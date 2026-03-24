@@ -1,0 +1,162 @@
+[
+  {
+    "name_en": "Samaria Gorge",
+    "name_el": "Φαράγγι Σαμαριάς",
+    "sac_scale": "demanding_mountain_hiking",
+    "lat": 35.2433,
+    "lon": 24.0447,
+    "ascent": 1200
+  },
+  {
+    "name_en": "Kourtaliotis Gorge",
+    "name_el": "Φαράγγι Κουρταλιώτη",
+    "sac_scale": "mountain_hiking",
+    "lat": 35.1917,
+    "lon": 24.8333,
+    "ascent": 400
+  },
+  {
+    "name_en": "Ha Gorge",
+    "name_el": "Φαράγγι Χα",
+    "sac_scale": "demanding_mountain_hiking",
+    "lat": 35.3442,
+    "lon": 25.2233,
+    "ascent": 600
+  },
+  {
+    "name_en": "Imbros Gorge",
+    "name_el": "Φαράγγι Ίμπρου",
+    "sac_scale": "mountain_hiking",
+    "lat": 35.2283,
+    "lon": 24.1133,
+    "ascent": 300
+  },
+  {
+    "name_en": "Agia Irini Gorge",
+    "name_el": "Φαράγγι Αγ. Ειρήνης",
+    "sac_scale": "mountain_hiking",
+    "lat": 35.0917,
+    "lon": 24.4167,
+    "ascent": 200
+  },
+  {
+    "name_en": "Mount Ida Summit",
+    "name_el": "Ψηλορείτης",
+    "sac_scale": "demanding_mountain_hiking",
+    "lat": 35.3236,
+    "lon": 24.9236,
+    "ascent": 1500
+  },
+  {
+    "name_en": "Mount Psiloritis Ridge",
+    "name_el": "Κορυφογραμμή Ψηλορείτη",
+    "sac_scale": "alpine_hiking",
+    "lat": 35.3167,
+    "lon": 24.9333,
+    "ascent": 1800
+  },
+  {
+    "name_en": "White Mountains Traverse",
+    "name_el": "Διάσχιση Λευκών Ορέων",
+    "sac_scale": "demanding_mountain_hiking",
+    "lat": 35.2167,
+    "lon": 23.9,
+    "ascent": 2000
+  },
+  {
+    "name_en": "Dikti Mountains Trail",
+    "name_el": "Σύρτης Ορών Δίκτης",
+    "sac_scale": "mountain_hiking",
+    "lat": 35.1917,
+    "lon": 25.5,
+    "ascent": 1200
+  },
+  {
+    "name_en": "Balos Lagoon Coastal Path",
+    "name_el": "Παραλιακό Μονοπάτι Κόλπου Μπάλου",
+    "sac_scale": "hiking",
+    "lat": 35.3628,
+    "lon": 23.5747,
+    "ascent": 100
+  },
+  {
+    "name_en": "Elafonissi Beach Trail",
+    "name_el": "Μονοπάτι Παραλίας Ελαφονησίου",
+    "sac_scale": "hiking",
+    "lat": 35.2667,
+    "lon": 23.5833,
+    "ascent": 50
+  },
+  {
+    "name_en": "Damnoni Coastal Trail",
+    "name_el": "Παραλιακό Μονοπάτι Δάμνωνι",
+    "sac_scale": "hiking",
+    "lat": 35.0833,
+    "lon": 24.5,
+    "ascent": 80
+  },
+  {
+    "name_en": "Matala Caves Coastal Path",
+    "name_el": "Παραλιακό Μονοπάτι Σπηλιών Ματάλας",
+    "sac_scale": "hiking",
+    "lat": 34.9639,
+    "lon": 24.7622,
+    "ascent": 120
+  },
+  {
+    "name_en": "Monastery Traverse - Meteora Trail",
+    "name_el": "Διάδρομος Μονών",
+    "sac_scale": "hiking",
+    "lat": 35.1667,
+    "lon": 25.2333,
+    "ascent": 250
+  },
+  {
+    "name_en": "Cretan Traditional Village Trail",
+    "name_el": "Μονοπάτι Παραδοσιακών Χωριών",
+    "sac_scale": "hiking",
+    "lat": 35.2417,
+    "lon": 25.3667,
+    "ascent": 180
+  },
+  {
+    "name_en": "Venetian Castle Hike Rethymno",
+    "name_el": "Ανάβαση Φορτέτζας",
+    "sac_scale": "hiking",
+    "lat": 35.3667,
+    "lon": 24.4722,
+    "ascent": 150
+  },
+  {
+    "name_en": "Astromeria Mountain Trail",
+    "name_el": "Ορεινό Μονοπάτι Αστρομεριάς",
+    "sac_scale": "mountain_hiking",
+    "lat": 35.2583,
+    "lon": 24.8417,
+    "ascent": 450
+  },
+  {
+    "name_en": "Psiloritis Circular Route",
+    "name_el": "Κυκλική Διαδρομή Ψηλορείτη",
+    "sac_scale": "demanding_mountain_hiking",
+    "lat": 35.33,
+    "lon": 24.92,
+    "ascent": 1400
+  },
+  {
+    "name_en": "Pachnes Mountain Loop",
+    "name_el": "Κυκλική Διαδρομή Παχνών",
+    "sac_scale": "mountain_hiking",
+    "lat": 35.1833,
+    "lon": 23.9667,
+    "ascent": 800
+  },
+  {
+    "name_en": "Kato Zakros Gorge and Coastal Trail",
+    "name_el": "Φαράγγι και Παραλία Κάτω Ζάκρου",
+    "sac_scale": "mountain_hiking",
+    "lat": 35.0306,
+    "lon": 26.2394,
+    "ascent": 300
+  }
+]

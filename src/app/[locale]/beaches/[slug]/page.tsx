@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { getBeachBySlug, getNearbyBeaches } from "@/lib/beaches";
 import { getLocalizedField, type Locale } from "@/lib/types";
+import { beachSchema } from "@/lib/schema";
 import { MapPin, Car, Waves, Fish, Sun, Wind, Baby, UtensilsCrossed, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -38,8 +39,14 @@ export default async function BeachDetailPage({
   const name = getLocalizedField(beach, "name", loc);
   const description = getLocalizedField(beach, "description", loc);
 
+  const jsonLd = beachSchema(beach, loc);
+
   return (
     <main className="min-h-screen bg-surface">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Hero image */}
       {beach.image_url && (
         <div className="relative h-64 md:h-80 bg-aegean">
