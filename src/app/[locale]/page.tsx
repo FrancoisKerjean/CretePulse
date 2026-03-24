@@ -58,6 +58,41 @@ export default function HomePage() {
         </div>
       </nav>
 
+      {/* News Ticker */}
+      <div className="bg-aegean text-white overflow-hidden">
+        <div className="max-w-6xl mx-auto flex items-center h-8">
+          <span className="shrink-0 bg-terra px-3 py-0.5 text-[11px] font-bold uppercase tracking-wider">Live</span>
+          <div className="overflow-hidden ml-3 flex-1">
+            <div className="animate-marquee whitespace-nowrap flex gap-8 text-xs">
+              <span className="inline-flex items-center gap-2">
+                <span className="w-1 h-1 rounded-full bg-terra" />
+                Kastelli airport reaches 67% completion, on track for 2028 opening
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <span className="w-1 h-1 rounded-full bg-terra" />
+                Sea temperature reaches 18°C in south Crete, earliest in 5 years
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <span className="w-1 h-1 rounded-full bg-terra" />
+                Heraklion hosts Mediterranean food festival March 28-30
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <span className="w-1 h-1 rounded-full bg-terra" />
+                New KTEL bus route connects Ierapetra to Sitia via coastal road
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <span className="w-1 h-1 rounded-full bg-terra" />
+                Kastelli airport reaches 67% completion, on track for 2028 opening
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <span className="w-1 h-1 rounded-full bg-terra" />
+                Sea temperature reaches 18°C in south Crete, earliest in 5 years
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Hero - Crete photo with warm overlay */}
       <section className="relative overflow-hidden pt-20 pb-16 px-4">
         {/* Background photo */}
