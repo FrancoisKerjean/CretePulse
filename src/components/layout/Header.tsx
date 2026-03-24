@@ -16,6 +16,7 @@ const NAV_LINKS = [
   { href: "/events", label: { en: "Events", fr: "Événements", de: "Events", el: "Εκδηλώσεις" } },
   { href: "/food", label: { en: "Food", fr: "Restaurants", de: "Essen", el: "Φαγητό" } },
   { href: "/news", label: { en: "News", fr: "Actus", de: "Nachrichten", el: "Νέα" } },
+  { href: "/articles", label: { en: "Guides", fr: "Guides", de: "Guides", el: "Οδηγοί" } },
 ];
 
 export function Header() {
