@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Unsubscribed – Crete Pulse</title>
+  <title>Unsubscribed – Crete Direct</title>
   <style>
     body { font-family: system-ui, sans-serif; background: #FAFAF8; color: #1A1A2E; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
     .card { background: #fff; border: 1px solid #E8E4DD; border-radius: 12px; padding: 2.5rem; max-width: 400px; text-align: center; }
@@ -52,8 +52,8 @@ export async function GET(request: NextRequest) {
 <body>
   <div class="card">
     <h1>You've been unsubscribed</h1>
-    <p>You will no longer receive newsletters from Crete Pulse. We're sorry to see you go.</p>
-    <a href="https://cretepulse.com">Return to Crete Pulse</a>
+    <p>You will no longer receive newsletters from Crete Direct. We're sorry to see you go.</p>
+    <a href="https://crete.direct">Return to Crete Direct</a>
   </div>
 </body>
 </html>`,

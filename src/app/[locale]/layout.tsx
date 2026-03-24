@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "meta" });
   return {
-    title: { default: t("title"), template: `%s | Crete Pulse` },
+    title: { default: t("title"), template: `%s | Crete Direct` },
     description: t("description"),
   };
 }

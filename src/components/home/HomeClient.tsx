@@ -305,7 +305,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeC
           <div className="flex items-center gap-1.5">
             <span className="font-bold text-aegean">CRETE</span>
             <span className="w-1.5 h-1.5 rounded-full bg-terra" />
-            <span className="font-bold text-terra">PULSE</span>
+            <span className="font-bold text-terra">DIRECT</span>
             <span className="ml-2">Free. Independent. Updated hourly.</span>
           </div>
           <div className="flex gap-4">

@@ -70,7 +70,7 @@ export const articles: Article[] = [
 
 <p>The eastern coast is best accessed with your own car. Public buses reach Ierapetra, Sitia, and Palekastro but not the small coves.</p>
 
-<p>Want real-time sea conditions before you drive out? <a href="/en/beaches">Check today's beach conditions on Crete Pulse</a>.</p>
+<p>Want real-time sea conditions before you drive out? <a href="/en/beaches">Check today's beach conditions on Crete Direct</a>.</p>
 `,
     content_fr: `
 <p>La Crète orientale reçoit bien moins de touristes que l'ouest. C'est une bonne chose. Le littoral entre Iérapetra et Sitia cache certaines des meilleures plages de l'île, sans infrastructure et sans vendeurs de matelas gonflables.</p>
@@ -106,7 +106,7 @@ export const articles: Article[] = [
   <li>Cartes hors ligne téléchargées avant de quitter la route principale</li>
 </ul>
 
-<p>Envie de vérifier les conditions de mer avant de partir ? <a href="/fr/beaches">Consultez les conditions des plages en direct sur Crete Pulse</a>.</p>
+<p>Envie de vérifier les conditions de mer avant de partir ? <a href="/fr/beaches">Consultez les conditions des plages en direct sur Crete Direct</a>.</p>
 `,
     content_de: "",
     content_el: "",
@@ -165,7 +165,7 @@ export const articles: Article[] = [
 <h2>The Cretan wild goat</h2>
 <p>The kri-kri (Cretan ibex) lives in the gorge. You might spot one on the rocky slopes, especially early morning. Do not feed them.</p>
 
-<p>Looking for other hikes in Crete? <a href="/en/hikes">Browse all trails on Crete Pulse</a>.</p>
+<p>Looking for other hikes in Crete? <a href="/en/hikes">Browse all trails on Crete Direct</a>.</p>
 `,
     content_fr: `
 <p>Les gorges de Samaria font 16 km de long, demandent 4 à 7 heures de marche et sont ouvertes de mai à octobre environ. C'est l'une des gorges les plus longues d'Europe, avec près d'un million de randonneurs par an. Voici tout ce qu'il faut savoir avant de partir.</p>
@@ -200,7 +200,7 @@ export const articles: Article[] = [
 <h2>Fermetures</h2>
 <p>Les gorges ferment pendant et après de fortes pluies (risque de crues soudaines). Vérifiez les conditions sur <strong>samaria.gr</strong> ou appelez le service forestier (2821067179) la veille. Les fermetures sont imprévisibles, même en haute saison.</p>
 
-<p>D'autres randonnées en Crète ? <a href="/fr/hikes">Consultez tous les sentiers sur Crete Pulse</a>.</p>
+<p>D'autres randonnées en Crète ? <a href="/fr/hikes">Consultez tous les sentiers sur Crete Direct</a>.</p>
 `,
     content_de: "",
     content_el: "",
@@ -254,7 +254,7 @@ export const articles: Article[] = [
   <li>Quiet and warm: October</li>
 </ul>
 
-<p>Check today's actual weather across Crete: <a href="/en/weather">Live weather conditions on Crete Pulse</a>.</p>
+<p>Check today's actual weather across Crete: <a href="/en/weather">Live weather conditions on Crete Direct</a>.</p>
 `,
     content_fr: `
 <p>La Crète compte plus de 300 jours de soleil par an. Cela ne signifie pas que tous les mois se valent. Voici un bilan mois par mois basé sur les vrais schémas météo.</p>
@@ -280,7 +280,7 @@ export const articles: Article[] = [
 <h2>Octobre</h2>
 <p>Premières pluies possibles mi-mois. 22-24°C. Mer encore très agréable. Bon rapport qualité-prix. La récolte des olives est en cours dans les villages.</p>
 
-<p>Consultez la météo en direct : <a href="/fr/weather">Conditions météo live sur Crete Pulse</a>.</p>
+<p>Consultez la météo en direct : <a href="/fr/weather">Conditions météo live sur Crete Direct</a>.</p>
 `,
     content_de: "",
     content_el: "",
@@ -326,7 +326,7 @@ export const articles: Article[] = [
 <h2>What to watch</h2>
 <p>The 2028 date is a target, not a guarantee. Check Greek infrastructure news sources closer to the date. If you are planning travel around the airport opening, keep flexibility in your bookings.</p>
 
-<p>Stay updated on Crete news: <a href="/en/news">Latest from Crete Pulse</a>.</p>
+<p>Stay updated on Crete news: <a href="/en/news">Latest from Crete Direct</a>.</p>
 `,
     content_fr: `
 <p>Le nouvel aéroport international de Kastelli, à 25 km au sud-est d'Héraklion, est prévu pour 2028. C'est l'un des plus grands projets d'infrastructure en Grèce depuis les Jeux Olympiques d'Athènes. Voici ce qui est confirmé et ce que cela implique pour les voyageurs.</p>
@@ -348,7 +348,7 @@ export const articles: Article[] = [
 <h2>À surveiller</h2>
 <p>La date de 2028 est une cible, pas une garantie. Consultez les sources d'information grecques à l'approche de l'ouverture.</p>
 
-<p>Suivez l'actualité crétoise : <a href="/fr/news">Dernières nouvelles sur Crete Pulse</a>.</p>
+<p>Suivez l'actualité crétoise : <a href="/fr/news">Dernières nouvelles sur Crete Direct</a>.</p>
 `,
     content_de: "",
     content_el: "",
@@ -397,7 +397,7 @@ export const articles: Article[] = [
   <li>Average daily budget (car + fuel + food + accommodation): 80-130 EUR/person for 2 people sharing</li>
 </ul>
 
-<p>Check beach and weather conditions for your driving days: <a href="/en/weather">Live conditions on Crete Pulse</a>.</p>
+<p>Check beach and weather conditions for your driving days: <a href="/en/weather">Live conditions on Crete Direct</a>.</p>
 `,
     content_fr: `
 <p>D'Héraklion à Sitia, c'est environ 170 km par la route côtière. Avec une semaine et une voiture, vous pouvez le faire correctement. Cet itinéraire couvre les points forts de la Crète centrale et orientale sans précipitation.</p>
@@ -423,7 +423,7 @@ export const articles: Article[] = [
 <h2>Jour 7 : Sitia</h2>
 <p>Ville moins touristique qu'Agios Nikolaos, forteresse vénitienne, bon marché au poisson, huile d'olive et vin muscat locaux réputés.</p>
 
-<p>Consultez les conditions météo pour vos trajets : <a href="/fr/weather">Conditions live sur Crete Pulse</a>.</p>
+<p>Consultez les conditions météo pour vos trajets : <a href="/fr/weather">Conditions live sur Crete Direct</a>.</p>
 `,
     content_de: "",
     content_el: "",
@@ -493,7 +493,7 @@ export const articles: Article[] = [
 <h2>Where to eat well</h2>
 <p>Look for places where the menu is handwritten on a chalkboard, where the owner works the floor, and where Greek is spoken at most tables. Avoid laminated 20-page menus with photos of every dish. The tourist strip in every resort exists because it is convenient, not because it is good.</p>
 
-<p>Find food places near you: <a href="/en/food">Tavernas and restaurants on Crete Pulse</a>.</p>
+<p>Find food places near you: <a href="/en/food">Tavernas and restaurants on Crete Direct</a>.</p>
 `,
     content_fr: `
 <p>La cuisine crétoise n'est pas la même chose que la "cuisine grecque" générique. L'île a sa propre tradition culinaire, façonnée par les influences minoennes, vénitiennes et ottomanes. À savoir : les portions sont généreuses, l'huile d'olive omniprésente, et les meilleures tavernes sont rarement sur la rue piétonne touristique.</p>
@@ -530,7 +530,7 @@ export const articles: Article[] = [
 <h2>10. Raki (tsikoudia)</h2>
 <p>Eau-de-vie distillée de marc de raisin. Offert en fin de repas dans les tavernes traditionnelles. 38-45% d'alcool. À siroter.</p>
 
-<p>Trouvez les bonnes adresses : <a href="/fr/food">Tavernes et restaurants sur Crete Pulse</a>.</p>
+<p>Trouvez les bonnes adresses : <a href="/fr/food">Tavernes et restaurants sur Crete Direct</a>.</p>
 `,
     content_de: "",
     content_el: "",
@@ -590,7 +590,7 @@ export const articles: Article[] = [
 <h2>Is it worth it?</h2>
 <p>For people who want climate, outdoor lifestyle, lower cost, and genuine Mediterranean culture: yes, with realistic expectations. For people who need urban amenities, top-tier healthcare, or fast-paced professional environments: the friction is real. The most common mistake is moving based on a holiday experience. Test with 3-6 months of renting first.</p>
 
-<p>Explore where to live: <a href="/en/villages">Villages across Crete on Crete Pulse</a>.</p>
+<p>Explore where to live: <a href="/en/villages">Villages across Crete on Crete Direct</a>.</p>
 `,
     content_fr: `
 <p>La Crète attire des expatriés d'Europe du Nord, du Royaume-Uni, d'Allemagne, de France et de plus en plus d'Amérique du Nord. L'île présente de vrais avantages mais aussi de vraies contraintes. Voici ce que les gens rapportent après 1+ an de vie ici.</p>
@@ -620,7 +620,7 @@ export const articles: Article[] = [
 <h2>Isolement saisonnier</h2>
 <p>Dans un village touristique, d'octobre à avril, la vie peut sembler isolée. Restaurants fermés, services réduits. À tester avec une location longue durée avant d'acheter.</p>
 
-<p>Explorez où vivre : <a href="/fr/villages">Villages de Crète sur Crete Pulse</a>.</p>
+<p>Explorez où vivre : <a href="/fr/villages">Villages de Crète sur Crete Direct</a>.</p>
 `,
     content_de: "",
     content_el: "",
@@ -669,7 +669,7 @@ export const articles: Article[] = [
 <h2>The honest answer</h2>
 <p>Both are genuinely beautiful. Neither is overrated if you manage the crowds. If you can only do one and you have young children, go to Elafonisi. If you are fit and want a slightly wilder experience, do Balos by the dirt road at 7am before anyone else arrives.</p>
 
-<p>Check today's conditions at both beaches: <a href="/en/beaches">Live beach conditions on Crete Pulse</a>.</p>
+<p>Check today's conditions at both beaches: <a href="/en/beaches">Live beach conditions on Crete Direct</a>.</p>
 `,
     content_fr: `
 <p>Les deux plages se trouvent sur la péninsule de La Canée, à l'ouest de la Crète. Les deux sont régulièrement citées parmi les meilleures d'Europe. Les deux sont extrêmement bondées en juillet-août. La comparaison est utile car elles sont à 70 km l'une de l'autre.</p>
@@ -695,7 +695,7 @@ export const articles: Article[] = [
   <li><strong>Qualité de l'eau :</strong> Exceptionnelle dans les deux cas.</li>
 </ul>
 
-<p>Vérifiez les conditions des plages : <a href="/fr/beaches">Conditions live sur Crete Pulse</a>.</p>
+<p>Vérifiez les conditions des plages : <a href="/fr/beaches">Conditions live sur Crete Direct</a>.</p>
 `,
     content_de: "",
     content_el: "",
@@ -751,7 +751,7 @@ export const articles: Article[] = [
 <h2>Practical note</h2>
 <p>Rain in Crete often comes in fronts of 1-2 days, not weeks. Check the 3-day forecast and plan accordingly. Summer storms typically clear within hours.</p>
 
-<p>Live weather: <a href="/en/weather">Crete Pulse weather for all regions</a>.</p>
+<p>Live weather: <a href="/en/weather">Crete Direct weather for all regions</a>.</p>
 `,
     content_fr: `
 <p>Il pleut en Crète. Surtout de novembre à mars, mais des orages estivaux rapides arrivent aussi. Un jour de pluie ne doit pas être une journée perdue.</p>
@@ -778,7 +778,7 @@ export const articles: Article[] = [
 <h2>Domaines viticoles</h2>
 <p>La Crète a une scène viticole sous-estimée. Lyrarakis (Alagni), Douloufakis (Dafnes). La plupart demandent un rendez-vous en basse saison. Les cépages locaux Vidiano et Kotsifali méritent d'être découverts.</p>
 
-<p>Météo en direct : <a href="/fr/weather">Crete Pulse météo toutes régions</a>.</p>
+<p>Météo en direct : <a href="/fr/weather">Crete Direct météo toutes régions</a>.</p>
 `,
     content_de: "",
     content_el: "",
@@ -840,7 +840,7 @@ export const articles: Article[] = [
   <li>Pharmacies: in every town. Doctors and clinics in all major centres. Heraklion has a children's hospital.</li>
 </ul>
 
-<p>Find family-friendly beaches near your location: <a href="/en/beaches">All beaches on Crete Pulse</a>.</p>
+<p>Find family-friendly beaches near your location: <a href="/en/beaches">All beaches on Crete Direct</a>.</p>
 `,
     content_fr: `
 <p>La Crète fonctionne bien pour les familles. La mer est chaude, la nourriture convient aux petits mangeurs sélectifs, et l'île est assez grande pour intéresser tous les âges.</p>
@@ -878,7 +878,7 @@ export const articles: Article[] = [
   <li>Pharmacies : dans chaque ville. Médecins et cliniques dans tous les grands centres.</li>
 </ul>
 
-<p>Trouvez les plages familiales près de chez vous : <a href="/fr/beaches">Toutes les plages sur Crete Pulse</a>.</p>
+<p>Trouvez les plages familiales près de chez vous : <a href="/fr/beaches">Toutes les plages sur Crete Direct</a>.</p>
 `,
     content_de: "",
     content_el: "",

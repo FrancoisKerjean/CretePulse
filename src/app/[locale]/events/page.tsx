@@ -7,7 +7,7 @@ import Link from "next/link";
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   return {
-    title: "Events in Crete - CretePulse",
+    title: "Events in Crete - Crete Direct",
     description: "Festivals, markets, concerts, panigýria. Upcoming events across Crete.",
   };
 }

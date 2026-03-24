@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { getAllBeaches } from "@/lib/beaches";
 import { getAllVillages } from "@/lib/villages";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://cretepulse.com";
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 const LOCALES = ["en", "fr", "de", "el"] as const;
 
 const STATIC_PAGES = [

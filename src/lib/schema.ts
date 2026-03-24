@@ -1,7 +1,7 @@
 import type { Beach, Event, NewsItem, Locale } from "./types";
 import { getLocalizedField } from "./types";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://cretepulse.com";
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 export function beachSchema(beach: Beach, locale: Locale): Record<string, unknown> {
   const name = getLocalizedField(beach, "name", locale);
@@ -61,7 +61,7 @@ export function eventSchema(event: Event, locale: Locale): Record<string, unknow
     eventStatus: "https://schema.org/EventScheduled",
     organizer: {
       "@type": "Organization",
-      name: "CretePulse",
+      name: "Crete Direct",
       url: BASE_URL,
     },
   };
@@ -91,7 +91,7 @@ export function newsSchema(news: NewsItem, locale: Locale): Record<string, unkno
     image: news.image_url || undefined,
     publisher: {
       "@type": "Organization",
-      name: "CretePulse",
+      name: "Crete Direct",
       url: BASE_URL,
       logo: {
         "@type": "ImageObject",

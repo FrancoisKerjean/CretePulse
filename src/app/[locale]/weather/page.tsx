@@ -5,7 +5,7 @@ import { Wind, Droplets, Sun, Thermometer, Waves, Eye } from "lucide-react";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   return {
-    title: "Weather in Crete - CretePulse",
+    title: "Weather in Crete - Crete Direct",
     description: "Live weather for 10 cities across Crete. Temperature, wind, sea temperature, UV index. Updated hourly.",
   };
 }

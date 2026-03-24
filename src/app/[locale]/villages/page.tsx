@@ -8,7 +8,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "nav" });
   return {
-    title: `Villages in Crete - CretePulse`,
+    title: `Villages in Crete - Crete Direct`,
     description: "Explore 300+ villages of Crete, from Minoan ruins to hidden mountain hamlets.",
   };
 }

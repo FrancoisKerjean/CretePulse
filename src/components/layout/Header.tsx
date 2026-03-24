@@ -34,7 +34,7 @@ export function Header() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-terra opacity-60" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-terra" />
           </span>
-          <span className="text-lg font-bold tracking-tight text-terra">PULSE</span>
+          <span className="text-lg font-bold tracking-tight text-terra">DIRECT</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-6 text-sm font-medium text-text-muted">

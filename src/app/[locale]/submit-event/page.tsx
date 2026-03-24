@@ -289,7 +289,7 @@ export default function SubmitEventPage() {
 
         {/* Footer note */}
         <p className="mt-5 text-center text-xs text-text-light">
-          Events are reviewed by the Crete Pulse team before appearing on the site.
+          Events are reviewed by the Crete Direct team before appearing on the site.
         </p>
       </div>
     </main>

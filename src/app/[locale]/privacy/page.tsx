@@ -7,19 +7,19 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
   const metadata = {
     en: {
-      title: "Privacy Policy - CretePulse",
+      title: "Privacy Policy - Crete Direct",
       description: "Our GDPR-compliant privacy policy. We do not track you, sell your data, or use invasive cookies.",
     },
     fr: {
-      title: "Politique de Confidentialité - CretePulse",
+      title: "Politique de Confidentialité - Crete Direct",
       description: "Notre politique de confidentialité conforme au RGPD. Nous ne vous suivons pas, ne vendons pas vos données et n'utilisons pas de cookies invasifs.",
     },
     de: {
-      title: "Datenschutzerklärung - CretePulse",
+      title: "Datenschutzerklärung - Crete Direct",
       description: "Unsere DSGVO-konforme Datenschutzerklärung. Wir verfolgen Sie nicht, verkaufen Ihre Daten nicht und verwenden keine invasiven Cookies.",
     },
     el: {
-      title: "Πολιτική Ιδιωτικότητας - CretePulse",
+      title: "Πολιτική Ιδιωτικότητας - Crete Direct",
       description: "Η πολιτική ιδιωτικότητας μας που συμμορφώνεται με το GDPR. Δεν σας παρακολουθούμε, δεν πουλάμε τα δεδομένα σας και δεν χρησιμοποιούμε επεμβατικά cookies.",
     },
   };
@@ -43,7 +43,7 @@ const CONTENT: Record<
 > = {
   en: {
     title: "Privacy Policy",
-    intro: "At CretePulse, your privacy is important. This policy explains what data we collect, how we use it, and your rights.",
+    intro: "At Crete Direct, your privacy is important. This policy explains what data we collect, how we use it, and your rights.",
     sections: [
       {
         heading: "What Data We Collect",
@@ -56,7 +56,7 @@ const CONTENT: Record<
       },
       {
         heading: "No Tracking",
-        content: "CretePulse does not use Google Analytics, Meta Pixel, or similar tracking tools. We do not build profiles of your browsing behavior.",
+        content: "Crete Direct does not use Google Analytics, Meta Pixel, or similar tracking tools. We do not build profiles of your browsing behavior.",
       },
       {
         heading: "Newsletter",
@@ -82,12 +82,12 @@ const CONTENT: Record<
           "Right to deletion: request permanent removal of your email.",
           "Right to data portability: request your data in a portable format.",
           "Right to withdraw consent: unsubscribe from our newsletter anytime.",
-          "To exercise these rights, email us at hello@cretepulse.com",
+          "To exercise these rights, email us at hello@crete.direct",
         ],
       },
       {
         heading: "Third-Party Services",
-        content: "Our website uses publicly available APIs (Open-Meteo, OpenStreetMap, Copernicus). These services may have their own privacy policies. CretePulse does not share your email with any third-party service.",
+        content: "Our website uses publicly available APIs (Open-Meteo, OpenStreetMap, Copernicus). These services may have their own privacy policies. Crete Direct does not share your email with any third-party service.",
       },
       {
         heading: "Changes to This Policy",
@@ -95,13 +95,13 @@ const CONTENT: Record<
       },
       {
         heading: "Contact Us",
-        content: "If you have questions about this privacy policy or your data, contact us at hello@cretepulse.com",
+        content: "If you have questions about this privacy policy or your data, contact us at hello@crete.direct",
       },
     ],
   },
   fr: {
     title: "Politique de Confidentialité",
-    intro: "Chez CretePulse, votre confidentialité est importante. Cette politique explique les données que nous collectons, comment nous les utilisons et vos droits.",
+    intro: "Chez Crete Direct, votre confidentialité est importante. Cette politique explique les données que nous collectons, comment nous les utilisons et vos droits.",
     sections: [
       {
         heading: "Données Que Nous Collectons",
@@ -114,7 +114,7 @@ const CONTENT: Record<
       },
       {
         heading: "Pas de Suivi",
-        content: "CretePulse n'utilise pas Google Analytics, Meta Pixel ou des outils de suivi similaires. Nous ne créons pas de profils de votre comportement de navigation.",
+        content: "Crete Direct n'utilise pas Google Analytics, Meta Pixel ou des outils de suivi similaires. Nous ne créons pas de profils de votre comportement de navigation.",
       },
       {
         heading: "Infolettre",
@@ -140,12 +140,12 @@ const CONTENT: Record<
           "Droit à l'oubli : demander la suppression permanente de votre e-mail.",
           "Droit à la portabilité des données : demander vos données dans un format portable.",
           "Droit de retirer le consentement : vous désabonner de notre infolettre à tout moment.",
-          "Pour exercer ces droits, envoyez-nous un e-mail à hello@cretepulse.com",
+          "Pour exercer ces droits, envoyez-nous un e-mail à hello@crete.direct",
         ],
       },
       {
         heading: "Services Tiers",
-        content: "Notre site Web utilise des API publiquement disponibles (Open-Meteo, OpenStreetMap, Copernicus). Ces services peuvent avoir leurs propres politiques de confidentialité. CretePulse ne partage pas votre e-mail avec aucun service tiers.",
+        content: "Notre site Web utilise des API publiquement disponibles (Open-Meteo, OpenStreetMap, Copernicus). Ces services peuvent avoir leurs propres politiques de confidentialité. Crete Direct ne partage pas votre e-mail avec aucun service tiers.",
       },
       {
         heading: "Modifications de Cette Politique",
@@ -153,13 +153,13 @@ const CONTENT: Record<
       },
       {
         heading: "Nous Contacter",
-        content: "Si vous avez des questions sur cette politique de confidentialité ou vos données, contactez-nous à hello@cretepulse.com",
+        content: "Si vous avez des questions sur cette politique de confidentialité ou vos données, contactez-nous à hello@crete.direct",
       },
     ],
   },
   de: {
     title: "Datenschutzerklärung",
-    intro: "Bei CretePulse ist Ihre Privatsphäre wichtig. Diese Richtlinie erläutert, welche Daten wir sammeln, wie wir sie nutzen und welche Rechte Sie haben.",
+    intro: "Bei Crete Direct ist Ihre Privatsphäre wichtig. Diese Richtlinie erläutert, welche Daten wir sammeln, wie wir sie nutzen und welche Rechte Sie haben.",
     sections: [
       {
         heading: "Welche Daten Wir Sammeln",
@@ -172,7 +172,7 @@ const CONTENT: Record<
       },
       {
         heading: "Keine Nachverfolgung",
-        content: "CretePulse verwendet nicht Google Analytics, Meta Pixel oder ähnliche Tracking-Tools. Wir erstellen keine Profile Ihres Navigationsverhaltens.",
+        content: "Crete Direct verwendet nicht Google Analytics, Meta Pixel oder ähnliche Tracking-Tools. Wir erstellen keine Profile Ihres Navigationsverhaltens.",
       },
       {
         heading: "Newsletter",
@@ -198,12 +198,12 @@ const CONTENT: Record<
           "Recht auf Vergessenwerden: permanente Entfernung Ihrer E-Mail anfordern.",
           "Datenportabilität: Ihre Daten in einem tragbaren Format anfordern.",
           "Recht, die Zustimmung zu widerrufen: jederzeit von unserem Newsletter abmelden.",
-          "Um diese Rechte auszuüben, senden Sie uns eine E-Mail an hello@cretepulse.com",
+          "Um diese Rechte auszuüben, senden Sie uns eine E-Mail an hello@crete.direct",
         ],
       },
       {
         heading: "Drittanbieter-Dienste",
-        content: "Unsere Website verwendet öffentlich verfügbare APIs (Open-Meteo, OpenStreetMap, Copernicus). Diese Dienste können ihre eigenen Datenschutzrichtlinien haben. CretePulse gibt Ihre E-Mail nicht an externe Dienste weiter.",
+        content: "Unsere Website verwendet öffentlich verfügbare APIs (Open-Meteo, OpenStreetMap, Copernicus). Diese Dienste können ihre eigenen Datenschutzrichtlinien haben. Crete Direct gibt Ihre E-Mail nicht an externe Dienste weiter.",
       },
       {
         heading: "Änderungen an dieser Richtlinie",
@@ -211,13 +211,13 @@ const CONTENT: Record<
       },
       {
         heading: "Kontaktieren Sie Uns",
-        content: "Wenn Sie Fragen zu dieser Datenschutzrichtlinie oder Ihren Daten haben, kontaktieren Sie uns unter hello@cretepulse.com",
+        content: "Wenn Sie Fragen zu dieser Datenschutzrichtlinie oder Ihren Daten haben, kontaktieren Sie uns unter hello@crete.direct",
       },
     ],
   },
   el: {
     title: "Πολιτική Ιδιωτικότητας",
-    intro: "Στο CretePulse, η ιδιωτικότητά σας είναι σημαντική. Αυτή η πολιτική εξηγεί ποια δεδομένα συλλέγουμε, πώς τα χρησιμοποιούμε και ποια είναι τα δικαιώματά σας.",
+    intro: "Στο Crete Direct, η ιδιωτικότητά σας είναι σημαντική. Αυτή η πολιτική εξηγεί ποια δεδομένα συλλέγουμε, πώς τα χρησιμοποιούμε και ποια είναι τα δικαιώματά σας.",
     sections: [
       {
         heading: "Ποια Δεδομένα Συλλέγουμε",
@@ -230,7 +230,7 @@ const CONTENT: Record<
       },
       {
         heading: "Χωρίς Παρακολούθηση",
-        content: "Το CretePulse δεν χρησιμοποιεί Google Analytics, Meta Pixel ή παρόμοια εργαλεία παρακολούθησης. Δεν δημιουργούμε προφίλ της συμπεριφοράς σας στη περιήγηση.",
+        content: "Το Crete Direct δεν χρησιμοποιεί Google Analytics, Meta Pixel ή παρόμοια εργαλεία παρακολούθησης. Δεν δημιουργούμε προφίλ της συμπεριφοράς σας στη περιήγηση.",
       },
       {
         heading: "Ενημερωτικό Δελτίο",
@@ -256,12 +256,12 @@ const CONTENT: Record<
           "Δικαίωμα στη λήθη: ζητήστε την οριστική αφαίρεση του ηλεκτρονικού σας ταχυδρομείου.",
           "Δικαίωμα φορητότητας δεδομένων: ζητήστε τα δεδομένα σας σε φορητή μορφή.",
           "Δικαίωμα ανάκλησης συγκατάθεσης: καταργήστε την εγγραφή από το ενημερωτικό μας δελτίο ανά πάσα στιγμή.",
-          "Για να ασκήσετε αυτά τα δικαιώματα, στείλτε μας ένα μήνυμα ηλεκτρονικού ταχυδρομείου στο hello@cretepulse.com",
+          "Για να ασκήσετε αυτά τα δικαιώματα, στείλτε μας ένα μήνυμα ηλεκτρονικού ταχυδρομείου στο hello@crete.direct",
         ],
       },
       {
         heading: "Υπηρεσίες Τρίτων",
-        content: "Ο ιστότοπός μας χρησιμοποιεί δημόσια διαθέσιμα API (Open-Meteo, OpenStreetMap, Copernicus). Αυτές οι υπηρεσίες ενδέχεται να έχουν τις δικές τους πολιτικές ιδιωτικότητας. Το CretePulse δεν κοινοποιεί το ηλεκτρονικό σας ταχυδρομείο σε καμία υπηρεσία τρίτων.",
+        content: "Ο ιστότοπός μας χρησιμοποιεί δημόσια διαθέσιμα API (Open-Meteo, OpenStreetMap, Copernicus). Αυτές οι υπηρεσίες ενδέχεται να έχουν τις δικές τους πολιτικές ιδιωτικότητας. Το Crete Direct δεν κοινοποιεί το ηλεκτρονικό σας ταχυδρομείο σε καμία υπηρεσία τρίτων.",
       },
       {
         heading: "Αλλαγές σε αυτή την Πολιτική",
@@ -269,7 +269,7 @@ const CONTENT: Record<
       },
       {
         heading: "Επικοινωνήστε μαζί μας",
-        content: "Εάν έχετε ερωτήσεις σχετικά με αυτή την πολιτική ιδιωτικότητας ή τα δεδομένα σας, επικοινωνήστε μαζί μας στο hello@cretepulse.com",
+        content: "Εάν έχετε ερωτήσεις σχετικά με αυτή την πολιτική ιδιωτικότητας ή τα δεδομένα σας, επικοινωνήστε μαζί μας στο hello@crete.direct",
       },
     ],
   },
