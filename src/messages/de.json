@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "Crete Pulse - Der Puls von Kreta",
-    "description": "Wetter, Veranstaltungen, Strände, Dörfer und alles was Sie über Kreta wissen müssen. Täglich aktualisiert."
+    "title": "Crete Pulse - Was auf Kreta los ist",
+    "description": "Wetter, Events, Strände, lokale Nachrichten. Ganz Kreta, stündlich aktualisiert. Kostenlos, in 4 Sprachen."
   },
   "nav": {
     "today": "Heute",
@@ -12,58 +12,36 @@
     "weather": "Wetter"
   },
   "home": {
-    "hero": "Der Puls von Kreta",
-    "subtitle": "Wetter, Events, Strände und lokale Nachrichten. Täglich aktualisiert.",
-    "weatherNow": "Wetter jetzt",
-    "eventsThisWeek": "Events diese Woche",
+    "hero": "Was auf Kreta los ist",
+    "subtitle": "Wetter, Events, Strände, Nachrichten. Stündlich aktualisiert. Kostenlos.",
+    "badge": "Live-Daten, stündlich aktualisiert",
+    "weatherNow": "Gerade jetzt",
+    "eventsThisWeek": "Diese Woche",
     "featuredBeaches": "Beste Strände heute",
-    "latestNews": "Neueste Nachrichten",
+    "latestNews": "Aktuell",
+    "explore": "Entdecken",
+    "exploreSubtitle": "500 Strände, 300 Dörfer, 80 Wanderwege, Events, Nachrichten. Ganz Kreta an einem Ort.",
+    "beachesCount": "500+ Strände",
+    "beachesDesc": "Mit heutigen Wind- und Meeresbedingungen",
+    "eventsCount": "Events",
+    "eventsDesc": "Festivals, Märkte, Konzerte, Panigýria",
+    "villagesCount": "300+ Dörfer",
+    "villagesDesc": "Von minoischen Ruinen bis zu versteckten Bergdörfern",
+    "hikesCount": "80+ Wanderwege",
+    "hikesDesc": "Schluchten, Küstenpfade, Bergrouten",
+    "foodLabel": "Tavernen & Restaurants",
+    "foodDesc": "Lokale Empfehlungen, keine Touristenfallen",
+    "newsLabel": "Kreta Nachrichten",
+    "newsDesc": "Griechische Presse, alle 3 Stunden in 3 Sprachen übersetzt",
+    "fireLabel": "Feueralarm",
+    "fireDesc": "Live EU-Copernicus Satellitendaten",
     "newsletter": "Wöchentliches Kreta-Briefing",
-    "newsletterCta": "Kostenlos, jeden Montag",
-    "subscribe": "Abonnieren",
+    "newsletterCta": "Jeden Montag. Wetter, Events, ein guter Artikel. Kostenlos.",
+    "subscribe": "Ich bin dabei",
     "emailPlaceholder": "Ihre E-Mail"
   },
-  "beaches": {
-    "title": "Strände auf Kreta",
-    "subtitle": "500+ Strände mit Echtzeitbedingungen",
-    "filterRegion": "Region",
-    "filterType": "Typ",
-    "all": "Alle",
-    "east": "Osten",
-    "west": "Westen",
-    "central": "Mitte",
-    "south": "Süden",
-    "sand": "Sand",
-    "pebble": "Kiesel",
-    "rock": "Felsen",
-    "mixed": "Gemischt",
-    "conditions": "Heutige Bedingungen",
-    "good": "Gut",
-    "moderate": "Mäßig",
-    "avoid": "Windig",
-    "parking": "Parkplatz",
-    "sunbeds": "Liegen",
-    "taverna": "Taverne",
-    "snorkeling": "Schnorcheln",
-    "kidsOk": "Kinderfreundlich",
-    "nearbyBeaches": "Strände in der Nähe"
-  },
-  "events": {
-    "title": "Veranstaltungen auf Kreta",
-    "thisWeek": "Diese Woche",
-    "thisMonth": "Diesen Monat",
-    "submitEvent": "Event einreichen",
-    "noEvents": "Keine Veranstaltungen geplant"
-  },
-  "weather": {
-    "title": "Kreta Wetter",
-    "seaTemp": "Wassertemperatur",
-    "wind": "Wind",
-    "uv": "UV-Index",
-    "forecast": "5-Tage-Vorhersage"
-  },
   "footer": {
-    "about": "Crete Pulse ist ein kostenloser, unabhängiger Reiseführer für die Insel Kreta.",
+    "about": "Kostenloser, unabhängiger Kreta-Reiseführer. Live-Daten. Keine Werbung (noch). Kein Tracking.",
     "newsletter": "Wöchentliches Briefing",
     "privacy": "Datenschutz",
     "contact": "Kontakt"
@@ -71,8 +49,6 @@
   "common": {
     "readMore": "Weiterlesen",
     "seeAll": "Alle anzeigen",
-    "back": "Zurück",
-    "loading": "Laden...",
-    "error": "Etwas ist schiefgelaufen"
+    "back": "Zurück"
   }
 }

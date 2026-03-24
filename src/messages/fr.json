@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "Crete Pulse - Le pouls de la Crète",
-    "description": "Météo, événements, plages, villages et tout ce qu'il faut savoir sur la Crète. Mis à jour quotidiennement."
+    "title": "Crete Pulse - Ce qui se passe en Crète",
+    "description": "Météo, événements, plages, actus locales. Toute la Crète, mise à jour chaque heure. Gratuit, en 4 langues."
   },
   "nav": {
     "today": "Aujourd'hui",
@@ -12,67 +12,43 @@
     "weather": "Météo"
   },
   "home": {
-    "hero": "Le pouls de la Crète",
-    "subtitle": "Météo, événements, plages et actualités locales. Mis à jour chaque jour.",
-    "weatherNow": "Météo en ce moment",
-    "eventsThisWeek": "Événements cette semaine",
+    "hero": "Ce qui se passe en Crète",
+    "subtitle": "Météo, événements, plages, actus. Mis à jour chaque heure. Gratuit.",
+    "badge": "Données live, mises à jour chaque heure",
+    "weatherNow": "En ce moment",
+    "eventsThisWeek": "Cette semaine",
     "featuredBeaches": "Meilleures plages aujourd'hui",
     "latestNews": "Dernières actus",
+    "explore": "Explorer",
+    "exploreSubtitle": "500 plages, 300 villages, 80 sentiers, événements, actus. Toute la Crète au même endroit.",
+    "beachesCount": "500+ plages",
+    "beachesDesc": "Avec les conditions de vent et de mer du jour",
+    "eventsCount": "Événements",
+    "eventsDesc": "Festivals, marchés, concerts, panigýria",
+    "villagesCount": "300+ villages",
+    "villagesDesc": "Des ruines minoennes aux hameaux de montagne cachés",
+    "hikesCount": "80+ sentiers",
+    "hikesDesc": "Gorges, chemins côtiers, routes de montagne",
+    "foodLabel": "Tavernes et restaurants",
+    "foodDesc": "Les adresses des locaux, pas les pièges à touristes",
+    "newsLabel": "Actus Crète",
+    "newsDesc": "Presse grecque, traduite en 3 langues toutes les 3 heures",
+    "fireLabel": "Alertes incendies",
+    "fireDesc": "Données satellite EU Copernicus en direct",
     "newsletter": "Recevez le briefing hebdo Crète",
-    "newsletterCta": "Gratuit, chaque lundi",
-    "subscribe": "S'inscrire",
+    "newsletterCta": "Chaque lundi. Météo, événements, une bonne lecture. Gratuit.",
+    "subscribe": "Je m'inscris",
     "emailPlaceholder": "Votre email"
   },
-  "beaches": {
-    "title": "Plages en Crète",
-    "subtitle": "500+ plages avec conditions en temps réel",
-    "filterRegion": "Région",
-    "filterType": "Type",
-    "all": "Toutes",
-    "east": "Est",
-    "west": "Ouest",
-    "central": "Centre",
-    "south": "Sud",
-    "sand": "Sable",
-    "pebble": "Galets",
-    "rock": "Rochers",
-    "mixed": "Mixte",
-    "conditions": "Conditions du jour",
-    "good": "Bonnes",
-    "moderate": "Moyennes",
-    "avoid": "Venteux",
-    "parking": "Parking",
-    "sunbeds": "Transats",
-    "taverna": "Taverne",
-    "snorkeling": "Snorkeling",
-    "kidsOk": "Familles",
-    "nearbyBeaches": "Plages à proximité"
-  },
-  "events": {
-    "title": "Événements en Crète",
-    "thisWeek": "Cette semaine",
-    "thisMonth": "Ce mois",
-    "submitEvent": "Proposer un événement",
-    "noEvents": "Aucun événement prévu"
-  },
-  "weather": {
-    "title": "Météo Crète",
-    "seaTemp": "Température mer",
-    "wind": "Vent",
-    "uv": "Indice UV",
-    "forecast": "Prévisions 5 jours"
-  },
   "footer": {
-    "about": "Crete Pulse est un guide gratuit et indépendant sur l'île de Crète.",
-    "newsletter": "Briefing hebdomadaire",
+    "about": "Guide gratuit et indépendant sur la Crète. Données live. Pas de pub (pour l'instant). Pas de tracking.",
+    "newsletter": "Briefing hebdo",
     "privacy": "Confidentialité",
     "contact": "Contact"
   },
   "common": {
     "readMore": "Lire la suite",
     "seeAll": "Voir tout",
-    "back": "Retour",
-    "loading": "Chargement...",
-    "error": "Une erreur est survenue"
+    "back": "Retour"
   }
 }

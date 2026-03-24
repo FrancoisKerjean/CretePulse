@@ -5,17 +5,33 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --color-sky: #4A90D9;
-  --color-sky-light: #E8F0FE;
-  --color-terra: #C75B39;
-  --color-terra-light: #F5DDD4;
+  /* Aegean blue - deep Mediterranean sea */
+  --color-aegean: #1B4965;
+  --color-aegean-light: #2D6A8F;
+  --color-aegean-faint: #E8F1F5;
+
+  /* Terra cotta - Cretan earth */
+  --color-terra: #B85C38;
+  --color-terra-light: #D4845F;
+  --color-terra-faint: #FBF0EB;
+
+  /* Olive - Cretan groves */
+  --color-olive: #5F7A3E;
+  --color-olive-light: #8BA665;
+
+  /* Sand - Cretan beaches */
   --color-sand: #F5E6D3;
-  --color-sand-dark: #E8D5BF;
-  --color-surface: #FAFAFA;
+  --color-sand-warm: #EDD9C0;
+
+  /* Limestone - Cretan stone */
+  --color-stone: #F7F4F0;
+  --color-stone-warm: #EDE8E1;
+
+  --color-surface: #FAFAF8;
   --color-text: #1A1A2E;
   --color-text-muted: #6B7280;
   --color-text-light: #94A3B8;
-  --color-border: #E5E7EB;
+  --color-border: #E8E4DD;
 
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
