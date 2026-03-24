@@ -5,6 +5,7 @@ export async function getLatestNews(limit = 20): Promise<NewsItem[]> {
   const { data, error } = await supabase
     .from("news")
     .select("*")
+    .eq("rewritten", true)
     .order("published_at", { ascending: false })
     .limit(limit);
 
@@ -17,6 +18,7 @@ export async function getNewsBySlug(slug: string): Promise<NewsItem | null> {
     .from("news")
     .select("*")
     .eq("slug", slug)
+    .eq("rewritten", true)
     .single();
 
   if (error) return null;

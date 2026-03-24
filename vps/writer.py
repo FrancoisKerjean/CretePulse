@@ -26,7 +26,7 @@ data = sb.table("news").select("id,slug,title_el,title_en,summary_el,source_url,
 article = None
 for item in (data.data or []):
     s = item.get("summary_en") or ""
-    if len(s) < 200:
+    if not item.get('rewritten', False):
         article = item
         break
 
@@ -103,6 +103,6 @@ if not update:
     print("[writer] ERROR: no valid fields in parsed output")
     sys.exit(1)
 
-sb.table("news").update(update).eq("id", article["id"]).execute()
+sb.table("news").update({**update, "rewritten": True}).eq("id", article["id"]).execute()
 print(f"[writer] updated article {article['slug']} with {len(update)} fields")
 print(f"[writer] done")
