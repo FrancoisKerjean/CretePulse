@@ -20,15 +20,10 @@ sb = create_client(SUPABASE_URL, SUPABASE_KEY)
 now = datetime.now(timezone.utc).isoformat()
 print(f"[writer] {now} - looking for unprocessed article")
 
-# Find an article that hasn't been rewritten yet (summary_en is null or very short)
-data = sb.table("news").select("id,slug,title_el,title_en,summary_el,source_url,source_name").order("published_at", desc=True).limit(30).execute()
+# Find an article that hasn't been rewritten yet
+data = sb.table("news").select("id,slug,title_el,title_en,summary_el,source_url,source_name").eq("rewritten", False).order("published_at", desc=True).limit(1).execute()
 
-article = None
-for item in (data.data or []):
-    s = item.get("summary_en") or ""
-    if not item.get('rewritten', False):
-        article = item
-        break
+article = (data.data or [None])[0]
 
 if not article:
     print("[writer] no unprocessed articles found")
@@ -83,8 +78,9 @@ if "```" in output:
 start = output.find("{")
 end = output.rfind("}") + 1
 if start == -1 or end == 0:
-    print(f"[writer] ERROR: no JSON found in output: {output[:200]}")
-    sys.exit(1)
+    print(f"[writer] SKIP: Claude refused, marking as done: {output[:100]}")
+    sb.table("news").update({"rewritten": True}).eq("id", article["id"]).execute()
+    sys.exit(0)
 
 try:
     parsed = json.loads(output[start:end])
