@@ -1,15 +1,32 @@
-import { getTranslations } from "next-intl/server";
 import { getUpcomingEvents, groupEventsByWeek } from "@/lib/events";
 import { getLocalizedField, type Locale } from "@/lib/types";
-import { Calendar, MapPin, Clock, Tag } from "lucide-react";
+import { Calendar, MapPin, Clock } from "lucide-react";
 import Link from "next/link";
+
+const EVENTS_LABELS: Record<Locale, {
+  subtitle: string;
+  until: string;
+  event: string;
+  events: string;
+  coming: string;
+}> = {
+  en: { subtitle: "upcoming events — festivals, markets, concerts, panigýria", until: "Until", event: "event", events: "events", coming: "Upcoming events coming soon." },
+  fr: { subtitle: "événements à venir — festivals, marchés, concerts, panigýria", until: "Jusqu'au", event: "événement", events: "événements", coming: "Événements à venir bientôt." },
+  de: { subtitle: "bevorstehende Events — Festivals, Märkte, Konzerte, Panigýria", until: "Bis", event: "Event", events: "Events", coming: "Bevorstehende Events demnächst." },
+  el: { subtitle: "επερχόμενες εκδηλώσεις — φεστιβάλ, αγορές, συναυλίες, πανηγύρια", until: "Έως", event: "εκδήλωση", events: "εκδηλώσεις", coming: "Επερχόμενες εκδηλώσεις σύντομα." },
+};
+
+const EVENTS_META: Record<string, { title: string; desc: string }> = {
+  en: { title: "Events in Crete - Crete Direct", desc: "Festivals, markets, concerts, panigýria. Upcoming events across Crete." },
+  fr: { title: "Événements en Crète - Crete Direct", desc: "Festivals, marchés, concerts, panigýria. Événements à venir en Crète." },
+  de: { title: "Veranstaltungen auf Kreta - Crete Direct", desc: "Festivals, Märkte, Konzerte, Panigýria. Kommende Events auf Kreta." },
+  el: { title: "Εκδηλώσεις στην Κρήτη - Crete Direct", desc: "Φεστιβάλ, αγορές, συναυλίες, πανηγύρια. Επερχόμενες εκδηλώσεις στην Κρήτη." },
+};
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  return {
-    title: "Events in Crete - Crete Direct",
-    description: "Festivals, markets, concerts, panigýria. Upcoming events across Crete.",
-  };
+  const m = EVENTS_META[locale] || EVENTS_META.en;
+  return { title: m.title, description: m.desc };
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -67,7 +84,7 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
            "Events in Crete"}
         </h1>
         <p className="text-text-muted mt-2">
-          {events.length} upcoming event{events.length !== 1 ? "s" : ""} - festivals, markets, concerts, panigýria
+          {events.length} {EVENTS_LABELS[loc].subtitle}
         </p>
 
         <div className="mt-8 space-y-10">
@@ -79,7 +96,7 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
                   <Calendar className="w-4 h-4" />
                   {formatWeekLabel(mondayStr, locale)}
                 </div>
-                <span className="text-xs text-text-muted">{weekEvents.length} event{weekEvents.length !== 1 ? "s" : ""}</span>
+                <span className="text-xs text-text-muted">{weekEvents.length} {weekEvents.length !== 1 ? EVENTS_LABELS[loc].events : EVENTS_LABELS[loc].event}</span>
               </div>
 
               {/* Events list */}
@@ -96,7 +113,10 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
                         {new Date(event.date_start).getDate()}
                       </div>
                       <div className="text-xs text-text-muted uppercase mt-0.5">
-                        {new Date(event.date_start).toLocaleDateString("en-GB", { month: "short" })}
+                        {new Date(event.date_start).toLocaleDateString(
+                          locale === "el" ? "el-GR" : locale === "fr" ? "fr-FR" : locale === "de" ? "de-DE" : "en-GB",
+                          { month: "short" }
+                        )}
                       </div>
                     </div>
 
@@ -130,7 +150,7 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
                         {event.date_end && event.date_end !== event.date_start && (
                           <span className="inline-flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
-                            Until {formatEventDate(event.date_end, locale)}
+                            {EVENTS_LABELS[loc].until} {formatEventDate(event.date_end, locale)}
                           </span>
                         )}
                       </div>
@@ -158,7 +178,7 @@ function EventsPlaceholder({ locale }: { locale: Locale }) {
     <main className="min-h-screen bg-surface">
       <div className="max-w-4xl mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold text-aegean">{titles[locale]}</h1>
-        <p className="text-text-muted mt-2">Upcoming events coming soon. Data being loaded.</p>
+        <p className="text-text-muted mt-2">{EVENTS_LABELS[locale].coming}</p>
         <div className="mt-8 space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-border bg-white p-4 animate-pulse flex gap-4">

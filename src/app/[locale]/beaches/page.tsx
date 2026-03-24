@@ -1,9 +1,14 @@
-import { useTranslations } from "next-intl";
-import { getTranslations } from "next-intl/server";
 import { getAllBeaches } from "@/lib/beaches";
 import { getLocalizedField, type Locale } from "@/lib/types";
-import { Waves, MapPin, Car, Sun as SunIcon, Fish } from "lucide-react";
+import { Waves, MapPin, Car, Fish } from "lucide-react";
 import Link from "next/link";
+
+const BEACHES_LABELS: Record<Locale, { subtitle: string; parking: string; kidsOk: string; coming: string }> = {
+  en: { subtitle: "beaches with real-time conditions", parking: "Parking", kidsOk: "Kids OK", coming: "500+ beaches coming soon. Data being loaded." },
+  fr: { subtitle: "plages avec conditions en temps réel", parking: "Parking", kidsOk: "Enfants OK", coming: "500+ plages à venir. Données en cours de chargement." },
+  de: { subtitle: "Strände mit Echtzeitbedingungen", parking: "Parkplatz", kidsOk: "Kinder OK", coming: "500+ Strände demnächst. Daten werden geladen." },
+  el: { subtitle: "παραλίες με συνθήκες σε πραγματικό χρόνο", parking: "Πάρκινγκ", kidsOk: "Παιδιά OK", coming: "500+ παραλίες σύντομα. Τα δεδομένα φορτώνονται." },
+};
 
 const META: Record<string, { title: string; desc: string }> = {
   en: { title: "Beaches in Crete", desc: "500+ beaches with real-time conditions" },
@@ -41,7 +46,7 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
           {getLocalizedField({ title_en: "Beaches in Crete", title_fr: "Plages en Crète", title_de: "Strände auf Kreta", title_el: "Παραλίες στην Κρήτη" }, "title", loc)}
         </h1>
         <p className="text-text-muted mt-2">
-          {beaches.length} beaches with real-time conditions
+          {beaches.length} {BEACHES_LABELS[loc].subtitle}
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
@@ -77,7 +82,7 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
                   )}
                   {beach.parking && (
                     <span className="inline-flex items-center gap-1 text-xs bg-stone text-text-muted px-2 py-0.5 rounded-full">
-                      <Car className="w-3 h-3" /> Parking
+                      <Car className="w-3 h-3" /> {BEACHES_LABELS[loc].parking}
                     </span>
                   )}
                   {beach.snorkeling && (
@@ -87,7 +92,7 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
                   )}
                   {beach.kids_friendly && (
                     <span className="inline-flex items-center gap-1 text-xs bg-terra-faint text-terra px-2 py-0.5 rounded-full">
-                      Kids OK
+                      {BEACHES_LABELS[loc].kidsOk}
                     </span>
                   )}
                 </div>
@@ -112,7 +117,7 @@ function BeachesPlaceholder({ locale }: { locale: Locale }) {
     <main className="min-h-screen bg-surface">
       <div className="max-w-6xl mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold text-aegean">{titles[locale]}</h1>
-        <p className="text-text-muted mt-2">500+ beaches coming soon. Data being loaded.</p>
+        <p className="text-text-muted mt-2">{BEACHES_LABELS[locale].coming}</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-border bg-white p-4 animate-pulse">

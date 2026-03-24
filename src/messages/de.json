@@ -20,6 +20,8 @@
     "eventsThisWeek": "Diese Woche",
     "featuredBeaches": "Beste Strände heute",
     "latestNews": "Aktuell",
+    "allNews": "Alle Nachrichten",
+    "allEvents": "Alle Events",
     "explore": "Entdecken",
     "exploreSubtitle": "500 Strände, 300 Dörfer, 80 Wanderwege, Events, Nachrichten. Ganz Kreta an einem Ort.",
     "beachesCount": "500+ Strände",
@@ -33,19 +35,29 @@
     "foodLabel": "Tavernen & Restaurants",
     "foodDesc": "Lokale Empfehlungen, keine Touristenfallen",
     "newsLabel": "Kreta Nachrichten",
-    "newsDesc": "Griechische Presse, alle 3 Stunden in 3 Sprachen übersetzt",
+    "newsDesc": "Griechische Presse, alle 3 Stunden in 4 Sprachen übersetzt",
     "fireLabel": "Feueralarm",
     "fireDesc": "Live EU-Copernicus Satellitendaten",
+    "guidesLabel": "Reiseführer",
+    "guidesDesc": "10 praktische Artikel über Kreta",
     "newsletter": "Wöchentliches Kreta-Briefing",
     "newsletterCta": "Jeden Montag. Wetter, Events, ein guter Artikel. Kostenlos.",
     "subscribe": "Ich bin dabei",
-    "emailPlaceholder": "Ihre E-Mail"
+    "emailPlaceholder": "Ihre E-Mail",
+    "updatedAt": "Aktualisiert um {time} Ortszeit",
+    "noEvents": "Keine bevorstehenden Events.",
+    "submitEvent": "Einen vorschlagen?",
+    "newsFeedLoading": "Nachrichtenfeed wird geladen. Alle 3 Stunden aktualisiert."
   },
   "footer": {
     "about": "Kostenloser, unabhängiger Kreta-Reiseführer. Live-Daten. Keine Werbung (noch). Kein Tracking.",
+    "tagline": "Kostenlos. Unabhängig. Stündlich aktualisiert.",
     "newsletter": "Wöchentliches Briefing",
     "privacy": "Datenschutz",
-    "contact": "Kontakt"
+    "contact": "Kontakt",
+    "about_link": "Über uns",
+    "buses": "Busse",
+    "submitEvent": "Event einreichen"
   },
   "common": {
     "readMore": "Weiterlesen",

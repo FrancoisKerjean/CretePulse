@@ -1,13 +1,18 @@
-import { getTranslations } from "next-intl/server";
 import { fetchAllCitiesWeather, getWeatherLabel, getWeatherIcon } from "@/lib/weather";
 import type { Locale } from "@/lib/types";
 import { Wind, Droplets, Sun, Thermometer, Waves, Eye } from "lucide-react";
 
+const WEATHER_META: Record<string, { title: string; desc: string }> = {
+  en: { title: "Weather in Crete - Crete Direct", desc: "Live weather for 10 cities across Crete. Temperature, wind, sea temperature, UV index. Updated hourly." },
+  fr: { title: "Météo en Crète - Crete Direct", desc: "Météo en direct pour 10 villes de Crète. Température, vent, mer, indice UV. Mis à jour chaque heure." },
+  de: { title: "Wetter auf Kreta - Crete Direct", desc: "Live-Wetter für 10 Städte auf Kreta. Temperatur, Wind, Meer, UV-Index. Stündlich aktualisiert." },
+  el: { title: "Καιρός στην Κρήτη - Crete Direct", desc: "Live καιρός για 10 πόλεις της Κρήτης. Θερμοκρασία, άνεμος, θάλασσα, δείκτης UV. Ενημέρωση κάθε ώρα." },
+};
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
-  return {
-    title: "Weather in Crete - Crete Direct",
-    description: "Live weather for 10 cities across Crete. Temperature, wind, sea temperature, UV index. Updated hourly.",
-  };
+  const { locale } = await params;
+  const m = WEATHER_META[locale] || WEATHER_META.en;
+  return { title: m.title, description: m.desc };
 }
 
 const TITLES: Record<Locale, string> = {
@@ -22,6 +27,16 @@ const SUBTITLES: Record<Locale, string> = {
   fr: "10 villes, mis à jour toutes les heures. Air, mer, vent, UV.",
   de: "10 Städte, stündlich aktualisiert. Luft, Meer, Wind, UV.",
   el: "10 πόλεις, ανανέωση κάθε ώρα. Αέρας, θάλασσα, άνεμος, UV.",
+};
+
+const WEATHER_CARD_LABELS: Record<Locale, {
+  wind: string; seaTemp: string; uvIndex: string; rain: string;
+  waves: string; forecast: string;
+}> = {
+  en: { wind: "Wind", seaTemp: "Sea temp", uvIndex: "UV index", rain: "Rain", waves: "Waves", forecast: "5-day forecast" },
+  fr: { wind: "Vent", seaTemp: "Temp. mer", uvIndex: "Indice UV", rain: "Pluie", waves: "Vagues", forecast: "Prévisions 5 jours" },
+  de: { wind: "Wind", seaTemp: "Meertemp.", uvIndex: "UV-Index", rain: "Regen", waves: "Wellen", forecast: "5-Tage-Prognose" },
+  el: { wind: "Άνεμος", seaTemp: "Θαλ. θερμ.", uvIndex: "Δείκτης UV", rain: "Βροχή", waves: "Κύματα", forecast: "5ήμερη πρόγνωση" },
 };
 
 function WindArrow({ deg }: { deg: number }) {
@@ -109,7 +124,7 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
                 <div className="flex items-center gap-2">
                   <Wind className="w-4 h-4 text-aegean shrink-0" />
                   <div>
-                    <p className="text-xs text-text-muted">Wind</p>
+                    <p className="text-xs text-text-muted">{WEATHER_CARD_LABELS[loc].wind}</p>
                     <p className="text-sm font-semibold">
                       {city.windSpeed} km/h{" "}
                       <WindArrow deg={city.windDir} />
@@ -120,7 +135,7 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
                 <div className="flex items-center gap-2">
                   <Waves className="w-4 h-4 text-aegean shrink-0" />
                   <div>
-                    <p className="text-xs text-text-muted">Sea temp</p>
+                    <p className="text-xs text-text-muted">{WEATHER_CARD_LABELS[loc].seaTemp}</p>
                     <p className="text-sm font-semibold">
                       {city.seaTemp != null ? `${city.seaTemp}°C` : "—"}
                     </p>
@@ -130,7 +145,7 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
                 <div className="flex items-center gap-2">
                   <Sun className="w-4 h-4 text-amber-500 shrink-0" />
                   <div>
-                    <p className="text-xs text-text-muted">UV index</p>
+                    <p className="text-xs text-text-muted">{WEATHER_CARD_LABELS[loc].uvIndex}</p>
                     <div className="mt-0.5">
                       <UVBadge uv={city.uvIndex} />
                     </div>
@@ -140,7 +155,7 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
                 <div className="flex items-center gap-2">
                   <Droplets className="w-4 h-4 text-aegean shrink-0" />
                   <div>
-                    <p className="text-xs text-text-muted">Rain</p>
+                    <p className="text-xs text-text-muted">{WEATHER_CARD_LABELS[loc].rain}</p>
                     <p className="text-sm font-semibold">{city.precipitation} mm</p>
                   </div>
                 </div>
@@ -151,14 +166,14 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
                 <div className="px-4 pb-3 border-t border-border pt-3">
                   <div className="flex items-center gap-2 text-sm text-text-muted">
                     <Waves className="w-4 h-4 text-aegean" />
-                    Waves: <span className="font-semibold text-text">{city.waveHeight.toFixed(1)} m</span>
+                    {WEATHER_CARD_LABELS[loc].waves}: <span className="font-semibold text-text">{city.waveHeight.toFixed(1)} m</span>
                   </div>
                 </div>
               )}
 
               {/* 5-day forecast placeholder */}
               <div className="px-4 pb-4 border-t border-border pt-3">
-                <p className="text-xs text-text-muted mb-2">5-day forecast</p>
+                <p className="text-xs text-text-muted mb-2">{WEATHER_CARD_LABELS[loc].forecast}</p>
                 <div className="flex gap-1 justify-between">
                   {Array.from({ length: 5 }).map((_, i) => {
                     const d = new Date();
@@ -166,7 +181,10 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
                     return (
                       <div key={i} className="flex-1 text-center">
                         <p className="text-[10px] text-text-muted">
-                          {d.toLocaleDateString("en-GB", { weekday: "short" })}
+                          {d.toLocaleDateString(
+                            locale === "el" ? "el-GR" : locale === "fr" ? "fr-FR" : locale === "de" ? "de-DE" : "en-GB",
+                            { weekday: "short" }
+                          )}
                         </p>
                         <div className="h-6 bg-stone rounded mt-1 animate-pulse" />
                       </div>

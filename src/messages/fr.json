@@ -20,6 +20,8 @@
     "eventsThisWeek": "Cette semaine",
     "featuredBeaches": "Meilleures plages aujourd'hui",
     "latestNews": "Dernières actus",
+    "allNews": "Toutes les actus",
+    "allEvents": "Tous les événements",
     "explore": "Explorer",
     "exploreSubtitle": "500 plages, 300 villages, 80 sentiers, événements, actus. Toute la Crète au même endroit.",
     "beachesCount": "500+ plages",
@@ -33,19 +35,29 @@
     "foodLabel": "Tavernes et restaurants",
     "foodDesc": "Les adresses des locaux, pas les pièges à touristes",
     "newsLabel": "Actus Crète",
-    "newsDesc": "Presse grecque, traduite en 3 langues toutes les 3 heures",
+    "newsDesc": "Presse grecque, traduite en 4 langues toutes les 3 heures",
     "fireLabel": "Alertes incendies",
     "fireDesc": "Données satellite EU Copernicus en direct",
+    "guidesLabel": "Guides voyage",
+    "guidesDesc": "10 articles pratiques sur la Crète",
     "newsletter": "Recevez le briefing hebdo Crète",
     "newsletterCta": "Chaque lundi. Météo, événements, une bonne lecture. Gratuit.",
     "subscribe": "Je m'inscris",
-    "emailPlaceholder": "Votre email"
+    "emailPlaceholder": "Votre email",
+    "updatedAt": "Mis à jour à {time} heure locale",
+    "noEvents": "Aucun événement à venir.",
+    "submitEvent": "Proposer un événement ?",
+    "newsFeedLoading": "Flux d'actualités en chargement. Mis à jour toutes les 3 heures."
   },
   "footer": {
     "about": "Guide gratuit et indépendant sur la Crète. Données live. Pas de pub (pour l'instant). Pas de tracking.",
+    "tagline": "Gratuit. Indépendant. Mis à jour chaque heure.",
     "newsletter": "Briefing hebdo",
     "privacy": "Confidentialité",
-    "contact": "Contact"
+    "contact": "Contact",
+    "about_link": "À propos",
+    "buses": "Bus",
+    "submitEvent": "Soumettre un événement"
   },
   "common": {
     "readMore": "Lire la suite",

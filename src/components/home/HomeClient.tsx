@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { BlurFade } from "@/components/ui/blur-fade";
 import {
   Sun, Wind, Waves, Calendar, Newspaper, ChevronRight, Mountain,
-  UtensilsCrossed, Footprints, Flame, Cloud, CloudRain, Clock, MapPin,
+  UtensilsCrossed, Footprints, Flame, Cloud, CloudRain, MapPin,
+  BookOpen,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import type { CityWeather } from "@/lib/weather";
@@ -29,10 +31,91 @@ function timeAgo(dateStr: string): string {
   return `${days}d`;
 }
 
-function formatEventDate(dateStr: string): string {
+function formatEventDate(dateStr: string, locale: string): string {
   const d = new Date(dateStr);
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  return `${months[d.getMonth()]} ${d.getDate()}`;
+  const lang = locale === "el" ? "el-GR" : locale === "fr" ? "fr-FR" : locale === "de" ? "de-DE" : "en-GB";
+  const month = d.toLocaleDateString(lang, { month: "short" });
+  const day = d.getDate();
+  return `${month} ${day}`;
+}
+
+interface NewsletterFormProps {
+  locale: string;
+}
+
+function NewsletterForm({ locale }: NewsletterFormProps) {
+  const t = useTranslations("home");
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email || status === "loading") return;
+    setStatus("loading");
+    try {
+      const res = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, locale }),
+      });
+      if (res.ok) {
+        setStatus("success");
+        setEmail("");
+      } else {
+        setStatus("error");
+      }
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  if (status === "success") {
+    const successMsg: Record<string, string> = {
+      en: "Thanks! Check your inbox.",
+      fr: "Merci ! Vérifiez votre boîte mail.",
+      de: "Danke! Prüfen Sie Ihren Posteingang.",
+      el: "Ευχαριστούμε! Ελέγξτε τα εισερχόμενά σας.",
+    };
+    return (
+      <div className="bg-gradient-to-br from-aegean-faint to-white rounded-xl border border-aegean/20 p-5">
+        <p className="text-sm text-aegean font-medium">{successMsg[locale] || successMsg.en}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-gradient-to-br from-aegean-faint to-white rounded-xl border border-aegean/20 p-5">
+      <h3 className="font-bold text-sm text-aegean">{t("newsletter")}</h3>
+      <p className="text-xs text-text-muted mt-1">{t("newsletterCta")}</p>
+      <form className="mt-3 space-y-2" onSubmit={handleSubmit}>
+        {/* Honeypot */}
+        <input type="text" name="website" className="hidden" tabIndex={-1} autoComplete="off" />
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={t("emailPlaceholder")}
+          required
+          className="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-aegean/30"
+        />
+        {status === "error" && (
+          <p className="text-xs text-red-500">
+            {locale === "fr" ? "Une erreur s'est produite. Réessayez." :
+             locale === "de" ? "Ein Fehler ist aufgetreten. Bitte erneut versuchen." :
+             locale === "el" ? "Προέκυψε σφάλμα. Δοκιμάστε ξανά." :
+             "Something went wrong. Please try again."}
+          </p>
+        )}
+        <button
+          type="submit"
+          disabled={status === "loading"}
+          className="w-full px-4 py-2 bg-terra text-white rounded-lg font-semibold text-sm hover:bg-terra-light transition-colors disabled:opacity-60"
+        >
+          {status === "loading" ? "..." : t("subscribe")}
+        </button>
+      </form>
+    </div>
+  );
 }
 
 interface HomeClientProps {
@@ -45,13 +128,14 @@ interface HomeClientProps {
 export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeClientProps) {
   const loc = locale as Locale;
   const t = useTranslations("home");
+  const tf = useTranslations("footer");
   const now = new Date();
   const updateTime = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
 
   return (
     <main className="min-h-screen bg-surface">
 
-      {/* News Ticker - pulls from real news if available */}
+      {/* News Ticker */}
       <div className="bg-aegean text-white overflow-hidden">
         <div className="max-w-6xl mx-auto flex items-center h-8">
           <span className="shrink-0 bg-terra px-3 py-0.5 text-[11px] font-bold uppercase tracking-wider">Live</span>
@@ -89,7 +173,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeC
         </div>
       </div>
 
-      {/* === MAIN CONTENT: 2-column layout on desktop === */}
+      {/* === MAIN CONTENT === */}
       <div className="max-w-6xl mx-auto px-4 py-6">
 
         {/* Updated timestamp */}
@@ -98,12 +182,12 @@ export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeC
             <span className="animate-ping absolute h-full w-full rounded-full bg-olive opacity-60" />
             <span className="relative rounded-full h-1.5 w-1.5 bg-olive" />
           </span>
-          Updated at {updateTime} local time
+          {t("updatedAt", { time: updateTime })}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-          {/* LEFT COLUMN: News + Events (2/3 width) */}
+          {/* LEFT COLUMN */}
           <div className="lg:col-span-2 space-y-6">
 
             {/* Weather bar compact */}
@@ -133,7 +217,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeC
                   <Newspaper className="w-4 h-4" /> {t("latestNews")}
                 </h2>
                 <Link href="/news" className="text-xs text-aegean hover:underline flex items-center gap-1">
-                  All news <ChevronRight className="w-3 h-3" />
+                  {t("allNews")} <ChevronRight className="w-3 h-3" />
                 </Link>
               </div>
 
@@ -161,7 +245,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeC
               ) : (
                 <div className="bg-white rounded-xl border border-border p-6 text-center">
                   <Newspaper className="w-8 h-8 text-text-light mx-auto mb-2" />
-                  <p className="text-sm text-text-muted">News feed loading. Updated every 3 hours.</p>
+                  <p className="text-sm text-text-muted">{t("newsFeedLoading")}</p>
                 </div>
               )}
             </section>
@@ -173,51 +257,59 @@ export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeC
                   <Calendar className="w-4 h-4" /> {t("eventsThisWeek")}
                 </h2>
                 <Link href="/events" className="text-xs text-terra hover:underline flex items-center gap-1">
-                  All events <ChevronRight className="w-3 h-3" />
+                  {t("allEvents")} <ChevronRight className="w-3 h-3" />
                 </Link>
               </div>
 
               {upcomingEvents.length > 0 ? (
                 <div className="space-y-2">
-                  {upcomingEvents.map((event, i) => (
-                    <BlurFade key={event.slug} delay={0.03 * i}>
-                      <Link
-                        href={`/events/${event.slug}`}
-                        className="flex items-center gap-3 p-3 bg-white rounded-xl border border-border hover:border-terra/30 hover:shadow-sm transition-all group"
-                      >
-                        <div className="shrink-0 w-12 h-12 rounded-lg bg-terra-faint flex flex-col items-center justify-center">
-                          <span className="text-[10px] text-terra font-semibold uppercase">
-                            {formatEventDate(event.date_start).split(" ")[0]}
-                          </span>
-                          <span className="text-lg font-bold text-terra leading-none">
-                            {formatEventDate(event.date_start).split(" ")[1]}
-                          </span>
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-text group-hover:text-terra transition-colors truncate">
-                            {getLocalizedField(event, "title", loc)}
-                          </p>
-                          <div className="flex items-center gap-2 text-xs text-text-muted mt-0.5">
-                            {event.location_name && (
-                              <span className="flex items-center gap-0.5">
-                                <MapPin className="w-3 h-3" /> {event.location_name}
-                              </span>
-                            )}
-                            {event.category && (
-                              <span className="px-1.5 py-0.5 bg-terra-faint text-terra rounded text-[10px] font-medium">
-                                {event.category}
-                              </span>
-                            )}
+                  {upcomingEvents.map((event, i) => {
+                    const dateParts = formatEventDate(event.date_start, locale).split(" ");
+                    return (
+                      <BlurFade key={event.slug} delay={0.03 * i}>
+                        <Link
+                          href={`/events/${event.slug}`}
+                          className="flex items-center gap-3 p-3 bg-white rounded-xl border border-border hover:border-terra/30 hover:shadow-sm transition-all group"
+                        >
+                          <div className="shrink-0 w-12 h-12 rounded-lg bg-terra-faint flex flex-col items-center justify-center">
+                            <span className="text-[10px] text-terra font-semibold uppercase">
+                              {dateParts[0]}
+                            </span>
+                            <span className="text-lg font-bold text-terra leading-none">
+                              {dateParts[1]}
+                            </span>
                           </div>
-                        </div>
-                      </Link>
-                    </BlurFade>
-                  ))}
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-text group-hover:text-terra transition-colors truncate">
+                              {getLocalizedField(event, "title", loc)}
+                            </p>
+                            <div className="flex items-center gap-2 text-xs text-text-muted mt-0.5">
+                              {event.location_name && (
+                                <span className="flex items-center gap-0.5">
+                                  <MapPin className="w-3 h-3" /> {event.location_name}
+                                </span>
+                              )}
+                              {event.category && (
+                                <span className="px-1.5 py-0.5 bg-terra-faint text-terra rounded text-[10px] font-medium">
+                                  {event.category}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </Link>
+                      </BlurFade>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="bg-white rounded-xl border border-border p-6 text-center">
                   <Calendar className="w-8 h-8 text-text-light mx-auto mb-2" />
-                  <p className="text-sm text-text-muted">No upcoming events. <Link href="/submit-event" className="text-terra hover:underline">Submit one?</Link></p>
+                  <p className="text-sm text-text-muted">
+                    {t("noEvents")}{" "}
+                    <Link href="/submit-event" className="text-terra hover:underline">
+                      {t("submitEvent")}
+                    </Link>
+                  </p>
                 </div>
               )}
             </section>
@@ -227,23 +319,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeC
           <div className="space-y-4">
 
             {/* Newsletter CTA */}
-            <div className="bg-gradient-to-br from-aegean-faint to-white rounded-xl border border-aegean/20 p-5">
-              <h3 className="font-bold text-sm text-aegean">{t("newsletter")}</h3>
-              <p className="text-xs text-text-muted mt-1">{t("newsletterCta")}</p>
-              <form className="mt-3 space-y-2" onSubmit={(e) => e.preventDefault()}>
-                <input
-                  type="email"
-                  placeholder={t("emailPlaceholder")}
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-aegean/30"
-                />
-                <button
-                  type="submit"
-                  className="w-full px-4 py-2 bg-terra text-white rounded-lg font-semibold text-sm hover:bg-terra-light transition-colors"
-                >
-                  {t("subscribe")}
-                </button>
-              </form>
-            </div>
+            <NewsletterForm locale={locale} />
 
             {/* Quick Links */}
             <div className="space-y-2">
@@ -288,10 +364,10 @@ export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeC
               </Link>
 
               <Link href="/articles" className="flex items-center gap-3 p-3 bg-white rounded-xl border border-border hover:border-aegean/30 transition-all group">
-                <Newspaper className="w-5 h-5 text-aegean" />
+                <BookOpen className="w-5 h-5 text-aegean" />
                 <div>
-                  <p className="text-sm font-semibold group-hover:text-aegean transition-colors">Guides</p>
-                  <p className="text-[11px] text-text-muted">10 articles about Crete</p>
+                  <p className="text-sm font-semibold group-hover:text-aegean transition-colors">{t("guidesLabel")}</p>
+                  <p className="text-[11px] text-text-muted">{t("guidesDesc")}</p>
                 </div>
               </Link>
             </div>
@@ -306,13 +382,13 @@ export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeC
             <span className="font-bold text-aegean">CRETE</span>
             <span className="w-1.5 h-1.5 rounded-full bg-terra" />
             <span className="font-bold text-terra">DIRECT</span>
-            <span className="ml-2">Free. Independent. Updated hourly.</span>
+            <span className="ml-2">{tf("tagline")}</span>
           </div>
           <div className="flex gap-4">
-            <Link href="/about" className="hover:text-text-muted">About</Link>
-            <Link href="/privacy" className="hover:text-text-muted">Privacy</Link>
-            <Link href="/buses" className="hover:text-text-muted">Buses</Link>
-            <Link href="/submit-event" className="hover:text-text-muted">Submit event</Link>
+            <Link href="/about" className="hover:text-text-muted">{tf("about_link")}</Link>
+            <Link href="/privacy" className="hover:text-text-muted">{tf("privacy")}</Link>
+            <Link href="/buses" className="hover:text-text-muted">{tf("buses")}</Link>
+            <Link href="/submit-event" className="hover:text-text-muted">{tf("submitEvent")}</Link>
           </div>
         </div>
       </footer>

@@ -20,6 +20,8 @@
     "eventsThisWeek": "This week",
     "featuredBeaches": "Best beaches today",
     "latestNews": "Latest",
+    "allNews": "All news",
+    "allEvents": "All events",
     "explore": "Explore",
     "exploreSubtitle": "500 beaches, 300 villages, 80 trails, events, news. All of Crete in one place.",
     "beachesCount": "500+ beaches",
@@ -33,19 +35,29 @@
     "foodLabel": "Tavernas & restaurants",
     "foodDesc": "Locals' picks, not tourist traps",
     "newsLabel": "Crete news",
-    "newsDesc": "Greek press, translated in 3 languages every 3 hours",
+    "newsDesc": "Greek press, translated in 4 languages every 3 hours",
     "fireLabel": "Fire alerts",
     "fireDesc": "Live satellite data from EU Copernicus",
+    "guidesLabel": "Travel guides",
+    "guidesDesc": "10 practical articles about Crete",
     "newsletter": "Get the weekly Crete briefing",
     "newsletterCta": "Every Monday. Weather, events, one good read. Free.",
     "subscribe": "Count me in",
-    "emailPlaceholder": "Your email"
+    "emailPlaceholder": "Your email",
+    "updatedAt": "Updated at {time} local time",
+    "noEvents": "No upcoming events.",
+    "submitEvent": "Submit one?",
+    "newsFeedLoading": "News feed loading. Updated every 3 hours."
   },
   "footer": {
     "about": "Free, independent guide to Crete. Live data. No ads (yet). No tracking.",
+    "tagline": "Free. Independent. Updated hourly.",
     "newsletter": "Weekly briefing",
     "privacy": "Privacy",
-    "contact": "Contact"
+    "contact": "Contact",
+    "about_link": "About",
+    "buses": "Buses",
+    "submitEvent": "Submit event"
   },
   "common": {
     "readMore": "Read more",

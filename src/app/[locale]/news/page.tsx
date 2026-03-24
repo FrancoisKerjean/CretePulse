@@ -1,4 +1,3 @@
-import { getTranslations } from "next-intl/server";
 import { getLatestNews } from "@/lib/news";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { Newspaper, ExternalLink, Clock } from "lucide-react";
@@ -27,19 +26,28 @@ const CATEGORY_COLORS: Record<string, string> = {
   weather: "bg-aegean-faint text-aegean",
 };
 
-function timeAgo(dateStr: string): string {
+const TIME_LABELS: Record<Locale, { justNow: string; yesterday: string; mAgo: string; hAgo: string; dAgo: string }> = {
+  en: { justNow: "just now", yesterday: "yesterday", mAgo: "m ago", hAgo: "h ago", dAgo: "d ago" },
+  fr: { justNow: "à l'instant", yesterday: "hier", mAgo: "min", hAgo: "h", dAgo: "j" },
+  de: { justNow: "gerade eben", yesterday: "gestern", mAgo: "Min.", hAgo: "Std.", dAgo: "T." },
+  el: { justNow: "μόλις τώρα", yesterday: "χθες", mAgo: "λ.", hAgo: "ω.", dAgo: "μ." },
+};
+
+function timeAgo(dateStr: string, locale: Locale): string {
   const now = Date.now();
   const then = new Date(dateStr).getTime();
   const diffMs = now - then;
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
+  const L = TIME_LABELS[locale];
+  const lang = locale === "el" ? "el-GR" : locale === "fr" ? "fr-FR" : locale === "de" ? "de-DE" : "en-GB";
 
-  if (diffMins < 60) return diffMins <= 1 ? "just now" : `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays === 1) return "yesterday";
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return new Date(dateStr).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  if (diffMins < 60) return diffMins <= 1 ? L.justNow : `${diffMins}${L.mAgo}`;
+  if (diffHours < 24) return `${diffHours}${L.hAgo}`;
+  if (diffDays === 1) return L.yesterday;
+  if (diffDays < 7) return `${diffDays}${L.dAgo}`;
+  return new Date(dateStr).toLocaleDateString(lang, { day: "numeric", month: "short" });
 }
 
 const PAGE_TITLES: Record<Locale, string> = {
@@ -97,7 +105,7 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
                     )}
                     <span className="text-xs text-text-light flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      {timeAgo(item.published_at)}
+                      {timeAgo(item.published_at, loc)}
                     </span>
                     <span className="text-xs text-text-light">&middot;</span>
                     <span className="text-xs text-text-light">{item.source_name}</span>
@@ -132,7 +140,6 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-[11px] text-text-light hover:text-aegean transition-colors"
-                  onClick={(e) => e.stopPropagation()}
                 >
                   <ExternalLink className="w-3 h-3" />
                   {item.source_name}
