@@ -98,7 +98,7 @@ export default function HomePage() {
         {/* Background photo */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=1400&q=80')" }}
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1580502304784-8985b7eb7260?w=1400&q=80')" }}
         />
         {/* Warm overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#F7F4F0]/85 via-[#F7F4F0]/75 to-[#F7F4F0]/90" />
