@@ -11,13 +11,23 @@ import {
   ChevronRight,
   Mountain,
   UtensilsCrossed,
-  MapPin,
   Footprints,
   Flame,
   Cloud,
   CloudRain,
+  Clock,
 } from "lucide-react";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import type { CityWeather } from "@/lib/weather";
+import type { NewsItem, Locale } from "@/lib/types";
+import { getLocalizedField } from "@/lib/types";
+
+const LOCALES = [
+  { code: "en", label: "EN" },
+  { code: "fr", label: "FR" },
+  { code: "de", label: "DE" },
+  { code: "el", label: "EL" },
+] as const;
 
 function WeatherIcon({ code, wind }: { code: number; wind: number }) {
   if (wind > 20) return <Wind className="w-4 h-4 text-aegean" />;
@@ -26,13 +36,34 @@ function WeatherIcon({ code, wind }: { code: number; wind: number }) {
   return <CloudRain className="w-4 h-4 text-blue-400" />;
 }
 
-interface HomeClientProps {
-  cities: CityWeather[];
+function timeAgo(dateStr: string): string {
+  const diffMs = Date.now() - new Date(dateStr).getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 60) return diffMins <= 1 ? "just now" : `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays === 1) return "yesterday";
+  return `${diffDays}d ago`;
 }
 
-export function HomeClient({ cities }: HomeClientProps) {
+interface HomeClientProps {
+  cities: CityWeather[];
+  latestNews: NewsItem[];
+  locale: string;
+}
+
+export function HomeClient({ cities, latestNews, locale }: HomeClientProps) {
+  const loc = locale as Locale;
   const t = useTranslations("home");
   const tnav = useTranslations("nav");
+  const pathname = usePathname();
+  const router = useRouter();
+
+  function switchLocale(nextLocale: string) {
+    router.replace(pathname, { locale: nextLocale });
+  }
 
   return (
     <main className="min-h-screen bg-surface">
@@ -52,13 +83,25 @@ export function HomeClient({ cities }: HomeClientProps) {
             <a href="#beaches" className="hover:text-aegean transition-colors">{tnav("beaches")}</a>
             <a href="#events" className="hover:text-aegean transition-colors">{tnav("events")}</a>
             <a href="#explore" className="hover:text-aegean transition-colors">{tnav("explore")}</a>
-            <a href="#news" className="hover:text-aegean transition-colors">{tnav("news")}</a>
+            <a href="#latest-news" className="hover:text-aegean transition-colors">{tnav("news")}</a>
+            <Link href="/news" className="px-3 py-1.5 bg-aegean/10 text-aegean rounded-lg hover:bg-aegean hover:text-white transition-colors font-semibold text-xs">
+              {tnav("news")} &rarr;
+            </Link>
           </div>
           <div className="flex items-center gap-1 text-xs font-medium">
-            <button className="px-2 py-1 rounded-md bg-aegean text-white">EN</button>
-            <button className="px-2 py-1 rounded-md hover:bg-stone-warm text-text-muted">FR</button>
-            <button className="px-2 py-1 rounded-md hover:bg-stone-warm text-text-muted">DE</button>
-            <button className="px-2 py-1 rounded-md hover:bg-stone-warm text-text-muted">EL</button>
+            {LOCALES.map(({ code, label }) => (
+              <button
+                key={code}
+                onClick={() => switchLocale(code)}
+                className={
+                  locale === code
+                    ? "px-2 py-1 rounded-md bg-aegean text-white"
+                    : "px-2 py-1 rounded-md hover:bg-stone-warm text-text-muted transition-colors"
+                }
+              >
+                {label}
+              </button>
+            ))}
           </div>
         </div>
       </nav>
@@ -153,9 +196,9 @@ export function HomeClient({ cities }: HomeClientProps) {
             <h2 className="text-xs font-semibold uppercase tracking-widest text-text-muted">
               {t("weatherNow")}
             </h2>
-            <a href="/weather" className="text-xs text-aegean font-medium flex items-center gap-1 hover:underline">
+            <Link href="/weather" className="text-xs text-aegean font-medium flex items-center gap-1 hover:underline">
               5-day forecast <ChevronRight className="w-3 h-3" />
-            </a>
+            </Link>
           </div>
           <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
             {cities.slice(0, 6).map((city, i) => (
@@ -192,41 +235,41 @@ export function HomeClient({ cities }: HomeClientProps) {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-8">
           <BlurFade delay={0.15}>
-            <a href="/beaches" className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-aegean-faint to-white p-5 h-44 flex flex-col justify-end hover:border-aegean/40 hover:shadow-md transition-all">
+            <Link href="/beaches" className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-aegean-faint to-white p-5 h-44 flex flex-col justify-end hover:border-aegean/40 hover:shadow-md transition-all">
               <Waves className="absolute top-3 right-3 w-7 h-7 text-aegean/20 group-hover:text-aegean/40 transition-colors" />
               <span className="text-2xl font-bold text-aegean">{t("beachesCount")}</span>
               <span className="text-xs text-text-muted mt-1 leading-tight">{t("beachesDesc")}</span>
-            </a>
+            </Link>
           </BlurFade>
 
           <BlurFade delay={0.2}>
-            <a href="/events" className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-terra-faint to-white p-5 h-44 flex flex-col justify-end hover:border-terra/40 hover:shadow-md transition-all">
+            <Link href="/events" className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-terra-faint to-white p-5 h-44 flex flex-col justify-end hover:border-terra/40 hover:shadow-md transition-all">
               <Calendar className="absolute top-3 right-3 w-7 h-7 text-terra/20 group-hover:text-terra/40 transition-colors" />
               <span className="text-2xl font-bold text-terra">{t("eventsCount")}</span>
               <span className="text-xs text-text-muted mt-1 leading-tight">{t("eventsDesc")}</span>
-            </a>
+            </Link>
           </BlurFade>
 
           <BlurFade delay={0.25}>
-            <a href="/villages" className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-sand/40 to-white p-5 h-44 flex flex-col justify-end hover:border-sand-warm hover:shadow-md transition-all">
+            <Link href="/villages" className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-sand/40 to-white p-5 h-44 flex flex-col justify-end hover:border-sand-warm hover:shadow-md transition-all">
               <Mountain className="absolute top-3 right-3 w-7 h-7 text-sand-warm/60 group-hover:text-terra-light/60 transition-colors" />
               <span className="text-2xl font-bold text-text">{t("villagesCount")}</span>
               <span className="text-xs text-text-muted mt-1 leading-tight">{t("villagesDesc")}</span>
-            </a>
+            </Link>
           </BlurFade>
 
           <BlurFade delay={0.3}>
-            <a href="/hikes" className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-olive/5 to-white p-5 h-44 flex flex-col justify-end hover:border-olive/30 hover:shadow-md transition-all">
+            <Link href="/hikes" className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-olive/5 to-white p-5 h-44 flex flex-col justify-end hover:border-olive/30 hover:shadow-md transition-all">
               <Footprints className="absolute top-3 right-3 w-7 h-7 text-olive/20 group-hover:text-olive/40 transition-colors" />
               <span className="text-2xl font-bold text-olive">{t("hikesCount")}</span>
               <span className="text-xs text-text-muted mt-1 leading-tight">{t("hikesDesc")}</span>
-            </a>
+            </Link>
           </BlurFade>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
           <BlurFade delay={0.35}>
-            <a href="/food" className="group rounded-xl bg-white border border-border p-4 flex items-center gap-3 hover:border-terra/30 hover:shadow-sm transition-all">
+            <Link href="/food" className="group rounded-xl bg-white border border-border p-4 flex items-center gap-3 hover:border-terra/30 hover:shadow-sm transition-all">
               <div className="w-10 h-10 rounded-lg bg-terra-faint flex items-center justify-center shrink-0">
                 <UtensilsCrossed className="w-5 h-5 text-terra" />
               </div>
@@ -235,11 +278,11 @@ export function HomeClient({ cities }: HomeClientProps) {
                 <p className="text-xs text-text-muted truncate">{t("foodDesc")}</p>
               </div>
               <ChevronRight className="w-4 h-4 text-text-light ml-auto shrink-0" />
-            </a>
+            </Link>
           </BlurFade>
 
           <BlurFade delay={0.4}>
-            <a href="/news" className="group rounded-xl bg-white border border-border p-4 flex items-center gap-3 hover:border-aegean/30 hover:shadow-sm transition-all">
+            <Link href="/news" className="group rounded-xl bg-white border border-border p-4 flex items-center gap-3 hover:border-aegean/30 hover:shadow-sm transition-all">
               <div className="w-10 h-10 rounded-lg bg-aegean-faint flex items-center justify-center shrink-0">
                 <Newspaper className="w-5 h-5 text-aegean" />
               </div>
@@ -248,11 +291,11 @@ export function HomeClient({ cities }: HomeClientProps) {
                 <p className="text-xs text-text-muted truncate">{t("newsDesc")}</p>
               </div>
               <ChevronRight className="w-4 h-4 text-text-light ml-auto shrink-0" />
-            </a>
+            </Link>
           </BlurFade>
 
           <BlurFade delay={0.45}>
-            <a href="/fire-alerts" className="group rounded-xl bg-white border border-border p-4 flex items-center gap-3 hover:border-red-400/30 hover:shadow-sm transition-all">
+            <Link href="/fire-alerts" className="group rounded-xl bg-white border border-border p-4 flex items-center gap-3 hover:border-red-400/30 hover:shadow-sm transition-all">
               <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
                 <Flame className="w-5 h-5 text-red-500" />
               </div>
@@ -261,10 +304,53 @@ export function HomeClient({ cities }: HomeClientProps) {
                 <p className="text-xs text-text-muted truncate">{t("fireDesc")}</p>
               </div>
               <ChevronRight className="w-4 h-4 text-text-light ml-auto shrink-0" />
-            </a>
+            </Link>
           </BlurFade>
         </div>
       </section>
+
+      {/* Latest News */}
+      {latestNews.length > 0 && (
+        <section id="latest-news" className="border-t border-border bg-white">
+          <div className="max-w-6xl mx-auto px-4 py-10">
+            <BlurFade delay={0.1}>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <Newspaper className="w-4 h-4 text-aegean" />
+                  <h2 className="text-xs font-semibold uppercase tracking-widest text-text-muted">
+                    {t("latestNews")}
+                  </h2>
+                </div>
+                <Link
+                  href="/news"
+                  className="text-xs text-aegean font-medium flex items-center gap-1 hover:underline"
+                >
+                  {t("newsLabel")} <ChevronRight className="w-3 h-3" />
+                </Link>
+              </div>
+            </BlurFade>
+
+            <div className="divide-y divide-border/60">
+              {latestNews.map((item, i) => (
+                <BlurFade key={item.slug} delay={0.05 + i * 0.05}>
+                  <Link
+                    href={`/news/${item.slug}`}
+                    className="flex items-start gap-3 py-3 group hover:bg-stone/30 -mx-2 px-2 rounded-lg transition-colors"
+                  >
+                    <span className="flex items-center gap-1 text-[11px] text-text-light whitespace-nowrap mt-0.5 shrink-0 min-w-[4rem]">
+                      <Clock className="w-3 h-3" />
+                      {timeAgo(item.published_at)}
+                    </span>
+                    <span className="text-sm font-medium text-text group-hover:text-aegean transition-colors leading-snug">
+                      {getLocalizedField(item, "title", loc)}
+                    </span>
+                  </Link>
+                </BlurFade>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Newsletter */}
       <section className="border-y border-border" style={{
@@ -310,26 +396,26 @@ export function HomeClient({ cities }: HomeClientProps) {
           <div>
             <h3 className="font-semibold text-xs uppercase tracking-wider text-text-muted mb-3">Explore</h3>
             <ul className="space-y-1.5 text-sm text-text-muted">
-              <li><a href="/beaches" className="hover:text-aegean transition-colors">Beaches</a></li>
-              <li><a href="/villages" className="hover:text-aegean transition-colors">Villages</a></li>
-              <li><a href="/hikes" className="hover:text-aegean transition-colors">Hiking trails</a></li>
-              <li><a href="/food" className="hover:text-aegean transition-colors">Restaurants</a></li>
-              <li><a href="/events" className="hover:text-aegean transition-colors">Events</a></li>
+              <li><Link href="/beaches" className="hover:text-aegean transition-colors">Beaches</Link></li>
+              <li><Link href="/villages" className="hover:text-aegean transition-colors">Villages</Link></li>
+              <li><Link href="/hikes" className="hover:text-aegean transition-colors">Hiking trails</Link></li>
+              <li><Link href="/food" className="hover:text-aegean transition-colors">Restaurants</Link></li>
+              <li><Link href="/events" className="hover:text-aegean transition-colors">Events</Link></li>
             </ul>
           </div>
           <div>
             <h3 className="font-semibold text-xs uppercase tracking-wider text-text-muted mb-3">Live</h3>
             <ul className="space-y-1.5 text-sm text-text-muted">
-              <li><a href="/weather" className="hover:text-aegean transition-colors">Weather & sea</a></li>
-              <li><a href="/fire-alerts" className="hover:text-aegean transition-colors">Fire alerts</a></li>
-              <li><a href="/news" className="hover:text-aegean transition-colors">News</a></li>
-              <li><a href="/buses" className="hover:text-aegean transition-colors">Bus schedules</a></li>
+              <li><Link href="/weather" className="hover:text-aegean transition-colors">Weather &amp; sea</Link></li>
+              <li><Link href="/fire-alerts" className="hover:text-aegean transition-colors">Fire alerts</Link></li>
+              <li><Link href="/news" className="hover:text-aegean transition-colors">News</Link></li>
+              <li><Link href="/buses" className="hover:text-aegean transition-colors">Bus schedules</Link></li>
             </ul>
           </div>
         </div>
         <div className="max-w-6xl mx-auto mt-8 pt-6 border-t border-border flex items-center justify-between text-[11px] text-text-light">
           <p>2026 Crete Pulse. Independent. Free. Open.</p>
-          <a href="/privacy" className="hover:text-text-muted">Privacy</a>
+          <Link href="/privacy" className="hover:text-text-muted">Privacy</Link>
         </div>
       </footer>
     </main>
