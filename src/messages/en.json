@@ -1,0 +1,78 @@
+{
+  "meta": {
+    "title": "Crete Pulse - The Pulse of Crete",
+    "description": "Weather, events, beaches, villages and everything you need to know about Crete. Updated daily."
+  },
+  "nav": {
+    "today": "Today",
+    "beaches": "Beaches",
+    "explore": "Explore",
+    "events": "Events",
+    "news": "News",
+    "weather": "Weather"
+  },
+  "home": {
+    "hero": "The pulse of Crete",
+    "subtitle": "Weather, events, beaches and local news. Updated daily.",
+    "weatherNow": "Weather right now",
+    "eventsThisWeek": "Events this week",
+    "featuredBeaches": "Best beaches for today",
+    "latestNews": "Latest news",
+    "newsletter": "Get the weekly Crete briefing",
+    "newsletterCta": "Free, every Monday",
+    "subscribe": "Subscribe",
+    "emailPlaceholder": "Your email"
+  },
+  "beaches": {
+    "title": "Beaches in Crete",
+    "subtitle": "500+ beaches with real-time conditions",
+    "filterRegion": "Region",
+    "filterType": "Type",
+    "all": "All",
+    "east": "East",
+    "west": "West",
+    "central": "Central",
+    "south": "South",
+    "sand": "Sand",
+    "pebble": "Pebble",
+    "rock": "Rock",
+    "mixed": "Mixed",
+    "conditions": "Today's conditions",
+    "good": "Good",
+    "moderate": "Moderate",
+    "avoid": "Windy",
+    "parking": "Parking",
+    "sunbeds": "Sunbeds",
+    "taverna": "Taverna",
+    "snorkeling": "Snorkeling",
+    "kidsOk": "Kids friendly",
+    "nearbyBeaches": "Nearby beaches"
+  },
+  "events": {
+    "title": "Events in Crete",
+    "thisWeek": "This week",
+    "thisMonth": "This month",
+    "submitEvent": "Submit an event",
+    "noEvents": "No events scheduled"
+  },
+  "weather": {
+    "title": "Crete Weather",
+    "seaTemp": "Sea temperature",
+    "wind": "Wind",
+    "uv": "UV index",
+    "forecast": "5-day forecast"
+  },
+  "footer": {
+    "about": "Crete Pulse is a free, independent guide to the island of Crete.",
+    "newsletter": "Weekly briefing",
+    "privacy": "Privacy policy",
+    "contact": "Contact"
+  },
+  "common": {
+    "readMore": "Read more",
+    "seeAll": "See all",
+    "back": "Back",
+    "loading": "Loading...",
+    "error": "Something went wrong"
+  }
+}

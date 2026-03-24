@@ -1,0 +1,78 @@
+{
+  "meta": {
+    "title": "Crete Pulse - Le pouls de la Crète",
+    "description": "Météo, événements, plages, villages et tout ce qu'il faut savoir sur la Crète. Mis à jour quotidiennement."
+  },
+  "nav": {
+    "today": "Aujourd'hui",
+    "beaches": "Plages",
+    "explore": "Explorer",
+    "events": "Événements",
+    "news": "Actus",
+    "weather": "Météo"
+  },
+  "home": {
+    "hero": "Le pouls de la Crète",
+    "subtitle": "Météo, événements, plages et actualités locales. Mis à jour chaque jour.",
+    "weatherNow": "Météo en ce moment",
+    "eventsThisWeek": "Événements cette semaine",
+    "featuredBeaches": "Meilleures plages aujourd'hui",
+    "latestNews": "Dernières actus",
+    "newsletter": "Recevez le briefing hebdo Crète",
+    "newsletterCta": "Gratuit, chaque lundi",
+    "subscribe": "S'inscrire",
+    "emailPlaceholder": "Votre email"
+  },
+  "beaches": {
+    "title": "Plages en Crète",
+    "subtitle": "500+ plages avec conditions en temps réel",
+    "filterRegion": "Région",
+    "filterType": "Type",
+    "all": "Toutes",
+    "east": "Est",
+    "west": "Ouest",
+    "central": "Centre",
+    "south": "Sud",
+    "sand": "Sable",
+    "pebble": "Galets",
+    "rock": "Rochers",
+    "mixed": "Mixte",
+    "conditions": "Conditions du jour",
+    "good": "Bonnes",
+    "moderate": "Moyennes",
+    "avoid": "Venteux",
+    "parking": "Parking",
+    "sunbeds": "Transats",
+    "taverna": "Taverne",
+    "snorkeling": "Snorkeling",
+    "kidsOk": "Familles",
+    "nearbyBeaches": "Plages à proximité"
+  },
+  "events": {
+    "title": "Événements en Crète",
+    "thisWeek": "Cette semaine",
+    "thisMonth": "Ce mois",
+    "submitEvent": "Proposer un événement",
+    "noEvents": "Aucun événement prévu"
+  },
+  "weather": {
+    "title": "Météo Crète",
+    "seaTemp": "Température mer",
+    "wind": "Vent",
+    "uv": "Indice UV",
+    "forecast": "Prévisions 5 jours"
+  },
+  "footer": {
+    "about": "Crete Pulse est un guide gratuit et indépendant sur l'île de Crète.",
+    "newsletter": "Briefing hebdomadaire",
+    "privacy": "Confidentialité",
+    "contact": "Contact"
+  },
+  "common": {
+    "readMore": "Lire la suite",
+    "seeAll": "Voir tout",
+    "back": "Retour",
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue"
+  }
+}

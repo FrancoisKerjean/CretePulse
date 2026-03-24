@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@theme {
+  --color-sky: #4A90D9;
+  --color-sky-light: #E8F0FE;
+  --color-terra: #C75B39;
+  --color-terra-light: #F5DDD4;
+  --color-sand: #F5E6D3;
+  --color-sand-dark: #E8D5BF;
+  --color-surface: #FAFAFA;
+  --color-text: #1A1A2E;
+  --color-text-muted: #6B7280;
+  --color-text-light: #94A3B8;
+  --color-border: #E5E7EB;
+
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
