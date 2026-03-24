@@ -90,6 +90,52 @@ export interface NewsItem {
   image_url: string | null;
 }
 
+export interface Hike {
+  id: number;
+  slug: string;
+  name_en: string;
+  name_fr: string;
+  name_de: string;
+  name_el: string;
+  description_en: string | null;
+  description_fr: string | null;
+  description_de: string | null;
+  description_el: string | null;
+  difficulty: "easy" | "moderate" | "hard" | "expert";
+  type: "gorge" | "coastal" | "mountain" | "cultural";
+  distance_km: number | null;
+  elevation_gain_m: number | null;
+  duration_hours: number | null;
+  water_available: boolean;
+  start_latitude: number | null;
+  start_longitude: number | null;
+  gpx_storage_path: string | null;
+  image_url: string | null;
+  image_credit: string | null;
+}
+
+export interface FoodPlace {
+  id: number;
+  slug: string;
+  name: string;
+  type: "restaurant" | "taverna" | "cafe" | "bar" | "bakery" | "other";
+  cuisine: string | null;
+  region: "east" | "west" | "central" | "south";
+  address: string | null;
+  phone: string | null;
+  website: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  description_en: string | null;
+  description_fr: string | null;
+  description_de: string | null;
+  description_el: string | null;
+  image_url: string | null;
+  image_credit: string | null;
+  price_range: "budget" | "mid" | "upscale" | null;
+  open_season: string | null;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getLocalizedField(item: any, field: string, locale: Locale): string {
   return item[`${field}_${locale}`] || item[`${field}_en`] || "";
