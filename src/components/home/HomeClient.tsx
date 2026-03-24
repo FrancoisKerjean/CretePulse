@@ -67,45 +67,6 @@ export function HomeClient({ cities, latestNews, locale }: HomeClientProps) {
 
   return (
     <main className="min-h-screen bg-surface">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-surface/90 backdrop-blur-md border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <span className="text-lg font-bold tracking-tight text-aegean">CRETE</span>
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-terra opacity-60" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-terra" />
-            </span>
-            <span className="text-lg font-bold tracking-tight text-terra">PULSE</span>
-          </div>
-          <div className="hidden md:flex items-center gap-6 text-sm font-medium text-text-muted">
-            <a href="#weather" className="hover:text-aegean transition-colors">{tnav("weather")}</a>
-            <a href="#beaches" className="hover:text-aegean transition-colors">{tnav("beaches")}</a>
-            <a href="#events" className="hover:text-aegean transition-colors">{tnav("events")}</a>
-            <a href="#explore" className="hover:text-aegean transition-colors">{tnav("explore")}</a>
-            <a href="#latest-news" className="hover:text-aegean transition-colors">{tnav("news")}</a>
-            <Link href="/news" className="px-3 py-1.5 bg-aegean/10 text-aegean rounded-lg hover:bg-aegean hover:text-white transition-colors font-semibold text-xs">
-              {tnav("news")} &rarr;
-            </Link>
-          </div>
-          <div className="flex items-center gap-1 text-xs font-medium">
-            {LOCALES.map(({ code, label }) => (
-              <button
-                key={code}
-                onClick={() => switchLocale(code)}
-                className={
-                  locale === code
-                    ? "px-2 py-1 rounded-md bg-aegean text-white"
-                    : "px-2 py-1 rounded-md hover:bg-stone-warm text-text-muted transition-colors"
-                }
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </nav>
-
       {/* News Ticker */}
       <div className="bg-aegean text-white overflow-hidden">
         <div className="max-w-6xl mx-auto flex items-center h-8">
