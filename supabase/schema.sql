@@ -335,8 +335,8 @@ CREATE TABLE IF NOT EXISTS news (
   image_url        TEXT,
 
   created_at       TIMESTAMPTZ DEFAULT now()
-  -- No updated_at: news records are immutable after insertion
 );
+-- No updated_at on news: records are immutable after insertion
 
 -- Index for chronological news feed queries (DESC = latest first)
 CREATE INDEX IF NOT EXISTS idx_news_published ON news (published_at DESC);

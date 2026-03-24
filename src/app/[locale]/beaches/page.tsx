@@ -5,13 +5,17 @@ import { getLocalizedField, type Locale } from "@/lib/types";
 import { Waves, MapPin, Car, Sun as SunIcon, Fish } from "lucide-react";
 import Link from "next/link";
 
+const META: Record<string, { title: string; desc: string }> = {
+  en: { title: "Beaches in Crete", desc: "500+ beaches with real-time conditions" },
+  fr: { title: "Plages en Crète", desc: "500+ plages avec conditions en temps réel" },
+  de: { title: "Strände auf Kreta", desc: "500+ Strände mit Echtzeitbedingungen" },
+  el: { title: "Παραλίες στην Κρήτη", desc: "500+ παραλίες με συνθήκες σε πραγματικό χρόνο" },
+};
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "beaches" });
-  return {
-    title: t("title"),
-    description: t("subtitle"),
-  };
+  const m = META[locale] || META.en;
+  return { title: m.title, description: m.desc };
 }
 
 export default async function BeachesPage({ params }: { params: Promise<{ locale: string }> }) {

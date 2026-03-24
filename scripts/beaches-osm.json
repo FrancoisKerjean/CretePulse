@@ -1,0 +1,1730 @@
+[
+  {
+    "name": "Κουρεμένος",
+    "name_el": "Κουρεμένος",
+    "name_en": "Kouremenos",
+    "lat": 35.2119338,
+    "lng": 26.2675081,
+    "surface": null
+  },
+  {
+    "name": "Marathi beach",
+    "name_el": "Παραλία Μαράθι",
+    "name_en": "Marathi beach",
+    "lat": 35.5055104,
+    "lng": 24.1758624,
+    "surface": null
+  },
+  {
+    "name": "Trachilias Beach",
+    "name_el": "Trachilias Beach",
+    "name_en": "Trachilias Beach",
+    "lat": 35.2212064,
+    "lng": 26.0672501,
+    "surface": "pebblestone"
+  },
+  {
+    "name": "Tiny beach pink sand",
+    "name_el": "Tiny beach pink sand",
+    "name_en": "Tiny beach pink sand",
+    "lat": 35.4768894,
+    "lng": 23.5657397,
+    "surface": null
+  },
+  {
+    "name": "Παραλία Κρασά",
+    "name_el": "Παραλία Κρασά",
+    "name_en": "Krassas beach",
+    "lat": 34.9833288,
+    "lng": 25.3085704,
+    "surface": null
+  },
+  {
+    "name": "Orthi Ammos Paralia",
+    "name_el": "Orthi Ammos Paralia",
+    "name_en": "Orthi Ammos Paralia",
+    "lat": 35.1832018,
+    "lng": 24.2500224,
+    "surface": "sand"
+  },
+  {
+    "name": "Pahia Ammos Nudist Beach",
+    "name_el": "Παχιά Άμμος παραλία γυμνιστών",
+    "name_en": "Pahia Ammos Nudist Beach",
+    "lat": 35.5915638,
+    "lng": 24.0862095,
+    "surface": null
+  },
+  {
+    "name": "White Beach",
+    "name_el": "White Beach",
+    "name_en": "White Beach",
+    "lat": 35.5509139,
+    "lng": 24.0797833,
+    "surface": null
+  },
+  {
+    "name": "Voulolimni",
+    "name_el": "Voulolimni",
+    "name_en": "Voulolimni",
+    "lat": 35.3151393,
+    "lng": 23.5336694,
+    "surface": null
+  },
+  {
+    "name": "Παραλία Κατεβατή",
+    "name_el": "Παραλία Κατεβατή",
+    "name_en": "Παραλία Κατεβατή",
+    "lat": 35.4102492,
+    "lng": 24.8278864,
+    "surface": null
+  },
+  {
+    "name": "Κουλούρα",
+    "name_el": "Κουλούρα",
+    "name_en": "Κουλούρα",
+    "lat": 35.5216936,
+    "lng": 24.040977,
+    "surface": null
+  },
+  {
+    "name": "Anidri Beach",
+    "name_el": "Anidri Beach",
+    "name_en": "Anidri Beach",
+    "lat": 35.2385496,
+    "lng": 23.722509,
+    "surface": null
+  },
+  {
+    "name": "Sougia Beach",
+    "name_el": "Sougia Beach",
+    "name_en": "Sougia Beach",
+    "lat": 35.2480681,
+    "lng": 23.8120918,
+    "surface": "pebblestone"
+  },
+  {
+    "name": "Χαλίκια",
+    "name_el": "Χαλίκια",
+    "name_en": "Stoney Beach",
+    "lat": 35.2335417,
+    "lng": 23.6867247,
+    "surface": null
+  },
+  {
+    "name": "Παραλία Λισσός",
+    "name_el": "Παραλία Λισσός",
+    "name_en": "Lissos Beach",
+    "lat": 35.2400576,
+    "lng": 23.7872158,
+    "surface": "gravel"
+  },
+  {
+    "name": "Σχοινάρια",
+    "name_el": "Σχοινάρια",
+    "name_en": "Skinaria Beach",
+    "lat": 35.1661628,
+    "lng": 24.4218207,
+    "surface": "sand"
+  },
+  {
+    "name": "Παραλία Πλακιά",
+    "name_el": "Παραλία Πλακιά",
+    "name_en": "Plakias Beach",
+    "lat": 35.1851907,
+    "lng": 24.3981058,
+    "surface": "sand"
+  },
+  {
+    "name": "Nea Chora beach",
+    "name_el": "Nea Chora beach",
+    "name_en": "Nea Chora beach",
+    "lat": 35.5142359,
+    "lng": 24.0057023,
+    "surface": "sand"
+  },
+  {
+    "name": "Κριός",
+    "name_el": "Κριός",
+    "name_en": "Krios Beach",
+    "lat": 35.2364725,
+    "lng": 23.5956743,
+    "surface": null
+  },
+  {
+    "name": "Χρυσή Ακτή",
+    "name_el": "Χρυσή Ακτή",
+    "name_en": "Golden Beach",
+    "lat": 35.5130111,
+    "lng": 23.9902381,
+    "surface": "sand"
+  },
+  {
+    "name": "Παραλία του Βάι",
+    "name_el": "Παραλία του Βάι",
+    "name_en": "Palm Beach Vai",
+    "lat": 35.2545883,
+    "lng": 26.2651641,
+    "surface": "sand"
+  },
+  {
+    "name": "Παραλία Αγία Μαρίνα",
+    "name_el": "Παραλία Αγία Μαρίνα",
+    "name_en": "Agia Marina Beach",
+    "lat": 35.5202255,
+    "lng": 23.9247021,
+    "surface": "sand"
+  },
+  {
+    "name": "Sunset Beach",
+    "name_el": "Sunset Beach",
+    "name_en": "Sunset Beach",
+    "lat": 35.5130918,
+    "lng": 23.9738122,
+    "surface": null
+  },
+  {
+    "name": "Παραλία Αγίων Αποστόλων",
+    "name_el": "Παραλία Αγίων Αποστόλων",
+    "name_en": "Παραλία Αγίων Αποστόλων",
+    "lat": 35.5142769,
+    "lng": 23.9786688,
+    "surface": null
+  },
+  {
+    "name": "Eastern Gulf",
+    "name_el": "Eastern Gulf",
+    "name_en": "Eastern Gulf",
+    "lat": 35.514105,
+    "lng": 23.9832079,
+    "surface": null
+  },
+  {
+    "name": "Gramméno Beach",
+    "name_el": "Gramméno Beach",
+    "name_en": "Gramméno Beach",
+    "lat": 35.2333224,
+    "lng": 23.6345965,
+    "surface": null
+  },
+  {
+    "name": "Κόκκινη Άμμος",
+    "name_el": "Κόκκινη Άμμος",
+    "name_en": "Red Beach",
+    "lat": 34.9860569,
+    "lng": 24.7493792,
+    "surface": "sand"
+  },
+  {
+    "name": "Ψιλή Άμμος",
+    "name_el": "Ψιλή Άμμος",
+    "name_en": "Ψιλή Άμμος",
+    "lat": 35.2514164,
+    "lng": 26.2671689,
+    "surface": "sand"
+  },
+  {
+    "name": "Μαύρος Μώλος",
+    "name_el": "Μαύρος Μώλος",
+    "name_en": "Mavros Molos",
+    "lat": 35.5004564,
+    "lng": 23.6477677,
+    "surface": null
+  },
+  {
+    "name": "Chiona Beach",
+    "name_el": "Chiona Beach",
+    "name_en": "Chiona Beach",
+    "lat": 35.1977623,
+    "lng": 26.2774464,
+    "surface": null
+  },
+  {
+    "name": "Kouremenos Beach",
+    "name_el": "Kouremenos Beach",
+    "name_en": "Kouremenos Beach",
+    "lat": 35.2058135,
+    "lng": 26.2723027,
+    "surface": null
+  },
+  {
+    "name": "Παραλία Δυνόνησος",
+    "name_el": "Παραλία Δυνόνησος",
+    "name_en": "Dynonissos beach",
+    "lat": 35.1527284,
+    "lng": 24.4804011,
+    "surface": null
+  },
+  {
+    "name": "Spilies Beach",
+    "name_el": "Spilies Beach",
+    "name_en": "Eko Beach",
+    "lat": 35.4103165,
+    "lng": 24.6382665,
+    "surface": "pebblestone"
+  },
+  {
+    "name": "Geropotamos Beach",
+    "name_el": "Geropotamos Beach",
+    "name_en": "Geropotamos Beach",
+    "lat": 35.4138246,
+    "lng": 24.6452996,
+    "surface": "sand"
+  },
+  {
+    "name": "Αγία Φωτιά",
+    "name_el": "Αγία Φωτιά",
+    "name_en": "Agia Fotia",
+    "lat": 35.021918,
+    "lng": 25.8763487,
+    "surface": null
+  },
+  {
+    "name": "Katalyki",
+    "name_el": "Katalyki",
+    "name_en": "Katalyki",
+    "lat": 35.0792591,
+    "lng": 24.7417341,
+    "surface": null
+  },
+  {
+    "name": "Σχίσμα",
+    "name_el": "Σχίσμα",
+    "name_en": "Schisma",
+    "lat": 35.2642876,
+    "lng": 25.7224721,
+    "surface": null
+  },
+  {
+    "name": "Αγιος Παντελεήμονας",
+    "name_el": "Αγιος Παντελεήμονας",
+    "name_en": "Αγιος Παντελεήμονας",
+    "lat": 35.1270539,
+    "lng": 25.7334318,
+    "surface": null
+  },
+  {
+    "name": "Παραλια Γλυκά Νερά",
+    "name_el": "Παραλια Γλυκά Νερά",
+    "name_en": "Sweet Water Beach",
+    "lat": 35.2016045,
+    "lng": 24.1076711,
+    "surface": "gravel"
+  },
+  {
+    "name": "Παραλία Ρεθύμνου",
+    "name_el": "Παραλία Ρεθύμνου",
+    "name_en": "Rethymnon Beach",
+    "lat": 35.3689513,
+    "lng": 24.503394,
+    "surface": null
+  },
+  {
+    "name": "Άμμος",
+    "name_el": "Άμμος",
+    "name_en": "Άμμος",
+    "lat": 35.1870119,
+    "lng": 25.7158131,
+    "surface": "sand"
+  },
+  {
+    "name": "Τραφουλάς",
+    "name_el": "Τραφουλάς",
+    "name_en": "Trachoulas",
+    "lat": 34.9263657,
+    "lng": 24.9604815,
+    "surface": null
+  },
+  {
+    "name": "Τρυπητή",
+    "name_el": "Τρυπητή",
+    "name_en": "Tripiti",
+    "lat": 34.9343506,
+    "lng": 24.9829211,
+    "surface": null
+  },
+  {
+    "name": "Βαθύ",
+    "name_el": "Βαθύ",
+    "name_en": "Βαθύ",
+    "lat": 34.9520751,
+    "lng": 24.7547254,
+    "surface": null
+  },
+  {
+    "name": "Κιτροπλατεία",
+    "name_el": "Κιτροπλατεία",
+    "name_en": "Kitroplatia",
+    "lat": 35.1890425,
+    "lng": 25.7211475,
+    "surface": "pebblestone"
+  },
+  {
+    "name": "Βούλισμα",
+    "name_el": "Βούλισμα",
+    "name_en": "Voulisma",
+    "lat": 35.1256037,
+    "lng": 25.7449068,
+    "surface": null
+  },
+  {
+    "name": "Golden Beach",
+    "name_el": "Golden Beach",
+    "name_en": "Golden Beach",
+    "lat": 35.1270977,
+    "lng": 25.7413662,
+    "surface": null
+  },
+  {
+    "name": "Καλυβάκι",
+    "name_el": "Καλυβάκι",
+    "name_en": "Kalivaki Beach",
+    "lat": 35.3667682,
+    "lng": 24.2608861,
+    "surface": null
+  },
+  {
+    "name": "Γεωργιούπολη",
+    "name_el": "Γεωργιούπολη",
+    "name_en": "Γεωργιούπολη",
+    "lat": 35.3620779,
+    "lng": 24.2644343,
+    "surface": "sand"
+  },
+  {
+    "name": "Finikas Beach-Παραλία Φοίνικας",
+    "name_el": "Finikas Beach-Παραλία Φοίνικας",
+    "name_en": "Finikas Beach-Παραλία Φοίνικας",
+    "lat": 35.1997451,
+    "lng": 24.0724425,
+    "surface": null
+  },
+  {
+    "name": "Παραλία Μάρμαρα",
+    "name_el": "Παραλία Μάρμαρα",
+    "name_en": "Marmara Beach",
+    "lat": 35.1966247,
+    "lng": 24.0581504,
+    "surface": null
+  },
+  {
+    "name": "Παραλία Τελώνιο",
+    "name_el": "Παραλία Τελώνιο",
+    "name_en": "Beach of Telonio",
+    "lat": 35.4981017,
+    "lng": 23.659469,
+    "surface": null
+  },
+  {
+    "name": "Diktina Beach",
+    "name_el": "Diktina Beach",
+    "name_en": "Diktina Beach",
+    "lat": 35.6646055,
+    "lng": 23.7678649,
+    "surface": null
+  },
+  {
+    "name": "Aghios Pavlos Beach",
+    "name_el": "Παραλία Άγιος Παύλος",
+    "name_en": "Aghios Pavlos Beach",
+    "lat": 35.5986701,
+    "lng": 23.7107422,
+    "surface": null
+  },
+  {
+    "name": "Παραλία Δώματα",
+    "name_el": "Παραλία Δώματα",
+    "name_en": "Domata beach",
+    "lat": 35.2271232,
+    "lng": 23.9128378,
+    "surface": null
+  },
+  {
+    "name": "Κολοκύθα",
+    "name_el": "Κολοκύθα",
+    "name_en": "Kolokitha",
+    "lat": 35.2598836,
+    "lng": 25.7517672,
+    "surface": null
+  },
+  {
+    "name": "Palm Bay Beach",
+    "name_el": "Palm Bay Beach",
+    "name_en": "Palm Bay Beach",
+    "lat": 35.3086826,
+    "lng": 25.5180302,
+    "surface": "sand"
+  },
+  {
+    "name": "Καρούμες",
+    "name_el": "Καρούμες",
+    "name_en": "Karoumes",
+    "lat": 35.1462521,
+    "lng": 26.2766079,
+    "surface": "sand"
+  },
+  {
+    "name": "Μαριδάτη",
+    "name_el": "Μαριδάτη",
+    "name_en": "Maridati Beach",
+    "lat": 35.2215765,
+    "lng": 26.2735359,
+    "surface": "pebblestone and sand"
+  },
+  {
+    "name": "Sougia Nude Beach",
+    "name_el": "Sougia Nude Beach",
+    "name_en": "Sougia Nude Beach",
+    "lat": 35.2483326,
+    "lng": 23.8170078,
+    "surface": "pebblestone"
+  },
+  {
+    "name": "Παραλία Δαμνόνι",
+    "name_el": "Παραλία Δαμνόνι",
+    "name_en": "Damnoni Beach",
+    "lat": 35.1741359,
+    "lng": 24.4150672,
+    "surface": "sand"
+  },
+  {
+    "name": "Μικρό Αμμούδι",
+    "name_el": "Μικρό Αμμούδι",
+    "name_en": "Mikro Ammoudi Nudist Beach",
+    "lat": 35.1725017,
+    "lng": 24.4187492,
+    "surface": "gravel"
+  },
+  {
+    "name": "Αμμούδι",
+    "name_el": "Αμμούδι",
+    "name_en": "Ammoudi Beach",
+    "lat": 35.1707583,
+    "lng": 24.4203506,
+    "surface": "gravel"
+  },
+  {
+    "name": "Μικρή Τριόπετρα",
+    "name_el": "Μικρή Τριόπετρα",
+    "name_en": "Mikri Triopetra Beach",
+    "lat": 35.1154933,
+    "lng": 24.5524189,
+    "surface": null
+  },
+  {
+    "name": "Varkotopos beach",
+    "name_el": "Varkotopos beach",
+    "name_en": "Varkotopos beach",
+    "lat": 35.4105828,
+    "lng": 24.7827869,
+    "surface": "sand"
+  },
+  {
+    "name": "Παραλία Φόδελε",
+    "name_el": "Παραλία Φόδελε",
+    "name_en": "Fodele Beach",
+    "lat": 35.4023314,
+    "lng": 24.9552257,
+    "surface": "sand"
+  },
+  {
+    "name": "Livadi beach",
+    "name_el": "Livadi beach",
+    "name_en": "Livadi beach",
+    "lat": 35.4075635,
+    "lng": 24.7850994,
+    "surface": "sand"
+  },
+  {
+    "name": "Ληστής",
+    "name_el": "Ληστής",
+    "name_en": "Ληστής",
+    "lat": 34.989331,
+    "lng": 25.3480761,
+    "surface": null
+  },
+  {
+    "name": "Розовый пляж",
+    "name_el": "Ροζ παραλία",
+    "name_en": "Pink Beach",
+    "lat": 35.2693341,
+    "lng": 23.5354899,
+    "surface": "sand"
+  },
+  {
+    "name": "Kendrodasos",
+    "name_el": "Kendrodasos",
+    "name_en": "Kendrodasos",
+    "lat": 35.2662341,
+    "lng": 23.5685908,
+    "surface": null
+  },
+  {
+    "name": "Αμμόλοφους",
+    "name_el": "Αμμόλοφους",
+    "name_en": "Ammofolos Beach",
+    "lat": 35.1071243,
+    "lng": 24.5584714,
+    "surface": "sand"
+  },
+  {
+    "name": "Χόχλακας",
+    "name_el": "Χόχλακας",
+    "name_en": "Hohlakas",
+    "lat": 35.1891641,
+    "lng": 24.3265467,
+    "surface": null
+  },
+  {
+    "name": "Κόρακας",
+    "name_el": "Κόρακας",
+    "name_en": "Korakas Beach",
+    "lat": 35.1872025,
+    "lng": 24.3151783,
+    "surface": null
+  },
+  {
+    "name": "Κλήματα",
+    "name_el": "Κλήματα",
+    "name_en": "Klimata",
+    "lat": 35.1885764,
+    "lng": 24.3201411,
+    "surface": null
+  },
+  {
+    "name": "Τριόπετρα",
+    "name_el": "Τριόπετρα",
+    "name_en": "Triopetra Beach",
+    "lat": 35.1210168,
+    "lng": 24.5439566,
+    "surface": null
+  },
+  {
+    "name": "Triopetra Beach",
+    "name_el": "Triopetra Beach",
+    "name_en": "Triopetra Beach",
+    "lat": 35.1126169,
+    "lng": 24.5545861,
+    "surface": null
+  },
+  {
+    "name": "Σταυρί",
+    "name_el": "Σταυρί",
+    "name_en": "Stavri Beach",
+    "lat": 35.1842944,
+    "lng": 24.354092,
+    "surface": "pebblestone"
+  },
+  {
+    "name": "Λίγκρες",
+    "name_el": "Λίγκρες",
+    "name_en": "Ligres Beach",
+    "lat": 35.1332095,
+    "lng": 24.5326791,
+    "surface": null
+  },
+  {
+    "name": "Κόκκινος Βόλακας",
+    "name_el": "Κόκκινος Βόλακας",
+    "name_en": "Kokkino Volakas",
+    "lat": 35.1877872,
+    "lng": 24.3582977,
+    "surface": null
+  },
+  {
+    "name": "Κλεισιδι",
+    "name_el": "Κλεισιδι",
+    "name_en": "Onerock Beach",
+    "lat": 35.1719692,
+    "lng": 24.41906,
+    "surface": "gravel"
+  },
+  {
+    "name": "Φοινικίδια",
+    "name_el": "Φοινικίδια",
+    "name_en": "Finikidia Beach",
+    "lat": 35.1027145,
+    "lng": 24.5639585,
+    "surface": null
+  },
+  {
+    "name": "Παραλία Αγία Πελαγία",
+    "name_el": "Παραλία Αγία Πελαγία",
+    "name_en": "Agia Pelagia Beach",
+    "lat": 35.4061962,
+    "lng": 25.0186883,
+    "surface": null
+  },
+  {
+    "name": "Παραλία Βουρλιά",
+    "name_el": "Παραλία Βουρλιά",
+    "name_en": "Vourlia beach",
+    "lat": 35.040973,
+    "lng": 26.2332875,
+    "surface": "sand"
+  },
+  {
+    "name": "Χιόνα",
+    "name_el": "Χιόνα",
+    "name_en": "Chiona beach",
+    "lat": 35.0392624,
+    "lng": 26.2322518,
+    "surface": "sand"
+  },
+  {
+    "name": "Άργιλος",
+    "name_el": "Άργιλος",
+    "name_en": "Argilos",
+    "lat": 35.038645,
+    "lng": 26.2316502,
+    "surface": null
+  },
+  {
+    "name": "Kakkos",
+    "name_el": "Kakkos",
+    "name_en": "Kakkos",
+    "lat": 35.0111009,
+    "lng": 25.839982,
+    "surface": null
+  },
+  {
+    "name": "Ilingas Beach",
+    "name_el": "Ilingas Beach",
+    "name_en": "Ilingas Beach",
+    "lat": 35.2022244,
+    "lng": 24.1244877,
+    "surface": "gravel"
+  },
+  {
+    "name": "Παραλία Αγίου Χαραλάμπους",
+    "name_el": "Παραλία Αγίου Χαραλάμπους",
+    "name_en": "Agios Charalampos Beach",
+    "lat": 35.1927364,
+    "lng": 24.1509622,
+    "surface": null
+  },
+  {
+    "name": "Timios Stavros beach",
+    "name_el": "Timios Stavros beach",
+    "name_en": "Timios Stavros beach",
+    "lat": 35.1986577,
+    "lng": 24.0998101,
+    "surface": "gravel"
+  },
+  {
+    "name": "Σφακιανό Αμμούδι",
+    "name_el": "Σφακιανό Αμμούδι",
+    "name_en": "Ammoudi Beach",
+    "lat": 35.1931739,
+    "lng": 24.1464012,
+    "surface": null
+  },
+  {
+    "name": "Παραλία Επισκοπής",
+    "name_el": "Παραλία Επισκοπής",
+    "name_en": "Episkopi beach",
+    "lat": 35.3512772,
+    "lng": 24.3412219,
+    "surface": "sand"
+  },
+  {
+    "name": "Παραλία της γριάς το πήδημα",
+    "name_el": "Παραλία της γριάς το πήδημα",
+    "name_en": "Παραλία της γριάς το πήδημα",
+    "lat": 35.0283003,
+    "lng": 25.8981997,
+    "surface": "pebblestone"
+  },
+  {
+    "name": "Itanos Beach",
+    "name_el": "Itanos Beach",
+    "name_en": "Itanos Beach",
+    "lat": 35.2663473,
+    "lng": 26.2631613,
+    "surface": null
+  },
+  {
+    "name": "Itanos Beach",
+    "name_el": "Itanos Beach",
+    "name_en": "Itanos Beach",
+    "lat": 35.2619138,
+    "lng": 26.2639109,
+    "surface": null
+  },
+  {
+    "name": "Παραλία του Μάλεμε",
+    "name_el": "Παραλία του Μάλεμε",
+    "name_en": "Máleme Beach",
+    "lat": 35.5254214,
+    "lng": 23.8533131,
+    "surface": "pebblestone"
+  },
+  {
+    "name": "Αλμυρός",
+    "name_el": "Αλμυρός",
+    "name_en": "Αλμυρός",
+    "lat": 35.1767404,
+    "lng": 25.709493,
+    "surface": "sand"
+  },
+  {
+    "name": "Krinakia beach",
+    "name_el": "Krinakia beach",
+    "name_en": "Krinakia beach",
+    "lat": 35.0582925,
+    "lng": 26.2427746,
+    "surface": "sand"
+  },
+  {
+    "name": "Παραλία Λυγαριά",
+    "name_el": "Παραλία Λυγαριά",
+    "name_en": "Lygaria Beach",
+    "lat": 35.3993205,
+    "lng": 25.0272401,
+    "surface": null
+  },
+  {
+    "name": "Καλαμάκι",
+    "name_el": "Καλαμάκι",
+    "name_en": "Kalamaki",
+    "lat": 35.5134769,
+    "lng": 23.9690023,
+    "surface": null
+  },
+  {
+    "name": "Πλάκα",
+    "name_el": "Πλάκα",
+    "name_en": "Πλάκα",
+    "lat": 35.3197369,
+    "lng": 25.5656682,
+    "surface": "concrete"
+  },
+  {
+    "name": "Βόλια",
+    "name_el": "Βόλια",
+    "name_en": "Βόλια",
+    "lat": 35.3197448,
+    "lng": 25.5673678,
+    "surface": "gravel"
+  },
+  {
+    "name": "Μπάλος",
+    "name_el": "Μπάλος",
+    "name_en": "Μπάλος",
+    "lat": 35.319643,
+    "lng": 25.5710189,
+    "surface": "gravel"
+  },
+  {
+    "name": "Skinias Beach",
+    "name_el": "Παραλία Σκινιά",
+    "name_en": "Skinias Beach",
+    "lat": 35.1692804,
+    "lng": 26.2813763,
+    "surface": "sand"
+  },
+  {
+    "name": "Boufos",
+    "name_el": "Boufos",
+    "name_en": "Boufos",
+    "lat": 35.308775,
+    "lng": 25.5273436,
+    "surface": null
+  },
+  {
+    "name": "Avlaki",
+    "name_el": "Avlaki",
+    "name_en": "Avlaki",
+    "lat": 35.309469,
+    "lng": 25.5290332,
+    "surface": null
+  },
+  {
+    "name": "Potamos municipal beach",
+    "name_el": "Δημοτικη παραλία Ποταμός",
+    "name_en": "Potamos municipal beach",
+    "lat": 35.2962023,
+    "lng": 25.4863639,
+    "surface": "sand"
+  },
+  {
+    "name": "Aelos Beach",
+    "name_el": "Aelos Beach",
+    "name_en": "Aelos Beach",
+    "lat": 35.2927664,
+    "lng": 25.4565159,
+    "surface": "sand"
+  },
+  {
+    "name": "Paralia Lagada",
+    "name_el": "Paralia Lagada",
+    "name_en": "Paralia Lagada",
+    "lat": 35.0281479,
+    "lng": 25.9993104,
+    "surface": null
+  },
+  {
+    "name": "Καρτερού",
+    "name_el": "Καρτερού",
+    "name_en": "Karterou",
+    "lat": 35.3327377,
+    "lng": 25.2027325,
+    "surface": null
+  },
+  {
+    "name": "Παραλία Κατσούνι (γυμνιστών)",
+    "name_el": "Παραλία Κατσούνι (γυμνιστών)",
+    "name_en": "Katsouni nudist beach",
+    "lat": 35.1393441,
+    "lng": 24.5254491,
+    "surface": "pebblestone"
+  },
+  {
+    "name": "Παχειά Άμμος",
+    "name_el": "Παχειά Άμμος",
+    "name_en": "Pachia Ammos",
+    "lat": 35.1417421,
+    "lng": 24.5228743,
+    "surface": "sand"
+  },
+  {
+    "name": "Παραλία Μονοναύτης",
+    "name_el": "Παραλία Μονοναύτης",
+    "name_en": "Mononaftis Beach",
+    "lat": 35.4163394,
+    "lng": 25.0187522,
+    "surface": null
+  },
+  {
+    "name": "Psaromoura beach",
+    "name_el": "Psaromoura beach",
+    "name_en": "Psaromoura beach",
+    "lat": 35.4129901,
+    "lng": 25.0178675,
+    "surface": null
+  },
+  {
+    "name": "Kalyves",
+    "name_el": "Kalyves",
+    "name_en": "Kalyves",
+    "lat": 35.4525117,
+    "lng": 24.1758913,
+    "surface": "sand"
+  },
+  {
+    "name": "Βρύση",
+    "name_el": "Βρύση",
+    "name_en": "Vrisi",
+    "lat": 35.2019505,
+    "lng": 24.1343326,
+    "surface": "fine_gravel"
+  },
+  {
+    "name": "Αγιοφάραγγο",
+    "name_el": "Αγιοφάραγγο",
+    "name_en": "Agiofarango",
+    "lat": 34.9255103,
+    "lng": 24.7782805,
+    "surface": "gravel"
+  },
+  {
+    "name": "Paralia Tersanas",
+    "name_el": "Paralia Tersanas",
+    "name_en": "Paralia Tersanas",
+    "lat": 35.5673788,
+    "lng": 24.0828853,
+    "surface": null
+  },
+  {
+    "name": "Kera",
+    "name_el": "Kera",
+    "name_en": "Kera",
+    "lat": 35.4497113,
+    "lng": 24.1868698,
+    "surface": null
+  },
+  {
+    "name": "Plaka",
+    "name_el": "Plaka",
+    "name_en": "Plaka",
+    "lat": 35.3019059,
+    "lng": 25.726911,
+    "surface": null
+  },
+  {
+    "name": "Παλίγκρεμνος",
+    "name_el": "Παλίγκρεμνος",
+    "name_en": "Paligremnos Beach (Nudist)",
+    "lat": 35.1807753,
+    "lng": 24.4004033,
+    "surface": "sand"
+  },
+  {
+    "name": "Σκίνος",
+    "name_el": "Σκίνος",
+    "name_en": "Skinos Beach",
+    "lat": 35.1920804,
+    "lng": 24.3897337,
+    "surface": "pebblestone"
+  },
+  {
+    "name": "Μαράθι",
+    "name_el": "Μαράθι",
+    "name_en": "Μαράθι",
+    "lat": 35.5046269,
+    "lng": 24.172957,
+    "surface": null
+  },
+  {
+    "name": "Tholos Beach",
+    "name_el": "Tholos Beach",
+    "name_en": "Tholos Beach",
+    "lat": 35.152228,
+    "lng": 25.8624474,
+    "surface": null
+  },
+  {
+    "name": "Kalathas Beach",
+    "name_el": "Kalathas Beach",
+    "name_en": "Kalathas Beach",
+    "lat": 35.5544569,
+    "lng": 24.087065,
+    "surface": "sand"
+  },
+  {
+    "name": "Kalami Beach",
+    "name_el": "Kalami Beach",
+    "name_en": "Kalami Beach",
+    "lat": 35.469717,
+    "lng": 24.141395,
+    "surface": "sand"
+  },
+  {
+    "name": "Aptera",
+    "name_el": "Aptera",
+    "name_en": "Aptera",
+    "lat": 35.5110702,
+    "lng": 23.993829,
+    "surface": null
+  },
+  {
+    "name": "Παραλία Νέα Χώρα",
+    "name_el": "Παραλία Νέα Χώρα",
+    "name_en": "Παραλία Νέα Χώρα",
+    "lat": 35.5117211,
+    "lng": 23.9984424,
+    "surface": "pebblestone"
+  },
+  {
+    "name": "Παραλια Τραχηλος",
+    "name_el": "Παραλια Τραχηλος",
+    "name_en": "Trachilos Beach",
+    "lat": 35.5130419,
+    "lng": 23.6296956,
+    "surface": null
+  },
+  {
+    "name": "Platanakia",
+    "name_el": "Platanakia",
+    "name_en": "Platanakia",
+    "lat": 35.4134262,
+    "lng": 23.5545196,
+    "surface": "pebblestone"
+  },
+  {
+    "name": "Φαλάσαρνα",
+    "name_el": "Φαλάσαρνα",
+    "name_en": "Falassarna",
+    "lat": 35.5036073,
+    "lng": 23.5764054,
+    "surface": null
+  },
+  {
+    "name": "Ορθή Άμμος",
+    "name_el": "Ορθή Άμμος",
+    "name_en": "Orthi Ammos",
+    "lat": 35.1832914,
+    "lng": 24.2463884,
+    "surface": "sand"
+  },
+  {
+    "name": "Μακριά Άμμος",
+    "name_el": "Μακριά Άμμος",
+    "name_en": "Μακριά Άμμος",
+    "lat": 34.9350512,
+    "lng": 24.8086639,
+    "surface": null
+  },
+  {
+    "name": "Καραβόβρυση",
+    "name_el": "Καραβόβρυση",
+    "name_en": "Καραβόβρυση",
+    "lat": 34.9379584,
+    "lng": 24.8159408,
+    "surface": null
+  },
+  {
+    "name": "Αμμούδι",
+    "name_el": "Αμμούδι",
+    "name_en": "Ammoudi",
+    "lat": 35.1981244,
+    "lng": 25.712727,
+    "surface": "sand"
+  },
+  {
+    "name": "Vlihi Nero beach",
+    "name_el": "Vlihi Nero beach",
+    "name_en": "Vlihi Nero beach",
+    "lat": 35.4062086,
+    "lng": 24.787335,
+    "surface": "sand"
+  },
+  {
+    "name": "Χαβάνια",
+    "name_el": "Χαβάνια",
+    "name_en": "Χαβάνια",
+    "lat": 35.213472,
+    "lng": 25.7124453,
+    "surface": null
+  },
+  {
+    "name": "Saradari Nude Beach",
+    "name_el": "Saradari Nude Beach",
+    "name_en": "Saradari Nude Beach",
+    "lat": 35.3337188,
+    "lng": 25.3845911,
+    "surface": "ground"
+  },
+  {
+    "name": "Παραλία Μαζιδά Άμμος",
+    "name_el": "Παραλία Μαζιδά Άμμος",
+    "name_en": "Mazida Ammos beach",
+    "lat": 35.0362542,
+    "lng": 26.2206625,
+    "surface": "sand"
+  },
+  {
+    "name": "Keratokambos",
+    "name_el": "Keratokambos",
+    "name_en": "Keratokambos",
+    "lat": 34.9962751,
+    "lng": 25.3927655,
+    "surface": null
+  },
+  {
+    "name": "Keratokambos",
+    "name_el": "Keratokambos",
+    "name_en": "Keratokambos",
+    "lat": 34.991992,
+    "lng": 25.403839,
+    "surface": null
+  },
+  {
+    "name": "Άγιος Ονούφριος",
+    "name_el": "Άγιος Ονούφριος",
+    "name_en": "Άγιος Ονούφριος",
+    "lat": 35.5488545,
+    "lng": 24.0631943,
+    "surface": null
+  },
+  {
+    "name": "Πολύριζος",
+    "name_el": "Πολύριζος",
+    "name_en": "Polyrizos Beach",
+    "lat": 35.1856174,
+    "lng": 24.3053279,
+    "surface": null
+  },
+  {
+    "name": "Παραλία Ελαφονήσι",
+    "name_el": "Παραλία Ελαφονήσι",
+    "name_en": "Elafonisi Beach",
+    "lat": 35.2715705,
+    "lng": 23.5419152,
+    "surface": "sand"
+  },
+  {
+    "name": "Κουδουμάς",
+    "name_el": "Κουδουμάς",
+    "name_en": "Koudouma",
+    "lat": 34.9377956,
+    "lng": 25.0859135,
+    "surface": null
+  },
+  {
+    "name": "Άσπες",
+    "name_el": "Άσπες",
+    "name_en": "Άσπες",
+    "lat": 35.3201772,
+    "lng": 25.5726499,
+    "surface": null
+  },
+  {
+    "name": "Peninsula Private Beach",
+    "name_el": "Peninsula Private Beach",
+    "name_en": "Peninsula Private Beach",
+    "lat": 35.4141619,
+    "lng": 25.0198268,
+    "surface": null
+  },
+  {
+    "name": "Παραλίες Βάταλου",
+    "name_el": "Παραλίες Βάταλου",
+    "name_en": "Vatalos Beach",
+    "lat": 35.1894748,
+    "lng": 24.2196291,
+    "surface": "sand"
+  },
+  {
+    "name": "Παραλία Κούμ Καπί (Kum Kapisi)",
+    "name_el": "Παραλία Κούμ Καπί (Kum Kapisi)",
+    "name_en": "Παραλία Κούμ Καπί (Kum Kapisi)",
+    "lat": 35.5160402,
+    "lng": 24.0285243,
+    "surface": null
+  },
+  {
+    "name": "Παραλία Κομμός",
+    "name_el": "Παραλία Κομμός",
+    "name_en": "Kommos Beach",
+    "lat": 35.0148954,
+    "lng": 24.7597754,
+    "surface": "sand"
+  },
+  {
+    "name": "Afrathia",
+    "name_el": "Afrathia",
+    "name_en": "Afrathia",
+    "lat": 35.0439528,
+    "lng": 24.7557083,
+    "surface": null
+  },
+  {
+    "name": "Rapaniana Beach",
+    "name_el": "Rapaniana Beach",
+    "name_en": "Rapaniana Beach",
+    "lat": 35.5406806,
+    "lng": 23.7921732,
+    "surface": null
+  },
+  {
+    "name": "Tavronitis",
+    "name_el": "Tavronitis",
+    "name_en": "Tavronitis",
+    "lat": 35.5353626,
+    "lng": 23.8107511,
+    "surface": null
+  },
+  {
+    "name": "Γεωργιούπολη",
+    "name_el": "Γεωργιούπολη",
+    "name_en": "Georgioupolis Beach",
+    "lat": 35.3569981,
+    "lng": 24.2784346,
+    "surface": "sand"
+  },
+  {
+    "name": "Μάρτσαλο",
+    "name_el": "Μάρτσαλο",
+    "name_en": "Martsalo",
+    "lat": 34.9300142,
+    "lng": 24.7703901,
+    "surface": "pebblestone"
+  },
+  {
+    "name": "Seitan Limani",
+    "name_el": "Seitan Limani",
+    "name_en": "Seitan Limania Beach",
+    "lat": 35.5519003,
+    "lng": 24.1934321,
+    "surface": null
+  },
+  {
+    "name": "Plakias Beach",
+    "name_el": "Plakias Beach",
+    "name_en": "Plakias Beach",
+    "lat": 35.1904331,
+    "lng": 24.3938523,
+    "surface": "pebblestone"
+  },
+  {
+    "name": "Palaiokastro Beach",
+    "name_el": "Palaiokastro Beach",
+    "name_en": "Palaiokastro Beach",
+    "lat": 35.3662056,
+    "lng": 25.0388557,
+    "surface": null
+  },
+  {
+    "name": "Αλιόρι",
+    "name_el": "Αλιόρι",
+    "name_en": "Αλιόρι",
+    "lat": 34.9857347,
+    "lng": 25.2968465,
+    "surface": null
+  },
+  {
+    "name": "Παραλία Σεντόνι",
+    "name_el": "Παραλία Σεντόνι",
+    "name_en": "Sedoni beach",
+    "lat": 35.2388221,
+    "lng": 23.8817316,
+    "surface": null
+  },
+  {
+    "name": "Παραλία Τρυπητής",
+    "name_el": "Παραλία Τρυπητής",
+    "name_en": "Tripiti Beach",
+    "lat": 35.2365169,
+    "lng": 23.8736745,
+    "surface": null
+  },
+  {
+    "name": "Star Beach",
+    "name_el": "Star Beach",
+    "name_en": "Star Beach",
+    "lat": 35.3087012,
+    "lng": 25.4048473,
+    "surface": null
+  },
+  {
+    "name": "Kiani Beach",
+    "name_el": "Kiani Beach",
+    "name_en": "Kiani Beach",
+    "lat": 35.4667167,
+    "lng": 24.155649,
+    "surface": "stone"
+  },
+  {
+    "name": "Blue Coast",
+    "name_el": "Blue Coast",
+    "name_en": "Blue Coast",
+    "lat": 35.4645242,
+    "lng": 24.1575545,
+    "surface": "sand"
+  },
+  {
+    "name": "Blue Coast",
+    "name_el": "Blue Coast",
+    "name_en": "Blue Coast",
+    "lat": 35.4615764,
+    "lng": 24.1607116,
+    "surface": "sand"
+  },
+  {
+    "name": "Παραλία Βλυχάδια",
+    "name_el": "Παραλία Βλυχάδια",
+    "name_en": "Paralia Vlichadia",
+    "lat": 35.3366889,
+    "lng": 25.69543,
+    "surface": "ground"
+  },
+  {
+    "name": "Πέρα Γαλήνοι",
+    "name_el": "Πέρα Γαλήνοι",
+    "name_en": "Pera Galini",
+    "lat": 35.404375,
+    "lng": 24.922053,
+    "surface": null
+  },
+  {
+    "name": "Pantanassa",
+    "name_el": "Pantanassa",
+    "name_en": "Pantanassa",
+    "lat": 35.3558683,
+    "lng": 25.041439,
+    "surface": null
+  },
+  {
+    "name": "Παραλία Κουταλάς",
+    "name_el": "Παραλία Κουταλάς",
+    "name_en": "Koutalas Beach",
+    "lat": 35.4667125,
+    "lng": 24.2322111,
+    "surface": "stone"
+  },
+  {
+    "name": "Παραλία Πλακάκι",
+    "name_el": "Παραλία Πλακάκι",
+    "name_en": "Παραλία Πλακάκι",
+    "lat": 35.2367771,
+    "lng": 23.6471619,
+    "surface": null
+  },
+  {
+    "name": "Alatsolimni beach",
+    "name_el": "Alatsolimni beach",
+    "name_en": "Alatsolimni beach",
+    "lat": 35.0487194,
+    "lng": 26.2389425,
+    "surface": "sand"
+  },
+  {
+    "name": "Φιλάκι",
+    "name_el": "Φιλάκι",
+    "name_en": "Filaki",
+    "lat": 35.1941652,
+    "lng": 24.1572777,
+    "surface": null
+  },
+  {
+    "name": "Αγία Μαρίνα",
+    "name_el": "Αγία Μαρίνα",
+    "name_en": "Agia Marina Beach",
+    "lat": 35.1794754,
+    "lng": 24.2915482,
+    "surface": null
+  },
+  {
+    "name": "Περιστερές",
+    "name_el": "Περιστερές",
+    "name_en": "Peristeres Beach",
+    "lat": 35.182431,
+    "lng": 24.2992633,
+    "surface": null
+  },
+  {
+    "name": "Φωτεινάρι",
+    "name_el": "Φωτεινάρι",
+    "name_en": "Fotinari Beach",
+    "lat": 35.1921741,
+    "lng": 24.3727709,
+    "surface": "sand"
+  },
+  {
+    "name": "Calypso",
+    "name_el": "Calypso",
+    "name_en": "Calypso",
+    "lat": 35.1723677,
+    "lng": 24.4000057,
+    "surface": null
+  },
+  {
+    "name": "Ποδαρέ",
+    "name_el": "Ποδαρέ",
+    "name_en": "Podare Beach",
+    "lat": 35.1442948,
+    "lng": 24.5177404,
+    "surface": null
+  },
+  {
+    "name": "Κλίμα",
+    "name_el": "Κλίμα",
+    "name_en": "Klima Beach",
+    "lat": 35.1429602,
+    "lng": 24.5208538,
+    "surface": null
+  },
+  {
+    "name": "Πρασονήσι",
+    "name_el": "Πρασονήσι",
+    "name_en": "Prasonisi Beach",
+    "lat": 35.0988972,
+    "lng": 24.5957597,
+    "surface": null
+  },
+  {
+    "name": "Agios Georgios",
+    "name_el": "Agios Georgios",
+    "name_en": "Agios Georgios",
+    "lat": 35.0968423,
+    "lng": 24.6566481,
+    "surface": null
+  },
+  {
+    "name": "Ψιλή Άμμος",
+    "name_el": "Ψιλή Άμμος",
+    "name_en": "Ψιλή Άμμος",
+    "lat": 34.9296228,
+    "lng": 24.8003267,
+    "surface": null
+  },
+  {
+    "name": "Χρυσόστομος",
+    "name_el": "Χρυσόστομος",
+    "name_en": "Χρυσόστομος",
+    "lat": 34.9391142,
+    "lng": 24.827218,
+    "surface": null
+  },
+  {
+    "name": "Ψιλή Άμμος",
+    "name_el": "Ψιλή Άμμος",
+    "name_en": "Psili Ammos Beach",
+    "lat": 34.9382344,
+    "lng": 24.8608919,
+    "surface": null
+  },
+  {
+    "name": "Κόκκινες Πλάκες",
+    "name_el": "Κόκκινες Πλάκες",
+    "name_en": "Κόκκινες Πλάκες",
+    "lat": 34.9409256,
+    "lng": 24.8407672,
+    "surface": null
+  },
+  {
+    "name": "Μάχα",
+    "name_el": "Μάχα",
+    "name_en": "Μάχα",
+    "lat": 34.9405452,
+    "lng": 24.8359126,
+    "surface": null
+  },
+  {
+    "name": "Λεπριάς",
+    "name_el": "Λεπριάς",
+    "name_en": "Λεπριάς",
+    "lat": 34.9332754,
+    "lng": 25.0018281,
+    "surface": null
+  },
+  {
+    "name": "Κατάρτι",
+    "name_el": "Κατάρτι",
+    "name_en": "Κατάρτι",
+    "lat": 34.9326287,
+    "lng": 25.0066827,
+    "surface": null
+  },
+  {
+    "name": "Ελυγιά",
+    "name_el": "Ελυγιά",
+    "name_en": "Eligias",
+    "lat": 34.941803,
+    "lng": 25.0568971,
+    "surface": null
+  },
+  {
+    "name": "Κεδρόδασος",
+    "name_el": "Κεδρόδασος",
+    "name_en": "Kedrodasos",
+    "lat": 35.2683705,
+    "lng": 23.5636005,
+    "surface": null
+  },
+  {
+    "name": "Καραβοστάσι",
+    "name_el": "Καραβοστάσι",
+    "name_en": "Karavostasi",
+    "lat": 35.130108,
+    "lng": 25.7273719,
+    "surface": null
+  },
+  {
+    "name": "Moni Kapsa Beach",
+    "name_el": "Moni Kapsa Beach",
+    "name_en": "Moni Kapsa Beach",
+    "lat": 35.0193332,
+    "lng": 26.0517016,
+    "surface": "gravel"
+  },
+  {
+    "name": "Παραλία Κεφάλα",
+    "name_el": "Παραλία Κεφάλα",
+    "name_en": "Kefala Beach",
+    "lat": 35.1502194,
+    "lng": 24.4910212,
+    "surface": "sand"
+  },
+  {
+    "name": "Παραλία Ανατολικά",
+    "name_el": "Παραλία Ανατολικά",
+    "name_en": "Anatolika Beach",
+    "lat": 35.1486963,
+    "lng": 24.500088,
+    "surface": "sand"
+  },
+  {
+    "name": "Παραλία Γιαλοπόταμα",
+    "name_el": "Παραλία Γιαλοπόταμα",
+    "name_en": "Gialopotama Beach",
+    "lat": 35.1464389,
+    "lng": 24.5056107,
+    "surface": null
+  },
+  {
+    "name": "Παραλία Διασκάρι",
+    "name_el": "Παραλία Διασκάρι",
+    "name_en": "Παραλία Διασκάρι",
+    "lat": 35.0327812,
+    "lng": 25.9940023,
+    "surface": null
+  },
+  {
+    "name": "Botzalaki beach",
+    "name_el": "Παραλία Μποτζαλάκι",
+    "name_en": "Botzalaki beach",
+    "lat": 35.0177642,
+    "lng": 26.0873356,
+    "surface": "dirt/sand"
+  },
+  {
+    "name": "Παραλία Ψηλός Βόλακας",
+    "name_el": "Παραλία Ψηλός Βόλακας",
+    "name_en": "Παραλία Ψηλός Βόλακας",
+    "lat": 35.2382299,
+    "lng": 23.6611222,
+    "surface": null
+  },
+  {
+    "name": "Sougia Beach",
+    "name_el": "Sougia Beach",
+    "name_en": "Sougia Beach",
+    "lat": 35.2476499,
+    "lng": 23.8183413,
+    "surface": "pebblestone"
+  },
+  {
+    "name": "Μαχαιρίδα Παραλία Γυμνιστών",
+    "name_el": "Μαχαιρίδα Παραλία Γυμνιστών",
+    "name_en": "Maherida Nudist Beach",
+    "lat": 35.5735305,
+    "lng": 24.0767571,
+    "surface": "sand"
+  },
+  {
+    "name": "Lycos Beach-Παραλία Λύκος",
+    "name_el": "Lycos Beach-Παραλία Λύκος",
+    "name_en": "Lycos Beach-Παραλία Λύκος",
+    "lat": 35.2005015,
+    "lng": 24.0676852,
+    "surface": "gravel"
+  },
+  {
+    "name": "Loutraki Beach",
+    "name_el": "Loutraki Beach",
+    "name_en": "Loutraki Beach",
+    "lat": 35.4991583,
+    "lng": 24.1639824,
+    "surface": null
+  },
+  {
+    "name": "Παραλία Καλάμια",
+    "name_el": "Παραλία Καλάμια",
+    "name_en": "Παραλία Καλάμια",
+    "lat": 35.238445,
+    "lng": 23.6641262,
+    "surface": null
+  },
+  {
+    "name": "Παραλία Τροχαλού",
+    "name_el": "Παραλία Τροχαλού",
+    "name_en": "Παραλία Τροχαλού",
+    "lat": 35.2378735,
+    "lng": 23.6581013,
+    "surface": null
+  },
+  {
+    "name": "Ανασκελού",
+    "name_el": "Ανασκελού",
+    "name_en": "Ανασκελού",
+    "lat": 35.0194108,
+    "lng": 26.0341592,
+    "surface": null
+  },
+  {
+    "name": "Ληστής",
+    "name_el": "Ληστής",
+    "name_en": "Listis",
+    "lat": 34.9900772,
+    "lng": 25.3540591,
+    "surface": null
+  },
+  {
+    "name": "Kalami beach",
+    "name_el": "Παραλία Καλάμι",
+    "name_en": "Kalami beach",
+    "lat": 35.0223831,
+    "lng": 26.0686045,
+    "surface": null
+  },
+  {
+    "name": "Φαλάσαρνα",
+    "name_el": "Φαλάσαρνα",
+    "name_en": "Falasarna beach",
+    "lat": 35.4926294,
+    "lng": 23.5795589,
+    "surface": "sand"
+  },
+  {
+    "name": "Σκούρος",
+    "name_el": "Σκούρος",
+    "name_en": "Skouros",
+    "lat": 34.9958807,
+    "lng": 25.366036,
+    "surface": null
+  },
+  {
+    "name": "Βρυονήσι",
+    "name_el": "Βρυονήσι",
+    "name_en": "Βρυονήσι",
+    "lat": 35.1253559,
+    "lng": 25.76222,
+    "surface": null
+  },
+  {
+    "name": "Atherina beach",
+    "name_el": "Αθερίνα",
+    "name_en": "Atherina beach",
+    "lat": 35.0210276,
+    "lng": 26.0716934,
+    "surface": "dirt"
+  },
+  {
+    "name": "Μέθεξις",
+    "name_el": "Μέθεξις",
+    "name_en": "Μέθεξις",
+    "lat": 35.2258285,
+    "lng": 23.6825897,
+    "surface": null
+  },
+  {
+    "name": "Στενά",
+    "name_el": "Στενά",
+    "name_en": "Stena",
+    "lat": 34.9269291,
+    "lng": 24.7983051,
+    "surface": null
+  },
+  {
+    "name": "Πελεκητή",
+    "name_el": "Πελεκητή",
+    "name_en": "Πελεκητή",
+    "lat": 35.2925177,
+    "lng": 25.7473654,
+    "surface": null
+  },
+  {
+    "name": "Διανισκάρι",
+    "name_el": "Διανισκάρι",
+    "name_en": "Διανισκάρι",
+    "lat": 35.2575479,
+    "lng": 25.7399158,
+    "surface": null
+  },
+  {
+    "name": "Βαγί",
+    "name_el": "Βαγί",
+    "name_en": "Βαγί",
+    "lat": 35.2576877,
+    "lng": 25.7547899,
+    "surface": null
+  },
+  {
+    "name": "Πλακάκι",
+    "name_el": "Πλακάκι",
+    "name_en": "Plakaki",
+    "lat": 35.1942633,
+    "lng": 24.1587421,
+    "surface": "pebblestone"
+  },
+  {
+    "name": "Άργιλος",
+    "name_el": "Άργιλος",
+    "name_en": "Argilos Beach",
+    "lat": 35.1808438,
+    "lng": 24.2562054,
+    "surface": "sand"
+  }
+]
