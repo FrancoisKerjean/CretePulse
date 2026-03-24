@@ -563,6 +563,13 @@ interface Hike {
 }
 
 async function processAndInsertHikes(elements: any[]): Promise<void> {
+  // Clear existing hikes
+  console.log("Clearing existing hikes...");
+  const { error: deleteError } = await supabase.from("hikes").delete().neq("id", 0);
+  if (deleteError) {
+    console.warn("Warning: Could not clear existing hikes:", deleteError);
+  }
+
   const hikesMap = new Map<string, Hike>();
 
   for (const element of elements) {
