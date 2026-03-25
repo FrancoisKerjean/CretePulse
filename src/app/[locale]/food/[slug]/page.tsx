@@ -1,10 +1,18 @@
 import { getFoodBySlug, getNearbyFoodPlaces } from "@/lib/food";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { UtensilsCrossed, MapPin, Phone, Globe, ChevronLeft } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
+
+const FL: Record<string, Record<string, string>> = {
+  en: { back: "All restaurants", maps: "Open in Google Maps", findMaps: "Find on Google Maps", more: "More in", website: "Website" },
+  fr: { back: "Tous les restaurants", maps: "Ouvrir dans Google Maps", findMaps: "Trouver sur Google Maps", more: "Plus en", website: "Site web" },
+  de: { back: "Alle Restaurants", maps: "In Google Maps offnen", findMaps: "Auf Google Maps finden", more: "Mehr in", website: "Webseite" },
+  el: { back: "\u038c\u03bb\u03b1 \u03c4\u03b1 \u03b5\u03c3\u03c4\u03b9\u03b1\u03c4\u03cc\u03c1\u03b9\u03b1", maps: "\u0386\u03bd\u03bf\u03b9\u03b3\u03bc\u03b1 \u03c3\u03c4\u03bf Google Maps", findMaps: "\u0395\u03cd\u03c1\u03b5\u03c3\u03b7 \u03c3\u03c4\u03bf Google Maps", more: "\u03a0\u03b5\u03c1\u03b9\u03c3\u03c3\u03cc\u03c4\u03b5\u03c1\u03b1 \u03c3\u03c4\u03b7\u03bd", website: "Website" },
+};
 
 export async function generateMetadata({
   params,
@@ -56,16 +64,20 @@ export default async function FoodDetailPage({
 
   const nearby = await getNearbyFoodPlaces(place.region, place.slug);
   const description = getLocalizedField(place, "description", loc);
+  const fl = FL[locale] || FL.en;
 
   return (
     <main className="min-h-screen bg-surface">
       {/* Hero image */}
       {place.image_url && (
         <div className="relative h-64 md:h-80 bg-terra-faint">
-          <img
+          <Image
             src={place.image_url}
             alt={place.name}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            sizes="100vw"
+            priority
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
           <div className="absolute bottom-4 left-4 right-4">
@@ -84,7 +96,7 @@ export default async function FoodDetailPage({
           href={`/${locale}/food`}
           className="inline-flex items-center gap-1 text-sm text-aegean hover:underline mb-6"
         >
-          <ChevronLeft className="w-4 h-4" /> All food places
+          <ChevronLeft className="w-4 h-4" /> {fl.back}
         </Link>
 
         {!place.image_url && (
@@ -159,7 +171,7 @@ export default async function FoodDetailPage({
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-border text-text rounded-lg text-sm font-medium hover:border-terra/40 transition-colors"
             >
-              <Globe className="w-4 h-4 text-aegean" /> Website
+              <Globe className="w-4 h-4 text-aegean" /> {fl.website}
             </a>
           )}
           {place.latitude && place.longitude && (
@@ -169,7 +181,7 @@ export default async function FoodDetailPage({
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 bg-terra text-white rounded-lg text-sm font-medium hover:bg-terra/90 transition-colors"
             >
-              <MapPin className="w-4 h-4" /> Open in Google Maps
+              <MapPin className="w-4 h-4" /> {fl.maps}
             </a>
           )}
           {place.address && !place.latitude && (
@@ -179,7 +191,7 @@ export default async function FoodDetailPage({
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 bg-terra text-white rounded-lg text-sm font-medium hover:bg-terra/90 transition-colors"
             >
-              <MapPin className="w-4 h-4" /> Find on Google Maps
+              <MapPin className="w-4 h-4" /> {fl.findMaps}
             </a>
           )}
         </div>
@@ -196,7 +208,7 @@ export default async function FoodDetailPage({
         {nearby.length > 0 && (
           <section>
             <h2 className="text-xl font-bold text-aegean mb-4">
-              More in {place.region} Crete
+              {fl.more} {place.region} Crete
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {nearby.map((p) => (

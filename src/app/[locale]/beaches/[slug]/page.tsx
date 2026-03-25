@@ -2,6 +2,7 @@ import { getBeachBySlug, getNearbyBeaches } from "@/lib/beaches";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { beachSchema, breadcrumbSchema } from "@/lib/schema";
 import { MapPin, Car, Waves, Fish, Sun, Wind, Baby, UtensilsCrossed, ChevronLeft } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -173,16 +174,19 @@ export default async function BeachDetailPage({
       />
       {/* Hero image */}
       {beach.image_url && (
-        <div className="relative h-64 md:h-80 bg-aegean">
-          <img
+        <div className="relative h-72 md:h-96 bg-aegean">
+          <Image
             src={beach.image_url}
-            alt={name}
-            className="w-full h-full object-cover"
+            alt={`${name} beach, Crete`}
+            fill
+            className="object-cover"
+            sizes="100vw"
+            priority
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-          <div className="absolute bottom-4 left-4 right-4">
-            <h1 className="text-3xl md:text-4xl font-bold text-white">{name}</h1>
-            <div className="flex items-center gap-2 text-white/80 text-sm mt-1">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+          <div className="absolute bottom-6 left-4 right-4 md:left-8">
+            <h1 className="text-3xl md:text-5xl font-bold text-white" style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}>{name}</h1>
+            <div className="flex items-center gap-2 text-white/75 text-sm mt-2">
               <MapPin className="w-4 h-4" />
               {beach.region} {L.crete}
             </div>
