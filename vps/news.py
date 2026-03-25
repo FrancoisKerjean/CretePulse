@@ -26,6 +26,7 @@ RSS_FEEDS = [
     {"source": "haniotika",    "source_name": "Haniotika Nea",  "lang": "el", "url": "https://www.haniotika-nea.gr/feed/"},
     {"source": "flashnews",    "source_name": "Flashnews",      "lang": "el", "url": "https://flashnews.gr/feed"},
     {"source": "cretanmagazine", "source_name": "Cretan Magazine", "lang": "el", "url": "https://www.cretanmagazine.gr/feed/"},
+    {"source": "cretaone", "source_name": "CretaOne", "lang": "el", "url": "https://cretaone.gr/feed/"},
 
     # English press (verified working)
     {"source": "ekathimerini", "source_name": "eKathimerini",   "lang": "en", "url": "https://www.ekathimerini.com/rss/news"},
@@ -66,8 +67,8 @@ CRETE_KEYWORDS = [
 ]
 
 # Sources that are Crete-specific (no keyword filtering needed)
-CRETE_ONLY_SOURCES = {"patris", "neakriti", "cretapost", "haniotika", "flashnews",
-                       "cretatv", "cretanmagazine", "google_crete_el", "google_crete_en",
+CRETE_ONLY_SOURCES = {"haniotika", "flashnews", "cretanmagazine", "cretaone",
+                       "google_crete_el", "google_crete_en",
                        "google_crete_tourism", "google_crete_fr", "google_crete_de",
                        "reddit_crete"}
 
@@ -82,11 +83,17 @@ def is_crete_relevant(title: str, summary: str, source: str) -> bool:
 
 def slugify(text: str) -> str:
     text = text.lower().strip()
-    greek_map = str.maketrans(
-        "αβγδεζηθικλμνξοπρστυφχψωάέήίόύώΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΆΈΉΊΌΎΏ",
-        "abgdezithiklmnxoprstyfxpoadaaaa aabgdezithiklmnxoprstyfxpoaadaaaa"
-    )
-    text = text.translate(greek_map)
+    # Simple approach: strip Greek chars via regex after transliterating common ones
+    replacements = {
+        "α": "a", "β": "b", "γ": "g", "δ": "d", "ε": "e", "ζ": "z", "η": "i",
+        "θ": "th", "ι": "i", "κ": "k", "λ": "l", "μ": "m", "ν": "n", "ξ": "x",
+        "ο": "o", "π": "p", "ρ": "r", "σ": "s", "ς": "s", "τ": "t", "υ": "y",
+        "φ": "f", "χ": "ch", "ψ": "ps", "ω": "o",
+        "ά": "a", "έ": "e", "ή": "i", "ί": "i", "ό": "o", "ύ": "y", "ώ": "o",
+    }
+    for gr, lat in replacements.items():
+        text = text.replace(gr, lat)
+        text = text.replace(gr.upper(), lat)
     text = re.sub(r"[^\w\s-]", "", text)
     text = re.sub(r"[\s_-]+", "-", text)
     text = re.sub(r"^-+|-+$", "", text)
@@ -108,12 +115,12 @@ def strip_html(text: str) -> str:
     return re.sub(r"<[^>]+>", "", text or "").strip()
 
 
-def get_existing_urls(supabase, source: str) -> set:
+def get_existing_urls(supabase, source_name: str) -> set:
     try:
-        result = supabase.table("news").select("source_url").eq("source", source).execute()
+        result = supabase.table("news").select("source_url").eq("source_name", source_name).execute()
         return {row["source_url"] for row in (result.data or [])}
     except Exception as e:
-        print(f"[news] WARNING: could not fetch existing URLs for {source}: {e}")
+        print(f"[news] WARNING: could not fetch existing URLs for {source_name}: {e}")
         return set()
 
 
@@ -139,7 +146,7 @@ def process_feed(supabase, feed_config: dict) -> tuple[int, int]:
         print(f"[news] {source}: no entries found")
         return 0, 0
 
-    existing_urls = get_existing_urls(supabase, source)
+    existing_urls = get_existing_urls(supabase, source_name)
 
     for entry in feed.entries:
         link = getattr(entry, "link", None) or getattr(entry, "id", None)
@@ -166,7 +173,6 @@ def process_feed(supabase, feed_config: dict) -> tuple[int, int]:
         # Pre-fill fields based on source language
         ts = datetime.now(timezone.utc).isoformat()
         base = {
-            "source": source,
             "source_name": source_name,
             "source_url": link,
             "slug": slug,
