@@ -1,4 +1,4 @@
-import type { Beach, Event, NewsItem, Locale } from "./types";
+import type { Beach, Event, NewsItem, FoodPlace, Locale } from "./types";
 import { getLocalizedField } from "./types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
@@ -86,6 +86,52 @@ export function eventSchema(event: Event, locale: Locale): Record<string, unknow
       "@type": "GeoCoordinates",
       latitude: event.latitude,
       longitude: event.longitude,
+    };
+  }
+
+  return schema;
+}
+
+export function restaurantSchema(place: FoodPlace, locale: Locale): Record<string, unknown> {
+  const description = getLocalizedField(place, "description", locale);
+
+  const priceRangeMap: Record<string, string> = {
+    budget: "$",
+    mid: "$$",
+    upscale: "$$$",
+  };
+
+  const schema: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Restaurant",
+    name: place.name,
+    description: description?.substring(0, 300) || undefined,
+    url: `${BASE_URL}/${locale}/food/${place.slug}`,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: place.address || undefined,
+      addressRegion: place.region,
+      addressCountry: "GR",
+    },
+    servesCuisine: place.cuisine || undefined,
+    priceRange: place.price_range ? priceRangeMap[place.price_range] : undefined,
+    image: place.image_url || undefined,
+  };
+
+  if (place.latitude && place.longitude) {
+    schema.geo = {
+      "@type": "GeoCoordinates",
+      latitude: place.latitude,
+      longitude: place.longitude,
+    };
+  }
+
+  if (place.rating) {
+    schema.aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: place.rating,
+      reviewCount: place.review_count || undefined,
+      bestRating: 5,
     };
   }
 

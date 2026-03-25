@@ -1,6 +1,10 @@
 import type { MetadataRoute } from "next";
 import { getAllBeaches } from "@/lib/beaches";
 import { getAllVillages } from "@/lib/villages";
+import { getAllFoodPlaces } from "@/lib/food";
+import { getAllHikes } from "@/lib/hikes";
+import { getLatestNews } from "@/lib/news";
+import { getUpcomingEvents } from "@/lib/events";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 const LOCALES = ["en", "fr", "de", "el"] as const;
@@ -63,6 +67,74 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   } catch {
     // Supabase unreachable at build time — skip dynamic village URLs
+  }
+
+  // Dynamic food pages
+  try {
+    const foodPlaces = await getAllFoodPlaces();
+    for (const place of foodPlaces) {
+      for (const locale of LOCALES) {
+        entries.push({
+          url: `${BASE_URL}/${locale}/food/${place.slug}`,
+          lastModified: new Date(),
+          changeFrequency: "monthly",
+          priority: 0.6,
+        });
+      }
+    }
+  } catch {
+    // Supabase unreachable at build time — skip dynamic food URLs
+  }
+
+  // Dynamic hike pages
+  try {
+    const hikes = await getAllHikes();
+    for (const hike of hikes) {
+      for (const locale of LOCALES) {
+        entries.push({
+          url: `${BASE_URL}/${locale}/hikes/${hike.slug}`,
+          lastModified: new Date(),
+          changeFrequency: "monthly",
+          priority: 0.6,
+        });
+      }
+    }
+  } catch {
+    // Supabase unreachable at build time — skip dynamic hike URLs
+  }
+
+  // Dynamic news pages (rewritten only)
+  try {
+    const newsItems = await getLatestNews(100, "en");
+    for (const item of newsItems) {
+      for (const locale of LOCALES) {
+        entries.push({
+          url: `${BASE_URL}/${locale}/news/${item.slug}`,
+          lastModified: new Date(item.published_at),
+          changeFrequency: "daily",
+          priority: 0.5,
+        });
+      }
+    }
+  } catch {
+    // Supabase unreachable at build time — skip dynamic news URLs
+  }
+
+  // Dynamic event pages
+  try {
+    const events = await getUpcomingEvents();
+    for (const event of events) {
+      for (const locale of LOCALES) {
+        entries.push({
+          url: `${BASE_URL}/${locale}/events/${event.slug}`,
+          lastModified: new Date(),
+          changeFrequency: "weekly",
+          priority: 0.7,
+        });
+      }
+    }
+  } catch {
+    // Supabase unreachable at build time — skip dynamic event URLs
   }
 
   return entries;
