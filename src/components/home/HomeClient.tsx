@@ -374,41 +374,42 @@ export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeC
             {/* Newsletter */}
             <NewsletterForm locale={locale} />
 
-            {/* Quick Links with photos */}
-            <div className="space-y-2.5">
+            {/* Explore Cards */}
+            <div className="grid grid-cols-2 gap-2.5">
               {[
-                { href: "/beaches", img: "https://images.pexels.com/photos/1078983/pexels-photo-1078983.jpeg?auto=compress&cs=tinysrgb&w=400", title: t("beachesCount"), desc: t("beachesDesc") },
-                { href: "/food", img: "https://images.pexels.com/photos/1267320/pexels-photo-1267320.jpeg?auto=compress&cs=tinysrgb&w=400", title: t("foodLabel"), desc: t("foodDesc") },
-                { href: "/villages", img: "https://images.pexels.com/photos/2096700/pexels-photo-2096700.jpeg?auto=compress&cs=tinysrgb&w=400", title: t("villagesCount"), desc: t("villagesDesc") },
-                { href: "/hikes", img: "https://images.pexels.com/photos/2108845/pexels-photo-2108845.jpeg?auto=compress&cs=tinysrgb&w=400", title: t("hikesCount"), desc: t("hikesDesc") },
-                { href: "/fire-alerts", img: null, icon: <Flame className="w-5 h-5 text-red-500" />, title: t("fireLabel"), desc: t("fireDesc") },
-                { href: "/articles", img: null, icon: <BookOpen className="w-5 h-5 text-aegean" />, title: t("guidesLabel"), desc: t("guidesDesc") },
-              ].map(({ href, img, icon, title, desc }) => (
+                { href: "/beaches", icon: <Waves className="w-6 h-6" />, title: t("beachesCount"), desc: t("beachesDesc"), bg: "from-aegean to-aegean-light", text: "text-white" },
+                { href: "/food", icon: <UtensilsCrossed className="w-6 h-6" />, title: t("foodLabel"), desc: t("foodDesc"), bg: "from-terra to-terra-light", text: "text-white" },
+                { href: "/villages", icon: <Mountain className="w-6 h-6" />, title: t("villagesCount"), desc: t("villagesDesc"), bg: "from-sand-warm to-sand", text: "text-text" },
+                { href: "/hikes", icon: <Footprints className="w-6 h-6" />, title: t("hikesCount"), desc: t("hikesDesc"), bg: "from-olive to-olive-light", text: "text-white" },
+              ].map(({ href, icon, title, desc, bg, text }) => (
                 <Link
                   key={href}
                   href={href}
-                  className="relative overflow-hidden rounded-xl border border-border hover:shadow-md transition-all group card-hover"
+                  className={`rounded-xl bg-gradient-to-br ${bg} p-4 h-28 flex flex-col justify-between hover:shadow-lg transition-all group card-hover`}
                 >
-                  {img ? (
-                    <>
-                      <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${img})` }} />
-                      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
-                      <div className="relative p-4">
-                        <p className="text-sm font-bold text-white group-hover:text-white/90 transition-colors leading-snug">{title}</p>
-                        <p className="text-[11px] text-white/70 leading-snug mt-0.5">{desc}</p>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex items-center gap-3 p-3.5 bg-white">
-                      {icon && <div className="shrink-0">{icon}</div>}
-                      <div>
-                        <p className="text-sm font-bold text-text group-hover:text-aegean transition-colors leading-snug">{title}</p>
-                        <p className="text-[11px] text-text-muted leading-snug">{desc}</p>
-                      </div>
-                    </div>
-                  )}
+                  <div className={`${text} opacity-60`}>{icon}</div>
+                  <div>
+                    <p className={`text-sm font-bold ${text} leading-snug`}>{title}</p>
+                    <p className={`text-[10px] ${text} opacity-70 leading-snug mt-0.5`}>{desc}</p>
+                  </div>
                 </Link>
               ))}
+            </div>
+            <div className="grid grid-cols-2 gap-2.5">
+              <Link href="/fire-alerts" className="flex items-center gap-2.5 p-3 bg-red-50 rounded-xl border border-red-100 hover:shadow-md transition-all card-hover">
+                <Flame className="w-5 h-5 text-red-500 shrink-0" />
+                <div>
+                  <p className="text-xs font-bold text-red-700">{t("fireLabel")}</p>
+                  <p className="text-[10px] text-red-500">{t("fireDesc")}</p>
+                </div>
+              </Link>
+              <Link href="/articles" className="flex items-center gap-2.5 p-3 bg-aegean-faint rounded-xl border border-aegean/10 hover:shadow-md transition-all card-hover">
+                <BookOpen className="w-5 h-5 text-aegean shrink-0" />
+                <div>
+                  <p className="text-xs font-bold text-aegean">{t("guidesLabel")}</p>
+                  <p className="text-[10px] text-text-muted">{t("guidesDesc")}</p>
+                </div>
+              </Link>
             </div>
           </div>
         </div>
