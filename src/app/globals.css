@@ -210,6 +210,15 @@
   box-shadow: 0 8px 24px -4px rgba(27, 73, 101, 0.12);
 }
 
+/* Hide scrollbar for weather strip */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 /* Smooth transitions globally */
 a, button {
   transition-property: color, background-color, border-color, box-shadow, transform;

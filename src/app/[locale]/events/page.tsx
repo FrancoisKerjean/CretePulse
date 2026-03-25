@@ -1,5 +1,6 @@
 import { getUpcomingEvents, groupEventsByWeek } from "@/lib/events";
 import { getLocalizedField, type Locale } from "@/lib/types";
+import { localizeLocation } from "@/lib/localize-location";
 import { Calendar, MapPin, Clock } from "lucide-react";
 import Link from "next/link";
 
@@ -147,7 +148,7 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
                       <div className="flex flex-wrap gap-3 mt-2 text-xs text-text-muted">
                         <span className="inline-flex items-center gap-1">
                           <MapPin className="w-3 h-3" />
-                          {event.location_name}
+                          {localizeLocation(event.location_name, locale)}
                         </span>
                         {event.time_start && (
                           <span className="inline-flex items-center gap-1">
