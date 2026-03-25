@@ -1,9 +1,15 @@
 import type { ReactNode } from "react";
+import type { Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { Header } from "@/components/layout/Header";
 import "@/app/globals.css";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
@@ -50,7 +56,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       index: true,
       follow: true,
     },
-    viewport: "width=device-width, initial-scale=1",
   };
 }
 

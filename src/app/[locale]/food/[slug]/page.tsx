@@ -4,6 +4,8 @@ import { UtensilsCrossed, MapPin, Phone, Globe, ChevronLeft } from "lucide-react
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
+
 export async function generateMetadata({
   params,
 }: {
@@ -14,10 +16,21 @@ export async function generateMetadata({
   if (!place) return { title: "Place not found" };
 
   const desc = getLocalizedField(place, "description", locale as Locale);
+  const title = `${place.name}, Crete - Restaurant Guide | Crete Direct`;
+  const description = desc?.substring(0, 160) || `${place.name} - ${place.type} in ${place.region} Crete. ${place.cuisine ? `Cuisine: ${place.cuisine}.` : ""}`;
+  const url = `${BASE_URL}/${locale}/food/${slug}`;
 
   return {
-    title: `${place.name} - Crete Food`,
-    description: desc?.substring(0, 160) || `${place.name} in Crete, Greece`,
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: "website",
+      images: place.image_url ? [{ url: place.image_url, alt: place.name }] : [],
+    },
   };
 }
 

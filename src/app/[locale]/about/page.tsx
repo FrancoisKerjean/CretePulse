@@ -1,32 +1,38 @@
 import type { Locale } from "@/lib/types";
 import Link from "next/link";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const loc = locale as Locale;
 
-  const metadata = {
+  const metadata: Record<Locale, { title: string; description: string }> = {
     en: {
-      title: "About Crete Direct",
-      description: "A free, independent guide to Crete with live weather, events, fire alerts, and practical information.",
+      title: "About Crete Direct - Independent Crete Guide | Crete Direct",
+      description: "Crete Direct is a free, independent guide to Crete. Live weather, events, 500+ beaches, local news and fire alerts. No ads, no tracking, no affiliation.",
     },
     fr: {
-      title: "À propos de Crete Direct",
-      description: "Un guide gratuit et indépendant de la Crète avec météo en direct, événements, alertes incendies et informations pratiques.",
+      title: "À propos de Crete Direct - Guide Indépendant de la Crète | Crete Direct",
+      description: "Crete Direct est un guide gratuit et indépendant de la Crète. Météo en direct, événements, 500+ plages, actualités locales. Pas de pub, pas de tracking.",
     },
     de: {
-      title: "Über Crete Direct",
-      description: "Ein kostenloser, unabhängiger Führer durch Kreta mit Live-Wetter, Ereignissen, Feueralerts und praktischen Informationen.",
+      title: "Über Crete Direct - Unabhängiger Kreta-Guide | Crete Direct",
+      description: "Crete Direct ist ein kostenloser, unabhängiger Kreta-Guide. Live-Wetter, Events, 500+ Strände, lokale Nachrichten. Keine Werbung, kein Tracking.",
     },
     el: {
-      title: "Σχετικά με Crete Direct",
-      description: "Ένας δωρεάν, ανεξάρτητος οδηγός της Κρήτης με live καιρό, εκδηλώσεις, ειδοποιήσεις πυρκαγιών και πρακτικές πληροφορίες.",
+      title: "Σχετικά με Crete Direct - Ανεξάρτητος Οδηγός Κρήτης | Crete Direct",
+      description: "Το Crete Direct είναι ένας δωρεάν, ανεξάρτητος οδηγός της Κρήτης. Live καιρός, εκδηλώσεις, 500+ παραλίες, τοπικά νέα. Χωρίς διαφημίσεις.",
     },
   };
+
+  const url = `${BASE_URL}/${locale}/about`;
 
   return {
     title: metadata[loc].title,
     description: metadata[loc].description,
+    alternates: { canonical: url },
+    openGraph: { title: metadata[loc].title, description: metadata[loc].description, url, type: "website" },
   };
 }
 

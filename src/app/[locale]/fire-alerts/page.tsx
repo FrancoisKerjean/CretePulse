@@ -1,16 +1,24 @@
 import type { Locale } from "@/lib/types";
 import { Flame, AlertTriangle, Phone, Shield } from "lucide-react";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const metaData: Record<string, { title: string; desc: string }> = {
-    en: { title: "Fire Risk & Safety in Crete", desc: "Fire safety information and emergency contacts" },
-    fr: { title: "Risque d'Incendie en Crète", desc: "Informations de sécurité incendie et contacts d'urgence" },
-    de: { title: "Brandrisiko auf Kreta", desc: "Informationen zur Brandsicherheit und Notfallkontakte" },
-    el: { title: "Κίνδυνος Πυρκαγιάς στην Κρήτη", desc: "Πληροφορίες ασφάλειας πυρκαγιάς και επαφές έκτακτης ανάγκης" },
+    en: { title: "Fire Risk & Safety in Crete - Live Alerts & Emergency Info | Crete Direct", desc: "Fire risk levels, EU Copernicus satellite data and emergency contacts for Crete. Know the risks during fire season (June-September) and safety tips for tourists." },
+    fr: { title: "Risque d'Incendie en Crète - Alertes Live & Sécurité | Crete Direct", desc: "Niveaux de risque d'incendie, données satellites Copernicus UE et contacts d'urgence pour la Crète. Saison des incendies juin-septembre." },
+    de: { title: "Brandrisiko auf Kreta - Live-Alerts & Notfallinformationen | Crete Direct", desc: "Brandrisikostufen, EU-Copernicus-Satellitendaten und Notfallkontakte für Kreta. Brandsaison Juni-September." },
+    el: { title: "Κίνδυνος Πυρκαγιάς στην Κρήτη - Live Ειδοποιήσεις | Crete Direct", desc: "Επίπεδα κινδύνου πυρκαγιάς, δορυφορικά δεδομένα Copernicus ΕΕ και επαφές έκτακτης ανάγκης. Εποχή πυρκαγιών Ιούνιος-Σεπτέμβριος." },
   };
   const m = metaData[locale] || metaData.en;
-  return { title: m.title, description: m.desc };
+  const url = `${BASE_URL}/${locale}/fire-alerts`;
+  return {
+    title: m.title,
+    description: m.desc,
+    alternates: { canonical: url },
+    openGraph: { title: m.title, description: m.desc, url, type: "website" },
+  };
 }
 
 const CONTENT: Record<Locale, {

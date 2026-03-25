@@ -3,6 +3,21 @@ import { getLocalizedField } from "./types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
+export function breadcrumbSchema(
+  items: Array<{ name: string; url: string }>
+): Record<string, unknown> {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  };
+}
+
 export function beachSchema(beach: Beach, locale: Locale): Record<string, unknown> {
   const name = getLocalizedField(beach, "name", locale);
   const description = getLocalizedField(beach, "description", locale);

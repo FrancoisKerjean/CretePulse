@@ -134,7 +134,7 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
                   <div className="shrink-0 w-20 h-16 rounded-lg overflow-hidden bg-stone">
                     <img
                       src={item.image_url}
-                      alt=""
+                      alt={getLocalizedField(item, "title", loc) || ""}
                       className="w-full h-full object-cover"
                       loading="lazy"
                     />

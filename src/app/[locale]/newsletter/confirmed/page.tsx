@@ -1,6 +1,14 @@
 import Link from "next/link";
 import { CheckCircle } from "lucide-react";
 
+export async function generateMetadata() {
+  return {
+    title: "Subscription Confirmed | Crete Direct",
+    description: "You are now subscribed to the Crete Direct weekly briefing.",
+    robots: { index: false, follow: false },
+  };
+}
+
 export default async function NewsletterConfirmedPage({
   params,
 }: {

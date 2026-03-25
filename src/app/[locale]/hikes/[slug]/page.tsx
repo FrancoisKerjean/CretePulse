@@ -5,6 +5,8 @@ import { Footprints, Mountain, Droplets, MapPin, ChevronLeft, Download } from "l
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
+
 const DIFFICULTY_STYLES: Record<Hike["difficulty"], { label: string; classes: string }> = {
   easy: { label: "Easy", classes: "bg-green-100 text-green-700" },
   moderate: { label: "Moderate", classes: "bg-amber-100 text-amber-700" },
@@ -23,10 +25,21 @@ export async function generateMetadata({
 
   const name = getLocalizedField(hike, "name", locale as Locale);
   const desc = getLocalizedField(hike, "description", locale as Locale);
+  const title = `${name} - Crete Hiking Trail | Crete Direct`;
+  const description = desc?.substring(0, 160) || `${name} hiking trail in Crete. ${hike.distance_km ? `${hike.distance_km} km,` : ""} ${hike.difficulty} difficulty.`;
+  const url = `${BASE_URL}/${locale}/hikes/${slug}`;
 
   return {
-    title: `${name} - Hiking in Crete`,
-    description: desc?.substring(0, 160) || `${name} hiking trail in Crete, Greece`,
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: "website",
+      images: hike.image_url ? [{ url: hike.image_url, alt: name }] : [],
+    },
   };
 }
 

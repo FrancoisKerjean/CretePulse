@@ -281,7 +281,7 @@ function RouteCard({ route, locale }: { route: BusRoute; locale: Locale }) {
 // Main page (client component — needed for search state)
 // ---------------------------------------------------------------------------
 
-export default function BusesPage() {
+export function BusesClient() {
   const params = useParams();
   const locale = (params?.locale as Locale) ?? "en";
 

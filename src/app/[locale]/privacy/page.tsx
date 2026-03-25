@@ -1,32 +1,39 @@
 import type { Locale } from "@/lib/types";
 import Link from "next/link";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const loc = locale as Locale;
 
-  const metadata = {
+  const metadata: Record<Locale, { title: string; description: string }> = {
     en: {
       title: "Privacy Policy - Crete Direct",
-      description: "Our GDPR-compliant privacy policy. We do not track you, sell your data, or use invasive cookies.",
+      description: "GDPR-compliant privacy policy for Crete Direct. We do not track you, sell your data, or use invasive cookies. Newsletter: double opt-in, EU data storage.",
     },
     fr: {
       title: "Politique de Confidentialité - Crete Direct",
-      description: "Notre politique de confidentialité conforme au RGPD. Nous ne vous suivons pas, ne vendons pas vos données et n'utilisons pas de cookies invasifs.",
+      description: "Politique de confidentialité conforme au RGPD pour Crete Direct. Pas de tracking, pas de vente de données, pas de cookies invasifs. Newsletter double opt-in.",
     },
     de: {
       title: "Datenschutzerklärung - Crete Direct",
-      description: "Unsere DSGVO-konforme Datenschutzerklärung. Wir verfolgen Sie nicht, verkaufen Ihre Daten nicht und verwenden keine invasiven Cookies.",
+      description: "DSGVO-konforme Datenschutzerklärung für Crete Direct. Kein Tracking, kein Datenverkauf, keine invasiven Cookies. Newsletter: Double-Opt-In, EU-Datenspeicherung.",
     },
     el: {
       title: "Πολιτική Ιδιωτικότητας - Crete Direct",
-      description: "Η πολιτική ιδιωτικότητας μας που συμμορφώνεται με το GDPR. Δεν σας παρακολουθούμε, δεν πουλάμε τα δεδομένα σας και δεν χρησιμοποιούμε επεμβατικά cookies.",
+      description: "Πολιτική ιδιωτικότητας GDPR για το Crete Direct. Δεν παρακολουθούμε, δεν πουλάμε δεδομένα, δεν χρησιμοποιούμε cookies. Newsletter: διπλή εξουσιοδότηση.",
     },
   };
+
+  const url = `${BASE_URL}/${locale}/privacy`;
 
   return {
     title: metadata[loc].title,
     description: metadata[loc].description,
+    alternates: { canonical: url },
+    openGraph: { title: metadata[loc].title, description: metadata[loc].description, url, type: "website" },
+    robots: { index: true, follow: true },
   };
 }
 
