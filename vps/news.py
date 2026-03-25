@@ -51,11 +51,8 @@ RSS_FEEDS = [
     {"source": "naftemporiki", "source_name": "Naftemporiki", "lang": "el",
      "url": "https://www.naftemporiki.gr/rss"},
 
-    # Reddit (verified working)
-    {"source": "reddit_crete", "source_name": "Reddit r/crete", "lang": "en",
-     "url": "https://www.reddit.com/r/crete/.rss"},
-    {"source": "reddit_greece", "source_name": "Reddit r/greece", "lang": "en",
-     "url": "https://www.reddit.com/r/greece/search/.rss?q=crete+OR+kreta+OR+kriti&sort=new&restrict_sr=on&t=week"},
+    # Reddit removed: posts are forum questions, not articles.
+    # Scrape fails (403), Haiku can't rewrite them, they block the writer queue.
 ]
 
 # Keywords to filter Crete-relevant articles from general Greek/English feeds
