@@ -374,26 +374,39 @@ export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeC
             {/* Newsletter */}
             <NewsletterForm locale={locale} />
 
-            {/* Quick Links */}
-            <div className="space-y-2">
+            {/* Quick Links with photos */}
+            <div className="space-y-2.5">
               {[
-                { href: "/beaches", icon: <Waves className="w-5 h-5 text-aegean" />, title: t("beachesCount"), desc: t("beachesDesc"), accent: "hover:border-aegean/30" },
-                { href: "/food", icon: <UtensilsCrossed className="w-5 h-5 text-terra" />, title: t("foodLabel"), desc: t("foodDesc"), accent: "hover:border-terra/30" },
-                { href: "/villages", icon: <Mountain className="w-5 h-5 text-sand-warm" />, title: t("villagesCount"), desc: t("villagesDesc"), accent: "hover:border-sand-warm/50" },
-                { href: "/hikes", icon: <Footprints className="w-5 h-5 text-olive" />, title: t("hikesCount"), desc: t("hikesDesc"), accent: "hover:border-olive/30" },
-                { href: "/fire-alerts", icon: <Flame className="w-5 h-5 text-red-500" />, title: t("fireLabel"), desc: t("fireDesc"), accent: "hover:border-red-400/30" },
-                { href: "/articles", icon: <BookOpen className="w-5 h-5 text-aegean" />, title: t("guidesLabel"), desc: t("guidesDesc"), accent: "hover:border-aegean/30" },
-              ].map(({ href, icon, title, desc, accent }) => (
+                { href: "/beaches", img: "https://images.pexels.com/photos/1078983/pexels-photo-1078983.jpeg?auto=compress&cs=tinysrgb&w=400", title: t("beachesCount"), desc: t("beachesDesc") },
+                { href: "/food", img: "https://images.pexels.com/photos/1267320/pexels-photo-1267320.jpeg?auto=compress&cs=tinysrgb&w=400", title: t("foodLabel"), desc: t("foodDesc") },
+                { href: "/villages", img: "https://images.pexels.com/photos/2096700/pexels-photo-2096700.jpeg?auto=compress&cs=tinysrgb&w=400", title: t("villagesCount"), desc: t("villagesDesc") },
+                { href: "/hikes", img: "https://images.pexels.com/photos/2108845/pexels-photo-2108845.jpeg?auto=compress&cs=tinysrgb&w=400", title: t("hikesCount"), desc: t("hikesDesc") },
+                { href: "/fire-alerts", img: null, icon: <Flame className="w-5 h-5 text-red-500" />, title: t("fireLabel"), desc: t("fireDesc") },
+                { href: "/articles", img: null, icon: <BookOpen className="w-5 h-5 text-aegean" />, title: t("guidesLabel"), desc: t("guidesDesc") },
+              ].map(({ href, img, icon, title, desc }) => (
                 <Link
                   key={href}
                   href={href}
-                  className={`flex items-center gap-3 p-3.5 bg-white rounded-xl border border-border ${accent} hover:shadow-md transition-all group card-hover`}
+                  className="relative overflow-hidden rounded-xl border border-border hover:shadow-md transition-all group card-hover"
                 >
-                  <div className="shrink-0">{icon}</div>
-                  <div>
-                    <p className="text-sm font-bold text-text group-hover:text-aegean transition-colors leading-snug">{title}</p>
-                    <p className="text-[11px] text-text-muted leading-snug">{desc}</p>
-                  </div>
+                  {img ? (
+                    <>
+                      <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${img})` }} />
+                      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
+                      <div className="relative p-4">
+                        <p className="text-sm font-bold text-white group-hover:text-white/90 transition-colors leading-snug">{title}</p>
+                        <p className="text-[11px] text-white/70 leading-snug mt-0.5">{desc}</p>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-3 p-3.5 bg-white">
+                      {icon && <div className="shrink-0">{icon}</div>}
+                      <div>
+                        <p className="text-sm font-bold text-text group-hover:text-aegean transition-colors leading-snug">{title}</p>
+                        <p className="text-[11px] text-text-muted leading-snug">{desc}</p>
+                      </div>
+                    </div>
+                  )}
                 </Link>
               ))}
             </div>
