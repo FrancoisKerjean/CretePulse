@@ -219,6 +219,12 @@
   display: none;
 }
 
+/* Marquee animation */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-100% - var(--gap))); }
+}
+
 /* Smooth transitions globally */
 a, button {
   transition-property: color, background-color, border-color, box-shadow, transform;
