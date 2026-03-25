@@ -130,7 +130,7 @@ Return ONLY JSON:
         sb.table("news").update({"rewritten": True}).eq("id", article["id"]).execute()
         continue
 
-    update = {"rewritten": True}
+    update = {"rewritten": True, "published_at": datetime.now(timezone.utc).isoformat()}
     for key in ["title_en", "title_fr", "title_de", "summary_en", "summary_fr", "summary_de", "category"]:
         if parsed.get(key):
             update[key] = parsed[key]
