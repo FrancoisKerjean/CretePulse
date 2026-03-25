@@ -164,10 +164,10 @@ export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeC
             </span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight" style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}>
-            What&apos;s happening in Crete
+            {t("hero")}
           </h1>
           <p className="mt-3 text-white/65 text-base max-w-xl">
-            Live news, weather, events and local guides across the island.
+            {t("subtitle")}
           </p>
         </div>
       </div>
