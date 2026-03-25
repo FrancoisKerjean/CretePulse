@@ -172,6 +172,7 @@ export default async function FoodPage({
           />
           {REGIONS.map((r) => {
             const regionCount = places.filter((p) => p.region === r).length;
+            if (regionCount === 0) return null;
             const href = `/${locale}/food?region=${r}${typeParam ? `&type=${typeParam}` : ""}`;
             return (
               <RegionTab
@@ -352,10 +353,13 @@ function FoodCard({
             </span>
           </span>
           {place.cuisine && (
-            <>
-              <span aria-hidden>·</span>
-              <span>{place.cuisine}</span>
-            </>
+            <span className="flex flex-wrap gap-1">
+              {place.cuisine.split(";").filter(Boolean).slice(0, 3).map((c: string) => (
+                <span key={c} className="px-1.5 py-0.5 bg-stone rounded text-[10px] capitalize">
+                  {c.trim().replace(/_/g, " ")}
+                </span>
+              ))}
+            </span>
           )}
           {place.price_range && (
             <>
