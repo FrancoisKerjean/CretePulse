@@ -22,57 +22,39 @@ SUPABASE_SERVICE_KEY = os.environ["SUPABASE_SERVICE_KEY"]
 
 # lang: "el" = Greek source (needs translation), "en" = English source (pre-filled)
 RSS_FEEDS = [
-    # Greek press (high volume, local detail)
-    {"source": "patris",       "source_name": "Patris",         "lang": "el", "url": "https://www.patris.gr/feed/"},
-    {"source": "neakriti",     "source_name": "Nea Kriti",      "lang": "el", "url": "https://www.neakriti.gr/feed/"},
-    {"source": "cretapost",    "source_name": "Cretapost",      "lang": "el", "url": "https://www.cretapost.gr/feed/"},
+    # Greek press (verified working 2026-03-25)
     {"source": "haniotika",    "source_name": "Haniotika Nea",  "lang": "el", "url": "https://www.haniotika-nea.gr/feed/"},
     {"source": "flashnews",    "source_name": "Flashnews",      "lang": "el", "url": "https://flashnews.gr/feed"},
-    {"source": "cretatv",      "source_name": "Creta TV",       "lang": "el", "url": "https://www.cretatv.gr/feed/"},
     {"source": "cretanmagazine", "source_name": "Cretan Magazine", "lang": "el", "url": "https://www.cretanmagazine.gr/feed/"},
 
-    # English press (no translation needed for EN, still needs FR/DE)
+    # English press (verified working)
     {"source": "ekathimerini", "source_name": "eKathimerini",   "lang": "en", "url": "https://www.ekathimerini.com/rss/news"},
     {"source": "greekreporter", "source_name": "Greek Reporter", "lang": "en", "url": "https://greekreporter.com/feed/"},
     {"source": "tornosnews",   "source_name": "Tornos News",    "lang": "en", "url": "https://www.tornosnews.gr/feed"},
     {"source": "keeptalkinggreece", "source_name": "Keep Talking Greece", "lang": "en", "url": "https://www.keeptalkinggreece.com/feed/"},
+    {"source": "gtp", "source_name": "GTP Headlines", "lang": "en", "url": "https://news.gtp.gr/feed/"},
 
-    # Google News - Crete specific (Greek)
+    # Google News - Crete in 4 languages (verified working)
     {"source": "google_crete_el", "source_name": "Google News", "lang": "el",
      "url": "https://news.google.com/rss/search?q=%CE%9A%CF%81%CE%AE%CF%84%CE%B7+when:1d&hl=el&gl=GR&ceid=GR:el"},
-    # Google News - Crete (English)
     {"source": "google_crete_en", "source_name": "Google News", "lang": "en",
      "url": "https://news.google.com/rss/search?q=Crete+Greece+when:1d&hl=en&gl=GR&ceid=GR:en"},
-
-    # Google News - Crete tourism (English)
     {"source": "google_crete_tourism", "source_name": "Google News", "lang": "en",
      "url": "https://news.google.com/rss/search?q=Crete+tourism+travel+when:2d&hl=en&gl=GR&ceid=GR:en"},
-
-    # Google News - Crete (French)
     {"source": "google_crete_fr", "source_name": "Google News", "lang": "fr",
      "url": "https://news.google.com/rss/search?q=Cr%C3%A8te+Gr%C3%A8ce+when:2d&hl=fr&gl=FR&ceid=FR:fr"},
-
-    # Google News - Crete (German)
     {"source": "google_crete_de", "source_name": "Google News", "lang": "de",
      "url": "https://news.google.com/rss/search?q=Kreta+Griechenland+when:2d&hl=de&gl=DE&ceid=DE:de"},
 
-    # Reddit - r/crete and r/greece (English)
+    # Greek financial press (verified working, needs Crete keyword filter)
+    {"source": "naftemporiki", "source_name": "Naftemporiki", "lang": "el",
+     "url": "https://www.naftemporiki.gr/rss"},
+
+    # Reddit (verified working)
     {"source": "reddit_crete", "source_name": "Reddit r/crete", "lang": "en",
      "url": "https://www.reddit.com/r/crete/.rss"},
     {"source": "reddit_greece", "source_name": "Reddit r/greece", "lang": "en",
      "url": "https://www.reddit.com/r/greece/search/.rss?q=crete+OR+kreta+OR+kriti&sort=new&restrict_sr=on&t=week"},
-
-    # Travel blogs & tourism press
-    {"source": "gtp", "source_name": "GTP Headlines", "lang": "en",
-     "url": "https://news.gtp.gr/feed/"},
-    {"source": "traveldailynews", "source_name": "Travel Daily News", "lang": "en",
-     "url": "https://www.traveldailynews.com/feed/"},
-    {"source": "ttgmedia", "source_name": "Travel Trade Gazette", "lang": "en",
-     "url": "https://www.ttgmedia.com/rss"},
-
-    # French travel press
-    {"source": "voyagevoyage", "source_name": "Le Petit Journal Grece", "lang": "fr",
-     "url": "https://lepetitjournal.com/athenes/feed"},
 ]
 
 # Keywords to filter Crete-relevant articles from general Greek/English feeds
