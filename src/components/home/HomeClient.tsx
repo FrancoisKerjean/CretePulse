@@ -236,7 +236,24 @@ export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeC
                           <p className="text-sm font-medium text-text group-hover:text-aegean transition-colors leading-snug line-clamp-2">
                             {getLocalizedField(item, "title", loc)}
                           </p>
-                          <p className="text-xs text-text-light mt-0.5">{item.source_name}</p>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="text-xs text-text-light">{item.source_name}</span>
+                            {item.category && (
+                              <span className={`text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${
+                                item.category === "politics" ? "bg-aegean/10 text-aegean" :
+                                item.category === "tourism" ? "bg-terra/10 text-terra" :
+                                item.category === "culture" ? "bg-sand text-text-muted" :
+                                item.category === "environment" ? "bg-olive/10 text-olive" :
+                                item.category === "economy" ? "bg-stone text-text-muted" :
+                                item.category === "sports" ? "bg-aegean/10 text-aegean" :
+                                item.category === "weather" ? "bg-aegean/10 text-aegean" :
+                                item.category === "local" ? "bg-olive/10 text-olive" :
+                                "bg-stone text-text-muted"
+                              }`}>
+                                {item.category}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </Link>
                     </BlurFade>
