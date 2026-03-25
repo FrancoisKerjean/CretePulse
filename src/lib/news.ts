@@ -23,8 +23,8 @@ export async function getLatestNews(limit = 20, locale = "en"): Promise<NewsItem
   const filtered = items.filter((item) => {
     const title = (item[titleField] as string) || "";
     if (!title) return false;
-    // On non-Greek pages, skip articles with Greek-only titles
-    if (locale !== "el" && hasGreek(title) && !/[a-zA-ZàâéèêëïîôùûüÿçæœÀÂÉÈ]/.test(title)) {
+    // On non-Greek pages, skip any article whose title contains Greek characters
+    if (locale !== "el" && hasGreek(title)) {
       return false;
     }
     return true;
