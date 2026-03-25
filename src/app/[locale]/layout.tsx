@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { Header } from "@/components/layout/Header";
+import { playfair } from "@/app/layout";
 import "@/app/globals.css";
 
 export const viewport: Viewport = {
@@ -70,7 +71,7 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale}>
+    <html lang={locale} className={playfair.variable}>
       <body className="bg-surface text-text font-sans antialiased">
         <NextIntlClientProvider messages={messages}>
           <Header />

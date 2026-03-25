@@ -2,6 +2,7 @@
 
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const LOCALES = [
   { code: "en", label: "EN" },
@@ -24,26 +25,45 @@ export function Header() {
   const locale = (params?.locale as string) || "en";
   const pathname = usePathname();
   const router = useRouter();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
-    <nav className="sticky top-0 z-50 bg-surface/90 backdrop-blur-md border-b border-border">
-      <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-1.5">
-          <span className="text-lg font-bold tracking-tight text-aegean">CRETE</span>
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-terra opacity-60" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-terra" />
+    <nav
+      className={`sticky top-0 z-50 bg-surface/95 backdrop-blur-md transition-shadow duration-300 ${
+        scrolled ? "shadow-[0_2px_20px_rgba(27,73,101,0.10)]" : "border-b border-border"
+      }`}
+    >
+      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 group">
+          <span className="text-xl font-extrabold tracking-tight text-aegean group-hover:text-aegean-light transition-colors">
+            CRETE
           </span>
-          <span className="text-lg font-bold tracking-tight text-terra">DIRECT</span>
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-terra opacity-50" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-terra" />
+          </span>
+          <span className="text-xl font-extrabold tracking-tight text-terra group-hover:text-terra-light transition-colors">
+            DIRECT
+          </span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-6 text-sm font-medium text-text-muted">
+        {/* Nav */}
+        <div className="hidden md:flex items-center gap-7 text-[13px] font-semibold text-text-muted">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`hover:text-aegean transition-colors ${
-                pathname?.startsWith(link.href) ? "text-aegean" : ""
+              className={`hover:text-aegean transition-colors relative pb-0.5 ${
+                pathname?.startsWith(link.href)
+                  ? "text-aegean after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-terra after:rounded-full"
+                  : ""
               }`}
             >
               {link.label[locale as keyof typeof link.label] || link.label.en}
@@ -51,15 +71,16 @@ export function Header() {
           ))}
         </div>
 
-        <div className="flex items-center gap-1 text-xs font-medium">
+        {/* Locale switcher */}
+        <div className="flex items-center gap-1 text-xs font-semibold">
           {LOCALES.map((l) => (
             <button
               key={l.code}
               onClick={() => router.replace(pathname, { locale: l.code })}
-              className={`px-2 py-1 rounded-md transition-colors ${
+              className={`px-2.5 py-1.5 rounded-lg transition-all ${
                 locale === l.code
-                  ? "bg-aegean text-white"
-                  : "text-text-muted hover:bg-stone-warm"
+                  ? "bg-aegean text-white shadow-sm"
+                  : "text-text-muted hover:bg-stone-warm hover:text-text"
               }`}
             >
               {l.label}
