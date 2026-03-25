@@ -342,6 +342,17 @@ function FoodCard({
           </span>
         </div>
 
+        {/* Rating */}
+        {place.rating && (
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm font-bold text-amber-500">{place.rating}</span>
+            <span className="text-amber-400">{"★".repeat(Math.round(place.rating))}</span>
+            {place.review_count && (
+              <span className="text-[11px] text-text-light">({place.review_count.toLocaleString()})</span>
+            )}
+          </div>
+        )}
+
         {/* Region + cuisine */}
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-text-muted">
           <span className="flex items-center gap-1">
