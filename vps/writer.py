@@ -1,6 +1,6 @@
 #!/opt/cretepulse/venv/bin/python3
-"""CretePulse AI Writer - rewrites news articles using Claude Code CLI.
-Picks one unprocessed article, rewrites in EN/FR/DE, updates Supabase.
+"""Crete Direct AI Writer - rewrites news using Claude Code CLI.
+Only processes Crete-related articles. Uses title + summary for context.
 Cron: */30 * * * *
 """
 import json, os, subprocess, sys
@@ -30,75 +30,79 @@ if not article:
     sys.exit(0)
 
 title = article.get("title_el") or article.get("title_en") or article.get("slug")
+summary_el = article.get("summary_el") or ""
 source = article.get("source_name") or "unknown"
+source_url = article.get("source_url") or ""
 print(f"[writer] processing: {article['slug']} (source: {source})")
 
-# Build prompt
-prompt = f"""You are a news writer for Crete Direct, a local Crete media site.
+# Build prompt with title AND summary for better context
+prompt = f"""You are a local journalist for Crete Direct (crete.direct), an independent Crete news site.
 
-Rewrite this news headline into a short article (2-3 paragraphs, under 250 words per language) in English, French, and German.
+Rewrite this Greek news article for our readers. Use the title AND the excerpt below.
 
-Original headline: {title}
+Original title: {title}
+Original excerpt: {summary_el[:500]}
 Source: {source}
 
-Rules:
-- Factual, direct, no fluff
-- Write as a local Crete journalist
-- You can expand on the headline with general context (this is news rewriting, not fabrication)
-- French must have proper accents
-- German must be correct
-- No em dashes
-- If the headline is in Greek, translate it first then write the article
+CRITICAL RULES:
+- ONLY write about what the title and excerpt actually say. Do NOT invent details, context, or quotes.
+- If the excerpt is empty, write a very short 2-sentence summary based on the title only.
+- Write 2-3 short paragraphs per language (150-200 words max).
+- Structure each language version with line breaks between paragraphs.
+- English: clear, factual, newspaper style.
+- French: proper accents (e, e, a, c, etc.), style journal local.
+- German: korrekt, Nachrichtenstil.
+- No em dashes. No editorializing. No "experts say" unless the source says it.
+- If the article is not related to Crete at all, still write it but keep it very brief (2 sentences).
 
-Return ONLY valid JSON with these exact keys, no other text:
-{{"title_en":"...","title_fr":"...","title_de":"...","summary_en":"...","summary_fr":"...","summary_de":"..."}}"""
+Return ONLY this JSON, nothing else:
+{{"title_en":"English headline","title_fr":"Titre francais avec accents","title_de":"Deutsche Uberschrift","summary_en":"<p>Paragraph 1</p><p>Paragraph 2</p>","summary_fr":"<p>Paragraphe 1</p><p>Paragraphe 2</p>","summary_de":"<p>Absatz 1</p><p>Absatz 2</p>"}}"""
 
 # Call Claude Code CLI
 try:
     result = subprocess.run(
         ["claude", "-p", prompt, "--model", "haiku"],
-        capture_output=True, text=True, timeout=60
+        capture_output=True, text=True, timeout=90
     )
     output = result.stdout.strip()
 except subprocess.TimeoutExpired:
     print("[writer] ERROR: Claude timed out")
+    sb.table("news").update({"rewritten": True}).eq("id", article["id"]).execute()
     sys.exit(1)
 except Exception as e:
     print(f"[writer] ERROR: {e}")
     sys.exit(1)
 
-# Extract JSON from output (Claude might add markdown fences)
+# Extract JSON from output
 if "```" in output:
-    output = output.split("```")[1]
+    parts = output.split("```")
+    for part in parts:
+        if "{" in part:
+            output = part
+            break
     if output.startswith("json"):
         output = output[4:]
     output = output.strip()
 
-# Find the JSON object in the output
 start = output.find("{")
 end = output.rfind("}") + 1
 if start == -1 or end == 0:
-    print(f"[writer] SKIP: Claude refused, marking as done: {output[:100]}")
+    print(f"[writer] SKIP: no JSON, marking done: {output[:80]}")
     sb.table("news").update({"rewritten": True}).eq("id", article["id"]).execute()
     sys.exit(0)
 
 try:
     parsed = json.loads(output[start:end])
 except json.JSONDecodeError as e:
-    print(f"[writer] ERROR: invalid JSON: {e}")
-    print(f"[writer] raw output: {output[:300]}")
-    sys.exit(1)
+    print(f"[writer] SKIP: bad JSON: {e}")
+    sb.table("news").update({"rewritten": True}).eq("id", article["id"]).execute()
+    sys.exit(0)
 
 # Update Supabase
-update = {}
+update = {"rewritten": True}
 for key in ["title_en", "title_fr", "title_de", "summary_en", "summary_fr", "summary_de"]:
     if parsed.get(key):
         update[key] = parsed[key]
 
-if not update:
-    print("[writer] ERROR: no valid fields in parsed output")
-    sys.exit(1)
-
-sb.table("news").update({**update, "rewritten": True}).eq("id", article["id"]).execute()
-print(f"[writer] updated article {article['slug']} with {len(update)} fields")
-print(f"[writer] done")
+sb.table("news").update(update).eq("id", article["id"]).execute()
+print(f"[writer] updated {article['slug']} ({len(update)-1} fields)")

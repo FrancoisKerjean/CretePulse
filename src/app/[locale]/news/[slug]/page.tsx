@@ -135,11 +135,12 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
             </div>
           )}
 
-          {/* Summary */}
+          {/* Article body */}
           {summary && (
-            <div className="mt-6 prose prose-sm max-w-none text-text leading-relaxed">
-              <p className="text-base text-text leading-relaxed">{summary}</p>
-            </div>
+            <article
+              className="mt-8 text-base text-text leading-relaxed space-y-4 [&>p]:mb-4 [&>p:first-child]:text-lg [&>p:first-child]:font-medium [&>p:first-child]:text-text [&>h2]:text-xl [&>h2]:font-bold [&>h2]:mt-8 [&>h2]:mb-3 [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:space-y-1"
+              dangerouslySetInnerHTML={{ __html: summary }}
+            />
           )}
 
           {/* CTA - read original */}
