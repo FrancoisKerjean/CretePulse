@@ -20,8 +20,9 @@ sb = create_client(SUPABASE_URL, SUPABASE_KEY)
 now = datetime.now(timezone.utc)
 today = now.strftime("%Y-%m-%d")
 
-# Only run 1 in 5 invocations
-if (now.minute // 5) % 5 != 0:
+# Run every 6 hours (0, 6, 12, 18) to produce ~4 articles/day
+# Only fire at :00 of those hours
+if now.hour not in (6, 10, 14, 18) or now.minute >= 5:
     sys.exit(0)
 
 print(f"[editorial] {now.isoformat()} - generating editorial article")
@@ -92,9 +93,9 @@ TOPICS = [
 topic_idx = (int(today.replace("-", "")) + now.hour) % len(TOPICS)
 topic = TOPICS[topic_idx]
 
-slug = f"{topic['slug_prefix']}-{today}"
+slug = f"{topic['slug_prefix']}-{today}-{now.hour:02d}"
 
-# Check if already generated today
+# Check if already generated this slot
 existing = sb.table("news").select("id").eq("slug", slug).execute()
 if existing.data:
     print(f"[editorial] already generated {slug}")
