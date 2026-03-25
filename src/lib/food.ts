@@ -5,9 +5,33 @@ export async function getAllFoodPlaces(): Promise<FoodPlace[]> {
   const { data, error } = await supabase
     .from("food_places")
     .select("*")
-    .order("name");
+    .not("cuisine", "is", null)
+    .neq("cuisine", "")
+    .order("name")
+    .limit(100);
 
   if (error) throw error;
+  return (data as FoodPlace[]) || [];
+}
+
+export async function getFoodByRegionAndType(
+  region?: string,
+  type?: string,
+  limit = 30
+): Promise<FoodPlace[]> {
+  let query = supabase
+    .from("food_places")
+    .select("*")
+    .not("cuisine", "is", null)
+    .neq("cuisine", "")
+    .order("name")
+    .limit(limit);
+
+  if (region) query = query.eq("region", region);
+  if (type) query = query.eq("type", type);
+
+  const { data, error } = await query;
+  if (error) return [];
   return (data as FoodPlace[]) || [];
 }
 
