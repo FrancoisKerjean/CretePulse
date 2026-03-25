@@ -16,8 +16,21 @@ sb = create_client(SUPABASE_URL, SUPABASE_KEY)
 now = datetime.now(timezone.utc)
 print(f"[writer] {now.isoformat()} - looking for article")
 
-data = sb.table("news").select("id,slug,title_el,title_en,summary_el,source_url,source_name").eq("rewritten", False).order("published_at", desc=True).limit(1).execute()
-article = (data.data or [None])[0]
+# Skip Reddit posts (not real articles, scrape fails)
+SKIP_SOURCES = {"Reddit r/crete", "Reddit r/greece"}
+
+data = sb.table("news").select("id,slug,title_el,title_en,summary_el,source_url,source_name").eq("rewritten", False).order("published_at", desc=True).limit(50).execute()
+articles = data.data or []
+
+# Filter out Reddit and pick first real article
+article = None
+for a in articles:
+    if a.get("source_name") in SKIP_SOURCES:
+        # Mark Reddit posts as rewritten so they don't block the queue
+        sb.table("news").update({"rewritten": True}).eq("id", a["id"]).execute()
+        continue
+    article = a
+    break
 
 if not article:
     print("[writer] no unprocessed articles"); sys.exit(0)
@@ -58,23 +71,22 @@ if summary_el:
 if scraped_text:
     context += f"\nFull article text: {scraped_text}"
 
-prompt = f"""You are a senior journalist for Crete Direct (crete.direct).
+prompt = f"""You are a news writer for Crete Direct (crete.direct), a local Crete news site.
 
-Rewrite this article based on the source material below. Write a SUBSTANTIAL article, not a 2-sentence summary.
+Translate and rewrite this news item. If you have little source material, write a SHORT article (2-3 paragraphs). If you have more material, write longer (4-5 paragraphs).
 
-Source material:
+Source:
 {context}
 
-Source: {source}
+From: {source}
 
 RULES:
-- Write 4-6 paragraphs (300-500 words per language). This must be a REAL article, not a paraphrase.
-- Add context: why this matters for Crete, who is affected, what happens next.
-- If the source is about an event, include practical details (when, where, cost, how to get there).
-- If it's about weather, include specific locations and advice.
-- If it's about politics/economy, explain the local impact.
-- Structure with HTML: <h2> for one subheading, <p> for paragraphs, <strong> for key facts.
-- French: ALL accents mandatory. Sentence case for titles (not Title Case).
+- ALWAYS produce output, even with minimal source material. A short news brief is fine.
+- Translate the title and write a short article in EN, FR, and DE.
+- If the source is in Greek, translate it. If in English, adapt it.
+- HTML format: <p> paragraphs, <strong> for key facts.
+- French: all accents mandatory.
+- German: korrekt, Nachrichtenstil.
 - German: korrekt, Nachrichtenstil.
 - No em dashes. No invented quotes. No "experts say" unless the source says it.
 - If you don't have enough info for a full article, say so honestly in a note at the end.
