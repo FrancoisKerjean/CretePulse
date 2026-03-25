@@ -1,24 +1,40 @@
 import { supabase } from "./supabase";
 import type { NewsItem } from "./types";
 
-export async function getLatestNews(limit = 20): Promise<NewsItem[]> {
-  // Fetch more than needed so we can deduplicate before returning `limit` items
+// Greek Unicode range check
+function hasGreek(text: string): boolean {
+  return /[\u0370-\u03FF\u1F00-\u1FFF]/.test(text);
+}
+
+export async function getLatestNews(limit = 20, locale = "en"): Promise<NewsItem[]> {
   const { data, error } = await supabase
     .from("news")
     .select("*")
     .eq("rewritten", true)
     .order("published_at", { ascending: false })
-    .limit(limit * 3);
+    .limit(limit * 4);
 
   if (error) throw error;
   const items = (data as NewsItem[]) || [];
 
-  // Deduplicate: if two articles share the same first 30 chars of title_en (case-insensitive),
-  // keep only the most recent one (already first because of descending order).
+  // Filter: only show articles that have a proper title in the requested locale
+  // If title_fr is still in Greek, skip it on the FR page
+  const titleField = `title_${locale}` as keyof NewsItem;
+  const filtered = items.filter((item) => {
+    const title = (item[titleField] as string) || "";
+    if (!title) return false;
+    // On non-Greek pages, skip articles with Greek-only titles
+    if (locale !== "el" && hasGreek(title) && !/[a-zA-ZàâéèêëïîôùûüÿçæœÀÂÉÈ]/.test(title)) {
+      return false;
+    }
+    return true;
+  });
+
+  // Deduplicate by first 30 chars
   const seen = new Set<string>();
   const deduped: NewsItem[] = [];
-  for (const item of items) {
-    const key = (item.title_en || "").toLowerCase().slice(0, 30).trim();
+  for (const item of filtered) {
+    const key = ((item[titleField] as string) || "").toLowerCase().slice(0, 30).trim();
     if (!seen.has(key)) {
       seen.add(key);
       deduped.push(item);

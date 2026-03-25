@@ -70,7 +70,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   const [cities, latestNews, upcomingEvents] = await Promise.all([
     fetchAllCitiesWeather(),
-    getLatestNews(8).catch((): NewsItem[] => []),
+    getLatestNews(8, locale).catch((): NewsItem[] => []),
     getUpcomingEvents().then(e => e.slice(0, 5)).catch((): Event[] => []),
   ]);
 
