@@ -55,8 +55,10 @@ CRITICAL RULES:
 - No em dashes. No editorializing. No "experts say" unless the source says it.
 - If the article is not related to Crete at all, still write it but keep it very brief (2 sentences).
 
+Also assign ONE category from this list: politics, economy, tourism, culture, sports, weather, environment, transport, health, local
+
 Return ONLY this JSON, nothing else:
-{{"title_en":"English headline","title_fr":"Titre francais avec accents","title_de":"Deutsche Uberschrift","summary_en":"<p>Paragraph 1</p><p>Paragraph 2</p>","summary_fr":"<p>Paragraphe 1</p><p>Paragraphe 2</p>","summary_de":"<p>Absatz 1</p><p>Absatz 2</p>"}}"""
+{{"title_en":"English headline","title_fr":"Titre francais avec accents","title_de":"Deutsche Uberschrift","summary_en":"<p>Paragraph 1</p><p>Paragraph 2</p>","summary_fr":"<p>Paragraphe 1</p><p>Paragraphe 2</p>","summary_de":"<p>Absatz 1</p><p>Absatz 2</p>","category":"one_word_category"}}"""
 
 # Call Claude Code CLI
 try:
@@ -100,7 +102,7 @@ except json.JSONDecodeError as e:
 
 # Update Supabase
 update = {"rewritten": True}
-for key in ["title_en", "title_fr", "title_de", "summary_en", "summary_fr", "summary_de"]:
+for key in ["title_en", "title_fr", "title_de", "summary_en", "summary_fr", "summary_de", "category"]:
     if parsed.get(key):
         update[key] = parsed[key]
 
