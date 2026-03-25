@@ -3,17 +3,25 @@ import { getLocalizedField, type Locale } from "@/lib/types";
 import { Newspaper, ExternalLink, Clock } from "lucide-react";
 import Link from "next/link";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
+
 const META: Record<string, { title: string; desc: string }> = {
-  en: { title: "Crete News", desc: "Latest news from Crete, translated in 4 languages" },
-  fr: { title: "Actus Crète", desc: "Dernières nouvelles de Crète, traduites en 4 langues" },
-  de: { title: "Kreta Nachrichten", desc: "Aktuelle Nachrichten aus Kreta, in 4 Sprachen" },
-  el: { title: "Νέα Κρήτης", desc: "Τελευταία νέα από την Κρήτη, σε 4 γλώσσες" },
+  en: { title: "Crete News - Latest from the Greek Press | Crete Direct", desc: "Latest news from Crete translated from the Greek press. Politics, tourism, culture, environment and sports - updated every 3 hours in 4 languages." },
+  fr: { title: "Actus Crète - Dernières de la Presse Grecque | Crete Direct", desc: "Dernières nouvelles de Crète traduites de la presse grecque. Politique, tourisme, culture, environnement - mises à jour toutes les 3 heures." },
+  de: { title: "Kreta Nachrichten - Aus der Griechischen Presse | Crete Direct", desc: "Aktuelle Nachrichten aus Kreta übersetzt aus der griechischen Presse. Politik, Tourismus, Kultur - alle 3 Stunden aktualisiert." },
+  el: { title: "Νέα Κρήτης - Τελευταία από τον Ελληνικό Τύπο | Crete Direct", desc: "Τελευταία νέα από την Κρήτη από τον ελληνικό τύπο. Πολιτική, τουρισμός, πολιτισμός - ανανέωση κάθε 3 ώρες." },
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const m = META[locale] || META.en;
-  return { title: m.title, description: m.desc };
+  const url = `${BASE_URL}/${locale}/news`;
+  return {
+    title: m.title,
+    description: m.desc,
+    alternates: { canonical: url },
+    openGraph: { title: m.title, description: m.desc, url, type: "website" },
+  };
 }
 
 const CATEGORY_COLORS: Record<string, string> = {

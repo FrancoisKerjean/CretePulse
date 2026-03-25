@@ -1,9 +1,11 @@
 import { getBeachBySlug, getNearbyBeaches } from "@/lib/beaches";
 import { getLocalizedField, type Locale } from "@/lib/types";
-import { beachSchema } from "@/lib/schema";
+import { beachSchema, breadcrumbSchema } from "@/lib/schema";
 import { MapPin, Car, Waves, Fish, Sun, Wind, Baby, UtensilsCrossed, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 const BEACH_LABELS: Record<Locale, {
   allBeaches: string;
@@ -118,10 +120,21 @@ export async function generateMetadata({
 
   const name = getLocalizedField(beach, "name", locale as Locale);
   const desc = getLocalizedField(beach, "description", locale as Locale);
+  const title = `${name} Beach, Crete - Conditions & Info | Crete Direct`;
+  const description = desc?.substring(0, 160) || `${name} beach in Crete, Greece. Water type, parking, snorkeling, kids conditions and nearby beaches.`;
+  const url = `${BASE_URL}/${locale}/beaches/${slug}`;
 
   return {
-    title: `${name} - Crete Direct`,
-    description: desc?.substring(0, 160) || `${name} beach in Crete, Greece`,
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: "website",
+      images: beach.image_url ? [{ url: beach.image_url, alt: `${name} beach, Crete` }] : [],
+    },
   };
 }
 
@@ -142,12 +155,21 @@ export default async function BeachDetailPage({
   const description = getLocalizedField(beach, "description", loc);
 
   const jsonLd = beachSchema(beach, loc);
+  const breadcrumb = breadcrumbSchema([
+    { name: "Crete Direct", url: `${BASE_URL}/${locale}` },
+    { name: loc === "fr" ? "Plages" : loc === "de" ? "Strände" : loc === "el" ? "Παραλίες" : "Beaches", url: `${BASE_URL}/${locale}/beaches` },
+    { name, url: `${BASE_URL}/${locale}/beaches/${beach.slug}` },
+  ]);
 
   return (
     <main className="min-h-screen bg-surface">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
       {/* Hero image */}
       {beach.image_url && (

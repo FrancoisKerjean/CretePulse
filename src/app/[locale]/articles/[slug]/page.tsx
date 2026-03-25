@@ -8,6 +8,9 @@ import {
   getLocalizedArticleContent,
 } from "@/data/articles";
 import type { Locale } from "@/lib/types";
+import { breadcrumbSchema } from "@/lib/schema";
+
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 export async function generateStaticParams() {
   return articles.map((article) => ({ slug: article.slug }));
@@ -22,13 +25,29 @@ export async function generateMetadata({
   const article = getArticleBySlug(slug);
   if (!article) return { title: "Article not found" };
 
-  const title = getLocalizedArticleTitle(article, locale);
+  const articleTitle = getLocalizedArticleTitle(article, locale);
+  const title = `${articleTitle} - Crete Travel Guide | Crete Direct`;
+  // Build a useful description from the category context
+  const categoryDesc: Record<string, Record<string, string>> = {
+    beaches: { en: "Complete guide to beaches in Crete.", fr: "Guide complet des plages en Crète.", de: "Vollständiger Strandführer für Kreta.", el: "Πλήρης οδηγός παραλιών στην Κρήτη." },
+    hikes: { en: "Hiking guide for Crete.", fr: "Guide randonnées en Crète.", de: "Wanderführer für Kreta.", el: "Οδηγός πεζοπορίας στην Κρήτη." },
+    travel: { en: "Crete travel tips and advice.", fr: "Conseils voyage pour la Crète.", de: "Reisetipps für Kreta.", el: "Συμβουλές ταξιδιού για την Κρήτη." },
+    food: { en: "Food guide to Crete.", fr: "Guide gastronomique de la Crète.", de: "Gastronomieführer für Kreta.", el: "Γαστρονομικός οδηγός για την Κρήτη." },
+    expat: { en: "Expat guide to living in Crete.", fr: "Guide expatrié pour vivre en Crète.", de: "Expat-Leitfaden für das Leben auf Kreta.", el: "Οδηγός ζωής στην Κρήτη για εκπατρισμένους." },
+  };
+  const description = `${articleTitle}. ${categoryDesc[article.category]?.[locale] || "Practical guide from Crete Direct."}`;
+  const url = `${BASE_URL}/${locale}/articles/${slug}`;
+
   return {
     title,
-    description: title,
+    description,
+    alternates: { canonical: url },
     openGraph: {
       title,
-      images: [{ url: article.image }],
+      description,
+      url,
+      type: "article",
+      images: [{ url: article.image, alt: articleTitle }],
     },
   };
 }
@@ -89,6 +108,11 @@ export default async function ArticleDetailPage({
   const content = getLocalizedArticleContent(article, loc);
   const categoryLabel = CATEGORY_LABELS[article.category]?.[loc] || article.category;
   const categoryColor = CATEGORY_COLORS[article.category] || "bg-stone text-text-muted";
+  const breadcrumb = breadcrumbSchema([
+    { name: "Crete Direct", url: `${BASE_URL}/${locale}` },
+    { name: loc === "fr" ? "Guides" : loc === "de" ? "Reiseführer" : loc === "el" ? "Οδηγοί" : "Guides", url: `${BASE_URL}/${locale}/articles` },
+    { name: title, url: `${BASE_URL}/${locale}/articles/${article.slug}` },
+  ]);
 
   const related = articles
     .filter((a) => a.slug !== article.slug && a.category === article.category)
@@ -105,6 +129,10 @@ export default async function ArticleDetailPage({
 
   return (
     <main className="min-h-screen bg-surface">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+      />
       {/* Hero */}
       <div className="relative h-64 md:h-80 bg-stone overflow-hidden">
         <img

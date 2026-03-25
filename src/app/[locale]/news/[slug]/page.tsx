@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
 import { getNewsBySlug, getLatestNews } from "@/lib/news";
 import { getLocalizedField, type Locale } from "@/lib/types";
-import { newsSchema } from "@/lib/schema";
+import { newsSchema, breadcrumbSchema } from "@/lib/schema";
 import { ExternalLink, Clock, ArrowLeft, Tag } from "lucide-react";
 import Link from "next/link";
+
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }) {
   const { locale, slug } = await params;
@@ -11,9 +13,23 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const item = await getNewsBySlug(slug);
   if (!item) return { title: "News not found" };
 
+  const headline = getLocalizedField(item, "title", loc) || "";
+  const summary = getLocalizedField(item, "summary", loc);
+  const title = `${headline} | Crete Direct`;
+  const description = summary?.replace(/<[^>]*>/g, "").substring(0, 160) || `${headline} - Crete news.`;
+  const url = `${BASE_URL}/${locale}/news/${slug}`;
+
   return {
-    title: getLocalizedField(item, "title", loc),
-    description: getLocalizedField(item, "summary", loc)?.substring(0, 160),
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: "article",
+      images: item.image_url ? [{ url: item.image_url, alt: headline }] : [],
+    },
   };
 }
 
@@ -70,12 +86,21 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
   const schema = newsSchema(item, loc);
   const title = getLocalizedField(item, "title", loc);
   const summary = getLocalizedField(item, "summary", loc);
+  const breadcrumb = breadcrumbSchema([
+    { name: "Crete Direct", url: `${BASE_URL}/${locale}` },
+    { name: loc === "fr" ? "Actus" : loc === "de" ? "Nachrichten" : loc === "el" ? "Νέα" : "News", url: `${BASE_URL}/${locale}/news` },
+    { name: title || "", url: `${BASE_URL}/${locale}/news/${item.slug}` },
+  ]);
 
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
 
       <main className="min-h-screen bg-surface">

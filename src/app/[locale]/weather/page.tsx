@@ -2,17 +2,25 @@ import { fetchAllCitiesWeather, getWeatherLabel, getWeatherIcon } from "@/lib/we
 import type { Locale } from "@/lib/types";
 import { Wind, Droplets, Sun, Thermometer, Waves, Eye } from "lucide-react";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
+
 const WEATHER_META: Record<string, { title: string; desc: string }> = {
-  en: { title: "Weather in Crete - Crete Direct", desc: "Live weather for 10 cities across Crete. Temperature, wind, sea temperature, UV index. Updated hourly." },
-  fr: { title: "Météo en Crète - Crete Direct", desc: "Météo en direct pour 10 villes de Crète. Température, vent, mer, indice UV. Mis à jour chaque heure." },
-  de: { title: "Wetter auf Kreta - Crete Direct", desc: "Live-Wetter für 10 Städte auf Kreta. Temperatur, Wind, Meer, UV-Index. Stündlich aktualisiert." },
-  el: { title: "Καιρός στην Κρήτη - Crete Direct", desc: "Live καιρός για 10 πόλεις της Κρήτης. Θερμοκρασία, άνεμος, θάλασσα, δείκτης UV. Ενημέρωση κάθε ώρα." },
+  en: { title: "Crete Weather Today - 10 Cities Live Forecast | Crete Direct", desc: "Live weather for 10 cities across Crete. Air temperature, sea temperature, wind speed, UV index and wave height. Updated every hour." },
+  fr: { title: "Météo Crète Aujourd'hui - 10 Villes en Direct | Crete Direct", desc: "Météo en direct pour 10 villes de Crète. Température air, mer, vent, indice UV et hauteur des vagues. Mis à jour toutes les heures." },
+  de: { title: "Kreta Wetter Heute - 10 Städte Live | Crete Direct", desc: "Live-Wetter für 10 Städte auf Kreta. Lufttemperatur, Meertemperatur, Wind, UV-Index und Wellenhöhe. Stündlich aktualisiert." },
+  el: { title: "Καιρός Κρήτη Σήμερα - 10 Πόλεις Live | Crete Direct", desc: "Live καιρός για 10 πόλεις της Κρήτης. Θερμοκρασία αέρα, θάλασσας, άνεμος, δείκτης UV. Ενημέρωση κάθε ώρα." },
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const m = WEATHER_META[locale] || WEATHER_META.en;
-  return { title: m.title, description: m.desc };
+  const url = `${BASE_URL}/${locale}/weather`;
+  return {
+    title: m.title,
+    description: m.desc,
+    alternates: { canonical: url },
+    openGraph: { title: m.title, description: m.desc, url, type: "website" },
+  };
 }
 
 const TITLES: Record<Locale, string> = {

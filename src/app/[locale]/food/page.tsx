@@ -3,17 +3,25 @@ import { getLocalizedField, type Locale } from "@/lib/types";
 import { UtensilsCrossed, MapPin } from "lucide-react";
 import Link from "next/link";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
+
 const META: Record<string, { title: string; desc: string }> = {
-  en: { title: "Food & Restaurants in Crete", desc: "Best restaurants, tavernas and cafes in Crete" },
-  fr: { title: "Restaurants en Crète", desc: "Les meilleurs restaurants, tavernes et cafés de Crète" },
-  de: { title: "Restaurants auf Kreta", desc: "Die besten Restaurants, Tavernen und Cafés auf Kreta" },
-  el: { title: "Εστιατόρια στην Κρήτη", desc: "Τα καλύτερα εστιατόρια, ταβέρνες και καφέ στην Κρήτη" },
+  en: { title: "Best Restaurants & Tavernas in Crete - Local Food Guide | Crete Direct", desc: "Best restaurants, tavernas, cafes and bakeries across Crete. Local picks by region - east, west, central and south Crete. Authentic Cretan cuisine." },
+  fr: { title: "Meilleurs Restaurants & Tavernes en Crète - Guide Local | Crete Direct", desc: "Meilleurs restaurants, tavernes, cafés et boulangeries de Crète. Adresses locales par région. Cuisine crétoise authentique." },
+  de: { title: "Beste Restaurants & Tavernen auf Kreta - Lokaler Guide | Crete Direct", desc: "Beste Restaurants, Tavernen, Cafés und Bäckereien auf Kreta. Lokale Empfehlungen nach Region. Authentische kretische Küche." },
+  el: { title: "Καλύτερα Εστιατόρια & Ταβέρνες στην Κρήτη - Τοπικός Οδηγός | Crete Direct", desc: "Καλύτερα εστιατόρια, ταβέρνες, καφέ και αρτοποιεία στην Κρήτη. Τοπικές επιλογές ανά περιοχή." },
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const m = META[locale] || META.en;
-  return { title: m.title, description: m.desc };
+  const url = `${BASE_URL}/${locale}/food`;
+  return {
+    title: m.title,
+    description: m.desc,
+    alternates: { canonical: url },
+    openGraph: { title: m.title, description: m.desc, url, type: "website" },
+  };
 }
 
 const TYPE_COLORS: Record<string, string> = {

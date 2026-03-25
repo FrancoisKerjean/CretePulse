@@ -3,17 +3,25 @@ import { BookOpen, Clock, ChevronRight } from "lucide-react";
 import { articles, getLocalizedArticleTitle, type Article } from "@/data/articles";
 import type { Locale } from "@/lib/types";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
+
 const META: Record<string, { title: string; desc: string }> = {
-  en: { title: "Crete Travel Guides", desc: "Practical guides about Crete: beaches, hiking, food, living, travel tips." },
-  fr: { title: "Guides de voyage Crète", desc: "Guides pratiques sur la Crète : plages, randonnées, cuisine, vie locale, conseils voyage." },
-  de: { title: "Kreta Reiseführer", desc: "Praktische Reiseführer für Kreta: Strände, Wandern, Essen, Leben, Reisetipps." },
-  el: { title: "Οδηγοί ταξιδιού Κρήτη", desc: "Πρακτικοί οδηγοί για την Κρήτη: παραλίες, πεζοπορία, φαγητό, διαμονή, συμβουλές ταξιδιού." },
+  en: { title: "Crete Travel Guide - Beaches, Hiking, Food & Expat Life | Crete Direct", desc: "Practical, fact-checked travel guides to Crete. Best beaches, hiking trails, local food, expat life tips and family travel. Written from the island." },
+  fr: { title: "Guide de Voyage Crète - Plages, Randonnées, Gastronomie | Crete Direct", desc: "Guides pratiques et vérifiés sur la Crète. Meilleures plages, randonnées, cuisine locale, vie d'expatrié. Écrits depuis l'île." },
+  de: { title: "Kreta Reiseführer - Strände, Wandern, Essen & Expat-Leben | Crete Direct", desc: "Praktische, faktengeprüfte Reiseführer für Kreta. Beste Strände, Wanderwege, lokales Essen, Expat-Leben. Von der Insel geschrieben." },
+  el: { title: "Οδηγός Ταξιδιού Κρήτη - Παραλίες, Πεζοπορία, Φαγητό | Crete Direct", desc: "Πρακτικοί οδηγοί για την Κρήτη. Καλύτερες παραλίες, μονοπάτια πεζοπορίας, τοπικό φαγητό, ζωή στην Κρήτη." },
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const m = META[locale] || META.en;
-  return { title: m.title, description: m.desc };
+  const url = `${BASE_URL}/${locale}/articles`;
+  return {
+    title: m.title,
+    description: m.desc,
+    alternates: { canonical: url },
+    openGraph: { title: m.title, description: m.desc, url, type: "website" },
+  };
 }
 
 const PAGE_TITLES: Record<Locale, string> = {

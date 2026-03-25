@@ -50,7 +50,18 @@ CRITICAL RULES:
 - Write 2-3 short paragraphs per language (150-200 words max).
 - Structure each language version with line breaks between paragraphs.
 - English: clear, factual, newspaper style.
-- French: proper accents (e, e, a, c, etc.), style journal local.
+- French: MANDATORY — use ALL correct French accents. Every accented letter MUST be written correctly:
+  é (e accent aigu): été, développement, économie, région, sécurité, autorité, réaliser, créer, etc.
+  è (e accent grave): crète, première, après, problème, modèle, etc.
+  à (a accent grave): à, là, déjà, voilà — especially "à la", "à l'", "à les", NOT just "a la"
+  ê (e accent circumflex): être, fête, forêt, arrêté, etc.
+  ô (o accent circumflex): côte, dépôt, rôle, etc.
+  â (a accent circumflex): bâtiment, âge, etc.
+  ç (cedilla): français, façon, leçon, etc.
+  NEVER write: "autorite" (→autorité), "economique" (→économique), "developpement" (→développement),
+  "region" (→région), "securite" (→sécurité), "Crete" (→Crète), "cle" (→clé),
+  "operations" (→opérations), "definition" (→définition), "a l'" when meaning "à l'".
+  Style: journal local, phrases courtes, faits concrets.
 - German: korrekt, Nachrichtenstil.
 - No em dashes. No editorializing. No "experts say" unless the source says it.
 - If the article is not related to Crete at all, still write it but keep it very brief (2 sentences).

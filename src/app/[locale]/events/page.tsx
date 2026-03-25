@@ -16,17 +16,25 @@ const EVENTS_LABELS: Record<Locale, {
   el: { subtitle: "επερχόμενες εκδηλώσεις — φεστιβάλ, αγορές, συναυλίες, πανηγύρια", until: "Έως", event: "εκδήλωση", events: "εκδηλώσεις", coming: "Επερχόμενες εκδηλώσεις σύντομα." },
 };
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
+
 const EVENTS_META: Record<string, { title: string; desc: string }> = {
-  en: { title: "Events in Crete - Crete Direct", desc: "Festivals, markets, concerts, panigýria. Upcoming events across Crete." },
-  fr: { title: "Événements en Crète - Crete Direct", desc: "Festivals, marchés, concerts, panigýria. Événements à venir en Crète." },
-  de: { title: "Veranstaltungen auf Kreta - Crete Direct", desc: "Festivals, Märkte, Konzerte, Panigýria. Kommende Events auf Kreta." },
-  el: { title: "Εκδηλώσεις στην Κρήτη - Crete Direct", desc: "Φεστιβάλ, αγορές, συναυλίες, πανηγύρια. Επερχόμενες εκδηλώσεις στην Κρήτη." },
+  en: { title: "Events in Crete - Festivals, Markets & Concerts | Crete Direct", desc: "Upcoming events in Crete: festivals, village markets, concerts, religious panigýria and cultural gatherings. Browse by week across all regions." },
+  fr: { title: "Événements en Crète - Festivals, Marchés & Concerts | Crete Direct", desc: "Événements à venir en Crète : festivals, marchés de villages, concerts, panigýria religieux et rassemblements culturels. Par semaine." },
+  de: { title: "Veranstaltungen auf Kreta - Festivals, Märkte & Konzerte | Crete Direct", desc: "Kommende Events auf Kreta: Festivals, Dorfmärkte, Konzerte, religiöse Panigýria. Nach Woche durchsuchen." },
+  el: { title: "Εκδηλώσεις στην Κρήτη - Φεστιβάλ, Αγορές & Συναυλίες | Crete Direct", desc: "Επερχόμενες εκδηλώσεις στην Κρήτη: φεστιβάλ, αγορές χωριών, συναυλίες, πανηγύρια. Ανά εβδομάδα." },
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const m = EVENTS_META[locale] || EVENTS_META.en;
-  return { title: m.title, description: m.desc };
+  const url = `${BASE_URL}/${locale}/events`;
+  return {
+    title: m.title,
+    description: m.desc,
+    alternates: { canonical: url },
+    openGraph: { title: m.title, description: m.desc, url, type: "website" },
+  };
 }
 
 const CATEGORY_COLORS: Record<string, string> = {

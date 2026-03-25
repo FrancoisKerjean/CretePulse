@@ -1,9 +1,12 @@
 import { getTranslations } from "next-intl/server";
 import { getVillageBySlug, getNearbyVillages } from "@/lib/villages";
 import { getLocalizedField, type Locale } from "@/lib/types";
+import { breadcrumbSchema } from "@/lib/schema";
 import { MapPin, Mountain, Users, Clock, ChevronLeft, Star } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 export async function generateMetadata({
   params,
@@ -16,10 +19,21 @@ export async function generateMetadata({
 
   const name = getLocalizedField(village, "name", locale as Locale);
   const desc = getLocalizedField(village, "description", locale as Locale);
+  const title = `${name}, Crete - History & Guide | Crete Direct`;
+  const description = desc?.substring(0, 160) || `${name} village in Crete, Greece. History, population, altitude and local guide.`;
+  const url = `${BASE_URL}/${locale}/villages/${slug}`;
 
   return {
-    title: `${name} - Crete Village`,
-    description: desc?.substring(0, 160) || `${name} village in Crete, Greece`,
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: "website",
+      images: village.image_url ? [{ url: village.image_url, alt: `${name}, Crete` }] : [],
+    },
   };
 }
 
@@ -53,9 +67,18 @@ export default async function VillageDetailPage({
   const nearby = await getNearbyVillages(village.latitude, village.longitude, village.slug);
   const name = getLocalizedField(village, "name", loc);
   const description = getLocalizedField(village, "description", loc);
+  const breadcrumb = breadcrumbSchema([
+    { name: "Crete Direct", url: `${BASE_URL}/${locale}` },
+    { name: loc === "fr" ? "Villages" : loc === "de" ? "Dörfer" : loc === "el" ? "Χωριά" : "Villages", url: `${BASE_URL}/${locale}/villages` },
+    { name, url: `${BASE_URL}/${locale}/villages/${village.slug}` },
+  ]);
 
   return (
     <main className="min-h-screen bg-surface">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+      />
       {/* Hero image */}
       {village.image_url && (
         <div className="relative h-64 md:h-80 bg-aegean">

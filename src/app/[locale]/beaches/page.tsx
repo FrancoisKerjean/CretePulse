@@ -10,17 +10,25 @@ const BEACHES_LABELS: Record<Locale, { subtitle: string; parking: string; kidsOk
   el: { subtitle: "παραλίες με συνθήκες σε πραγματικό χρόνο", parking: "Πάρκινγκ", kidsOk: "Παιδιά OK", coming: "500+ παραλίες σύντομα. Τα δεδομένα φορτώνονται." },
 };
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
+
 const META: Record<string, { title: string; desc: string }> = {
-  en: { title: "Beaches in Crete", desc: "500+ beaches with real-time conditions" },
-  fr: { title: "Plages en Crète", desc: "500+ plages avec conditions en temps réel" },
-  de: { title: "Strände auf Kreta", desc: "500+ Strände mit Echtzeitbedingungen" },
-  el: { title: "Παραλίες στην Κρήτη", desc: "500+ παραλίες με συνθήκες σε πραγματικό χρόνο" },
+  en: { title: "500+ Beaches in Crete - Real-Time Conditions | Crete Direct", desc: "Explore 500+ beaches across Crete with real-time wind, sea and conditions. Sandy coves, pebble shores, snorkeling spots - filter by region and facilities." },
+  fr: { title: "500+ Plages en Crète - Conditions en Temps Réel | Crete Direct", desc: "Explorez 500+ plages de Crète avec conditions en temps réel : vent, mer, snorkeling. Filtrez par région et équipements." },
+  de: { title: "500+ Strände auf Kreta - Echtzeit-Bedingungen | Crete Direct", desc: "Entdecken Sie 500+ Strände auf Kreta mit Echtzeit-Wind- und Meeresbedingungen. Filtern nach Region und Einrichtungen." },
+  el: { title: "500+ Παραλίες στην Κρήτη - Συνθήκες Πραγματικού Χρόνου | Crete Direct", desc: "Εξερευνήστε 500+ παραλίες στην Κρήτη με συνθήκες σε πραγματικό χρόνο. Ανέμος, θάλασσα, snorkeling." },
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const m = META[locale] || META.en;
-  return { title: m.title, description: m.desc };
+  const url = `${BASE_URL}/${locale}/beaches`;
+  return {
+    title: m.title,
+    description: m.desc,
+    alternates: { canonical: url },
+    openGraph: { title: m.title, description: m.desc, url, type: "website" },
+  };
 }
 
 export default async function BeachesPage({ params }: { params: Promise<{ locale: string }> }) {

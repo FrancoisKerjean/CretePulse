@@ -1,9 +1,12 @@
 import { getTranslations } from "next-intl/server";
 import { getEventBySlug } from "@/lib/events";
 import { getLocalizedField, type Locale } from "@/lib/types";
+import { eventSchema, breadcrumbSchema } from "@/lib/schema";
 import { MapPin, Clock, Calendar, Tag, ExternalLink, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 export async function generateMetadata({
   params,
@@ -14,12 +17,27 @@ export async function generateMetadata({
   const event = await getEventBySlug(slug);
   if (!event) return { title: "Event not found" };
 
-  const title = getLocalizedField(event, "title", locale as Locale);
+  const eventTitle = getLocalizedField(event, "title", locale as Locale);
   const desc = getLocalizedField(event, "description", locale as Locale);
+  const title = `${eventTitle} - Crete Events | Crete Direct`;
+  const description = desc?.substring(0, 160) || `${eventTitle} in Crete. Location: ${event.location_name}.`;
+  const url = `${BASE_URL}/${locale}/events/${slug}`;
+
+  // Noindex expired events (end date is in the past)
+  const endDate = event.date_end || event.date_start;
+  const isExpired = new Date(endDate) < new Date();
 
   return {
-    title: `${title} - Crete Events`,
-    description: desc?.substring(0, 160) || `${title} in Crete`,
+    title,
+    description,
+    alternates: { canonical: url },
+    robots: isExpired ? { index: false, follow: true } : { index: true, follow: true },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: "website",
+    },
   };
 }
 
@@ -58,6 +76,13 @@ export default async function EventDetailPage({
   const title = getLocalizedField(event, "title", loc);
   const description = getLocalizedField(event, "description", loc);
 
+  const jsonLd = eventSchema(event, loc);
+  const breadcrumb = breadcrumbSchema([
+    { name: "Crete Direct", url: `${BASE_URL}/${locale}` },
+    { name: loc === "fr" ? "Événements" : loc === "de" ? "Events" : loc === "el" ? "Εκδηλώσεις" : "Events", url: `${BASE_URL}/${locale}/events` },
+    { name: title, url: `${BASE_URL}/${locale}/events/${event.slug}` },
+  ]);
+
   const isMultiDay = event.date_end && event.date_end !== event.date_start;
   const mapsUrl = event.latitude && event.longitude
     ? `https://www.google.com/maps?q=${event.latitude},${event.longitude}`
@@ -65,6 +90,14 @@ export default async function EventDetailPage({
 
   return (
     <main className="min-h-screen bg-surface">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+      />
       {/* Header band */}
       <div className="bg-aegean text-white">
         <div className="max-w-4xl mx-auto px-4 py-10">

@@ -4,11 +4,13 @@ import { getLocalizedField, type Locale, type Hike } from "@/lib/types";
 import { Footprints, Mountain, MapPin } from "lucide-react";
 import Link from "next/link";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
+
 const META: Record<string, { title: string; desc: string }> = {
-  en: { title: "Hiking Trails in Crete", desc: "Best hiking trails in Crete: gorges, coastal paths, mountain routes and cultural walks" },
-  fr: { title: "Randonnées en Crète", desc: "Les meilleures randonnées en Crète : gorges, sentiers côtiers, routes de montagne et balades culturelles" },
-  de: { title: "Wanderwege auf Kreta", desc: "Die besten Wanderwege auf Kreta: Schluchten, Küstenpfade, Bergtouren und kulturelle Spaziergänge" },
-  el: { title: "Πεζοπορικές Διαδρομές στην Κρήτη", desc: "Οι καλύτερες πεζοπορικές διαδρομές στην Κρήτη" },
+  en: { title: "Hiking Trails in Crete - Gorges, Mountains & Coastal Paths | Crete Direct", desc: "80+ hiking trails in Crete rated by difficulty. Samaria Gorge, Imbros, coastal paths and mountain routes. Distance, elevation and duration for each trail." },
+  fr: { title: "Randonnées en Crète - Gorges, Montagnes & Sentiers Côtiers | Crete Direct", desc: "80+ sentiers de randonnée en Crète notés par difficulté. Gorge de Samaria, Imbros, sentiers côtiers. Distance, dénivelé et durée pour chaque trail." },
+  de: { title: "Wanderwege auf Kreta - Schluchten, Berge & Küstenpfade | Crete Direct", desc: "80+ Wanderwege auf Kreta nach Schwierigkeit bewertet. Samaria-Schlucht, Imbros, Küstenpfade. Distanz, Höhenprofil und Dauer." },
+  el: { title: "Μονοπάτια Πεζοπορίας στην Κρήτη - Φαράγγια & Βουνά | Crete Direct", desc: "80+ μονοπάτια πεζοπορίας στην Κρήτη κατά δυσκολία. Φαράγγι Σαμαριάς, Ιμπρος, παράκτια μονοπάτια. Απόσταση και υψόμετρο." },
 };
 
 const DIFFICULTY_STYLES: Record<Hike["difficulty"], { label: string; classes: string }> = {
@@ -24,7 +26,13 @@ const TYPES: Hike["type"][] = ["gorge", "coastal", "mountain", "cultural"];
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const m = META[locale] || META.en;
-  return { title: m.title, description: m.desc };
+  const url = `${BASE_URL}/${locale}/hikes`;
+  return {
+    title: m.title,
+    description: m.desc,
+    alternates: { canonical: url },
+    openGraph: { title: m.title, description: m.desc, url, type: "website" },
+  };
 }
 
 export default async function HikesPage({

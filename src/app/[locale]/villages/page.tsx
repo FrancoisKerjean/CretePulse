@@ -4,12 +4,24 @@ import { getLocalizedField, type Locale } from "@/lib/types";
 import { MapPin, Mountain, Users, Clock } from "lucide-react";
 import Link from "next/link";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
+
+const VILLAGES_META: Record<string, { title: string; desc: string }> = {
+  en: { title: "Villages in Crete - History & Guide | Crete Direct", desc: "Explore 300+ villages of Crete - from ancient Minoan ruins to Venetian harbours and hidden mountain hamlets. History, altitude, population and local info." },
+  fr: { title: "Villages en Crète - Histoire & Guide | Crete Direct", desc: "Explorez 300+ villages de Crète - des ruines minoennes aux ports vénitiens et hameaux de montagne. Histoire, altitude, population." },
+  de: { title: "Dörfer auf Kreta - Geschichte & Reiseführer | Crete Direct", desc: "Entdecken Sie 300+ Dörfer auf Kreta - von minoischen Ruinen bis zu venezianischen Häfen und versteckten Bergdörfern." },
+  el: { title: "Χωριά της Κρήτης - Ιστορία & Οδηγός | Crete Direct", desc: "Εξερευνήστε 300+ χωριά της Κρήτης - από μινωικά ερείπια έως βενετσιάνικα λιμάνια και κρυφά ορεινά χωριά." },
+};
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "nav" });
+  const m = VILLAGES_META[locale] || VILLAGES_META.en;
+  const url = `${BASE_URL}/${locale}/villages`;
   return {
-    title: `Villages in Crete - Crete Direct`,
-    description: "Explore 300+ villages of Crete, from Minoan ruins to hidden mountain hamlets.",
+    title: m.title,
+    description: m.desc,
+    alternates: { canonical: url },
+    openGraph: { title: m.title, description: m.desc, url, type: "website" },
   };
 }
 
