@@ -169,6 +169,29 @@ export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeC
           <p className="mt-3 text-white/65 text-base max-w-xl">
             {t("subtitle")}
           </p>
+
+          {/* Live headlines in hero */}
+          {latestNews.length > 0 && (
+            <div className="mt-6 flex flex-col gap-2">
+              {latestNews.slice(0, 2).map((item) => (
+                <Link
+                  key={item.slug}
+                  href={`/news/${item.slug}`}
+                  className="flex items-center gap-3 px-4 py-2.5 bg-white/10 backdrop-blur-sm rounded-lg hover:bg-white/20 transition-all group"
+                >
+                  <span className="shrink-0 text-[10px] text-white/50 font-mono w-6">{timeAgo(item.published_at)}</span>
+                  {item.category && (
+                    <span className="shrink-0 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-terra/80 text-white font-semibold">
+                      {item.category}
+                    </span>
+                  )}
+                  <span className="text-sm text-white/90 font-medium truncate group-hover:text-white transition-colors">
+                    {getLocalizedField(item, "title", loc)}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
