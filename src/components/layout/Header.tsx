@@ -2,32 +2,32 @@
 
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Menu, X, Globe, ChevronDown } from "lucide-react";
 
 const LOCALES = [
-  { code: "en", label: "EN" },
-  { code: "fr", label: "FR" },
-  { code: "de", label: "DE" },
-  { code: "el", label: "EL" },
-  { code: "it", label: "IT" },
-  { code: "nl", label: "NL" },
-  { code: "pl", label: "PL" },
-  { code: "es", label: "ES" },
-  { code: "pt", label: "PT" },
-  { code: "ru", label: "RU" },
-  { code: "ja", label: "JA" },
-  { code: "ko", label: "KO" },
-  { code: "zh", label: "ZH" },
-  { code: "tr", label: "TR" },
-  { code: "sv", label: "SV" },
-  { code: "da", label: "DA" },
-  { code: "no", label: "NO" },
-  { code: "fi", label: "FI" },
-  { code: "cs", label: "CS" },
-  { code: "hu", label: "HU" },
-  { code: "ro", label: "RO" },
-  { code: "ar", label: "AR" },
+  { code: "en", label: "EN", name: "English" },
+  { code: "fr", label: "FR", name: "Français" },
+  { code: "de", label: "DE", name: "Deutsch" },
+  { code: "el", label: "EL", name: "Ελληνικά" },
+  { code: "es", label: "ES", name: "Español" },
+  { code: "it", label: "IT", name: "Italiano" },
+  { code: "pt", label: "PT", name: "Português" },
+  { code: "nl", label: "NL", name: "Nederlands" },
+  { code: "pl", label: "PL", name: "Polski" },
+  { code: "ru", label: "RU", name: "Русский" },
+  { code: "tr", label: "TR", name: "Türkçe" },
+  { code: "ja", label: "JA", name: "日本語" },
+  { code: "ko", label: "KO", name: "한국어" },
+  { code: "zh", label: "ZH", name: "中文" },
+  { code: "sv", label: "SV", name: "Svenska" },
+  { code: "da", label: "DA", name: "Dansk" },
+  { code: "no", label: "NO", name: "Norsk" },
+  { code: "fi", label: "FI", name: "Suomi" },
+  { code: "cs", label: "CS", name: "Čeština" },
+  { code: "hu", label: "HU", name: "Magyar" },
+  { code: "ro", label: "RO", name: "Română" },
+  { code: "ar", label: "AR", name: "العربية" },
 ];
 
 const NAV_LINKS = [
@@ -41,6 +41,59 @@ const NAV_LINKS = [
   { href: "/articles", label: { en: "Guides", fr: "Guides", de: "Guides", el: "Οδηγοί", it: "Guide", nl: "Gidsen", pl: "Przewodniki", es: "Guías", pt: "Guias", ru: "Гиды", ja: "ガイド", ko: "가이드", zh: "指南", tr: "Rehber", sv: "Guider", da: "Guides", no: "Guider", fi: "Oppaat", cs: "Průvodce", hu: "Útmutatók", ro: "Ghiduri", ar: "أدلة" } },
 ];
 
+function LocaleSwitcher({ locale, pathname, router }: { locale: string; pathname: string; router: ReturnType<typeof useRouter> }) {
+  const [langOpen, setLangOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setLangOpen(false);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const current = LOCALES.find((l) => l.code === locale) || LOCALES[0];
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setLangOpen(!langOpen)}
+        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-text-muted hover:bg-stone-warm hover:text-text transition-all"
+        aria-label="Change language"
+      >
+        <Globe className="w-3.5 h-3.5" />
+        <span>{current.label}</span>
+        <ChevronDown className={`w-3 h-3 transition-transform ${langOpen ? "rotate-180" : ""}`} />
+      </button>
+
+      {langOpen && (
+        <div className="absolute right-0 top-full mt-1.5 w-44 max-h-80 overflow-y-auto bg-white rounded-xl border border-border shadow-xl z-50">
+          <div className="py-1">
+            {LOCALES.map((l) => (
+              <button
+                key={l.code}
+                onClick={() => {
+                  router.replace(pathname, { locale: l.code });
+                  setLangOpen(false);
+                }}
+                className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between transition-colors ${
+                  locale === l.code
+                    ? "bg-aegean/8 text-aegean font-semibold"
+                    : "text-text-muted hover:bg-stone hover:text-text"
+                }`}
+              >
+                <span>{l.name}</span>
+                <span className="text-[10px] font-mono text-text-light">{l.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Header() {
   const params = useParams();
   const locale = (params?.locale as string) || "en";
@@ -48,6 +101,7 @@ export function Header() {
   const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [mobileLangOpen, setMobileLangOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -55,10 +109,12 @@ export function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Close menu on route change
   useEffect(() => {
     setOpen(false);
+    setMobileLangOpen(false);
   }, [pathname]);
+
+  const currentLocale = LOCALES.find((l) => l.code === locale) || LOCALES[0];
 
   return (
     <nav
@@ -98,23 +154,10 @@ export function Header() {
           ))}
         </div>
 
-        {/* Right: locale switcher + mobile hamburger */}
+        {/* Right: locale dropdown + mobile hamburger */}
         <div className="flex items-center gap-2">
-          {/* Locale switcher - compact on mobile */}
-          <div className="hidden sm:flex items-center gap-1 text-xs font-semibold">
-            {LOCALES.map((l) => (
-              <button
-                key={l.code}
-                onClick={() => router.replace(pathname, { locale: l.code })}
-                className={`px-2.5 py-1.5 rounded-lg transition-all ${
-                  locale === l.code
-                    ? "bg-aegean text-white shadow-sm"
-                    : "text-text-muted hover:bg-stone-warm hover:text-text"
-                }`}
-              >
-                {l.label}
-              </button>
-            ))}
+          <div className="hidden sm:block">
+            <LocaleSwitcher locale={locale} pathname={pathname} router={router} />
           </div>
 
           {/* Mobile hamburger */}
@@ -146,21 +189,39 @@ export function Header() {
               </Link>
             ))}
 
-            {/* Mobile locale switcher */}
-            <div className="flex items-center gap-1.5 pt-3 mt-2 border-t border-border">
-              {LOCALES.map((l) => (
-                <button
-                  key={l.code}
-                  onClick={() => router.replace(pathname, { locale: l.code })}
-                  className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all text-center ${
-                    locale === l.code
-                      ? "bg-aegean text-white shadow-sm"
-                      : "text-text-muted bg-stone hover:bg-stone-warm"
-                  }`}
-                >
-                  {l.label}
-                </button>
-              ))}
+            {/* Mobile locale switcher - collapsible */}
+            <div className="pt-3 mt-2 border-t border-border">
+              <button
+                onClick={() => setMobileLangOpen(!mobileLangOpen)}
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold text-text-muted hover:bg-stone transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  <Globe className="w-4 h-4" />
+                  {currentLocale.name}
+                </span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${mobileLangOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              {mobileLangOpen && (
+                <div className="mt-1 grid grid-cols-3 gap-1.5 px-1">
+                  {LOCALES.map((l) => (
+                    <button
+                      key={l.code}
+                      onClick={() => {
+                        router.replace(pathname, { locale: l.code });
+                        setMobileLangOpen(false);
+                      }}
+                      className={`py-2 rounded-lg text-xs font-bold transition-all text-center ${
+                        locale === l.code
+                          ? "bg-aegean text-white shadow-sm"
+                          : "text-text-muted bg-stone hover:bg-stone-warm"
+                      }`}
+                    >
+                      {l.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
