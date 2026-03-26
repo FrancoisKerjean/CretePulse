@@ -35,6 +35,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Confirmation failed" }, { status: 500 });
   }
 
+  // Send welcome email (non-blocking)
+  try {
+    const { sendWelcomeEmail } = await import("@/lib/email");
+    await sendWelcomeEmail(subscriber.email, subscriber.locale ?? "en");
+  } catch (emailError) {
+    console.error("[newsletter/confirm] Welcome email error:", emailError);
+  }
+
   const locale = subscriber.locale ?? "en";
   return NextResponse.redirect(new URL(`/${locale}/newsletter/confirmed`, request.url));
 }

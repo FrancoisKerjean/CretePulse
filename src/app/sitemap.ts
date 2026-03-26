@@ -238,5 +238,53 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
+  // Where to stay pages
+  const areaSlugs = ["chania", "heraklion", "rethymno", "agios-nikolaos", "elounda", "plakias", "paleochora", "matala"];
+  for (const slug of areaSlugs) {
+    for (const locale of LOCALES) {
+      entries.push({
+        url: `${BASE_URL}/${locale}/where-to-stay/${slug}`,
+        lastModified: new Date(),
+        changeFrequency: "monthly",
+        priority: 0.6,
+      });
+    }
+  }
+
+  // Itinerary pages
+  const itinerarySlugs = ["3-days", "5-days", "7-days", "10-days"];
+  for (const slug of itinerarySlugs) {
+    for (const locale of LOCALES) {
+      entries.push({
+        url: `${BASE_URL}/${locale}/itineraries/${slug}`,
+        lastModified: new Date(),
+        changeFrequency: "monthly",
+        priority: 0.7,
+      });
+    }
+  }
+
+  // Archaeological sites
+  const archSlugs = ["knossos", "phaistos", "spinalonga", "gortyna", "malia-palace", "aptera"];
+  for (const slug of archSlugs) {
+    for (const locale of LOCALES) {
+      entries.push({
+        url: `${BASE_URL}/${locale}/archaeology/${slug}`,
+        lastModified: new Date(),
+        changeFrequency: "monthly",
+        priority: 0.6,
+      });
+    }
+  }
+
+  // Utility pages
+  for (const locale of LOCALES) {
+    entries.push(
+      { url: `${BASE_URL}/${locale}/faq`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.7 },
+      { url: `${BASE_URL}/${locale}/map`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.6 },
+      { url: `${BASE_URL}/${locale}/search`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.4 },
+    );
+  }
+
   return entries;
 }
