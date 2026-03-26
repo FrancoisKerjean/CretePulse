@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   alternates["x-default"] = `${BASE_URL}/en`;
 
   return {
-    title: { default: t("title"), template: `%s | Crete Direct` },
+    title: { default: t("title"), template: `%s` },
     description: t("description"),
     metadataBase: new URL(BASE_URL),
     alternates: {

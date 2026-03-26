@@ -6,10 +6,10 @@ import Link from "next/link";
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 const META: Record<string, { title: string; desc: string }> = {
-  en: { title: "Crete News - Latest from the Greek Press | Crete Direct", desc: "Latest news from Crete translated from the Greek press. Politics, tourism, culture, environment and sports - updated every 3 hours in 4 languages." },
-  fr: { title: "Actus Crète - Dernières de la Presse Grecque | Crete Direct", desc: "Dernières nouvelles de Crète traduites de la presse grecque. Politique, tourisme, culture, environnement - mises à jour toutes les 3 heures." },
-  de: { title: "Kreta Nachrichten - Aus der Griechischen Presse | Crete Direct", desc: "Aktuelle Nachrichten aus Kreta übersetzt aus der griechischen Presse. Politik, Tourismus, Kultur - alle 3 Stunden aktualisiert." },
-  el: { title: "Νέα Κρήτης - Τελευταία από τον Ελληνικό Τύπο | Crete Direct", desc: "Τελευταία νέα από την Κρήτη από τον ελληνικό τύπο. Πολιτική, τουρισμός, πολιτισμός - ανανέωση κάθε 3 ώρες." },
+  en: { title: "Crete News - Latest from the Greek Press", desc: "Latest news from Crete translated from the Greek press. Politics, tourism, culture, environment and sports - updated every 3 hours in 4 languages." },
+  fr: { title: "Actus Crète - Dernières de la Presse Grecque", desc: "Dernières nouvelles de Crète traduites de la presse grecque. Politique, tourisme, culture, environnement - mises à jour toutes les 3 heures." },
+  de: { title: "Kreta Nachrichten - Aus der Griechischen Presse", desc: "Aktuelle Nachrichten aus Kreta übersetzt aus der griechischen Presse. Politik, Tourismus, Kultur - alle 3 Stunden aktualisiert." },
+  el: { title: "Νέα Κρήτης - Τελευταία από τον Ελληνικό Τύπο", desc: "Τελευταία νέα από την Κρήτη από τον ελληνικό τύπο. Πολιτική, τουρισμός, πολιτισμός - ανανέωση κάθε 3 ώρες." },
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
@@ -125,7 +125,7 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
 
                   {item.summary_en && (
                     <p className="text-sm text-text-muted mt-1 line-clamp-2 leading-relaxed">
-                      {getLocalizedField(item, "summary", loc)}
+                      {getLocalizedField(item, "summary", loc).replace(/<[^>]*>/g, "")}
                     </p>
                   )}
                 </div>
