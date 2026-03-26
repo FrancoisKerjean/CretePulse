@@ -5,6 +5,7 @@ import { breadcrumbSchema } from "@/lib/schema";
 import { MapPin, Mountain, Users, Clock, ChevronLeft, Star } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AffiliateCTA } from "@/components/ui/affiliate-cta";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
@@ -177,6 +178,11 @@ export default async function VillageDetailPage({
         >
           <MapPin className="w-4 h-4" /> Open in Google Maps
         </a>
+
+        {/* Property management CTA */}
+        <div className="mb-12">
+          <AffiliateCTA type="propertyManagement" locale={locale} />
+        </div>
 
         {/* Nearby villages */}
         {nearby.length > 0 && (

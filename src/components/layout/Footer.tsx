@@ -33,6 +33,7 @@ export function Footer() {
               <Link href="/food" className="block text-sm text-text-muted hover:text-aegean transition-colors">{t("food")}</Link>
               <Link href="/hikes" className="block text-sm text-text-muted hover:text-aegean transition-colors">{t("hikes")}</Link>
               <Link href="/weather" className="block text-sm text-text-muted hover:text-aegean transition-colors">{t("weather")}</Link>
+              <Link href="/property-management" className="block text-sm text-text-muted hover:text-aegean transition-colors">{t("propertyManagement")}</Link>
             </div>
           </div>
 

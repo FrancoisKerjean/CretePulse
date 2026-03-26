@@ -2,6 +2,7 @@ import { MapPin, Bed, Euro, Lightbulb, Umbrella, ChevronLeft, ChevronRight } fro
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { breadcrumbSchema } from "@/lib/schema";
+import { AffiliateCTA } from "@/components/ui/affiliate-cta";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
@@ -488,6 +489,11 @@ export default async function WhereToStayAreaPage({
             ))}
           </div>
         </section>
+
+        {/* Property management CTA */}
+        <div className="mb-10">
+          <AffiliateCTA type="propertyManagement" locale={locale} />
+        </div>
 
         {/* Other areas */}
         <section className="mb-8">

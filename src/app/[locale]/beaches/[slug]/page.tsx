@@ -5,6 +5,7 @@ import { MapPin, Car, Waves, Fish, Sun, Wind, Baby, UtensilsCrossed, ChevronLeft
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AffiliateCTA } from "@/components/ui/affiliate-cta";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
@@ -312,6 +313,11 @@ export default async function BeachDetailPage({
             ))}
           </div>
         </section>
+
+        {/* Property management CTA */}
+        <div className="mb-12">
+          <AffiliateCTA type="propertyManagement" locale={locale} />
+        </div>
 
         {/* Nearby beaches */}
         {nearby.length > 0 && (
