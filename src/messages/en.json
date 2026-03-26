@@ -57,7 +57,15 @@
     "contact": "Contact",
     "about_link": "About",
     "buses": "Buses",
-    "submitEvent": "Submit event"
+    "submitEvent": "Submit event",
+    "explore_heading": "Explore",
+    "beaches": "Beaches",
+    "villages": "Villages",
+    "food": "Food & Drink",
+    "hikes": "Hiking",
+    "weather": "Weather",
+    "rights": "All rights reserved.",
+    "madeIn": "Made in Crete"
   },
   "common": {
     "readMore": "Read more",

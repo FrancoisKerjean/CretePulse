@@ -57,7 +57,15 @@
     "contact": "Contact",
     "about_link": "À propos",
     "buses": "Bus",
-    "submitEvent": "Soumettre un événement"
+    "submitEvent": "Soumettre un événement",
+    "explore_heading": "Explorer",
+    "beaches": "Plages",
+    "villages": "Villages",
+    "food": "Restaurants",
+    "hikes": "Randonnées",
+    "weather": "Météo",
+    "rights": "Tous droits réservés.",
+    "madeIn": "Fait en Crète"
   },
   "common": {
     "readMore": "Lire la suite",

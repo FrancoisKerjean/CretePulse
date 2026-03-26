@@ -127,7 +127,7 @@ interface HomeClientProps {
 export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeClientProps) {
   const loc = locale as Locale;
   const t = useTranslations("home");
-  const tf = useTranslations("footer");
+
   const now = new Date();
   const updateTime = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
 
@@ -487,23 +487,6 @@ export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeC
         </div>
       </section>
 
-      {/* ═══════════════════ FOOTER ═══════════════════ */}
-      <footer className="border-t border-border py-10 px-4 bg-surface">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-text-light">
-          <div className="flex items-center gap-2">
-            <span className="font-extrabold text-sm text-aegean tracking-tight">CRETE</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-terra" />
-            <span className="font-extrabold text-sm text-terra tracking-tight">DIRECT</span>
-            <span className="ml-3 text-text-light">{tf("tagline")}</span>
-          </div>
-          <div className="flex gap-6">
-            <Link href="/about" className="hover:text-text transition-colors">{tf("about_link")}</Link>
-            <Link href="/privacy" className="hover:text-text transition-colors">{tf("privacy")}</Link>
-            <Link href="/buses" className="hover:text-text transition-colors">{tf("buses")}</Link>
-            <Link href="/submit-event" className="hover:text-text transition-colors">{tf("submitEvent")}</Link>
-          </div>
-        </div>
-      </footer>
     </main>
   );
 }

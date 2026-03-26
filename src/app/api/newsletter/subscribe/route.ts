@@ -70,8 +70,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Subscription failed" }, { status: 500 });
   }
 
-  // TODO: send confirmation email via Resend once configured
-  // The confirm_token goes in: /api/newsletter/confirm?token=<confirm_token>
+  // Send confirmation email (non-blocking - don't fail subscription if email fails)
+  try {
+    const { sendConfirmationEmail } = await import("@/lib/email");
+    await sendConfirmationEmail(email, confirm_token, locale);
+  } catch (emailError) {
+    console.error("[newsletter/subscribe] Email send error:", emailError);
+  }
 
   return NextResponse.json({ ok: true });
 }

@@ -1,4 +1,11 @@
+/** Base content locales (have full translations in Supabase content) */
 export type Locale = "en" | "fr" | "de" | "el";
+
+/** All site locales including extended ones (UI-only translations) */
+export type SiteLocale = Locale | "it" | "nl" | "pl";
+
+/** All supported locale codes */
+export const ALL_LOCALES = ["en", "fr", "de", "el", "it", "nl", "pl"] as const;
 
 export interface Beach {
   id: number;

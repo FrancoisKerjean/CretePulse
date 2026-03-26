@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 import { playfair } from "@/app/layout";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -55,6 +56,21 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       description: t("description"),
       images: [`${BASE_URL}/og-default.jpg`],
     },
+    other: {
+      "script:ld+json": JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        name: "Crete Direct",
+        url: "https://crete.direct",
+        logo: "https://crete.direct/icon.svg",
+        description: t("description"),
+        areaServed: {
+          "@type": "Place",
+          name: "Crete, Greece",
+        },
+        sameAs: [],
+      }),
+    },
     robots: {
       index: true,
       follow: true,
@@ -78,6 +94,7 @@ export default async function LocaleLayout({
         <NextIntlClientProvider messages={messages}>
           <Header />
           {children}
+          <Footer />
         </NextIntlClientProvider>
         <Analytics />
         <SpeedInsights />

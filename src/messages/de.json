@@ -57,7 +57,15 @@
     "contact": "Kontakt",
     "about_link": "Über uns",
     "buses": "Busse",
-    "submitEvent": "Event einreichen"
+    "submitEvent": "Event einreichen",
+    "explore_heading": "Entdecken",
+    "beaches": "Strände",
+    "villages": "Dörfer",
+    "food": "Essen & Trinken",
+    "hikes": "Wandern",
+    "weather": "Wetter",
+    "rights": "Alle Rechte vorbehalten.",
+    "madeIn": "Made in Kreta"
   },
   "common": {
     "readMore": "Weiterlesen",

@@ -162,6 +162,36 @@ export default async function BeachDetailPage({
     { name, url: `${BASE_URL}/${locale}/beaches/${beach.slug}` },
   ]);
 
+  // FAQ structured data
+  const faqItems = [
+    {
+      q: loc === "fr" ? `${name} est-elle une plage de sable ?` : loc === "de" ? `Ist ${name} ein Sandstrand?` : loc === "el" ? `Είναι η ${name} αμμώδης παραλία;` : `Is ${name} a sandy beach?`,
+      a: loc === "fr" ? `${name} est une plage de type ${beach.type || "mixte"} située dans la région ${beach.region} de la Crète.` : loc === "de" ? `${name} ist ein ${beach.type || "gemischter"} Strand in der Region ${beach.region} auf Kreta.` : loc === "el" ? `Η ${name} είναι παραλία τύπου ${beach.type || "μικτή"} στην περιοχή ${beach.region} της Κρήτης.` : `${name} is a ${beach.type || "mixed"} beach located in the ${beach.region} region of Crete.`,
+    },
+    {
+      q: loc === "fr" ? `${name} est-elle adaptée aux enfants ?` : loc === "de" ? `Ist ${name} kinderfreundlich?` : loc === "el" ? `Είναι η ${name} κατάλληλη για παιδιά;` : `Is ${name} suitable for children?`,
+      a: beach.kids_friendly
+        ? (loc === "fr" ? `Oui, ${name} est adaptée aux familles avec enfants.` : loc === "de" ? `Ja, ${name} ist kinderfreundlich.` : loc === "el" ? `Ναι, η ${name} είναι κατάλληλη για παιδιά.` : `Yes, ${name} is family-friendly and suitable for children.`)
+        : (loc === "fr" ? `${name} n'est pas idéale pour les enfants en raison des conditions.` : loc === "de" ? `${name} ist aufgrund der Bedingungen nicht ideal für Kinder.` : loc === "el" ? `Η ${name} δεν είναι ιδανική για παιδιά.` : `${name} is not ideal for children due to conditions.`),
+    },
+    {
+      q: loc === "fr" ? `Y a-t-il un parking à ${name} ?` : loc === "de" ? `Gibt es einen Parkplatz bei ${name}?` : loc === "el" ? `Υπάρχει πάρκινγκ στην ${name};` : `Is there parking at ${name}?`,
+      a: beach.parking
+        ? (loc === "fr" ? `Oui, ${name} dispose d'un parking.` : loc === "de" ? `Ja, ${name} hat einen Parkplatz.` : loc === "el" ? `Ναι, η ${name} διαθέτει πάρκινγκ.` : `Yes, ${name} has parking available.`)
+        : (loc === "fr" ? `Non, ${name} n'a pas de parking dédié.` : loc === "de" ? `Nein, ${name} hat keinen Parkplatz.` : loc === "el" ? `Όχι, η ${name} δεν έχει πάρκινγκ.` : `No, ${name} does not have dedicated parking.`),
+    },
+  ];
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems.map(f => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+
   return (
     <main className="min-h-screen bg-surface">
       <script
@@ -171,6 +201,10 @@ export default async function BeachDetailPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
       {/* Hero image */}
       {beach.image_url && (
@@ -265,6 +299,19 @@ export default async function BeachDetailPage({
         >
           <MapPin className="w-4 h-4" /> {L.openInMaps}
         </a>
+
+        {/* FAQ */}
+        <section className="mb-12">
+          <h2 className="text-xl font-bold text-aegean mb-4">FAQ</h2>
+          <div className="space-y-3">
+            {faqItems.map((faq, i) => (
+              <div key={i} className="p-4 bg-white rounded-xl border border-border">
+                <h3 className="font-semibold text-sm text-text mb-1">{faq.q}</h3>
+                <p className="text-sm text-text-muted">{faq.a}</p>
+              </div>
+            ))}
+          </div>
+        </section>
 
         {/* Nearby beaches */}
         {nearby.length > 0 && (

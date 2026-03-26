@@ -7,7 +7,7 @@ import { getLatestNews } from "@/lib/news";
 import { getUpcomingEvents } from "@/lib/events";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
-const LOCALES = ["en", "fr", "de", "el"] as const;
+const LOCALES = ["en", "fr", "de", "el", "it", "nl", "pl"] as const;
 
 const STATIC_PAGES = [
   "",
@@ -18,6 +18,11 @@ const STATIC_PAGES = [
   "/news",
   "/hikes",
   "/food",
+  "/articles",
+  "/about",
+  "/buses",
+  "/fire-alerts",
+  "/property-management",
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -67,6 +72,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   } catch {
     // Supabase unreachable at build time — skip dynamic village URLs
+  }
+
+  // Beaches near village pages
+  try {
+    const villagesForBeaches = await getAllVillages();
+    for (const village of villagesForBeaches) {
+      for (const locale of LOCALES) {
+        entries.push({
+          url: `${BASE_URL}/${locale}/beaches/near/${village.slug}`,
+          lastModified: new Date(),
+          changeFrequency: "monthly",
+          priority: 0.5,
+        });
+      }
+    }
+  } catch {
+    // Skip if Supabase unreachable
   }
 
   // Dynamic food pages
@@ -135,6 +157,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   } catch {
     // Supabase unreachable at build time — skip dynamic event URLs
+  }
+
+  // Programmatic weather pages (city x month)
+  const { CITIES: weatherCities, MONTHS: weatherMonths } = await import("@/lib/weather-monthly");
+  for (const city of weatherCities) {
+    for (const month of weatherMonths) {
+      for (const locale of LOCALES) {
+        entries.push({
+          url: `${BASE_URL}/${locale}/weather/${city.slug}/${month}`,
+          lastModified: new Date(),
+          changeFrequency: "monthly",
+          priority: 0.5,
+        });
+      }
+    }
   }
 
   return entries;

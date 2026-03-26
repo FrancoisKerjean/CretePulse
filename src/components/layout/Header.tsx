@@ -10,15 +10,20 @@ const LOCALES = [
   { code: "fr", label: "FR" },
   { code: "de", label: "DE" },
   { code: "el", label: "EL" },
+  { code: "it", label: "IT" },
+  { code: "nl", label: "NL" },
+  { code: "pl", label: "PL" },
 ];
 
 const NAV_LINKS = [
-  { href: "/weather", label: { en: "Weather", fr: "Météo", de: "Wetter", el: "Καιρός" } },
-  { href: "/beaches", label: { en: "Beaches", fr: "Plages", de: "Strände", el: "Παραλίες" } },
-  { href: "/events", label: { en: "Events", fr: "Événements", de: "Events", el: "Εκδηλώσεις" } },
-  { href: "/food", label: { en: "Food", fr: "Restaurants", de: "Essen", el: "Φαγητό" } },
-  { href: "/news", label: { en: "News", fr: "Actus", de: "Nachrichten", el: "Νέα" } },
-  { href: "/articles", label: { en: "Guides", fr: "Guides", de: "Guides", el: "Οδηγοί" } },
+  { href: "/weather", label: { en: "Weather", fr: "Météo", de: "Wetter", el: "Καιρός", it: "Meteo", nl: "Weer", pl: "Pogoda" } },
+  { href: "/beaches", label: { en: "Beaches", fr: "Plages", de: "Strände", el: "Παραλίες", it: "Spiagge", nl: "Stranden", pl: "Plaże" } },
+  { href: "/villages", label: { en: "Villages", fr: "Villages", de: "Dörfer", el: "Χωριά", it: "Villaggi", nl: "Dorpen", pl: "Wioski" } },
+  { href: "/events", label: { en: "Events", fr: "Événements", de: "Events", el: "Εκδηλώσεις", it: "Eventi", nl: "Evenementen", pl: "Wydarzenia" } },
+  { href: "/food", label: { en: "Food", fr: "Restaurants", de: "Essen", el: "Φαγητό", it: "Ristoranti", nl: "Eten", pl: "Restauracje" } },
+  { href: "/hikes", label: { en: "Hikes", fr: "Randos", de: "Wandern", el: "Πεζοπορία", it: "Escursioni", nl: "Wandelen", pl: "Szlaki" } },
+  { href: "/news", label: { en: "News", fr: "Actus", de: "Nachrichten", el: "Νέα", it: "Notizie", nl: "Nieuws", pl: "Wiadomości" } },
+  { href: "/articles", label: { en: "Guides", fr: "Guides", de: "Guides", el: "Οδηγοί", it: "Guide", nl: "Gidsen", pl: "Przewodniki" } },
 ];
 
 export function Header() {
