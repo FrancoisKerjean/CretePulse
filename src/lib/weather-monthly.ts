@@ -33,6 +33,21 @@ export const MONTH_NAMES: Record<string, Record<string, string>> = {
   it: { january: "Gennaio", february: "Febbraio", march: "Marzo", april: "Aprile", may: "Maggio", june: "Giugno", july: "Luglio", august: "Agosto", september: "Settembre", october: "Ottobre", november: "Novembre", december: "Dicembre" },
   nl: { january: "Januari", february: "Februari", march: "Maart", april: "April", may: "Mei", june: "Juni", july: "Juli", august: "Augustus", september: "September", october: "Oktober", november: "November", december: "December" },
   pl: { january: "Styczeń", february: "Luty", march: "Marzec", april: "Kwiecień", may: "Maj", june: "Czerwiec", july: "Lipiec", august: "Sierpień", september: "Wrzesień", october: "Październik", november: "Listopad", december: "Grudzień" },
+  es: { january: "Enero", february: "Febrero", march: "Marzo", april: "Abril", may: "Mayo", june: "Junio", july: "Julio", august: "Agosto", september: "Septiembre", october: "Octubre", november: "Noviembre", december: "Diciembre" },
+  pt: { january: "Janeiro", february: "Fevereiro", march: "Março", april: "Abril", may: "Maio", june: "Junho", july: "Julho", august: "Agosto", september: "Setembro", october: "Outubro", november: "Novembro", december: "Dezembro" },
+  ru: { january: "Январь", february: "Февраль", march: "Март", april: "Апрель", may: "Май", june: "Июнь", july: "Июль", august: "Август", september: "Сентябрь", october: "Октябрь", november: "Ноябрь", december: "Декабрь" },
+  ja: { january: "1月", february: "2月", march: "3月", april: "4月", may: "5月", june: "6月", july: "7月", august: "8月", september: "9月", october: "10月", november: "11月", december: "12月" },
+  ko: { january: "1월", february: "2월", march: "3월", april: "4월", may: "5월", june: "6월", july: "7월", august: "8월", september: "9월", october: "10월", november: "11월", december: "12월" },
+  zh: { january: "一月", february: "二月", march: "三月", april: "四月", may: "五月", june: "六月", july: "七月", august: "八月", september: "九月", october: "十月", november: "十一月", december: "十二月" },
+  tr: { january: "Ocak", february: "Şubat", march: "Mart", april: "Nisan", may: "Mayıs", june: "Haziran", july: "Temmuz", august: "Ağustos", september: "Eylül", october: "Ekim", november: "Kasım", december: "Aralık" },
+  sv: { january: "Januari", february: "Februari", march: "Mars", april: "April", may: "Maj", june: "Juni", july: "Juli", august: "Augusti", september: "September", october: "Oktober", november: "November", december: "December" },
+  da: { january: "Januar", february: "Februar", march: "Marts", april: "April", may: "Maj", june: "Juni", july: "Juli", august: "August", september: "September", october: "Oktober", november: "November", december: "December" },
+  no: { january: "Januar", february: "Februar", march: "Mars", april: "April", may: "Mai", june: "Juni", july: "Juli", august: "August", september: "September", october: "Oktober", november: "November", december: "Desember" },
+  fi: { january: "Tammikuu", february: "Helmikuu", march: "Maaliskuu", april: "Huhtikuu", may: "Toukokuu", june: "Kesäkuu", july: "Heinäkuu", august: "Elokuu", september: "Syyskuu", october: "Lokakuu", november: "Marraskuu", december: "Joulukuu" },
+  cs: { january: "Leden", february: "Únor", march: "Březen", april: "Duben", may: "Květen", june: "Červen", july: "Červenec", august: "Srpen", september: "Září", october: "Říjen", november: "Listopad", december: "Prosinec" },
+  hu: { january: "Január", february: "Február", march: "Március", april: "Április", may: "Május", june: "Június", july: "Július", august: "Augusztus", september: "Szeptember", october: "Október", november: "November", december: "December" },
+  ro: { january: "Ianuarie", february: "Februarie", march: "Martie", april: "Aprilie", may: "Mai", june: "Iunie", july: "Iulie", august: "August", september: "Septembrie", october: "Octombrie", november: "Noiembrie", december: "Decembrie" },
+  ar: { january: "يناير", february: "فبراير", march: "مارس", april: "أبريل", may: "مايو", june: "يونيو", july: "يوليو", august: "أغسطس", september: "سبتمبر", october: "أكتوبر", november: "نوفمبر", december: "ديسمبر" },
 };
 
 // Historical monthly climate data (averaged across east Crete)
