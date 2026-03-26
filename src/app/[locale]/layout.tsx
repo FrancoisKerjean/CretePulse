@@ -48,13 +48,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       url: localeUrl,
       title: t("title"),
       description: t("description"),
-      images: [{ url: `${BASE_URL}/og-default.jpg`, width: 1200, height: 630 }],
+      images: [{ url: `${BASE_URL}/api/og?title=${encodeURIComponent(t("title"))}`, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
       title: t("title"),
       description: t("description"),
-      images: [`${BASE_URL}/og-default.jpg`],
+      images: [`${BASE_URL}/api/og?title=${encodeURIComponent(t("title"))}`],
     },
     other: {
       "script:ld+json": JSON.stringify({
