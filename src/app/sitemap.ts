@@ -5,6 +5,7 @@ import { getAllFoodPlaces } from "@/lib/food";
 import { getAllHikes } from "@/lib/hikes";
 import { getLatestNews } from "@/lib/news";
 import { getUpcomingEvents } from "@/lib/events";
+import { MONTHS } from "@/lib/weather-monthly";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 const LOCALES = ["en", "fr", "de", "el", "it", "nl", "pl", "es", "pt", "ru", "ja", "ko", "zh", "tr", "sv", "da", "no", "fi", "cs", "hu", "ro", "ar"] as const;
@@ -159,6 +160,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Supabase unreachable at build time — skip dynamic event URLs
   }
 
+  // Visit Crete in [month] pages
+  for (const month of MONTHS) {
+    for (const locale of LOCALES) {
+      entries.push({
+        url: `${BASE_URL}/${locale}/visit/${month}`,
+        lastModified: new Date(),
+        changeFrequency: "monthly",
+        priority: 0.7,
+      });
+    }
+  }
+
   // Programmatic weather pages (city x month)
   const { CITIES: weatherCities, MONTHS: weatherMonths } = await import("@/lib/weather-monthly");
   for (const city of weatherCities) {
@@ -192,6 +205,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const locale of LOCALES) {
       entries.push({
         url: `${BASE_URL}/${locale}/beaches/best-for/${activity}`,
+        lastModified: new Date(),
+        changeFrequency: "monthly",
+        priority: 0.6,
+      });
+    }
+  }
+
+  // Transport route pages
+  const routeSlugs = ["heraklion-to-chania", "heraklion-to-rethymno", "heraklion-to-agios-nikolaos", "heraklion-airport-to-city", "chania-airport-to-city", "athens-to-crete", "crete-to-santorini", "heraklion-to-sitia"];
+  for (const slug of routeSlugs) {
+    for (const locale of LOCALES) {
+      entries.push({
+        url: `${BASE_URL}/${locale}/getting-around/${slug}`,
+        lastModified: new Date(),
+        changeFrequency: "monthly",
+        priority: 0.6,
+      });
+    }
+  }
+
+  // Comparison pages (A vs B)
+  const compSlugs = ["chania-vs-heraklion", "chania-vs-rethymno", "heraklion-vs-rethymno", "agios-nikolaos-vs-elounda", "malia-vs-hersonissos", "sitia-vs-ierapetra", "chania-vs-agios-nikolaos", "crete-vs-santorini", "crete-vs-rhodes", "crete-vs-corfu", "crete-vs-mykonos", "crete-vs-cyprus", "elafonisi-vs-balos", "elafonisi-vs-vai", "balos-vs-preveli"];
+  for (const slug of compSlugs) {
+    for (const locale of LOCALES) {
+      entries.push({
+        url: `${BASE_URL}/${locale}/compare/${slug}`,
         lastModified: new Date(),
         changeFrequency: "monthly",
         priority: 0.6,
