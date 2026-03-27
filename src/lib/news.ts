@@ -7,24 +7,32 @@ function hasGreek(text: string): boolean {
 }
 
 export async function getLatestNews(limit = 20, locale = "en"): Promise<NewsItem[]> {
-  const titleCol = `title_${locale}` as keyof NewsItem;
-  const summaryCol = `summary_${locale}` as keyof NewsItem;
-  const { data, error } = await supabase
+  // Only EN, FR, DE have translations in the DB. All others fall back to EN.
+  const TRANSLATED_LOCALES = ["en", "fr", "de"];
+  const effectiveLocale = TRANSLATED_LOCALES.includes(locale) ? locale : "en";
+  const titleCol = `title_${effectiveLocale}` as keyof NewsItem;
+
+  const query = supabase
     .from("news")
     .select("*")
     .neq("title_en", "")
-    .neq(`title_${locale}`, "")
     .order("published_at", { ascending: false })
     .limit(limit * 4);
 
+  // For translated locales, also require the locale title to be filled
+  if (effectiveLocale !== "en") {
+    query.neq(`title_${effectiveLocale}`, "");
+  }
+
+  const { data, error } = await query;
   if (error) throw error;
   const items = (data as NewsItem[]) || [];
 
-  // Filter: require actual content in the requested locale, skip Greek on non-Greek pages
+  // Filter out articles with Greek characters on non-Greek pages
   const filtered = items.filter((item) => {
     const title = (item[titleCol] as string) || "";
     if (!title) return false;
-    if (locale !== "el" && hasGreek(title)) return false;
+    if (effectiveLocale !== "el" && hasGreek(title)) return false;
     return true;
   });
 
