@@ -7,10 +7,12 @@ function hasGreek(text: string): boolean {
 }
 
 export async function getLatestNews(limit = 20, locale = "en"): Promise<NewsItem[]> {
+  const titleCol = `title_${locale}`;
   const { data, error } = await supabase
     .from("news")
     .select("*")
-    .eq("rewritten", true)
+    .neq("title_en", "")
+    .neq(titleCol, "")
     .order("published_at", { ascending: false })
     .limit(limit * 4);
 
@@ -50,7 +52,7 @@ export async function getNewsBySlug(slug: string): Promise<NewsItem | null> {
     .from("news")
     .select("*")
     .eq("slug", slug)
-    .eq("rewritten", true)
+    .neq("title_en", "")
     .single();
 
   if (error) return null;

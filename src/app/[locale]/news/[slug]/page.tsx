@@ -152,7 +152,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
 
   const [item, allNews] = await Promise.all([
     getNewsBySlug(slug),
-    getLatestNews(20),
+    getLatestNews(20, locale),
   ]);
 
   if (!item) notFound();

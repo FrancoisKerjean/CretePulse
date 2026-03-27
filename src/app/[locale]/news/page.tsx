@@ -78,7 +78,7 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
 
   let news: Awaited<ReturnType<typeof getLatestNews>> = [];
   try {
-    news = await getLatestNews(50);
+    news = await getLatestNews(50, locale);
   } catch {
     news = [];
   }
