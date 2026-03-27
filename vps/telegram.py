@@ -8,19 +8,15 @@ Cron: 30 7 * * *  (every day at 07:30 Athens time)
 import os
 import sys
 import json
-import urllib.request
-import urllib.parse
-import urllib.error
 from datetime import datetime, timezone, date
 from dotenv import load_dotenv
 from supabase import create_client
+from kairos_telegram import send, Bot
 
 load_dotenv()
 
 SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_SERVICE_KEY = os.environ["SUPABASE_SERVICE_KEY"]
-TELEGRAM_BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
-TELEGRAM_CHANNEL_ID = os.environ["TELEGRAM_CHANNEL_ID"]
 
 # Cities to highlight in the weather line (must match city_slug in DB)
 HEADLINE_CITIES = ["heraklion", "chania", "ierapetra"]
@@ -41,38 +37,8 @@ def get_weather_emoji(code: int) -> str:
 
 
 def send_telegram_message(text: str) -> bool:
-    """Send a message via Telegram Bot API using urllib (no external deps)."""
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    payload = json.dumps({
-        "chat_id": TELEGRAM_CHANNEL_ID,
-        "text": text,
-        "parse_mode": "HTML",
-        "disable_web_page_preview": True,
-    }).encode("utf-8")
-
-    req = urllib.request.Request(
-        url,
-        data=payload,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-
-    try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            result = json.loads(resp.read().decode())
-            if result.get("ok"):
-                print("[telegram] message sent successfully")
-                return True
-            else:
-                print(f"[telegram] Telegram API error: {result}")
-                return False
-    except urllib.error.HTTPError as e:
-        body = e.read().decode()
-        print(f"[telegram] HTTP error {e.code}: {body}")
-        return False
-    except Exception as e:
-        print(f"[telegram] unexpected error: {e}")
-        return False
+    """Send a message via the kairos_telegram module (thin wrapper for backward compat)."""
+    return send(Bot.PLUME, "Crete Daily", text)
 
 
 def fetch_weather(supabase) -> dict:
