@@ -49,12 +49,31 @@ def send_telegram(text):
 def call_claude(prompt, model="sonnet"):
     """Call Claude CLI and return stdout."""
     result = subprocess.run(
-        ["claude", "-p", prompt, "--model", model],
+        ["claude", "-p", prompt, "--model", model, "--output-format", "json"],
         capture_output=True, text=True, timeout=600
     )
     if result.returncode != 0:
         raise RuntimeError(f"claude -p failed: {result.stderr[:500]}")
-    return result.stdout.strip()
+    # --output-format json wraps in {"type":"result","result":"..."}
+    try:
+        wrapper = json.loads(result.stdout)
+        return wrapper.get("result", result.stdout).strip()
+    except (json.JSONDecodeError, AttributeError):
+        return result.stdout.strip()
+
+
+def parse_json_response(raw):
+    """Parse JSON from Claude response, handling code fences and common issues."""
+    raw = re.sub(r'^```(?:json)?\s*', '', raw.strip())
+    raw = re.sub(r'\s*```$', '', raw.strip())
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        # Try to extract JSON object from the response
+        match = re.search(r'\{[\s\S]*\}', raw)
+        if match:
+            return json.loads(match.group())
+        raise
 
 
 def select_topic():
@@ -142,9 +161,7 @@ Return ONLY valid JSON (no markdown, no code fences):
 Minimum 3 FAQ questions that tourists actually ask."""
 
     raw = call_claude(prompt, "sonnet")
-    raw = re.sub(r'^```json\s*', '', raw)
-    raw = re.sub(r'\s*```$', '', raw)
-    return json.loads(raw)
+    return parse_json_response(raw)
 
 
 def validate_content(data, fmt):
@@ -196,9 +213,7 @@ Return ONLY valid JSON (no markdown):
 {{"fr": {{"title": "...", "meta_desc": "...", "content": "...", "faq": [...]}}, "de": {{"title": "...", "meta_desc": "...", "content": "...", "faq": [...]}}, "el": {{"title": "...", "meta_desc": "...", "content": "...", "faq": [...]}}}}"""
 
     raw = call_claude(prompt, "sonnet")
-    raw = re.sub(r'^```json\s*', '', raw)
-    raw = re.sub(r'\s*```$', '', raw)
-    return json.loads(raw)
+    return parse_json_response(raw)
 
 
 def translate_batch(en_data, locales):
@@ -217,9 +232,7 @@ Return ONLY valid JSON (no markdown), one key per locale code:
 {{"{locales[0]}": {{"title": "...", "meta_desc": "...", "content": "...", "faq": [...]}}, ...}}"""
 
     raw = call_claude(prompt, "haiku")
-    raw = re.sub(r'^```json\s*', '', raw)
-    raw = re.sub(r'\s*```$', '', raw)
-    return json.loads(raw)
+    return parse_json_response(raw)
 
 
 def generate_and_upload_image(title, category, slug):
