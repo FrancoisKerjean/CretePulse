@@ -47,10 +47,10 @@ def send_telegram(text):
 
 
 def call_claude(prompt, model="sonnet"):
-    """Call Claude CLI and return stdout."""
+    """Call Claude CLI via stdin to avoid shell escaping issues with long prompts."""
     result = subprocess.run(
-        ["claude", "-p", prompt, "--model", model, "--output-format", "json"],
-        capture_output=True, text=True, timeout=600
+        ["claude", "-p", "-", "--model", model, "--output-format", "json"],
+        input=prompt, capture_output=True, text=True, timeout=600
     )
     if result.returncode != 0:
         raise RuntimeError(f"claude -p failed: {result.stderr[:500]}")
@@ -225,8 +225,8 @@ Keep HTML structure intact. Anchor IDs stay in English.
 Source:
 - Title: {en_data['title']}
 - Meta desc: {en_data['meta_desc']}
-- Content: {en_data['content'][:3000]}
-- FAQ: {json.dumps(en_data['faq'][:3], ensure_ascii=False)}
+- Content (abbreviated): {en_data['content'][:2000]}
+- FAQ (first 2): {json.dumps(en_data['faq'][:2], ensure_ascii=False)}
 
 Return ONLY valid JSON (no markdown), one key per locale code:
 {{"{locales[0]}": {{"title": "...", "meta_desc": "...", "content": "...", "faq": [...]}}, ...}}"""
