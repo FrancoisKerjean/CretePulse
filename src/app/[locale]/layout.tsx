@@ -40,6 +40,9 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     alternates: {
       canonical: localeUrl,
       languages: alternates,
+      types: {
+        "application/rss+xml": "https://crete.direct/feed.xml",
+      },
     },
     openGraph: {
       siteName: "Crete Direct",

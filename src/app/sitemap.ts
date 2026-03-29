@@ -6,6 +6,7 @@ import { getAllHikes } from "@/lib/hikes";
 import { getLatestNews } from "@/lib/news";
 import { getUpcomingEvents } from "@/lib/events";
 import { MONTHS } from "@/lib/weather-monthly";
+import { supabase } from "@/lib/supabase";
 
 export const revalidate = 3600;
 
@@ -162,6 +163,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   } catch {
     // Supabase unreachable at build time — skip dynamic event URLs
   }
+
+  // Dynamic guide pages
+  try {
+    const { data: guides } = await supabase
+      .from("guides")
+      .select("slug, published_at")
+      .eq("status", "published")
+      .order("published_at", { ascending: false });
+
+    if (guides) {
+      for (const guide of guides) {
+        for (const locale of LOCALES) {
+          entries.push({
+            url: `${BASE_URL}/${locale}/articles/${guide.slug}`,
+            lastModified: new Date(guide.published_at),
+            changeFrequency: "monthly" as const,
+            priority: 0.8,
+          });
+        }
+      }
+    }
+  } catch {}
 
   // Visit Crete in [month] pages
   for (const month of MONTHS) {
