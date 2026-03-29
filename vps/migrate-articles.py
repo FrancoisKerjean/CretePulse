@@ -29,13 +29,36 @@ BATCH_LOCALES = [
 
 
 def call_claude(prompt, model="sonnet"):
-    result = subprocess.run(
-        ["claude", "-p", prompt, "--model", model],
-        capture_output=True, text=True, timeout=300
-    )
-    if result.returncode != 0:
-        raise RuntimeError(f"claude -p failed: {result.stderr[:500]}")
-    return result.stdout.strip()
+    import tempfile
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as f:
+        f.write(prompt)
+        tmp_path = f.name
+    try:
+        cmd = f'cat "{tmp_path}" | claude -p --model {model} --output-format json'
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=600)
+        if result.returncode != 0:
+            raise RuntimeError(f"claude -p failed: {result.stderr[:500]}")
+        try:
+            import json as _json
+            wrapper = _json.loads(result.stdout)
+            return wrapper.get("result", result.stdout).strip()
+        except Exception:
+            return result.stdout.strip()
+    finally:
+        os.unlink(tmp_path)
+
+
+def parse_json_response(raw):
+    """Parse JSON from Claude response, handling code fences."""
+    raw = re.sub(r'^```(?:json)?\s*', '', raw.strip())
+    raw = re.sub(r'\s*```$', '', raw.strip())
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        match = re.search(r'\{[\s\S]*\}', raw)
+        if match:
+            return json.loads(match.group())
+        raise
 
 
 def migrate_article(article):
@@ -74,9 +97,7 @@ Return ONLY valid JSON:
 {{"meta_desc_en": "...", "meta_desc_fr": "...", "meta_desc_de": "...", "meta_desc_el": "...", "faq_en": [{{"q": "...", "a": "..."}}, ...], "faq_fr": [{{"q": "...", "a": "..."}}, ...], "faq_de": [{{"q": "...", "a": "..."}}, ...], "faq_el": [{{"q": "...", "a": "..."}}, ...]}}"""
 
     raw = call_claude(enrich_prompt, "sonnet")
-    raw = re.sub(r'^```json\s*', '', raw)
-    raw = re.sub(r'\s*```$', '', raw)
-    enriched = json.loads(raw)
+    enriched = parse_json_response(raw)
 
     meta_descs = {
         "en": enriched.get("meta_desc_en", ""),
@@ -107,9 +128,7 @@ Return ONLY valid JSON:
 {{"{batch[0]}": {{"title": "...", "meta_desc": "...", "content": "...", "faq": [...]}}, ...}}"""
 
         raw = call_claude(prompt, "haiku")
-        raw = re.sub(r'^```json\s*', '', raw)
-        raw = re.sub(r'\s*```$', '', raw)
-        batch_data = json.loads(raw)
+        batch_data = parse_json_response(raw)
 
         for loc, data in batch_data.items():
             titles[loc] = data.get("title", "")
