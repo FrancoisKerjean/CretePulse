@@ -50,7 +50,7 @@ def call_claude(prompt, model="sonnet"):
     """Call Claude CLI and return stdout."""
     result = subprocess.run(
         ["claude", "-p", prompt, "--model", model],
-        capture_output=True, text=True, timeout=300
+        capture_output=True, text=True, timeout=600
     )
     if result.returncode != 0:
         raise RuntimeError(f"claude -p failed: {result.stderr[:500]}")
