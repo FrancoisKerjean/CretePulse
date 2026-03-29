@@ -8,19 +8,19 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 const META: Record<string, { title: string; desc: string }> = {
   en: {
-    title: "Crete FAQ - 30+ Questions Answered About Visiting Crete | Crete Direct",
+    title: "Crete FAQ - 30+ Questions About Visiting Crete",
     desc: "Everything you need to know before visiting Crete: flights, beaches, food, weather, budget, safety and more. 30+ questions answered by locals.",
   },
   fr: {
-    title: "FAQ Crète - 30+ Questions sur la Crète | Crete Direct",
+    title: "FAQ Crète - 30+ Questions sur la Crète",
     desc: "Tout ce qu'il faut savoir avant de visiter la Crète : vols, plages, cuisine, météo, budget, sécurité et plus. 30+ réponses par des locaux.",
   },
   de: {
-    title: "Kreta FAQ - 30+ Fragen über Kreta beantwortet | Crete Direct",
+    title: "Kreta FAQ - 30+ Fragen über Kreta beantwortet",
     desc: "Alles was Sie vor Ihrem Kreta-Urlaub wissen müssen: Flüge, Strände, Essen, Wetter, Budget, Sicherheit. 30+ Antworten von Einheimischen.",
   },
   el: {
-    title: "Συχνές Ερωτήσεις Κρήτη - 30+ Απαντήσεις | Crete Direct",
+    title: "Συχνές Ερωτήσεις Κρήτη - 30+ Απαντήσεις",
     desc: "Όλα όσα πρέπει να γνωρίζετε για την Κρήτη: πτήσεις, παραλίες, φαγητό, καιρός, budget, ασφάλεια. 30+ απαντήσεις.",
   },
 };

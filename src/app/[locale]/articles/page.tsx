@@ -8,10 +8,10 @@ export const revalidate = 86400;
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 const META: Record<string, { title: string; desc: string }> = {
-  en: { title: "Crete Travel Guide - Beaches, Hiking, Food & Expat Life | Crete Direct", desc: "Practical, fact-checked travel guides to Crete. Best beaches, hiking trails, local food, expat life tips and family travel. Written from the island." },
-  fr: { title: "Guide de Voyage Crète - Plages, Randonnées, Gastronomie | Crete Direct", desc: "Guides pratiques et vérifiés sur la Crète. Meilleures plages, randonnées, cuisine locale, vie d'expatrié. Écrits depuis l'île." },
-  de: { title: "Kreta Reiseführer - Strände, Wandern, Essen & Expat-Leben | Crete Direct", desc: "Praktische, faktengeprüfte Reiseführer für Kreta. Beste Strände, Wanderwege, lokales Essen, Expat-Leben. Von der Insel geschrieben." },
-  el: { title: "Οδηγός Ταξιδιού Κρήτη - Παραλίες, Πεζοπορία, Φαγητό | Crete Direct", desc: "Πρακτικοί οδηγοί για την Κρήτη. Καλύτερες παραλίες, μονοπάτια πεζοπορίας, τοπικό φαγητό, ζωή στην Κρήτη." },
+  en: { title: "Crete Travel Guide - Beaches, Hiking & Food", desc: "Practical, fact-checked travel guides to Crete. Best beaches, hiking trails, local food, expat life tips and family travel. Written from the island." },
+  fr: { title: "Guide de Voyage Crète - Plages, Randonnées, Gastronomie", desc: "Guides pratiques et vérifiés sur la Crète. Meilleures plages, randonnées, cuisine locale, vie d'expatrié. Écrits depuis l'île." },
+  de: { title: "Kreta Reiseführer - Strände, Wandern & Essen", desc: "Praktische, faktengeprüfte Reiseführer für Kreta. Beste Strände, Wanderwege, lokales Essen, Expat-Leben. Von der Insel geschrieben." },
+  el: { title: "Οδηγός Ταξιδιού Κρήτη - Παραλίες, Πεζοπορία, Φαγητό", desc: "Πρακτικοί οδηγοί για την Κρήτη. Καλύτερες παραλίες, μονοπάτια πεζοπορίας, τοπικό φαγητό, ζωή στην Κρήτη." },
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {

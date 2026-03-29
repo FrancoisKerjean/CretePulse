@@ -7,19 +7,19 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 const META: Record<string, { title: string; desc: string }> = {
   en: {
-    title: "Property Management in Crete - Rental Management Services | Crete Direct",
+    title: "Property Management in Crete - Rental Services",
     desc: "Everything you need to know about property management in Crete. Short-term rental regulations, AMA license, revenue potential, and trusted local management services.",
   },
   fr: {
-    title: "Gestion locative en Crète - Services de gestion | Crete Direct",
+    title: "Gestion locative en Crète - Services de gestion",
     desc: "Tout savoir sur la gestion locative en Crète. Réglementation location courte durée, licence AMA, potentiel de revenus et services de gestion locale.",
   },
   de: {
-    title: "Immobilienverwaltung auf Kreta - Mietverwaltungsdienste | Crete Direct",
+    title: "Immobilienverwaltung auf Kreta - Mietverwaltung",
     desc: "Alles über Immobilienverwaltung auf Kreta. Kurzzeitvermietung, AMA-Lizenz, Einnahmepotenzial und lokale Verwaltungsdienste.",
   },
   el: {
-    title: "Διαχείριση Ακινήτων στην Κρήτη - Υπηρεσίες Διαχείρισης | Crete Direct",
+    title: "Διαχείριση Ακινήτων στην Κρήτη - Υπηρεσίες",
     desc: "Όλα όσα πρέπει να γνωρίζετε για τη διαχείριση ακινήτων στην Κρήτη. Βραχυχρόνια μίσθωση, άδεια AMA, δυναμικό εσόδων.",
   },
 };

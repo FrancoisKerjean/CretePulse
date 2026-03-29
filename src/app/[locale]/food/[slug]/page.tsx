@@ -1,5 +1,6 @@
 import { getFoodBySlug, getNearbyFoodPlaces } from "@/lib/food";
 import { getLocalizedField, type Locale } from "@/lib/types";
+import { restaurantSchema, breadcrumbSchema } from "@/lib/schema";
 import { UtensilsCrossed, MapPin, Phone, Globe, ChevronLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -68,8 +69,17 @@ export default async function FoodDetailPage({
   const description = getLocalizedField(place, "description", loc);
   const fl = FL[locale] || FL.en;
 
+  const restaurantJsonLd = restaurantSchema(place, loc);
+  const breadcrumbJsonLd = breadcrumbSchema([
+    { name: "Crete Direct", url: `${BASE_URL}/${locale}` },
+    { name: loc === "fr" ? "Restaurants" : loc === "de" ? "Restaurants" : loc === "el" ? "Εστιατόρια" : "Restaurants", url: `${BASE_URL}/${locale}/food` },
+    { name: place.name, url: `${BASE_URL}/${locale}/food/${slug}` },
+  ]);
+
   return (
     <main className="min-h-screen bg-surface">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       {/* Hero image */}
       {place.image_url && (
         <div className="relative h-64 md:h-80 bg-terra-faint">

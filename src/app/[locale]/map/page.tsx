@@ -10,10 +10,10 @@ export const revalidate = 86400;
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 const META: Record<string, { title: string; desc: string }> = {
-  en: { title: "Interactive Map of Crete - Beaches, Villages, Food, Hikes | Crete Direct", desc: "Explore Crete on an interactive map. Find beaches, villages, restaurants, and hiking trails across the island." },
-  fr: { title: "Carte Interactive de la Crète - Plages, Villages, Restaurants | Crete Direct", desc: "Explorez la Crète sur une carte interactive. Trouvez plages, villages, restaurants et sentiers de randonnée." },
-  de: { title: "Interaktive Karte von Kreta - Strände, Dörfer, Essen, Wandern | Crete Direct", desc: "Entdecken Sie Kreta auf einer interaktiven Karte. Finden Sie Strände, Dörfer, Restaurants und Wanderwege." },
-  el: { title: "Διαδραστικός Χάρτης Κρήτης - Παραλίες, Χωριά, Φαγητό | Crete Direct", desc: "Εξερευνήστε την Κρήτη σε διαδραστικό χάρτη. Βρείτε παραλίες, χωριά, εστιατόρια και μονοπάτια." },
+  en: { title: "Interactive Map of Crete - Beaches, Villages & Hikes", desc: "Explore Crete on an interactive map. Find beaches, villages, restaurants, and hiking trails across the island." },
+  fr: { title: "Carte Interactive de la Crète - Plages & Villages", desc: "Explorez la Crète sur une carte interactive. Trouvez plages, villages, restaurants et sentiers de randonnée." },
+  de: { title: "Interaktive Karte von Kreta - Strände & Wanderwege", desc: "Entdecken Sie Kreta auf einer interaktiven Karte. Finden Sie Strände, Dörfer, Restaurants und Wanderwege." },
+  el: { title: "Διαδραστικός Χάρτης Κρήτης - Παραλίες & Χωριά", desc: "Εξερευνήστε την Κρήτη σε διαδραστικό χάρτη. Βρείτε παραλίες, χωριά, εστιατόρια και μονοπάτια." },
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {

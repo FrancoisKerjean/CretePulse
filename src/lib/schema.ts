@@ -156,7 +156,7 @@ export function newsSchema(news: NewsItem, locale: Locale): Record<string, unkno
       url: BASE_URL,
       logo: {
         "@type": "ImageObject",
-        url: `${BASE_URL}/logo.png`,
+        url: `${BASE_URL}/icon.svg`,
       },
     },
     isBasedOn: {

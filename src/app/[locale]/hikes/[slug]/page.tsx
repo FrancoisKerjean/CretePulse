@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { getHikeBySlug } from "@/lib/hikes";
 import { getLocalizedField, type Locale, type Hike } from "@/lib/types";
+import { breadcrumbSchema } from "@/lib/schema";
 import { Footprints, Mountain, Droplets, MapPin, ChevronLeft, Download } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -60,8 +61,40 @@ export default async function HikeDetailPage({
   const description = getLocalizedField(hike, "description", loc);
   const diffStyle = DIFFICULTY_STYLES[hike.difficulty];
 
+  const url = `${BASE_URL}/${locale}/hikes/${slug}`;
+
+  const hikeJsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "SportsActivityLocation",
+    name,
+    description: description?.substring(0, 300) || undefined,
+    url,
+    sport: "Hiking",
+    additionalProperty: [
+      hike.distance_km != null && { "@type": "PropertyValue", name: "Distance", value: `${hike.distance_km} km` },
+      hike.duration_hours != null && { "@type": "PropertyValue", name: "Duration", value: `${hike.duration_hours}h` },
+      hike.elevation_gain_m != null && { "@type": "PropertyValue", name: "Elevation Gain", value: `${hike.elevation_gain_m} m` },
+      { "@type": "PropertyValue", name: "Difficulty", value: hike.difficulty },
+    ].filter(Boolean),
+    ...(hike.start_latitude != null && hike.start_longitude != null
+      ? { geo: { "@type": "GeoCoordinates", latitude: hike.start_latitude, longitude: hike.start_longitude } }
+      : {}),
+    ...(hike.image_url ? { image: hike.image_url } : {}),
+  };
+
+  const breadcrumbJsonLd = breadcrumbSchema([
+    { name: "Crete Direct", url: `${BASE_URL}/${locale}` },
+    {
+      name: loc === "fr" ? "Randonnées" : loc === "de" ? "Wanderwege" : loc === "el" ? "Πεζοπορία" : "Hiking Trails",
+      url: `${BASE_URL}/${locale}/hikes`,
+    },
+    { name, url },
+  ]);
+
   return (
     <main className="min-h-screen bg-surface">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(hikeJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       {/* Hero image */}
       {hike.image_url && (
         <div className="relative h-64 md:h-80 bg-aegean">

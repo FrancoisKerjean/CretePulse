@@ -22,10 +22,10 @@ const EVENTS_LABELS: Record<Locale, {
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 const EVENTS_META: Record<string, { title: string; desc: string }> = {
-  en: { title: "Events in Crete - Festivals, Markets & Concerts | Crete Direct", desc: "Upcoming events in Crete: festivals, village markets, concerts, religious panigýria and cultural gatherings. Browse by week across all regions." },
-  fr: { title: "Événements en Crète - Festivals, Marchés & Concerts | Crete Direct", desc: "Événements à venir en Crète : festivals, marchés de villages, concerts, panigýria religieux et rassemblements culturels. Par semaine." },
-  de: { title: "Veranstaltungen auf Kreta - Festivals, Märkte & Konzerte | Crete Direct", desc: "Kommende Events auf Kreta: Festivals, Dorfmärkte, Konzerte, religiöse Panigýria. Nach Woche durchsuchen." },
-  el: { title: "Εκδηλώσεις στην Κρήτη - Φεστιβάλ, Αγορές & Συναυλίες | Crete Direct", desc: "Επερχόμενες εκδηλώσεις στην Κρήτη: φεστιβάλ, αγορές χωριών, συναυλίες, πανηγύρια. Ανά εβδομάδα." },
+  en: { title: "Events in Crete - Festivals, Markets & Concerts", desc: "Upcoming events in Crete: festivals, village markets, concerts, religious panigýria and cultural gatherings. Browse by week across all regions." },
+  fr: { title: "Événements en Crète - Festivals, Marchés & Concerts", desc: "Événements à venir en Crète : festivals, marchés de villages, concerts, panigýria religieux et rassemblements culturels. Par semaine." },
+  de: { title: "Veranstaltungen auf Kreta - Festivals & Konzerte", desc: "Kommende Events auf Kreta: Festivals, Dorfmärkte, Konzerte, religiöse Panigýria. Nach Woche durchsuchen." },
+  el: { title: "Εκδηλώσεις στην Κρήτη - Φεστιβάλ & Συναυλίες", desc: "Επερχόμενες εκδηλώσεις στην Κρήτη: φεστιβάλ, αγορές χωριών, συναυλίες, πανηγύρια. Ανά εβδομάδα." },
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
