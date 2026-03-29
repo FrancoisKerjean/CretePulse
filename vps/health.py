@@ -22,7 +22,7 @@ TELEGRAM_BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 TELEGRAM_CHANNEL_ID = os.environ["TELEGRAM_CHANNEL_ID"]
 
 # Thresholds
-WEATHER_MAX_AGE_HOURS = 2
+WEATHER_MAX_AGE_HOURS = 2.5
 NEWS_MAX_AGE_HOURS = 6
 NEWS_QUIET_START = 22   # no news alert after 22h
 NEWS_QUIET_END = 6      # no news alert before 6h (Athens time = UTC+3 in summer)
