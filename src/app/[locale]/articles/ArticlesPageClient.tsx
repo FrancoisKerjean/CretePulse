@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { Guide } from "@/lib/guides";
 import type { Locale } from "@/lib/types";
-import { GuideCard, CATEGORY_LABELS, CATEGORY_COLORS } from "./page";
+import { GuideCard, CATEGORY_LABELS, CATEGORY_COLORS } from "./articles-shared";
 
 interface Props {
   guides: Guide[];
