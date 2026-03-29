@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { BookOpen, Clock, ChevronRight } from "lucide-react";
-import { articles, getLocalizedArticleTitle, type Article } from "@/data/articles";
+import { getPublishedGuides, getLocalizedGuideField, type Guide } from "@/lib/guides";
 import type { Locale } from "@/lib/types";
+import ArticlesPageClient from "./ArticlesPageClient";
 
 export const revalidate = 86400;
 
@@ -40,7 +41,7 @@ const PAGE_SUBTITLES: Record<Locale, string> = {
   el: "Πρακτικοί οδηγοί για παραλίες, πεζοπορία, φαγητό και ζωή στην Κρήτη.",
 };
 
-const CATEGORY_LABELS: Record<string, Record<string, string>> = {
+export const CATEGORY_LABELS: Record<string, Record<string, string>> = {
   beaches: { en: "Beaches", fr: "Plages", de: "Strände", el: "Παραλίες" },
   hikes: { en: "Hiking", fr: "Randonnées", de: "Wandern", el: "Πεζοπορία" },
   travel: { en: "Travel", fr: "Voyage", de: "Reise", el: "Ταξίδι" },
@@ -50,7 +51,7 @@ const CATEGORY_LABELS: Record<string, Record<string, string>> = {
   family: { en: "Family", fr: "Famille", de: "Familie", el: "Οικογένεια" },
 };
 
-const CATEGORY_COLORS: Record<string, string> = {
+export const CATEGORY_COLORS: Record<string, string> = {
   beaches: "bg-aegean-faint text-aegean",
   hikes: "bg-olive/10 text-olive",
   travel: "bg-sand text-text",
@@ -60,26 +61,26 @@ const CATEGORY_COLORS: Record<string, string> = {
   family: "bg-sand text-text",
 };
 
-const READ_TIME_LABEL: Record<Locale, string> = {
+export const READ_TIME_LABEL: Record<Locale, string> = {
   en: "min read",
   fr: "min de lecture",
   de: "Min. Lesezeit",
   el: "λεπτά ανάγνωσης",
 };
 
-function ArticleCard({ article, locale }: { article: Article; locale: Locale }) {
-  const title = getLocalizedArticleTitle(article, locale);
-  const categoryLabel = CATEGORY_LABELS[article.category]?.[locale] || article.category;
-  const categoryColor = CATEGORY_COLORS[article.category] || "bg-stone text-text-muted";
+export function GuideCard({ guide, locale }: { guide: Guide; locale: Locale }) {
+  const title = getLocalizedGuideField(guide, "titles", locale);
+  const categoryLabel = CATEGORY_LABELS[guide.category]?.[locale] || guide.category;
+  const categoryColor = CATEGORY_COLORS[guide.category] || "bg-stone text-text-muted";
 
   return (
     <Link
-      href={`/${locale}/articles/${article.slug}`}
+      href={`/${locale}/articles/${guide.slug}`}
       className="group block bg-white rounded-xl border border-border overflow-hidden hover:shadow-md transition-shadow"
     >
       <div className="relative h-48 bg-stone overflow-hidden">
         <img
-          src={article.image}
+          src={guide.image_url || "/images/crete-default.jpg"}
           alt={title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
@@ -100,7 +101,7 @@ function ArticleCard({ article, locale }: { article: Article; locale: Locale }) 
         <div className="flex items-center justify-between mt-3">
           <div className="flex items-center gap-1 text-xs text-text-light">
             <Clock className="w-3 h-3" />
-            {article.readTime} {READ_TIME_LABEL[locale]}
+            {guide.read_time ?? "—"} {READ_TIME_LABEL[locale]}
           </div>
           <span className="flex items-center gap-1 text-xs text-aegean font-medium">
             {locale === "fr" ? "Lire" : locale === "de" ? "Lesen" : locale === "el" ? "Διαβάστε" : "Read"}
@@ -116,6 +117,10 @@ export default async function ArticlesPage({ params }: { params: Promise<{ local
   const { locale } = await params;
   const loc = locale as Locale;
 
+  const guides = await getPublishedGuides(200);
+
+  const categories = Array.from(new Set(guides.map((g) => g.category))).filter(Boolean);
+
   return (
     <main className="min-h-screen bg-surface">
       <div className="max-w-6xl mx-auto px-4 py-12">
@@ -127,11 +132,7 @@ export default async function ArticlesPage({ params }: { params: Promise<{ local
           <p className="text-sm text-text-muted">{PAGE_SUBTITLES[loc]}</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {articles.map((article) => (
-            <ArticleCard key={article.slug} article={article} locale={loc} />
-          ))}
-        </div>
+        <ArticlesPageClient guides={guides} locale={loc} categories={categories} />
       </div>
     </main>
   );
