@@ -47,19 +47,28 @@ def send_telegram(text):
 
 
 def call_claude(prompt, model="sonnet"):
-    """Call Claude CLI via stdin to avoid shell escaping issues with long prompts."""
-    result = subprocess.run(
-        ["claude", "-p", "-", "--model", model, "--output-format", "json"],
-        input=prompt, capture_output=True, text=True, timeout=600
-    )
-    if result.returncode != 0:
-        raise RuntimeError(f"claude -p failed: {result.stderr[:500]}")
-    # --output-format json wraps in {"type":"result","result":"..."}
+    """Call Claude CLI with prompt written to temp file to avoid arg length issues."""
+    import tempfile
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as f:
+        f.write(prompt)
+        tmp_path = f.name
+
     try:
-        wrapper = json.loads(result.stdout)
-        return wrapper.get("result", result.stdout).strip()
-    except (json.JSONDecodeError, AttributeError):
-        return result.stdout.strip()
+        # Use shell to pipe file content to claude
+        cmd = f'cat "{tmp_path}" | claude -p --model {model} --output-format json'
+        result = subprocess.run(
+            cmd, shell=True, capture_output=True, text=True, timeout=600
+        )
+        if result.returncode != 0:
+            raise RuntimeError(f"claude -p failed: {result.stderr[:500]}")
+        # --output-format json wraps in {"type":"result","result":"..."}
+        try:
+            wrapper = json.loads(result.stdout)
+            return wrapper.get("result", result.stdout).strip()
+        except (json.JSONDecodeError, AttributeError):
+            return result.stdout.strip()
+    finally:
+        os.unlink(tmp_path)
 
 
 def parse_json_response(raw):
