@@ -7,6 +7,8 @@ import { getLatestNews } from "@/lib/news";
 import { getUpcomingEvents } from "@/lib/events";
 import { MONTHS } from "@/lib/weather-monthly";
 
+export const revalidate = 3600;
+
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 const LOCALES = ["en", "fr", "de", "el", "it", "nl", "pl", "es", "pt", "ru", "ja", "ko", "zh", "tr", "sv", "da", "no", "fi", "cs", "hu", "ro", "ar"] as const;
 
@@ -59,8 +61,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // Dynamic village pages
+  let villages: Awaited<ReturnType<typeof getAllVillages>> | null = null;
   try {
-    const villages = await getAllVillages();
+    villages = await getAllVillages();
     for (const village of villages) {
       for (const locale of LOCALES) {
         entries.push({
@@ -75,9 +78,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Supabase unreachable at build time — skip dynamic village URLs
   }
 
-  // Beaches near village pages
+  // Beaches near village pages (reuse villages from above)
   try {
-    const villagesForBeaches = await getAllVillages();
+    const villagesForBeaches = villages ?? await getAllVillages();
     for (const village of villagesForBeaches) {
       for (const locale of LOCALES) {
         entries.push({

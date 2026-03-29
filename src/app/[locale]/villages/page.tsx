@@ -4,6 +4,8 @@ import { getLocalizedField, type Locale } from "@/lib/types";
 import { MapPin, Mountain, Users, Clock } from "lucide-react";
 import Link from "next/link";
 
+export const revalidate = 86400;
+
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 const VILLAGES_META: Record<string, { title: string; desc: string }> = {

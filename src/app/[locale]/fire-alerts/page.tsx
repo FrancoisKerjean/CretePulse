@@ -1,6 +1,8 @@
 import type { Locale } from "@/lib/types";
 import { Flame, AlertTriangle, Phone, Shield } from "lucide-react";
 
+export const revalidate = 3600;
+
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {

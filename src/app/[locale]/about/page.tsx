@@ -1,6 +1,8 @@
 import type { Locale } from "@/lib/types";
 import Link from "next/link";
 
+export const revalidate = 86400;
+
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {

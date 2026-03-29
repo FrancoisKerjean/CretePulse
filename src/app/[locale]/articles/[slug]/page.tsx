@@ -8,6 +8,8 @@ import {
   getLocalizedArticleContent,
 } from "@/data/articles";
 import type { Locale } from "@/lib/types";
+
+export const revalidate = 86400;
 import { breadcrumbSchema } from "@/lib/schema";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";

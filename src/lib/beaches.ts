@@ -34,12 +34,17 @@ export async function getBeachesByRegion(region: string): Promise<Beach[]> {
 }
 
 export async function getNearbyBeaches(lat: number, lng: number, excludeSlug: string, limit = 4): Promise<Beach[]> {
-  // Simple distance approximation - fetch all and sort client-side
-  // (Supabase free tier doesn't have PostGIS)
+  // Bounding box filter (~50km radius) to avoid fetching entire table
+  const delta = 0.5; // ~55km at Crete's latitude
   const { data } = await supabase
     .from("beaches")
     .select("*")
-    .neq("slug", excludeSlug);
+    .neq("slug", excludeSlug)
+    .gte("latitude", lat - delta)
+    .lte("latitude", lat + delta)
+    .gte("longitude", lng - delta)
+    .lte("longitude", lng + delta)
+    .limit(20);
 
   if (!data) return [];
 

@@ -1,15 +1,19 @@
 import { supabase } from "./supabase";
 import type { Event } from "./types";
 
-export async function getUpcomingEvents(): Promise<Event[]> {
+export async function getUpcomingEvents(limit?: number): Promise<Event[]> {
   const today = new Date().toISOString().split("T")[0];
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("events")
     .select("*")
     .gte("date_start", today)
     .eq("verified", true)
     .order("date_start");
+
+  if (limit) query = query.limit(limit);
+
+  const { data, error } = await query;
 
   if (error) throw error;
   return (data as Event[]) || [];

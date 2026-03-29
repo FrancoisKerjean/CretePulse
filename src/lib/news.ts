@@ -17,7 +17,7 @@ export async function getLatestNews(limit = 20, locale = "en"): Promise<NewsItem
     .select("*")
     .neq("title_en", "")
     .order("published_at", { ascending: false })
-    .limit(limit * 4);
+    .limit(limit * 2);
 
   // For translated locales, also require the locale title to be filled
   if (effectiveLocale !== "en") {

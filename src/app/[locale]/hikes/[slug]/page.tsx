@@ -5,6 +5,8 @@ import { Footprints, Mountain, Droplets, MapPin, ChevronLeft, Download } from "l
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+export const revalidate = 86400;
+
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 const DIFFICULTY_STYLES: Record<Hike["difficulty"], { label: string; classes: string }> = {

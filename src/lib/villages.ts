@@ -34,10 +34,17 @@ export async function getVillagesByRegion(region: string): Promise<Village[]> {
 }
 
 export async function getNearbyVillages(lat: number, lng: number, excludeSlug: string, limit = 4): Promise<Village[]> {
+  // Bounding box filter (~50km radius) to avoid fetching entire table
+  const delta = 0.5;
   const { data } = await supabase
     .from("villages")
     .select("*")
-    .neq("slug", excludeSlug);
+    .neq("slug", excludeSlug)
+    .gte("latitude", lat - delta)
+    .lte("latitude", lat + delta)
+    .gte("longitude", lng - delta)
+    .lte("longitude", lng + delta)
+    .limit(20);
 
   if (!data) return [];
 

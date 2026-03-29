@@ -4,6 +4,8 @@ import { MapPin, Clock, Ticket, ChevronLeft, ChevronRight, Landmark } from "luci
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+export const revalidate = 86400;
+
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 interface LocalizedText {

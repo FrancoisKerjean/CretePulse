@@ -7,6 +7,8 @@ import { MapPin, Clock, Calendar, Tag, ExternalLink, ChevronLeft } from "lucide-
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+export const revalidate = 3600;
+
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 const L: Record<string, Record<string, string>> = {

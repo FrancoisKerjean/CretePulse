@@ -3,6 +3,8 @@ import { BookOpen, Clock, ChevronRight } from "lucide-react";
 import { articles, getLocalizedArticleTitle, type Article } from "@/data/articles";
 import type { Locale } from "@/lib/types";
 
+export const revalidate = 86400;
+
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 const META: Record<string, { title: string; desc: string }> = {

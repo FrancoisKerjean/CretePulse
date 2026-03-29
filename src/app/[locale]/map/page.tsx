@@ -5,6 +5,8 @@ import { getAllHikes } from "@/lib/hikes";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { MapView } from "@/components/map/MapView";
 
+export const revalidate = 86400;
+
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 const META: Record<string, { title: string; desc: string }> = {

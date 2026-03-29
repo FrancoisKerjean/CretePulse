@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { breadcrumbSchema } from "@/lib/schema";
 import { AffiliateCTA } from "@/components/ui/affiliate-cta";
 
+export const revalidate = 86400;
+
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 /* ------------------------------------------------------------------ */

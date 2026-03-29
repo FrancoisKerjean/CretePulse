@@ -3,6 +3,8 @@ import { getLocalizedField, type Locale } from "@/lib/types";
 import { Waves, MapPin, Car, Fish } from "lucide-react";
 import Link from "next/link";
 
+export const revalidate = 86400;
+
 const BEACHES_LABELS: Record<Locale, { subtitle: string; parking: string; kidsOk: string; coming: string }> = {
   en: { subtitle: "beaches with real-time conditions", parking: "Parking", kidsOk: "Kids OK", coming: "500+ beaches coming soon. Data being loaded." },
   fr: { subtitle: "plages avec conditions en temps réel", parking: "Parking", kidsOk: "Enfants OK", coming: "500+ plages à venir. Données en cours de chargement." },
