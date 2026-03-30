@@ -1,12 +1,6 @@
 import type { MetadataRoute } from "next";
-import { getAllBeaches } from "@/lib/beaches";
-import { getAllVillages } from "@/lib/villages";
-import { getAllFoodPlaces } from "@/lib/food";
-import { getAllHikes } from "@/lib/hikes";
-import { getLatestNews } from "@/lib/news";
-import { getUpcomingEvents } from "@/lib/events";
-import { MONTHS } from "@/lib/weather-monthly";
 import { supabase } from "@/lib/supabase";
+import { MONTHS } from "@/lib/weather-monthly";
 
 export const revalidate = 3600;
 
@@ -46,8 +40,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Dynamic beach pages
   try {
-    const beaches = await getAllBeaches();
-    for (const beach of beaches) {
+    const { data: beaches } = await supabase.from("beaches").select("slug");
+    for (const beach of beaches || []) {
       for (const locale of LOCALES) {
         entries.push({
           url: `${BASE_URL}/${locale}/beaches/${beach.slug}`,
@@ -62,10 +56,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // Dynamic village pages
-  let villages: Awaited<ReturnType<typeof getAllVillages>> | null = null;
+  let villageData: { slug: string }[] | null = null;
   try {
-    villages = await getAllVillages();
-    for (const village of villages) {
+    const { data } = await supabase.from("villages").select("slug");
+    villageData = data;
+    for (const village of villageData || []) {
       for (const locale of LOCALES) {
         entries.push({
           url: `${BASE_URL}/${locale}/villages/${village.slug}`,
@@ -81,8 +76,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Beaches near village pages (reuse villages from above)
   try {
-    const villagesForBeaches = villages ?? await getAllVillages();
-    for (const village of villagesForBeaches) {
+    const vForBeaches = villageData ?? (await supabase.from("villages").select("slug")).data ?? [];
+    for (const village of vForBeaches) {
       for (const locale of LOCALES) {
         entries.push({
           url: `${BASE_URL}/${locale}/beaches/near/${village.slug}`,
@@ -98,8 +93,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Dynamic food pages
   try {
-    const foodPlaces = await getAllFoodPlaces();
-    for (const place of foodPlaces) {
+    const { data: foodPlaces } = await supabase.from("food_places").select("slug");
+    for (const place of foodPlaces || []) {
       for (const locale of LOCALES) {
         entries.push({
           url: `${BASE_URL}/${locale}/food/${place.slug}`,
@@ -115,8 +110,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Dynamic hike pages
   try {
-    const hikes = await getAllHikes();
-    for (const hike of hikes) {
+    const { data: hikes } = await supabase.from("hikes").select("slug");
+    for (const hike of hikes || []) {
       for (const locale of LOCALES) {
         entries.push({
           url: `${BASE_URL}/${locale}/hikes/${hike.slug}`,
@@ -132,8 +127,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Dynamic news pages (rewritten only)
   try {
-    const newsItems = await getLatestNews(100, "en");
-    for (const item of newsItems) {
+    const { data: newsItems } = await supabase.from("news").select("slug, published_at").neq("title_en", "").order("published_at", { ascending: false }).limit(200);
+    for (const item of newsItems || []) {
       for (const locale of LOCALES) {
         entries.push({
           url: `${BASE_URL}/${locale}/news/${item.slug}`,
@@ -149,8 +144,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Dynamic event pages
   try {
-    const events = await getUpcomingEvents();
-    for (const event of events) {
+    const today = new Date().toISOString().split("T")[0];
+    const { data: events } = await supabase.from("events").select("slug").gte("date_start", today).eq("verified", true);
+    for (const event of events || []) {
       for (const locale of LOCALES) {
         entries.push({
           url: `${BASE_URL}/${locale}/events/${event.slug}`,

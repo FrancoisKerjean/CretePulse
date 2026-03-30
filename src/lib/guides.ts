@@ -41,7 +41,7 @@ export async function getPublishedGuides(limit: number = 100): Promise<Guide[]> 
   try {
     const { data, error } = await supabase
       .from("guides")
-      .select("*")
+      .select("id, slug, format, category, keywords, titles, meta_descs, image_url, read_time, published_at, status")
       .eq("status", "published")
       .order("published_at", { ascending: false })
       .limit(limit);
