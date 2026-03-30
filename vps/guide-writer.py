@@ -150,9 +150,11 @@ def generate_en(topic, existing_guides):
     word_target = "1500-2000 words" if fmt == "long" else "500-800 words"
     min_h2 = 4 if fmt == "long" else 2
 
+    year = datetime.now(timezone.utc).year
     prompt = f"""You are an expert SEO travel writer specializing in Crete, Greece.
 Write a {fmt}-format guide about: {topic['slug'].replace('-', ' ')}
 Target keywords: {', '.join(topic['keywords'])}
+IMPORTANT: The current year is {year}. All references to years must use {year}, never 2024 or 2025.
 
 Requirements:
 - {word_target}, factual, concrete data (distances, prices, seasons)

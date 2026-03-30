@@ -40,13 +40,15 @@ export function GuideCard({ guide, locale }: { guide: Guide; locale: Locale }) {
       href={`/${locale}/articles/${guide.slug}`}
       className="group block bg-white rounded-xl border border-border overflow-hidden hover:shadow-md transition-shadow"
     >
-      <div className="relative h-48 bg-stone overflow-hidden">
-        <img
-          src={guide.image_url || "/images/crete-default.jpg"}
-          alt={title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          loading="lazy"
-        />
+      <div className="relative h-48 bg-gradient-to-br from-aegean/20 via-stone to-sand overflow-hidden">
+        {guide.image_url && (
+          <img
+            src={guide.image_url}
+            alt={title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            loading="lazy"
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
         <span
           className={`absolute top-3 left-3 text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-full ${categoryColor}`}
