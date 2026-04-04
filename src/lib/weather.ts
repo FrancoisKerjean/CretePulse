@@ -61,32 +61,76 @@ export function getWeatherIcon(code: number): "sun" | "cloud" | "rain" | "wind" 
   return "cloud";
 }
 
-export async function fetchAllCitiesWeather(): Promise<CityWeather[]> {
-  // Read from Supabase weather_cache (updated hourly by VPS cron)
-  // This is more reliable than calling Open-Meteo from Vercel serverless
-  const { supabase } = await import("./supabase");
-  const { data: cache } = await supabase.from("weather_cache").select("city_slug, data");
+async function fetchFromOpenMeteo(): Promise<CityWeather[]> {
+  const lats = CRETE_CITIES.map((c) => c.lat).join(",");
+  const lngs = CRETE_CITIES.map((c) => c.lng).join(",");
 
-  return CRETE_CITIES.map((city) => {
-    const slug = city.name.toLowerCase().replace(/[^a-z]/g, "-").replace(/-+/g, "-");
-    const cached = (cache || []).find((c: { city_slug: string; data: unknown }) =>
-      c.city_slug === slug || c.city_slug === city.name.toLowerCase().replace(/ /g, "-").replace(/\./g, "")
-    );
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const d: any = cached ? (typeof cached.data === "string" ? JSON.parse(cached.data) : cached.data) : {};
+  const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lngs}&current=temperature_2m,wind_speed_10m,wind_direction_10m,weather_code,uv_index,precipitation&timezone=Europe/Athens`;
+  const marineUrl = `https://marine-api.open-meteo.com/v1/marine?latitude=${lats}&longitude=${lngs}&current=sea_surface_temperature,wave_height&timezone=Europe/Athens`;
+
+  const [weatherRes, marineRes] = await Promise.all([
+    fetch(weatherUrl, { next: { revalidate: 7200 } }),
+    fetch(marineUrl, { next: { revalidate: 7200 } }).catch(() => null),
+  ]);
+
+  const weather = await weatherRes.json();
+  const marine = marineRes ? await marineRes.json() : null;
+
+  return CRETE_CITIES.map((city, i) => {
+    const w = Array.isArray(weather) ? weather[i]?.current : weather?.current;
+    const m = marine ? (Array.isArray(marine) ? marine[i]?.current : marine?.current) : null;
     return {
       name: city.name,
       nameEl: city.nameEl,
       lat: city.lat,
       lng: city.lng,
-      temp: Math.round(d.temp ?? 0),
-      windSpeed: Math.round(d.wind_speed ?? 0),
-      windDir: d.wind_dir ?? 0,
-      weatherCode: d.weather_code ?? 0,
-      seaTemp: d.sea_temp ? Math.round(d.sea_temp) : null,
-      waveHeight: d.wave_height ?? null,
-      uvIndex: Math.round(d.uv_index ?? 0),
-      precipitation: d.precipitation ?? 0,
+      temp: Math.round(w?.temperature_2m ?? 0),
+      windSpeed: Math.round(w?.wind_speed_10m ?? 0),
+      windDir: w?.wind_direction_10m ?? 0,
+      weatherCode: w?.weather_code ?? 0,
+      seaTemp: m?.sea_surface_temperature ? Math.round(m.sea_surface_temperature) : null,
+      waveHeight: m?.wave_height ?? null,
+      uvIndex: Math.round(w?.uv_index ?? 0),
+      precipitation: w?.precipitation ?? 0,
     };
   });
+}
+
+export async function fetchAllCitiesWeather(): Promise<CityWeather[]> {
+  // Try Supabase cache first, fallback to Open-Meteo direct
+  try {
+    const { supabase } = await import("./supabase");
+    const { data: cache } = await supabase.from("weather_cache").select("city_slug, data");
+
+    if (cache && cache.length > 0) {
+      const results = CRETE_CITIES.map((city) => {
+        const slug = city.name.toLowerCase().replace(/[^a-z]/g, "-").replace(/-+/g, "-");
+        const cached = cache.find((c: { city_slug: string; data: unknown }) =>
+          c.city_slug === slug || c.city_slug === city.name.toLowerCase().replace(/ /g, "-").replace(/\./g, "")
+        );
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const d: any = cached ? (typeof cached.data === "string" ? JSON.parse(cached.data) : cached.data) : {};
+        return {
+          name: city.name,
+          nameEl: city.nameEl,
+          lat: city.lat,
+          lng: city.lng,
+          temp: Math.round(d.temp ?? 0),
+          windSpeed: Math.round(d.wind_speed ?? 0),
+          windDir: d.wind_dir ?? 0,
+          weatherCode: d.weather_code ?? 0,
+          seaTemp: d.sea_temp ? Math.round(d.sea_temp) : null,
+          waveHeight: d.wave_height ?? null,
+          uvIndex: Math.round(d.uv_index ?? 0),
+          precipitation: d.precipitation ?? 0,
+        };
+      });
+      // Check if data is real (not all zeros)
+      if (results.some((r) => r.temp !== 0)) return results;
+    }
+  } catch {
+    // Supabase down, fall through to Open-Meteo
+  }
+
+  return fetchFromOpenMeteo();
 }
