@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 
-export const revalidate = 3600;
+export const revalidate = 14400;
 
 export async function GET() {
   const { data: guides } = await supabase

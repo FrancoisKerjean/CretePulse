@@ -65,7 +65,7 @@ export async function fetchAllCitiesWeather(): Promise<CityWeather[]> {
   // Read from Supabase weather_cache (updated hourly by VPS cron)
   // This is more reliable than calling Open-Meteo from Vercel serverless
   const { supabase } = await import("./supabase");
-  const { data: cache } = await supabase.from("weather_cache").select("*");
+  const { data: cache } = await supabase.from("weather_cache").select("city_slug, data");
 
   return CRETE_CITIES.map((city) => {
     const slug = city.name.toLowerCase().replace(/[^a-z]/g, "-").replace(/-+/g, "-");

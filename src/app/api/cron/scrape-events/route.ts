@@ -27,7 +27,8 @@ export async function GET(request: NextRequest) {
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // Get existing events for dedup
-    const { data: existing } = await supabase.from("events").select("title_en, date_start");
+    const today = new Date().toISOString().split("T")[0];
+    const { data: existing } = await supabase.from("events").select("title_en, date_start").gte("date_start", today);
     const existingKeys = new Set(
       (existing || []).map((e: { title_en: string; date_start: string }) =>
         `${e.title_en?.toLowerCase().slice(0, 30)}|${e.date_start}`

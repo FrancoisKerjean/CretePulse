@@ -4,7 +4,7 @@ import type { Hike } from "./types";
 export async function getAllHikes(): Promise<Hike[]> {
   const { data, error } = await supabase
     .from("hikes")
-    .select("*")
+    .select("slug, name_en, name_fr, name_de, name_el, image_url, difficulty, type, distance_km, elevation_gain_m, duration_hours")
     .order("name_en");
 
   if (error) throw error;

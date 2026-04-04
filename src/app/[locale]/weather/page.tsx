@@ -2,7 +2,7 @@ import { fetchAllCitiesWeather, getWeatherLabel, getWeatherIcon } from "@/lib/we
 import type { Locale } from "@/lib/types";
 import { Wind, Droplets, Sun, Thermometer, Waves, Eye } from "lucide-react";
 
-export const revalidate = 3600;
+export const revalidate = 7200;
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 

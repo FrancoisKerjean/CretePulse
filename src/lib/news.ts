@@ -14,7 +14,7 @@ export async function getLatestNews(limit = 20, locale = "en"): Promise<NewsItem
 
   const query = supabase
     .from("news")
-    .select("*")
+    .select("slug, title_en, title_fr, title_de, title_el, summary_en, summary_fr, summary_de, summary_el, image_url, category, published_at, source_name, source_url")
     .neq("title_en", "")
     .order("published_at", { ascending: false })
     .limit(limit * 2);

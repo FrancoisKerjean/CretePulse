@@ -4,7 +4,7 @@ import type { Village } from "./types";
 export async function getAllVillages(): Promise<Village[]> {
   const { data, error } = await supabase
     .from("villages")
-    .select("*")
+    .select("slug, name_en, name_fr, name_de, name_el, image_url, period, municipality, region, altitude_m, population, latitude, longitude")
     .order("name_en");
 
   if (error) throw error;
@@ -25,7 +25,7 @@ export async function getVillageBySlug(slug: string): Promise<Village | null> {
 export async function getVillagesByRegion(region: string): Promise<Village[]> {
   const { data, error } = await supabase
     .from("villages")
-    .select("*")
+    .select("slug, name_en, name_fr, name_de, name_el, image_url, period, municipality, region, altitude_m, population, latitude, longitude")
     .eq("region", region)
     .order("name_en");
 
@@ -38,7 +38,7 @@ export async function getNearbyVillages(lat: number, lng: number, excludeSlug: s
   const delta = 0.5;
   const { data } = await supabase
     .from("villages")
-    .select("*")
+    .select("slug, name_en, name_fr, name_de, name_el, image_url, region, latitude, longitude")
     .neq("slug", excludeSlug)
     .gte("latitude", lat - delta)
     .lte("latitude", lat + delta)

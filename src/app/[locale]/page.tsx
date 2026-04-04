@@ -4,7 +4,7 @@ import { getUpcomingEvents } from "@/lib/events";
 import { HomeClient } from "@/components/home/HomeClient";
 import type { NewsItem, Event, Locale } from "@/lib/types";
 
-export const revalidate = 1800; // Revalidate every 30 min - homepage must feel alive
+export const revalidate = 7200; // 2h - reduce Supabase egress
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 

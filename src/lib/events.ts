@@ -6,7 +6,7 @@ export async function getUpcomingEvents(limit?: number): Promise<Event[]> {
 
   let query = supabase
     .from("events")
-    .select("*")
+    .select("slug, title_en, title_fr, title_de, title_el, date_start, date_end, time_start, location_name, category, region")
     .gte("date_start", today)
     .eq("verified", true)
     .order("date_start");
@@ -35,7 +35,7 @@ export async function getEventsByCategory(category: string): Promise<Event[]> {
 
   const { data, error } = await supabase
     .from("events")
-    .select("*")
+    .select("slug, title_en, title_fr, title_de, title_el, date_start, date_end, time_start, location_name, category, region")
     .gte("date_start", today)
     .eq("category", category)
     .eq("verified", true)

@@ -3,7 +3,7 @@ import { getLocalizedField, type Locale } from "@/lib/types";
 import { Newspaper, ExternalLink, Clock } from "lucide-react";
 import Link from "next/link";
 
-export const revalidate = 3600;
+export const revalidate = 7200;
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 

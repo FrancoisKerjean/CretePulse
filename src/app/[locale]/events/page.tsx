@@ -4,7 +4,7 @@ import { localizeLocation } from "@/lib/localize-location";
 import { Calendar, MapPin, Clock } from "lucide-react";
 import Link from "next/link";
 
-export const revalidate = 3600;
+export const revalidate = 7200;
 
 const EVENTS_LABELS: Record<Locale, {
   subtitle: string;

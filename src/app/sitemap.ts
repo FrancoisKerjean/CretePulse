@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { supabase } from "@/lib/supabase";
 import { MONTHS } from "@/lib/weather-monthly";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 const LOCALES = ["en", "fr", "de", "el", "it", "nl", "pl", "es", "pt", "ru", "ja", "ko", "zh", "tr", "sv", "da", "no", "fi", "cs", "hu", "ro", "ar"] as const;
@@ -166,7 +166,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .from("guides")
       .select("slug, published_at")
       .eq("status", "published")
-      .order("published_at", { ascending: false });
+      .order("published_at", { ascending: false })
+      .limit(500);
 
     if (guides) {
       for (const guide of guides) {

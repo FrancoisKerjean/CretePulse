@@ -28,13 +28,13 @@ if now.hour not in (6, 10, 14, 18) or now.minute >= 5:
 print(f"[editorial] {now.isoformat()} - generating editorial article")
 
 # Gather live data
-weather = sb.table("weather_cache").select("*").execute().data or []
+weather = sb.table("weather_cache").select("city_slug, data").execute().data or []
 wx = {}
 for w in weather:
     d = json.loads(w["data"]) if isinstance(w["data"], str) else w["data"]
     wx[w["city_slug"]] = d
 
-events = sb.table("events").select("*").gte("date_start", today).order("date_start").limit(5).execute().data or []
+events = sb.table("events").select("title_en, date_start, location_name, category").gte("date_start", today).order("date_start").limit(5).execute().data or []
 
 # EDITORIAL TOPICS - rotate through the day
 TOPICS = [

@@ -5,7 +5,7 @@ import { newsSchema, breadcrumbSchema } from "@/lib/schema";
 import { ExternalLink, Clock, ArrowLeft, Calendar, Globe } from "lucide-react";
 import Link from "next/link";
 
-export const revalidate = 3600;
+export const revalidate = 14400;
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
