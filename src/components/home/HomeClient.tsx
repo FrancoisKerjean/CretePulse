@@ -265,6 +265,24 @@ export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeC
         </div>
       </section>
 
+      {/* ═══════════════════ MAINTENANCE BANNER ═══════════════════ */}
+      {latestNews.length === 0 && upcomingEvents.length === 0 && (
+        <div className="max-w-6xl mx-auto px-4 pt-8">
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 flex items-center gap-3">
+            <span className="text-amber-600 text-lg">&#9888;</span>
+            <p className="text-sm text-amber-800">
+              {loc === "fr"
+                ? "Maintenance en cours. La météo est disponible, les actualités et événements reviendront très prochainement."
+                : loc === "de"
+                ? "Wartungsarbeiten. Das Wetter ist verfügbar, Nachrichten und Veranstaltungen kehren in Kürze zurück."
+                : loc === "el"
+                ? "Συντήρηση σε εξέλιξη. Ο καιρός είναι διαθέσιμος, τα νέα και οι εκδηλώσεις θα επιστρέψουν σύντομα."
+                : "Maintenance in progress. Weather is available, news and events will be back shortly."}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* ═══════════════════ MAIN CONTENT ═══════════════════ */}
       <div className="max-w-6xl mx-auto px-4 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
