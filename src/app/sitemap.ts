@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { supabase } from "@/lib/supabase";
-import { MONTHS } from "@/lib/weather-monthly";
+import { MONTHS, CITIES } from "@/lib/weather-monthly";
 
 export const revalidate = 86400;
 
@@ -23,291 +23,96 @@ const STATIC_PAGES = [
   "/property-management",
 ];
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+const BEACH_ACTIVITIES = ["snorkeling", "kids", "swimming", "secluded", "sandy", "pebble"];
+const ROUTE_SLUGS = ["heraklion-to-chania", "heraklion-to-rethymno", "heraklion-to-agios-nikolaos", "heraklion-airport-to-city", "chania-airport-to-city", "athens-to-crete", "crete-to-santorini", "heraklion-to-sitia"];
+const COMP_SLUGS = ["chania-vs-heraklion", "chania-vs-rethymno", "heraklion-vs-rethymno", "agios-nikolaos-vs-elounda", "malia-vs-hersonissos", "sitia-vs-ierapetra", "chania-vs-agios-nikolaos", "crete-vs-santorini", "crete-vs-rhodes", "crete-vs-corfu", "crete-vs-mykonos", "crete-vs-cyprus", "elafonisi-vs-balos", "elafonisi-vs-vai", "balos-vs-preveli"];
+const AREA_SLUGS = ["chania", "heraklion", "rethymno", "agios-nikolaos", "elounda", "plakias", "paleochora", "matala"];
+const ITINERARY_SLUGS = ["3-days", "5-days", "7-days", "10-days"];
+const ARCH_SLUGS = ["knossos", "phaistos", "spinalonga", "gortyna", "malia-palace", "aptera"];
+
+// One sub-sitemap per locale (index 0..21)
+export async function generateSitemaps() {
+  return LOCALES.map((_, i) => ({ id: i }));
+}
+
+async function fetchSlugs(table: string, extra?: string): Promise<string[]> {
+  try {
+    let query = supabase.from(table).select("slug");
+    if (extra === "news") {
+      query = supabase.from(table).select("slug").neq("title_en", "").order("published_at", { ascending: false }).limit(200);
+    } else if (extra === "events") {
+      const today = new Date().toISOString().split("T")[0];
+      query = supabase.from(table).select("slug").gte("date_start", today).eq("verified", true);
+    } else if (extra === "guides") {
+      query = supabase.from(table).select("slug").eq("status", "published").order("published_at", { ascending: false }).limit(500);
+    }
+    const { data } = await query;
+    return (data || []).map((r: { slug: string }) => r.slug);
+  } catch {
+    return [];
+  }
+}
+
+export default async function sitemap({ id }: { id: number }): Promise<MetadataRoute.Sitemap> {
+  const locale = LOCALES[id];
   const entries: MetadataRoute.Sitemap = [];
+  const now = new Date();
 
-  // Static pages for all locales
-  for (const locale of LOCALES) {
-    for (const page of STATIC_PAGES) {
-      entries.push({
-        url: `${BASE_URL}/${locale}${page}`,
-        lastModified: new Date(),
-        changeFrequency: page === "" ? "daily" : "weekly",
-        priority: page === "" ? 1.0 : 0.8,
-      });
-    }
-  }
+  const add = (path: string, freq: MetadataRoute.Sitemap[0]["changeFrequency"], priority: number, lastMod?: Date) => {
+    entries.push({
+      url: `${BASE_URL}/${locale}${path}`,
+      lastModified: lastMod || now,
+      changeFrequency: freq,
+      priority,
+    });
+  };
 
-  // Dynamic beach pages
-  try {
-    const { data: beaches } = await supabase.from("beaches").select("slug");
-    for (const beach of beaches || []) {
-      for (const locale of LOCALES) {
-        entries.push({
-          url: `${BASE_URL}/${locale}/beaches/${beach.slug}`,
-          lastModified: new Date(),
-          changeFrequency: "monthly",
-          priority: 0.6,
-        });
-      }
-    }
-  } catch {
-    // Supabase unreachable at build time — skip dynamic beach URLs
-  }
-
-  // Dynamic village pages
-  let villageData: { slug: string }[] | null = null;
-  try {
-    const { data } = await supabase.from("villages").select("slug");
-    villageData = data;
-    for (const village of villageData || []) {
-      for (const locale of LOCALES) {
-        entries.push({
-          url: `${BASE_URL}/${locale}/villages/${village.slug}`,
-          lastModified: new Date(),
-          changeFrequency: "monthly",
-          priority: 0.6,
-        });
-      }
-    }
-  } catch {
-    // Supabase unreachable at build time — skip dynamic village URLs
-  }
-
-  // Beaches near village pages (reuse villages from above)
-  try {
-    const vForBeaches = villageData ?? (await supabase.from("villages").select("slug")).data ?? [];
-    for (const village of vForBeaches) {
-      for (const locale of LOCALES) {
-        entries.push({
-          url: `${BASE_URL}/${locale}/beaches/near/${village.slug}`,
-          lastModified: new Date(),
-          changeFrequency: "monthly",
-          priority: 0.5,
-        });
-      }
-    }
-  } catch {
-    // Skip if Supabase unreachable
-  }
-
-  // Dynamic food pages
-  try {
-    const { data: foodPlaces } = await supabase.from("food_places").select("slug");
-    for (const place of foodPlaces || []) {
-      for (const locale of LOCALES) {
-        entries.push({
-          url: `${BASE_URL}/${locale}/food/${place.slug}`,
-          lastModified: new Date(),
-          changeFrequency: "monthly",
-          priority: 0.6,
-        });
-      }
-    }
-  } catch {
-    // Supabase unreachable at build time — skip dynamic food URLs
-  }
-
-  // Dynamic hike pages
-  try {
-    const { data: hikes } = await supabase.from("hikes").select("slug");
-    for (const hike of hikes || []) {
-      for (const locale of LOCALES) {
-        entries.push({
-          url: `${BASE_URL}/${locale}/hikes/${hike.slug}`,
-          lastModified: new Date(),
-          changeFrequency: "monthly",
-          priority: 0.6,
-        });
-      }
-    }
-  } catch {
-    // Supabase unreachable at build time — skip dynamic hike URLs
-  }
-
-  // Dynamic news pages (rewritten only)
-  try {
-    const { data: newsItems } = await supabase.from("news").select("slug, published_at").neq("title_en", "").order("published_at", { ascending: false }).limit(200);
-    for (const item of newsItems || []) {
-      for (const locale of LOCALES) {
-        entries.push({
-          url: `${BASE_URL}/${locale}/news/${item.slug}`,
-          lastModified: new Date(item.published_at),
-          changeFrequency: "daily",
-          priority: 0.5,
-        });
-      }
-    }
-  } catch {
-    // Supabase unreachable at build time — skip dynamic news URLs
-  }
-
-  // Dynamic event pages
-  try {
-    const today = new Date().toISOString().split("T")[0];
-    const { data: events } = await supabase.from("events").select("slug").gte("date_start", today).eq("verified", true);
-    for (const event of events || []) {
-      for (const locale of LOCALES) {
-        entries.push({
-          url: `${BASE_URL}/${locale}/events/${event.slug}`,
-          lastModified: new Date(),
-          changeFrequency: "weekly",
-          priority: 0.7,
-        });
-      }
-    }
-  } catch {
-    // Supabase unreachable at build time — skip dynamic event URLs
-  }
-
-  // Dynamic guide pages
-  try {
-    const { data: guides } = await supabase
-      .from("guides")
-      .select("slug, published_at")
-      .eq("status", "published")
-      .order("published_at", { ascending: false })
-      .limit(500);
-
-    if (guides) {
-      for (const guide of guides) {
-        for (const locale of LOCALES) {
-          entries.push({
-            url: `${BASE_URL}/${locale}/articles/${guide.slug}`,
-            lastModified: new Date(guide.published_at),
-            changeFrequency: "monthly" as const,
-            priority: 0.8,
-          });
-        }
-      }
-    }
-  } catch {}
-
-  // Visit Crete in [month] pages
-  for (const month of MONTHS) {
-    for (const locale of LOCALES) {
-      entries.push({
-        url: `${BASE_URL}/${locale}/visit/${month}`,
-        lastModified: new Date(),
-        changeFrequency: "monthly",
-        priority: 0.7,
-      });
-    }
-  }
-
-  // Programmatic weather pages (city x month)
-  const { CITIES: weatherCities, MONTHS: weatherMonths } = await import("@/lib/weather-monthly");
-  for (const city of weatherCities) {
-    for (const month of weatherMonths) {
-      for (const locale of LOCALES) {
-        entries.push({
-          url: `${BASE_URL}/${locale}/weather/${city.slug}/${month}`,
-          lastModified: new Date(),
-          changeFrequency: "monthly",
-          priority: 0.5,
-        });
-      }
-    }
-  }
-
-  // Things to do in [city] pages
-  for (const city of weatherCities) {
-    for (const locale of LOCALES) {
-      entries.push({
-        url: `${BASE_URL}/${locale}/things-to-do/${city.slug}`,
-        lastModified: new Date(),
-        changeFrequency: "monthly",
-        priority: 0.6,
-      });
-    }
-  }
-
-  // Best beaches for [activity] pages
-  const BEACH_ACTIVITIES = ["snorkeling", "kids", "swimming", "secluded", "sandy", "pebble"];
-  for (const activity of BEACH_ACTIVITIES) {
-    for (const locale of LOCALES) {
-      entries.push({
-        url: `${BASE_URL}/${locale}/beaches/best-for/${activity}`,
-        lastModified: new Date(),
-        changeFrequency: "monthly",
-        priority: 0.6,
-      });
-    }
-  }
-
-  // Transport route pages
-  const routeSlugs = ["heraklion-to-chania", "heraklion-to-rethymno", "heraklion-to-agios-nikolaos", "heraklion-airport-to-city", "chania-airport-to-city", "athens-to-crete", "crete-to-santorini", "heraklion-to-sitia"];
-  for (const slug of routeSlugs) {
-    for (const locale of LOCALES) {
-      entries.push({
-        url: `${BASE_URL}/${locale}/getting-around/${slug}`,
-        lastModified: new Date(),
-        changeFrequency: "monthly",
-        priority: 0.6,
-      });
-    }
-  }
-
-  // Comparison pages (A vs B)
-  const compSlugs = ["chania-vs-heraklion", "chania-vs-rethymno", "heraklion-vs-rethymno", "agios-nikolaos-vs-elounda", "malia-vs-hersonissos", "sitia-vs-ierapetra", "chania-vs-agios-nikolaos", "crete-vs-santorini", "crete-vs-rhodes", "crete-vs-corfu", "crete-vs-mykonos", "crete-vs-cyprus", "elafonisi-vs-balos", "elafonisi-vs-vai", "balos-vs-preveli"];
-  for (const slug of compSlugs) {
-    for (const locale of LOCALES) {
-      entries.push({
-        url: `${BASE_URL}/${locale}/compare/${slug}`,
-        lastModified: new Date(),
-        changeFrequency: "monthly",
-        priority: 0.6,
-      });
-    }
-  }
-
-  // Where to stay pages
-  const areaSlugs = ["chania", "heraklion", "rethymno", "agios-nikolaos", "elounda", "plakias", "paleochora", "matala"];
-  for (const slug of areaSlugs) {
-    for (const locale of LOCALES) {
-      entries.push({
-        url: `${BASE_URL}/${locale}/where-to-stay/${slug}`,
-        lastModified: new Date(),
-        changeFrequency: "monthly",
-        priority: 0.6,
-      });
-    }
-  }
-
-  // Itinerary pages
-  const itinerarySlugs = ["3-days", "5-days", "7-days", "10-days"];
-  for (const slug of itinerarySlugs) {
-    for (const locale of LOCALES) {
-      entries.push({
-        url: `${BASE_URL}/${locale}/itineraries/${slug}`,
-        lastModified: new Date(),
-        changeFrequency: "monthly",
-        priority: 0.7,
-      });
-    }
-  }
-
-  // Archaeological sites
-  const archSlugs = ["knossos", "phaistos", "spinalonga", "gortyna", "malia-palace", "aptera"];
-  for (const slug of archSlugs) {
-    for (const locale of LOCALES) {
-      entries.push({
-        url: `${BASE_URL}/${locale}/archaeology/${slug}`,
-        lastModified: new Date(),
-        changeFrequency: "monthly",
-        priority: 0.6,
-      });
-    }
+  // Static pages
+  for (const page of STATIC_PAGES) {
+    add(page, page === "" ? "daily" : "weekly", page === "" ? 1.0 : 0.8);
   }
 
   // Utility pages
-  for (const locale of LOCALES) {
-    entries.push(
-      { url: `${BASE_URL}/${locale}/faq`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.7 },
-      { url: `${BASE_URL}/${locale}/map`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.6 },
-      { url: `${BASE_URL}/${locale}/search`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.4 },
-    );
+  add("/faq", "monthly", 0.7);
+  add("/map", "monthly", 0.6);
+  add("/search", "monthly", 0.4);
+
+  // Programmatic pages
+  for (const city of CITIES) {
+    add(`/things-to-do/${city.slug}`, "monthly", 0.6);
+    for (const month of MONTHS) {
+      add(`/weather/${city.slug}/${month}`, "monthly", 0.5);
+    }
   }
+  for (const month of MONTHS) add(`/visit/${month}`, "monthly", 0.7);
+  for (const a of BEACH_ACTIVITIES) add(`/beaches/best-for/${a}`, "monthly", 0.6);
+  for (const s of ROUTE_SLUGS) add(`/getting-around/${s}`, "monthly", 0.6);
+  for (const s of COMP_SLUGS) add(`/compare/${s}`, "monthly", 0.6);
+  for (const s of AREA_SLUGS) add(`/where-to-stay/${s}`, "monthly", 0.6);
+  for (const s of ITINERARY_SLUGS) add(`/itineraries/${s}`, "monthly", 0.7);
+  for (const s of ARCH_SLUGS) add(`/archaeology/${s}`, "monthly", 0.6);
+
+  // Dynamic DB pages
+  const [beaches, villages, foodPlaces, hikes, news, events, guides] = await Promise.all([
+    fetchSlugs("beaches"),
+    fetchSlugs("villages"),
+    fetchSlugs("food_places"),
+    fetchSlugs("hikes"),
+    fetchSlugs("news", "news"),
+    fetchSlugs("events", "events"),
+    fetchSlugs("guides", "guides"),
+  ]);
+
+  for (const s of beaches) add(`/beaches/${s}`, "monthly", 0.6);
+  for (const s of villages) {
+    add(`/villages/${s}`, "monthly", 0.6);
+    add(`/beaches/near/${s}`, "monthly", 0.5);
+  }
+  for (const s of foodPlaces) add(`/food/${s}`, "monthly", 0.6);
+  for (const s of hikes) add(`/hikes/${s}`, "monthly", 0.6);
+  for (const s of news) add(`/news/${s}`, "daily", 0.5);
+  for (const s of events) add(`/events/${s}`, "weekly", 0.7);
+  for (const s of guides) add(`/articles/${s}`, "monthly", 0.8);
 
   return entries;
 }
