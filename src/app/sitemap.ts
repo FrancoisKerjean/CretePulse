@@ -40,11 +40,8 @@ async function fetchSlugs(table: string, extra?: string): Promise<string[]> {
     let query = supabase.from(table).select("slug");
     if (extra === "news") {
       query = supabase.from(table).select("slug").neq("title_en", "").order("published_at", { ascending: false }).limit(200);
-    } else if (extra === "events") {
-      const today = new Date().toISOString().split("T")[0];
-      query = supabase.from(table).select("slug").gte("date_start", today).eq("verified", true);
-    } else if (extra === "guides") {
-      query = supabase.from(table).select("slug").eq("status", "published").order("published_at", { ascending: false }).limit(500);
+    } else if (extra === "food_featured") {
+      query = supabase.from(table).select("slug").neq("description_en", "");
     }
     const { data } = await query;
     return (data || []).map((r: { slug: string }) => r.slug);
@@ -93,14 +90,12 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
   for (const s of ARCH_SLUGS) add(`/archaeology/${s}`, "monthly", 0.6);
 
   // Dynamic DB pages
-  const [beaches, villages, foodPlaces, hikes, news, events, guides] = await Promise.all([
+  const [beaches, villages, foodPlaces, hikes, news] = await Promise.all([
     fetchSlugs("beaches"),
     fetchSlugs("villages"),
-    fetchSlugs("food_places"),
+    fetchSlugs("food_places", "food_featured"),
     fetchSlugs("hikes"),
     fetchSlugs("news", "news"),
-    fetchSlugs("events", "events"),
-    fetchSlugs("guides", "guides"),
   ]);
 
   for (const s of beaches) add(`/beaches/${s}`, "monthly", 0.6);
@@ -111,8 +106,6 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
   for (const s of foodPlaces) add(`/food/${s}`, "monthly", 0.6);
   for (const s of hikes) add(`/hikes/${s}`, "monthly", 0.6);
   for (const s of news) add(`/news/${s}`, "daily", 0.5);
-  for (const s of events) add(`/events/${s}`, "weekly", 0.7);
-  for (const s of guides) add(`/articles/${s}`, "monthly", 0.8);
 
   return entries;
 }
