@@ -77,10 +77,12 @@ Le trigger copie le titre de la langue source vers TOUS les champs titre vides (
 **Solution** :
 
 **Phase 3A - Fix bug affichage `/food`**
-Diagnostiquer le composant React qui affiche la liste. Hypothèses à tester :
-- Filtre PostgREST qui exige `description_en` non null
-- Filtre côté composant sur un champ vide
-- Problème de connexion PostgREST vs Supabase client
+**Root cause identifiée** : `src/lib/food.ts` fait `.order("rating", { ascending: false, nullsFirst: false })` mais la colonne `rating` n'existe pas dans la table `food_places`. PostgREST renvoie 400, le try/catch avale l'erreur → tableau vide → "No results".
+Fix :
+- Soit retirer le `.order("rating", ...)` de toutes les fonctions dans `food.ts` (tri par nom à la place)
+- Soit ajouter les colonnes `rating` et `review_count` à la table (ALTER TABLE) et les remplir plus tard
+- Recommandation : retirer l'order by rating pour débloquer immédiatement, ajouter les colonnes plus tard quand on aura une source de ratings
+- Aussi : le filtre JS ligne 144 de `/food/page.tsx` filtre les restos sans `cuisine` ET sans description. 1 201 restos sur 1 995 n'ont ni l'un ni l'autre → filtrés. Après enrichissement des 200 restos featured, ce filtre gardera les 200 enrichis + les 794 avec cuisine.
 
 **Phase 3B - Sélection top 200**
 Pas de colonne `rating` en base. Sélection par :
