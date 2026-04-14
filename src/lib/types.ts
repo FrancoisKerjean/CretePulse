@@ -141,8 +141,6 @@ export interface FoodPlace {
   image_credit: string | null;
   price_range: "budget" | "mid" | "upscale" | null;
   open_season: string | null;
-  rating: number | null;
-  review_count: number | null;
   google_maps_url: string | null;
 }
 

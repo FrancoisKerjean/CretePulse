@@ -126,15 +126,6 @@ export function restaurantSchema(place: FoodPlace, locale: Locale): Record<strin
     };
   }
 
-  if (place.rating) {
-    schema.aggregateRating = {
-      "@type": "AggregateRating",
-      ratingValue: place.rating,
-      reviewCount: place.review_count || undefined,
-      bestRating: 5,
-    };
-  }
-
   return schema;
 }
 

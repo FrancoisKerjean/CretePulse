@@ -4,8 +4,8 @@ import type { FoodPlace } from "./types";
 export async function getAllFoodPlaces(): Promise<FoodPlace[]> {
   const { data, error } = await supabase
     .from("food_places")
-    .select("slug, name, image_url, type, region, description_en, description_fr, description_de, description_el, rating, review_count, cuisine, price_range, latitude, longitude")
-    .order("rating", { ascending: false, nullsFirst: false })
+    .select("slug, name, image_url, type, region, description_en, description_fr, description_de, description_el, cuisine, price_range, latitude, longitude")
+    .order("name", { ascending: true })
     .limit(200);
 
   if (error) throw error;
@@ -19,8 +19,8 @@ export async function getFoodByRegionAndType(
 ): Promise<FoodPlace[]> {
   let query = supabase
     .from("food_places")
-    .select("slug, name, image_url, type, region, description_en, description_fr, description_de, description_el, rating, review_count, cuisine, price_range")
-    .order("rating", { ascending: false, nullsFirst: false })
+    .select("slug, name, image_url, type, region, description_en, description_fr, description_de, description_el, cuisine, price_range")
+    .order("name", { ascending: true })
     .limit(limit);
 
   if (region) query = query.eq("region", region);
@@ -45,9 +45,9 @@ export async function getFoodBySlug(slug: string): Promise<FoodPlace | null> {
 export async function getFoodByRegion(region: string): Promise<FoodPlace[]> {
   const { data, error } = await supabase
     .from("food_places")
-    .select("slug, name, image_url, type, region, description_en, description_fr, description_de, description_el, rating, review_count, cuisine, price_range")
+    .select("slug, name, image_url, type, region, description_en, description_fr, description_de, description_el, cuisine, price_range")
     .eq("region", region)
-    .order("rating", { ascending: false, nullsFirst: false })
+    .order("name", { ascending: true })
     .limit(50);
 
   if (error) return [];
@@ -57,10 +57,10 @@ export async function getFoodByRegion(region: string): Promise<FoodPlace[]> {
 export async function getNearbyFoodPlaces(region: string, excludeSlug: string, limit = 4): Promise<FoodPlace[]> {
   const { data } = await supabase
     .from("food_places")
-    .select("slug, name, image_url, type, region, rating, cuisine")
+    .select("slug, name, image_url, type, region, cuisine")
     .eq("region", region)
     .neq("slug", excludeSlug)
-    .order("rating", { ascending: false, nullsFirst: false })
+    .order("name", { ascending: true })
     .limit(limit);
 
   if (!data) return [];
