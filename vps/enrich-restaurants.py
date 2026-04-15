@@ -7,6 +7,12 @@ load_dotenv("/opt/cretepulse-db/.env")
 
 DB = dict(host="localhost", port=5433, dbname="cretepulse", user="postgres", password=os.environ["POSTGRES_PASSWORD"])
 
+REFUSAL_MARKERS = [
+    "i don't have", "i cannot", "reliable information", "training data",
+    "need to search", "verify", "grant permission", "informations fiables",
+    "i'm not able", "i can't", "would need", "unfortunately",
+]
+
 
 def claude(prompt, model="haiku"):
     try:
@@ -39,20 +45,39 @@ def extract_json(raw):
         return None
 
 
+def is_refusal(text):
+    lower = text.lower()
+    return any(m in lower for m in REFUSAL_MARKERS)
+
+
 def enrich(cur, place):
     slug = place["slug"]
     cuisine_str = place["cuisine"] or "Greek"
+    location = place["village"] or place["region"]
 
-    prompt = f"""Write a 100-150 word English description of {place['name']}, a {place['type']} in {place['village'] or place['region']} Crete, Greece.
+    prompt = f"""You are a travel copywriter for a Crete tourism guide. Using ONLY the details below, write a 100-150 word description in English. Do NOT search for or request additional information. Write based on what is provided.
+
+Name: {place['name']}
+Type: {place['type']}
+Location: {location}, Crete, Greece
 Cuisine: {cuisine_str}
 
-Describe: what kind of food they serve, the atmosphere, approximate price range (budget/mid-range/upscale based on type and location), what to try. If it's a taverna, mention traditional Cretan dishes. If it's a cafe, mention the setting.
-Write for tourists. Factual, no fluff. No em dashes."""
+Rules:
+- Tavernas: mention Cretan staples (dakos, grilled lamb, fresh fish, local olive oil, raki)
+- Cafes: describe the Mediterranean setting
+- Restaurants: highlight the cuisine style and dining experience
+- Price range: taverna = budget to mid-range, restaurant = mid-range, fine dining = upscale
+- Be specific about the location and its appeal to visitors
+- Write warmly but factually. No em dashes. No disclaimers.
+- Output ONLY the description, no preamble."""
 
     print(f"  {slug[:50]}...", end="", flush=True)
     desc_en = claude(prompt, "haiku")
-    if not desc_en or len(desc_en) < 30:
-        print(" SKIP")
+    if not desc_en or len(desc_en) < 50:
+        print(" SKIP (too short)")
+        return False
+    if is_refusal(desc_en):
+        print(" SKIP (refusal)")
         return False
     time.sleep(1)
 

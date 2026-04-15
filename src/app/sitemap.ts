@@ -90,12 +90,13 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
   for (const s of ARCH_SLUGS) add(`/archaeology/${s}`, "monthly", 0.6);
 
   // Dynamic DB pages
-  const [beaches, villages, foodPlaces, hikes, news] = await Promise.all([
+  const [beaches, villages, foodPlaces, hikes, news, guides] = await Promise.all([
     fetchSlugs("beaches"),
     fetchSlugs("villages"),
     fetchSlugs("food_places", "food_featured"),
     fetchSlugs("hikes"),
     fetchSlugs("news", "news"),
+    fetchSlugs("guides"),
   ]);
 
   for (const s of beaches) add(`/beaches/${s}`, "monthly", 0.6);
@@ -106,6 +107,7 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
   for (const s of foodPlaces) add(`/food/${s}`, "monthly", 0.6);
   for (const s of hikes) add(`/hikes/${s}`, "monthly", 0.6);
   for (const s of news) add(`/news/${s}`, "daily", 0.5);
+  for (const s of guides) add(`/articles/${s}`, "weekly", 0.7);
 
   return entries;
 }
