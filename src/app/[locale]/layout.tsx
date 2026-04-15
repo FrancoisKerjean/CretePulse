@@ -8,6 +8,7 @@ import { Footer } from "@/components/layout/Footer";
 import { playfair } from "@/app/layout";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { buildAlternates } from "@/lib/seo";
 import "@/app/globals.css";
 
 export const viewport: Viewport = {
@@ -25,21 +26,14 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "meta" });
 
-  const localeUrl = `${BASE_URL}/${locale}`;
-
-  const alternates: Record<string, string> = {};
-  for (const loc of routing.locales) {
-    alternates[loc] = `${BASE_URL}/${loc}`;
-  }
-  alternates["x-default"] = `${BASE_URL}/en`;
+  const alts = buildAlternates(locale);
 
   return {
     title: { default: t("title"), template: `%s` },
     description: t("description"),
     metadataBase: new URL(BASE_URL),
     alternates: {
-      canonical: localeUrl,
-      languages: alternates,
+      ...alts,
       types: {
         "application/rss+xml": "https://crete.direct/feed.xml",
       },
@@ -48,7 +42,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       siteName: "Crete Direct",
       locale: locale === "el" ? "el_GR" : locale === "fr" ? "fr_FR" : locale === "de" ? "de_DE" : "en_GB",
       type: "website",
-      url: localeUrl,
+      url: alts.canonical,
       title: t("title"),
       description: t("description"),
       images: [{ url: `${BASE_URL}/api/og?title=${encodeURIComponent(t("title"))}`, width: 1200, height: 630 }],
