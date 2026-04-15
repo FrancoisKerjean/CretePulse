@@ -1,4 +1,5 @@
 import { BusesClient } from "./BusesClient";
+import { buildAlternates } from "@/lib/seo";
 
 export const revalidate = 86400;
 
@@ -18,7 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: m.title,
     description: m.desc,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, "/buses"),
     openGraph: { title: m.title, description: m.desc, url, type: "website" },
   };
 }

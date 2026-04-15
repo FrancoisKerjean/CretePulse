@@ -3,6 +3,7 @@ import type { Locale } from "@/lib/types";
 import { Sun, Users, Euro, Shirt, Calendar, Waves, Thermometer, ChevronRight, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { buildAlternates } from "@/lib/seo";
 
 export const revalidate = 86400;
 
@@ -296,7 +297,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: titles[locale] || titles.en,
     description: descs[locale] || descs.en,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, `/visit/${month}`),
     openGraph: { title: titles[locale] || titles.en, description: descs[locale] || descs.en, url },
   };
 }

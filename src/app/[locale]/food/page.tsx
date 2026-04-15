@@ -2,6 +2,7 @@ import { getAllFoodPlaces, getFoodByRegionAndType } from "@/lib/food";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { UtensilsCrossed, MapPin } from "lucide-react";
 import Link from "next/link";
+import { buildAlternates } from "@/lib/seo";
 
 export const revalidate = 86400;
 
@@ -104,7 +105,7 @@ export async function generateMetadata({
   return {
     title: `${m.title} | Crete Direct`,
     description: m.desc,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, "/food"),
     openGraph: { title: m.title, description: m.desc, url, type: "website" },
   };
 }

@@ -4,6 +4,7 @@ import { Waves, Fish, Baby, Shield, Sun, ChevronLeft, ChevronRight, MapPin } fro
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { buildAlternates } from "@/lib/seo";
 
 export const revalidate = 86400;
 
@@ -165,7 +166,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: titles[locale] || titles.en,
     description: desc,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, `/beaches/best-for/${activitySlug}`),
     openGraph: { title: titles[locale] || titles.en, description: desc, url },
   };
 }

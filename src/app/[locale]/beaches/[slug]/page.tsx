@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AffiliateCTA } from "@/components/ui/affiliate-cta";
+import { buildAlternates } from "@/lib/seo";
 
 export const revalidate = 86400;
 
@@ -131,7 +132,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, `/beaches/${slug}`),
     openGraph: {
       title,
       description,

@@ -3,6 +3,7 @@ import { getEventBySlug } from "@/lib/events";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { localizeLocation } from "@/lib/localize-location";
 import { eventSchema, breadcrumbSchema } from "@/lib/schema";
+import { buildAlternates } from "@/lib/seo";
 import { MapPin, Clock, Calendar, Tag, ExternalLink, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -40,7 +41,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, `/events/${slug}`),
     robots: isExpired ? { index: false, follow: true } : { index: true, follow: true },
     openGraph: {
       title,

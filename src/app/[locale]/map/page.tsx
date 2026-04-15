@@ -3,6 +3,7 @@ import { getAllVillages } from "@/lib/villages";
 import { getAllFoodPlaces } from "@/lib/food";
 import { getAllHikes } from "@/lib/hikes";
 import { getLocalizedField, type Locale } from "@/lib/types";
+import { buildAlternates } from "@/lib/seo";
 import { MapView } from "@/components/map/MapView";
 
 export const revalidate = 86400;
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: m.title,
     description: m.desc,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, "/map"),
     openGraph: { title: m.title, description: m.desc, url },
   };
 }

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { breadcrumbSchema } from "@/lib/schema";
 import { AffiliateCTA } from "@/components/ui/affiliate-cta";
+import { buildAlternates } from "@/lib/seo";
 
 export const revalidate = 86400;
 
@@ -298,16 +299,10 @@ export async function generateMetadata({
   const description = meta.desc(area.name, area.vibe[loc]);
   const url = `${BASE_URL}/${locale}/where-to-stay/${area.slug}`;
 
-  const alternates: Record<string, string> = {};
-  for (const l of ["en", "fr", "de", "el"]) {
-    alternates[l] = `${BASE_URL}/${l}/where-to-stay/${area.slug}`;
-  }
-  alternates["x-default"] = `${BASE_URL}/en/where-to-stay/${area.slug}`;
-
   return {
     title,
     description,
-    alternates: { canonical: url, languages: alternates },
+    alternates: buildAlternates(locale, `/where-to-stay/${area.slug}`),
     openGraph: { title, description, url, type: "website" },
   };
 }

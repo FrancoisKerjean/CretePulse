@@ -1,5 +1,6 @@
 import type { Locale } from "@/lib/types";
 import { Flame, AlertTriangle, Phone, Shield } from "lucide-react";
+import { buildAlternates } from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -18,7 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: m.title,
     description: m.desc,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, "/fire-alerts"),
     openGraph: { title: m.title, description: m.desc, url, type: "website" },
   };
 }

@@ -3,6 +3,7 @@ import type { Locale } from "@/lib/types";
 import { Waves, Sun, UtensilsCrossed, Mountain, Calendar, ChevronLeft, MapPin, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { buildAlternates } from "@/lib/seo";
 
 export const revalidate = 86400;
 
@@ -219,7 +220,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: titles[locale] || titles.en,
     description: descs[locale] || descs.en,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, `/things-to-do/${citySlug}`),
     openGraph: { title: titles[locale] || titles.en, description: descs[locale] || descs.en, url },
   };
 }

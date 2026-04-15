@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, Clock, Calendar, BookOpen } from "lucide-react";
+import { buildAlternates } from "@/lib/seo";
 import {
   getGuideBySlug,
   getRelatedGuides,
@@ -36,7 +37,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, `/articles/${slug}`),
     openGraph: {
       title,
       description,

@@ -1,6 +1,7 @@
 import { fetchAllCitiesWeather, getWeatherLabel, getWeatherIcon } from "@/lib/weather";
 import type { Locale } from "@/lib/types";
 import { Wind, Droplets, Sun, Thermometer, Waves, Eye } from "lucide-react";
+import { buildAlternates } from "@/lib/seo";
 
 export const revalidate = 7200;
 
@@ -20,7 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: m.title,
     description: m.desc,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, "/weather"),
     openGraph: { title: m.title, description: m.desc, url, type: "website" },
   };
 }

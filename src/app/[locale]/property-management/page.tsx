@@ -1,5 +1,6 @@
 import type { Locale } from "@/lib/types";
 import { Waves, Key, BarChart3, Shield, Phone, ChevronRight, MapPin, CheckCircle2 } from "lucide-react";
+import { buildAlternates } from "@/lib/seo";
 
 export const revalidate = 86400;
 
@@ -158,7 +159,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: m.title,
     description: m.desc,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, "/property-management"),
     openGraph: { title: m.title, description: m.desc, url, type: "article" },
   };
 }

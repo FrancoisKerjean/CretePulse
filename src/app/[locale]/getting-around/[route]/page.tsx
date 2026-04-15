@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft, Bus, Car, Ship, Plane, Clock, Euro, RefreshCw, Lightbulb, ArrowRight } from "lucide-react";
+import { buildAlternates } from "@/lib/seo";
 
 export const revalidate = 86400;
 
@@ -264,7 +265,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: titles[locale] || titles.en,
     description: descs[locale] || descs.en,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, `/getting-around/${slug}`),
     openGraph: { title: titles[locale] || titles.en, description: descs[locale] || descs.en, url, type: "website" },
   };
 }

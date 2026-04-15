@@ -3,6 +3,7 @@ import { getAllVillages } from "@/lib/villages";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { MapPin, Mountain, Users, Clock } from "lucide-react";
 import Link from "next/link";
+import { buildAlternates } from "@/lib/seo";
 
 export const revalidate = 86400;
 
@@ -22,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: m.title,
     description: m.desc,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, "/villages"),
     openGraph: { title: m.title, description: m.desc, url, type: "website" },
   };
 }

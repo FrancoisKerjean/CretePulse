@@ -3,6 +3,7 @@ import { getNewsBySlug, getLatestNews } from "@/lib/news";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { newsSchema, breadcrumbSchema } from "@/lib/schema";
 import { ExternalLink, Clock, ArrowLeft, Calendar, Globe } from "lucide-react";
+import { buildAlternates } from "@/lib/seo";
 import Link from "next/link";
 
 export const revalidate = 14400;
@@ -24,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title,
     description,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, `/news/${slug}`),
     openGraph: {
       title,
       description,

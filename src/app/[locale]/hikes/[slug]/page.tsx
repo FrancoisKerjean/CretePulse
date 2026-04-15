@@ -3,6 +3,7 @@ import { getHikeBySlug } from "@/lib/hikes";
 import { getLocalizedField, type Locale, type Hike } from "@/lib/types";
 import { breadcrumbSchema } from "@/lib/schema";
 import { Footprints, Mountain, Droplets, MapPin, ChevronLeft, Download } from "lucide-react";
+import { buildAlternates } from "@/lib/seo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -35,7 +36,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, `/hikes/${slug}`),
     openGraph: {
       title,
       description,

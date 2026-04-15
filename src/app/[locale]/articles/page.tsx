@@ -2,6 +2,7 @@ import { BookOpen } from "lucide-react";
 import { getPublishedGuides } from "@/lib/guides";
 import type { Locale } from "@/lib/types";
 import ArticlesPageClient from "./ArticlesPageClient";
+import { buildAlternates } from "@/lib/seo";
 
 export const revalidate = 86400;
 
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: m.title,
     description: m.desc,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, "/articles"),
     openGraph: { title: m.title, description: m.desc, url, type: "website" },
   };
 }

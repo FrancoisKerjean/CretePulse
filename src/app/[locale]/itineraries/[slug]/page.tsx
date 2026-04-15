@@ -3,6 +3,7 @@ import type { Locale } from "@/lib/types";
 import { MapPin, Clock, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { buildAlternates } from "@/lib/seo";
 
 export const revalidate = 86400;
 
@@ -193,7 +194,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, `/itineraries/${slug}`),
     openGraph: {
       title,
       description,

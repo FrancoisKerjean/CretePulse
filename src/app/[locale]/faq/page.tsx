@@ -1,6 +1,7 @@
 import type { Locale } from "@/lib/types";
 import Link from "next/link";
 import { Plane, Car, Waves, Sun, UtensilsCrossed, Globe, Banknote, Hotel } from "lucide-react";
+import { buildAlternates } from "@/lib/seo";
 
 export const revalidate = 86400;
 
@@ -32,7 +33,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: m.title,
     description: m.desc,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, "/faq"),
     openGraph: { title: m.title, description: m.desc, url, type: "website" },
   };
 }

@@ -2,6 +2,7 @@ import { getFoodBySlug, getNearbyFoodPlaces } from "@/lib/food";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { restaurantSchema, breadcrumbSchema } from "@/lib/schema";
 import { UtensilsCrossed, MapPin, Phone, Globe, ChevronLeft } from "lucide-react";
+import { buildAlternates } from "@/lib/seo";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -34,7 +35,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, `/food/${slug}`),
     openGraph: {
       title,
       description,

@@ -2,6 +2,7 @@ import { getAllBeaches } from "@/lib/beaches";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { Waves, MapPin, Car, Fish } from "lucide-react";
 import Link from "next/link";
+import { buildAlternates } from "@/lib/seo";
 
 export const revalidate = 86400;
 
@@ -28,7 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: m.title,
     description: m.desc,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, "/beaches"),
     openGraph: { title: m.title, description: m.desc, url, type: "website" },
   };
 }

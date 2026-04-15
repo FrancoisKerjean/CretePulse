@@ -3,6 +3,7 @@ import { getLatestNews } from "@/lib/news";
 import { getUpcomingEvents } from "@/lib/events";
 import { HomeClient } from "@/components/home/HomeClient";
 import type { NewsItem, Event, Locale } from "@/lib/types";
+import { buildAlternates } from "@/lib/seo";
 
 export const revalidate = 7200; // 2h - reduce Supabase egress
 
@@ -52,7 +53,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: m.title,
     description: m.desc,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale),
     openGraph: {
       title: m.title,
       description: m.desc,

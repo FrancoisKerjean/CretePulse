@@ -4,6 +4,7 @@ import { getLocalizedField, type Locale } from "@/lib/types";
 import { Waves, MapPin, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { buildAlternates } from "@/lib/seo";
 
 export const revalidate = 86400;
 
@@ -46,7 +47,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: titles[locale] || titles.en,
     description: descs[locale] || descs.en,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, `/beaches/near/${villageSlug}`),
     openGraph: { title: titles[locale] || titles.en, description: descs[locale] || descs.en, url },
   };
 }

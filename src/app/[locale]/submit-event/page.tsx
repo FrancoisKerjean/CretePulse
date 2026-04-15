@@ -1,4 +1,5 @@
 import { SubmitEventClient } from "./SubmitEventClient";
+import { buildAlternates } from "@/lib/seo";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
@@ -16,7 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: m.title,
     description: m.desc,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, "/submit-event"),
     openGraph: { title: m.title, description: m.desc, url, type: "website" },
   };
 }

@@ -3,6 +3,7 @@ import { getVillageBySlug, getNearbyVillages } from "@/lib/villages";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { breadcrumbSchema } from "@/lib/schema";
 import { MapPin, Mountain, Users, Clock, ChevronLeft, Star } from "lucide-react";
+import { buildAlternates } from "@/lib/seo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AffiliateCTA } from "@/components/ui/affiliate-cta";
@@ -29,7 +30,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, `/villages/${slug}`),
     openGraph: {
       title,
       description,

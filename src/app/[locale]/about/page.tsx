@@ -1,5 +1,6 @@
 import type { Locale } from "@/lib/types";
 import Link from "next/link";
+import { buildAlternates } from "@/lib/seo";
 
 export const revalidate = 86400;
 
@@ -33,7 +34,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: metadata[loc].title,
     description: metadata[loc].description,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, "/about"),
     openGraph: { title: metadata[loc].title, description: metadata[loc].description, url, type: "website" },
   };
 }

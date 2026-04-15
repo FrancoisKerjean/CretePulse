@@ -3,6 +3,7 @@ import { getLocalizedField, type Locale } from "@/lib/types";
 import { localizeLocation } from "@/lib/localize-location";
 import { Calendar, MapPin, Clock } from "lucide-react";
 import Link from "next/link";
+import { buildAlternates } from "@/lib/seo";
 
 export const revalidate = 7200;
 
@@ -35,7 +36,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: m.title,
     description: m.desc,
-    alternates: { canonical: url },
+    alternates: buildAlternates(locale, "/events"),
     openGraph: { title: m.title, description: m.desc, url, type: "website" },
   };
 }
