@@ -51,7 +51,8 @@ async function fetchSlugs(table: string, extra?: string): Promise<string[]> {
 }
 
 export default async function sitemap({ id }: { id: number }): Promise<MetadataRoute.Sitemap> {
-  const locale = LOCALES[id];
+  const safeId = typeof id === "number" && id >= 0 && id < LOCALES.length ? id : 0;
+  const locale = LOCALES[safeId];
   const entries: MetadataRoute.Sitemap = [];
   const now = new Date();
 
