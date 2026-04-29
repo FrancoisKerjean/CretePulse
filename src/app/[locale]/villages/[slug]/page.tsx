@@ -1,9 +1,9 @@
 import { getTranslations } from "next-intl/server";
 import { getVillageBySlug, getNearbyVillages } from "@/lib/villages";
 import { getLocalizedField, type Locale } from "@/lib/types";
-import { breadcrumbSchema } from "@/lib/schema";
+import { breadcrumbSchema, villageSchema } from "@/lib/schema";
 import { MapPin, Mountain, Users, Clock, ChevronLeft, Star } from "lucide-react";
-import { buildAlternates } from "@/lib/seo";
+import { buildAlternates, buildVillageTitle, buildVillageDescription } from "@/lib/seo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AffiliateCTA } from "@/components/ui/affiliate-cta";
@@ -23,8 +23,9 @@ export async function generateMetadata({
 
   const name = getLocalizedField(village, "name", locale as Locale);
   const desc = getLocalizedField(village, "description", locale as Locale);
-  const title = `${name}, Crete - History & Guide | Crete Direct`;
-  const description = desc?.substring(0, 160) || `${name} village in Crete, Greece. History, population, altitude and local guide.`;
+  const title = buildVillageTitle(locale, name, village.region);
+  const description =
+    desc?.substring(0, 160) || buildVillageDescription(locale, name, village.region);
   const url = `${BASE_URL}/${locale}/villages/${slug}`;
 
   return {
@@ -76,9 +77,14 @@ export default async function VillageDetailPage({
     { name: loc === "fr" ? "Villages" : loc === "de" ? "Dörfer" : loc === "el" ? "Χωριά" : "Villages", url: `${BASE_URL}/${locale}/villages` },
     { name, url: `${BASE_URL}/${locale}/villages/${village.slug}` },
   ]);
+  const placeJsonLd = villageSchema(village, loc);
 
   return (
     <main className="min-h-screen bg-surface">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(placeJsonLd) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}

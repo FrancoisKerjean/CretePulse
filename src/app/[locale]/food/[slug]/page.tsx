@@ -2,7 +2,7 @@ import { getFoodBySlug, getNearbyFoodPlaces } from "@/lib/food";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { restaurantSchema, breadcrumbSchema } from "@/lib/schema";
 import { UtensilsCrossed, MapPin, Phone, Globe, ChevronLeft } from "lucide-react";
-import { buildAlternates } from "@/lib/seo";
+import { buildAlternates, buildFoodTitle } from "@/lib/seo";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -28,8 +28,15 @@ export async function generateMetadata({
   if (!place) return { title: "Place not found" };
 
   const desc = getLocalizedField(place, "description", locale as Locale);
-  const title = `${place.name}, Crete - Restaurant Guide | Crete Direct`;
-  const description = desc?.substring(0, 160) || `${place.name} - ${place.type} in ${place.region} Crete. ${place.cuisine ? `Cuisine: ${place.cuisine}.` : ""}`;
+  const title = buildFoodTitle(locale, {
+    name: place.name,
+    region: place.region,
+    type: place.type,
+    cuisine: place.cuisine,
+  });
+  const description =
+    desc?.substring(0, 160) ||
+    `${place.name} - ${place.type} in ${place.region} Crete. ${place.cuisine ? `Cuisine: ${place.cuisine}.` : ""}`;
   const url = `${BASE_URL}/${locale}/food/${slug}`;
 
   return {

@@ -1,4 +1,4 @@
-import type { Beach, Event, NewsItem, FoodPlace, Locale } from "./types";
+import type { Beach, Event, NewsItem, FoodPlace, Village, Locale } from "./types";
 import { getLocalizedField } from "./types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
@@ -125,6 +125,47 @@ export function restaurantSchema(place: FoodPlace, locale: Locale): Record<strin
       longitude: place.longitude,
     };
   }
+
+  return schema;
+}
+
+export function villageSchema(village: Village, locale: Locale): Record<string, unknown> {
+  const name = getLocalizedField(village, "name", locale);
+  const description = getLocalizedField(village, "description", locale);
+
+  const schema: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Place",
+    name,
+    description: description?.substring(0, 300) || undefined,
+    url: `${BASE_URL}/${locale}/villages/${village.slug}`,
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: village.latitude,
+      longitude: village.longitude,
+    },
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: name,
+      addressRegion: village.region,
+      addressCountry: "GR",
+    },
+    image: village.image_url || undefined,
+    ...(typeof village.altitude_m === "number"
+      ? { elevation: `${village.altitude_m} m` }
+      : {}),
+    ...(typeof village.population === "number"
+      ? {
+          additionalProperty: [
+            {
+              "@type": "PropertyValue",
+              name: "Population",
+              value: village.population,
+            },
+          ],
+        }
+      : {}),
+  };
 
   return schema;
 }

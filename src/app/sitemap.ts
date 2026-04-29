@@ -5,7 +5,14 @@ import { MONTHS, CITIES } from "@/lib/weather-monthly";
 export const revalidate = 86400;
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
-const LOCALES = ["en", "fr", "de", "el", "it", "nl", "pl", "es", "pt", "ru", "ja", "ko", "zh", "tr", "sv", "da", "no", "fi", "cs", "hu", "ro", "ar"] as const;
+
+// 22 locales — must match src/i18n/routing.ts
+const LOCALES = [
+  "en", "fr", "de", "el", "it", "nl", "pl", "es", "pt", "ru",
+  "ja", "ko", "zh", "tr", "sv", "da", "no", "fi", "cs", "hu",
+  "ro", "ar",
+] as const;
+type Locale = (typeof LOCALES)[number];
 
 const STATIC_PAGES = [
   "",
@@ -50,18 +57,50 @@ async function fetchSlugs(table: string, extra?: string): Promise<string[]> {
   }
 }
 
+// Coerce whatever Next.js passes into a valid locale.
+// Some Next.js versions / Turbopack pass id as string from the URL.
+// We must never end up with `undefined` in the final URL.
+function resolveLocale(idRaw: unknown): Locale {
+  const idNum =
+    typeof idRaw === "number"
+      ? idRaw
+      : typeof idRaw === "string"
+        ? Number.parseInt(idRaw, 10)
+        : NaN;
+  if (Number.isInteger(idNum) && idNum >= 0 && idNum < LOCALES.length) {
+    return LOCALES[idNum];
+  }
+  return "en";
+}
+
+function buildLanguagesAlternates(path: string): Record<string, string> {
+  const langs: Record<string, string> = {};
+  for (const loc of LOCALES) {
+    langs[loc] = `${BASE_URL}/${loc}${path}`;
+  }
+  langs["x-default"] = `${BASE_URL}/en${path}`;
+  return langs;
+}
+
 export default async function sitemap({ id }: { id: number }): Promise<MetadataRoute.Sitemap> {
-  const safeId = typeof id === "number" && id >= 0 && id < LOCALES.length ? id : 0;
-  const locale = LOCALES[safeId];
+  const locale = resolveLocale(id);
   const entries: MetadataRoute.Sitemap = [];
   const now = new Date();
 
-  const add = (path: string, freq: MetadataRoute.Sitemap[0]["changeFrequency"], priority: number, lastMod?: Date) => {
+  const add = (
+    path: string,
+    freq: MetadataRoute.Sitemap[0]["changeFrequency"],
+    priority: number,
+    lastMod?: Date,
+  ) => {
     entries.push({
       url: `${BASE_URL}/${locale}${path}`,
       lastModified: lastMod || now,
       changeFrequency: freq,
       priority,
+      alternates: {
+        languages: buildLanguagesAlternates(path),
+      },
     });
   };
 
