@@ -206,6 +206,29 @@ const MORE_ARTICLES_LABEL: Record<Locale, string> = {
   el: "Περισσότεροι οδηγοί",
 };
 
+const KAIROS_CTA: Record<Locale, { intro: string; link: string; href: string }> = {
+  en: {
+    intro: "Thinking about buying property in Crete? Read our guide on prices and steps.",
+    link: "Buy a house in Crete →",
+    href: "https://kairosguest.com/en/blog/acheter-maison-crete-prix-2026",
+  },
+  fr: {
+    intro: "Vous pensez à acheter en Crète ? Lisez notre guide complet sur les prix et démarches.",
+    link: "Acheter une maison en Crète →",
+    href: "https://kairosguest.com/fr/blog/acheter-maison-crete-prix-2026",
+  },
+  de: {
+    intro: "Denken Sie daran, eine Immobilie in Kreta zu kaufen? Unser Leitfaden zu Preisen und Schritten.",
+    link: "Haus in Kreta kaufen →",
+    href: "https://kairosguest.com/en/blog/acheter-maison-crete-prix-2026",
+  },
+  el: {
+    intro: "Σκέφτεστε να αγοράσετε ακίνητο στην Κρήτη; Διαβάστε τον οδηγό μας για τιμές και διαδικασίες.",
+    link: "Αγοράστε σπίτι στην Κρήτη →",
+    href: "https://kairosguest.com/en/blog/acheter-maison-crete-prix-2026",
+  },
+};
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function ArticleDetailPage({
@@ -358,16 +381,16 @@ export default async function ArticleDetailPage({
             {/* FAQ Accordion */}
             <FaqSection faqs={faqs} />
 
-            {/* Kairos CTA */}
+            {/* Kairos cross-link (multilingue, discret, vers l'article cible SEO) */}
             <div className="mt-12 p-6 bg-blue-50 rounded-lg text-center">
-              <p className="text-gray-600 mb-2">Looking for property management in Crete?</p>
+              <p className="text-gray-600 mb-2">{KAIROS_CTA[loc].intro}</p>
               <a
-                href="https://kairosguest.com"
+                href={KAIROS_CTA[loc].href}
                 target="_blank"
                 rel="noopener"
                 className="text-blue-600 hover:underline font-medium"
               >
-                Kairos Guest Management →
+                {KAIROS_CTA[loc].link}
               </a>
             </div>
 
