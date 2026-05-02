@@ -6,6 +6,23 @@ function hasGreek(text: string): boolean {
   return /[\u0370-\u03FF\u1F00-\u1FFF]/.test(text);
 }
 
+// Heuristic: detect German-only words/diacritics that should NOT appear
+// in a French or English title.
+function hasGermanOnlyMarkers(text: string): boolean {
+  // \u00DF is German-only. Common German prefix/suffix that almost never occur in FR/EN.
+  if (/[\u00DF]/.test(text)) return true;
+  if (/\b(Flughafen|Er\u00F6ffnung|Anreise|Sehensw\u00FCrdigkeiten|Tipps|\u00DCbersicht|Aktivit\u00E4ten|Nachrichten)\b/.test(text)) return true;
+  return false;
+}
+
+// Heuristic: detect English-only function words / patterns that should NOT
+// appear in a French/German title (catches untranslated EN headlines).
+function hasEnglishOnlyMarkers(text: string): boolean {
+  // Common English headline glue words that are very rare in FR/DE.
+  // Use word boundaries to avoid matching cognates.
+  return /\b(after|with|amid|despite|toward|through|while|among|across|reach|reaches)\b/i.test(text);
+}
+
 export async function getLatestNews(limit = 20, locale = "en"): Promise<NewsItem[]> {
   // Only EN, FR, DE have translations in the DB. All others fall back to EN.
   const TRANSLATED_LOCALES = ["en", "fr", "de"];
@@ -18,7 +35,7 @@ export async function getLatestNews(limit = 20, locale = "en"): Promise<NewsItem
     .neq("title_en", "")
     .neq("category", "filtered")
     .order("published_at", { ascending: false })
-    .limit(limit * 2);
+    .limit(limit * 3);
 
   // For translated locales, also require the locale title to be filled
   if (effectiveLocale !== "en") {
@@ -29,11 +46,28 @@ export async function getLatestNews(limit = 20, locale = "en"): Promise<NewsItem
   if (error) throw error;
   const items = (data as NewsItem[]) || [];
 
-  // Filter out articles with Greek characters on non-Greek pages
+  // Filter out items where title was not actually translated:
+  // - Greek glyphs on non-Greek pages
+  // - title_<loc> equal to title_en on a non-EN page (translation failed silently)
+  // - language-specific markers (\u00DF, "Flughafen", etc) leaking into other locales
   const filtered = items.filter((item) => {
     const title = (item[titleCol] as string) || "";
     if (!title) return false;
     if (effectiveLocale !== "el" && hasGreek(title)) return false;
+
+    if (effectiveLocale !== "en") {
+      // Untranslated: title for this locale is identical to the English version
+      if (item.title_en && title.trim() === item.title_en.trim()) return false;
+    }
+
+    if (effectiveLocale !== "de") {
+      if (hasGermanOnlyMarkers(title)) return false;
+    }
+
+    if (effectiveLocale === "fr" || effectiveLocale === "de") {
+      if (hasEnglishOnlyMarkers(title)) return false;
+    }
+
     return true;
   });
 
