@@ -173,15 +173,26 @@ export function villageSchema(village: Village, locale: Locale): Record<string, 
 export function newsSchema(news: NewsItem, locale: Locale): Record<string, unknown> {
   const headline = getLocalizedField(news, "title", locale);
   const description = getLocalizedField(news, "summary", locale);
+  const url = `${BASE_URL}/${locale}/news/${news.slug}`;
 
   return {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     headline,
     description: description?.substring(0, 300) || undefined,
-    url: `${BASE_URL}/${locale}/news/${news.slug}`,
+    url,
+    mainEntityOfPage: { "@type": "WebPage", "@id": url },
     datePublished: news.published_at,
-    image: news.image_url || undefined,
+    dateModified: news.published_at,
+    articleSection: news.category || "News",
+    image: news.image_url
+      ? { "@type": "ImageObject", url: news.image_url, width: 1200, height: 630 }
+      : undefined,
+    author: {
+      "@type": "Organization",
+      name: "Crete Direct",
+      url: BASE_URL,
+    },
     publisher: {
       "@type": "Organization",
       name: "Crete Direct",

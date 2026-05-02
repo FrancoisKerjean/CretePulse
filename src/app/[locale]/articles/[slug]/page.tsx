@@ -106,11 +106,15 @@ function JsonLdSchemas({
 }) {
   const articleSchema = {
     "@context": "https://schema.org",
-    "@type": "Article",
+    "@type": "NewsArticle",
     headline: title,
     description,
-    image: guide.image_url || undefined,
+    image: guide.image_url
+      ? { "@type": "ImageObject", url: guide.image_url, width: 1200, height: 630 }
+      : undefined,
     datePublished: guide.published_at,
+    dateModified: guide.published_at,
+    articleSection: guide.category,
     author: {
       "@type": "Organization",
       name: "Crete Direct",
