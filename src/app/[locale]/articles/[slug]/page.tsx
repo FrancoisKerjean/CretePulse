@@ -43,8 +43,19 @@ export async function generateMetadata({
       title,
       description,
       url,
-      images: guide.image_url ? [{ url: guide.image_url }] : [],
+      images: guide.image_url ? [{ url: guide.image_url, width: 1200, height: 630, alt: title }] : [],
       type: "article",
+      publishedTime: guide.published_at,
+      authors: ["Crete Direct"],
+      section: guide.category,
+      siteName: "Crete Direct",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: guide.image_url ? [guide.image_url] : [],
+      site: "@cretedirect",
     },
   };
 }

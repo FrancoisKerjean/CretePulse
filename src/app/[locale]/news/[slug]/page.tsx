@@ -32,7 +32,18 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       description,
       url,
       type: "article",
-      images: item.image_url ? [{ url: item.image_url, alt: headline }] : [],
+      images: item.image_url ? [{ url: item.image_url, width: 1200, height: 630, alt: headline }] : [],
+      publishedTime: item.published_at,
+      authors: ["Crete Direct"],
+      section: item.category || undefined,
+      siteName: "Crete Direct",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: item.image_url ? [item.image_url] : [],
+      site: "@cretedirect",
     },
   };
 }
