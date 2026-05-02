@@ -4,6 +4,7 @@ import { getLocalizedField, type Locale } from "@/lib/types";
 import { MapPin, Mountain, Users, Clock } from "lucide-react";
 import Link from "next/link";
 import { buildAlternates } from "@/lib/seo";
+import { itemListSchema } from "@/lib/schema";
 
 export const revalidate = 86400;
 
@@ -51,8 +52,18 @@ export default async function VillagesPage({ params }: { params: Promise<{ local
     return <VillagesPlaceholder locale={loc} />;
   }
 
+  const listSchema = itemListSchema(
+    villages.slice(0, 100).map((v) => ({
+      url: `${BASE_URL}/${locale}/villages/${v.slug}`,
+      name: getLocalizedField(v, "name", loc),
+      image: v.image_url,
+    })),
+    "Villages in Crete",
+  );
+
   return (
     <main className="min-h-screen bg-surface">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(listSchema) }} />
       <div className="max-w-6xl mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold text-aegean">
           {loc === "fr" ? "Villages de Crète" :

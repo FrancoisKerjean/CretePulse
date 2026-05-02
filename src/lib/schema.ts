@@ -170,6 +170,25 @@ export function villageSchema(village: Village, locale: Locale): Record<string, 
   return schema;
 }
 
+export function itemListSchema(
+  items: Array<{ url: string; name: string; image?: string | null }>,
+  listName: string,
+): Record<string, unknown> {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: listName,
+    numberOfItems: items.length,
+    itemListElement: items.map((it, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      url: it.url,
+      name: it.name,
+      ...(it.image ? { image: it.image } : {}),
+    })),
+  };
+}
+
 export function newsSchema(news: NewsItem, locale: Locale): Record<string, unknown> {
   const headline = getLocalizedField(news, "title", locale);
   const description = getLocalizedField(news, "summary", locale);

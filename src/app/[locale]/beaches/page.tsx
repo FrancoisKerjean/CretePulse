@@ -3,6 +3,7 @@ import { getLocalizedField, type Locale } from "@/lib/types";
 import { Waves, MapPin, Car, Fish } from "lucide-react";
 import Link from "next/link";
 import { buildAlternates } from "@/lib/seo";
+import { itemListSchema } from "@/lib/schema";
 
 export const revalidate = 86400;
 
@@ -50,8 +51,18 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
     return <BeachesPlaceholder locale={loc} />;
   }
 
+  const listSchema = itemListSchema(
+    beaches.slice(0, 100).map((b) => ({
+      url: `${BASE_URL}/${locale}/beaches/${b.slug}`,
+      name: getLocalizedField(b, "name", loc),
+      image: b.image_url,
+    })),
+    "Beaches in Crete",
+  );
+
   return (
     <main className="min-h-screen bg-surface">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(listSchema) }} />
       <div className="max-w-6xl mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold text-aegean">
           {getLocalizedField({ title_en: "Beaches in Crete", title_fr: "Plages en Crète", title_de: "Strände auf Kreta", title_el: "Παραλίες στην Κρήτη" }, "title", loc)}
