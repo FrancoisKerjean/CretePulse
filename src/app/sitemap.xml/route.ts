@@ -86,24 +86,26 @@ async function fetchSlugsWithDate(
   extra?: string,
 ): Promise<Array<{ slug: string; lastmod: string }>> {
   try {
-    let query = supabase.from(table).select(`slug, ${dateCol}`);
+    const cols = `slug, ${dateCol}`;
+    let q = supabase.from(table).select(cols);
     if (extra === "news") {
-      query = supabase
+      q = supabase
         .from(table)
-        .select(`slug, ${dateCol}`)
+        .select(cols)
         .neq("title_en", "")
         .neq("category", "filtered")
         .order(dateCol, { ascending: false })
         .limit(500);
     } else if (extra === "guides_published") {
-      query = supabase
+      q = supabase
         .from(table)
-        .select(`slug, ${dateCol}`)
+        .select(cols)
         .eq("status", "published")
         .order(dateCol, { ascending: false });
     }
-    const { data } = await query;
-    return (data || []).map((r: Record<string, string>) => ({
+    const { data } = await q;
+    const rows = (data as unknown as Array<Record<string, string>>) || [];
+    return rows.map((r) => ({
       slug: r.slug,
       lastmod: new Date(r[dateCol]).toISOString(),
     }));
