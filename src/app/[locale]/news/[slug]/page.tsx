@@ -5,6 +5,7 @@ import { newsSchema, breadcrumbSchema } from "@/lib/schema";
 import { ExternalLink, Clock, ArrowLeft, Calendar, Globe } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
 import Link from "next/link";
+import DiscoverCrete from "@/components/DiscoverCrete";
 
 export const revalidate = 14400;
 
@@ -365,6 +366,9 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
               </div>
             </section>
           )}
+
+          {/* ── DISCOVER CRETE (internal links boost) ── */}
+          <DiscoverCrete category={item.category} locale={locale} />
 
           {/* ── NEWSLETTER CTA ─────────────────────── */}
           <div className="mt-14 rounded-2xl border border-aegean/20 bg-aegean-faint px-6 py-8 text-center">

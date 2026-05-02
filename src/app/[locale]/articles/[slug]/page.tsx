@@ -13,6 +13,7 @@ import {
 } from "@/lib/guides";
 import type { Locale } from "@/lib/types";
 import { breadcrumbSchema } from "@/lib/schema";
+import DiscoverCrete from "@/components/DiscoverCrete";
 
 export const revalidate = 86400;
 
@@ -434,6 +435,9 @@ export default async function ArticleDetailPage({
                 </div>
               </section>
             )}
+
+            {/* Discover Crete (internal links boost) */}
+            <DiscoverCrete category={guide.category} locale={locale} />
           </div>
 
           {/* TOC sidebar */}
