@@ -7,20 +7,20 @@ function hasGreek(text: string): boolean {
 }
 
 // Heuristic: detect German-only words/diacritics that should NOT appear
-// in a French or English title.
+// in a French or English title or summary.
 function hasGermanOnlyMarkers(text: string): boolean {
-  // \u00DF is German-only. Common German prefix/suffix that almost never occur in FR/EN.
+  // \u00DF is German-only. Plus common DE function words that very rarely appear in FR/EN.
   if (/[\u00DF]/.test(text)) return true;
-  if (/\b(Flughafen|Er\u00F6ffnung|Anreise|Sehensw\u00FCrdigkeiten|Tipps|\u00DCbersicht|Aktivit\u00E4ten|Nachrichten)\b/.test(text)) return true;
+  if (/\b(Flughafen|Er\u00F6ffnung|Anreise|Sehensw\u00FCrdigkeiten|\u00DCbersicht|Aktivit\u00E4ten|Bedingungen|Wanderungen|Strandbesuche|Strandaktivit\u00E4ten|Wetterkarte|einschlie\u00DFlich|w\u00E4hrend|zwischen|werden|sollten|k\u00F6nnen|nicht empfohlen)\b/i.test(text)) return true;
   return false;
 }
 
 // Heuristic: detect English-only function words / patterns that should NOT
-// appear in a French/German title (catches untranslated EN headlines).
+// appear in a French/German title or summary. Conservative — only words
+// extremely unlikely to appear in proper FR/DE prose (avoid false positives
+// on borrowed English words in legitimate French content).
 function hasEnglishOnlyMarkers(text: string): boolean {
-  // Common English headline glue words that are very rare in FR/DE.
-  // Use word boundaries to avoid matching cognates.
-  return /\b(after|with|amid|despite|toward|through|while|among|across|reach|reaches)\b/i.test(text);
+  return /\b(after|amid|despite|toward|through|while|among|across|reaches|including|expected|throughout|coastal areas|are likely)\b/i.test(text);
 }
 
 export async function getLatestNews(limit = 20, locale = "en"): Promise<NewsItem[]> {
@@ -46,26 +46,31 @@ export async function getLatestNews(limit = 20, locale = "en"): Promise<NewsItem
   if (error) throw error;
   const items = (data as NewsItem[]) || [];
 
-  // Filter out items where title was not actually translated:
+  // Filter out items where title or summary was not actually translated:
   // - Greek glyphs on non-Greek pages
-  // - title_<loc> equal to title_en on a non-EN page (translation failed silently)
-  // - language-specific markers (\u00DF, "Flughafen", etc) leaking into other locales
+  // - title or summary equal to the EN/DE version on the wrong locale
+  // - language-specific markers (\u00DF, "Flughafen", "Aktivit\u00E4ten", etc) leaking
+  const summaryCol = `summary_${effectiveLocale}` as keyof NewsItem;
   const filtered = items.filter((item) => {
     const title = (item[titleCol] as string) || "";
     if (!title) return false;
-    if (effectiveLocale !== "el" && hasGreek(title)) return false;
+    const summary = (item[summaryCol] as string) || "";
+
+    if (effectiveLocale !== "el" && (hasGreek(title) || hasGreek(summary))) return false;
 
     if (effectiveLocale !== "en") {
-      // Untranslated: title for this locale is identical to the English version
       if (item.title_en && title.trim() === item.title_en.trim()) return false;
+      if (item.summary_en && summary && summary.trim() === item.summary_en.trim()) return false;
     }
-
     if (effectiveLocale !== "de") {
+      if (item.title_de && title.trim() === item.title_de.trim()) return false;
+      if (item.summary_de && summary && summary.trim() === item.summary_de.trim()) return false;
       if (hasGermanOnlyMarkers(title)) return false;
+      if (hasGermanOnlyMarkers(summary)) return false;
     }
-
     if (effectiveLocale === "fr" || effectiveLocale === "de") {
       if (hasEnglishOnlyMarkers(title)) return false;
+      if (hasEnglishOnlyMarkers(summary)) return false;
     }
 
     return true;
