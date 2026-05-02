@@ -21,10 +21,11 @@ const CATEGORY_TINT: Record<string, [string, string]> = {
 export default async function OpengraphImage({
   params,
 }: {
-  params: { locale: string; slug: string };
+  params: Promise<{ locale: string; slug: string }>;
 }) {
-  const item = await getNewsBySlug(params.slug);
-  const loc = params.locale as Locale;
+  const { locale, slug } = await params;
+  const item = await getNewsBySlug(slug);
+  const loc = locale as Locale;
 
   const title = item ? getLocalizedField(item, "title", loc) || "" : "Crete news";
   const category = item?.category || "news";

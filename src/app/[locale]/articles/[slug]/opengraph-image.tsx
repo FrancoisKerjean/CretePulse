@@ -20,12 +20,13 @@ const CATEGORY_TINT: Record<string, [string, string]> = {
 export default async function OpengraphImage({
   params,
 }: {
-  params: { locale: string; slug: string };
+  params: Promise<{ locale: string; slug: string }>;
 }) {
-  const guide = await getGuideBySlug(params.slug);
+  const { locale, slug } = await params;
+  const guide = await getGuideBySlug(slug);
 
   const title = guide
-    ? getLocalizedGuideField(guide, "titles", params.locale as Locale) || ""
+    ? getLocalizedGuideField(guide, "titles", locale as Locale) || ""
     : "Crete Direct";
 
   const category = guide?.category || "news";
