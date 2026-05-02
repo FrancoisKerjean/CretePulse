@@ -27,6 +27,9 @@ export default function robots(): MetadataRoute.Robots {
         allow: "/",
       },
     ],
-    sitemap: `${BASE_URL}/sitemap.xml`,
+    sitemap: [
+      `${BASE_URL}/sitemap.xml`,
+      `${BASE_URL}/sitemap-news.xml`,
+    ],
   };
 }
