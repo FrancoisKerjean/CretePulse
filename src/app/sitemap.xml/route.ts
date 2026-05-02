@@ -56,6 +56,7 @@ type Entry = {
   path: string;
   changefreq: "daily" | "weekly" | "monthly";
   priority: number;
+  lastmod?: string;
 };
 
 async function fetchSlugs(table: string, extra?: string): Promise<string[]> {
@@ -66,13 +67,46 @@ async function fetchSlugs(table: string, extra?: string): Promise<string[]> {
         .from(table)
         .select("slug")
         .neq("title_en", "")
+        .neq("category", "filtered")
         .order("published_at", { ascending: false })
-        .limit(200);
+        .limit(500);
     } else if (extra === "food_featured") {
       query = supabase.from(table).select("slug").neq("description_en", "");
     }
     const { data } = await query;
     return (data || []).map((r: { slug: string }) => r.slug);
+  } catch {
+    return [];
+  }
+}
+
+async function fetchSlugsWithDate(
+  table: string,
+  dateCol: string,
+  extra?: string,
+): Promise<Array<{ slug: string; lastmod: string }>> {
+  try {
+    let query = supabase.from(table).select(`slug, ${dateCol}`);
+    if (extra === "news") {
+      query = supabase
+        .from(table)
+        .select(`slug, ${dateCol}`)
+        .neq("title_en", "")
+        .neq("category", "filtered")
+        .order(dateCol, { ascending: false })
+        .limit(500);
+    } else if (extra === "guides_published") {
+      query = supabase
+        .from(table)
+        .select(`slug, ${dateCol}`)
+        .eq("status", "published")
+        .order(dateCol, { ascending: false });
+    }
+    const { data } = await query;
+    return (data || []).map((r: Record<string, string>) => ({
+      slug: r.slug,
+      lastmod: new Date(r[dateCol]).toISOString(),
+    }));
   } catch {
     return [];
   }
@@ -87,16 +121,15 @@ function escapeXml(s: string): string {
     .replace(/'/g, "&apos;");
 }
 
-function urlEntry(entry: Entry, lastmod: string): string {
+function urlEntry(entry: Entry, fallbackLastmod: string): string {
   const alternates = LOCALES.map(
     (loc) =>
       `    <xhtml:link rel="alternate" hreflang="${loc}" href="${escapeXml(`${BASE_URL}/${loc}${entry.path}`)}" />`,
   ).join("\n");
   const xDefault = `    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(`${BASE_URL}/en${entry.path}`)}" />`;
 
-  // Canonical URL = English version. Each language variant is exposed via the
-  // xhtml:link alternates; Google then picks the right one per-user.
   const loc = `${BASE_URL}/en${entry.path}`;
+  const lastmod = entry.lastmod || fallbackLastmod;
 
   return `  <url>
     <loc>${escapeXml(loc)}</loc>
@@ -110,8 +143,8 @@ ${xDefault}
 
 export async function GET() {
   const entries: Entry[] = [];
-  const push = (path: string, changefreq: Entry["changefreq"], priority: number) => {
-    entries.push({ path, changefreq, priority });
+  const push = (path: string, changefreq: Entry["changefreq"], priority: number, lastmod?: string) => {
+    entries.push({ path, changefreq, priority, lastmod });
   };
 
   // Static pages
@@ -139,14 +172,15 @@ export async function GET() {
   for (const s of ITINERARY_SLUGS) push(`/itineraries/${s}`, "monthly", 0.7);
   for (const s of ARCH_SLUGS) push(`/archaeology/${s}`, "monthly", 0.6);
 
-  // Dynamic DB pages
+  // Dynamic DB pages — news + guides use real published_at as lastmod
+  // (huge crawl prioritization signal for Google News)
   const [beaches, villages, foodPlaces, hikes, news, guides] = await Promise.all([
     fetchSlugs("beaches"),
     fetchSlugs("villages"),
     fetchSlugs("food_places", "food_featured"),
     fetchSlugs("hikes"),
-    fetchSlugs("news", "news"),
-    fetchSlugs("guides"),
+    fetchSlugsWithDate("news", "published_at", "news"),
+    fetchSlugsWithDate("guides", "published_at", "guides_published"),
   ]);
 
   for (const s of beaches) push(`/beaches/${s}`, "monthly", 0.6);
@@ -156,8 +190,8 @@ export async function GET() {
   }
   for (const s of foodPlaces) push(`/food/${s}`, "monthly", 0.6);
   for (const s of hikes) push(`/hikes/${s}`, "monthly", 0.6);
-  for (const s of news) push(`/news/${s}`, "daily", 0.5);
-  for (const s of guides) push(`/articles/${s}`, "weekly", 0.7);
+  for (const n of news) push(`/news/${n.slug}`, "daily", 0.5, n.lastmod);
+  for (const g of guides) push(`/articles/${g.slug}`, "weekly", 0.7, g.lastmod);
 
   const lastmod = new Date().toISOString();
   const xmlEntries = entries.map((e) => urlEntry(e, lastmod)).join("\n");
