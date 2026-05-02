@@ -3,6 +3,7 @@ import { getLocalizedField, type Locale } from "@/lib/types";
 import { UtensilsCrossed, MapPin } from "lucide-react";
 import Link from "next/link";
 import { buildAlternates } from "@/lib/seo";
+import { itemListSchema } from "@/lib/schema";
 
 export const revalidate = 86400;
 
@@ -156,8 +157,17 @@ export default async function FoodPage({
   const subtitle = SUBTITLE[loc] || SUBTITLE.en;
   const allLabel = ALL_LABEL[loc] || ALL_LABEL.en;
 
+  const listSchema = itemListSchema(
+    places.slice(0, 100).map((p) => ({
+      url: `${BASE_URL}/${locale}/food/${p.slug}`,
+      name: p.name,
+    })),
+    "Restaurants and tavernas in Crete",
+  );
+
   return (
     <main className="min-h-screen bg-surface">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(listSchema) }} />
       <div className="max-w-6xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="flex items-center gap-3 mb-1">
