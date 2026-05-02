@@ -6,6 +6,7 @@ import { ExternalLink, Clock, ArrowLeft, Calendar, Globe } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
 import Link from "next/link";
 import DiscoverCrete from "@/components/DiscoverCrete";
+import NewsletterCTA from "@/components/NewsletterCTA";
 
 export const revalidate = 14400;
 
@@ -83,27 +84,6 @@ const RELATED_LABELS: Record<Locale, string> = {
   fr: "Autres actualités",
   de: "Weitere Nachrichten",
   el: "Σχετικά νέα",
-};
-
-const NEWSLETTER_TITLE: Record<Locale, string> = {
-  en: "Stay informed.",
-  fr: "Restez informé.",
-  de: "Bleiben Sie informiert.",
-  el: "Μείνετε ενημερωμένοι.",
-};
-
-const NEWSLETTER_SUB: Record<Locale, string> = {
-  en: "Get the weekly Crete briefing — news, weather, events. No spam.",
-  fr: "Recevez la synthèse hebdomadaire de Crète - actualités, météo, événements. Pas de spam.",
-  de: "Das wöchentliche Kreta-Briefing - Nachrichten, Wetter, Events. Kein Spam.",
-  el: "Το εβδομαδιαίο ενημερωτικό για την Κρήτη - νέα, καιρός, εκδηλώσεις. Χωρίς spam.",
-};
-
-const NEWSLETTER_CTA: Record<Locale, string> = {
-  en: "Subscribe",
-  fr: "S'abonner",
-  de: "Abonnieren",
-  el: "Εγγραφή",
 };
 
 // ── Category styles ────────────────────────────────────────────────────────
@@ -382,31 +362,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
           <DiscoverCrete category={item.category} locale={locale} />
 
           {/* ── NEWSLETTER CTA ─────────────────────── */}
-          <div className="mt-14 rounded-2xl border border-aegean/20 bg-aegean-faint px-6 py-8 text-center">
-            <div className="w-8 h-1 bg-terra rounded-full mx-auto mb-4" />
-            <h3
-              className="text-lg font-bold text-aegean mb-2"
-              style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
-            >
-              {NEWSLETTER_TITLE[loc]}
-            </h3>
-            <p className="text-sm text-text-muted mb-5 max-w-sm mx-auto leading-relaxed">
-              {NEWSLETTER_SUB[loc]}
-            </p>
-            <form className="flex flex-col sm:flex-row gap-2 max-w-sm mx-auto">
-              <input
-                type="email"
-                placeholder="you@email.com"
-                className="flex-1 px-4 py-2.5 text-sm rounded-lg border border-aegean/30 bg-white text-text placeholder:text-text-light focus:outline-none focus:ring-2 focus:ring-aegean/40"
-              />
-              <button
-                type="submit"
-                className="px-5 py-2.5 text-sm font-semibold bg-aegean text-white rounded-lg hover:bg-aegean-light transition-colors whitespace-nowrap cursor-pointer"
-              >
-                {NEWSLETTER_CTA[loc]}
-              </button>
-            </form>
-          </div>
+          <NewsletterCTA locale={locale} />
 
         </div>
       </main>
