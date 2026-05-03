@@ -66,6 +66,7 @@ const L: Record<Loc, {
   cta: string;
   ctaButton: string;
   ctaLink: string;
+  dataPartner: string;
 }> = {
   en: {
     pageTitlePrefix: "Airbnb in",
@@ -113,6 +114,7 @@ const L: Record<Loc, {
     cta: "Considering buying or renting out a property here?",
     ctaButton: "Get a personal yield analysis",
     ctaLink: "https://kairosguest.com/rental-analyzer",
+    dataPartner: "Data analysis and aggregation provided by",
   },
   fr: {
     pageTitlePrefix: "Airbnb à",
@@ -160,6 +162,7 @@ const L: Record<Loc, {
     cta: "Vous envisagez d'acheter ou de mettre en location un bien ici ?",
     ctaButton: "Obtenir une analyse personnelle",
     ctaLink: "https://kairosguest.com/rental-analyzer",
+    dataPartner: "Analyse et agrégation des données réalisées par",
   },
   de: {
     pageTitlePrefix: "Airbnb in",
@@ -207,6 +210,7 @@ const L: Record<Loc, {
     cta: "Erwägen Sie hier zu kaufen oder zu vermieten?",
     ctaButton: "Persönliche Renditeanalyse anfordern",
     ctaLink: "https://kairosguest.com/rental-analyzer",
+    dataPartner: "Datenanalyse und Aggregation bereitgestellt von",
   },
   el: {
     pageTitlePrefix: "Airbnb στ",
@@ -254,6 +258,7 @@ const L: Record<Loc, {
     cta: "Σκέφτεστε να αγοράσετε ή να εκμισθώσετε εδώ;",
     ctaButton: "Λάβετε προσωπική ανάλυση",
     ctaLink: "https://kairosguest.com/rental-analyzer",
+    dataPartner: "Ανάλυση και συγκέντρωση δεδομένων από",
   },
 };
 
@@ -502,6 +507,18 @@ export default async function AirbnbNeighbourhoodPage(
           <p>{t.methodologyText(stats.snapshot_date || "")}</p>
           <p>
             <strong>{t.caveat}.</strong> {t.caveatText}
+          </p>
+          <p className="text-xs text-stone-500 pt-2 border-t border-stone-200">
+            {t.dataPartner}{" "}
+            <a
+              href="https://kairosguest.com/rental-analyzer"
+              target="_blank"
+              rel="noopener"
+              className="text-amber-700 hover:underline"
+            >
+              Kairos
+            </a>
+            .
           </p>
         </section>
 
