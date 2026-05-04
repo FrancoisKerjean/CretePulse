@@ -14,6 +14,8 @@ import {
 import type { Locale } from "@/lib/types";
 import { breadcrumbSchema } from "@/lib/schema";
 import DiscoverCrete from "@/components/DiscoverCrete";
+import ReadingProgressBar from "@/components/ReadingProgressBar";
+import StickyNewsletterBar from "@/components/StickyNewsletterBar";
 
 export const revalidate = 86400;
 
@@ -302,6 +304,9 @@ export default async function ArticleDetailPage({
 
   return (
     <main className="min-h-screen bg-surface">
+      <ReadingProgressBar />
+      <StickyNewsletterBar locale={locale} />
+
       {/* Breadcrumb schema */}
       <script
         type="application/ld+json"
@@ -420,29 +425,44 @@ export default async function ArticleDetailPage({
                   </h2>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {relatedGuides.map((rel) => (
-                    <Link
-                      key={rel.slug}
-                      href={`/${locale}/articles/${rel.slug}`}
-                      className="group block rounded-lg overflow-hidden border border-border hover:shadow-sm transition-shadow"
-                    >
-                      {rel.image_url && (
-                        <div className="h-28 overflow-hidden">
-                          <img
-                            src={rel.image_url}
-                            alt={getLocalizedGuideField(rel, "titles", loc)}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            loading="lazy"
-                          />
+                  {relatedGuides.map((rel) => {
+                    const relTitle = getLocalizedGuideField(rel, "titles", loc);
+                    const relDesc = getLocalizedGuideField(rel, "meta_descs", loc);
+                    return (
+                      <Link
+                        key={rel.slug}
+                        href={`/${locale}/articles/${rel.slug}`}
+                        className="group flex flex-col rounded-lg overflow-hidden border border-border hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+                      >
+                        {rel.image_url && (
+                          <div className="h-32 overflow-hidden">
+                            <img
+                              src={rel.image_url}
+                              alt={relTitle}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              loading="lazy"
+                            />
+                          </div>
+                        )}
+                        <div className="p-3 flex flex-col gap-1.5 flex-1">
+                          <p className="text-sm font-semibold text-text group-hover:text-aegean transition-colors line-clamp-2 leading-snug">
+                            {relTitle}
+                          </p>
+                          {relDesc && (
+                            <p className="text-xs text-text-muted line-clamp-3 leading-relaxed">
+                              {relDesc}
+                            </p>
+                          )}
+                          {rel.read_time && (
+                            <p className="text-[11px] text-text-light mt-auto pt-1 flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {rel.read_time} {READ_TIME_LABEL[loc]}
+                            </p>
+                          )}
                         </div>
-                      )}
-                      <div className="p-3">
-                        <p className="text-sm font-medium text-text group-hover:text-aegean transition-colors line-clamp-2 leading-snug">
-                          {getLocalizedGuideField(rel, "titles", loc)}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
+                      </Link>
+                    );
+                  })}
                 </div>
               </section>
             )}

@@ -77,7 +77,7 @@ export async function getRelatedGuides(
   try {
     const { data, error } = await supabase
       .from("guides")
-      .select("slug, titles, category, image_url, read_time, published_at, format")
+      .select("slug, titles, meta_descs, category, image_url, read_time, published_at, format")
       .eq("status", "published")
       .eq("category", category)
       .neq("slug", excludeSlug)
