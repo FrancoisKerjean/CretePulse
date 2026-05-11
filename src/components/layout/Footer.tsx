@@ -55,9 +55,18 @@ export function Footer() {
           <p className="text-[11px] text-text-light">
             &copy; {new Date().getFullYear()} Crete Direct. {t("rights")}
           </p>
-          <div className="flex items-center gap-1 text-[11px] text-text-light">
-            <MapPin className="w-3 h-3" />
-            <span>{t("madeIn")}</span>
+          <div className="flex items-center gap-4 text-[11px] text-text-light">
+            <div className="flex items-center gap-1">
+              <MapPin className="w-3 h-3" />
+              <span>{t("madeIn")}</span>
+            </div>
+            <a
+              href="https://nov-ai.xyz"
+              rel="external"
+              className="hover:text-aegean transition-colors"
+            >
+              Built by NovAI
+            </a>
           </div>
         </div>
       </div>
