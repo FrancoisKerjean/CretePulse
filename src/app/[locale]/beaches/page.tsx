@@ -4,6 +4,21 @@ import { Waves, MapPin, Car, Fish } from "lucide-react";
 import Link from "next/link";
 import { buildAlternates } from "@/lib/seo";
 import { itemListSchema } from "@/lib/schema";
+import { BeachImage } from "@/components/BeachImage";
+
+const REGION_LABELS: Record<Locale, Record<string, string>> = {
+  en: { east: "east Crete", west: "west Crete", central: "central Crete", south: "south Crete" },
+  fr: { east: "Crète de l'est", west: "Crète de l'ouest", central: "Crète centrale", south: "Crète du sud" },
+  de: { east: "Ostkreta", west: "Westkreta", central: "Mittelkreta", south: "Südkreta" },
+  el: { east: "ανατολική Κρήτη", west: "δυτική Κρήτη", central: "κεντρική Κρήτη", south: "νότια Κρήτη" },
+};
+
+const TYPE_LABELS: Record<Locale, Record<string, string>> = {
+  en: { sand: "sandy", pebble: "pebble", rock: "rocky", mixed: "mixed" },
+  fr: { sand: "de sable", pebble: "de galets", rock: "rocheuse", mixed: "mixte" },
+  de: { sand: "Sand-", pebble: "Kiesel-", rock: "Fels-", mixed: "gemischt" },
+  el: { sand: "αμμώδης", pebble: "βότσαλο", rock: "βραχώδης", mixed: "μικτή" },
+};
 
 export const revalidate = 86400;
 
@@ -78,16 +93,13 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
               href={`/${locale}/beaches/${beach.slug}`}
               className="group rounded-xl border border-border bg-white overflow-hidden hover:border-aegean/30 hover:shadow-md transition-all"
             >
-              {beach.image_url && (
-                <div className="h-40 bg-aegean-faint overflow-hidden">
-                  <img
-                    src={beach.image_url}
-                    alt={getLocalizedField(beach, "name", loc)}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    loading="lazy"
-                  />
-                </div>
-              )}
+              <div className="h-40 overflow-hidden">
+                <BeachImage
+                  src={beach.image_url}
+                  alt={`${getLocalizedField(beach, "name", loc)} beach, ${REGION_LABELS[loc][beach.region] || beach.region}${beach.type ? `, ${TYPE_LABELS[loc][beach.type] || beach.type}` : ""}`}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              </div>
               <div className="p-4">
                 <h2 className="font-semibold text-lg">
                   {getLocalizedField(beach, "name", loc)}

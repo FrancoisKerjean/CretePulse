@@ -215,7 +215,7 @@ export default async function BeachDetailPage({
         <div className="relative h-72 md:h-96 bg-aegean">
           <Image
             src={beach.image_url}
-            alt={`${name} beach, Crete`}
+            alt={`${name} beach in ${beach.region} Crete${beach.type ? `, ${beach.type}` : ""}`}
             fill
             className="object-cover"
             sizes="100vw"
