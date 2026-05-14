@@ -292,6 +292,178 @@ export function weatherPageSchema(params: {
   };
 }
 
+export function cityThingsToDoSchema(params: {
+  locale: string;
+  city: { slug: string; name: string; nameEl: string; lat: number; lng: number };
+  description: string;
+  pageTitle: string;
+  highlights: string[];
+  faqItems: Array<{ q: string; a: string }>;
+  breadcrumbLabels: { home: string; thingsToDo: string };
+}): Record<string, unknown> {
+  const url = `${BASE_URL}/${params.locale}/things-to-do/${params.city.slug}`;
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": url,
+        url,
+        name: params.pageTitle,
+        description: params.description,
+        inLanguage: params.locale,
+        isPartOf: { "@type": "WebSite", name: "Crete Direct", url: BASE_URL },
+        breadcrumb: { "@id": `${url}#breadcrumb` },
+        about: { "@id": `${url}#place` },
+        mainEntity: { "@id": `${url}#faq` },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${url}#breadcrumb`,
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: params.breadcrumbLabels.home, item: `${BASE_URL}/${params.locale}` },
+          { "@type": "ListItem", position: 2, name: params.breadcrumbLabels.thingsToDo, item: `${BASE_URL}/${params.locale}/things-to-do` },
+          { "@type": "ListItem", position: 3, name: params.city.name, item: url },
+        ],
+      },
+      {
+        "@type": "TouristDestination",
+        "@id": `${url}#place`,
+        name: params.city.name,
+        alternateName: params.city.nameEl,
+        description: params.description,
+        url,
+        geo: {
+          "@type": "GeoCoordinates",
+          latitude: params.city.lat,
+          longitude: params.city.lng,
+        },
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: params.city.name,
+          addressRegion: "Crete",
+          addressCountry: "GR",
+        },
+        includesAttraction: params.highlights.map((h) => ({
+          "@type": "TouristAttraction",
+          name: h,
+          touristType: "Sightseer",
+        })),
+      },
+      {
+        "@type": "ItemList",
+        "@id": `${url}#highlights`,
+        name: `Top highlights in ${params.city.name}`,
+        numberOfItems: params.highlights.length,
+        itemListElement: params.highlights.map((h, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          item: { "@type": "TouristAttraction", name: h },
+        })),
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${url}#faq`,
+        inLanguage: params.locale,
+        mainEntity: params.faqItems.map((f) => ({
+          "@type": "Question",
+          name: f.q,
+          acceptedAnswer: { "@type": "Answer", text: f.a },
+        })),
+      },
+    ],
+  };
+}
+
+export function compareSchema(params: {
+  locale: string;
+  slug: string;
+  a: string;
+  b: string;
+  pageTitle: string;
+  description: string;
+  categories: Array<{ label: string; a: string; b: string; winner?: "a" | "b" | "tie" }>;
+  verdictA: string;
+  verdictB: string;
+  faqItems: Array<{ q: string; a: string }>;
+  breadcrumbLabels: { home: string; compare: string };
+}): Record<string, unknown> {
+  const url = `${BASE_URL}/${params.locale}/compare/${params.slug}`;
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": url,
+        url,
+        name: params.pageTitle,
+        description: params.description,
+        inLanguage: params.locale,
+        isPartOf: { "@type": "WebSite", name: "Crete Direct", url: BASE_URL },
+        breadcrumb: { "@id": `${url}#breadcrumb` },
+        mainEntity: { "@id": `${url}#faq` },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${url}#breadcrumb`,
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: params.breadcrumbLabels.home, item: `${BASE_URL}/${params.locale}` },
+          { "@type": "ListItem", position: 2, name: params.breadcrumbLabels.compare, item: `${BASE_URL}/${params.locale}/compare` },
+          { "@type": "ListItem", position: 3, name: `${params.a} vs ${params.b}`, item: url },
+        ],
+      },
+      {
+        "@type": "ItemList",
+        "@id": `${url}#comparison`,
+        name: `${params.a} vs ${params.b} comparison`,
+        numberOfItems: 2,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            item: {
+              "@type": "Place",
+              name: params.a,
+              description: params.verdictA,
+              additionalProperty: params.categories.map((c) => ({
+                "@type": "PropertyValue",
+                name: c.label,
+                value: c.a,
+              })),
+            },
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            item: {
+              "@type": "Place",
+              name: params.b,
+              description: params.verdictB,
+              additionalProperty: params.categories.map((c) => ({
+                "@type": "PropertyValue",
+                name: c.label,
+                value: c.b,
+              })),
+            },
+          },
+        ],
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${url}#faq`,
+        inLanguage: params.locale,
+        mainEntity: params.faqItems.map((f) => ({
+          "@type": "Question",
+          name: f.q,
+          acceptedAnswer: { "@type": "Answer", text: f.a },
+        })),
+      },
+    ],
+  };
+}
+
 export function newsSchema(news: NewsItem, locale: Locale): Record<string, unknown> {
   const headline = getLocalizedField(news, "title", locale);
   const description = getLocalizedField(news, "summary", locale);

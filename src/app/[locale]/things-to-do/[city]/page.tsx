@@ -4,6 +4,7 @@ import { Waves, Sun, UtensilsCrossed, Mountain, Calendar, ChevronLeft, MapPin, C
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
+import { cityThingsToDoSchema } from "@/lib/schema";
 
 export const revalidate = 86400;
 
@@ -272,15 +273,47 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
     },
   ];
 
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqItems.map(f => ({
-      "@type": "Question",
-      name: f.q,
-      acceptedAnswer: { "@type": "Answer", text: f.a },
-    })),
+  const homeLabels: Record<string, string> = {
+    en: "Home", fr: "Accueil", de: "Startseite", el: "Αρχική",
+    it: "Home", nl: "Home", pl: "Strona główna", es: "Inicio", pt: "Início",
+    ru: "Главная", ja: "ホーム", ko: "홈", zh: "首页", tr: "Ana sayfa",
+    sv: "Hem", da: "Hjem", no: "Hjem", fi: "Etusivu", cs: "Domů",
+    hu: "Főoldal", ro: "Acasă", ar: "الرئيسية",
   };
+
+  const thingsToDoLabels: Record<string, string> = {
+    en: "Things to do", fr: "Que faire", de: "Aktivitäten", el: "Δραστηριότητες",
+    it: "Cosa fare", nl: "Bezienswaardigheden", pl: "Atrakcje", es: "Qué hacer", pt: "O que fazer",
+    ru: "Что делать", ja: "観光", ko: "할 일", zh: "活动", tr: "Yapılacaklar",
+    sv: "Att göra", da: "Ting at gøre", no: "Ting å gjøre", fi: "Tekemistä", cs: "Co dělat",
+    hu: "Tennivalók", ro: "De făcut", ar: "أنشطة",
+  };
+
+  const pageTitles: Record<string, string> = {
+    en: `Things to Do in ${city.name}, Crete - Activities & Attractions`,
+    fr: `Que faire à ${city.name}, Crète - Activités & Sites à visiter`,
+    de: `Aktivitäten in ${city.name}, Kreta - Sehenswürdigkeiten & Tipps`,
+    el: `Τι να κάνετε στην ${city.nameEl}, Κρήτη - Δραστηριότητες & Αξιοθέατα`,
+  };
+
+  const pageSchema = cityThingsToDoSchema({
+    locale,
+    city: {
+      slug: citySlug,
+      name: city.name,
+      nameEl: city.nameEl,
+      lat: city.lat,
+      lng: city.lng,
+    },
+    pageTitle: pageTitles[locale] || pageTitles.en,
+    description: desc,
+    highlights: info.highlights,
+    faqItems,
+    breadcrumbLabels: {
+      home: homeLabels[locale] || homeLabels.en,
+      thingsToDo: thingsToDoLabels[locale] || thingsToDoLabels.en,
+    },
+  });
 
   const sections = [
     {
@@ -352,7 +385,7 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
 
   return (
     <main className="min-h-screen bg-surface">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(pageSchema) }} />
 
       {/* Hero */}
       <section className="bg-aegean text-white py-12 md:py-20 px-4">

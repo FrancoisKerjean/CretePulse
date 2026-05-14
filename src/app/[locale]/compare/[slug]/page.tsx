@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Trophy, ArrowRight, ChevronLeft, Scale } from "lucide-react";
 import type { Metadata } from "next";
+import { compareSchema } from "@/lib/schema";
 
 export const revalidate = 86400;
 
@@ -448,22 +449,54 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
 
   return (
     <main className="min-h-screen bg-white">
-      {/* FAQ Schema */}
+      {/* @graph schema: WebPage + BreadcrumbList + ItemList comparison + FAQPage */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            mainEntity: faqItems.map((item) => ({
-              "@type": "Question",
-              name: t(item.q, locale),
-              acceptedAnswer: {
-                "@type": "Answer",
-                text: t(item.a, locale),
+          __html: JSON.stringify(
+            compareSchema({
+              locale,
+              slug,
+              a: comp.a,
+              b: comp.b,
+              pageTitle: `${comp.a} vs ${comp.b}`,
+              description: (META_DESC[locale] || META_DESC.en)
+                .replace("%A%", comp.a)
+                .replace("%B%", comp.b),
+              categories: data.categories.map((c) => ({
+                label: t(c.label, locale),
+                a: t(c.a, locale),
+                b: t(c.b, locale),
+                winner: c.winner as "a" | "b" | "tie" | undefined,
+              })),
+              verdictA: t(data.verdictA, locale),
+              verdictB: t(data.verdictB, locale),
+              faqItems: faqItems.map((item) => ({
+                q: t(item.q, locale),
+                a: t(item.a, locale),
+              })),
+              breadcrumbLabels: {
+                home:
+                  ({
+                    en: "Home", fr: "Accueil", de: "Startseite", el: "Αρχική",
+                    it: "Home", nl: "Home", pl: "Strona główna", es: "Inicio",
+                    pt: "Início", ru: "Главная", ja: "ホーム", ko: "홈",
+                    zh: "首页", tr: "Ana sayfa", sv: "Hem", da: "Hjem",
+                    no: "Hjem", fi: "Etusivu", cs: "Domů", hu: "Főoldal",
+                    ro: "Acasă", ar: "الرئيسية",
+                  } as Record<string, string>)[locale] || "Home",
+                compare:
+                  ({
+                    en: "Compare", fr: "Comparer", de: "Vergleichen", el: "Σύγκριση",
+                    it: "Confronta", nl: "Vergelijken", pl: "Porównaj", es: "Comparar",
+                    pt: "Comparar", ru: "Сравнить", ja: "比較", ko: "비교",
+                    zh: "比较", tr: "Karşılaştır", sv: "Jämför", da: "Sammenlign",
+                    no: "Sammenlign", fi: "Vertaa", cs: "Porovnat", hu: "Összehasonlítás",
+                    ro: "Comparați", ar: "مقارنة",
+                  } as Record<string, string>)[locale] || "Compare",
               },
-            })),
-          }),
+            }),
+          ),
         }}
       />
 
