@@ -4,6 +4,7 @@ import { Thermometer, Waves, Sun, CloudRain, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
+import { weatherPageSchema } from "@/lib/schema";
 
 export const revalidate = 86400;
 
@@ -94,19 +95,53 @@ export default async function WeatherCityMonthPage({ params }: { params: Promise
     },
   ];
 
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqItems.map(f => ({
-      "@type": "Question",
-      name: f.q,
-      acceptedAnswer: { "@type": "Answer", text: f.a },
-    })),
+  const homeLabels: Record<string, string> = {
+    en: "Home", fr: "Accueil", de: "Startseite", el: "Αρχική",
+    it: "Home", nl: "Home", pl: "Strona główna", es: "Inicio", pt: "Início",
+    ru: "Главная", ja: "ホーム", ko: "홈", zh: "首页", tr: "Ana sayfa",
+    sv: "Hem", da: "Hjem", no: "Hjem", fi: "Etusivu", cs: "Domů",
+    hu: "Főoldal", ro: "Acasă", ar: "الرئيسية",
   };
+
+  const weatherLabels: Record<string, string> = {
+    en: "Weather", fr: "Météo", de: "Wetter", el: "Καιρός",
+    it: "Meteo", nl: "Weer", pl: "Pogoda", es: "Clima", pt: "Clima",
+    ru: "Погода", ja: "天気", ko: "날씨", zh: "天气", tr: "Hava durumu",
+    sv: "Väder", da: "Vejr", no: "Vær", fi: "Sää", cs: "Počasí",
+    hu: "Időjárás", ro: "Vremea", ar: "الطقس",
+  };
+
+  const pageDescriptions: Record<string, string> = {
+    en: `${city.name} in ${monthName}: ${climate.avgHigh}°C average high, sea temperature ${climate.seaTemp}°C, ${climate.sunHours}h sunshine daily. Complete weather guide for your trip to Crete.`,
+    fr: `${city.name} en ${monthName} : ${climate.avgHigh}°C en moyenne, mer à ${climate.seaTemp}°C, ${climate.sunHours}h de soleil/jour. Guide météo complet pour votre voyage en Crète.`,
+    de: `${city.name} im ${monthName}: ${climate.avgHigh}°C Durchschnitt, Meer ${climate.seaTemp}°C, ${climate.sunHours}h Sonne täglich. Kompletter Wetterleitfaden für Kreta.`,
+    el: `${city.nameEl} τον ${monthName}: ${climate.avgHigh}°C μέση θερμοκρασία, θάλασσα ${climate.seaTemp}°C, ${climate.sunHours} ώρες ήλιο. Οδηγός καιρού Κρήτης.`,
+  };
+
+  const pageSchema = weatherPageSchema({
+    locale,
+    city: {
+      slug: citySlug,
+      name: city.name,
+      nameEl: city.nameEl,
+      lat: city.lat,
+      lng: city.lng,
+    },
+    monthSlug: month,
+    monthName,
+    climate,
+    pageTitle: heroTitles[locale] || heroTitles.en,
+    description: pageDescriptions[locale] || pageDescriptions.en,
+    faqItems,
+    breadcrumbLabels: {
+      home: homeLabels[locale] || homeLabels.en,
+      weather: weatherLabels[locale] || weatherLabels.en,
+    },
+  });
 
   return (
     <main className="min-h-screen bg-surface">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(pageSchema) }} />
 
       {/* Hero */}
       <section className="bg-aegean text-white py-12 md:py-16 px-4">

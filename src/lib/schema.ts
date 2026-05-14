@@ -189,6 +189,109 @@ export function itemListSchema(
   };
 }
 
+export function weatherPageSchema(params: {
+  locale: string;
+  city: { slug: string; name: string; nameEl: string; lat: number; lng: number };
+  monthSlug: string;
+  monthName: string;
+  climate: {
+    avgHigh: number;
+    avgLow: number;
+    seaTemp: number;
+    rainyDays: number;
+    sunHours: number;
+    uvIndex: number;
+  };
+  pageTitle: string;
+  description: string;
+  faqItems: Array<{ q: string; a: string }>;
+  breadcrumbLabels: { home: string; weather: string };
+}): Record<string, unknown> {
+  const url = `${BASE_URL}/${params.locale}/weather/${params.city.slug}/${params.monthSlug}`;
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": url,
+        url,
+        name: params.pageTitle,
+        description: params.description,
+        inLanguage: params.locale,
+        isPartOf: {
+          "@type": "WebSite",
+          name: "Crete Direct",
+          url: BASE_URL,
+        },
+        breadcrumb: { "@id": `${url}#breadcrumb` },
+        about: { "@id": `${url}#place` },
+        mainEntity: { "@id": `${url}#faq` },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${url}#breadcrumb`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: params.breadcrumbLabels.home,
+            item: `${BASE_URL}/${params.locale}`,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: params.breadcrumbLabels.weather,
+            item: `${BASE_URL}/${params.locale}/weather`,
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: `${params.city.name} - ${params.monthName}`,
+            item: url,
+          },
+        ],
+      },
+      {
+        "@type": "Place",
+        "@id": `${url}#place`,
+        name: params.city.name,
+        alternateName: params.city.nameEl,
+        url: `${BASE_URL}/${params.locale}/things-to-do/${params.city.slug}`,
+        geo: {
+          "@type": "GeoCoordinates",
+          latitude: params.city.lat,
+          longitude: params.city.lng,
+        },
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: params.city.name,
+          addressRegion: "Crete",
+          addressCountry: "GR",
+        },
+        additionalProperty: [
+          { "@type": "PropertyValue", name: `Average high in ${params.monthName} (°C)`, value: params.climate.avgHigh },
+          { "@type": "PropertyValue", name: `Average low in ${params.monthName} (°C)`, value: params.climate.avgLow },
+          { "@type": "PropertyValue", name: `Sea temperature in ${params.monthName} (°C)`, value: params.climate.seaTemp },
+          { "@type": "PropertyValue", name: `Rainy days in ${params.monthName}`, value: params.climate.rainyDays },
+          { "@type": "PropertyValue", name: `Daily sunshine in ${params.monthName} (h)`, value: params.climate.sunHours },
+          { "@type": "PropertyValue", name: `UV index in ${params.monthName}`, value: params.climate.uvIndex },
+        ],
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${url}#faq`,
+        inLanguage: params.locale,
+        mainEntity: params.faqItems.map((f) => ({
+          "@type": "Question",
+          name: f.q,
+          acceptedAnswer: { "@type": "Answer", text: f.a },
+        })),
+      },
+    ],
+  };
+}
+
 export function newsSchema(news: NewsItem, locale: Locale): Record<string, unknown> {
   const headline = getLocalizedField(news, "title", locale);
   const description = getLocalizedField(news, "summary", locale);
