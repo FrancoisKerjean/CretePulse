@@ -20,11 +20,20 @@ export function generateStaticParams() {
   return params;
 }
 
+/**
+ * Locales where /weather/[city]/[month] generated >=2 clicks on the last 28d (GSC).
+ * Other locales are noindex'd: they had 0 clicks across 220-1117 impressions
+ * (avg position 50-75 = invisible page 5-8 Google). Decision 15/05/2026.
+ */
+const WEATHER_INDEX_LOCALES = new Set(["fr", "de", "el", "da", "ru"]);
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; city: string; month: string }> }) {
   const { locale, city: citySlug, month } = await params;
   const city = getCity(citySlug);
   const monthName = MONTH_NAMES[locale]?.[month] || MONTH_NAMES.en[month];
   if (!city || !monthName) return { title: "Not found" };
+
+  const shouldIndex = WEATHER_INDEX_LOCALES.has(locale);
 
   const climate = getClimateData(citySlug, month);
 
@@ -48,6 +57,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     title: titles[locale] || titles.en,
     description: descs[locale] || descs.en,
     alternates: buildAlternates(locale, `/weather/${citySlug}/${month}`),
+    robots: shouldIndex ? undefined : { index: false, follow: true },
     openGraph: { title: titles[locale] || titles.en, description: descs[locale] || descs.en, url },
   };
 }

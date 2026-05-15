@@ -266,6 +266,9 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     title: titles[locale] || titles.en,
     description: descs[locale] || descs.en,
     alternates: buildAlternates(locale, `/getting-around/${slug}`),
+    // /getting-around/[route] is noindex bulk: 41 pages indexed for 2 clicks on 28d,
+    // average position 38 = invisible. Decision 15/05/2026.
+    robots: { index: false, follow: true },
     openGraph: { title: titles[locale] || titles.en, description: descs[locale] || descs.en, url, type: "website" },
   };
 }

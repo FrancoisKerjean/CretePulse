@@ -171,7 +171,11 @@ export async function GET() {
   // No /visit index page exists, so the section is fully removed from the sitemap.
   // for (const month of MONTHS) push(`/visit/${month}`, "monthly", 0.7);
   for (const a of BEACH_ACTIVITIES) push(`/beaches/best-for/${a}`, "monthly", 0.6);
-  for (const s of ROUTE_SLUGS) push(`/getting-around/${s}`, "monthly", 0.6);
+  // /getting-around/[route] pages are noindex (GSC: 41 pages, 704 impressions for
+  // only 2 clicks on 28d, average position 38 = invisible). Removed from sitemap
+  // for coherence with the noindex header.
+  // for (const s of ROUTE_SLUGS) push(`/getting-around/${s}`, "monthly", 0.6);
+  void ROUTE_SLUGS;
   for (const s of COMP_SLUGS) push(`/compare/${s}`, "monthly", 0.6);
   for (const s of AREA_SLUGS) push(`/where-to-stay/${s}`, "monthly", 0.6);
   for (const s of ITINERARY_SLUGS) push(`/itineraries/${s}`, "monthly", 0.7);
