@@ -47,7 +47,10 @@
     "updatedAt": "Actualizat la {time} ora locală",
     "noEvents": "Nu sunt evenimente viitoare.",
     "submitEvent": "Trimite unul?",
-    "newsFeedLoading": "Fluxul de știri se încarcă. Se actualizează la fiecare 3 ore."
+    "newsFeedLoading": "Fluxul de știri se încarcă. Se actualizează la fiecare 3 ore.",
+    "guidesSectionTitle": "Ghiduri de călătorie",
+    "guidesSectionSubtitle": "Plaje, drumeții, mâncare, viață în Creta. Verificate pe insulă.",
+    "allGuides": "Toate ghidurile"
   },
   "footer": {
     "about": "Ghid gratuit și independent pentru Creta. Date în timp real. Fără reclame (deocamdată). Fără urmărire.",

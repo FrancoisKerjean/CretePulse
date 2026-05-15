@@ -47,7 +47,10 @@
     "updatedAt": "Yerel saat {time} itibarıyla güncellendi",
     "noEvents": "Yaklaşan etkinlik yok.",
     "submitEvent": "Bir tane gönderin?",
-    "newsFeedLoading": "Haber akışı yükleniyor. 3 saatte bir güncellenir."
+    "newsFeedLoading": "Haber akışı yükleniyor. 3 saatte bir güncellenir.",
+    "guidesSectionTitle": "Seyahat rehberleri",
+    "guidesSectionSubtitle": "Plajlar, yürüyüşler, yemek, Girit'te yaşam. Yerinde doğrulandı.",
+    "allGuides": "Tüm rehberler"
   },
   "footer": {
     "about": "Girit için ücretsiz, bağımsız rehber. Canlı veri. Reklam yok (henüz). Takip yok.",

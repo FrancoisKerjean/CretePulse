@@ -47,7 +47,10 @@
     "updatedAt": "Zaktualizowano o {time} czasu lokalnego",
     "noEvents": "Brak nadchodzących wydarzeń.",
     "submitEvent": "Zaproponuj jedno?",
-    "newsFeedLoading": "Ładowanie wiadomości. Aktualizowane co 3 godziny."
+    "newsFeedLoading": "Ładowanie wiadomości. Aktualizowane co 3 godziny.",
+    "guidesSectionTitle": "Przewodniki",
+    "guidesSectionSubtitle": "Plaże, wędrówki, jedzenie, życie na Krecie. Sprawdzone na miejscu.",
+    "allGuides": "Wszystkie przewodniki"
   },
   "footer": {
     "about": "Darmowy, niezależny przewodnik po Krecie. Dane na żywo. Bez reklam (na razie). Bez śledzenia.",

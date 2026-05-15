@@ -17,6 +17,7 @@ import type { CityWeather } from "@/lib/weather";
 import type { NewsItem, Event, Locale } from "@/lib/types";
 import { getLocalizedField } from "@/lib/types";
 import { localizeLocation } from "@/lib/localize-location";
+import { type Guide, getLocalizedGuideField } from "@/lib/guides";
 
 function WeatherIcon({ code, wind, className }: { code: number; wind: number; className?: string }) {
   const c = className || "w-5 h-5";
@@ -121,10 +122,11 @@ interface HomeClientProps {
   cities: CityWeather[];
   latestNews: NewsItem[];
   upcomingEvents: Event[];
+  latestGuides: Guide[];
   locale: string;
 }
 
-export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeClientProps) {
+export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, locale }: HomeClientProps) {
   const loc = locale as Locale;
   const t = useTranslations("home");
 
@@ -466,6 +468,111 @@ export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeC
           </div>
         </div>
       </div>
+
+      {/* ═══════════════════ LATEST GUIDES ═══════════════════ */}
+      {latestGuides.length > 0 && (
+        <section className="border-t border-border bg-surface py-14 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-end justify-between mb-6 gap-4">
+              <div>
+                <BlurFade delay={0.1}>
+                  <h2
+                    className="text-3xl md:text-4xl font-bold text-text mb-2 flex items-center gap-3"
+                    style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
+                  >
+                    <BookOpen className="w-7 h-7 text-aegean" />
+                    {t("guidesSectionTitle")}
+                  </h2>
+                  <p className="text-text-muted text-sm max-w-lg">{t("guidesSectionSubtitle")}</p>
+                </BlurFade>
+              </div>
+              <Link
+                href="/articles"
+                className="hidden sm:flex shrink-0 text-xs text-aegean hover:text-aegean-light items-center gap-1 font-semibold transition-colors whitespace-nowrap"
+              >
+                {t("allGuides")} <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
+            <div
+              className="relative rounded-2xl border border-border bg-white overflow-hidden"
+              style={{
+                maskImage: "linear-gradient(to bottom, black 0, black calc(100% - 32px), transparent 100%)",
+                WebkitMaskImage: "linear-gradient(to bottom, black 0, black calc(100% - 32px), transparent 100%)",
+              }}
+            >
+              <div
+                className="overflow-y-auto px-3 sm:px-5 py-3"
+                style={{ maxHeight: "560px", scrollbarWidth: "thin", scrollbarColor: "#cbd5e1 transparent" }}
+              >
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {latestGuides.map((guide, idx) => {
+                    const title = getLocalizedGuideField(guide, "titles", locale);
+                    const desc = getLocalizedGuideField(guide, "meta_descs", locale);
+                    return (
+                      <li key={guide.slug}>
+                        <BlurFade delay={Math.min(0.04 * idx, 0.4)}>
+                          <Link
+                            href={`/articles/${guide.slug}`}
+                            className="flex items-start gap-3 p-3 rounded-xl border border-border/60 bg-white hover:border-aegean/40 hover:shadow-md transition-all group h-full"
+                          >
+                            <div className="shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-stone relative">
+                              {guide.image_url ? (
+                                <Image
+                                  src={guide.image_url}
+                                  alt={title}
+                                  fill
+                                  sizes="80px"
+                                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-aegean to-aegean-light flex items-center justify-center">
+                                  <BookOpen className="w-7 h-7 text-white/70" />
+                                </div>
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                {guide.category && (
+                                  <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-md bg-aegean/8 text-aegean">
+                                    {guide.category}
+                                  </span>
+                                )}
+                                {guide.read_time ? (
+                                  <span className="text-[10px] text-text-light font-mono">
+                                    {guide.read_time} min
+                                  </span>
+                                ) : null}
+                              </div>
+                              <p className="text-sm font-semibold text-text group-hover:text-aegean transition-colors leading-snug line-clamp-2">
+                                {title}
+                              </p>
+                              {desc && (
+                                <p className="text-[11px] text-text-muted mt-1 leading-snug line-clamp-2">
+                                  {desc}
+                                </p>
+                              )}
+                            </div>
+                          </Link>
+                        </BlurFade>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </div>
+
+            <div className="mt-4 sm:hidden">
+              <Link
+                href="/articles"
+                className="text-xs text-aegean hover:text-aegean-light flex items-center gap-1 font-semibold transition-colors"
+              >
+                {t("allGuides")} <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ═══════════════════ EXPLORE BENTO ═══════════════════ */}
       <section className="border-t border-border bg-white py-14 px-4">

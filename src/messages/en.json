@@ -47,7 +47,10 @@
     "updatedAt": "Updated at {time} local time",
     "noEvents": "No upcoming events.",
     "submitEvent": "Submit one?",
-    "newsFeedLoading": "News feed loading. Updated every 3 hours."
+    "newsFeedLoading": "News feed loading. Updated every 3 hours.",
+    "guidesSectionTitle": "Travel guides",
+    "guidesSectionSubtitle": "Beaches, hikes, food, life in Crete. Fact-checked on the island.",
+    "allGuides": "All guides"
   },
   "footer": {
     "about": "Free, independent guide to Crete. Live data. No ads (yet). No tracking.",

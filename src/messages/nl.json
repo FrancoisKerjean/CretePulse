@@ -47,7 +47,10 @@
     "updatedAt": "Bijgewerkt om {time} lokale tijd",
     "noEvents": "Geen aankomende evenementen.",
     "submitEvent": "Er eentje voorstellen?",
-    "newsFeedLoading": "Nieuwsfeed wordt geladen. Elke 3 uur bijgewerkt."
+    "newsFeedLoading": "Nieuwsfeed wordt geladen. Elke 3 uur bijgewerkt.",
+    "guidesSectionTitle": "Reisgidsen",
+    "guidesSectionSubtitle": "Stranden, wandelen, eten, leven op Kreta. Ter plaatse gecheckt.",
+    "allGuides": "Alle reisgidsen"
   },
   "footer": {
     "about": "Gratis, onafhankelijke gids voor Kreta. Live data. Geen advertenties (nog). Geen tracking.",

@@ -47,7 +47,10 @@
     "updatedAt": "Aktualizováno v {time} místního času",
     "noEvents": "Žádné nadcházející události.",
     "submitEvent": "Odeslat jednu?",
-    "newsFeedLoading": "Zpravodajský kanál se načítá. Aktualizace každé 3 hodiny."
+    "newsFeedLoading": "Zpravodajský kanál se načítá. Aktualizace každé 3 hodiny.",
+    "guidesSectionTitle": "Průvodci",
+    "guidesSectionSubtitle": "Pláže, túry, jídlo, život na Krétě. Ověřeno na místě.",
+    "allGuides": "Všichni průvodci"
   },
   "footer": {
     "about": "Bezplatný, nezávislý průvodce Krétou. Živá data. Bez reklam (zatím). Bez sledování.",

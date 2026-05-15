@@ -47,7 +47,10 @@
     "updatedAt": "Atualizado às {time} hora local",
     "noEvents": "Sem eventos próximos.",
     "submitEvent": "Submeter um?",
-    "newsFeedLoading": "A carregar notícias. Atualizadas a cada 3 horas."
+    "newsFeedLoading": "A carregar notícias. Atualizadas a cada 3 horas.",
+    "guidesSectionTitle": "Guias de viagem",
+    "guidesSectionSubtitle": "Praias, caminhadas, gastronomia, vida em Creta. Verificado na ilha.",
+    "allGuides": "Todos os guias"
   },
   "footer": {
     "about": "Guia gratuito e independente de Creta. Dados em tempo real. Sem anúncios (por enquanto). Sem rastreamento.",

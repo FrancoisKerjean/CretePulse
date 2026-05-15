@@ -47,7 +47,10 @@
     "updatedAt": "現地時間 {time} に更新",
     "noEvents": "今後のイベントはありません。",
     "submitEvent": "イベントを投稿しますか？",
-    "newsFeedLoading": "ニュースフィードを読み込み中。3時間ごとに更新されます。"
+    "newsFeedLoading": "ニュースフィードを読み込み中。3時間ごとに更新されます。",
+    "guidesSectionTitle": "旅行ガイド",
+    "guidesSectionSubtitle": "クレタ島のビーチ、ハイキング、料理、暮らし。現地で検証済み。",
+    "allGuides": "すべてのガイド"
   },
   "footer": {
     "about": "クレタ島の無料・独立ガイド。ライブデータ。広告なし（今のところ）。トラッキングなし。",
