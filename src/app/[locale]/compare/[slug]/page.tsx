@@ -305,18 +305,58 @@ export function generateStaticParams() {
 /*  SEO metadata                                                       */
 /* ------------------------------------------------------------------ */
 
-const META_TITLES: Record<string, Record<string, string>> = {
-  en: { prefix: "", suffix: "- Which is better? | Crete Direct" },
-  fr: { prefix: "", suffix: "- Lequel choisir ? | Crete Direct" },
-  de: { prefix: "", suffix: "- Was ist besser? | Crete Direct" },
-  el: { prefix: "", suffix: "- Ποιο είναι καλύτερο; | Crete Direct" },
+/**
+ * Title/description templates by locale × comparison type.
+ * Optimised for CTR on Google SERPs (positions 3-15) :
+ * - year for freshness signal
+ * - concrete promise (number of differences, "2 minutes" reading time)
+ * - "local guide" authority cue
+ * - no empty rhetorical question ("Which is better?" performed at 0.4% CTR pos 3.6)
+ */
+const META_TITLES: Record<string, Record<string, (a: string, b: string, n: number) => string>> = {
+  en: {
+    city:   (a, b, n) => `${a} vs ${b} 2026: ${n} Key Differences (Local's Honest Guide)`,
+    island: (a, b, n) => `${a} vs ${b} 2026: Which Greek Island to Pick? Local Comparison`,
+    beach:  (a, b, n) => `${a} vs ${b} 2026: Which Crete Beach Wins? Honest Local Guide`,
+  },
+  fr: {
+    city:   (a, b)    => `${a} ou ${b} en 2026 : que choisir ? Comparatif local`,
+    island: (a, b)    => `${a} ou ${b} en 2026 : quelle île grecque choisir ? Guide local`,
+    beach:  (a, b)    => `${a} ou ${b} en 2026 : quelle plage de Crète choisir ? Guide local`,
+  },
+  de: {
+    city:   (a, b, n) => `${a} oder ${b} 2026: ${n} Unterschiede (Ehrlicher Insider-Guide)`,
+    island: (a, b)    => `${a} oder ${b} 2026: Welche griechische Insel wählen? Vergleich`,
+    beach:  (a, b)    => `${a} oder ${b} 2026: Welcher Kreta-Strand gewinnt? Insider-Guide`,
+  },
+  el: {
+    city:   (a, b, n) => `${a} ή ${b} 2026: ${n} διαφορές · Ειλικρινής οδηγός ντόπιου`,
+    island: (a, b)    => `${a} ή ${b} 2026: Ποιο ελληνικό νησί να διαλέξετε; Σύγκριση`,
+    beach:  (a, b)    => `${a} ή ${b} 2026: Ποια παραλία της Κρήτης κερδίζει; Οδηγός`,
+  },
 };
 
-const META_DESC: Record<string, string> = {
-  en: "Detailed side-by-side comparison of %A% vs %B%. Beaches, food, nightlife, budget, and our honest verdict.",
-  fr: "Comparaison detaillee de %A% vs %B%. Plages, gastronomie, vie nocturne, budget et notre verdict honnete.",
-  de: "Detaillierter Vergleich von %A% vs %B%. Strande, Essen, Nachtleben, Budget und unser ehrliches Urteil.",
-  el: "Λεπτομερής σύγκριση %A% vs %B%. Παραλίες, φαγητό, νυχτερινή ζωή, κόστος.",
+const META_DESC: Record<string, Record<string, (a: string, b: string) => string>> = {
+  en: {
+    city:   (a, b) => `${a} or ${b} in 2026? Compare beaches, food, nightlife, prices and history side-by-side. Local guide with our honest verdict in 2 minutes.`,
+    island: (a, b) => `${a} or ${b} for your 2026 trip? Beaches, prices, vibe, flights and authenticity compared. Local guide with an honest verdict in 2 minutes.`,
+    beach:  (a, b) => `${a} or ${b} beach in 2026? Compare access, crowds, water clarity, family-friendliness and best time to visit. Honest local guide.`,
+  },
+  fr: {
+    city:   (a, b) => `${a} ou ${b} en 2026 ? Plages, gastronomie, vie nocturne, prix et histoire comparés. Guide local avec verdict honnête en 2 minutes.`,
+    island: (a, b) => `${a} ou ${b} pour votre voyage 2026 ? Plages, prix, ambiance, vols et authenticité comparés. Guide local avec verdict honnête en 2 minutes.`,
+    beach:  (a, b) => `Plage ${a} ou ${b} en 2026 ? Accès, affluence, clarté de l'eau et meilleure saison comparés. Guide local honnête, sans bullshit.`,
+  },
+  de: {
+    city:   (a, b) => `${a} oder ${b} 2026? Strände, Essen, Nachtleben, Preise und Geschichte im direkten Vergleich. Lokaler Guide mit ehrlichem Urteil in 2 Minuten.`,
+    island: (a, b) => `${a} oder ${b} für 2026? Strände, Preise, Atmosphäre, Flüge und Authentizität verglichen. Ehrlicher Insider-Guide in 2 Minuten.`,
+    beach:  (a, b) => `Strand ${a} oder ${b} in 2026? Anfahrt, Andrang, Wasserklarheit und beste Reisezeit im Vergleich. Ehrlicher lokaler Guide.`,
+  },
+  el: {
+    city:   (a, b) => `${a} ή ${b} το 2026; Παραλίες, φαγητό, νυχτερινή ζωή, τιμές και ιστορία σε άμεση σύγκριση. Οδηγός ντόπιου με ειλικρινή ετυμηγορία σε 2 λεπτά.`,
+    island: (a, b) => `${a} ή ${b} για το 2026; Παραλίες, τιμές, ατμόσφαιρα, πτήσεις και αυθεντικότητα σε σύγκριση. Ειλικρινής οδηγός ντόπιου.`,
+    beach:  (a, b) => `Παραλία ${a} ή ${b} το 2026; Πρόσβαση, κοσμοσυρροή, διαύγεια νερού και καλύτερη εποχή. Ειλικρινής οδηγός ντόπιου.`,
+  },
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
@@ -324,10 +364,15 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const comp = COMPARISONS.find((c) => c.slug === slug);
   if (!comp) return {};
 
-  const titleMeta = META_TITLES[locale] || META_TITLES.en;
-  const title = `${comp.a} vs ${comp.b} ${titleMeta.suffix}`;
-  const descTemplate = META_DESC[locale] || META_DESC.en;
-  const description = descTemplate.replace("%A%", comp.a).replace("%B%", comp.b);
+  const data = COMPARISON_DATA[slug];
+  const categoryCount = data?.categories.length ?? 8;
+  const titleByType = (META_TITLES[locale] || META_TITLES.en);
+  const titleFn = titleByType[comp.type] || titleByType.city;
+  const title = titleFn(comp.a, comp.b, categoryCount);
+
+  const descByType = (META_DESC[locale] || META_DESC.en);
+  const descFn = descByType[comp.type] || descByType.city;
+  const description = descFn(comp.a, comp.b);
 
   const url = `${BASE_URL}/${locale}/compare/${slug}`;
   const alternates: Record<string, string> = {};
@@ -336,7 +381,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   }
   alternates["x-default"] = `${BASE_URL}/en/compare/${slug}`;
 
-  const data = COMPARISON_DATA[slug];
   const faqSchema = data
     ? {
         "@context": "https://schema.org",
@@ -460,9 +504,11 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
               a: comp.a,
               b: comp.b,
               pageTitle: `${comp.a} vs ${comp.b}`,
-              description: (META_DESC[locale] || META_DESC.en)
-                .replace("%A%", comp.a)
-                .replace("%B%", comp.b),
+              description: (() => {
+                const byType = META_DESC[locale] || META_DESC.en;
+                const fn = byType[comp.type] || byType.city;
+                return fn(comp.a, comp.b);
+              })(),
               categories: data.categories.map((c) => ({
                 label: t(c.label, locale),
                 a: t(c.a, locale),
