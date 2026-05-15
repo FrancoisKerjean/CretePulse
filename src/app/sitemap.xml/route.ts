@@ -166,7 +166,10 @@ export async function GET() {
       push(`/weather/${city.slug}/${month}`, "monthly", 0.5);
     }
   }
-  for (const month of MONTHS) push(`/visit/${month}`, "monthly", 0.7);
+  // /visit/[month] pages are noindex (GSC: ~5800 impressions on 28d for only 4 clicks
+  // across 170+ pages, average position 60+ = invisible page 5-8 Google).
+  // No /visit index page exists, so the section is fully removed from the sitemap.
+  // for (const month of MONTHS) push(`/visit/${month}`, "monthly", 0.7);
   for (const a of BEACH_ACTIVITIES) push(`/beaches/best-for/${a}`, "monthly", 0.6);
   for (const s of ROUTE_SLUGS) push(`/getting-around/${s}`, "monthly", 0.6);
   for (const s of COMP_SLUGS) push(`/compare/${s}`, "monthly", 0.6);
