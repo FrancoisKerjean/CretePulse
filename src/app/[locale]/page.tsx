@@ -1,7 +1,7 @@
 import { fetchAllCitiesWeather } from "@/lib/weather";
 import { getLatestNews } from "@/lib/news";
 import { getUpcomingEvents } from "@/lib/events";
-import { getPublishedGuides, type Guide } from "@/lib/guides";
+import { getEditorialGuides, type Guide } from "@/lib/guides";
 import { HomeClient } from "@/components/home/HomeClient";
 import type { NewsItem, Event, Locale } from "@/lib/types";
 import { buildAlternates } from "@/lib/seo";
@@ -74,7 +74,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     fetchAllCitiesWeather(),
     getLatestNews(8, locale).catch((): NewsItem[] => []),
     getUpcomingEvents(5).catch((): Event[] => []),
-    getPublishedGuides(12).catch((): Guide[] => []),
+    getEditorialGuides(12).catch((): Guide[] => []),
   ]);
 
   return (

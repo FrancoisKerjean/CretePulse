@@ -53,6 +53,26 @@ export async function getPublishedGuides(limit: number = 100): Promise<Guide[]> 
   }
 }
 
+// Editorial travel guides only (format "long" or "mid"), excluding scraped
+// news entries that share the guides table (format "news", from diavgeia
+// administrative announcements and similar).
+export async function getEditorialGuides(limit: number = 12): Promise<Guide[]> {
+  try {
+    const { data, error } = await supabase
+      .from("guides")
+      .select("id, slug, format, category, keywords, titles, meta_descs, image_url, read_time, published_at, status")
+      .eq("status", "published")
+      .in("format", ["long", "mid"])
+      .order("published_at", { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    return (data as Guide[]) || [];
+  } catch {
+    return [];
+  }
+}
+
 export async function getGuideBySlug(slug: string): Promise<Guide | null> {
   try {
     const { data, error } = await supabase
