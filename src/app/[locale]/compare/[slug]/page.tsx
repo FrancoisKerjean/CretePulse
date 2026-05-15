@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Trophy, ArrowRight, ChevronLeft, Scale } from "lucide-react";
 import type { Metadata } from "next";
 import { compareSchema } from "@/lib/schema";
+import RentalCTA from "@/components/RentalCTA";
 
 export const revalidate = 86400;
 
@@ -717,6 +718,11 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
                 <ArrowRight className="w-4 h-4 text-gray-400 ml-auto" />
               </Link>
             ))}
+          </div>
+
+          {/* Cross-link rental funnel (kairosguest.com), UTM-tracked */}
+          <div className="mt-8">
+            <RentalCTA locale={locale} contentSlug={slug} contentType="compare" />
           </div>
 
           {/* Links back to site */}

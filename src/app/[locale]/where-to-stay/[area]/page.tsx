@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { breadcrumbSchema } from "@/lib/schema";
 import { AffiliateCTA } from "@/components/ui/affiliate-cta";
+import RentalCTA from "@/components/RentalCTA";
 import { buildAlternates } from "@/lib/seo";
 
 export const revalidate = 86400;
@@ -493,6 +494,9 @@ export default async function WhereToStayAreaPage({
         <div className="mb-10">
           <AffiliateCTA type="propertyManagement" locale={locale} />
         </div>
+
+        {/* Cross-link rental funnel (kairosguest.com), UTM-tracked */}
+        <RentalCTA locale={locale} contentSlug={areaSlug} contentType="where-to-stay" />
 
         {/* Other areas */}
         <section className="mb-8">

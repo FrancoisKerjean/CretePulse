@@ -16,6 +16,7 @@ import { breadcrumbSchema } from "@/lib/schema";
 import DiscoverCrete from "@/components/DiscoverCrete";
 import ReadingProgressBar from "@/components/ReadingProgressBar";
 import StickyNewsletterBar from "@/components/StickyNewsletterBar";
+import RentalCTA from "@/components/RentalCTA";
 
 export const revalidate = 86400;
 
@@ -466,6 +467,9 @@ export default async function ArticleDetailPage({
                 </div>
               </section>
             )}
+
+            {/* Cross-link rental funnel (kairosguest.com), UTM-tracked */}
+            <RentalCTA locale={locale} contentSlug={guide.slug} contentType="article" />
 
             {/* Discover Crete (internal links boost) */}
             <DiscoverCrete category={guide.category} locale={locale} />

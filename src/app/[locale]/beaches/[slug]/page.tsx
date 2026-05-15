@@ -7,6 +7,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AffiliateCTA } from "@/components/ui/affiliate-cta";
 import { buildAlternates } from "@/lib/seo";
+import RentalCTA from "@/components/RentalCTA";
 
 export const revalidate = 86400;
 
@@ -360,6 +361,9 @@ export default async function BeachDetailPage({
             </div>
           </section>
         )}
+
+        {/* Cross-link rental funnel (kairosguest.com), UTM-tracked */}
+        <RentalCTA locale={locale} contentSlug={beach.slug} contentType="beach" />
 
         {/* Image credit */}
         {beach.image_credit && (
