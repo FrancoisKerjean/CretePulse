@@ -43,6 +43,10 @@ export async function generateMetadata({
     title,
     description,
     alternates: buildAlternates(locale, `/food/${slug}`),
+    robots: {
+      index: false,
+      follow: true,
+    },
     openGraph: {
       title,
       description,

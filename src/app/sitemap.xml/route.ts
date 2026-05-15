@@ -190,7 +190,10 @@ export async function GET() {
     push(`/villages/${s}`, "monthly", 0.6);
     push(`/beaches/near/${s}`, "monthly", 0.5);
   }
-  for (const s of foodPlaces) push(`/food/${s}`, "monthly", 0.6);
+  // /food/[slug] pages are noindex (4875/5000 pages had 0 clicks on 28d, low-quality signal).
+  // Keep the /food index page indexed (added above), but exclude individual restaurant pages.
+  // for (const s of foodPlaces) push(`/food/${s}`, "monthly", 0.6);
+  void foodPlaces;
   for (const s of hikes) push(`/hikes/${s}`, "monthly", 0.6);
   for (const n of news) push(`/news/${n.slug}`, "daily", 0.5, n.lastmod);
   for (const g of guides) push(`/articles/${g.slug}`, "weekly", 0.7, g.lastmod);
