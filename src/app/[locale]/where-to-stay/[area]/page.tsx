@@ -265,22 +265,24 @@ export function generateStaticParams() {
 /*  SEO metadata                                                       */
 /* ------------------------------------------------------------------ */
 
+// Where-to-stay already has the best CTR of the site (2.79% on 28d / 38 pages).
+// Pattern preserved : answer-the-question framing. Adding year 2026 + price tease for freshness.
 const META: Record<Loc, { title: (name: string) => string; desc: (name: string, vibe: string) => string }> = {
   en: {
-    title: (name) => `Where to Stay in ${name}, Crete - Best Areas & Tips`,
-    desc: (name, vibe) => `Find the best area to stay in ${name}, Crete. ${vibe}. Price ranges, local tips, and nearby beaches.`,
+    title: (name) => `Where to Stay in ${name} Crete 2026: Best Areas, Prices & Local Tips`,
+    desc: (name, vibe) => `Where to stay in ${name}, Crete in 2026. ${vibe}. Best areas by budget, price ranges, walking distances, and nearby beaches. Honest local guide.`,
   },
   fr: {
-    title: (name) => `Où loger à ${name}, Crète - Meilleurs quartiers & conseils`,
-    desc: (name, vibe) => `Trouvez le meilleur quartier où loger à ${name}, Crète. ${vibe}. Gammes de prix, conseils locaux et plages à proximité.`,
+    title: (name) => `Où loger à ${name} en Crète 2026 : Meilleurs quartiers, prix & conseils`,
+    desc: (name, vibe) => `Où loger à ${name}, Crète en 2026. ${vibe}. Quartiers par budget, fourchettes de prix, distances et plages voisines. Guide local honnête.`,
   },
   de: {
-    title: (name) => `Wo übernachten in ${name}, Kreta - Beste Gegenden & Tipps`,
-    desc: (name, vibe) => `Finden Sie die beste Gegend zum Übernachten in ${name}, Kreta. ${vibe}. Preisklassen, lokale Tipps und nahe Strände.`,
+    title: (name) => `Wo übernachten in ${name} Kreta 2026: Beste Gegenden, Preise & Tipps`,
+    desc: (name, vibe) => `Wo in ${name}, Kreta übernachten in 2026. ${vibe}. Beste Viertel nach Budget, Preisklassen, Entfernungen und nahe Strände. Ehrlicher Insider-Guide.`,
   },
   el: {
-    title: (name) => `Πού να μείνετε στ${name.match(/^[ΑΕΗΙΟΥΩΆΈΉΊΌΎΏ]/i) ? "ο" : "ην"} ${name}, Κρήτη`,
-    desc: (name, vibe) => `Βρείτε την καλύτερη περιοχή για διαμονή στ${name.match(/^[ΑΕΗΙΟΥΩΆΈΉΊΌΎΏ]/i) ? "ο" : "ην"} ${name}, Κρήτη. ${vibe}.`,
+    title: (name) => `Πού να μείνετε στ${name.match(/^[ΑΕΗΙΟΥΩΆΈΉΊΌΎΏ]/i) ? "ο" : "ην"} ${name}, Κρήτη 2026 : Καλύτερες περιοχές, τιμές & συμβουλές`,
+    desc: (name, vibe) => `Πού να μείνετε στ${name.match(/^[ΑΕΗΙΟΥΩΆΈΉΊΌΎΏ]/i) ? "ο" : "ην"} ${name}, Κρήτη το 2026. ${vibe}. Καλύτερες περιοχές ανά budget, τιμές και κοντινές παραλίες.`,
   },
 };
 

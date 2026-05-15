@@ -202,11 +202,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const info = CITY_INFO[citySlug];
   if (!city || !info) return { title: "Not found" };
 
+  // CTR-optimised : year 2026 freshness + concrete promise + local authority.
+  // Previous generic "Things to Do in X" at pos 52 = page 5-6. Aim for page 2-3 with better hook.
   const titles: Record<string, string> = {
-    en: `Things to Do in ${city.name}, Crete - Activities & Attractions | Crete Direct`,
-    fr: `Que faire à ${city.name}, Crète - Activités & Sites à visiter | Crete Direct`,
-    de: `Aktivitäten in ${city.name}, Kreta - Sehenswürdigkeiten & Tipps | Crete Direct`,
-    el: `Τι να κάνετε στην ${city.nameEl}, Κρήτη - Δραστηριότητες & Αξιοθέατα | Crete Direct`,
+    en: `${city.name} Crete 2026: Top 10 Things to Do (Local's Honest Guide)`,
+    fr: `Que faire à ${city.name} en Crète 2026 : Top 10 activités (Guide local)`,
+    de: `${city.name} Kreta 2026: Top 10 Aktivitäten (Ehrlicher Insider-Guide)`,
+    el: `${city.nameEl} Κρήτη 2026: Top 10 δραστηριότητες (Οδηγός ντόπιου)`,
   };
 
   const descs: Record<string, string> = {

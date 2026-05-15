@@ -114,6 +114,24 @@ const BEACH_LABELS: Record<Locale, {
   },
 };
 
+/**
+ * Title/description templates by locale.
+ * Pattern (CTR-optimised) : "<Beach> Beach Crete 2026: Local Guide (Water, Parking, Family-Friendly)".
+ * Year 2026 = freshness, concrete features = curiosity, "Local Guide" = authority.
+ */
+const BEACH_TITLES: Record<string, (name: string) => string> = {
+  en: (name) => `${name} Beach Crete 2026: Local Guide (Water, Parking, Family-Friendly)`,
+  fr: (name) => `Plage ${name} en Crète 2026 : Guide local (eau, accès, famille)`,
+  de: (name) => `Strand ${name} Kreta 2026: Insider-Guide (Wasser, Parken, Familie)`,
+  el: (name) => `Παραλία ${name} Κρήτη 2026: Οδηγός ντόπιου (νερό, πρόσβαση)`,
+};
+const BEACH_DESCS: Record<string, (name: string, region: string) => string> = {
+  en: (name, region) => `${name} beach in ${region}, Crete: water type, parking, snorkeling, family-friendliness, best time to visit and nearby beaches. Honest 2026 local guide, no fluff.`,
+  fr: (name, region) => `Plage ${name} dans la région ${region}, Crète : type d'eau, parking, snorkeling, familles, meilleure saison et plages voisines. Guide local 2026 honnête, sans bullshit.`,
+  de: (name, region) => `Strand ${name} in der Region ${region}, Kreta: Wassertyp, Parken, Schnorcheln, Familien, beste Reisezeit und nahe Strände. Ehrlicher Insider-Guide 2026.`,
+  el: (name, region) => `Παραλία ${name} στην περιοχή ${region}, Κρήτη: τύπος νερού, parking, snorkeling, οικογένειες, καλύτερη εποχή και κοντινές παραλίες. Οδηγός ντόπιου 2026.`,
+};
+
 export async function generateMetadata({
   params,
 }: {
@@ -125,8 +143,10 @@ export async function generateMetadata({
 
   const name = getLocalizedField(beach, "name", locale as Locale);
   const desc = getLocalizedField(beach, "description", locale as Locale);
-  const title = `${name} Beach, Crete - Conditions & Info | Crete Direct`;
-  const description = desc?.substring(0, 160) || `${name} beach in Crete, Greece. Water type, parking, snorkeling, kids conditions and nearby beaches.`;
+  const titleFn = BEACH_TITLES[locale] || BEACH_TITLES.en;
+  const descFn = BEACH_DESCS[locale] || BEACH_DESCS.en;
+  const title = titleFn(name);
+  const description = desc?.substring(0, 160) || descFn(name, beach.region);
   const url = `${BASE_URL}/${locale}/beaches/${slug}`;
 
   return {
