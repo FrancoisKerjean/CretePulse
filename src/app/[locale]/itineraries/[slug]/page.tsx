@@ -211,7 +211,8 @@ export default async function ItineraryPage({
 }) {
   const { locale, slug } = await params;
   const loc = (locale || "en") as Locale;
-  const L = LABELS[loc];
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  const L = LABELS[loc] ?? LABELS.en;
 
   const itinerary = ITINERARIES.find((it) => it.slug === slug);
   if (!itinerary) notFound();

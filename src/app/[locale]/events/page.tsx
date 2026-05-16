@@ -71,6 +71,8 @@ function formatEventDate(dateStr: string, locale: string): string {
 export default async function EventsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const loc = locale as Locale;
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  const eventsLabels = EVENTS_LABELS[loc] ?? EVENTS_LABELS.en;
 
   let events: Awaited<ReturnType<typeof getUpcomingEvents>> = [];
   try {
@@ -96,7 +98,7 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
            "Events in Crete"}
         </h1>
         <p className="text-text-muted mt-2">
-          {events.length} {EVENTS_LABELS[loc].subtitle}
+          {events.length} {eventsLabels.subtitle}
         </p>
 
         <div className="mt-8 space-y-10">
@@ -108,7 +110,7 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
                   <Calendar className="w-4 h-4" />
                   {formatWeekLabel(mondayStr, locale)}
                 </div>
-                <span className="text-xs text-text-muted">{weekEvents.length} {weekEvents.length !== 1 ? EVENTS_LABELS[loc].events : EVENTS_LABELS[loc].event}</span>
+                <span className="text-xs text-text-muted">{weekEvents.length} {weekEvents.length !== 1 ? eventsLabels.events : eventsLabels.event}</span>
               </div>
 
               {/* Events list */}
@@ -162,7 +164,7 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
                         {event.date_end && event.date_end !== event.date_start && (
                           <span className="inline-flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
-                            {EVENTS_LABELS[loc].until} {formatEventDate(event.date_end, locale)}
+                            {eventsLabels.until} {formatEventDate(event.date_end, locale)}
                           </span>
                         )}
                       </div>
@@ -185,12 +187,14 @@ function EventsPlaceholder({ locale }: { locale: Locale }) {
     de: "Veranstaltungen auf Kreta",
     el: "Εκδηλώσεις στην Κρήτη",
   };
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  const eventsLabels = EVENTS_LABELS[locale] ?? EVENTS_LABELS.en;
 
   return (
     <main className="min-h-screen bg-surface">
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-aegean">{titles[locale]}</h1>
-        <p className="text-text-muted mt-2">{EVENTS_LABELS[locale].coming}</p>
+        <h1 className="text-3xl font-bold text-aegean">{titles[locale] ?? titles.en}</h1>
+        <p className="text-text-muted mt-2">{eventsLabels.coming}</p>
         <div className="mt-8 space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-border bg-white p-4 animate-pulse flex gap-4">

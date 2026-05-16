@@ -181,7 +181,8 @@ export default async function ArchaeologyDetailPage({
 }) {
   const { locale, slug } = await params;
   const loc = (locale || "en") as Locale;
-  const L = LABELS[loc];
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  const L = LABELS[loc] ?? LABELS.en;
 
   const site = SITES.find((s) => s.slug === slug);
   if (!site) notFound();

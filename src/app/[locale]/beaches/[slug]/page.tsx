@@ -171,7 +171,8 @@ export default async function BeachDetailPage({
 }) {
   const { locale, slug } = await params;
   const loc = locale as Locale;
-  const L = BEACH_LABELS[loc];
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  const L = BEACH_LABELS[loc] ?? BEACH_LABELS.en;
 
   const beach = await getBeachBySlug(slug);
   if (!beach) notFound();

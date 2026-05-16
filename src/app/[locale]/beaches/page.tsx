@@ -53,6 +53,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function BeachesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const loc = locale as Locale;
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  const regionLabels = REGION_LABELS[loc] ?? REGION_LABELS.en;
+  const typeLabels = TYPE_LABELS[loc] ?? TYPE_LABELS.en;
+  const beachesLabels = BEACHES_LABELS[loc] ?? BEACHES_LABELS.en;
 
   let beaches: Awaited<ReturnType<typeof getAllBeaches>> = [];
   try {
@@ -83,7 +87,7 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
           {getLocalizedField({ title_en: "Beaches in Crete", title_fr: "Plages en Crète", title_de: "Strände auf Kreta", title_el: "Παραλίες στην Κρήτη" }, "title", loc)}
         </h1>
         <p className="text-text-muted mt-2">
-          {beaches.length} {BEACHES_LABELS[loc].subtitle}
+          {beaches.length} {beachesLabels.subtitle}
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
@@ -96,7 +100,7 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
               <div className="h-40 overflow-hidden">
                 <BeachImage
                   src={beach.image_url}
-                  alt={`${getLocalizedField(beach, "name", loc)} beach, ${REGION_LABELS[loc][beach.region] || beach.region}${beach.type ? `, ${TYPE_LABELS[loc][beach.type] || beach.type}` : ""}`}
+                  alt={`${getLocalizedField(beach, "name", loc)} beach, ${regionLabels[beach.region] || beach.region}${beach.type ? `, ${typeLabels[beach.type] || beach.type}` : ""}`}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
@@ -116,7 +120,7 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
                   )}
                   {beach.parking && (
                     <span className="inline-flex items-center gap-1 text-xs bg-stone text-text-muted px-2 py-0.5 rounded-full">
-                      <Car className="w-3 h-3" /> {BEACHES_LABELS[loc].parking}
+                      <Car className="w-3 h-3" /> {beachesLabels.parking}
                     </span>
                   )}
                   {beach.snorkeling && (
@@ -126,7 +130,7 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
                   )}
                   {beach.kids_friendly && (
                     <span className="inline-flex items-center gap-1 text-xs bg-terra-faint text-terra px-2 py-0.5 rounded-full">
-                      {BEACHES_LABELS[loc].kidsOk}
+                      {beachesLabels.kidsOk}
                     </span>
                   )}
                 </div>
@@ -146,12 +150,14 @@ function BeachesPlaceholder({ locale }: { locale: Locale }) {
     de: "Strände auf Kreta",
     el: "Παραλίες στην Κρήτη",
   };
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  const beachesLabels = BEACHES_LABELS[locale] ?? BEACHES_LABELS.en;
 
   return (
     <main className="min-h-screen bg-surface">
       <div className="max-w-6xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-aegean">{titles[locale]}</h1>
-        <p className="text-text-muted mt-2">{BEACHES_LABELS[locale].coming}</p>
+        <h1 className="text-3xl font-bold text-aegean">{titles[locale] ?? titles.en}</h1>
+        <p className="text-text-muted mt-2">{beachesLabels.coming}</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-border bg-white p-4 animate-pulse">

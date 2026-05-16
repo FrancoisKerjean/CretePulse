@@ -463,7 +463,7 @@ export default async function ArticleDetailPage({
                           {rel.read_time && (
                             <p className="text-[11px] text-text-light mt-auto pt-1 flex items-center gap-1">
                               <Clock className="w-3 h-3" />
-                              {rel.read_time} {READ_TIME_LABEL[loc]}
+                              {rel.read_time} {readTimeLabel}
                             </p>
                           )}
                         </div>
