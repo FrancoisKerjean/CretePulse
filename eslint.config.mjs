@@ -10,6 +10,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Legacy CommonJS Node scripts (not part of Next build) — out of lint scope.
+    "scripts/**",
+    "translate-events.js",
   ]),
 ]);
 

@@ -110,6 +110,7 @@ export function Header() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- close menus on route change, intentional sync from pathname
     setOpen(false);
     setMobileLangOpen(false);
   }, [pathname]);
