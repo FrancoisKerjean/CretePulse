@@ -257,6 +257,12 @@ export default async function ArticleDetailPage({
 }) {
   const { locale, slug } = await params;
   const loc = locale as Locale;
+  // Article content has 22 routed locales but Locale type only covers en/fr/de/el.
+  // Fallback to en on extended locales to avoid `undefined.intro` crashes.
+  const kairosCta = KAIROS_CTA[loc] ?? KAIROS_CTA.en;
+  const readTimeLabel = READ_TIME_LABEL[loc] ?? READ_TIME_LABEL.en;
+  const backLabel = BACK_LABEL[loc] ?? BACK_LABEL.en;
+  const moreArticlesLabel = MORE_ARTICLES_LABEL[loc] ?? MORE_ARTICLES_LABEL.en;
 
   const [guide, related] = await Promise.all([
     getGuideBySlug(slug),
@@ -368,7 +374,7 @@ export default async function ArticleDetailPage({
             className="inline-flex items-center gap-1 text-sm text-aegean hover:underline"
           >
             <ChevronLeft className="w-4 h-4" />
-            {BACK_LABEL[loc]}
+            {backLabel}
           </Link>
 
           <div className="flex items-center gap-4 text-xs text-text-light">
@@ -379,7 +385,7 @@ export default async function ArticleDetailPage({
             {guide.read_time && (
               <span className="flex items-center gap-1">
                 <Clock className="w-3 h-3" />
-                {guide.read_time} {READ_TIME_LABEL[loc]}
+                {guide.read_time} {readTimeLabel}
               </span>
             )}
           </div>
@@ -405,14 +411,14 @@ export default async function ArticleDetailPage({
 
             {/* Kairos cross-link (multilingue, discret, vers l'article cible SEO) */}
             <div className="mt-12 p-6 bg-blue-50 rounded-lg text-center">
-              <p className="text-gray-600 mb-2">{KAIROS_CTA[loc].intro}</p>
+              <p className="text-gray-600 mb-2">{kairosCta.intro}</p>
               <a
-                href={KAIROS_CTA[loc].href}
+                href={kairosCta.href}
                 target="_blank"
                 rel="noopener"
                 className="text-blue-600 hover:underline font-medium"
               >
-                {KAIROS_CTA[loc].link}
+                {kairosCta.link}
               </a>
             </div>
 
@@ -422,7 +428,7 @@ export default async function ArticleDetailPage({
                 <div className="flex items-center gap-2 mb-6">
                   <BookOpen className="w-4 h-4 text-aegean" />
                   <h2 className="text-lg font-semibold text-aegean">
-                    {MORE_ARTICLES_LABEL[loc]}
+                    {moreArticlesLabel}
                   </h2>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
