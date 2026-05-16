@@ -118,6 +118,64 @@ function NewsletterForm({ locale }: { locale: string }) {
   );
 }
 
+function NewsletterFormCompact({ locale }: { locale: string }) {
+  const t = useTranslations("home");
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email || status === "loading") return;
+    setStatus("loading");
+    try {
+      const res = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, locale }),
+      });
+      setStatus(res.ok ? "success" : "error");
+      if (res.ok) setEmail("");
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  if (status === "success") {
+    const successMsg: Record<string, string> = {
+      en: "Thanks!",
+      fr: "Merci !",
+      de: "Danke!",
+      el: "Ευχαριστώ!",
+    };
+    return (
+      <div className="rounded-xl bg-aegean p-3 text-white text-center">
+        <p className="text-xs font-medium">{successMsg[locale] || successMsg.en}</p>
+      </div>
+    );
+  }
+
+  return (
+    <form className="flex flex-col gap-2" onSubmit={handleSubmit}>
+      <input type="text" name="website" className="hidden" tabIndex={-1} autoComplete="off" />
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder={t("emailPlaceholder")}
+        required
+        className="w-full px-3 py-2 rounded-lg border border-border bg-white text-xs text-text placeholder:text-text-light focus:outline-none focus:ring-2 focus:ring-aegean/30 focus:border-aegean/40"
+      />
+      <button
+        type="submit"
+        disabled={status === "loading"}
+        className="w-full px-3 py-2 bg-terra text-white rounded-lg font-bold text-xs hover:bg-terra-light transition-colors disabled:opacity-60 shadow-sm"
+      >
+        {status === "loading" ? "..." : t("subscribe")}
+      </button>
+    </form>
+  );
+}
+
 interface HomeClientProps {
   cities: CityWeather[];
   latestNews: NewsItem[];
