@@ -57,67 +57,6 @@ const CATEGORY_STYLES: Record<string, string> = {
   local: "bg-olive/10 text-olive",
 };
 
-function NewsletterForm({ locale }: { locale: string }) {
-  const t = useTranslations("home");
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!email || status === "loading") return;
-    setStatus("loading");
-    try {
-      const res = await fetch("/api/newsletter/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, locale }),
-      });
-      setStatus(res.ok ? "success" : "error");
-      if (res.ok) setEmail("");
-    } catch {
-      setStatus("error");
-    }
-  }
-
-  if (status === "success") {
-    const successMsg: Record<string, string> = {
-      en: "Thanks! Check your inbox.",
-      fr: "Merci ! Verifiez votre boite mail.",
-      de: "Danke! Prufen Sie Ihren Posteingang.",
-      el: "\u0395\u03c5\u03c7\u03b1\u03c1\u03b9\u03c3\u03c4\u03bf\u03cd\u03bc\u03b5! \u0395\u03bb\u03ad\u03b3\u03be\u03c4\u03b5 \u03c4\u03b1 \u03b5\u03b9\u03c3\u03b5\u03c1\u03c7\u03cc\u03bc\u03b5\u03bd\u03ac \u03c3\u03b1\u03c2.",
-    };
-    return (
-      <div className="rounded-2xl bg-aegean p-6 text-white text-center">
-        <p className="text-sm font-medium">{successMsg[locale] || successMsg.en}</p>
-      </div>
-    );
-  }
-
-  return (
-    <form className="flex gap-2" onSubmit={handleSubmit}>
-      <input type="text" name="website" className="hidden" tabIndex={-1} autoComplete="off" />
-      <input
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder={t("emailPlaceholder")}
-        required
-        className="flex-1 px-4 py-3 rounded-xl border border-border bg-white text-sm text-text placeholder:text-text-light focus:outline-none focus:ring-2 focus:ring-aegean/30 focus:border-aegean/40"
-      />
-      {status === "error" && (
-        <p className="text-xs text-red-500 absolute -bottom-5">Error</p>
-      )}
-      <button
-        type="submit"
-        disabled={status === "loading"}
-        className="px-6 py-3 bg-terra text-white rounded-xl font-bold text-sm hover:bg-terra-light transition-colors disabled:opacity-60 shadow-md hover:shadow-lg shrink-0"
-      >
-        {status === "loading" ? "..." : t("subscribe")}
-      </button>
-    </form>
-  );
-}
-
 function NewsletterFormCompact({ locale }: { locale: string }) {
   const t = useTranslations("home");
   const [email, setEmail] = useState("");
