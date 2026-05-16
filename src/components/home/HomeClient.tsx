@@ -195,6 +195,10 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, l
   const secondNews = latestNews[1] ?? null;
   const restNews = latestNews.slice(2);
 
+  const featuredGuide = latestGuides[0] ?? null;
+  const secondGuide = latestGuides[1] ?? null;
+  const restGuides = latestGuides.slice(2, 8);
+
   return (
     <main className="min-h-screen bg-surface">
 
@@ -345,10 +349,10 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, l
 
       {/* ═══════════════════ MAIN CONTENT ═══════════════════ */}
       <div className="max-w-6xl mx-auto px-4 py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
           {/* ──── LEFT: News ──── */}
-          <div className="lg:col-span-7 space-y-8">
+          <div className="lg:col-span-5 space-y-8">
 
             <section>
               <div className="flex items-center justify-between mb-6">
@@ -428,6 +432,124 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, l
                 <div className="bg-white rounded-2xl border border-border p-10 text-center">
                   <Newspaper className="w-8 h-8 text-text-light mx-auto mb-3" />
                   <p className="text-sm text-text-muted">{t("newsFeedLoading")}</p>
+                </div>
+              )}
+            </section>
+          </div>
+
+          {/* ──── MIDDLE: Editorial guides (parity with news) ──── */}
+          <div className="lg:col-span-5 space-y-8">
+
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xs font-bold text-aegean uppercase tracking-[0.2em] flex items-center gap-2">
+                  <BookOpen className="w-4 h-4" /> {t("editorialGuides")}
+                </h2>
+                <Link href="/articles" className="text-xs text-aegean hover:text-aegean-light flex items-center gap-1 font-semibold transition-colors">
+                  {t("allGuides")} <ChevronRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+
+              {latestGuides.length > 0 ? (
+                <div className="space-y-4">
+                  {/* Top 2 featured guides - side by side on desktop */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {[featuredGuide, secondGuide].filter(Boolean).map((guide, idx) => {
+                      const gTitle = getLocalizedGuideField(guide!, "titles", locale);
+                      return (
+                        <BlurFade key={guide!.slug} delay={idx * 0.1}>
+                          <SpotlightCard className="rounded-2xl">
+                            <Link
+                              href={`/articles/${guide!.slug}`}
+                              className="block group rounded-2xl overflow-hidden relative h-56"
+                            >
+                              {guide!.image_url ? (
+                                <Image
+                                  src={guide!.image_url}
+                                  alt={gTitle}
+                                  fill
+                                  sizes="(max-width: 768px) 100vw, 33vw"
+                                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                />
+                              ) : (
+                                <div className={`absolute inset-0 ${idx === 0 ? "bg-gradient-to-br from-aegean via-[#1a5f82] to-[#2D6A8F]" : "bg-gradient-to-br from-olive via-[#5a7a4a] to-[#7a9a6a]"}`} />
+                              )}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                              <div className="relative h-full flex flex-col justify-end p-5">
+                                <div className="flex items-center gap-2 mb-2">
+                                  {guide!.category && (
+                                    <span className="text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-md bg-white/20 text-white backdrop-blur-sm">
+                                      {guide!.category}
+                                    </span>
+                                  )}
+                                  {guide!.read_time && (
+                                    <span className="text-[9px] text-white/60 font-mono">{guide!.read_time} min</span>
+                                  )}
+                                </div>
+                                <h3
+                                  className="text-base font-bold text-white leading-snug group-hover:text-sand transition-colors line-clamp-3"
+                                  style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
+                                >
+                                  {gTitle}
+                                </h3>
+                              </div>
+                            </Link>
+                          </SpotlightCard>
+                        </BlurFade>
+                      );
+                    })}
+                  </div>
+
+                  {/* Rest of guides */}
+                  <div className="divide-y divide-border">
+                    {restGuides.map((guide, i) => {
+                      const gTitle = getLocalizedGuideField(guide, "titles", locale);
+                      return (
+                        <BlurFade key={guide.slug} delay={0.04 * (i + 1)}>
+                          <Link
+                            href={`/articles/${guide.slug}`}
+                            className="flex items-start gap-3 py-4 group"
+                          >
+                            <div className="shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-stone relative">
+                              {guide.image_url ? (
+                                <Image
+                                  src={guide.image_url}
+                                  alt={gTitle}
+                                  fill
+                                  sizes="56px"
+                                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-aegean to-aegean-light flex items-center justify-center">
+                                  <BookOpen className="w-5 h-5 text-white/70" />
+                                </div>
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[15px] font-semibold text-text group-hover:text-aegean transition-colors leading-snug line-clamp-2">
+                                {gTitle}
+                              </p>
+                              <div className="flex items-center gap-3 mt-1.5">
+                                {guide.category && (
+                                  <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-md bg-aegean/8 text-aegean">
+                                    {guide.category}
+                                  </span>
+                                )}
+                                {guide.read_time && (
+                                  <span className="text-[10px] text-text-light font-mono ml-auto">{guide.read_time} min</span>
+                                )}
+                              </div>
+                            </div>
+                          </Link>
+                        </BlurFade>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl border border-border p-10 text-center">
+                  <BookOpen className="w-8 h-8 text-text-light mx-auto mb-3" />
+                  <p className="text-sm text-text-muted">{t("guidesSectionSubtitle")}</p>
                 </div>
               )}
             </section>
