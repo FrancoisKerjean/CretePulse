@@ -610,7 +610,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, l
       )}
 
       {/* ═══════════════════ MORE GUIDES ═══════════════════ */}
-      {latestGuides.length > 4 && (
+      {latestGuides.length > 8 && (
         <section className="border-t border-border bg-surface py-14 px-4">
           <div className="max-w-6xl mx-auto">
             <div className="flex items-end justify-between mb-6 gap-4">
@@ -635,7 +635,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, l
             </div>
 
             <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {latestGuides.slice(4).map((guide, idx) => {
+              {latestGuides.slice(8).map((guide, idx) => {
                 const title = getLocalizedGuideField(guide, "titles", locale);
                 return (
                   <li key={guide.slug}>
