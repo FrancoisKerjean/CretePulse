@@ -585,6 +585,30 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, l
         </div>
       </div>
 
+      {/* ═══════════════════ EVENTS TICKER ═══════════════════ */}
+      {upcomingEvents.length > 0 && (
+        <div className="bg-terra text-white py-2.5 overflow-hidden">
+          <Marquee duration={50} pauseOnHover>
+            {upcomingEvents.map((event) => (
+              <Link
+                key={event.slug}
+                href={`/events/${event.slug}`}
+                className="flex items-center gap-2.5 px-4 text-sm hover:text-sand transition-colors whitespace-nowrap"
+              >
+                <Calendar className="w-3.5 h-3.5 shrink-0" />
+                <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-white/15 font-semibold shrink-0">
+                  {formatEventDate(event.date_start, locale)}
+                </span>
+                <span className="font-medium">{getLocalizedField(event, "title", loc)}</span>
+                <MapPin className="w-3 h-3 text-white/50 shrink-0" />
+                <span className="text-white/60 text-xs">{localizeLocation(event.location_name, locale)}</span>
+                <span className="text-white/20 mx-2">|</span>
+              </Link>
+            ))}
+          </Marquee>
+        </div>
+      )}
+
       {/* ═══════════════════ LATEST GUIDES ═══════════════════ */}
       {latestGuides.length > 0 && (
         <section className="border-t border-border bg-surface py-14 px-4">
