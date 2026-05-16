@@ -609,8 +609,8 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, l
         </div>
       )}
 
-      {/* ═══════════════════ LATEST GUIDES ═══════════════════ */}
-      {latestGuides.length > 0 && (
+      {/* ═══════════════════ MORE GUIDES ═══════════════════ */}
+      {latestGuides.length > 4 && (
         <section className="border-t border-border bg-surface py-14 px-4">
           <div className="max-w-6xl mx-auto">
             <div className="flex items-end justify-between mb-6 gap-4">
@@ -621,7 +621,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, l
                     style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
                   >
                     <BookOpen className="w-7 h-7 text-aegean" />
-                    {t("guidesSectionTitle")}
+                    {t("moreGuides")}
                   </h2>
                   <p className="text-text-muted text-sm max-w-lg">{t("guidesSectionSubtitle")}</p>
                 </BlurFade>
@@ -634,75 +634,54 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, l
               </Link>
             </div>
 
-            <div
-              className="relative rounded-2xl border border-border bg-white overflow-hidden"
-              style={{
-                maskImage: "linear-gradient(to bottom, black 0, black calc(100% - 32px), transparent 100%)",
-                WebkitMaskImage: "linear-gradient(to bottom, black 0, black calc(100% - 32px), transparent 100%)",
-              }}
-            >
-              <div
-                className="overflow-y-auto px-3 sm:px-5 py-3"
-                style={{ maxHeight: "560px", scrollbarWidth: "thin", scrollbarColor: "#cbd5e1 transparent" }}
-              >
-                <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {latestGuides.map((guide, idx) => {
-                    const title = getLocalizedGuideField(guide, "titles", locale);
-                    const desc = getLocalizedGuideField(guide, "meta_descs", locale);
-                    return (
-                      <li key={guide.slug}>
-                        <BlurFade delay={Math.min(0.04 * idx, 0.4)}>
-                          <Link
-                            href={`/articles/${guide.slug}`}
-                            className="flex items-start gap-3 p-3 rounded-xl border border-border/60 bg-white hover:border-aegean/40 hover:shadow-md transition-all group h-full"
-                          >
-                            <div className="shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-stone relative">
-                              {guide.image_url ? (
-                                <Image
-                                  src={guide.image_url}
-                                  alt={title}
-                                  fill
-                                  sizes="80px"
-                                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                                />
-                              ) : (
-                                <div className="w-full h-full bg-gradient-to-br from-aegean to-aegean-light flex items-center justify-center">
-                                  <BookOpen className="w-7 h-7 text-white/70" />
-                                </div>
-                              )}
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {latestGuides.slice(4).map((guide, idx) => {
+                const title = getLocalizedGuideField(guide, "titles", locale);
+                return (
+                  <li key={guide.slug}>
+                    <BlurFade delay={Math.min(0.04 * idx, 0.4)}>
+                      <Link
+                        href={`/articles/${guide.slug}`}
+                        className="block group rounded-2xl border border-border bg-white overflow-hidden hover:border-aegean/40 hover:shadow-md transition-all h-full"
+                      >
+                        <div className="relative aspect-[16/9] bg-stone overflow-hidden">
+                          {guide.image_url ? (
+                            <Image
+                              src={guide.image_url}
+                              alt={title}
+                              fill
+                              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                              className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-aegean to-aegean-light flex items-center justify-center">
+                              <BookOpen className="w-10 h-10 text-white/70" />
                             </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                {guide.category && (
-                                  <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-md bg-aegean/8 text-aegean">
-                                    {guide.category}
-                                  </span>
-                                )}
-                                {guide.read_time ? (
-                                  <span className="text-[10px] text-text-light font-mono">
-                                    {guide.read_time} min
-                                  </span>
-                                ) : null}
-                              </div>
-                              <p className="text-sm font-semibold text-text group-hover:text-aegean transition-colors leading-snug line-clamp-2">
-                                {title}
-                              </p>
-                              {desc && (
-                                <p className="text-[11px] text-text-muted mt-1 leading-snug line-clamp-2">
-                                  {desc}
-                                </p>
-                              )}
-                            </div>
-                          </Link>
-                        </BlurFade>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            </div>
+                          )}
+                        </div>
+                        <div className="p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            {guide.category && (
+                              <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-md bg-aegean/8 text-aegean">
+                                {guide.category}
+                              </span>
+                            )}
+                            {guide.read_time && (
+                              <span className="text-[10px] text-text-light font-mono">{guide.read_time} min</span>
+                            )}
+                          </div>
+                          <p className="text-sm font-semibold text-text group-hover:text-aegean transition-colors leading-snug line-clamp-2">
+                            {title}
+                          </p>
+                        </div>
+                      </Link>
+                    </BlurFade>
+                  </li>
+                );
+              })}
+            </ul>
 
-            <div className="mt-4 sm:hidden">
+            <div className="mt-6 sm:hidden">
               <Link
                 href="/articles"
                 className="text-xs text-aegean hover:text-aegean-light flex items-center gap-1 font-semibold transition-colors"
