@@ -555,96 +555,32 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, l
             </section>
           </div>
 
-          {/* ──── RIGHT: Events + Newsletter ──── */}
-          <div className="lg:col-span-5 space-y-8">
+          {/* ──── RIGHT: Sidebar 2/12 (Newsletter + Fire alerts) ──── */}
+          <div className="lg:col-span-2 space-y-4">
 
-            {/* Events */}
-            <section>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xs font-bold text-terra uppercase tracking-[0.2em] flex items-center gap-2">
-                  <Calendar className="w-4 h-4" /> {t("eventsThisWeek")}
-                </h2>
-                <Link href="/events" className="text-xs text-terra hover:text-terra-light flex items-center gap-1 font-semibold transition-colors">
-                  {t("allEvents")} <ChevronRight className="w-3.5 h-3.5" />
-                </Link>
+            {/* Newsletter compact */}
+            <section className="rounded-2xl border border-border bg-white p-4">
+              <div className="flex flex-col items-start gap-2 mb-3">
+                <div className="w-9 h-9 rounded-lg bg-aegean/8 flex items-center justify-center shrink-0">
+                  <Mail className="w-4 h-4 text-aegean" />
+                </div>
+                <h3 className="font-bold text-xs text-text leading-tight">{t("newsletter")}</h3>
               </div>
-
-              {upcomingEvents.length > 0 ? (
-                <div className="space-y-2">
-                  {upcomingEvents.map((event, i) => {
-                    const dateParts = formatEventDate(event.date_start, locale).split(" ");
-                    return (
-                      <BlurFade key={event.slug} delay={0.04 * i}>
-                        <Link
-                          href={`/events/${event.slug}`}
-                          className="flex items-center gap-3 p-3 bg-white rounded-xl border border-border hover:border-terra/30 hover:shadow-md transition-all group"
-                        >
-                          <div className="shrink-0 w-12 h-12 rounded-lg bg-terra/8 flex flex-col items-center justify-center">
-                            <span className="text-[9px] text-terra font-bold uppercase tracking-wider leading-none">
-                              {dateParts[0]}
-                            </span>
-                            <span className="text-lg font-bold text-terra leading-none mt-0.5">
-                              {dateParts[1]}
-                            </span>
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold text-text group-hover:text-terra transition-colors leading-snug line-clamp-1">
-                              {getLocalizedField(event, "title", loc)}
-                            </p>
-                            <div className="flex items-center gap-1.5 text-[11px] text-text-muted mt-0.5">
-                              <MapPin className="w-3 h-3 shrink-0" />
-                              <span className="truncate">{localizeLocation(event.location_name, locale)}</span>
-                            </div>
-                          </div>
-                        </Link>
-                      </BlurFade>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="bg-white rounded-2xl border border-border p-6 text-center">
-                  <Calendar className="w-6 h-6 text-text-light mx-auto mb-2" />
-                  <p className="text-sm text-text-muted">
-                    {t("noEvents")}{" "}
-                    <Link href="/submit-event" className="text-terra hover:underline font-semibold">
-                      {t("submitEvent")}
-                    </Link>
-                  </p>
-                </div>
-              )}
+              <NewsletterFormCompact locale={locale} />
             </section>
 
-            {/* Newsletter - clean inline */}
-            <section className="rounded-2xl border border-border bg-white p-6">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-aegean/8 flex items-center justify-center shrink-0">
-                  <Mail className="w-5 h-5 text-aegean" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm text-text">{t("newsletter")}</h3>
-                  <p className="text-xs text-text-muted mt-0.5">{t("newsletterCta")}</p>
-                </div>
+            {/* Fire alerts compact */}
+            <Link
+              href="/fire-alerts"
+              className="flex items-center gap-2 p-3 bg-red-50 rounded-xl border border-red-100 hover:shadow-md transition-all group"
+            >
+              <Flame className="w-4 h-4 text-red-500 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-red-700">{t("fireLabel")}</p>
+                <p className="text-[9px] text-red-400 leading-tight line-clamp-2">{t("fireDesc")}</p>
               </div>
-              <NewsletterForm locale={locale} />
-            </section>
+            </Link>
 
-            {/* Quick links */}
-            <div className="grid grid-cols-2 gap-2">
-              <Link href="/fire-alerts" className="flex items-center gap-2 p-3 bg-red-50 rounded-xl border border-red-100 hover:shadow-md transition-all group">
-                <Flame className="w-4 h-4 text-red-500 shrink-0" />
-                <div>
-                  <p className="text-xs font-bold text-red-700">{t("fireLabel")}</p>
-                  <p className="text-[9px] text-red-400 leading-tight">{t("fireDesc")}</p>
-                </div>
-              </Link>
-              <Link href="/articles" className="flex items-center gap-2 p-3 bg-aegean-faint rounded-xl border border-aegean/10 hover:shadow-md transition-all group">
-                <BookOpen className="w-4 h-4 text-aegean shrink-0" />
-                <div>
-                  <p className="text-xs font-bold text-aegean">{t("guidesLabel")}</p>
-                  <p className="text-[9px] text-text-muted leading-tight">{t("guidesDesc")}</p>
-                </div>
-              </Link>
-            </div>
           </div>
         </div>
       </div>
