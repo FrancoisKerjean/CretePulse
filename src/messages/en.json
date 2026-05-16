@@ -50,7 +50,9 @@
     "newsFeedLoading": "News feed loading. Updated every 3 hours.",
     "guidesSectionTitle": "Travel guides",
     "guidesSectionSubtitle": "Beaches, hikes, food, life in Crete. Fact-checked on the island.",
-    "allGuides": "All guides"
+    "allGuides": "All guides",
+    "editorialGuides": "Editorial guides",
+    "moreGuides": "More guides"
   },
   "footer": {
     "about": "Free, independent guide to Crete. Live data. No ads (yet). No tracking.",

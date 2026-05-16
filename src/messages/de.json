@@ -50,7 +50,9 @@
     "newsFeedLoading": "Nachrichtenfeed wird geladen. Alle 3 Stunden aktualisiert.",
     "guidesSectionTitle": "Reiseführer",
     "guidesSectionSubtitle": "Strände, Wandern, Essen, Leben auf Kreta. Vor Ort geprüft.",
-    "allGuides": "Alle Reiseführer"
+    "allGuides": "Alle Reiseführer",
+    "editorialGuides": "Redaktionelle Guides",
+    "moreGuides": "Weitere Guides"
   },
   "footer": {
     "about": "Kostenloser, unabhängiger Kreta-Reiseführer. Live-Daten. Keine Werbung (noch). Kein Tracking.",
