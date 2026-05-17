@@ -8,7 +8,7 @@ import Link from "next/link";
 import DiscoverCrete from "@/components/DiscoverCrete";
 import NewsletterCTA from "@/components/NewsletterCTA";
 
-export const revalidate = 14400;
+export const revalidate = 86400;
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
