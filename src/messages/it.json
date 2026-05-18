@@ -47,7 +47,10 @@
     "updatedAt": "Aggiornato alle {time} ora locale",
     "noEvents": "Nessun evento in programma.",
     "submitEvent": "Proporne uno?",
-    "newsFeedLoading": "Feed notizie in caricamento. Aggiornato ogni 3 ore."
+    "newsFeedLoading": "Feed notizie in caricamento. Aggiornato ogni 3 ore.",
+    "guidesSectionTitle": "Guide di viaggio",
+    "guidesSectionSubtitle": "Spiagge, escursioni, cibo, vita a Creta. Verificate sull'isola.",
+    "allGuides": "Tutte le guide"
   },
   "footer": {
     "about": "Guida gratuita e indipendente su Creta. Dati live. Niente pubblicità (ancora). Niente tracking.",

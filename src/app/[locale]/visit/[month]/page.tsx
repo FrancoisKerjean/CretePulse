@@ -298,6 +298,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     title: titles[locale] || titles.en,
     description: descs[locale] || descs.en,
     alternates: buildAlternates(locale, `/visit/${month}`),
+    robots: {
+      index: false,
+      follow: true,
+    },
     openGraph: { title: titles[locale] || titles.en, description: descs[locale] || descs.en, url },
   };
 }

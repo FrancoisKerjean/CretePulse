@@ -8,7 +8,7 @@ import Link from "next/link";
 import DiscoverCrete from "@/components/DiscoverCrete";
 import NewsletterCTA from "@/components/NewsletterCTA";
 
-export const revalidate = 14400;
+export const revalidate = 86400;
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
@@ -144,6 +144,12 @@ function calcReadingTime(html: string): number {
 export default async function NewsDetailPage({ params }: { params: Promise<{ locale: string; slug: string }> }) {
   const { locale, slug } = await params;
   const loc = locale as Locale;
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  const backLabel = BACK_LABELS[loc] ?? BACK_LABELS.en;
+  const readOriginalLabel = READ_ORIGINAL_LABELS[loc] ?? READ_ORIGINAL_LABELS.en;
+  const sourceLabel = SOURCE_LABELS[loc] ?? SOURCE_LABELS.en;
+  const readMinLabel = READ_MIN_LABELS[loc] ?? READ_MIN_LABELS.en;
+  const relatedLabel = RELATED_LABELS[loc] ?? RELATED_LABELS.en;
 
   const [item, allNews] = await Promise.all([
     getNewsBySlug(slug),
@@ -197,7 +203,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
             className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-aegean transition-colors mb-10 group"
           >
             <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
-            {BACK_LABELS[loc]}
+            {backLabel}
           </Link>
 
           {/* ── HEADER ─────────────────────────────── */}
@@ -229,7 +235,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
             <span className="text-border select-none">/</span>
             <span className="flex items-center gap-1.5">
               <Globe className="w-3.5 h-3.5 text-text-light flex-shrink-0" />
-              {SOURCE_LABELS[loc]}:&nbsp;
+              {sourceLabel}:&nbsp;
               <a
                 href={item.source_url}
                 target="_blank"
@@ -242,7 +248,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
             <span className="text-border select-none">/</span>
             <span className="flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-text-light flex-shrink-0" />
-              {readingTime}&nbsp;{READ_MIN_LABELS[loc]}
+              {readingTime}&nbsp;{readMinLabel}
             </span>
           </div>
 
@@ -295,7 +301,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
               className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-aegean transition-colors underline underline-offset-2"
             >
               <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
-              {READ_ORIGINAL_LABELS[loc]} &rarr; {item.source_name}
+              {readOriginalLabel} &rarr; {item.source_name}
             </a>
           </div>
 
@@ -304,7 +310,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
             <section className="mt-14">
               <div className="flex items-center gap-3 mb-6">
                 <h2 className="text-xs font-bold uppercase tracking-widest text-text-muted whitespace-nowrap">
-                  {RELATED_LABELS[loc]}
+                  {relatedLabel}
                 </h2>
                 <div className="flex-1 h-px bg-border" />
               </div>

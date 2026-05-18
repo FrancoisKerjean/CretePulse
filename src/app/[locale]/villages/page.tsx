@@ -139,7 +139,7 @@ function VillagesPlaceholder({ locale }: { locale: Locale }) {
   return (
     <main className="min-h-screen bg-surface">
       <div className="max-w-6xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-aegean">{titles[locale]}</h1>
+        <h1 className="text-3xl font-bold text-aegean">{titles[locale] ?? titles.en}</h1>
         <p className="text-text-muted mt-2">300+ villages coming soon. Data being loaded.</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
           {Array.from({ length: 6 }).map((_, i) => (

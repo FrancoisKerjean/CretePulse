@@ -51,7 +51,8 @@ function timeAgo(dateStr: string, locale: Locale): string {
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
-  const L = TIME_LABELS[locale];
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  const L = TIME_LABELS[locale] ?? TIME_LABELS.en;
   const lang = locale === "el" ? "el-GR" : locale === "fr" ? "fr-FR" : locale === "de" ? "de-DE" : "en-GB";
 
   if (diffMins < 60) return diffMins <= 1 ? L.justNow : `${diffMins}${L.mAgo}`;
@@ -97,9 +98,9 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-2">
             <Newspaper className="w-5 h-5 text-aegean" />
-            <h1 className="text-2xl font-bold text-aegean">{PAGE_TITLES[loc]}</h1>
+            <h1 className="text-2xl font-bold text-aegean">{PAGE_TITLES[loc] ?? PAGE_TITLES.en}</h1>
           </div>
-          <p className="text-sm text-text-muted">{PAGE_SUBTITLES[loc]}</p>
+          <p className="text-sm text-text-muted">{PAGE_SUBTITLES[loc] ?? PAGE_SUBTITLES.en}</p>
         </div>
 
         {/* News list */}
@@ -170,9 +171,9 @@ function NewsPlaceholder({ locale }: { locale: Locale }) {
       <div className="max-w-3xl mx-auto px-4 py-12">
         <div className="flex items-center gap-2 mb-2">
           <Newspaper className="w-5 h-5 text-aegean" />
-          <h1 className="text-2xl font-bold text-aegean">{PAGE_TITLES[locale]}</h1>
+          <h1 className="text-2xl font-bold text-aegean">{PAGE_TITLES[locale] ?? PAGE_TITLES.en}</h1>
         </div>
-        <p className="text-sm text-text-muted mb-8">{PAGE_SUBTITLES[locale]}</p>
+        <p className="text-sm text-text-muted mb-8">{PAGE_SUBTITLES[locale] ?? PAGE_SUBTITLES.en}</p>
 
         <div className="divide-y divide-border">
           {Array.from({ length: 8 }).map((_, i) => (

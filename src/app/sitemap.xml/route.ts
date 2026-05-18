@@ -166,9 +166,16 @@ export async function GET() {
       push(`/weather/${city.slug}/${month}`, "monthly", 0.5);
     }
   }
-  for (const month of MONTHS) push(`/visit/${month}`, "monthly", 0.7);
+  // /visit/[month] pages are noindex (GSC: ~5800 impressions on 28d for only 4 clicks
+  // across 170+ pages, average position 60+ = invisible page 5-8 Google).
+  // No /visit index page exists, so the section is fully removed from the sitemap.
+  // for (const month of MONTHS) push(`/visit/${month}`, "monthly", 0.7);
   for (const a of BEACH_ACTIVITIES) push(`/beaches/best-for/${a}`, "monthly", 0.6);
-  for (const s of ROUTE_SLUGS) push(`/getting-around/${s}`, "monthly", 0.6);
+  // /getting-around/[route] pages are noindex (GSC: 41 pages, 704 impressions for
+  // only 2 clicks on 28d, average position 38 = invisible). Removed from sitemap
+  // for coherence with the noindex header.
+  // for (const s of ROUTE_SLUGS) push(`/getting-around/${s}`, "monthly", 0.6);
+  void ROUTE_SLUGS;
   for (const s of COMP_SLUGS) push(`/compare/${s}`, "monthly", 0.6);
   for (const s of AREA_SLUGS) push(`/where-to-stay/${s}`, "monthly", 0.6);
   for (const s of ITINERARY_SLUGS) push(`/itineraries/${s}`, "monthly", 0.7);
@@ -190,7 +197,10 @@ export async function GET() {
     push(`/villages/${s}`, "monthly", 0.6);
     push(`/beaches/near/${s}`, "monthly", 0.5);
   }
-  for (const s of foodPlaces) push(`/food/${s}`, "monthly", 0.6);
+  // /food/[slug] pages are noindex (4875/5000 pages had 0 clicks on 28d, low-quality signal).
+  // Keep the /food index page indexed (added above), but exclude individual restaurant pages.
+  // for (const s of foodPlaces) push(`/food/${s}`, "monthly", 0.6);
+  void foodPlaces;
   for (const s of hikes) push(`/hikes/${s}`, "monthly", 0.6);
   for (const n of news) push(`/news/${n.slug}`, "daily", 0.5, n.lastmod);
   for (const g of guides) push(`/articles/${g.slug}`, "weekly", 0.7, g.lastmod);

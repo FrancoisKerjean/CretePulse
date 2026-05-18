@@ -214,7 +214,8 @@ const T = {
 } as const satisfies Record<string, Record<Locale, string>>;
 
 function t(key: keyof typeof T, locale: Locale): string {
-  return T[key][locale];
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  return T[key][locale] ?? T[key].en;
 }
 
 // ---------------------------------------------------------------------------

@@ -477,10 +477,10 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
       <main className="min-h-screen bg-surface">
         <div className="max-w-4xl mx-auto px-4 py-12">
           <h1 className="text-3xl md:text-4xl font-bold text-aegean mb-3">
-            {pageTitle[loc]}
+            {pageTitle[loc] ?? pageTitle.en}
           </h1>
           <p className="text-text-muted text-lg mb-10">
-            {pageSubtitle[loc]}
+            {pageSubtitle[loc] ?? pageSubtitle.en}
           </p>
 
           {/* Quick nav */}

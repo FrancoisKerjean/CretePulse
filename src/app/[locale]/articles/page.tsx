@@ -55,9 +55,9 @@ export default async function ArticlesPage({ params }: { params: Promise<{ local
         <div className="mb-10">
           <div className="flex items-center gap-2 mb-2">
             <BookOpen className="w-5 h-5 text-aegean" />
-            <h1 className="text-2xl font-bold text-aegean">{PAGE_TITLES[loc]}</h1>
+            <h1 className="text-2xl font-bold text-aegean">{PAGE_TITLES[loc] ?? PAGE_TITLES.en}</h1>
           </div>
-          <p className="text-sm text-text-muted">{PAGE_SUBTITLES[loc]}</p>
+          <p className="text-sm text-text-muted">{PAGE_SUBTITLES[loc] ?? PAGE_SUBTITLES.en}</p>
         </div>
 
         <ArticlesPageClient guides={guides} locale={loc} categories={categories} />

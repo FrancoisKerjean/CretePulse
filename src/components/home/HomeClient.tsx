@@ -17,6 +17,7 @@ import type { CityWeather } from "@/lib/weather";
 import type { NewsItem, Event, Locale } from "@/lib/types";
 import { getLocalizedField } from "@/lib/types";
 import { localizeLocation } from "@/lib/localize-location";
+import { type Guide, getLocalizedGuideField } from "@/lib/guides";
 
 function WeatherIcon({ code, wind, className }: { code: number; wind: number; className?: string }) {
   const c = className || "w-5 h-5";
@@ -56,7 +57,7 @@ const CATEGORY_STYLES: Record<string, string> = {
   local: "bg-olive/10 text-olive",
 };
 
-function NewsletterForm({ locale }: { locale: string }) {
+function NewsletterFormCompact({ locale }: { locale: string }) {
   const t = useTranslations("home");
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -80,20 +81,20 @@ function NewsletterForm({ locale }: { locale: string }) {
 
   if (status === "success") {
     const successMsg: Record<string, string> = {
-      en: "Thanks! Check your inbox.",
-      fr: "Merci ! Verifiez votre boite mail.",
-      de: "Danke! Prufen Sie Ihren Posteingang.",
-      el: "\u0395\u03c5\u03c7\u03b1\u03c1\u03b9\u03c3\u03c4\u03bf\u03cd\u03bc\u03b5! \u0395\u03bb\u03ad\u03b3\u03be\u03c4\u03b5 \u03c4\u03b1 \u03b5\u03b9\u03c3\u03b5\u03c1\u03c7\u03cc\u03bc\u03b5\u03bd\u03ac \u03c3\u03b1\u03c2.",
+      en: "Thanks!",
+      fr: "Merci !",
+      de: "Danke!",
+      el: "Ευχαριστώ!",
     };
     return (
-      <div className="rounded-2xl bg-aegean p-6 text-white text-center">
-        <p className="text-sm font-medium">{successMsg[locale] || successMsg.en}</p>
+      <div className="rounded-xl bg-aegean p-3 text-white text-center">
+        <p className="text-xs font-medium">{successMsg[locale] || successMsg.en}</p>
       </div>
     );
   }
 
   return (
-    <form className="flex gap-2" onSubmit={handleSubmit}>
+    <form className="flex flex-col gap-2" onSubmit={handleSubmit}>
       <input type="text" name="website" className="hidden" tabIndex={-1} autoComplete="off" />
       <input
         type="email"
@@ -101,15 +102,12 @@ function NewsletterForm({ locale }: { locale: string }) {
         onChange={(e) => setEmail(e.target.value)}
         placeholder={t("emailPlaceholder")}
         required
-        className="flex-1 px-4 py-3 rounded-xl border border-border bg-white text-sm text-text placeholder:text-text-light focus:outline-none focus:ring-2 focus:ring-aegean/30 focus:border-aegean/40"
+        className="w-full px-3 py-2 rounded-lg border border-border bg-white text-xs text-text placeholder:text-text-light focus:outline-none focus:ring-2 focus:ring-aegean/30 focus:border-aegean/40"
       />
-      {status === "error" && (
-        <p className="text-xs text-red-500 absolute -bottom-5">Error</p>
-      )}
       <button
         type="submit"
         disabled={status === "loading"}
-        className="px-6 py-3 bg-terra text-white rounded-xl font-bold text-sm hover:bg-terra-light transition-colors disabled:opacity-60 shadow-md hover:shadow-lg shrink-0"
+        className="w-full px-3 py-2 bg-terra text-white rounded-lg font-bold text-xs hover:bg-terra-light transition-colors disabled:opacity-60 shadow-sm"
       >
         {status === "loading" ? "..." : t("subscribe")}
       </button>
@@ -121,10 +119,11 @@ interface HomeClientProps {
   cities: CityWeather[];
   latestNews: NewsItem[];
   upcomingEvents: Event[];
+  latestGuides: Guide[];
   locale: string;
 }
 
-export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeClientProps) {
+export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, locale }: HomeClientProps) {
   const loc = locale as Locale;
   const t = useTranslations("home");
 
@@ -134,6 +133,10 @@ export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeC
   const featuredNews = latestNews[0] ?? null;
   const secondNews = latestNews[1] ?? null;
   const restNews = latestNews.slice(2);
+
+  const featuredGuide = latestGuides[0] ?? null;
+  const secondGuide = latestGuides[1] ?? null;
+  const restGuides = latestGuides.slice(2, 8);
 
   return (
     <main className="min-h-screen bg-surface">
@@ -285,10 +288,10 @@ export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeC
 
       {/* ═══════════════════ MAIN CONTENT ═══════════════════ */}
       <div className="max-w-6xl mx-auto px-4 py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
           {/* ──── LEFT: News ──── */}
-          <div className="lg:col-span-7 space-y-8">
+          <div className="lg:col-span-5 space-y-8">
 
             <section>
               <div className="flex items-center justify-between mb-6">
@@ -373,99 +376,261 @@ export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeC
             </section>
           </div>
 
-          {/* ──── RIGHT: Events + Newsletter ──── */}
+          {/* ──── MIDDLE: Editorial guides (parity with news) ──── */}
           <div className="lg:col-span-5 space-y-8">
 
-            {/* Events */}
             <section>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xs font-bold text-terra uppercase tracking-[0.2em] flex items-center gap-2">
-                  <Calendar className="w-4 h-4" /> {t("eventsThisWeek")}
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xs font-bold text-aegean uppercase tracking-[0.2em] flex items-center gap-2">
+                  <BookOpen className="w-4 h-4" /> {t("editorialGuides")}
                 </h2>
-                <Link href="/events" className="text-xs text-terra hover:text-terra-light flex items-center gap-1 font-semibold transition-colors">
-                  {t("allEvents")} <ChevronRight className="w-3.5 h-3.5" />
+                <Link href="/articles" className="text-xs text-aegean hover:text-aegean-light flex items-center gap-1 font-semibold transition-colors">
+                  {t("allGuides")} <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
 
-              {upcomingEvents.length > 0 ? (
-                <div className="space-y-2">
-                  {upcomingEvents.map((event, i) => {
-                    const dateParts = formatEventDate(event.date_start, locale).split(" ");
-                    return (
-                      <BlurFade key={event.slug} delay={0.04 * i}>
-                        <Link
-                          href={`/events/${event.slug}`}
-                          className="flex items-center gap-3 p-3 bg-white rounded-xl border border-border hover:border-terra/30 hover:shadow-md transition-all group"
-                        >
-                          <div className="shrink-0 w-12 h-12 rounded-lg bg-terra/8 flex flex-col items-center justify-center">
-                            <span className="text-[9px] text-terra font-bold uppercase tracking-wider leading-none">
-                              {dateParts[0]}
-                            </span>
-                            <span className="text-lg font-bold text-terra leading-none mt-0.5">
-                              {dateParts[1]}
-                            </span>
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold text-text group-hover:text-terra transition-colors leading-snug line-clamp-1">
-                              {getLocalizedField(event, "title", loc)}
-                            </p>
-                            <div className="flex items-center gap-1.5 text-[11px] text-text-muted mt-0.5">
-                              <MapPin className="w-3 h-3 shrink-0" />
-                              <span className="truncate">{localizeLocation(event.location_name, locale)}</span>
+              {latestGuides.length > 0 ? (
+                <div className="space-y-4">
+                  {/* Top 2 featured guides - side by side on desktop */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {[featuredGuide, secondGuide].filter(Boolean).map((guide, idx) => {
+                      const gTitle = getLocalizedGuideField(guide!, "titles", locale);
+                      return (
+                        <BlurFade key={guide!.slug} delay={idx * 0.1}>
+                          <SpotlightCard className="rounded-2xl">
+                            <Link
+                              href={`/articles/${guide!.slug}`}
+                              className="block group rounded-2xl overflow-hidden relative h-56"
+                            >
+                              {guide!.image_url ? (
+                                <Image
+                                  src={guide!.image_url}
+                                  alt={gTitle}
+                                  fill
+                                  sizes="(max-width: 768px) 100vw, 33vw"
+                                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                />
+                              ) : (
+                                <div className={`absolute inset-0 ${idx === 0 ? "bg-gradient-to-br from-aegean via-[#1a5f82] to-[#2D6A8F]" : "bg-gradient-to-br from-olive via-[#5a7a4a] to-[#7a9a6a]"}`} />
+                              )}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                              <div className="relative h-full flex flex-col justify-end p-5">
+                                <div className="flex items-center gap-2 mb-2">
+                                  {guide!.category && (
+                                    <span className="text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-md bg-white/20 text-white backdrop-blur-sm">
+                                      {guide!.category}
+                                    </span>
+                                  )}
+                                  {guide!.read_time && (
+                                    <span className="text-[9px] text-white/60 font-mono">{guide!.read_time} min</span>
+                                  )}
+                                </div>
+                                <h3
+                                  className="text-base font-bold text-white leading-snug group-hover:text-sand transition-colors line-clamp-3"
+                                  style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
+                                >
+                                  {gTitle}
+                                </h3>
+                              </div>
+                            </Link>
+                          </SpotlightCard>
+                        </BlurFade>
+                      );
+                    })}
+                  </div>
+
+                  {/* Rest of guides */}
+                  <div className="divide-y divide-border">
+                    {restGuides.map((guide, i) => {
+                      const gTitle = getLocalizedGuideField(guide, "titles", locale);
+                      return (
+                        <BlurFade key={guide.slug} delay={0.04 * (i + 1)}>
+                          <Link
+                            href={`/articles/${guide.slug}`}
+                            className="flex items-start gap-3 py-4 group"
+                          >
+                            <div className="shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-stone relative">
+                              {guide.image_url ? (
+                                <Image
+                                  src={guide.image_url}
+                                  alt={gTitle}
+                                  fill
+                                  sizes="56px"
+                                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-aegean to-aegean-light flex items-center justify-center">
+                                  <BookOpen className="w-5 h-5 text-white/70" />
+                                </div>
+                              )}
                             </div>
-                          </div>
-                        </Link>
-                      </BlurFade>
-                    );
-                  })}
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[15px] font-semibold text-text group-hover:text-aegean transition-colors leading-snug line-clamp-2">
+                                {gTitle}
+                              </p>
+                              <div className="flex items-center gap-3 mt-1.5">
+                                {guide.category && (
+                                  <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-md bg-aegean/8 text-aegean">
+                                    {guide.category}
+                                  </span>
+                                )}
+                                {guide.read_time && (
+                                  <span className="text-[10px] text-text-light font-mono ml-auto">{guide.read_time} min</span>
+                                )}
+                              </div>
+                            </div>
+                          </Link>
+                        </BlurFade>
+                      );
+                    })}
+                  </div>
                 </div>
               ) : (
-                <div className="bg-white rounded-2xl border border-border p-6 text-center">
-                  <Calendar className="w-6 h-6 text-text-light mx-auto mb-2" />
-                  <p className="text-sm text-text-muted">
-                    {t("noEvents")}{" "}
-                    <Link href="/submit-event" className="text-terra hover:underline font-semibold">
-                      {t("submitEvent")}
-                    </Link>
-                  </p>
+                <div className="bg-white rounded-2xl border border-border p-10 text-center">
+                  <BookOpen className="w-8 h-8 text-text-light mx-auto mb-3" />
+                  <p className="text-sm text-text-muted">{t("guidesSectionSubtitle")}</p>
                 </div>
               )}
             </section>
+          </div>
 
-            {/* Newsletter - clean inline */}
-            <section className="rounded-2xl border border-border bg-white p-6">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-aegean/8 flex items-center justify-center shrink-0">
-                  <Mail className="w-5 h-5 text-aegean" />
+          {/* ──── RIGHT: Sidebar 2/12 (Newsletter + Fire alerts) ──── */}
+          <div className="lg:col-span-2 space-y-4">
+
+            {/* Newsletter compact */}
+            <section className="rounded-2xl border border-border bg-white p-4">
+              <div className="flex flex-col items-start gap-2 mb-3">
+                <div className="w-9 h-9 rounded-lg bg-aegean/8 flex items-center justify-center shrink-0">
+                  <Mail className="w-4 h-4 text-aegean" />
                 </div>
-                <div>
-                  <h3 className="font-bold text-sm text-text">{t("newsletter")}</h3>
-                  <p className="text-xs text-text-muted mt-0.5">{t("newsletterCta")}</p>
-                </div>
+                <h3 className="font-bold text-xs text-text leading-tight">{t("newsletter")}</h3>
               </div>
-              <NewsletterForm locale={locale} />
+              <NewsletterFormCompact locale={locale} />
             </section>
 
-            {/* Quick links */}
-            <div className="grid grid-cols-2 gap-2">
-              <Link href="/fire-alerts" className="flex items-center gap-2 p-3 bg-red-50 rounded-xl border border-red-100 hover:shadow-md transition-all group">
-                <Flame className="w-4 h-4 text-red-500 shrink-0" />
-                <div>
-                  <p className="text-xs font-bold text-red-700">{t("fireLabel")}</p>
-                  <p className="text-[9px] text-red-400 leading-tight">{t("fireDesc")}</p>
-                </div>
-              </Link>
-              <Link href="/articles" className="flex items-center gap-2 p-3 bg-aegean-faint rounded-xl border border-aegean/10 hover:shadow-md transition-all group">
-                <BookOpen className="w-4 h-4 text-aegean shrink-0" />
-                <div>
-                  <p className="text-xs font-bold text-aegean">{t("guidesLabel")}</p>
-                  <p className="text-[9px] text-text-muted leading-tight">{t("guidesDesc")}</p>
-                </div>
-              </Link>
-            </div>
+            {/* Fire alerts compact */}
+            <Link
+              href="/fire-alerts"
+              className="flex items-center gap-2 p-3 bg-red-50 rounded-xl border border-red-100 hover:shadow-md transition-all group"
+            >
+              <Flame className="w-4 h-4 text-red-500 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-red-700">{t("fireLabel")}</p>
+                <p className="text-[9px] text-red-400 leading-tight line-clamp-2">{t("fireDesc")}</p>
+              </div>
+            </Link>
+
           </div>
         </div>
       </div>
+
+      {/* ═══════════════════ EVENTS TICKER ═══════════════════ */}
+      {upcomingEvents.length > 0 && (
+        <div className="bg-terra text-white py-2.5 overflow-hidden">
+          <Marquee duration={50} pauseOnHover>
+            {upcomingEvents.map((event) => (
+              <Link
+                key={event.slug}
+                href={`/events/${event.slug}`}
+                className="flex items-center gap-2.5 px-4 text-sm hover:text-sand transition-colors whitespace-nowrap"
+              >
+                <Calendar className="w-3.5 h-3.5 shrink-0" />
+                <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-white/15 font-semibold shrink-0">
+                  {formatEventDate(event.date_start, locale)}
+                </span>
+                <span className="font-medium">{getLocalizedField(event, "title", loc)}</span>
+                <MapPin className="w-3 h-3 text-white/50 shrink-0" />
+                <span className="text-white/60 text-xs">{localizeLocation(event.location_name, locale)}</span>
+                <span className="text-white/20 mx-2">|</span>
+              </Link>
+            ))}
+          </Marquee>
+        </div>
+      )}
+
+      {/* ═══════════════════ MORE GUIDES ═══════════════════ */}
+      {latestGuides.length > 8 && (
+        <section className="border-t border-border bg-surface py-14 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-end justify-between mb-6 gap-4">
+              <div>
+                <BlurFade delay={0.1}>
+                  <h2
+                    className="text-3xl md:text-4xl font-bold text-text mb-2 flex items-center gap-3"
+                    style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
+                  >
+                    <BookOpen className="w-7 h-7 text-aegean" />
+                    {t("moreGuides")}
+                  </h2>
+                  <p className="text-text-muted text-sm max-w-lg">{t("guidesSectionSubtitle")}</p>
+                </BlurFade>
+              </div>
+              <Link
+                href="/articles"
+                className="hidden sm:flex shrink-0 text-xs text-aegean hover:text-aegean-light items-center gap-1 font-semibold transition-colors whitespace-nowrap"
+              >
+                {t("allGuides")} <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {latestGuides.slice(8).map((guide, idx) => {
+                const title = getLocalizedGuideField(guide, "titles", locale);
+                return (
+                  <li key={guide.slug}>
+                    <BlurFade delay={Math.min(0.04 * idx, 0.4)}>
+                      <Link
+                        href={`/articles/${guide.slug}`}
+                        className="block group rounded-2xl border border-border bg-white overflow-hidden hover:border-aegean/40 hover:shadow-md transition-all h-full"
+                      >
+                        <div className="relative aspect-[16/9] bg-stone overflow-hidden">
+                          {guide.image_url ? (
+                            <Image
+                              src={guide.image_url}
+                              alt={title}
+                              fill
+                              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                              className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-aegean to-aegean-light flex items-center justify-center">
+                              <BookOpen className="w-10 h-10 text-white/70" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            {guide.category && (
+                              <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-md bg-aegean/8 text-aegean">
+                                {guide.category}
+                              </span>
+                            )}
+                            {guide.read_time && (
+                              <span className="text-[10px] text-text-light font-mono">{guide.read_time} min</span>
+                            )}
+                          </div>
+                          <p className="text-sm font-semibold text-text group-hover:text-aegean transition-colors leading-snug line-clamp-2">
+                            {title}
+                          </p>
+                        </div>
+                      </Link>
+                    </BlurFade>
+                  </li>
+                );
+              })}
+            </ul>
+
+            <div className="mt-6 sm:hidden">
+              <Link
+                href="/articles"
+                className="text-xs text-aegean hover:text-aegean-light flex items-center gap-1 font-semibold transition-colors"
+              >
+                {t("allGuides")} <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ═══════════════════ EXPLORE BENTO ═══════════════════ */}
       <section className="border-t border-border bg-white py-14 px-4">

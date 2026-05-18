@@ -47,7 +47,10 @@
     "updatedAt": "Uppdaterat kl. {time} lokal tid",
     "noEvents": "Inga kommande evenemang.",
     "submitEvent": "Skicka in ett?",
-    "newsFeedLoading": "Nyhetsflödet laddas. Uppdateras var tredje timme."
+    "newsFeedLoading": "Nyhetsflödet laddas. Uppdateras var tredje timme.",
+    "guidesSectionTitle": "Resguider",
+    "guidesSectionSubtitle": "Stränder, vandringar, mat, liv på Kreta. Kontrollerat på platsen.",
+    "allGuides": "Alla guider"
   },
   "footer": {
     "about": "Gratis, oberoende guide till Kreta. Realtidsdata. Inga annonser (ännu). Ingen spårning.",

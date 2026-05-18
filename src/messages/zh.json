@@ -47,7 +47,10 @@
     "updatedAt": "更新于当地时间 {time}",
     "noEvents": "没有即将举行的活动。",
     "submitEvent": "提交一个？",
-    "newsFeedLoading": "新闻源加载中。每3小时更新。"
+    "newsFeedLoading": "新闻源加载中。每3小时更新。",
+    "guidesSectionTitle": "旅行指南",
+    "guidesSectionSubtitle": "克里特岛的海滩、徒步、美食、生活。实地核实。",
+    "allGuides": "所有指南"
   },
   "footer": {
     "about": "免费、独立的克里特岛指南。实时数据。无广告（暂时）。无追踪。",

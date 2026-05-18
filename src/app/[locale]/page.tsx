@@ -1,6 +1,7 @@
 import { fetchAllCitiesWeather } from "@/lib/weather";
 import { getLatestNews } from "@/lib/news";
 import { getUpcomingEvents } from "@/lib/events";
+import { getEditorialGuides, type Guide } from "@/lib/guides";
 import { HomeClient } from "@/components/home/HomeClient";
 import type { NewsItem, Event, Locale } from "@/lib/types";
 import { buildAlternates } from "@/lib/seo";
@@ -69,10 +70,11 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
 
-  const [cities, latestNews, upcomingEvents] = await Promise.all([
+  const [cities, latestNews, upcomingEvents, latestGuides] = await Promise.all([
     fetchAllCitiesWeather(),
     getLatestNews(8, locale).catch((): NewsItem[] => []),
     getUpcomingEvents(5).catch((): Event[] => []),
+    getEditorialGuides(12).catch((): Guide[] => []),
   ]);
 
   return (
@@ -80,6 +82,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       cities={cities}
       latestNews={latestNews}
       upcomingEvents={upcomingEvents}
+      latestGuides={latestGuides}
       locale={locale}
     />
   );

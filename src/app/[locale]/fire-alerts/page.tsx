@@ -139,7 +139,8 @@ function isHighSeason(): boolean {
 export default async function FireAlertsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const loc = locale as Locale;
-  const content = CONTENT[loc];
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  const content = CONTENT[loc] ?? CONTENT.en;
   const highSeason = isHighSeason();
 
   return (

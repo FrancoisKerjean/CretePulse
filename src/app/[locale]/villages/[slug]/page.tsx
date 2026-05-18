@@ -12,6 +12,14 @@ export const revalidate = 86400;
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
+/**
+ * Locales where /villages/[slug] had 0 clicks on 28d for >=40 impressions (GSC).
+ * Average position 48-66 = invisible. Decision 15/05/2026.
+ * Other locales (fr, fi with positive signal + en/da/nl/zh/etc. with marginal traffic)
+ * remain indexed.
+ */
+const VILLAGES_NOINDEX_LOCALES = new Set(["cs", "sv", "no", "de", "es", "it", "ru", "hu", "pl"]);
+
 export async function generateMetadata({
   params,
 }: {
@@ -20,6 +28,8 @@ export async function generateMetadata({
   const { locale, slug } = await params;
   const village = await getVillageBySlug(slug);
   if (!village) return { title: "Village not found" };
+
+  const shouldIndex = !VILLAGES_NOINDEX_LOCALES.has(locale);
 
   const name = getLocalizedField(village, "name", locale as Locale);
   const desc = getLocalizedField(village, "description", locale as Locale);
@@ -32,6 +42,7 @@ export async function generateMetadata({
     title,
     description,
     alternates: buildAlternates(locale, `/villages/${slug}`),
+    robots: shouldIndex ? undefined : { index: false, follow: true },
     openGraph: {
       title,
       description,

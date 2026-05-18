@@ -47,7 +47,10 @@
     "updatedAt": "Päivitetty klo {time} paikallista aikaa",
     "noEvents": "Ei tulevia tapahtumia.",
     "submitEvent": "Lähetä tapahtuma?",
-    "newsFeedLoading": "Uutissyöte latautuu. Päivitetään 3 tunnin välein."
+    "newsFeedLoading": "Uutissyöte latautuu. Päivitetään 3 tunnin välein.",
+    "guidesSectionTitle": "Matkaoppaat",
+    "guidesSectionSubtitle": "Rannat, vaellukset, ruoka, elämä Kreetalla. Tarkistettu paikan päällä.",
+    "allGuides": "Kaikki oppaat"
   },
   "footer": {
     "about": "Ilmainen, riippumaton Kreeta-opas. Reaaliaikaista dataa. Ei mainoksia (vielä). Ei seurantaa.",

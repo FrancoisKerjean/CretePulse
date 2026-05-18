@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
 import { cityThingsToDoSchema } from "@/lib/schema";
+import RentalCTA from "@/components/RentalCTA";
 
 export const revalidate = 86400;
 
@@ -202,11 +203,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const info = CITY_INFO[citySlug];
   if (!city || !info) return { title: "Not found" };
 
+  // CTR-optimised : year 2026 freshness + concrete promise + local authority.
+  // Previous generic "Things to Do in X" at pos 52 = page 5-6. Aim for page 2-3 with better hook.
   const titles: Record<string, string> = {
-    en: `Things to Do in ${city.name}, Crete - Activities & Attractions | Crete Direct`,
-    fr: `Que faire à ${city.name}, Crète - Activités & Sites à visiter | Crete Direct`,
-    de: `Aktivitäten in ${city.name}, Kreta - Sehenswürdigkeiten & Tipps | Crete Direct`,
-    el: `Τι να κάνετε στην ${city.nameEl}, Κρήτη - Δραστηριότητες & Αξιοθέατα | Crete Direct`,
+    en: `${city.name} Crete 2026: Top 10 Things to Do (Local's Honest Guide)`,
+    fr: `Que faire à ${city.name} en Crète 2026 : Top 10 activités (Guide local)`,
+    de: `${city.name} Kreta 2026: Top 10 Aktivitäten (Ehrlicher Insider-Guide)`,
+    el: `${city.nameEl} Κρήτη 2026: Top 10 δραστηριότητες (Οδηγός ντόπιου)`,
   };
 
   const descs: Record<string, string> = {
@@ -485,7 +488,10 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
 
         {/* Other cities */}
         <section>
-          <h2 className="text-sm font-bold text-text-muted uppercase tracking-wider mb-3">{L.allCities}</h2>
+          {/* Cross-link rental funnel (kairosguest.com), UTM-tracked */}
+          <RentalCTA locale={locale} contentSlug={citySlug} contentType="things-to-do" />
+
+          <h2 className="text-sm font-bold text-text-muted uppercase tracking-wider mb-3 mt-10">{L.allCities}</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
             {CITIES.filter(c => c.slug !== citySlug).map(c => (
               <Link

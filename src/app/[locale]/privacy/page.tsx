@@ -30,12 +30,14 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   };
 
   const url = `${BASE_URL}/${locale}/privacy`;
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  const meta = metadata[loc] ?? metadata.en;
 
   return {
-    title: metadata[loc].title,
-    description: metadata[loc].description,
+    title: meta.title,
+    description: meta.description,
     alternates: buildAlternates(locale, "/privacy"),
-    openGraph: { title: metadata[loc].title, description: metadata[loc].description, url, type: "website" },
+    openGraph: { title: meta.title, description: meta.description, url, type: "website" },
     robots: { index: true, follow: true },
   };
 }
@@ -288,7 +290,8 @@ const CONTENT: Record<
 export default async function PrivacyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const loc = locale as Locale;
-  const content = CONTENT[loc];
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  const content = CONTENT[loc] ?? CONTENT.en;
 
   return (
     <main className="min-h-screen bg-surface">

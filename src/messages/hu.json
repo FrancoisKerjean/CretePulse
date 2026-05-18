@@ -47,7 +47,10 @@
     "updatedAt": "Frissítve {time} helyi idő szerint",
     "noEvents": "Nincs közelgő esemény.",
     "submitEvent": "Küld be egyet?",
-    "newsFeedLoading": "Hírek betöltése. 3 óránként frissül."
+    "newsFeedLoading": "Hírek betöltése. 3 óránként frissül.",
+    "guidesSectionTitle": "Útikalauzok",
+    "guidesSectionSubtitle": "Strandok, túrák, étel, élet Krétán. Helyszínen ellenőrizve.",
+    "allGuides": "Összes útikalauz"
   },
   "footer": {
     "about": "Ingyenes, független Kréta-útmutató. Élő adatok. Nincs reklám (egyelőre). Nincs nyomon követés.",

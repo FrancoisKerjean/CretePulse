@@ -47,7 +47,12 @@
     "updatedAt": "Mis à jour à {time} heure locale",
     "noEvents": "Aucun événement à venir.",
     "submitEvent": "Proposer un événement ?",
-    "newsFeedLoading": "Flux d'actualités en chargement. Mis à jour toutes les 3 heures."
+    "newsFeedLoading": "Flux d'actualités en chargement. Mis à jour toutes les 3 heures.",
+    "guidesSectionTitle": "Guides de voyage",
+    "guidesSectionSubtitle": "Plages, randonnées, cuisine, vie en Crète. Vérifiés sur l'île.",
+    "allGuides": "Tous les guides",
+    "editorialGuides": "Guides éditoriaux",
+    "moreGuides": "Plus de guides"
   },
   "footer": {
     "about": "Guide gratuit et indépendant sur la Crète. Données live. Pas de pub (pour l'instant). Pas de tracking.",
