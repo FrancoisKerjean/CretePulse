@@ -9,6 +9,7 @@ from parsers import (
     parse_herlas_index,
     parse_herlas_detail,
     parse_ektel_index,
+    is_crete_route,
     CURATED_EKTEL,
 )
 
@@ -62,6 +63,22 @@ def test_parse_ektel_index_returns_groups_with_dates():
     assert any("CHANIA" in (gr["label"] or "").upper() for gr in groups)
     # au moins une date valid_from au format ISO (YYYY-MM-DD) extraite
     assert any(gr["valid_from"] and len(gr["valid_from"]) == 10 for gr in groups)
+
+
+def test_is_crete_route_excludes_mainland():
+    # intra-Crete : garde
+    assert is_crete_route("Heraklion", "Rethymno") is True
+    assert is_crete_route("Sitia", "Ierapetra") is True
+    # liaisons continent (via ferry) : exclu
+    assert is_crete_route("Thessaloniki", "Heraklion") is False
+    assert is_crete_route("Heraklion", "Athens") is False
+    assert is_crete_route("Patra", "Heraklion") is False
+
+
+def test_herlas_detail_keeps_only_crete_routes():
+    routes = parse_herlas_detail(_read("herlas_route_detail.html"))
+    for r in routes:
+        assert is_crete_route(r["from_place"], r["to_place"])
 
 
 def test_curated_ektel_is_usable_west_seed():

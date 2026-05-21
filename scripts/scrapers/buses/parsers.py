@@ -50,6 +50,24 @@ def _to_iso(text):
     return f"{y}-{mo}-{d}"
 
 
+# Villes du continent grec listees par KTEL (liaisons longue distance via ferry).
+# crete.direct = data Crete uniquement -> on exclut tout trajet qui les touche.
+MAINLAND_PLACES = {
+    "athens", "athina", "athina (kifisos)", "thessaloniki", "larisa", "larissa",
+    "lamia", "ioannina", "patra", "patras", "volos", "trikala", "katerini",
+    "kavala", "kalamata", "tripoli", "korinthos", "corinth", "xanthi", "drama",
+    "serres", "veria", "kozani", "agrinio", "pyrgos", "alexandroupoli", "kilkis",
+    "ekt​os krhths", "ektos kritis", "mainland",
+}
+
+
+def is_crete_route(from_place: str, to_place: str) -> bool:
+    """True seulement si les deux extremites sont en Crete (ni l'une ni l'autre
+    n'est une ville du continent grec)."""
+    a, b = from_place.strip().lower(), to_place.strip().lower()
+    return a not in MAINLAND_PLACES and b not in MAINLAND_PLACES
+
+
 def _split_route(title):
     """'HERAKLION - RETHYMNO' -> ('Heraklion', 'Rethymno')."""
     parts = re.split(r"\s+[-–→]\s+", title.strip(), maxsplit=1)
@@ -87,6 +105,8 @@ def parse_herlas_detail(html: str) -> list[dict]:
         if not rt:
             continue
         from_place, to_place = rt
+        if not is_crete_route(from_place, to_place):
+            continue  # exclut les liaisons continent (data Crete only)
         days_el = box.find(_has_class_prefix("timetable_daysWrapper")) or box.find(
             _has_class_prefix("timetable_days")
         )
