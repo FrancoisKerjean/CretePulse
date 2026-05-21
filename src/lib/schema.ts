@@ -504,3 +504,60 @@ export function newsSchema(news: NewsItem, locale: Locale): Record<string, unkno
     inLanguage: locale,
   };
 }
+
+export function busesPageSchema(params: {
+  locale: string;
+  pageTitle: string;
+  description: string;
+  routes: Array<{ from: string; to: string }>;
+  dateModified: string | null;
+  faqItems: Array<{ q: string; a: string }>;
+  breadcrumbLabels: { home: string; buses: string };
+}): Record<string, unknown> {
+  const url = `${BASE_URL}/${params.locale}/buses`;
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": url,
+        url,
+        name: params.pageTitle,
+        description: params.description,
+        inLanguage: params.locale,
+        ...(params.dateModified ? { dateModified: params.dateModified } : {}),
+        isPartOf: { "@type": "WebSite", name: "Crete Direct", url: BASE_URL },
+        breadcrumb: { "@id": `${url}#breadcrumb` },
+        mainEntity: { "@id": `${url}#faq` },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${url}#breadcrumb`,
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: params.breadcrumbLabels.home, item: `${BASE_URL}/${params.locale}` },
+          { "@type": "ListItem", position: 2, name: params.breadcrumbLabels.buses, item: url },
+        ],
+      },
+      {
+        "@type": "ItemList",
+        "@id": `${url}#routes`,
+        numberOfItems: params.routes.length,
+        itemListElement: params.routes.map((r, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          name: `${r.from} to ${r.to} by bus`,
+        })),
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${url}#faq`,
+        inLanguage: params.locale,
+        mainEntity: params.faqItems.map((f) => ({
+          "@type": "Question",
+          name: f.q,
+          acceptedAnswer: { "@type": "Answer", text: f.a },
+        })),
+      },
+    ],
+  };
+}
