@@ -86,6 +86,12 @@ const T = {
     en: "No direct bus to", fr: "Pas de bus direct vers",
     de: "Kein Direktbus nach", el: "Χωρίς απευθείας λεωφορείο προς",
   },
+  noDirectSection: {
+    en: "No direct bus – plan ahead",
+    fr: "Sans bus direct – à anticiper",
+    de: "Kein Direktbus – im Voraus planen",
+    el: "Χωρίς απευθείας λεωφορείο – προγραμματίστε",
+  },
   compareModes: {
     en: "Compare car, taxi, ferry", fr: "Comparer voiture, taxi, ferry",
     de: "Auto, Taxi, Fähre vergleichen", el: "Σύγκριση αυτοκινήτου, ταξί, πλοίου",
@@ -151,6 +157,31 @@ function GuideLinks({ route, destination, locale }: { route: BusRoute; destinati
           {t("compareModes", locale)}
         </Link>
       )}
+    </div>
+  );
+}
+
+function NoDirectBusCard({ destination, locale }: { destination: BusDestination; locale: Locale }) {
+  return (
+    <div className="rounded-xl border border-amber-200 bg-amber-50/50 overflow-hidden flex flex-col">
+      <div className="px-5 py-4">
+        <p className="font-bold text-base text-text">{destination.name}</p>
+        <p className="text-xs text-amber-700 mt-1">
+          {t("noDirectBus", locale)} {destination.name}.
+        </p>
+      </div>
+      <div className="px-4 pb-4 pt-2 border-t border-amber-200/60 flex flex-wrap gap-x-3 gap-y-1 text-xs mt-auto">
+        {destination.beaches_near && (
+          <Link href={`/${locale}/beaches`} className="text-aegean hover:underline">
+            {t("beachesNear", locale)} {destination.name}
+          </Link>
+        )}
+        {destination.things_to_do_slug && THINGS_TO_DO_SLUGS.has(destination.things_to_do_slug) && (
+          <Link href={`/${locale}/things-to-do/${destination.things_to_do_slug}`} className="text-aegean hover:underline">
+            {t("whatToDo", locale)} {destination.name}
+          </Link>
+        )}
+      </div>
     </div>
   );
 }
@@ -249,6 +280,7 @@ export function BusesClient({
   const hasSearch = Boolean(fromPlace || toPlace);
   const east = routes.filter((r) => r.operator_id === "herlas");
   const west = routes.filter((r) => r.operator_id === "ektel");
+  const noBusDests = Object.values(destinations).filter((d) => d.has_direct_bus === false);
 
   const dest = (slug: string | null) => (slug ? destinations[slug] : undefined);
 
@@ -345,11 +377,21 @@ export function BusesClient({
               </section>
             )}
             {west.length > 0 && (
-              <section className="mb-2">
+              <section className="mb-10">
                 <h2 className="text-lg font-semibold text-text mb-4">
                   {t("regionWest", locale)} <span className="text-text-muted font-normal">({west.length})</span>
                 </h2>
                 <Grid list={west} />
+              </section>
+            )}
+            {noBusDests.length > 0 && (
+              <section className="mb-2">
+                <h2 className="text-lg font-semibold text-text mb-4">{t("noDirectSection", locale)}</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {noBusDests.map((d) => (
+                    <NoDirectBusCard key={d.slug} destination={d} locale={locale} />
+                  ))}
+                </div>
               </section>
             )}
           </>
