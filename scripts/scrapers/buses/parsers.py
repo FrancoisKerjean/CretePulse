@@ -1,0 +1,141 @@
+"""Parsers KTEL -> schema normalise commun.
+
+Architecture reelle (verifiee sur fixtures 21/05, decision Kami Option 1) :
+  - herlas (Heraklion-Lasithi, EST) : site Next.js.
+      * page index `/en/timetables` -> liens vers pages detail `?ds=fromID,toID`
+      * page detail -> blocs `timetable_box` (titre "FROM - TO", jours, horaires)
+      Selecteurs matches par PREFIXE de classe car les hash CSS-module
+      (`__gq8SF`, `__iH0GL`...) changent a chaque build du site KTEL.
+  - ektel (Chania-Rethymno, OUEST) : site Joomla.
+      * page index = groupes + dates "valid from" pointant vers des PDF.
+      * routes ouest = CURATED_EKTEL (curation terrain) datees via l'index.
+
+Chaque route normalisee : from_place, to_place, duration, price_eur,
+frequency, departures(list|None).
+"""
+import re
+from html import unescape
+from urllib.parse import urljoin
+
+import bs4
+from bs4 import BeautifulSoup
+
+HERLAS_BASE = "https://www.ktelherlas.gr"
+EKTEL_BASE = "https://www.e-ktel.com"
+
+_DATE_RE = re.compile(r"(\d{2})-(\d{2})-(\d{4})")
+_PRICE_RE = re.compile(r"(\d+[.,]\d{1,2})")
+
+
+def _price(text):
+    if not text:
+        return None
+    m = _PRICE_RE.search(text)
+    return float(m.group(1).replace(",", ".")) if m else None
+
+
+def _has_class_prefix(prefix):
+    """Predicat bs4 : element dont une classe commence par `prefix`."""
+    def pred(tag):
+        return tag.has_attr("class") and any(c.startswith(prefix) for c in tag["class"])
+    return pred
+
+
+def _to_iso(text):
+    """'19-05-2026' -> '2026-05-19' (premiere date trouvee), sinon None."""
+    m = _DATE_RE.search(text or "")
+    if not m:
+        return None
+    d, mo, y = m.groups()
+    return f"{y}-{mo}-{d}"
+
+
+def _split_route(title):
+    """'HERAKLION - RETHYMNO' -> ('Heraklion', 'Rethymno')."""
+    parts = re.split(r"\s+[-–→]\s+", title.strip(), maxsplit=1)
+    if len(parts) != 2:
+        return None
+    f, t = parts[0].strip(), parts[1].strip()
+    return (f.title(), t.title()) if f and t else None
+
+
+# --- herlas (EST) -----------------------------------------------------------
+
+def parse_herlas_index(html: str) -> list[str]:
+    """Liste dedupliquee des URLs detail (absolues) trouvees sur l'index."""
+    soup = BeautifulSoup(html, "html.parser")
+    seen, urls = set(), []
+    for a in soup.select("a[href]"):
+        href = unescape(a["href"])
+        if "/timetables/timetable" in href and "ds=" in href:
+            full = urljoin(HERLAS_BASE, href)
+            if full not in seen:
+                seen.add(full)
+                urls.append(full)
+    return urls
+
+
+def parse_herlas_detail(html: str) -> list[dict]:
+    """Parse une page detail herlas -> routes (un bloc `timetable_box` par route)."""
+    soup = BeautifulSoup(html, "html.parser")
+    routes = []
+    for box in soup.find_all(_has_class_prefix("timetable_box")):
+        title_el = box.find(_has_class_prefix("timetable_title"))
+        if not title_el:
+            continue
+        rt = _split_route(title_el.get_text(strip=True))
+        if not rt:
+            continue
+        from_place, to_place = rt
+        days_el = box.find(_has_class_prefix("timetable_daysWrapper")) or box.find(
+            _has_class_prefix("timetable_days")
+        )
+        frequency = days_el.get_text(" ", strip=True).rstrip(":") if days_el else None
+        times = [t.get_text(strip=True) for t in box.find_all(_has_class_prefix("timetable_time"))]
+        times = [t for t in times if ":" in t]
+        routes.append({
+            "from_place": from_place,
+            "to_place": to_place,
+            "duration": None,
+            "price_eur": None,
+            "frequency": frequency,
+            "departures": times or None,
+        })
+    return routes
+
+
+# --- ektel (OUEST) ----------------------------------------------------------
+
+def parse_ektel_index(html: str) -> list[dict]:
+    """Groupes d'horaires ouest + date 'valid from' + lien PDF (curation freshness)."""
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.select_one("table.table-striped")
+    groups = []
+    if not table:
+        return groups
+    for tr in table.select("tr"):
+        text = tr.get_text(" ", strip=True)
+        if not text or "VALID" not in text.upper():
+            continue
+        label = re.split(r"[›>]", text, maxsplit=1)[0].strip()  # avant le '>'
+        pdf = None
+        a = tr.find("a", href=True)
+        if a:
+            pdf = urljoin(EKTEL_BASE, a["href"])
+        groups.append({"label": label, "valid_from": _to_iso(text), "pdf": pdf})
+    return groups
+
+
+# Routes ouest curees (liaisons reelles, verifiables sur l'index/PDF KTEL).
+# valid_from rafraichi a l'execution via parse_ektel_index. Duree/prix laisses
+# a None : non verifies ici (regle no-invention) -> la page renvoie au PDF KTEL
+# date pour le detail. frequency = descripteur qualitatif sur (KTEL dessert ces
+# liaisons quotidiennement).
+CURATED_EKTEL = [
+    {"from_place": "Chania", "to_place": "Rethymno", "duration": None, "price_eur": None, "frequency": "Daily"},
+    {"from_place": "Chania", "to_place": "Heraklion", "duration": None, "price_eur": None, "frequency": "Daily"},
+    {"from_place": "Rethymno", "to_place": "Heraklion", "duration": None, "price_eur": None, "frequency": "Daily"},
+    {"from_place": "Chania", "to_place": "Chania Airport", "duration": None, "price_eur": None, "frequency": "Daily"},
+    {"from_place": "Chania", "to_place": "Elafonissi", "duration": None, "price_eur": None, "frequency": "Daily (summer)"},
+    {"from_place": "Chania", "to_place": "Kissamos", "duration": None, "price_eur": None, "frequency": "Daily"},
+]
