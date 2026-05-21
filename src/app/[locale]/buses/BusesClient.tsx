@@ -2,119 +2,32 @@
 
 import { useState } from "react";
 import { Bus, Clock, Euro, ArrowRight, ExternalLink, Info } from "lucide-react";
+import Link from "next/link";
 import type { Locale } from "@/lib/types";
+import type { BusRoute, BusDestination } from "@/lib/buses";
 import { useParams } from "next/navigation";
 
 // ---------------------------------------------------------------------------
-// Static data
+// Slugs valides des pages cibles (mirror des generateStaticParams cote serveur).
+// On ne rend un lien sas QUE si la cible existe -> jamais de 404.
 // ---------------------------------------------------------------------------
+const THINGS_TO_DO_SLUGS = new Set([
+  "heraklion", "chania", "rethymno", "agios-nikolaos", "sitia",
+  "ierapetra", "malia", "hersonissos", "elounda", "makrigialos",
+]);
+const WHERE_TO_STAY_SLUGS = new Set([
+  "chania", "heraklion", "rethymno", "agios-nikolaos",
+  "elounda", "plakias", "paleochora", "matala",
+]);
+const GETTING_AROUND_SLUGS = new Set([
+  "heraklion-to-chania", "heraklion-to-rethymno",
+  "heraklion-to-agios-nikolaos", "heraklion-to-sitia",
+]);
 
-interface BusRoute {
-  id: string;
-  from: string;
-  to: string;
-  duration: string;
-  frequency: string;
-  price: number | null;
-  schedule?: string;
-  notes?: Record<Locale, string>;
+function slugifyRoute(from: string, to: string): string {
+  const s = (x: string) => x.toLowerCase().trim().replace(/\s+/g, "-");
+  return `${s(from)}-to-${s(to)}`;
 }
-
-const ROUTES: BusRoute[] = [
-  {
-    id: "hea-cha",
-    from: "Heraklion",
-    to: "Chania",
-    duration: "2h30",
-    frequency: "Every hour",
-    price: 15.10,
-    schedule: "05:30 – 21:00",
-  },
-  {
-    id: "hea-ret",
-    from: "Heraklion",
-    to: "Rethymno",
-    duration: "1h30",
-    frequency: "Every hour",
-    price: 8.50,
-  },
-  {
-    id: "hea-ano",
-    from: "Heraklion",
-    to: "Agios Nikolaos",
-    duration: "1h30",
-    frequency: "Every hour",
-    price: 8.30,
-    schedule: "06:30 – 21:00",
-  },
-  {
-    id: "hea-ier",
-    from: "Heraklion",
-    to: "Ierapetra",
-    duration: "2h30",
-    frequency: "5–6 daily",
-    price: 12.80,
-  },
-  {
-    id: "hea-sit",
-    from: "Heraklion",
-    to: "Sitia",
-    duration: "3h30",
-    frequency: "4–5 daily",
-    price: 16.30,
-  },
-  {
-    id: "hea-mal",
-    from: "Heraklion",
-    to: "Malia",
-    duration: "45 min",
-    frequency: "Frequent",
-    price: null,
-  },
-  {
-    id: "hea-her",
-    from: "Heraklion",
-    to: "Hersonissos",
-    duration: "30 min",
-    frequency: "Frequent",
-    price: null,
-  },
-  {
-    id: "cha-ret",
-    from: "Chania",
-    to: "Rethymno",
-    duration: "1h",
-    frequency: "Frequent",
-    price: 6.80,
-  },
-  {
-    id: "ano-ier",
-    from: "Agios Nikolaos",
-    to: "Ierapetra",
-    duration: "1h",
-    frequency: "5–6 daily",
-    price: null,
-  },
-  {
-    id: "ano-sit",
-    from: "Agios Nikolaos",
-    to: "Sitia",
-    duration: "1h30",
-    frequency: "4–5 daily",
-    price: null,
-  },
-];
-
-const CITIES = [
-  "Heraklion",
-  "Chania",
-  "Rethymno",
-  "Agios Nikolaos",
-  "Ierapetra",
-  "Sitia",
-  "Malia",
-  "Hersonissos",
-];
 
 // ---------------------------------------------------------------------------
 // Translations
@@ -128,34 +41,21 @@ const T = {
     el: "Δρομολόγια ΚΤΕΛ – Κρήτη",
   },
   subtitle: {
-    en: "Public bus schedules across the island. Prices and times for the main routes.",
-    fr: "Horaires des bus publics à travers l'île. Prix et horaires pour les principales lignes.",
-    de: "Öffentliche Busfahrpläne auf der Insel. Preise und Zeiten für die Hauptstrecken.",
-    el: "Δρομολόγια δημόσιων λεωφορείων σε όλο το νησί. Τιμές και ώρες για τις κύριες γραμμές.",
+    en: "Every KTEL bus route across Crete – towns, beaches, villages and sites – kept up to date from the operators.",
+    fr: "Toutes les lignes de bus KTEL de Crète – villes, plages, villages et sites – tenues à jour depuis les opérateurs.",
+    de: "Alle KTEL-Buslinien auf Kreta – Städte, Strände, Dörfer und Sehenswürdigkeiten – aktuell von den Betreibern.",
+    el: "Όλες οι γραμμές ΚΤΕΛ της Κρήτης – πόλεις, παραλίες, χωριά και αξιοθέατα – ενημερωμένες από τους φορείς.",
+  },
+  updatedOn: {
+    en: "Updated on", fr: "Mis à jour le", de: "Aktualisiert am", el: "Ενημερώθηκε στις",
   },
   searchTitle: {
-    en: "Find a route",
-    fr: "Trouver un trajet",
-    de: "Verbindung suchen",
-    el: "Εύρεση διαδρομής",
+    en: "Find a route", fr: "Trouver un trajet", de: "Verbindung suchen", el: "Εύρεση διαδρομής",
   },
-  from: {
-    en: "From",
-    fr: "Départ",
-    de: "Von",
-    el: "Από",
-  },
-  to: {
-    en: "To",
-    fr: "Arrivée",
-    de: "Nach",
-    el: "Προς",
-  },
-  allCities: {
-    en: "All cities",
-    fr: "Toutes les villes",
-    de: "Alle Städte",
-    el: "Όλες οι πόλεις",
+  from: { en: "From", fr: "Départ", de: "Von", el: "Από" },
+  to: { en: "To", fr: "Arrivée", de: "Nach", el: "Προς" },
+  allPlaces: {
+    en: "All places", fr: "Tous les lieux", de: "Alle Orte", el: "Όλα τα μέρη",
   },
   noRoute: {
     en: "No direct route found. Try reversing origin and destination.",
@@ -163,58 +63,44 @@ const T = {
     de: "Keine direkte Verbindung gefunden. Tausche Start und Ziel.",
     el: "Δεν βρέθηκε άμεση διαδρομή. Δοκιμάστε να αντιστρέψετε αφετηρία και προορισμό.",
   },
-  allRoutes: {
-    en: "All routes",
-    fr: "Toutes les lignes",
-    de: "Alle Linien",
-    el: "Όλες οι γραμμές",
+  regionEast: {
+    en: "East Crete (KTEL Heraklion-Lasithi)",
+    fr: "Crète orientale (KTEL Héraklion-Lassithi)",
+    de: "Ostkreta (KTEL Heraklion-Lasithi)",
+    el: "Ανατολική Κρήτη (ΚΤΕΛ Ηρακλείου-Λασιθίου)",
   },
-  duration: {
-    en: "Duration",
-    fr: "Durée",
-    de: "Dauer",
-    el: "Διάρκεια",
+  regionWest: {
+    en: "West Crete (KTEL Chania-Rethymno)",
+    fr: "Crète occidentale (KTEL La Canée-Rethymnon)",
+    de: "Westkreta (KTEL Chania-Rethymno)",
+    el: "Δυτική Κρήτη (ΚΤΕΛ Χανίων-Ρεθύμνου)",
   },
-  frequency: {
-    en: "Frequency",
-    fr: "Fréquence",
-    de: "Häufigkeit",
-    el: "Συχνότητα",
+  frequency: { en: "Frequency", fr: "Fréquence", de: "Häufigkeit", el: "Συχνότητα" },
+  price: { en: "Price", fr: "Prix", de: "Preis", el: "Τιμή" },
+  departures: { en: "Departures", fr: "Départs", de: "Abfahrten", el: "Αναχωρήσεις" },
+  perDay: { en: "/ day", fr: "/ jour", de: "/ Tag", el: "/ ημέρα" },
+  whatToDo: { en: "What to do in", fr: "Que faire à", de: "Aktivitäten in", el: "Τι να κάνετε στο" },
+  whereToStay: { en: "Where to stay", fr: "Où dormir", de: "Unterkünfte", el: "Πού να μείνετε" },
+  beachesNear: { en: "Beaches near", fr: "Plages près de", de: "Strände bei", el: "Παραλίες κοντά στο" },
+  noDirectBus: {
+    en: "No direct bus to", fr: "Pas de bus direct vers",
+    de: "Kein Direktbus nach", el: "Χωρίς απευθείας λεωφορείο προς",
   },
-  price: {
-    en: "Price",
-    fr: "Prix",
-    de: "Preis",
-    el: "Τιμή",
-  },
-  schedule: {
-    en: "Schedule",
-    fr: "Horaires",
-    de: "Fahrplan",
-    el: "Πρόγραμμα",
+  compareModes: {
+    en: "Compare car, taxi, ferry", fr: "Comparer voiture, taxi, ferry",
+    de: "Auto, Taxi, Fähre vergleichen", el: "Σύγκριση αυτοκινήτου, ταξί, πλοίου",
   },
   disclaimer: {
-    en: "Schedules are approximate. Check e-ktel.com for current times. Summer schedules (May–Oct) have more frequent service.",
-    fr: "Les horaires sont approximatifs. Consultez e-ktel.com pour les horaires en vigueur. Les horaires d'été (mai–oct) sont plus fréquents.",
-    de: "Fahrzeiten sind Näherungswerte. Aktuelle Zeiten auf e-ktel.com prüfen. Sommerfahrplan (Mai–Okt) bietet häufigere Verbindungen.",
-    el: "Τα δρομολόγια είναι κατά προσέγγιση. Ελέγξτε το e-ktel.com για τρέχοντες χρόνους. Το καλοκαιρινό πρόγραμμα (Μάι–Οκτ) έχει συχνότερα δρομολόγια.",
+    en: "Times follow the operators' seasonal timetables and may change. Always confirm on the official KTEL sites before travelling – summer (May–Oct) runs more frequently.",
+    fr: "Les horaires suivent les calendriers saisonniers des opérateurs et peuvent changer. Vérifiez toujours sur les sites officiels KTEL avant de partir – l'été (mai–oct) est plus fréquent.",
+    de: "Die Zeiten folgen den saisonalen Fahrplänen der Betreiber und können sich ändern. Bestätigen Sie sie immer auf den offiziellen KTEL-Seiten – im Sommer (Mai–Okt) häufiger.",
+    el: "Οι ώρες ακολουθούν τα εποχικά δρομολόγια των φορέων και μπορεί να αλλάξουν. Επιβεβαιώνετε πάντα στις επίσημες σελίδες ΚΤΕΛ – το καλοκαίρι (Μάι–Οκτ) πιο συχνά.",
   },
-  officialSite: {
-    en: "Official KTEL website",
-    fr: "Site officiel KTEL",
-    de: "Offizielle KTEL-Website",
-    el: "Επίσημη ιστοσελίδα ΚΤΕΛ",
-  },
-  priceNA: {
-    en: "Check site",
-    fr: "Voir site",
-    de: "Seite prüfen",
-    el: "Ελέγξτε",
-  },
+  officialEast: { en: "KTEL East (Heraklion-Lasithi)", fr: "KTEL Est (Héraklion-Lassithi)", de: "KTEL Ost", el: "ΚΤΕΛ Ανατολικής" },
+  officialWest: { en: "KTEL West (Chania-Rethymno)", fr: "KTEL Ouest (La Canée-Rethymnon)", de: "KTEL West", el: "ΚΤΕΛ Δυτικής" },
 } as const satisfies Record<string, Record<Locale, string>>;
 
 function t(key: keyof typeof T, locale: Locale): string {
-  // Fallback to en on extended locales to avoid `undefined.x` crashes.
   return T[key][locale] ?? T[key].en;
 }
 
@@ -222,57 +108,104 @@ function t(key: keyof typeof T, locale: Locale): string {
 // Sub-components
 // ---------------------------------------------------------------------------
 
-function RouteCard({ route, locale }: { route: BusRoute; locale: Locale }) {
+function GuideLinks({ route, destination, locale }: { route: BusRoute; destination?: BusDestination; locale: Locale }) {
+  const routeSlug = slugifyRoute(route.from_place, route.to_place);
+  const showCompare = GETTING_AROUND_SLUGS.has(routeSlug);
+  const ttd = destination?.things_to_do_slug && THINGS_TO_DO_SLUGS.has(destination.things_to_do_slug)
+    ? destination.things_to_do_slug : null;
+  const wts = destination?.where_to_stay_slug && WHERE_TO_STAY_SLUGS.has(destination.where_to_stay_slug)
+    ? destination.where_to_stay_slug : null;
+  const beaches = destination?.beaches_near;
+
+  if (!destination && !showCompare) return null;
+
   return (
-    <div className="rounded-xl border border-border bg-white overflow-hidden hover:shadow-md transition-shadow">
-      {/* Card header */}
+    <div className="px-4 pb-4 pt-3 border-t border-border space-y-2">
+      {destination && destination.has_direct_bus === false && (
+        <p className="text-xs text-amber-700">
+          {t("noDirectBus", locale)} {destination.name}.
+        </p>
+      )}
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
+        {ttd && (
+          <Link href={`/${locale}/things-to-do/${ttd}`} className="text-aegean hover:underline">
+            {t("whatToDo", locale)} {destination!.name}
+          </Link>
+        )}
+        {wts && (
+          <Link href={`/${locale}/where-to-stay/${wts}`} className="text-aegean hover:underline">
+            {t("whereToStay", locale)}
+          </Link>
+        )}
+        {beaches && (
+          <Link href={`/${locale}/beaches`} className="text-aegean hover:underline">
+            {t("beachesNear", locale)} {destination!.name}
+          </Link>
+        )}
+      </div>
+      {showCompare && (
+        <Link
+          href={`/${locale}/getting-around/${routeSlug}`}
+          className="inline-block text-xs text-text-muted hover:text-text underline"
+        >
+          {t("compareModes", locale)}
+        </Link>
+      )}
+    </div>
+  );
+}
+
+function RouteCard({ route, destination, locale }: { route: BusRoute; destination?: BusDestination; locale: Locale }) {
+  const deps = route.departures ?? [];
+  const range = deps.length > 0 ? `${deps[0]} – ${deps[deps.length - 1]}` : null;
+
+  return (
+    <div className="rounded-xl border border-border bg-white overflow-hidden hover:shadow-md transition-shadow flex flex-col">
       <div className="bg-aegean px-5 py-4 text-white">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-bold text-lg">{route.from}</span>
+          <span className="font-bold text-base">{route.from_place}</span>
           <ArrowRight className="w-4 h-4 text-white/70 shrink-0" />
-          <span className="font-bold text-lg">{route.to}</span>
+          <span className="font-bold text-base">{route.to_place}</span>
         </div>
       </div>
 
-      {/* Stats */}
       <div className="p-4 grid grid-cols-2 gap-4">
-        <div className="flex items-start gap-2">
-          <Clock className="w-4 h-4 text-aegean shrink-0 mt-0.5" />
-          <div>
-            <p className="text-xs text-text-muted">{t("duration", locale)}</p>
-            <p className="text-sm font-semibold text-text">{route.duration}</p>
-          </div>
-        </div>
-
-        <div className="flex items-start gap-2">
-          <Bus className="w-4 h-4 text-aegean shrink-0 mt-0.5" />
-          <div>
-            <p className="text-xs text-text-muted">{t("frequency", locale)}</p>
-            <p className="text-sm font-semibold text-text">{route.frequency}</p>
-          </div>
-        </div>
-
-        <div className="flex items-start gap-2">
-          <Euro className="w-4 h-4 text-aegean shrink-0 mt-0.5" />
-          <div>
-            <p className="text-xs text-text-muted">{t("price", locale)}</p>
-            <p className="text-sm font-semibold text-text">
-              {route.price != null
-                ? `${route.price.toFixed(2)} €`
-                : t("priceNA", locale)}
-            </p>
-          </div>
-        </div>
-
-        {route.schedule && (
+        {route.frequency && (
           <div className="flex items-start gap-2">
-            <Clock className="w-4 h-4 text-sand shrink-0 mt-0.5" />
+            <Bus className="w-4 h-4 text-aegean shrink-0 mt-0.5" />
             <div>
-              <p className="text-xs text-text-muted">{t("schedule", locale)}</p>
-              <p className="text-sm font-semibold text-text">{route.schedule}</p>
+              <p className="text-xs text-text-muted">{t("frequency", locale)}</p>
+              <p className="text-sm font-semibold text-text">{route.frequency}</p>
             </div>
           </div>
         )}
+
+        {range && (
+          <div className="flex items-start gap-2">
+            <Clock className="w-4 h-4 text-aegean shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs text-text-muted">{t("departures", locale)}</p>
+              <p className="text-sm font-semibold text-text">{range}</p>
+              {deps.length > 1 && (
+                <p className="text-xs text-text-muted">{deps.length} {t("perDay", locale)}</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {route.price_eur != null && (
+          <div className="flex items-start gap-2">
+            <Euro className="w-4 h-4 text-aegean shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs text-text-muted">{t("price", locale)}</p>
+              <p className="text-sm font-semibold text-text">{route.price_eur.toFixed(2)} €</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-auto">
+        <GuideLinks route={route} destination={destination} locale={locale} />
       </div>
     </div>
   );
@@ -282,27 +215,52 @@ function RouteCard({ route, locale }: { route: BusRoute; locale: Locale }) {
 // Main page (client component — needed for search state)
 // ---------------------------------------------------------------------------
 
-export function BusesClient() {
+export function BusesClient({
+  routes,
+  destinations,
+  updatedAt,
+}: {
+  routes: BusRoute[];
+  destinations: Record<string, BusDestination>;
+  updatedAt: string | null;
+}) {
   const params = useParams();
   const locale = (params?.locale as Locale) ?? "en";
 
-  const [fromCity, setFromCity] = useState("");
-  const [toCity, setToCity] = useState("");
+  const [fromPlace, setFromPlace] = useState("");
+  const [toPlace, setToPlace] = useState("");
 
-  const filtered = ROUTES.filter((r) => {
-    const matchFrom = !fromCity || r.from === fromCity || r.to === fromCity;
-    const matchTo = !toCity || r.to === toCity || r.from === toCity;
-    // If both are set, require exact match (either direction)
-    if (fromCity && toCity) {
+  const places = Array.from(
+    new Set(routes.flatMap((r) => [r.from_place, r.to_place])),
+  ).sort();
+
+  const filtered = routes.filter((r) => {
+    if (fromPlace && toPlace) {
       return (
-        (r.from === fromCity && r.to === toCity) ||
-        (r.from === toCity && r.to === fromCity)
+        (r.from_place === fromPlace && r.to_place === toPlace) ||
+        (r.from_place === toPlace && r.to_place === fromPlace)
       );
     }
+    const matchFrom = !fromPlace || r.from_place === fromPlace || r.to_place === fromPlace;
+    const matchTo = !toPlace || r.to_place === toPlace || r.from_place === toPlace;
     return matchFrom && matchTo;
   });
 
-  const hasSearch = fromCity || toCity;
+  const hasSearch = Boolean(fromPlace || toPlace);
+  const east = routes.filter((r) => r.operator_id === "herlas");
+  const west = routes.filter((r) => r.operator_id === "ektel");
+
+  const dest = (slug: string | null) => (slug ? destinations[slug] : undefined);
+
+  function Grid({ list }: { list: BusRoute[] }) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {list.map((route) => (
+          <RouteCard key={route.id} route={route} destination={dest(route.to_slug)} locale={locale} />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-surface">
@@ -315,6 +273,11 @@ export function BusesClient() {
           <div>
             <h1 className="text-3xl font-bold text-aegean">{t("title", locale)}</h1>
             <p className="text-text-muted mt-1">{t("subtitle", locale)}</p>
+            {updatedAt && (
+              <p className="text-xs text-text-muted mt-1">
+                {t("updatedOn", locale)} {new Date(updatedAt).toLocaleDateString(locale)}
+              </p>
+            )}
           </div>
         </div>
 
@@ -323,12 +286,12 @@ export function BusesClient() {
           <p className="text-sm font-semibold text-text mb-3">{t("searchTitle", locale)}</p>
           <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
             <select
-              value={fromCity}
-              onChange={(e) => setFromCity(e.target.value)}
+              value={fromPlace}
+              onChange={(e) => setFromPlace(e.target.value)}
               className="flex-1 border border-border rounded-lg px-3 py-2 text-sm text-text bg-white focus:outline-none focus:ring-2 focus:ring-aegean/30"
             >
-              <option value="">{t("from", locale)} – {t("allCities", locale)}</option>
-              {CITIES.map((c) => (
+              <option value="">{t("from", locale)} – {t("allPlaces", locale)}</option>
+              {places.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
@@ -336,19 +299,19 @@ export function BusesClient() {
             <ArrowRight className="w-5 h-5 text-text-muted shrink-0 hidden sm:block" />
 
             <select
-              value={toCity}
-              onChange={(e) => setToCity(e.target.value)}
+              value={toPlace}
+              onChange={(e) => setToPlace(e.target.value)}
               className="flex-1 border border-border rounded-lg px-3 py-2 text-sm text-text bg-white focus:outline-none focus:ring-2 focus:ring-aegean/30"
             >
-              <option value="">{t("to", locale)} – {t("allCities", locale)}</option>
-              {CITIES.map((c) => (
+              <option value="">{t("to", locale)} – {t("allPlaces", locale)}</option>
+              {places.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
 
             {hasSearch && (
               <button
-                onClick={() => { setFromCity(""); setToCity(""); }}
+                onClick={() => { setFromPlace(""); setToPlace(""); }}
                 className="text-xs text-text-muted hover:text-text underline shrink-0 px-1"
               >
                 ✕ Reset
@@ -357,24 +320,40 @@ export function BusesClient() {
           </div>
         </div>
 
-        {/* Results / all routes */}
-        <div className="mb-2">
-          <h2 className="text-lg font-semibold text-text mb-4">
-            {hasSearch ? `${filtered.length} route${filtered.length !== 1 ? "s" : ""}` : t("allRoutes", locale)}
-          </h2>
-
-          {hasSearch && filtered.length === 0 ? (
-            <div className="rounded-xl border border-border bg-white p-6 text-center text-text-muted text-sm">
-              {t("noRoute", locale)}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {(hasSearch ? filtered : ROUTES).map((route) => (
-                <RouteCard key={route.id} route={route} locale={locale} />
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Results (search) or grouped directory */}
+        {hasSearch ? (
+          <div className="mb-2">
+            <h2 className="text-lg font-semibold text-text mb-4">
+              {filtered.length} route{filtered.length !== 1 ? "s" : ""}
+            </h2>
+            {filtered.length === 0 ? (
+              <div className="rounded-xl border border-border bg-white p-6 text-center text-text-muted text-sm">
+                {t("noRoute", locale)}
+              </div>
+            ) : (
+              <Grid list={filtered} />
+            )}
+          </div>
+        ) : (
+          <>
+            {east.length > 0 && (
+              <section className="mb-10">
+                <h2 className="text-lg font-semibold text-text mb-4">
+                  {t("regionEast", locale)} <span className="text-text-muted font-normal">({east.length})</span>
+                </h2>
+                <Grid list={east} />
+              </section>
+            )}
+            {west.length > 0 && (
+              <section className="mb-2">
+                <h2 className="text-lg font-semibold text-text mb-4">
+                  {t("regionWest", locale)} <span className="text-text-muted font-normal">({west.length})</span>
+                </h2>
+                <Grid list={west} />
+              </section>
+            )}
+          </>
+        )}
 
         {/* Disclaimer */}
         <div className="mt-10 rounded-xl border border-amber-200 bg-amber-50 p-4 flex gap-3">
@@ -382,16 +361,25 @@ export function BusesClient() {
           <p className="text-sm text-amber-800">{t("disclaimer", locale)}</p>
         </div>
 
-        {/* Official link */}
-        <div className="mt-6 text-center">
+        {/* Official links */}
+        <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center text-center">
           <a
-            href="https://e-ktel.com"
+            href="https://www.ktelherlas.gr/en/timetables"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sm text-aegean font-medium hover:underline"
+            className="inline-flex items-center justify-center gap-2 text-sm text-aegean font-medium hover:underline"
           >
             <ExternalLink className="w-4 h-4" />
-            {t("officialSite", locale)}
+            {t("officialEast", locale)}
+          </a>
+          <a
+            href="https://www.e-ktel.com/en/services/dromologia"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 text-sm text-aegean font-medium hover:underline"
+          >
+            <ExternalLink className="w-4 h-4" />
+            {t("officialWest", locale)}
           </a>
         </div>
       </div>
