@@ -25,6 +25,7 @@ EKTEL_BASE = "https://www.e-ktel.com"
 
 _DATE_RE = re.compile(r"(\d{2})-(\d{2})-(\d{4})")
 _PRICE_RE = re.compile(r"(\d+[.,]\d{1,2})")
+_TIME_RE = re.compile(r"^\d{1,2}:\d{2}$")  # un seul horaire HH:MM exact
 
 
 def _price(text):
@@ -111,8 +112,11 @@ def parse_herlas_detail(html: str) -> list[dict]:
             _has_class_prefix("timetable_days")
         )
         frequency = days_el.get_text(" ", strip=True).rstrip(":") if days_el else None
-        times = [t.get_text(strip=True) for t in box.find_all(_has_class_prefix("timetable_time"))]
-        times = [t for t in times if ":" in t]
+        # ATTENTION : `timetable_time__<hash>` = un horaire ; `timetable_times__<hash>`
+        # = le conteneur (texte = tous les horaires colles). On prend le prefixe avec
+        # double underscore + on filtre sur HH:MM exact pour exclure le conteneur.
+        times = [t.get_text(strip=True) for t in box.find_all(_has_class_prefix("timetable_time__"))]
+        times = [t for t in times if _TIME_RE.match(t)]
         routes.append({
             "from_place": from_place,
             "to_place": to_place,

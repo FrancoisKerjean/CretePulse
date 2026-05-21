@@ -4,6 +4,7 @@ Architecture reelle (cf. spec + decision Kami 21/05) :
   - ektel (ouest) = Joomla : index = groupes + dates 'valid from' (curation pour les routes).
 """
 import os
+import re
 
 from parsers import (
     parse_herlas_index,
@@ -47,7 +48,8 @@ def test_parse_herlas_detail_returns_normalized_routes():
     # departures = liste d'heures HH:MM si presentes
     withtimes = [r for r in routes if r["departures"]]
     assert withtimes, "au moins une route avec des horaires"
-    assert all(":" in t for t in withtimes[0]["departures"])
+    # chaque depart = un seul horaire HH:MM exact (pas de conteneur colle '09:4515:15')
+    assert all(re.match(r"^\d{1,2}:\d{2}$", t) for t in withtimes[0]["departures"])
     assert withtimes[0]["price_eur"] is None or isinstance(withtimes[0]["price_eur"], (int, float))
 
 
