@@ -86,6 +86,10 @@ Categories: {CATEGORIES}
 
 Rules:
 - Slugs must be URL-friendly (lowercase, hyphens, English)
+- NEVER put a specific year (2024, 2025, 2026...) in a slug. Slugs are permanent
+  URLs and a baked-in year makes them look stale forever; the writer adds the
+  current year to the title at publication time. Keywords may use the current
+  year but never a past one.
 - Keywords should target real search queries tourists type
 - Mix: ~30 evergreen + ~20 seasonal
 - Format: "long" for comprehensive guides, "mid" for focused topics
