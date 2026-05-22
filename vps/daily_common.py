@@ -10,6 +10,7 @@ transforms live here and are unit-tested; I/O wrappers are thin.
 import json
 import os
 import re
+import shutil
 import subprocess
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
@@ -58,9 +59,12 @@ def _call_claude(prompt, model="sonnet", timeout=600):
     # Prompt is passed via stdin (not argv) to avoid arg-length limits, and without a
     # shell so it works on both the Linux VPS and a local Windows dry-run (the old
     # `cat file | claude` pattern needs a Unix shell). `claude -p` reads stdin when no
-    # prompt argument is given.
+    # prompt argument is given. shutil.which resolves the platform executable (the npm
+    # `claude.CMD` shim on Windows, the binary on Linux) so subprocess finds it without
+    # a shell; WinError 2 otherwise, since subprocess can't resolve a .CMD bare name.
+    exe = shutil.which("claude") or "claude"
     r = subprocess.run(
-        ["claude", "-p", "--model", model, "--output-format", "json"],
+        [exe, "-p", "--model", model, "--output-format", "json"],
         input=prompt, capture_output=True, text=True, encoding="utf-8", timeout=timeout,
     )
     if r.returncode != 0:
