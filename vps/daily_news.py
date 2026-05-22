@@ -32,7 +32,7 @@ def select_news(rows):
 
 def build_prompt(items, date_label):
     listed = "\n".join(
-        f'- slug="{r["slug"]}" | {r["title_en"]} | {r["summary_en"][:200]}'
+        f'- slug="{r["slug"]}" | {r["title_en"][:120]} | {r["summary_en"][:200]}'
         for r in items
     )
     return f"""You are the news editor of crete.direct. From the Crete news collected today
@@ -76,9 +76,10 @@ def main():
     items = select_news(resp.data or [])
 
     if len(items) < MIN_NEWS:
-        msg = f"daily_news: only {len(items)} usable news today (< {MIN_NEWS}), no recap published."
-        print(f"[news] {msg}")
-        dc.alert(msg)
+        # A quiet news day is a normal condition, not a failure: log it and stop.
+        # Bot.PLUME (dc.alert) is reserved for genuine generation/publish failures
+        # so routine slow days do not create alert fatigue.
+        print(f"[news] daily_news: only {len(items)} usable news today (< {MIN_NEWS}), no recap published.")
         return
 
     try:

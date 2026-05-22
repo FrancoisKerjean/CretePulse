@@ -22,3 +22,13 @@ def test_select_news_drops_untranslated_rows():
     ]
     kept = dn.select_news(rows)
     assert [r["slug"] for r in kept] == ["a", "d"]
+
+
+def test_select_news_handles_none_missing_and_whitespace():
+    rows = [
+        {"slug": "ok", "title_en": "T", "summary_en": "S"},
+        {"slug": "none_title", "title_en": None, "summary_en": "S"},
+        {"slug": "missing_summary", "title_en": "T"},          # summary_en key absent
+        {"slug": "ws_title", "title_en": "   ", "summary_en": "S"},
+    ]
+    assert [r["slug"] for r in dn.select_news(rows)] == ["ok"]
