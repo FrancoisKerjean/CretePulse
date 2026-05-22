@@ -32,8 +32,12 @@ CITIES = [
 WMO = {
     0: "clear sky", 1: "mainly clear", 2: "partly cloudy", 3: "overcast",
     45: "fog", 48: "rime fog", 51: "light drizzle", 53: "drizzle", 55: "dense drizzle",
-    61: "light rain", 63: "rain", 65: "heavy rain", 71: "light snow", 73: "snow",
-    75: "heavy snow", 80: "rain showers", 81: "rain showers", 82: "violent showers",
+    56: "light freezing drizzle", 57: "dense freezing drizzle",
+    61: "light rain", 63: "rain", 65: "heavy rain",
+    66: "light freezing rain", 67: "heavy freezing rain",
+    71: "light snow", 73: "snow", 75: "heavy snow", 77: "snow grains",
+    80: "light rain showers", 81: "moderate rain showers", 82: "violent rain showers",
+    85: "light snow showers", 86: "heavy snow showers",
     95: "thunderstorm", 96: "thunderstorm with hail", 99: "thunderstorm with hail",
 }
 
@@ -118,18 +122,21 @@ def main():
         print(f"[weather] FATAL fetch: {e}")
         sys.exit(1)
 
-    block = build_weather_block(forecast, marine, CITIES)
-    data = dc.claude_json(build_prompt(block, date_label), model="sonnet", label="weather")
-
-    row = dc.build_guide_row(
-        slug=slug, category="daily-weather",
-        title_en=data["title"], meta_en=data["meta_desc"],
-        content_html_en=data["content"], faq_en=data.get("faq", []),
-        read_time=int(data.get("read_time", 3)),
-    )
-
-    sb = None if args.dry_run else dc.get_supabase()
-    dc.publish(sb, row, dry_run=args.dry_run)
+    try:
+        block = build_weather_block(forecast, marine, CITIES)
+        data = dc.claude_json(build_prompt(block, date_label), model="sonnet", label="weather")
+        row = dc.build_guide_row(
+            slug=slug, category="daily-weather",
+            title_en=data["title"], meta_en=data["meta_desc"],
+            content_html_en=data["content"], faq_en=data.get("faq", []),
+            read_time=int(data.get("read_time", 3)),
+        )
+        sb = None if args.dry_run else dc.get_supabase()
+        dc.publish(sb, row, dry_run=args.dry_run)
+    except Exception as e:
+        dc.alert(f"daily_weather: generation/publish failed: {e}")
+        print(f"[weather] FATAL generate/publish: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

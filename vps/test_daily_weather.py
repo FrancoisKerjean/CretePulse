@@ -21,7 +21,7 @@ def test_build_weather_block_maps_fields():
     assert block[0]["tmax"] == 27.0
     assert block[0]["sky"] == "mainly clear"
     assert block[0]["sea_temp"] == 22.5
-    assert block[1]["sky"] == "rain showers"
+    assert block[1]["sky"] == "light rain showers"
     assert block[1]["wave_max"] == 1.4
 
 
@@ -36,3 +36,17 @@ def test_build_weather_block_tolerates_missing_marine():
     assert block[0]["sea_temp"] is None
     assert block[0]["wave_max"] is None
     assert block[0]["sky"] == "clear sky"
+
+
+def test_build_weather_block_unknown_code_and_dict_input():
+    # forecast/marine passed as single dicts (not lists); unknown WMO code -> fallback
+    cities = [{"name": "Elounda"}]
+    forecast = {"daily": {"temperature_2m_max": [26.0], "temperature_2m_min": [18.0],
+                          "precipitation_sum": [0.0], "wind_speed_10m_max": [12.0],
+                          "uv_index_max": [6.0], "weather_code": [999]}}
+    marine = {"current": {"sea_surface_temperature": 21.0}, "daily": {"wave_height_max": [0.3]}}
+    block = dw.build_weather_block(forecast, marine, cities)
+    assert len(block) == 1
+    assert block[0]["sky"] == "mixed conditions"
+    assert block[0]["sea_temp"] == 21.0
+    assert block[0]["wave_max"] == 0.3
