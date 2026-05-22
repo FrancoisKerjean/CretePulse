@@ -121,14 +121,16 @@ function JsonLdSchemas({
 }) {
   const articleSchema = {
     "@context": "https://schema.org",
-    "@type": "NewsArticle",
+    // News-format entries are timely; long/mid guides are evergreen -> Article.
+    "@type": (guide.format as string) === "news" ? "NewsArticle" : "Article",
     headline: title,
     description,
     image: guide.image_url
       ? { "@type": "ImageObject", url: guide.image_url, width: 1200, height: 630 }
       : undefined,
     datePublished: guide.published_at,
-    dateModified: guide.published_at,
+    dateModified:
+      (guide as { updated_at?: string }).updated_at || guide.published_at,
     articleSection: guide.category,
     author: {
       "@type": "Organization",
