@@ -230,6 +230,10 @@ def get_existing_urls(supabase, source_name: str) -> set:
         return set()
 
 
+# Slugs inserted during this run, collected for a single IndexNow ping at the end.
+_INSERTED_SLUGS: list[str] = []
+
+
 def process_feed(supabase, feed_config: dict) -> tuple[int, int]:
     source = feed_config["source"]
     source_name = feed_config.get("source_name", source)
@@ -341,6 +345,7 @@ def process_feed(supabase, feed_config: dict) -> tuple[int, int]:
         try:
             supabase.table("news").insert(row).execute()
             inserted += 1
+            _INSERTED_SLUGS.append(slug)
             print(f"[news] + {title_raw[:60]}...")
         except Exception as e:
             err_str = str(e)
@@ -375,6 +380,15 @@ def main():
 
     elapsed = (datetime.now(timezone.utc) - started_at).total_seconds()
     print(f"[news] done - +{total_inserted}, skip {total_skipped}, err {feed_errors}, {elapsed:.1f}s")
+
+    # Notify search engines of the freshly published news (one batched ping).
+    if _INSERTED_SLUGS:
+        try:
+            import indexnow
+            urls = [u for slug in _INSERTED_SLUGS for u in indexnow.news_urls(slug)]
+            indexnow.submit(urls)
+        except Exception as e:
+            print(f"[news] indexnow skipped: {e}")
 
     if feed_errors == len(RSS_FEEDS):
         print("[news] FATAL: all feeds failed")

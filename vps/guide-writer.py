@@ -415,6 +415,13 @@ def main():
         sb.table("guides").insert(row).execute()
         print(f"[guide-writer] Inserted guide: {slug}")
 
+        # Tell search engines immediately (all locales) instead of waiting for recrawl.
+        try:
+            import indexnow
+            indexnow.submit(indexnow.guide_urls(slug))
+        except Exception as e:
+            print(f"[guide-writer] indexnow skipped: {e}")
+
         msg = f"✅ Guide publié : {en_data['title']} ({fmt}, {topic['category']})"
         send_telegram(msg)
 
