@@ -68,10 +68,17 @@ def main():
     start_iso = news_window_start(now).isoformat()
 
     sb = dc.get_supabase()
+    # Window on created_at (ingestion time), NOT published_at: news.py stamps published_at
+    # with the RSS feed date (which can be up to MAX_ARTICLE_AGE_DAYS=7 old) and writer-v2.py
+    # does not refresh it on rewrite, so an item ingested + rewritten today but dated earlier
+    # would be missed and the recap would thin out. created_at = "today's news as the site
+    # saw it". Exclude relevance-filtered items (writer-v2 marks EN-source rejects
+    # category='filtered' while leaving title_en/summary_en populated).
     resp = (sb.table("news")
-            .select("slug, title_en, summary_en, source_name, category, published_at")
-            .gte("published_at", start_iso)
-            .order("published_at", desc=True)
+            .select("slug, title_en, summary_en, source_name, category, created_at")
+            .gte("created_at", start_iso)
+            .neq("category", "filtered")
+            .order("created_at", desc=True)
             .execute())
     items = select_news(resp.data or [])
 
