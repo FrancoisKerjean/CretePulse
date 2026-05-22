@@ -1,5 +1,5 @@
 import { BookOpen } from "lucide-react";
-import { getPublishedGuides } from "@/lib/guides";
+import { getEditorialGuides } from "@/lib/guides";
 import type { Locale } from "@/lib/types";
 import ArticlesPageClient from "./ArticlesPageClient";
 import { buildAlternates } from "@/lib/seo";
@@ -45,7 +45,7 @@ export default async function ArticlesPage({ params }: { params: Promise<{ local
   const { locale } = await params;
   const loc = locale as Locale;
 
-  const guides = await getPublishedGuides(200);
+  const guides = await getEditorialGuides(200);
 
   const categories = Array.from(new Set(guides.map((g) => g.category))).filter(Boolean);
 

@@ -3,7 +3,7 @@ import { supabase } from "./supabase";
 export interface Guide {
   id: number;
   slug: string;
-  format: "long" | "mid";
+  format: "long" | "mid" | "daily";
   category: string;
   keywords: string[];
   titles: Record<string, string>;
@@ -66,6 +66,29 @@ export async function getEditorialGuides(limit: number = 12): Promise<Guide[]> {
       .order("published_at", { ascending: false })
       .limit(limit);
 
+    if (error) throw error;
+    return (data as Guide[]) || [];
+  } catch {
+    return [];
+  }
+}
+
+// Daily editorial posts (format "daily"): dated weather bulletins + news recaps.
+// Shown only on the /daily hub, excluded from the evergreen /articles index.
+export async function getDailyPosts(
+  category?: "daily-news" | "daily-weather",
+  limit: number = 30
+): Promise<Guide[]> {
+  try {
+    let q = supabase
+      .from("guides")
+      .select("id, slug, format, category, keywords, titles, meta_descs, image_url, read_time, published_at, status")
+      .eq("status", "published")
+      .eq("format", "daily")
+      .order("published_at", { ascending: false })
+      .limit(limit);
+    if (category) q = q.eq("category", category);
+    const { data, error } = await q;
     if (error) throw error;
     return (data as Guide[]) || [];
   } catch {
