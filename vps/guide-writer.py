@@ -85,6 +85,38 @@ def parse_json_response(raw):
         raise
 
 
+def call_claude_json(prompt, model="sonnet", max_retries=2, label="response"):
+    """Call Claude and parse its JSON, retrying on malformed output.
+
+    LLM JSON occasionally breaks (e.g. an unescaped double quote inside long HTML,
+    surfacing as "Expecting ',' delimiter"). With no retry this silently drops the
+    whole article. Output is non-deterministic, so a fresh attempt usually parses;
+    each retry also appends a strict-escaping reminder. Same hardening as the
+    kairos-compta OCR pipeline.
+    """
+    last_err = None
+    for attempt in range(max_retries + 1):
+        p = prompt
+        if attempt > 0:
+            p = (
+                prompt
+                + f"\n\nREMINDER: your previous answer was NOT valid JSON ({last_err})."
+                + " Return exactly ONE strictly valid JSON object. Escape every"
+                + ' double quote inside string values as \\". No markdown fences,'
+                + " no text before or after the JSON."
+            )
+        raw = call_claude(p, model)
+        try:
+            return parse_json_response(raw)
+        except (json.JSONDecodeError, ValueError) as e:
+            last_err = e
+            print(f"[guide-writer] {label}: JSON parse failed "
+                  f"(attempt {attempt + 1}/{max_retries + 1}): {e}")
+    raise RuntimeError(
+        f"{label}: JSON still invalid after {max_retries + 1} attempts: {last_err}"
+    )
+
+
 def select_topic():
     """Select next topic from the bank, excluding already published slugs."""
     with open(TOPICS_FILE, "r") as f:
@@ -176,8 +208,7 @@ Return ONLY valid JSON (no markdown, no code fences):
 
 Minimum 3 FAQ questions that tourists actually ask."""
 
-    raw = call_claude(prompt, "sonnet")
-    return parse_json_response(raw)
+    return call_claude_json(prompt, "sonnet", label="EN content")
 
 
 def validate_content(data, fmt):
@@ -228,8 +259,7 @@ Source:
 Return ONLY valid JSON (no markdown):
 {{"fr": {{"title": "...", "meta_desc": "...", "content": "...", "faq": [...]}}, "de": {{"title": "...", "meta_desc": "...", "content": "...", "faq": [...]}}, "el": {{"title": "...", "meta_desc": "...", "content": "...", "faq": [...]}}}}"""
 
-    raw = call_claude(prompt, "sonnet")
-    return parse_json_response(raw)
+    return call_claude_json(prompt, "sonnet", label="FR/DE/EL translation")
 
 
 def translate_batch(en_data, locales):
@@ -247,8 +277,7 @@ Source:
 Return ONLY valid JSON (no markdown), one key per locale code:
 {{"{locales[0]}": {{"title": "...", "meta_desc": "...", "content": "...", "faq": [...]}}, ...}}"""
 
-    raw = call_claude(prompt, "haiku")
-    return parse_json_response(raw)
+    return call_claude_json(prompt, "haiku", label=f"batch {locale_str}")
 
 
 WIKI_UA = "CreteDirect/1.0 (contact@kairosguest.com)"
