@@ -25,6 +25,7 @@ def test_build_guide_row_is_en_only_and_daily():
     assert list(row["contents"].keys()) == ["en"]
     assert row["faqs"]["en"][0]["q"] == "Will it rain?"
     assert row["read_time"] == 3
+    assert row["keywords"] == []
     assert row["image_url"] is None
     datetime.fromisoformat(row["published_at"])
 
@@ -32,3 +33,4 @@ def test_build_guide_row_is_en_only_and_daily():
 def test_athens_now_is_tz_aware():
     now = dc.athens_now()
     assert now.tzinfo is not None
+    assert str(now.tzinfo) == "Europe/Athens"

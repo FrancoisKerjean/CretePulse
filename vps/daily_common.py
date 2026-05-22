@@ -11,7 +11,6 @@ import json
 import os
 import re
 import subprocess
-import tempfile
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
@@ -56,20 +55,20 @@ def build_guide_row(slug, category, title_en, meta_en, content_html_en, faq_en,
 # ---------- claude -p (mirrors guide-writer.py hardening) ----------
 
 def _call_claude(prompt, model="sonnet", timeout=600):
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False, encoding="utf-8") as f:
-        f.write(prompt)
-        tmp = f.name
+    # Prompt is passed via stdin (not argv) to avoid arg-length limits, and without a
+    # shell so it works on both the Linux VPS and a local Windows dry-run (the old
+    # `cat file | claude` pattern needs a Unix shell). `claude -p` reads stdin when no
+    # prompt argument is given.
+    r = subprocess.run(
+        ["claude", "-p", "--model", model, "--output-format", "json"],
+        input=prompt, capture_output=True, text=True, encoding="utf-8", timeout=timeout,
+    )
+    if r.returncode != 0:
+        raise RuntimeError(f"claude -p failed: {r.stderr[:500]}")
     try:
-        cmd = f'cat "{tmp}" | claude -p --model {model} --output-format json'
-        r = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=timeout)
-        if r.returncode != 0:
-            raise RuntimeError(f"claude -p failed: {r.stderr[:500]}")
-        try:
-            return json.loads(r.stdout).get("result", r.stdout).strip()
-        except (json.JSONDecodeError, AttributeError):
-            return r.stdout.strip()
-    finally:
-        os.unlink(tmp)
+        return json.loads(r.stdout).get("result", r.stdout).strip()
+    except (json.JSONDecodeError, AttributeError):
+        return r.stdout.strip()
 
 
 def _parse_json(raw):
