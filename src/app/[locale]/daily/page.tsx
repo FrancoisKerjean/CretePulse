@@ -8,6 +8,9 @@ export const revalidate = 3600;
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
+// EN-only MVP: hub labels + META are hardcoded English. When the daily content is
+// translated (phase 2), make META a per-locale record like articles/page.tsx and
+// localize the section labels.
 const META = {
   title: "Crete Daily - Weather Bulletins & News Recaps",
   desc: "Daily Crete weather bulletins every morning and a recap of the day's major Crete news every evening.",
