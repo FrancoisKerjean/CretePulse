@@ -39,6 +39,7 @@ const STATIC_PAGES = [
   "/hikes",
   "/food",
   "/articles",
+  "/daily",
   "/about",
   "/buses",
   "/fire-alerts",
