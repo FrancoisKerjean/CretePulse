@@ -120,6 +120,18 @@ Flux :
 5. Vérif IndexNow (HTTP 200/202).
 6. Seulement ensuite : poser les deux crons sur le VPS.
 
+## Extension possible — météo observée sur la journée (à arbitrer)
+
+Le bulletin du matin est une **prévision** : un seul fetch Open-Meteo `daily=` couvre toute
+la journée, aucune accumulation horaire nécessaire. Si on veut en plus un angle
+**« conditions réellement observées »** (ex. « il a fait 31 °C à Ierapetra cet après-midi »,
+ou un mini-récap météo du soir), il faut historiser les relevés : aujourd'hui `weather.py`
+tourne toutes les heures mais **écrase** (`weather_cache` = 10 lignes max, sans historique).
+
+Option : nouvelle table `weather_history` (append au lieu d'upsert), alimentée par `weather.py`
+inchangé pour le reste, et purge mensuelle. Le bulletin pourrait alors mêler prévision du
+matin + observé de la veille. **Hors MVP** ; à activer seulement si Kami veut l'angle observé.
+
 ## Hors périmètre (YAGNI)
 
 - Traduction multilingue (22 langues) : phase 2, après validation indexation EN.

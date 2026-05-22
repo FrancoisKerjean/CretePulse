@@ -283,6 +283,31 @@ export default async function PropertyManagementPage({ params }: { params: Promi
             <ChevronRight className="w-4 h-4" />
           </a>
           <p className="text-[11px] text-white/40 mt-4">{c.ctaNote}</p>
+
+          {/* Discreet referral mention */}
+          <p className="text-[11px] text-white/50 mt-6 pt-4 border-t border-white/10 max-w-md mx-auto">
+            {locale === "fr"
+              ? "Vous connaissez un propriétaire en Crète orientale ? "
+              : locale === "de"
+              ? "Kennen Sie einen Eigentümer in Ostkreta? "
+              : locale === "el"
+              ? "Γνωρίζετε ιδιοκτήτη στην ανατολική Κρήτη; "
+              : "Do you know a property owner in eastern Crete? "}
+            <a
+              href={`https://kairosguest.com/${locale === "fr" ? "fr" : "en"}/recommander-un-proprietaire`}
+              target="_blank"
+              rel="noopener noreferrer nofollow sponsored"
+              className="text-sand hover:underline"
+            >
+              {locale === "fr"
+                ? "Recommandez Kairos"
+                : locale === "de"
+                ? "Empfehlen Sie Kairos"
+                : locale === "el"
+                ? "Συστήστε την Kairos"
+                : "Refer Kairos"}
+            </a>
+          </p>
         </section>
       </div>
     </main>

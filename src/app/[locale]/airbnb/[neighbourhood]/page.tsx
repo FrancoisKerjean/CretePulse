@@ -16,6 +16,7 @@ import {
   getRelatedGuides,
 } from "@/lib/airbnb";
 import { buildAlternates } from "@/lib/seo";
+import { routing } from "@/i18n/routing";
 
 export const revalidate = 86400;
 
@@ -262,8 +263,23 @@ const L: Record<Loc, {
   },
 };
 
+/**
+ * Type guard : the URL locale has a full UI translation (en/fr/de/el).
+ * For other site locales (it/nl/ru/es/...) we still serve the page but
+ * with English UI strings — the SEO benefit comes from indexing 22 × 24
+ * pages with proper hreflang, not from re-translating the same UI 22 times.
+ */
 const VALID_LOC = (l: string): l is Loc =>
   (SUPPORTED as readonly string[]).includes(l);
+
+/** Any locale routed by the site (22 languages from i18n/routing.ts). */
+const VALID_SITE_LOC = (l: string): boolean =>
+  (routing.locales as readonly string[]).includes(l);
+
+/** Pick the closest UI locale we have translations for. */
+function pickUiLoc(l: string): Loc {
+  return VALID_LOC(l) ? l : "en";
+}
 
 function fmtNum(n: number | null | undefined, locale: string, digits = 0): string {
   if (n === null || n === undefined || !Number.isFinite(n)) return "-";
@@ -292,21 +308,34 @@ interface Params {
   neighbourhood: string;
 }
 
-export async function generateStaticParams(): Promise<Array<{ neighbourhood: string }>> {
-  return CRETE_NEIGHBOURHOODS.map(n => ({ neighbourhood: n.slug }));
+export const dynamicParams = true;
+
+export async function generateStaticParams(): Promise<Array<{ locale: string; neighbourhood: string }>> {
+  // 4 fully-translated locales × 24 Crete neighbourhoods = 96 pages prerendered at build time.
+  // The 18 remaining site locales are generated on-demand (ISR), cached 24h via
+  // `export const revalidate = 86400` above. Page exists for the 22 routed locales:
+  // they share the same data, but UI strings fall back to English (pickUiLoc).
+  const out: Array<{ locale: string; neighbourhood: string }> = [];
+  for (const locale of SUPPORTED) {
+    for (const n of CRETE_NEIGHBOURHOODS) {
+      out.push({ locale, neighbourhood: n.slug });
+    }
+  }
+  return out;
 }
 
 export async function generateMetadata(
   { params }: { params: Promise<Params> },
 ): Promise<Metadata> {
   const { locale, neighbourhood } = await params;
-  if (!VALID_LOC(locale)) return {};
+  if (!VALID_SITE_LOC(locale)) return {};
   const n = findNeighbourhood(neighbourhood);
   if (!n) return {};
   const stats = await getNeighbourhoodStats(n.greek);
   if (!stats) return {};
-  const t = L[locale];
-  const name = n.label[locale];
+  const uiLoc = pickUiLoc(locale);
+  const t = L[uiLoc];
+  const name = n.label[uiLoc];
   return {
     title: t.metaTitle(name),
     description: t.metaDesc(name, stats.listings),
@@ -324,20 +353,21 @@ export default async function AirbnbNeighbourhoodPage(
   { params }: { params: Promise<Params> },
 ) {
   const { locale, neighbourhood } = await params;
-  if (!VALID_LOC(locale)) return notFound();
+  if (!VALID_SITE_LOC(locale)) return notFound();
 
   const n = findNeighbourhood(neighbourhood);
   if (!n) return notFound();
 
-  const t = L[locale];
-  const name = n.label[locale];
-  const regionLabel = REGION_LABEL[n.region][locale];
+  const uiLoc = pickUiLoc(locale);
+  const t = L[uiLoc];
+  const name = n.label[uiLoc];
+  const regionLabel = REGION_LABEL[n.region][uiLoc];
 
   const [stats, types, overall, related] = await Promise.all([
     getNeighbourhoodStats(n.greek),
     getNeighbourhoodPropertyTypes(n.greek),
     getCreteOverall(),
-    getRelatedGuides(n.greek, locale),
+    getRelatedGuides(n.greek, uiLoc),
   ]);
 
   if (!stats || stats.listings === 0) return notFound();
@@ -548,7 +578,7 @@ export default async function AirbnbNeighbourhoodPage(
                     href={`/${locale}/airbnb/${s.slug}`}
                     className="block rounded-md border border-stone-200 px-3 py-2 hover:border-stone-400 hover:bg-stone-50"
                   >
-                    {s.label[locale]}
+                    {s.label[uiLoc]}
                   </Link>
                 </li>
               ))}
