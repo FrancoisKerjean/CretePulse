@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """CretePulse - Weather cache updater. Runs hourly via cron."""
-import json, os, sys, urllib.request
+import json, os, sys, time, urllib.request
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 
@@ -13,6 +13,21 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 
 from supabase import create_client
 sb = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+HTTP_TIMEOUT = 30  # secondes, évite que urlopen bloque indéfiniment si l'API hang
+
+
+def _fetch_json(url: str, retries: int = 2):
+    """Fetch + parse JSON avec timeout + retry. None si tous les essais foirent."""
+    for attempt in range(1, retries + 1):
+        try:
+            with urllib.request.urlopen(url, timeout=HTTP_TIMEOUT) as resp:
+                return json.loads(resp.read())
+        except Exception as e:
+            print(f"  [fetch try {attempt}/{retries}] {url[:60]}... : {e}")
+            if attempt < retries:
+                time.sleep(2)
+    return None
 
 CITIES = [
     {"name": "Heraklion", "slug": "heraklion", "lat": 35.34, "lng": 25.13},
@@ -34,13 +49,12 @@ now = datetime.now(timezone.utc).isoformat()
 print(f"[weather] {now} - fetching for {len(CITIES)} cities")
 
 url = f"https://api.open-meteo.com/v1/forecast?latitude={lats}&longitude={lngs}&current=temperature_2m,wind_speed_10m,wind_direction_10m,weather_code,uv_index,precipitation&timezone=Europe/Athens"
-weather_raw = json.loads(urllib.request.urlopen(url).read())
+weather_raw = _fetch_json(url)
+if not weather_raw:
+    print("[weather] ERROR: cannot fetch Open-Meteo forecast after retries"); sys.exit(1)
 
 murl = f"https://marine-api.open-meteo.com/v1/marine?latitude={lats}&longitude={lngs}&current=sea_surface_temperature,wave_height&timezone=Europe/Athens"
-try:
-    marine_raw = json.loads(urllib.request.urlopen(murl).read())
-except Exception:
-    marine_raw = None
+marine_raw = _fetch_json(murl)  # marine est optionnel, on continue si None
 
 ok = err = 0
 for i, city in enumerate(CITIES):
