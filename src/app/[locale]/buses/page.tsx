@@ -1,4 +1,5 @@
 import { BusesClient } from "./BusesClient";
+import { BusNetworkMap } from "@/components/BusNetworkMap";
 import { buildAlternates } from "@/lib/seo";
 import { getBusRoutes, getBusDestinations, latestScrapedAt } from "@/lib/buses";
 import { busesPageSchema } from "@/lib/schema";
@@ -58,7 +59,12 @@ export default async function BusesPage({ params }: { params: Promise<{ locale: 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
-      <BusesClient routes={routes} destinations={destinations} updatedAt={updatedAt} />
+      <BusesClient
+        routes={routes}
+        destinations={destinations}
+        updatedAt={updatedAt}
+        networkMap={<BusNetworkMap locale={locale} />}
+      />
     </>
   );
 }

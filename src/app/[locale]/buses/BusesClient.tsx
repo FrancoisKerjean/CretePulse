@@ -340,10 +340,12 @@ export function BusesClient({
   routes,
   destinations,
   updatedAt,
+  networkMap,
 }: {
   routes: BusRoute[];
   destinations: Record<string, BusDestination>;
   updatedAt: string | null;
+  networkMap?: React.ReactNode;
 }) {
   const params = useParams();
   const locale = (params?.locale as Locale) ?? "en";
@@ -402,6 +404,9 @@ export function BusesClient({
             )}
           </div>
         </div>
+
+        {/* Plan réseau type métro (server component injecté depuis page.tsx) */}
+        {networkMap}
 
         {/* Search bar */}
         <div className="rounded-xl border border-border bg-white p-5 mb-8 shadow-sm">
