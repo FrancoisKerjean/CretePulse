@@ -25,6 +25,7 @@ from parsers import (
     parse_herlas_detail,
     parse_ektel_index,
     CURATED_EKTEL,
+    apply_curated_overlay,
 )
 from store import replace_operator_routes, should_commit
 
@@ -83,6 +84,7 @@ def _attach_to_slug(routes: list) -> list:
     for r in routes:
         slug = _slugify(r["to_place"])
         r["to_slug"] = slug if slug in DEST_SLUGS else None
+        apply_curated_overlay(r)
     return routes
 
 

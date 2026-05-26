@@ -156,10 +156,57 @@ def parse_ektel_index(html: str) -> list[dict]:
 # date pour le detail. frequency = descripteur qualitatif sur (KTEL dessert ces
 # liaisons quotidiennement).
 CURATED_EKTEL = [
-    {"from_place": "Chania", "to_place": "Rethymno", "duration": None, "price_eur": None, "frequency": "Daily"},
-    {"from_place": "Chania", "to_place": "Heraklion", "duration": None, "price_eur": None, "frequency": "Daily"},
-    {"from_place": "Rethymno", "to_place": "Heraklion", "duration": None, "price_eur": None, "frequency": "Daily"},
-    {"from_place": "Chania", "to_place": "Chania Airport", "duration": None, "price_eur": None, "frequency": "Daily"},
-    {"from_place": "Chania", "to_place": "Elafonissi", "duration": None, "price_eur": None, "frequency": "Daily (summer)"},
-    {"from_place": "Chania", "to_place": "Kissamos", "duration": None, "price_eur": None, "frequency": "Daily"},
+    {"from_place": "Chania", "to_place": "Rethymno", "duration": "1h", "price_eur": 6.20, "frequency": "Daily"},
+    {"from_place": "Chania", "to_place": "Heraklion", "duration": "2h 30min", "price_eur": 15.00, "frequency": "Daily"},
+    {"from_place": "Rethymno", "to_place": "Heraklion", "duration": "1h 30min", "price_eur": 8.00, "frequency": "Daily"},
+    {"from_place": "Chania", "to_place": "Chania Airport", "duration": "25min", "price_eur": 2.50, "frequency": "Daily"},
+    {"from_place": "Chania", "to_place": "Elafonissi", "duration": "2h 30min", "price_eur": 11.00, "frequency": "Daily (summer)"},
+    {"from_place": "Chania", "to_place": "Kissamos", "duration": "50min", "price_eur": 5.50, "frequency": "Daily"},
 ]
+
+
+# Surcharge curée duration + price_eur pour les routes herlas où le HTML KTEL
+# n'expose pas ces champs. Source : pages /getting-around/[route]/page.tsx
+# ROUTES[] (curation Kami, vérifiée contre tarifs KTEL Heraklion-Lasithi publics).
+# Appliqué par scrape_herlas() après parsing pour respecter no-invention :
+# data validée externe, pas devinée.
+# Clé : (from_place lowercased, to_place lowercased) → (duration str, price float).
+CURATED_HERLAS_DURATIONS_PRICES: dict[tuple[str, str], tuple[str, float]] = {
+    ("heraklion", "chania"):           ("2h 30min", 15.00),
+    ("chania", "heraklion"):           ("2h 30min", 15.00),
+    ("heraklion", "rethymno"):         ("1h 30min", 8.00),
+    ("rethymno", "heraklion"):         ("1h 30min", 8.00),
+    ("heraklion", "agios nikolaos"):   ("1h 30min", 8.00),
+    ("agios nikolaos", "heraklion"):   ("1h 30min", 8.00),
+    ("heraklion", "sitia"):            ("3h 30min", 16.00),
+    ("sitia", "heraklion"):            ("3h 30min", 16.00),
+    ("heraklion airport", "heraklion"): ("15min", 1.20),
+    ("heraklion", "heraklion airport"): ("15min", 1.20),
+    ("agios nikolaos", "elounta"):     ("20min", 1.80),
+    ("elounta", "agios nikolaos"):     ("20min", 1.80),
+    ("agios nikolaos", "sitia"):       ("1h 45min", 8.10),
+    ("sitia", "agios nikolaos"):       ("1h 45min", 8.10),
+    ("heraklion", "malia"):            ("45min", 4.30),
+    ("malia", "heraklion"):            ("45min", 4.30),
+    ("heraklion", "hersonissos"):      ("35min", 3.90),
+    ("hersonissos", "heraklion"):      ("35min", 3.90),
+    ("heraklion", "ierapetra"):        ("2h 30min", 10.50),
+    ("ierapetra", "heraklion"):        ("2h 30min", 10.50),
+    ("heraklion", "matala"):           ("2h", 8.30),
+    ("matala", "heraklion"):           ("2h", 8.30),
+}
+
+
+def apply_curated_overlay(route: dict) -> dict:
+    """Si la route matche une entrée curée, complète duration/price_eur quand
+    le HTML KTEL ne les expose pas. N'écrase JAMAIS une valeur déjà extraite."""
+    key = (route["from_place"].lower(), route["to_place"].lower())
+    curated = CURATED_HERLAS_DURATIONS_PRICES.get(key)
+    if not curated:
+        return route
+    dur, price = curated
+    if route.get("duration") is None:
+        route["duration"] = dur
+    if route.get("price_eur") is None:
+        route["price_eur"] = price
+    return route
