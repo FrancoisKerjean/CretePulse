@@ -3,6 +3,16 @@ import { getLocalizedField } from "./types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
+const CARDINAL_REGIONS = new Set(["central", "east", "west", "north", "south", "eastern", "western", "northern", "southern"]);
+
+function formatRegionLabel(region: string | null | undefined): string {
+  if (!region) return "Crete";
+  const r = region.trim().toLowerCase();
+  if (!r) return "Crete";
+  const capitalized = r.charAt(0).toUpperCase() + r.slice(1);
+  return CARDINAL_REGIONS.has(r) ? `${capitalized} Crete` : `${capitalized}, Crete`;
+}
+
 export function breadcrumbSchema(
   items: Array<{ name: string; url: string }>
 ): Record<string, unknown> {
@@ -62,7 +72,7 @@ export function eventSchema(event: Event, locale: Locale): Record<string, unknow
     ? (event.time_start ? `${event.date_end}T${event.time_start}` : event.date_end)
     : startDate;
 
-  const locationName = event.location_name?.trim() || event.region || "Crete";
+  const locationName = event.location_name?.trim() || formatRegionLabel(event.region);
   const image = `${BASE_URL}/api/og?type=event&title=${encodeURIComponent(name)}&subtitle=${encodeURIComponent(locationName)}`;
 
   const schema: Record<string, unknown> = {
@@ -82,7 +92,7 @@ export function eventSchema(event: Event, locale: Locale): Record<string, unknow
       address: {
         "@type": "PostalAddress",
         addressLocality: locationName,
-        addressRegion: event.region || "Crete",
+        addressRegion: formatRegionLabel(event.region),
         addressCountry: "GR",
       },
     },
