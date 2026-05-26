@@ -24,6 +24,8 @@ from parsers import (
     parse_herlas_index,
     parse_herlas_detail,
     parse_ektel_index,
+    parse_ektel_pdf,
+    fetch_ektel_pdfs,
     CURATED_EKTEL,
     apply_curated_overlay,
 )
@@ -110,21 +112,88 @@ def scrape_herlas() -> list:
     return _attach_to_slug(routes)
 
 
+def _fetch_pdf_bytes(url: str) -> bytes | None:
+    for attempt in (1, 2):
+        try:
+            r = requests.get(url, headers={"User-Agent": UA}, timeout=60)
+            if r.status_code == 200:
+                return r.content
+            log(f"HTTP {r.status_code} for PDF {url}")
+        except requests.RequestException as e:
+            log(f"PDF fetch error {url} (try {attempt}): {e}")
+        time.sleep(1.5)
+    return None
+
+
+def _parse_pdf(content: bytes, source_url: str) -> list[dict]:
+    """Extrait le texte du PDF via pdfplumber puis appelle parse_ektel_pdf."""
+    try:
+        import io
+        import pdfplumber  # type: ignore
+    except ImportError:
+        log("pdfplumber not installed (pip install pdfplumber) - skip PDF parse")
+        return []
+    try:
+        with pdfplumber.open(io.BytesIO(content)) as doc:
+            text = "\n".join((p.extract_text() or "") for p in doc.pages)
+    except Exception as e:
+        log(f"pdfplumber error on {source_url}: {e}")
+        return []
+    return parse_ektel_pdf(text, source_url=source_url)
+
+
 def scrape_ektel() -> list:
-    """Ouest : routes curees + valid_from issu de l'index (freshness)."""
+    """Ouest : download + parsing des PDFs e-ktel pour avoir tous les horaires.
+    Fallback CURATED_EKTEL si zéro PDF parsable (no-routes-no-replace dans store)."""
     idx = fetch(EKTEL_INDEX)
-    valid_from = None
-    if idx:
-        groups = parse_ektel_index(idx)
-        dates = [g["valid_from"] for g in groups if g["valid_from"]]
-        valid_from = max(dates) if dates else None
-        log(f"ektel: {len(groups)} groups, latest valid_from={valid_from}")
-    routes = []
-    for r in CURATED_EKTEL:
-        row = dict(r)
-        row["season"] = "all"
-        routes.append(row)
-    return _attach_to_slug(routes)
+    if not idx:
+        log("ektel: index unreachable, fallback CURATED only")
+        routes = [dict(r, season="all") for r in CURATED_EKTEL]
+        return _attach_to_slug(routes)
+
+    # Métadonnée freshness pour log
+    groups = parse_ektel_index(idx)
+    dates = [g["valid_from"] for g in groups if g["valid_from"]]
+    valid_from = max(dates) if dates else None
+    log(f"ektel: {len(groups)} groups, latest valid_from={valid_from}")
+
+    pdfs = fetch_ektel_pdfs(idx)
+    log(f"ektel: {len(pdfs)} PDFs to parse")
+
+    all_routes: list[dict] = []
+    seen_keys: set[tuple[str, str]] = set()
+    for label, url in pdfs:
+        content = _fetch_pdf_bytes(url)
+        if not content:
+            continue
+        parsed = _parse_pdf(content, source_url=url)
+        log(f"  {label[:40]:40} → {len(parsed)} routes")
+        for r in parsed:
+            key = (r["from_place"].lower(), r["to_place"].lower())
+            if key in seen_keys:
+                continue
+            seen_keys.add(key)
+            all_routes.append(r)
+        time.sleep(0.5)
+
+    # Merge avec CURATED (les CURATED couvrent duration+price que les PDFs n'ont pas)
+    for c in CURATED_EKTEL:
+        key = (c["from_place"].lower(), c["to_place"].lower())
+        if key in seen_keys:
+            # Déjà parsé : on overlay duration/price si les CURATED en ont
+            for r in all_routes:
+                if (r["from_place"].lower(), r["to_place"].lower()) == key:
+                    if r.get("duration") is None and c.get("duration"):
+                        r["duration"] = c["duration"]
+                    if r.get("price_eur") is None and c.get("price_eur"):
+                        r["price_eur"] = c["price_eur"]
+                    break
+        else:
+            # Ajoute la route curée que les PDFs n'ont pas (rare)
+            all_routes.append(dict(c, season="all", source_url=EKTEL_INDEX))
+            seen_keys.add(key)
+
+    return _attach_to_slug(all_routes)
 
 
 def main():

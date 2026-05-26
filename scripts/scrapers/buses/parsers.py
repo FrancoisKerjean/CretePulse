@@ -26,6 +26,20 @@ EKTEL_BASE = "https://www.e-ktel.com"
 _DATE_RE = re.compile(r"(\d{2})-(\d{2})-(\d{4})")
 _PRICE_RE = re.compile(r"(\d+[.,]\d{1,2})")
 _TIME_RE = re.compile(r"^\d{1,2}:\d{2}$")  # un seul horaire HH:MM exact
+_HHMM_RE = re.compile(r"\b(\d{1,2}:\d{2})\b")
+
+# Le PDF e-ktel double chaque label : GREEK/ENGLISH. On ignore le grec et on
+# matche tous les segments anglais derrière `/`. Un segment route contient un
+# tiret ('CHANIA-HERAKLION'), un segment frequency commence par un jour ou EVERY.
+_PDF_SEG_RE = re.compile(r"/\s*([A-Z][A-Z0-9 .\-]+?)(?=\s*[/]|\s*\d{1,2}:\d{2}|\s*$)")
+
+_FREQ_HEAD = (
+    "EVERY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY",
+    "SATURDAY", "SUNDAY", "DAILY", "WEEKDAYS", "WEEKEND",
+)
+
+# Mots à ignorer en début/fin de nom de route (résidus Joomla).
+_NAME_NOISE = {"EXPRESS", "KA", "XANIA", "EI", "BAR"}
 
 
 def _price(text):
@@ -195,6 +209,127 @@ CURATED_HERLAS_DURATIONS_PRICES: dict[tuple[str, str], tuple[str, float]] = {
     ("heraklion", "matala"):           ("2h", 8.30),
     ("matala", "heraklion"):           ("2h", 8.30),
 }
+
+
+def _clean_route_name(raw: str) -> str:
+    """Nettoie un nom de route brut du PDF e-ktel : retire noise + collapse spaces."""
+    s = raw.strip()
+    # Retire les mots-noise en début OU fin (EXPRESS, KA, XANIA…)
+    parts = s.split()
+    while parts and parts[0] in _NAME_NOISE:
+        parts.pop(0)
+    while parts and parts[-1] in _NAME_NOISE:
+        parts.pop()
+    s = " ".join(parts)
+    # Normalise tirets / espaces multiples
+    s = re.sub(r"\s*-\s*", "-", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
+
+
+def _route_endpoints(name: str) -> tuple[str, str] | None:
+    """De 'CHANIA-GEORGIOUPOLIS-KAVROS-RETHYMNO-BALI-HERAKLION' renvoie
+    ('Chania', 'Heraklion'). Garde first et last segments, jette intermediaires."""
+    parts = [p.strip() for p in name.split("-") if p.strip()]
+    parts = [p for p in parts if p not in _NAME_NOISE]
+    if len(parts) < 2:
+        return None
+    f, t = parts[0], parts[-1]
+    return (f.title(), t.title())
+
+
+def _is_freq(s: str) -> bool:
+    """Une frequency commence par un jour, EVERY, DAILY, etc."""
+    return any(s.upper().startswith(h) for h in _FREQ_HEAD)
+
+
+def _is_route_name(s: str) -> bool:
+    """Un nom de route contient au moins un tiret entre 2 segments uppercase."""
+    parts = [p for p in s.split("-") if p.strip()]
+    return len(parts) >= 2 and all(p.strip()[0].isupper() for p in parts[:2])
+
+
+def parse_ektel_pdf(text: str, source_url: str = "") -> list[dict]:
+    """Parse le texte extrait d'un PDF e-ktel en liste de routes normalisées.
+
+    Format (validé sur CHANIA_FROM_24-05-2026.pdf) : chaque label est doublé
+    GREEK/ENGLISH. On ignore le grec et on capture les segments anglais après
+    chaque `/`. Sur une même ligne on peut avoir :
+      route name (avec tiret) → opens new current route
+      frequency (EVERY DAY, MONDAY TO SATURDAY…) → set on current
+      times (HH:MM ...) → append on current
+
+    Footnotes type "DEPARTURE AFTER THE ARRIVAL..." sont filtrées par la
+    whitelist _FREQ_HEAD.
+    """
+    routes: list[dict] = []
+    current: dict | None = None
+
+    def flush():
+        nonlocal current
+        if current and current.get("departures"):
+            routes.append(current)
+        current = None
+
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+
+        segments = [s.strip() for s in _PDF_SEG_RE.findall(line)]
+        times = _HHMM_RE.findall(line)
+
+        for seg in segments:
+            if _is_route_name(seg):
+                # Nouvelle route : flush + ouvre
+                flush()
+                endpoints = _route_endpoints(_clean_route_name(seg))
+                if endpoints:
+                    from_place, to_place = endpoints
+                    current = {
+                        "from_place": from_place,
+                        "to_place": to_place,
+                        "duration": None,
+                        "price_eur": None,
+                        "frequency": None,
+                        "departures": [],
+                        "source_url": source_url,
+                        "season": "all",
+                    }
+            elif _is_freq(seg):
+                # Frequency : pose sur la route active si elle n'en a pas encore
+                if current is not None and current["frequency"] is None:
+                    current["frequency"] = seg.strip().title()
+
+        # Apply times to current
+        if current is not None and times:
+            current["departures"].extend(times)
+
+    flush()
+    return routes
+
+
+def fetch_ektel_pdfs(html_index: str) -> list[tuple[str, str]]:
+    """Depuis le HTML de l'index e-ktel, retourne [(label, pdf_url), …]."""
+    soup = BeautifulSoup(html_index, "html.parser")
+    pdfs: list[tuple[str, str]] = []
+    for a in soup.select("a[href]"):
+        href = unescape(a["href"])
+        if ".pdf" not in href.lower():
+            continue
+        if "/images/pdfs/" not in href:
+            continue
+        full = urljoin(EKTEL_BASE, href)
+        label = a.get_text(" ", strip=True)
+        pdfs.append((label or full.split("/")[-1], full))
+    # Dédup par URL
+    seen, dedup = set(), []
+    for lbl, u in pdfs:
+        if u in seen:
+            continue
+        seen.add(u)
+        dedup.append((lbl, u))
+    return dedup
 
 
 def apply_curated_overlay(route: dict) -> dict:
