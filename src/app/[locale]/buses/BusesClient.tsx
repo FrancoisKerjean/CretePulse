@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Bus, Clock, Euro, ArrowRight, ExternalLink, Info } from "lucide-react";
+import { Bus, Clock, Euro, ArrowRight, Info } from "lucide-react";
 import Link from "next/link";
 import type { Locale } from "@/lib/types";
 import type { BusRoute, BusDestination } from "@/lib/buses";
 import { useParams } from "next/navigation";
+import { BusNetworkMap } from "@/components/BusNetworkMap";
 
 // ---------------------------------------------------------------------------
 // Slugs valides des pages cibles (mirror des generateStaticParams cote serveur).
@@ -260,7 +261,6 @@ function RouteCard({ route, destination, locale }: { route: BusRoute; destinatio
         <DepartureChips
           times={deps}
           collapsedLimit={COLLAPSED_LIMIT}
-          sourceUrl={route.source_url}
           locale={locale}
         />
       )}
@@ -278,12 +278,10 @@ function RouteCard({ route, destination, locale }: { route: BusRoute; destinatio
 function DepartureChips({
   times,
   collapsedLimit,
-  sourceUrl,
   locale,
 }: {
   times: string[];
   collapsedLimit: number;
-  sourceUrl?: string;
   locale: Locale;
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -297,17 +295,6 @@ function DepartureChips({
         <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
           {t("allDepartures", locale)}
         </p>
-        {sourceUrl && (
-          <a
-            href={sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-aegean hover:underline inline-flex items-center gap-1"
-          >
-            {t("officialSchedule", locale)}
-            <ExternalLink className="w-3 h-3" aria-hidden="true" />
-          </a>
-        )}
       </div>
       <ul className="flex flex-wrap gap-1.5 list-none p-0 m-0">
         {visible.map((time) => (
@@ -340,12 +327,10 @@ export function BusesClient({
   routes,
   destinations,
   updatedAt,
-  networkMap,
 }: {
   routes: BusRoute[];
   destinations: Record<string, BusDestination>;
   updatedAt: string | null;
-  networkMap?: React.ReactNode;
 }) {
   const params = useParams();
   const locale = (params?.locale as Locale) ?? "en";
@@ -405,11 +390,8 @@ export function BusesClient({
           </div>
         </div>
 
-        {/* Plan réseau type métro (server component injecté depuis page.tsx) */}
-        {networkMap}
-
-        {/* Search bar */}
-        <div className="rounded-xl border border-border bg-white p-5 mb-8 shadow-sm">
+        {/* Search bar AVANT la carte → la map réagit aux sélecteurs */}
+        <div className="rounded-xl border border-border bg-white p-5 mb-6 shadow-sm">
           <p className="text-sm font-semibold text-text mb-3">{t("searchTitle", locale)}</p>
           <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
             <select
@@ -446,6 +428,9 @@ export function BusesClient({
             )}
           </div>
         </div>
+
+        {/* Plan réseau interactif — réagit aux sélecteurs From/To */}
+        <BusNetworkMap locale={locale} fromPlace={fromPlace} toPlace={toPlace} />
 
         {/* Results (search) or grouped directory */}
         {hasSearch ? (
@@ -498,27 +483,6 @@ export function BusesClient({
           <p className="text-sm text-amber-800">{t("disclaimer", locale)}</p>
         </div>
 
-        {/* Official links */}
-        <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center text-center">
-          <a
-            href="https://www.ktelherlas.gr/en/timetables"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 text-sm text-aegean font-medium hover:underline"
-          >
-            <ExternalLink className="w-4 h-4" />
-            {t("officialEast", locale)}
-          </a>
-          <a
-            href="https://www.e-ktel.com/en/services/dromologia"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 text-sm text-aegean font-medium hover:underline"
-          >
-            <ExternalLink className="w-4 h-4" />
-            {t("officialWest", locale)}
-          </a>
-        </div>
       </div>
     </main>
   );

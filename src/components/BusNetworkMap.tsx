@@ -1,5 +1,8 @@
+"use client";
+
 // BusNetworkMap - plan du réseau KTEL Crète style Harry Beck (Paris metro).
-// Server component (SSG-friendly, SEO : le SVG est dans le HTML).
+// Interactif : props fromPlace/toPlace highlightent 2 stations + lignes qui
+// les relient, grisent le reste. Toujours indexable Google (SVG inline).
 //
 // Stratégie layout :
 //   - La côte nord de la Crète est quasi-rectiligne → on aligne toutes les villes
@@ -22,8 +25,8 @@ type Station = {
   /** Position viewBox 1200×420. */
   x: number;
   y: number;
-  /** "town" | "airport" | "beach" | "site" */
-  kind?: "town" | "airport" | "beach" | "site";
+  /** "town" | "airport" | "beach" | "site" | "village" */
+  kind?: "town" | "airport" | "beach" | "site" | "village";
   /** Anchor label : "above" (default) / "below" / "right" / "left" */
   anchor?: "above" | "below" | "right" | "left";
   /** Si destination = ancre interne sur /buses (slug bus_destinations). */
@@ -42,32 +45,39 @@ type Line = {
 };
 
 const STATIONS: Station[] = [
-  // Ligne nord (gauche → droite, ouest → est)
-  { id: "kissamos",  label: { en: "Kissamos" },                                   x: 80,   y: 180, kind: "town" },
-  { id: "chania_apt",label: { en: "Chania Apt", fr: "Aéroport La Canée" },        x: 200,  y: 90,  kind: "airport", anchor: "above" },
-  { id: "chania",    label: { en: "Chania", fr: "La Canée" },                     x: 220,  y: 180, kind: "town", destSlug: "chania" },
-  { id: "rethymno",  label: { en: "Rethymno", fr: "Rethymnon" },                  x: 410,  y: 180, kind: "town", destSlug: "rethymno" },
-  { id: "heraklion", label: { en: "Heraklion", fr: "Héraklion" },                 x: 640,  y: 180, kind: "town", destSlug: "heraklion" },
-  { id: "her_apt",   label: { en: "Heraklion Apt", fr: "Aéroport Héraklion" },    x: 700,  y: 90,  kind: "airport", anchor: "above" },
-  { id: "hersonissos",label:{ en: "Hersonissos" },                                x: 780,  y: 180, kind: "town", destSlug: "hersonissos" },
-  { id: "malia",     label: { en: "Malia" },                                      x: 850,  y: 180, kind: "town", destSlug: "malia" },
-  { id: "agios",     label: { en: "Agios Nikolaos" },                             x: 970,  y: 180, kind: "town", destSlug: "agios-nikolaos" },
-  { id: "elounda",   label: { en: "Elounda" },                                    x: 990,  y: 90,  kind: "town", anchor: "above" },
-  { id: "sitia",     label: { en: "Sitia" },                                      x: 1120, y: 180, kind: "town", destSlug: "sitia" },
+  // ============ NORD (ligne principale ouest → est) ============
+  { id: "falassarna",label: { en: "Falassarna" },                                 x: 40,   y: 110, kind: "beach", anchor: "above" },
+  { id: "balos",     label: { en: "Balos" },                                      x: 60,   y: 50,  kind: "beach", anchor: "above", destSlug: "balos" },
+  { id: "kissamos",  label: { en: "Kissamos" },                                   x: 100,  y: 200, kind: "town" },
+  { id: "chania_apt",label: { en: "Chania Apt", fr: "Aéroport La Canée" },        x: 230,  y: 110, kind: "airport", anchor: "above" },
+  { id: "chania",    label: { en: "Chania", fr: "La Canée" },                     x: 250,  y: 200, kind: "town", destSlug: "chania" },
+  { id: "souda",     label: { en: "Souda", fr: "Souda (port)" },                  x: 320,  y: 110, kind: "town", anchor: "above" },
+  { id: "rethymno",  label: { en: "Rethymno", fr: "Rethymnon" },                  x: 470,  y: 200, kind: "town", destSlug: "rethymno" },
+  { id: "anogeia",   label: { en: "Anogeia" },                                    x: 560,  y: 120, kind: "village", anchor: "above" },
+  { id: "heraklion", label: { en: "Heraklion", fr: "Héraklion" },                 x: 680,  y: 200, kind: "town", destSlug: "heraklion" },
+  { id: "her_apt",   label: { en: "Heraklion Apt", fr: "Aéroport Héraklion" },    x: 720,  y: 110, kind: "airport", anchor: "above" },
+  { id: "hersonissos",label:{ en: "Hersonissos" },                                x: 790,  y: 200, kind: "town", destSlug: "hersonissos" },
+  { id: "malia",     label: { en: "Malia" },                                      x: 860,  y: 200, kind: "town", destSlug: "malia" },
+  { id: "agios",     label: { en: "Agios Nikolaos" },                             x: 970,  y: 200, kind: "town", destSlug: "agios-nikolaos" },
+  { id: "elounda",   label: { en: "Elounda" },                                    x: 990,  y: 110, kind: "town", anchor: "above" },
+  { id: "sitia",     label: { en: "Sitia" },                                      x: 1110, y: 200, kind: "town", destSlug: "sitia" },
+  { id: "vai",       label: { en: "Vai" },                                        x: 1160, y: 110, kind: "beach", anchor: "above" },
 
-  // Sud (ligne secondaire)
-  { id: "matala",    label: { en: "Matala" },                                     x: 580,  y: 330, kind: "beach", anchor: "below", destSlug: "matala" },
-  { id: "knossos",   label: { en: "Knossos" },                                    x: 640,  y: 260, kind: "site", anchor: "below", destSlug: "knossos" },
-  { id: "ierapetra", label: { en: "Ierapetra" },                                  x: 920,  y: 330, kind: "town", anchor: "below", destSlug: "ierapetra" },
-  { id: "makrigialos",label:{ en: "Makrigialos" },                                x: 1010, y: 330, kind: "town", anchor: "below" },
-
-  // Branches saisonnières ouest
-  { id: "elafonissi",label: { en: "Elafonissi" },                                 x: 100,  y: 330, kind: "beach", anchor: "below", destSlug: "elafonissi" },
-  { id: "balos",     label: { en: "Balos" },                                      x: 60,   y: 90,  kind: "beach", anchor: "above", destSlug: "balos" },
+  // ============ SUD ============
+  { id: "paleochora",label: { en: "Paleochora", fr: "Paléochora" },               x: 180,  y: 360, kind: "town", anchor: "below" },
+  { id: "sougia",    label: { en: "Sougia" },                                     x: 250,  y: 380, kind: "village", anchor: "below" },
+  { id: "elafonissi",label: { en: "Elafonissi" },                                 x: 100,  y: 360, kind: "beach", anchor: "below", destSlug: "elafonissi" },
+  { id: "omalos",    label: { en: "Omalos / Samaria" },                           x: 310,  y: 320, kind: "site", anchor: "below" },
+  { id: "sfakion",   label: { en: "Hora Sfakion", fr: "Sfakia" },                 x: 380,  y: 380, kind: "town", anchor: "below" },
+  { id: "plakias",   label: { en: "Plakias" },                                    x: 470,  y: 360, kind: "beach", anchor: "below" },
+  { id: "matala",    label: { en: "Matala" },                                     x: 620,  y: 360, kind: "beach", anchor: "below", destSlug: "matala" },
+  { id: "knossos",   label: { en: "Knossos" },                                    x: 680,  y: 280, kind: "site", anchor: "below", destSlug: "knossos" },
+  { id: "ierapetra", label: { en: "Ierapetra" },                                  x: 920,  y: 360, kind: "town", anchor: "below", destSlug: "ierapetra" },
+  { id: "makrigialos",label:{ en: "Makrigialos" },                                x: 1010, y: 360, kind: "town", anchor: "below" },
 ];
 
 const LINES: Line[] = [
-  // OUEST ektel (aegean)
+  // ============ OUEST ektel (aegean) ============
   {
     id: "west_main",
     color: "aegean",
@@ -86,10 +96,16 @@ const LINES: Line[] = [
     stops: ["chania", "chania_apt"],
   },
   {
-    id: "west_elafonissi",
+    id: "west_souda",
     color: "aegean",
-    operatorLabel: { en: "Elafonissi (summer only)" },
-    stops: ["chania", "elafonissi"],
+    operatorLabel: { en: "Souda ferry port (Athens)" },
+    stops: ["chania", "souda"],
+  },
+  {
+    id: "west_falassarna",
+    color: "aegean",
+    operatorLabel: { en: "Falassarna beach (summer only)" },
+    stops: ["kissamos", "falassarna"],
     dashed: true,
   },
   {
@@ -99,8 +115,53 @@ const LINES: Line[] = [
     stops: ["kissamos", "balos"],
     dashed: true,
   },
+  {
+    id: "west_paleochora",
+    color: "aegean",
+    operatorLabel: { en: "Paleochora (south-west)" },
+    stops: ["chania", "paleochora"],
+  },
+  {
+    id: "west_sougia",
+    color: "aegean",
+    operatorLabel: { en: "Sougia (south)" },
+    stops: ["chania", "sougia"],
+  },
+  {
+    id: "west_omalos",
+    color: "aegean",
+    operatorLabel: { en: "Omalos / Samaria Gorge (summer only)" },
+    stops: ["chania", "omalos"],
+    dashed: true,
+  },
+  {
+    id: "west_sfakion",
+    color: "aegean",
+    operatorLabel: { en: "Hora Sfakion / Loutro" },
+    stops: ["chania", "sfakion"],
+  },
+  {
+    id: "west_elafonissi",
+    color: "aegean",
+    operatorLabel: { en: "Elafonissi (summer only)" },
+    stops: ["chania", "elafonissi"],
+    dashed: true,
+  },
+  {
+    id: "west_plakias",
+    color: "aegean",
+    operatorLabel: { en: "Plakias (south)" },
+    stops: ["rethymno", "plakias"],
+  },
+  {
+    id: "west_anogeia",
+    color: "olive",
+    operatorLabel: { en: "Anogeia / Psiloritis (mountain)" },
+    stops: ["rethymno", "anogeia"],
+    dashed: true,
+  },
 
-  // EST herlas (terra)
+  // ============ EST herlas (terra) ============
   {
     id: "east_main",
     color: "terra",
@@ -137,6 +198,13 @@ const LINES: Line[] = [
     stops: ["agios", "ierapetra", "makrigialos"],
   },
   {
+    id: "east_vai",
+    color: "terra",
+    operatorLabel: { en: "Vai palm beach (summer only)" },
+    stops: ["sitia", "vai"],
+    dashed: true,
+  },
+  {
     id: "east_matala",
     color: "olive",
     operatorLabel: { en: "Matala / Messara plain (south)" },
@@ -156,11 +224,45 @@ const LINE_STROKE = 5;
 
 type Props = {
   locale: string;
-  /** Locale du domaine (default fr). */
-  baseLocale?: Loc;
-  /** Préfixe ancre destination (default `#`). */
-  anchorPrefix?: string;
+  /** Place name from BusesClient search (raw, ex "Heraklion", "Agios Nikolaos"). */
+  fromPlace?: string;
+  /** Place name to. */
+  toPlace?: string;
 };
+
+// Mapping nom de lieu (bus_routes.from_place / to_place) → station.id de la map.
+// Normalisé lowercase + trim. Tout ce qui n'est pas dedans = pas de highlight
+// (la map reste à pleine opacité).
+const PLACE_TO_STATION: Record<string, string> = {
+  "heraklion": "heraklion",
+  "héraklion": "heraklion",
+  "chania": "chania",
+  "la canée": "chania",
+  "rethymno": "rethymno",
+  "rethymnon": "rethymno",
+  "agios nikolaos": "agios",
+  "sitia": "sitia",
+  "hersonissos": "hersonissos",
+  "malia": "malia",
+  "elounda": "elounda",
+  "elounta": "elounda",
+  "kissamos": "kissamos",
+  "matala": "matala",
+  "knossos": "knossos",
+  "ierapetra": "ierapetra",
+  "makrigialos": "makrigialos",
+  "heraklion apt": "her_apt",
+  "heraklion airport": "her_apt",
+  "chania apt": "chania_apt",
+  "chania airport": "chania_apt",
+  "elafonissi": "elafonissi",
+  "balos": "balos",
+};
+
+function placeToStationId(place?: string): string | null {
+  if (!place) return null;
+  return PLACE_TO_STATION[place.toLowerCase().trim()] ?? null;
+}
 
 function pickLoc(locale: string): Loc {
   return (["en", "fr", "de", "el"] as const).includes(locale as Loc)
@@ -191,11 +293,33 @@ const T = {
   },
 };
 
-export function BusNetworkMap({ locale }: Props) {
+export function BusNetworkMap({ locale, fromPlace, toPlace }: Props) {
   const loc = pickLoc(locale);
   const stationById: Record<string, Station> = Object.fromEntries(
     STATIONS.map((s) => [s.id, s]),
   );
+
+  // Highlight logic : 2 stations matchées + lignes qui les couvrent.
+  const fromId = placeToStationId(fromPlace);
+  const toId = placeToStationId(toPlace);
+  const hasHighlight = !!(fromId || toId);
+  const highlightedStationIds = new Set<string>(
+    [fromId, toId].filter((x): x is string => !!x),
+  );
+  // Une ligne est "active" si elle touche au moins une des 2 stations highlightées.
+  // (Si direct = touche les 2, on la mettra encore plus en valeur via stroke-width.)
+  const highlightedLineIds = new Set<string>();
+  const directLineIds = new Set<string>();
+  for (const line of LINES) {
+    const touchesFrom = fromId ? line.stops.includes(fromId) : false;
+    const touchesTo = toId ? line.stops.includes(toId) : false;
+    if (touchesFrom || touchesTo) highlightedLineIds.add(line.id);
+    if (touchesFrom && touchesTo) directLineIds.add(line.id);
+  }
+  const isStationActive = (id: string) =>
+    !hasHighlight || highlightedStationIds.has(id);
+  const isLineActive = (id: string) =>
+    !hasHighlight || highlightedLineIds.has(id);
 
   return (
     <section
@@ -235,17 +359,20 @@ export function BusNetworkMap({ locale }: Props) {
               })
               .filter(Boolean)
               .join(" ");
+            const active = isLineActive(line.id);
+            const isDirect = directLineIds.has(line.id);
             return (
               <polyline
                 key={line.id}
                 points={points}
                 fill="none"
                 stroke={COLOR_HEX[line.color]}
-                strokeWidth={LINE_STROKE}
+                strokeWidth={isDirect ? LINE_STROKE + 2 : LINE_STROKE}
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeDasharray={line.dashed ? "8 8" : undefined}
-                opacity={0.9}
+                opacity={active ? 0.95 : 0.18}
+                style={{ transition: "opacity 280ms ease, stroke-width 280ms ease" }}
               />
             );
           })}
@@ -263,17 +390,39 @@ export function BusNetworkMap({ locale }: Props) {
             const textAnchor =
               s.anchor === "right" ? "start" : s.anchor === "left" ? "end" : "middle";
 
+            const active = isStationActive(s.id);
+            const isPinned = highlightedStationIds.has(s.id);
+            // Couleur de pin pour from = aegean, pour to = terra (différenciation)
+            const pinColor =
+              s.id === fromId ? "var(--color-aegean)"
+              : s.id === toId ? "var(--color-terra)"
+              : null;
+
             const innerCircle = (
-              <>
+              <g
+                opacity={active ? 1 : 0.35}
+                style={{ transition: "opacity 280ms ease" }}
+              >
+                {isPinned && pinColor && (
+                  <circle
+                    cx={s.x}
+                    cy={s.y}
+                    r={STATION_RADIUS + 8}
+                    fill="none"
+                    stroke={pinColor}
+                    strokeWidth={3}
+                    opacity={0.9}
+                  />
+                )}
                 <circle
                   cx={s.x}
                   cy={s.y}
-                  r={isHub ? STATION_RADIUS + 2 : STATION_RADIUS}
-                  fill="#FFFFFF"
+                  r={isPinned ? STATION_RADIUS + 3 : isHub ? STATION_RADIUS + 2 : STATION_RADIUS}
+                  fill={isPinned && pinColor ? pinColor : "#FFFFFF"}
                   stroke="var(--color-text)"
                   strokeWidth={2}
                 />
-                {isHub && (
+                {isHub && !isPinned && (
                   <circle
                     cx={s.x}
                     cy={s.y}
@@ -284,15 +433,15 @@ export function BusNetworkMap({ locale }: Props) {
                 <text
                   x={s.x + labelDx}
                   y={s.y + labelDy}
-                  fontSize={isHub ? 14 : 11}
-                  fontWeight={isHub ? 700 : 500}
+                  fontSize={isPinned ? 13 : isHub ? 14 : 11}
+                  fontWeight={isPinned || isHub ? 700 : 500}
                   fontFamily="ui-sans-serif, system-ui, sans-serif"
                   fill="var(--color-text)"
                   textAnchor={textAnchor}
                 >
                   {stationLabel(s, loc)}
                 </text>
-              </>
+              </g>
             );
 
             return s.destSlug ? (
