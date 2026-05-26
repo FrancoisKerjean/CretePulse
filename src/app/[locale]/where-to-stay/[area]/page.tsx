@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { breadcrumbSchema } from "@/lib/schema";
 import { AffiliateCTA } from "@/components/ui/affiliate-cta";
 import RentalCTA from "@/components/RentalCTA";
+import { BusAccessBox } from "@/components/BusAccessBox";
 import { buildAlternates } from "@/lib/seo";
 
 export const revalidate = 86400;
@@ -476,6 +477,14 @@ export default async function WhereToStayAreaPage({
             })}
           </div>
         </section>
+
+        {/* Bus access — internal linking vers /buses */}
+        <BusAccessBox
+          locale={locale}
+          destinationName={area.name}
+          matchSlug={areaSlug}
+          matchOn="where_to_stay_slug"
+        />
 
         {/* FAQ */}
         <section className="mb-12">

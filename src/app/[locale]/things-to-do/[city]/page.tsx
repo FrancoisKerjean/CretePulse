@@ -1,6 +1,7 @@
 import { CITIES, MONTH_NAMES } from "@/lib/weather-monthly";
 import type { Locale } from "@/lib/types";
 import { Waves, Sun, UtensilsCrossed, Mountain, Calendar, ChevronLeft, MapPin, ChevronRight } from "lucide-react";
+import { BusAccessBox } from "@/components/BusAccessBox";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
@@ -485,6 +486,14 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
             ))}
           </div>
         </section>
+
+        {/* Bus access — internal linking vers /buses */}
+        <BusAccessBox
+          locale={locale}
+          destinationName={city.name}
+          matchSlug={citySlug}
+          matchOn="things_to_do_slug"
+        />
 
         {/* Other cities */}
         <section>

@@ -1,4 +1,5 @@
 import { ChevronLeft, MapPin, Home, Euro, Calendar, Star, Award, Shield } from "lucide-react";
+import { BusAccessBox } from "@/components/BusAccessBox";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -551,6 +552,14 @@ export default async function AirbnbNeighbourhoodPage(
             .
           </p>
         </section>
+
+        {/* Bus access — internal linking vers /buses (match opportuniste sur slug) */}
+        <BusAccessBox
+          locale={locale}
+          destinationName={n.label[uiLoc] ?? n.label.en}
+          matchSlug={n.slug}
+          matchOn="slug"
+        />
 
         {/* CTA */}
         <section className="mb-10 rounded-lg bg-stone-900 p-6 text-white">

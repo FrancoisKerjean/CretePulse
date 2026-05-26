@@ -79,6 +79,26 @@ const T = {
   price: { en: "Price", fr: "Prix", de: "Preis", el: "Τιμή" },
   departures: { en: "Departures", fr: "Départs", de: "Abfahrten", el: "Αναχωρήσεις" },
   perDay: { en: "/ day", fr: "/ jour", de: "/ Tag", el: "/ ημέρα" },
+  allDepartures: {
+    en: "All departure times",
+    fr: "Tous les horaires de départ",
+    de: "Alle Abfahrtszeiten",
+    el: "Όλες οι ώρες αναχώρησης",
+  },
+  showLess: { en: "Show less", fr: "Réduire", de: "Weniger anzeigen", el: "Λιγότερα" },
+  showAll: { en: "Show all", fr: "Tout afficher", de: "Alle anzeigen", el: "Όλα" },
+  noTimetableYet: {
+    en: "Departure times not available yet — check the operator site.",
+    fr: "Horaires non encore disponibles — voir le site de l'opérateur.",
+    de: "Abfahrtszeiten noch nicht verfügbar — Operator-Seite prüfen.",
+    el: "Δεν υπάρχουν διαθέσιμες ώρες — δείτε τον φορέα.",
+  },
+  officialSchedule: {
+    en: "Official schedule",
+    fr: "Horaires officiels",
+    de: "Offizieller Fahrplan",
+    el: "Επίσημο πρόγραμμα",
+  },
   whatToDo: { en: "What to do in", fr: "Que faire à", de: "Aktivitäten in", el: "Τι να κάνετε στο" },
   whereToStay: { en: "Where to stay", fr: "Où dormir", de: "Unterkünfte", el: "Πού να μείνετε" },
   beachesNear: { en: "Beaches near", fr: "Plages près de", de: "Strände bei", el: "Παραλίες κοντά στο" },
@@ -189,6 +209,7 @@ function NoDirectBusCard({ destination, locale }: { destination: BusDestination;
 function RouteCard({ route, destination, locale }: { route: BusRoute; destination?: BusDestination; locale: Locale }) {
   const deps = route.departures ?? [];
   const range = deps.length > 0 ? `${deps[0]} – ${deps[deps.length - 1]}` : null;
+  const COLLAPSED_LIMIT = 8;
 
   return (
     <div className="rounded-xl border border-border bg-white overflow-hidden hover:shadow-md transition-shadow flex flex-col">
@@ -235,9 +256,78 @@ function RouteCard({ route, destination, locale }: { route: BusRoute; destinatio
         )}
       </div>
 
+      {deps.length > 0 && (
+        <DepartureChips
+          times={deps}
+          collapsedLimit={COLLAPSED_LIMIT}
+          sourceUrl={route.source_url}
+          locale={locale}
+        />
+      )}
+
       <div className="mt-auto">
         <GuideLinks route={route} destination={destination} locale={locale} />
       </div>
+    </div>
+  );
+}
+
+// Liste détaillée des horaires de départ : SEO + utilité = on rend tout
+// dans le HTML (pas de <details> qui masque côté Google), avec un toggle
+// client pour le confort visuel quand il y a beaucoup de départs.
+function DepartureChips({
+  times,
+  collapsedLimit,
+  sourceUrl,
+  locale,
+}: {
+  times: string[];
+  collapsedLimit: number;
+  sourceUrl?: string;
+  locale: Locale;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const visible = expanded || times.length <= collapsedLimit
+    ? times
+    : times.slice(0, collapsedLimit);
+
+  return (
+    <div className="px-4 pb-4 pt-1">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+          {t("allDepartures", locale)}
+        </p>
+        {sourceUrl && (
+          <a
+            href={sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-aegean hover:underline inline-flex items-center gap-1"
+          >
+            {t("officialSchedule", locale)}
+            <ExternalLink className="w-3 h-3" aria-hidden="true" />
+          </a>
+        )}
+      </div>
+      <ul className="flex flex-wrap gap-1.5 list-none p-0 m-0">
+        {visible.map((time) => (
+          <li
+            key={time}
+            className="px-2 py-0.5 rounded bg-aegean/5 border border-aegean/15 text-xs font-mono text-text"
+          >
+            {time}
+          </li>
+        ))}
+      </ul>
+      {times.length > collapsedLimit && (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-2 text-xs text-aegean font-semibold hover:underline"
+        >
+          {expanded ? t("showLess", locale) : `${t("showAll", locale)} (${times.length})`}
+        </button>
+      )}
     </div>
   );
 }
