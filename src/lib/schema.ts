@@ -53,31 +53,55 @@ export function beachSchema(beach: Beach, locale: Locale): Record<string, unknow
 export function eventSchema(event: Event, locale: Locale): Record<string, unknown> {
   const name = getLocalizedField(event, "title", locale);
   const description = getLocalizedField(event, "description", locale);
+  const url = `${BASE_URL}/${locale}/events/${event.slug}`;
+
+  const startDate = event.time_start
+    ? `${event.date_start}T${event.time_start}`
+    : event.date_start;
+  const endDate = event.date_end
+    ? (event.time_start ? `${event.date_end}T${event.time_start}` : event.date_end)
+    : startDate;
+
+  const locationName = event.location_name?.trim() || event.region || "Crete";
+  const image = `${BASE_URL}/api/og?type=event&title=${encodeURIComponent(name)}&subtitle=${encodeURIComponent(locationName)}`;
 
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Event",
     name,
     description: description?.substring(0, 300) || undefined,
-    url: `${BASE_URL}/${locale}/events/${event.slug}`,
-    startDate: event.time_start
-      ? `${event.date_start}T${event.time_start}`
-      : event.date_start,
-    endDate: event.date_end || undefined,
+    url,
+    startDate,
+    endDate,
+    image,
+    eventStatus: "https://schema.org/EventScheduled",
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     location: {
       "@type": "Place",
-      name: event.location_name,
+      name: locationName,
       address: {
         "@type": "PostalAddress",
+        addressLocality: locationName,
         addressRegion: event.region || "Crete",
         addressCountry: "GR",
       },
     },
-    eventStatus: "https://schema.org/EventScheduled",
     organizer: {
       "@type": "Organization",
       name: "Crete Direct",
       url: BASE_URL,
+    },
+    performer: {
+      "@type": "PerformingGroup",
+      name,
+    },
+    offers: {
+      "@type": "Offer",
+      url,
+      price: "0",
+      priceCurrency: "EUR",
+      availability: "https://schema.org/InStock",
+      validFrom: event.date_start,
     },
   };
 
