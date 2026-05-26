@@ -18,6 +18,7 @@
 
 import { supabase } from "@/lib/supabase";
 import { MONTHS, CITIES } from "@/lib/weather-monthly";
+import { CRETE_NEIGHBOURHOODS } from "@/lib/airbnb-mappings";
 
 export const revalidate = 86400;
 
@@ -44,6 +45,7 @@ const STATIC_PAGES = [
   "/buses",
   "/fire-alerts",
   "/property-management",
+  "/airbnb",
 ];
 
 const BEACH_ACTIVITIES = ["snorkeling", "kids", "swimming", "secluded", "sandy", "pebble"];
@@ -181,6 +183,14 @@ export async function GET() {
   for (const s of AREA_SLUGS) push(`/where-to-stay/${s}`, "monthly", 0.6);
   for (const s of ITINERARY_SLUGS) push(`/itineraries/${s}`, "monthly", 0.7);
   for (const s of ARCH_SLUGS) push(`/archaeology/${s}`, "monthly", 0.6);
+
+  // Inside Airbnb data pages: 24 Crete neighbourhoods x 22 locales = 528 URLs.
+  // High SEO priority — these are data-exclusive pages (ADR, occupancy, hosts
+  // breakdown, revenue estimates from public Inside Airbnb snapshot) that
+  // no competitor can replicate. Prerendered for en/fr/de/el (96 pages),
+  // ISR-served for the other 18 locales with English UI fallback + proper
+  // hreflang alternates.
+  for (const n of CRETE_NEIGHBOURHOODS) push(`/airbnb/${n.slug}`, "monthly", 0.7);
 
   // Dynamic DB pages — news + guides use real published_at as lastmod
   // (huge crawl prioritization signal for Google News)
