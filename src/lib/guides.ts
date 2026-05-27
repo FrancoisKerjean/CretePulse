@@ -15,6 +15,7 @@ export interface Guide {
   published_at: string;
   created_at: string;
   status: string;
+  youtube_video_id: string | null;
 }
 
 export function getLocalizedGuideField(

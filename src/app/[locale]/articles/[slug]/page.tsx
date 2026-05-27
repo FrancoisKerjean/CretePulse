@@ -17,6 +17,7 @@ import DiscoverCrete from "@/components/DiscoverCrete";
 import ReadingProgressBar from "@/components/ReadingProgressBar";
 import StickyNewsletterBar from "@/components/StickyNewsletterBar";
 import RentalCTA from "@/components/RentalCTA";
+import YouTubeEmbed from "@/components/YouTubeEmbed";
 
 export const revalidate = 86400;
 
@@ -168,6 +169,26 @@ function JsonLdSchemas({
         }
       : null;
 
+  // VideoObject schema quand une vidéo YouTube est embarquée (SEO : Google peut
+  // l'afficher en rich result dans les SERP).
+  const videoSchema = guide.youtube_video_id
+    ? {
+        "@context": "https://schema.org",
+        "@type": "VideoObject",
+        name: title,
+        description,
+        thumbnailUrl: `https://i.ytimg.com/vi/${guide.youtube_video_id}/maxresdefault.jpg`,
+        uploadDate: guide.published_at,
+        contentUrl: `https://www.youtube.com/watch?v=${guide.youtube_video_id}`,
+        embedUrl: `https://www.youtube-nocookie.com/embed/${guide.youtube_video_id}`,
+        publisher: {
+          "@type": "Organization",
+          name: "Crete Direct",
+          logo: { "@type": "ImageObject", url: `${BASE_URL}/icon.svg` },
+        },
+      }
+    : null;
+
   return (
     <>
       <script
@@ -178,6 +199,12 @@ function JsonLdSchemas({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      )}
+      {videoSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(videoSchema) }}
         />
       )}
     </>
@@ -397,6 +424,16 @@ export default async function ArticleDetailPage({
         <div className="flex gap-12 items-start">
           {/* Article */}
           <div className="min-w-0 flex-1">
+            {/* YouTube embed quand la vidéo daily a été uploadée par le pipeline auto */}
+            {guide.youtube_video_id && (
+              <YouTubeEmbed
+                videoId={guide.youtube_video_id}
+                title={title}
+                locale={loc}
+                vertical={guide.format === "daily"}
+              />
+            )}
+
             <article
               className="prose prose-slate max-w-none
                 prose-h2:text-aegean prose-h2:font-bold prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-3
