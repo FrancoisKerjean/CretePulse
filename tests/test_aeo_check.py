@@ -38,6 +38,30 @@ def test_fails_when_no_table_and_no_long_list():
     assert result.passed is False
     assert "no_table_or_long_list" in result.failures
 
+def test_passes_with_strong_question_pattern_mid_pillar_style():
+    """Mid/pillar articles often use <p><strong>Question?</strong><br>Answer</p> in FAQ.
+    The check must accept this as a valid AEO question signal."""
+    html = """<h1>Balos vs Elafonisi: Which Crete Paradise Wins</h1>
+    <p>Both beaches charge 0 EUR entry but ferry costs 18 EUR.</p>
+    <h2>Quick Verdict</h2>
+    <table><tr><td>A</td></tr><tr><td>B</td></tr><tr><td>C</td></tr><tr><td>D</td></tr></table>
+    <h2>Frequently Asked Questions</h2>
+    <p><strong>Which beach is better for families?</strong><br>Elafonisi.</p>"""
+    faq = {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Q", "acceptedAnswer": {"@type": "Answer", "text": "A"}}] * 3}
+    result = check_aeo_compliance(html, faq)
+    assert result.passed is True
+
+def test_passes_with_h3_question_pattern():
+    """H3 questions also count as valid AEO signal."""
+    html = """<h1>Crete Tourism Guide 2026</h1>
+    <p>Crete welcomed 5.7 million tourists in 2025.</p>
+    <h2>Practical Tips</h2>
+    <h3>Should you visit Crete in May?</h3>
+    <table><tr><td>A</td></tr><tr><td>B</td></tr><tr><td>C</td></tr><tr><td>D</td></tr></table>"""
+    faq = {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Q", "acceptedAnswer": {"@type": "Answer", "text": "A"}}] * 3}
+    result = check_aeo_compliance(html, faq)
+    assert result.passed is True
+
 def test_fails_when_faq_under_3_entries():
     html = """<h1>Can you drink tap water in Crete?</h1>
     <p>Yes 95% of the time.</p>

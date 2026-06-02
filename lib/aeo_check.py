@@ -21,13 +21,12 @@ def check_aeo_compliance(html: str, faq_jsonld: dict) -> AEOFailure:
     details: Dict[str, Any] = {}
 
     h1 = soup.find("h1")
-    h2s = soup.find_all("h2")
-    has_question = False
-    if h1 and "?" in h1.get_text():
-        has_question = True
+    heading_tags = soup.find_all(["h1", "h2", "h3", "h4"])
+    has_question = any("?" in el.get_text() for el in heading_tags)
     if not has_question:
-        for h2 in h2s:
-            if "?" in h2.get_text():
+        for el in soup.find_all(["strong", "b"]):
+            text = el.get_text(strip=True)
+            if "?" in text and 5 < len(text) < 200:
                 has_question = True
                 break
     if not has_question:
