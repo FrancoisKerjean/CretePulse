@@ -1,5 +1,10 @@
 import { supabase } from "@/lib/supabase";
 
+export interface BusDepartureGroup {
+  days: string;
+  times: string[];
+}
+
 export interface BusRoute {
   id: number;
   operator_id: string;
@@ -11,6 +16,7 @@ export interface BusRoute {
   price_eur: number | null;
   frequency: string | null;
   departures: string[] | null;
+  departures_by_day: BusDepartureGroup[] | null;
   source_url: string;
   scraped_at: string;
 }

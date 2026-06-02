@@ -14,7 +14,12 @@ def should_commit(rows) -> bool:
 
 
 def normalize_for_db(operator_id: str, source_url: str, rows: list) -> list:
-    """Met les routes scrapees au format de la table bus_routes."""
+    """Met les routes scrapees au format de la table bus_routes.
+
+    `departures_by_day` est la nouvelle source de verite (sous-grilles
+    Mon-Fri / Sat / Sun). `departures` reste persiste en flat sorted unique
+    pour retrocompat lecture (range affiche, recherche).
+    """
     now = datetime.now(timezone.utc).isoformat()
     return [{
         "operator_id": operator_id,
@@ -26,6 +31,7 @@ def normalize_for_db(operator_id: str, source_url: str, rows: list) -> list:
         "price_eur": r.get("price_eur"),
         "frequency": r.get("frequency"),
         "departures": r.get("departures"),
+        "departures_by_day": r.get("departures_by_day"),
         "source_url": source_url,
         "scraped_at": now,
     } for r in rows]

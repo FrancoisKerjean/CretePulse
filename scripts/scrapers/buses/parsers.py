@@ -109,7 +109,18 @@ def parse_herlas_index(html: str) -> list[str]:
 
 
 def parse_herlas_detail(html: str) -> list[dict]:
-    """Parse une page detail herlas -> routes (un bloc `timetable_box` par route)."""
+    """Parse une page detail herlas -> routes (un bloc `timetable_box` par route).
+
+    Un `timetable_box` peut contenir PLUSIEURS `timetable_valuesWrapper`, chacun
+    portant un `daysWrapper` (ex: 'Mon-Fri', 'Sat', 'Sun') + sa propre liste
+    `timetable_time__`. On extrait chaque sous-grille distincte dans
+    `departures_by_day` au lieu de fusionner (bug doublons 02/06/2026).
+
+    Sortie :
+      - `departures_by_day`: [{days: 'Mon, Tue, ...', times: ['07:20', '10:00']}, ...]
+      - `departures`: liste flat triee+dedupliquee (retrocompat affichage, range).
+      - `frequency`: jours de la PREMIERE sous-grille (descripteur principal).
+    """
     soup = BeautifulSoup(html, "html.parser")
     routes = []
     for box in soup.find_all(_has_class_prefix("timetable_box")):
@@ -122,22 +133,45 @@ def parse_herlas_detail(html: str) -> list[dict]:
         from_place, to_place = rt
         if not is_crete_route(from_place, to_place):
             continue  # exclut les liaisons continent (data Crete only)
-        days_el = box.find(_has_class_prefix("timetable_daysWrapper")) or box.find(
-            _has_class_prefix("timetable_days")
-        )
-        frequency = days_el.get_text(" ", strip=True).rstrip(":") if days_el else None
+
+        # Itere chaque sous-grille (valuesWrapper = days + times).
         # ATTENTION : `timetable_time__<hash>` = un horaire ; `timetable_times__<hash>`
         # = le conteneur (texte = tous les horaires colles). On prend le prefixe avec
         # double underscore + on filtre sur HH:MM exact pour exclure le conteneur.
-        times = [t.get_text(strip=True) for t in box.find_all(_has_class_prefix("timetable_time__"))]
-        times = [t for t in times if _TIME_RE.match(t)]
+        by_day: list[dict] = []
+        for vw in box.find_all(_has_class_prefix("timetable_valuesWrapper")):
+            days_el = vw.find(_has_class_prefix("timetable_daysWrapper")) or vw.find(
+                _has_class_prefix("timetable_days")
+            )
+            days = days_el.get_text(" ", strip=True).rstrip(":") if days_el else None
+            sub_times = [t.get_text(strip=True) for t in vw.find_all(_has_class_prefix("timetable_time__"))]
+            sub_times = [t for t in sub_times if _TIME_RE.match(t)]
+            if not sub_times:
+                continue
+            by_day.append({"days": days or "Daily", "times": sub_times})
+
+        # Fallback : si aucun valuesWrapper trouve (markup different), retombe
+        # sur l'ancienne logique (1 grille fusionnee au niveau du box).
+        if not by_day:
+            days_el = box.find(_has_class_prefix("timetable_daysWrapper")) or box.find(
+                _has_class_prefix("timetable_days")
+            )
+            days = days_el.get_text(" ", strip=True).rstrip(":") if days_el else None
+            times = [t.get_text(strip=True) for t in box.find_all(_has_class_prefix("timetable_time__"))]
+            times = [t for t in times if _TIME_RE.match(t)]
+            if times:
+                by_day.append({"days": days or "Daily", "times": times})
+
+        flat = sorted({t for grp in by_day for t in grp["times"]})
+        frequency = by_day[0]["days"] if by_day else None
         routes.append({
             "from_place": from_place,
             "to_place": to_place,
             "duration": None,
             "price_eur": None,
             "frequency": frequency,
-            "departures": times or None,
+            "departures": flat or None,
+            "departures_by_day": by_day or None,
         })
     return routes
 
@@ -256,20 +290,32 @@ def parse_ektel_pdf(text: str, source_url: str = "") -> list[dict]:
     GREEK/ENGLISH. On ignore le grec et on capture les segments anglais après
     chaque `/`. Sur une même ligne on peut avoir :
       route name (avec tiret) → opens new current route
-      frequency (EVERY DAY, MONDAY TO SATURDAY…) → set on current
-      times (HH:MM ...) → append on current
+      frequency (EVERY DAY, MONDAY TO SATURDAY…) → opens new sub-grid in current
+      times (HH:MM ...) → append on current SUB-GRID
+
+    Chaque sous-grille (Mon-Fri / Sat / Sun, etc) devient une entree distincte
+    dans `departures_by_day` (fix 02/06/2026 : avant, toutes les grilles d'une
+    meme route etaient fusionnees dans `departures` -> doublons).
 
     Footnotes type "DEPARTURE AFTER THE ARRIVAL..." sont filtrées par la
     whitelist _FREQ_HEAD.
     """
     routes: list[dict] = []
     current: dict | None = None
+    current_grid: dict | None = None  # sous-grille active dans current["departures_by_day"]
+
+    def _flatten(by_day: list[dict]) -> list[str]:
+        return sorted({t for g in by_day for t in g["times"]})
 
     def flush():
-        nonlocal current
-        if current and current.get("departures"):
+        nonlocal current, current_grid
+        if current and current.get("departures_by_day"):
+            current["departures"] = _flatten(current["departures_by_day"])
+            if current["frequency"] is None:
+                current["frequency"] = current["departures_by_day"][0]["days"]
             routes.append(current)
         current = None
+        current_grid = None
 
     for raw_line in text.splitlines():
         line = raw_line.strip()
@@ -293,17 +339,27 @@ def parse_ektel_pdf(text: str, source_url: str = "") -> list[dict]:
                         "price_eur": None,
                         "frequency": None,
                         "departures": [],
+                        "departures_by_day": [],
                         "source_url": source_url,
                         "season": "all",
                     }
+                    current_grid = None
             elif _is_freq(seg):
-                # Frequency : pose sur la route active si elle n'en a pas encore
-                if current is not None and current["frequency"] is None:
-                    current["frequency"] = seg.strip().title()
+                # Nouvelle sous-grille (jour-type) sur la route active
+                if current is not None:
+                    days_label = seg.strip().title()
+                    current_grid = {"days": days_label, "times": []}
+                    current["departures_by_day"].append(current_grid)
+                    if current["frequency"] is None:
+                        current["frequency"] = days_label
 
-        # Apply times to current
+        # Apply times to current sub-grid (cree une grille "Daily" implicite
+        # si on a des times sans frequency precedente -> robustesse PDF mal formate)
         if current is not None and times:
-            current["departures"].extend(times)
+            if current_grid is None:
+                current_grid = {"days": "Daily", "times": []}
+                current["departures_by_day"].append(current_grid)
+            current_grid["times"].extend(times)
 
     flush()
     return routes

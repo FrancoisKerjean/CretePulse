@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Bus, Clock, Euro, ArrowRight, Info } from "lucide-react";
 import Link from "next/link";
 import type { Locale } from "@/lib/types";
-import type { BusRoute, BusDestination } from "@/lib/buses";
+import type { BusRoute, BusDestination, BusDepartureGroup } from "@/lib/buses";
 import { useParams } from "next/navigation";
 import { BusNetworkMap } from "@/components/BusNetworkMap";
 
@@ -259,6 +259,7 @@ function RouteCard({ route, destination, locale }: { route: BusRoute; destinatio
 
       {deps.length > 0 && (
         <DepartureChips
+          groups={route.departures_by_day ?? null}
           times={deps}
           collapsedLimit={COLLAPSED_LIMIT}
           locale={locale}
@@ -275,46 +276,99 @@ function RouteCard({ route, destination, locale }: { route: BusRoute; destinatio
 // Liste détaillée des horaires de départ : SEO + utilité = on rend tout
 // dans le HTML (pas de <details> qui masque côté Google), avec un toggle
 // client pour le confort visuel quand il y a beaucoup de départs.
+// Si `departures_by_day` est fourni, on rend une sous-liste par grille
+// (Mon-Fri / Sat / Sun, etc.) pour eviter que l'utilisateur confonde des
+// horaires de jours differents.
 function DepartureChips({
+  groups,
   times,
   collapsedLimit,
   locale,
 }: {
+  groups: BusDepartureGroup[] | null;
   times: string[];
   collapsedLimit: number;
   locale: Locale;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const visible = expanded || times.length <= collapsedLimit
-    ? times
-    : times.slice(0, collapsedLimit);
+  const total = times.length;
+  const shouldCollapse = total > collapsedLimit && !expanded;
 
   return (
     <div className="px-4 pb-4 pt-1">
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
-          {t("allDepartures", locale)}
-        </p>
-      </div>
-      <ul className="flex flex-wrap gap-1.5 list-none p-0 m-0">
-        {visible.map((time) => (
-          <li
-            key={time}
-            className="px-2 py-0.5 rounded bg-aegean/5 border border-aegean/15 text-xs font-mono text-text"
-          >
-            {time}
-          </li>
-        ))}
-      </ul>
-      {times.length > collapsedLimit && (
+      <p className="text-xs font-semibold uppercase tracking-wide text-text-muted mb-2">
+        {t("allDepartures", locale)}
+      </p>
+
+      {groups && groups.length > 0 ? (
+        <DepartureGroups
+          groups={groups}
+          collapsed={shouldCollapse}
+          collapsedLimit={collapsedLimit}
+        />
+      ) : (
+        <ul className="flex flex-wrap gap-1.5 list-none p-0 m-0">
+          {(shouldCollapse ? times.slice(0, collapsedLimit) : times).map((time, i) => (
+            <li
+              key={`${time}-${i}`}
+              className="px-2 py-0.5 rounded bg-aegean/5 border border-aegean/15 text-xs font-mono text-text"
+            >
+              {time}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {total > collapsedLimit && (
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
           className="mt-2 text-xs text-aegean font-semibold hover:underline"
         >
-          {expanded ? t("showLess", locale) : `${t("showAll", locale)} (${times.length})`}
+          {expanded ? t("showLess", locale) : `${t("showAll", locale)} (${total})`}
         </button>
       )}
+    </div>
+  );
+}
+
+function DepartureGroups({
+  groups,
+  collapsed,
+  collapsedLimit,
+}: {
+  groups: BusDepartureGroup[];
+  collapsed: boolean;
+  collapsedLimit: number;
+}) {
+  // En mode collapsed, on rend une fenetre des `collapsedLimit` premiers horaires
+  // groupes par jour, en gardant la structure (pas un slice flat brut).
+  let remaining = collapsed ? collapsedLimit : Infinity;
+  return (
+    <div className="space-y-2">
+      {groups.map((g, gi) => {
+        if (remaining <= 0) return null;
+        const visible = g.times.slice(0, remaining);
+        remaining -= visible.length;
+        if (visible.length === 0) return null;
+        return (
+          <div key={`${g.days}-${gi}`}>
+            <p className="text-[11px] uppercase tracking-wide text-text-muted mb-1">
+              {g.days}
+            </p>
+            <ul className="flex flex-wrap gap-1.5 list-none p-0 m-0">
+              {visible.map((time, i) => (
+                <li
+                  key={`${time}-${i}`}
+                  className="px-2 py-0.5 rounded bg-aegean/5 border border-aegean/15 text-xs font-mono text-text"
+                >
+                  {time}
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      })}
     </div>
   );
 }
