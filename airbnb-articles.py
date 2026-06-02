@@ -237,6 +237,97 @@ ANGLES = [
             "what they will actually find when browsing."
         ),
     },
+    {
+        "id": "host-portfolio-concentration",
+        "category": "market-structure",
+        "min_days_between": 60,
+        "headline_seed": "Crete Airbnb: solo hosts vs portfolio professionals",
+        "sql": """
+            WITH host_counts AS (
+              SELECT host_id, count(*) AS portfolio_size
+              FROM airbnb_listings
+              WHERE region='crete'
+              GROUP BY host_id
+            )
+            SELECT
+              CASE
+                WHEN portfolio_size = 1 THEN '1_solo'
+                WHEN portfolio_size = 2 THEN '2_pair'
+                WHEN portfolio_size BETWEEN 3 AND 5 THEN '3_small_pro'
+                WHEN portfolio_size BETWEEN 6 AND 20 THEN '4_pro'
+                ELSE '5_mega'
+              END AS host_tier,
+              count(*) AS host_count,
+              sum(portfolio_size) AS listings_total,
+              round(avg(portfolio_size)::numeric, 1) AS avg_listings_per_host
+            FROM host_counts
+            GROUP BY host_tier
+            ORDER BY listings_total DESC
+        """,
+        "angle_brief": (
+            "Decompose Crete's Airbnb host market by portfolio tier: solo (1), pair (2), "
+            "small pro (3-5), pro (6-20), mega (20+). Where is market concentration? "
+            "Is the island still amateur-driven or captured by a small number of pros? "
+            "Implications for travelers (consistency?) and prospective buyers (entry barriers)."
+        ),
+    },
+    {
+        "id": "rating-vs-revenue",
+        "category": "data-deep-dive",
+        "min_days_between": 60,
+        "headline_seed": "Does higher Airbnb rating on Crete really mean more revenue?",
+        "sql": """
+            SELECT
+              round(review_scores_rating::numeric, 1) AS rating_bin,
+              count(*) AS listings,
+              round(avg(price)::numeric, 0) AS avg_price,
+              round(avg(estimated_revenue_l365d)::numeric, 0) AS avg_annual_revenue,
+              round(avg(estimated_occupancy_l365d)::numeric, 0) AS avg_occupancy_days,
+              round(avg(review_scores_rating)::numeric, 2) AS avg_rating_exact
+            FROM airbnb_listings
+            WHERE region='crete'
+              AND review_scores_rating IS NOT NULL
+              AND estimated_revenue_l365d IS NOT NULL
+              AND price > 30 AND price < 2000
+              AND review_scores_rating >= 4.0
+            GROUP BY rating_bin
+            ORDER BY rating_bin DESC
+        """,
+        "angle_brief": (
+            "Bucket Crete Airbnb listings by rating (4.0 → 5.0) and compute average revenue, "
+            "price, occupancy per bucket. Does a 4.8 rating really mean 10x better business "
+            "than a 4.0? Identify outliers: high-revenue low-rating (price-driven) and "
+            "high-rating low-revenue (under-monetized gems). Hard numbers for skeptical investors."
+        ),
+    },
+    {
+        "id": "license-distribution",
+        "category": "regulation",
+        "min_days_between": 60,
+        "headline_seed": "Crete Airbnb: which neighbourhoods have proper short-rental licenses?",
+        "sql": """
+            SELECT neighbourhood,
+                   count(*) AS listings,
+                   round(100.0 * count(*) FILTER (WHERE license IS NOT NULL) / count(*), 1) AS license_declared_pct,
+                   round(avg(price)::numeric, 0) AS avg_price,
+                   round(avg(estimated_revenue_l365d)::numeric, 0) AS avg_annual_revenue,
+                   round(avg(review_scores_rating)::numeric, 2) AS avg_rating
+            FROM airbnb_listings
+            WHERE region='crete'
+              AND neighbourhood IS NOT NULL
+              AND price > 30 AND price < 2000
+            GROUP BY neighbourhood
+            HAVING count(*) >= 50
+            ORDER BY license_declared_pct DESC
+            LIMIT 15
+        """,
+        "angle_brief": (
+            "Spotlight neighbourhoods by license declaration rate. Greek short-rental law "
+            "(AMA) requires proper registration. Where do hosts comply? Where is the grey zone? "
+            "Compare compliance neighbourhoods on price, revenue, and rating. "
+            "Frame for travelers (cleaner legal footing?) and buyers (compliance risk assessment)."
+        ),
+    },
 ]
 
 
