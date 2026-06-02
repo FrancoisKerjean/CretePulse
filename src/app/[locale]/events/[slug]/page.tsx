@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import DOMPurify from "isomorphic-dompurify";
 import { getEventBySlug } from "@/lib/events";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { localizeLocation } from "@/lib/localize-location";
@@ -183,9 +184,21 @@ export default async function EventDetailPage({
 
         {/* Description */}
         {description && (
-          <div className="prose prose-sm max-w-none mb-8">
-            <p className="text-text leading-relaxed">{description}</p>
-          </div>
+          <article
+            className="prose prose-slate max-w-none mb-8
+              prose-h2:text-aegean prose-h2:font-bold prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-3
+              prose-p:text-text prose-p:leading-relaxed prose-p:mb-4
+              prose-ul:text-text prose-ul:leading-relaxed
+              prose-li:mb-1
+              prose-a:text-aegean prose-a:underline hover:prose-a:text-aegean-light
+              prose-strong:text-text"
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(description, {
+                ALLOWED_TAGS: ["p", "h2", "h3", "ul", "ol", "li", "a", "strong", "em", "br"],
+                ALLOWED_ATTR: ["href", "id", "target", "rel"],
+              }),
+            }}
+          />
         )}
 
         {/* Actions */}
