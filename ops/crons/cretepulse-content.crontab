@@ -1,0 +1,27 @@
+# CretePulse pipeline editorial v2 — crete.direct
+# Managed by Claude design 2026-06-02-crete-direct-editorial-pipeline-revival
+# Replaces: weekly run-batch.sh / discover.py (no --mode) since 01/05/2026
+
+# Discover GSC + Reddit RSS + RSS (weekly Sunday 03:00 UTC) — graceful GSC skip if creds missing
+0 3 * * 0 cd /opt/cretepulse-content && source /opt/cretepulse/venv/bin/activate && PYTHONPATH=/opt/cretepulse-content python3 discover.py --mode=gsc-rss >> /var/log/cretepulse-content/discover.log 2>&1
+
+# Discover PAA expansion (weekly Monday 04:00 UTC) — expands last 7d published articles
+0 4 * * 1 cd /opt/cretepulse-content && source /opt/cretepulse/venv/bin/activate && PYTHONPATH=/opt/cretepulse-content python3 discover.py --mode=paa >> /var/log/cretepulse-content/discover.log 2>&1
+
+# Writer pillar (2x/sem mercredi+vendredi 06:00 UTC, Opus, 2000-3000 mots)
+0 6 * * 3,5 cd /opt/cretepulse-content && source /opt/cretepulse/venv/bin/activate && PYTHONPATH=/opt/cretepulse-content python3 writer.py --format=pillar >> /var/log/cretepulse-content/writer.log 2>&1
+
+# Writer mid (5x/sem lun-ven 12:00 UTC, Sonnet, 1000-1500 mots)
+0 12 * * 1-5 cd /opt/cretepulse-content && source /opt/cretepulse/venv/bin/activate && PYTHONPATH=/opt/cretepulse-content python3 writer.py --format=mid >> /var/log/cretepulse-content/writer.log 2>&1
+
+# Writer short (7x/sem daily 18:00 UTC, Haiku, 500-800 mots)
+0 18 * * * cd /opt/cretepulse-content && source /opt/cretepulse/venv/bin/activate && PYTHONPATH=/opt/cretepulse-content python3 writer.py --format=short >> /var/log/cretepulse-content/writer.log 2>&1
+
+# Weekly perf check: Monday 09:00 UTC (INCHANGÉ)
+0 9 * * 1 cd /opt/cretepulse-content && source /opt/cretepulse/venv/bin/activate && python3 bin/perf-check.py >> /var/log/cretepulse-content/perf.log 2>&1
+
+# HCAA Crete airports — 5 du mois 6h UTC (INCHANGÉ, HCAA publie ~10j après fin mois)
+0 6 5 * * cd /opt/cretepulse-content && source /opt/cretepulse/venv/bin/activate && python3 hcaa-crete-airports.py >> /var/log/cretepulse-content/hcaa-crete.log 2>&1
+
+# Fraport Chania traffic — 7 du mois 7h UTC (INCHANGÉ, Fraport publie ~5j après fin mois)
+0 7 7 * * cd /opt/cretepulse-content && source /opt/cretepulse/venv/bin/activate && python3 fraport-chq-traffic.py >> /var/log/cretepulse-content/fraport-chq.log 2>&1
