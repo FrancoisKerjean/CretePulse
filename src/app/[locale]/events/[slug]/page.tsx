@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import DOMPurify from "isomorphic-dompurify";
+import sanitizeHtml from "sanitize-html";
 import { getEventBySlug } from "@/lib/events";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { localizeLocation } from "@/lib/localize-location";
@@ -193,9 +193,9 @@ export default async function EventDetailPage({
               prose-a:text-aegean prose-a:underline hover:prose-a:text-aegean-light
               prose-strong:text-text"
             dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(description, {
-                ALLOWED_TAGS: ["p", "h2", "h3", "ul", "ol", "li", "a", "strong", "em", "br"],
-                ALLOWED_ATTR: ["href", "id", "target", "rel"],
+              __html: sanitizeHtml(description, {
+                allowedTags: ["p", "h2", "h3", "ul", "ol", "li", "a", "strong", "em", "br"],
+                allowedAttributes: { a: ["href", "target", "rel"], h2: ["id"], h3: ["id"] },
               }),
             }}
           />
