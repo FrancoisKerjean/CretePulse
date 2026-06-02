@@ -31,8 +31,9 @@ export async function generateMetadata({
 
   const eventTitle = getLocalizedField(event, "title", locale as Locale);
   const desc = getLocalizedField(event, "description", locale as Locale);
+  const plainDesc = desc?.replace(/<[^>]+>/g, "").trim();
   const title = `${eventTitle} - Crete Events | Crete Direct`;
-  const description = desc?.substring(0, 160) || `${eventTitle} in Crete. Location: ${event.location_name}.`;
+  const description = plainDesc?.substring(0, 160) || `${eventTitle} in Crete. Location: ${event.location_name}.`;
   const url = `${BASE_URL}/${locale}/events/${slug}`;
 
   // Noindex expired events (end date is in the past)
