@@ -186,26 +186,49 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
                 </div>
               )}
 
-              {/* 5-day forecast placeholder */}
+              {/* 5-day forecast */}
               <div className="px-4 pb-4 border-t border-border pt-3">
                 <p className="text-xs text-text-muted mb-2">{cardLabels.forecast}</p>
-                <div className="flex gap-1 justify-between">
-                  {Array.from({ length: 5 }).map((_, i) => {
-                    const d = new Date();
-                    d.setDate(d.getDate() + i + 1);
-                    return (
-                      <div key={i} className="flex-1 text-center">
-                        <p className="text-[10px] text-text-muted">
-                          {d.toLocaleDateString(
-                            locale === "el" ? "el-GR" : locale === "fr" ? "fr-FR" : locale === "de" ? "de-DE" : "en-GB",
-                            { weekday: "short" }
-                          )}
-                        </p>
-                        <div className="h-6 bg-stone rounded mt-1 animate-pulse" />
-                      </div>
-                    );
-                  })}
-                </div>
+                {city.daily && city.daily.length > 0 ? (
+                  <div className="flex gap-1 justify-between">
+                    {city.daily.slice(0, 5).map((day) => {
+                      const d = new Date(day.date);
+                      const icon = getWeatherIcon(day.weatherCode);
+                      const emoji = icon === "sun" ? "☀️" : icon === "rain" ? "🌧️" : icon === "wind" ? "💨" : "⛅";
+                      return (
+                        <div key={day.date} className="flex-1 text-center">
+                          <p className="text-[10px] text-text-muted">
+                            {d.toLocaleDateString(
+                              locale === "el" ? "el-GR" : locale === "fr" ? "fr-FR" : locale === "de" ? "de-DE" : "en-GB",
+                              { weekday: "short" }
+                            )}
+                          </p>
+                          <p className="text-base leading-tight mt-0.5" aria-label={getWeatherLabel(day.weatherCode)}>{emoji}</p>
+                          <p className="text-[11px] font-semibold text-text leading-tight">{day.tempMax}°</p>
+                          <p className="text-[10px] text-text-muted leading-tight">{day.tempMin}°</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="flex gap-1 justify-between">
+                    {Array.from({ length: 5 }).map((_, i) => {
+                      const d = new Date();
+                      d.setDate(d.getDate() + i + 1);
+                      return (
+                        <div key={i} className="flex-1 text-center">
+                          <p className="text-[10px] text-text-muted">
+                            {d.toLocaleDateString(
+                              locale === "el" ? "el-GR" : locale === "fr" ? "fr-FR" : locale === "de" ? "de-DE" : "en-GB",
+                              { weekday: "short" }
+                            )}
+                          </p>
+                          <div className="h-6 bg-stone rounded mt-1 animate-pulse" />
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           ))}
