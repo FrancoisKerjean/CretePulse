@@ -8,6 +8,7 @@ import { Footer } from "@/components/layout/Footer";
 import { playfair } from "@/app/layout";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import Script from "next/script";
 import { buildAlternates } from "@/lib/seo";
 import "@/app/globals.css";
 
@@ -96,6 +97,15 @@ export default async function LocaleLayout({
         </NextIntlClientProvider>
         <Analytics />
         <SpeedInsights />
+        <Script
+          defer
+          data-domain="crete.direct"
+          src="https://analytics.crete.direct/js/script.outbound-links.js"
+          strategy="afterInteractive"
+        />
+        <Script id="plausible-init" strategy="afterInteractive">
+          {`window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments); }`}
+        </Script>
       </body>
     </html>
   );
