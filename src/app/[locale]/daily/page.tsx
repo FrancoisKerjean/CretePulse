@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { setRequestLocale } from "next-intl/server";
 import { CloudSun, Newspaper } from "lucide-react";
 import { getDailyPosts, getLocalizedGuideField, type Guide } from "@/lib/guides";
 import { buildAlternates } from "@/lib/seo";
@@ -18,6 +19,7 @@ const META = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const url = `${BASE_URL}/${locale}/daily`;
   return {
     title: META.title,
@@ -52,6 +54,7 @@ function PostList({ posts, locale }: { posts: Guide[]; locale: Locale }) {
 
 export default async function DailyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
 
   const [weather, news] = await Promise.all([

@@ -1,4 +1,5 @@
 import { getAllFoodPlaces, getFoodByRegionAndType } from "@/lib/food";
+import { setRequestLocale } from "next-intl/server";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { UtensilsCrossed, MapPin } from "lucide-react";
 import Link from "next/link";
@@ -101,6 +102,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = META[locale] || META.en;
   const url = `${BASE_URL}/${locale}/food`;
   return {
@@ -123,6 +125,7 @@ export default async function FoodPage({
   searchParams: Promise<{ region?: string; type?: string }>;
 }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const { region: regionParam, type: typeParam } = await searchParams;
   const loc = locale as Locale;
 

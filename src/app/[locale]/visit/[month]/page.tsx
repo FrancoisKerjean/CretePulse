@@ -1,4 +1,5 @@
 import { CITIES, MONTHS, MONTH_NAMES, getClimateData, getSwimVerdict } from "@/lib/weather-monthly";
+import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/types";
 import { Sun, Users, Euro, Shirt, Calendar, Waves, Thermometer, ChevronRight, ChevronLeft } from "lucide-react";
 import Link from "next/link";
@@ -273,6 +274,7 @@ export function generateStaticParams() {
 // --- Metadata ---
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; month: string }> }) {
   const { locale, month } = await params;
+  setRequestLocale(locale);
   const monthName = MONTH_NAMES[locale]?.[month] || MONTH_NAMES.en[month];
   if (!monthName) return { title: "Not found" };
 
@@ -309,6 +311,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 // --- Page component ---
 export default async function VisitMonthPage({ params }: { params: Promise<{ locale: string; month: string }> }) {
   const { locale, month } = await params;
+  setRequestLocale(locale);
   const monthName = MONTH_NAMES[locale]?.[month] || MONTH_NAMES.en[month];
 
   if (!monthName || !MONTHS.includes(month as typeof MONTHS[number])) notFound();

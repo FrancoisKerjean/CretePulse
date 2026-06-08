@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { setRequestLocale } from "next-intl/server";
 import { getNewsBySlug, getLatestNews } from "@/lib/news";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { newsSchema, breadcrumbSchema } from "@/lib/schema";
@@ -14,6 +15,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
   const item = await getNewsBySlug(slug);
   if (!item) return { title: "News not found" };
@@ -143,6 +145,7 @@ function calcReadingTime(html: string): number {
 
 export default async function NewsDetailPage({ params }: { params: Promise<{ locale: string; slug: string }> }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
   // Fallback to en on extended locales to avoid `undefined.x` crashes.
   const backLabel = BACK_LABELS[loc] ?? BACK_LABELS.en;

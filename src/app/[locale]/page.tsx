@@ -1,4 +1,5 @@
 import { fetchAllCitiesWeather } from "@/lib/weather";
+import { setRequestLocale } from "next-intl/server";
 import { getLatestNews } from "@/lib/news";
 import { getUpcomingEvents } from "@/lib/events";
 import { getEditorialGuides, type Guide } from "@/lib/guides";
@@ -31,6 +32,7 @@ const HOME_META: Record<string, { title: string; desc: string }> = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = HOME_META[locale] || HOME_META.en;
   const url = `${BASE_URL}/${locale}`;
 
@@ -70,6 +72,7 @@ function buildWebsiteSchema(locale: string, desc: string) {
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = HOME_META[locale] || HOME_META.en;
   const websiteSchema = buildWebsiteSchema(locale, m.desc);
 

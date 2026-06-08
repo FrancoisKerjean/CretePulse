@@ -1,4 +1,5 @@
 import { CITIES, MONTHS, MONTH_NAMES, getClimateData, getCity, getSwimVerdict } from "@/lib/weather-monthly";
+import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/types";
 import { Thermometer, Waves, Sun, CloudRain, ChevronLeft } from "lucide-react";
 import Link from "next/link";
@@ -29,6 +30,7 @@ const WEATHER_INDEX_LOCALES = new Set(["fr", "de", "el", "da", "ru"]);
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; city: string; month: string }> }) {
   const { locale, city: citySlug, month } = await params;
+  setRequestLocale(locale);
   const city = getCity(citySlug);
   const monthName = MONTH_NAMES[locale]?.[month] || MONTH_NAMES.en[month];
   if (!city || !monthName) return { title: "Not found" };
@@ -64,6 +66,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function WeatherCityMonthPage({ params }: { params: Promise<{ locale: string; city: string; month: string }> }) {
   const { locale, city: citySlug, month } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
   const city = getCity(citySlug);
   const monthName = MONTH_NAMES[locale]?.[month] || MONTH_NAMES.en[month];

@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getHikeBySlug } from "@/lib/hikes";
 import { getLocalizedField, type Locale, type Hike } from "@/lib/types";
 import DiscoverCrete from "@/components/DiscoverCrete";
@@ -26,6 +26,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const hike = await getHikeBySlug(slug);
   if (!hike) return { title: "Trail not found" };
 
@@ -55,6 +56,7 @@ export default async function HikeDetailPage({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
 
   const hike = await getHikeBySlug(slug);

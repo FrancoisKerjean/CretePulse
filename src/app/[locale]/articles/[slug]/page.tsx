@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { ChevronLeft, Clock, Calendar, BookOpen } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
@@ -34,6 +35,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const guide = await getGuideBySlug(slug);
   if (!guide) return {};
   const title = getLocalizedGuideField(guide, "titles", locale);
@@ -285,6 +287,7 @@ export default async function ArticleDetailPage({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
   // Article content has 22 routed locales but Locale type only covers en/fr/de/el.
   // Fallback to en on extended locales to avoid `undefined.intro` crashes.

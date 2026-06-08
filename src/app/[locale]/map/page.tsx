@@ -1,4 +1,5 @@
 import { getAllBeaches } from "@/lib/beaches";
+import { setRequestLocale } from "next-intl/server";
 import { getAllVillages } from "@/lib/villages";
 import { getAllFoodPlaces } from "@/lib/food";
 import { getAllHikes } from "@/lib/hikes";
@@ -19,6 +20,7 @@ const META: Record<string, { title: string; desc: string }> = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = META[locale] || META.en;
   const url = `${BASE_URL}/${locale}/map`;
   return {
@@ -31,6 +33,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function MapPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
 
   // Fetch all data in parallel

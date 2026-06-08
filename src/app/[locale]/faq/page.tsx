@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/types";
+import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { Plane, Car, Waves, Sun, UtensilsCrossed, Globe, Banknote, Hotel } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
@@ -28,6 +29,7 @@ const META: Record<string, { title: string; desc: string }> = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = META[locale] || META.en;
   const url = `${BASE_URL}/${locale}/faq`;
   return {
@@ -436,6 +438,7 @@ function getAllFaqItems(locale: string): FaqItem[] {
 
 export default async function FaqPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
   const sections = getFaqSections(locale);
   const allItems = getAllFaqItems(locale);

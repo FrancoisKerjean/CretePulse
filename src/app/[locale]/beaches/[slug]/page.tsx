@@ -1,4 +1,5 @@
 import { getBeachBySlug, getNearbyBeaches } from "@/lib/beaches";
+import { setRequestLocale } from "next-intl/server";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import DiscoverCrete from "@/components/DiscoverCrete";
 import NewsletterCTA from "@/components/NewsletterCTA";
@@ -141,6 +142,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const beach = await getBeachBySlug(slug);
   if (!beach) return { title: "Beach not found" };
 
@@ -172,6 +174,7 @@ export default async function BeachDetailPage({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
   // Fallback to en on extended locales to avoid `undefined.x` crashes.
   const L = BEACH_LABELS[loc] ?? BEACH_LABELS.en;

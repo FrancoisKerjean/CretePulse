@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { ChevronLeft, Bus, Car, Ship, Plane, Clock, Euro, RefreshCw, Lightbulb, ArrowRight } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
@@ -243,6 +244,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; route: string }> }) {
   const { locale, route: slug } = await params;
+  setRequestLocale(locale);
   const route = getRoute(slug);
   if (!route) return { title: "Not found" };
 
@@ -279,6 +281,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function RoutePage({ params }: { params: Promise<{ locale: string; route: string }> }) {
   const { locale, route: slug } = await params;
+  setRequestLocale(locale);
   const route = getRoute(slug);
   if (!route) notFound();
 

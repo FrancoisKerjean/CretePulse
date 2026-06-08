@@ -1,4 +1,5 @@
 import { getUpcomingEvents, groupEventsByWeek } from "@/lib/events";
+import { setRequestLocale } from "next-intl/server";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { localizeLocation } from "@/lib/localize-location";
 import { Calendar, MapPin, Clock } from "lucide-react";
@@ -31,6 +32,7 @@ const EVENTS_META: Record<string, { title: string; desc: string }> = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = EVENTS_META[locale] || EVENTS_META.en;
   const url = `${BASE_URL}/${locale}/events`;
   return {
@@ -70,6 +72,7 @@ function formatEventDate(dateStr: string, locale: string): string {
 
 export default async function EventsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
   // Fallback to en on extended locales to avoid `undefined.x` crashes.
   const eventsLabels = EVENTS_LABELS[loc] ?? EVENTS_LABELS.en;

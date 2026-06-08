@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/types";
+import { setRequestLocale } from "next-intl/server";
 import { Waves, Key, BarChart3, Shield, Phone, ChevronRight, MapPin, CheckCircle2 } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
 
@@ -153,6 +154,7 @@ const CONTENT: Record<string, {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = META[locale] || META.en;
   const url = `${BASE_URL}/${locale}/property-management`;
 
@@ -166,6 +168,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function PropertyManagementPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const c = CONTENT[locale as keyof typeof CONTENT] || CONTENT.en;
 
   const seasonData = [

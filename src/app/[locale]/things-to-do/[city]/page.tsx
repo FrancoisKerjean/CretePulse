@@ -1,4 +1,5 @@
 import { CITIES, MONTH_NAMES } from "@/lib/weather-monthly";
+import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/types";
 import { Waves, Sun, UtensilsCrossed, Mountain, Calendar, ChevronLeft, MapPin, ChevronRight } from "lucide-react";
 import { BusAccessBox } from "@/components/BusAccessBox";
@@ -200,6 +201,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; city: string }> }) {
   const { locale, city: citySlug } = await params;
+  setRequestLocale(locale);
   const city = getCityObj(citySlug);
   const info = CITY_INFO[citySlug];
   if (!city || !info) return { title: "Not found" };
@@ -232,6 +234,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function ThingsToDoPage({ params }: { params: Promise<{ locale: string; city: string }> }) {
   const { locale, city: citySlug } = await params;
+  setRequestLocale(locale);
   const city = getCityObj(citySlug);
   const info = CITY_INFO[citySlug];
 

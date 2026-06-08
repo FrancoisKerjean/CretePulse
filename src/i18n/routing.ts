@@ -10,5 +10,10 @@ export const routing = defineRouting({
   // served as static HTML from the edge -> much better TTFB/LCP and far less Supabase/Vercel load.
   // First-time visitors land on the default locale (en) and can switch via the language picker.
   localeDetection: false,
+  // Disable the NEXT_LOCALE cookie. next-intl set it on every request, which forced
+  // `Cache-Control: private, no-store` and made the CDN never cache the output. Locale lives
+  // in the URL prefix (/en, /fr...) so the cookie is not needed. Pairs with setRequestLocale()
+  // in the layout + pages to make next-intl render statically (cacheable at the edge).
+  localeCookie: false,
   alternateLinks: true,
 });

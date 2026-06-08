@@ -1,4 +1,5 @@
 import { breadcrumbSchema } from "@/lib/schema";
+import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/types";
 import { MapPin, Clock, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
@@ -176,6 +177,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const loc = (locale || "en") as Locale;
   const itinerary = ITINERARIES.find((it) => it.slug === slug);
   if (!itinerary) return { title: "Itinerary not found" };
@@ -210,6 +212,7 @@ export default async function ItineraryPage({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const loc = (locale || "en") as Locale;
   // Fallback to en on extended locales to avoid `undefined.x` crashes.
   const L = LABELS[loc] ?? LABELS.en;

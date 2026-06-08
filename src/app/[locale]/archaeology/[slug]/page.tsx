@@ -1,4 +1,5 @@
 import { breadcrumbSchema } from "@/lib/schema";
+import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/types";
 import { MapPin, Clock, Ticket, ChevronLeft, ChevronRight, Landmark } from "lucide-react";
 import Link from "next/link";
@@ -152,6 +153,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const loc = (locale || "en") as Locale;
   const site = SITES.find((s) => s.slug === slug);
   if (!site) return { title: "Site not found" };
@@ -180,6 +182,7 @@ export default async function ArchaeologyDetailPage({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const loc = (locale || "en") as Locale;
   // Fallback to en on extended locales to avoid `undefined.x` crashes.
   const L = LABELS[loc] ?? LABELS.en;

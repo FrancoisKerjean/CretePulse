@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { setRequestLocale } from "next-intl/server";
 import { CheckCircle } from "lucide-react";
 
 export async function generateMetadata() {
@@ -15,6 +16,7 @@ export default async function NewsletterConfirmedPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  setRequestLocale(locale);
 
   return (
     <main className="min-h-screen bg-surface flex items-center justify-center px-4">

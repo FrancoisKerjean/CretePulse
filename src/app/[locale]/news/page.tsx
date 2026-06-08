@@ -1,4 +1,5 @@
 import { getLatestNews } from "@/lib/news";
+import { setRequestLocale } from "next-intl/server";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { Newspaper, ExternalLink, Clock } from "lucide-react";
 import Link from "next/link";
@@ -17,6 +18,7 @@ const META: Record<string, { title: string; desc: string }> = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = META[locale] || META.en;
   const url = `${BASE_URL}/${locale}/news`;
   return {
@@ -78,6 +80,7 @@ const PAGE_SUBTITLES: Record<Locale, string> = {
 
 export default async function NewsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
 
   let news: Awaited<ReturnType<typeof getLatestNews>> = [];

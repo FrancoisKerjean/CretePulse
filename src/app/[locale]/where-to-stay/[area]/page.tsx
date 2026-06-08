@@ -1,4 +1,5 @@
 import { MapPin, Bed, Euro, Lightbulb, Umbrella, ChevronLeft, ChevronRight } from "lucide-react";
+import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { breadcrumbSchema } from "@/lib/schema";
@@ -294,6 +295,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; area: string }>;
 }) {
   const { locale, area: areaSlug } = await params;
+  setRequestLocale(locale);
   const area = getArea(areaSlug);
   if (!area) return { title: "Not found" };
 
@@ -321,6 +323,7 @@ export default async function WhereToStayAreaPage({
   params: Promise<{ locale: string; area: string }>;
 }) {
   const { locale, area: areaSlug } = await params;
+  setRequestLocale(locale);
   const area = getArea(areaSlug);
   if (!area) notFound();
 

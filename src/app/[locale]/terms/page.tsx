@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/types";
+import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { buildAlternates } from "@/lib/seo";
 
@@ -9,6 +10,7 @@ const LAST_UPDATED = "2026-06-04";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const url = `${BASE_URL}/${locale}/terms`;
   const title = "Terms of Service - Crete Direct";
   const description = "Terms of Service for Crete Direct. Free, independent guide to Crete: weather, beaches, villages, events. Editorial use, no warranties, contact: hello@crete.direct.";
@@ -126,6 +128,7 @@ const CONTENT = {
 
 export default async function TermsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
   const content = CONTENT;
 

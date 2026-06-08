@@ -1,4 +1,5 @@
 import { fetchAllCitiesWeather, getWeatherLabel, getWeatherIcon } from "@/lib/weather";
+import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/types";
 import { Wind, Droplets, Sun, Thermometer, Waves, Eye } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
@@ -16,6 +17,7 @@ const WEATHER_META: Record<string, { title: string; desc: string }> = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = WEATHER_META[locale] || WEATHER_META.en;
   const url = `${BASE_URL}/${locale}/weather`;
   return {
@@ -84,6 +86,7 @@ function UVBadge({ uv }: { uv: number }) {
 
 export default async function WeatherPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
   // Fallback to en on extended locales to avoid `undefined.x` crashes.
   const title = TITLES[loc] ?? TITLES.en;

@@ -1,4 +1,5 @@
 import { SubmitEventClient } from "./SubmitEventClient";
+import { setRequestLocale } from "next-intl/server";
 import { buildAlternates } from "@/lib/seo";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
@@ -12,6 +13,7 @@ const META: Record<string, { title: string; desc: string }> = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = META[locale] || META.en;
   const url = `${BASE_URL}/${locale}/submit-event`;
   return {

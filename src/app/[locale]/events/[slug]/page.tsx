@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import sanitizeHtml from "sanitize-html";
 import { getEventBySlug } from "@/lib/events";
 import { getLocalizedField, type Locale } from "@/lib/types";
@@ -26,6 +26,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const event = await getEventBySlug(slug);
   if (!event) return { title: "Event not found" };
 
@@ -81,6 +82,7 @@ export default async function EventDetailPage({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
 
   const event = await getEventBySlug(slug);

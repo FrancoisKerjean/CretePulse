@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getAllVillages } from "@/lib/villages";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { MapPin, Mountain, Users, Clock } from "lucide-react";
@@ -19,6 +19,7 @@ const VILLAGES_META: Record<string, { title: string; desc: string }> = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = VILLAGES_META[locale] || VILLAGES_META.en;
   const url = `${BASE_URL}/${locale}/villages`;
   return {
@@ -39,6 +40,7 @@ const PERIOD_COLORS: Record<string, string> = {
 
 export default async function VillagesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
 
   let villages: Awaited<ReturnType<typeof getAllVillages>> = [];

@@ -1,4 +1,5 @@
 import { BookOpen } from "lucide-react";
+import { setRequestLocale } from "next-intl/server";
 import { getEditorialGuides } from "@/lib/guides";
 import type { Locale } from "@/lib/types";
 import ArticlesPageClient from "./ArticlesPageClient";
@@ -17,6 +18,7 @@ const META: Record<string, { title: string; desc: string }> = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = META[locale] || META.en;
   const url = `${BASE_URL}/${locale}/articles`;
   return {
@@ -43,6 +45,7 @@ const PAGE_SUBTITLES: Record<Locale, string> = {
 
 export default async function ArticlesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
 
   const guides = await getEditorialGuides(200);

@@ -1,4 +1,5 @@
 import { getAllBeaches } from "@/lib/beaches";
+import { setRequestLocale } from "next-intl/server";
 import { getLocalizedField, type Locale, type Beach } from "@/lib/types";
 import { Waves, Fish, Baby, Shield, Sun, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import Image from "next/image";
@@ -148,6 +149,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; activity: string }> }) {
   const { locale, activity: activitySlug } = await params;
+  setRequestLocale(locale);
   const activity = getActivity(activitySlug);
   if (!activity) return { title: "Not found" };
 
@@ -173,6 +175,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function BestBeachesForPage({ params }: { params: Promise<{ locale: string; activity: string }> }) {
   const { locale, activity: activitySlug } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
   const activity = getActivity(activitySlug);
 

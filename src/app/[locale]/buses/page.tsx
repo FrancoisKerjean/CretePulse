@@ -1,4 +1,5 @@
 import { BusesClient } from "./BusesClient";
+import { setRequestLocale } from "next-intl/server";
 import { buildAlternates } from "@/lib/seo";
 import { getBusRoutes, getBusDestinations, latestScrapedAt } from "@/lib/buses";
 import { busesPageSchema } from "@/lib/schema";
@@ -16,6 +17,7 @@ const META: Record<string, { title: string; desc: string }> = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = META[locale] || META.en;
   const url = `${BASE_URL}/${locale}/buses`;
   return {
@@ -41,6 +43,7 @@ const FAQ: Record<string, Array<{ q: string; a: string }>> = {
 
 export default async function BusesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const [routes, destinations] = await Promise.all([getBusRoutes(), getBusDestinations()]);
   const updatedAt = latestScrapedAt(routes);
   const m = META[locale] || META.en;

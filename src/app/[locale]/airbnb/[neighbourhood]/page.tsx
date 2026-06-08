@@ -1,4 +1,5 @@
 import { ChevronLeft, MapPin, Home, Euro, Calendar, Star, Award, Shield } from "lucide-react";
+import { setRequestLocale } from "next-intl/server";
 import { BusAccessBox } from "@/components/BusAccessBox";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -329,6 +330,7 @@ export async function generateMetadata(
   { params }: { params: Promise<Params> },
 ): Promise<Metadata> {
   const { locale, neighbourhood } = await params;
+  setRequestLocale(locale);
   if (!VALID_SITE_LOC(locale)) return {};
   const n = findNeighbourhood(neighbourhood);
   if (!n) return {};
@@ -354,6 +356,7 @@ export default async function AirbnbNeighbourhoodPage(
   { params }: { params: Promise<Params> },
 ) {
   const { locale, neighbourhood } = await params;
+  setRequestLocale(locale);
   if (!VALID_SITE_LOC(locale)) return notFound();
 
   const n = findNeighbourhood(neighbourhood);

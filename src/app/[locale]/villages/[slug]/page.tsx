@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getVillageBySlug, getNearbyVillages } from "@/lib/villages";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import DiscoverCrete from "@/components/DiscoverCrete";
@@ -28,6 +28,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const village = await getVillageBySlug(slug);
   if (!village) return { title: "Village not found" };
 
@@ -77,6 +78,7 @@ export default async function VillageDetailPage({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
 
   const village = await getVillageBySlug(slug);

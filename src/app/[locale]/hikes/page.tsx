@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getAllHikes } from "@/lib/hikes";
 import { getLocalizedField, type Locale, type Hike } from "@/lib/types";
 import { Footprints, Mountain, MapPin } from "lucide-react";
@@ -28,6 +28,7 @@ const TYPES: Hike["type"][] = ["gorge", "coastal", "mountain", "cultural"];
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = META[locale] || META.en;
   const url = `${BASE_URL}/${locale}/hikes`;
   return {
@@ -46,6 +47,7 @@ export default async function HikesPage({
   searchParams: Promise<{ difficulty?: string; type?: string }>;
 }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const { difficulty, type } = await searchParams;
   const loc = locale as Locale;
 

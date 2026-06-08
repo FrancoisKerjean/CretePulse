@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/types";
+import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { buildAlternates } from "@/lib/seo";
 
@@ -8,6 +9,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
 
   const metadata: Record<Locale, { title: string; description: string }> = {
@@ -289,6 +291,7 @@ const CONTENT: Record<
 
 export default async function PrivacyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
   // Fallback to en on extended locales to avoid `undefined.x` crashes.
   const content = CONTENT[loc] ?? CONTENT.en;

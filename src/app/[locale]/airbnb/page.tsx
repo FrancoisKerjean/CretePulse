@@ -1,4 +1,5 @@
 import { ChevronLeft, ExternalLink } from "lucide-react";
+import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import type { Metadata } from "next";
 import {
@@ -85,6 +86,7 @@ export async function generateMetadata(
   { params }: { params: Promise<Params> },
 ): Promise<Metadata> {
   const { locale } = await params;
+  setRequestLocale(locale);
   const loc = pickUiLoc(locale);
   const l = L[loc];
 
@@ -118,6 +120,7 @@ export default async function AirbnbIndexPage(
   { params }: { params: Promise<Params> },
 ) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const loc = pickUiLoc(locale);
   const uiLoc = loc as Loc;
   const l = L[loc];

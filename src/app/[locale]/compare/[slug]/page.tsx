@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Trophy, ArrowRight, ChevronLeft, Scale } from "lucide-react";
 import type { Metadata } from "next";
@@ -362,6 +363,7 @@ const META_DESC: Record<string, Record<string, (a: string, b: string) => string>
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const comp = COMPARISONS.find((c) => c.slug === slug);
   if (!comp) return {};
 
@@ -453,6 +455,7 @@ const LABELS: Record<string, Record<string, string>> = {
 
 export default async function ComparePage({ params }: { params: Promise<{ locale: string; slug: string }> }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const comp = COMPARISONS.find((c) => c.slug === slug);
   if (!comp) notFound();
 

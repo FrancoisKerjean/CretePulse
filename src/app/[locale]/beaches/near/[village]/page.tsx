@@ -1,4 +1,5 @@
 import { getAllBeaches } from "@/lib/beaches";
+import { setRequestLocale } from "next-intl/server";
 import { getAllVillages } from "@/lib/villages";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { Waves, MapPin, ChevronLeft } from "lucide-react";
@@ -21,6 +22,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; village: string }> }) {
   const { locale, village: villageSlug } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
 
   let villages;
@@ -54,6 +56,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function BeachesNearVillagePage({ params }: { params: Promise<{ locale: string; village: string }> }) {
   const { locale, village: villageSlug } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
 
   let villages, beaches;

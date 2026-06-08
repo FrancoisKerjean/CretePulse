@@ -1,4 +1,5 @@
 import { getFoodBySlug, getNearbyFoodPlaces } from "@/lib/food";
+import { setRequestLocale } from "next-intl/server";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import DiscoverCrete from "@/components/DiscoverCrete";
 import NewsletterCTA from "@/components/NewsletterCTA";
@@ -26,6 +27,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const place = await getFoodBySlug(slug);
   if (!place) return { title: "Place not found" };
 
@@ -74,6 +76,7 @@ export default async function FoodDetailPage({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
 
   const place = await getFoodBySlug(slug);
