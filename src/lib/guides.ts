@@ -26,6 +26,17 @@ export function getLocalizedGuideField(
   return guide[field]?.[locale] || guide[field]?.["en"] || "";
 }
 
+/**
+ * True if the guide actually has body content for this locale (not an EN fallback).
+ * Used to noindex EN-fallback variants (e.g. daily weather/news guides that exist only in
+ * EN) so 22 identical-content URLs don't cannibalise each other in search.
+ */
+export function isGuideTranslated(guide: Guide, locale: string): boolean {
+  if (locale === "en") return true;
+  const c = guide.contents?.[locale];
+  return !!c && c.trim().length > 0 && c.trim() !== (guide.contents?.["en"] || "").trim();
+}
+
 export function getLocalizedFaqs(
   guide: Guide,
   locale: string

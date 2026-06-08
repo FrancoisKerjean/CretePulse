@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { setRequestLocale } from "next-intl/server";
-import { getNewsBySlug, getLatestNews } from "@/lib/news";
+import { getNewsBySlug, getLatestNews, isNewsTranslated } from "@/lib/news";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { newsSchema, breadcrumbSchema } from "@/lib/schema";
 import { ExternalLink, Clock, ArrowLeft, Calendar, Globe } from "lucide-react";
@@ -31,6 +31,9 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     title,
     description,
     alternates: buildAlternates(locale, `/news/${slug}`),
+    // noindex locales that only have the EN fallback (news is translated to en/fr/de/el
+    // only) so duplicate-content variants don't cannibalise the real article.
+    robots: isNewsTranslated(item, locale) ? undefined : { index: false, follow: true },
     openGraph: {
       title,
       description,

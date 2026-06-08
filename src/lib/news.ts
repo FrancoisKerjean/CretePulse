@@ -1,6 +1,17 @@
 import { supabase } from "./supabase";
 import type { NewsItem } from "./types";
 
+/**
+ * True if the news item has a real title for this locale (not an EN fallback).
+ * News is translated only to en/fr/de/el; the other 18 locales serve EN, so their
+ * detail pages should be noindex to avoid duplicate-content cannibalisation.
+ */
+export function isNewsTranslated(item: NewsItem, locale: string): boolean {
+  if (locale === "en") return true;
+  const t = item[`title_${locale}` as keyof NewsItem] as string | undefined;
+  return typeof t === "string" && t.trim().length > 0 && t.trim() !== (item.title_en || "").trim();
+}
+
 // Greek Unicode range check
 function hasGreek(text: string): boolean {
   return /[\u0370-\u03FF\u1F00-\u1FFF]/.test(text);

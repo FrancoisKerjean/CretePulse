@@ -11,6 +11,7 @@ import {
   getLocalizedGuideField,
   getLocalizedFaqs,
   extractToc,
+  isGuideTranslated,
   type Guide,
 } from "@/lib/guides";
 import type { Locale } from "@/lib/types";
@@ -46,6 +47,9 @@ export async function generateMetadata({
     title,
     description,
     alternates: buildAlternates(locale, `/articles/${slug}`),
+    // noindex EN-fallback locales (e.g. daily guides that exist only in EN) so 22
+    // identical-content URLs don't cannibalise each other; keep follow for link equity.
+    robots: isGuideTranslated(guide, locale) ? undefined : { index: false, follow: true },
     openGraph: {
       title,
       description,
