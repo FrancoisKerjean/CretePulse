@@ -371,65 +371,83 @@ export default async function ArticleDetailPage({
         url={url}
       />
 
-      {/* Hero */}
-      {guide.image_url && (
-        <div className="relative h-72 md:h-[460px] lg:h-[560px] bg-stone overflow-hidden">
+      {/* Hero (PR2: editorial 60vh, category + Playfair H1 + dek) */}
+      {guide.image_url ? (
+        <header className="relative h-[60vh] min-h-[440px] max-h-[640px] bg-stone overflow-hidden">
           <img
             src={guide.image_url}
             alt={title}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-6">
-            <div className="max-w-5xl mx-auto">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0">
+            <div className="max-w-[720px] mx-auto px-5 pb-12 md:pb-16">
               <span
-                className={`inline-block text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-full mb-3 ${categoryColor}`}
+                className={`inline-block text-[11px] font-semibold uppercase tracking-[0.18em] px-3 py-1.5 rounded-sm mb-5 ${categoryColor}`}
               >
                 {categoryLabel}
               </span>
-              <h1 className="font-heading text-3xl md:text-5xl font-bold text-white leading-tight">
+              <h1
+                className="font-heading font-bold text-white leading-[1.08] tracking-[-0.01em] text-[32px] md:text-[52px]"
+                style={{ textShadow: "0 2px 24px rgba(0,0,0,0.45)" }}
+              >
                 {title}
               </h1>
+              {description && (
+                <p className="font-heading italic text-sand-warm mt-5 text-[17px] md:text-[21px] leading-[1.4] max-w-[560px]">
+                  {description}
+                </p>
+              )}
             </div>
           </div>
-        </div>
-      )}
-
-      {/* No image: show title in page body */}
-      {!guide.image_url && (
-        <div className="max-w-5xl mx-auto px-4 pt-8">
+        </header>
+      ) : (
+        <div className="max-w-[720px] mx-auto px-5 pt-12">
           <span
-            className={`inline-block text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-full mb-3 ${categoryColor}`}
+            className={`inline-block text-[11px] font-semibold uppercase tracking-[0.18em] px-3 py-1.5 rounded-sm mb-4 ${categoryColor}`}
           >
             {categoryLabel}
           </span>
-          <h1 className="font-heading text-3xl md:text-5xl font-bold text-text leading-tight">{title}</h1>
+          <h1 className="font-heading text-[32px] md:text-5xl font-bold text-text leading-[1.1] tracking-[-0.01em]">{title}</h1>
+          {description && (
+            <p className="font-heading italic text-text-muted mt-4 text-xl leading-[1.4]">{description}</p>
+          )}
         </div>
       )}
 
       {/* Main layout: article + TOC sidebar */}
       <div className="max-w-5xl mx-auto px-4 py-8">
-        {/* Back + meta */}
-        <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
-          <Link
-            href={`/${locale}/articles`}
-            className="inline-flex items-center gap-1 text-sm text-aegean hover:underline"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            {backLabel}
-          </Link>
+        {/* Back link */}
+        <Link
+          href={`/${locale}/articles`}
+          className="inline-flex items-center gap-1 text-sm text-aegean hover:underline mb-6"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          {backLabel}
+        </Link>
 
-          <div className="flex items-center gap-4 text-xs text-text-light">
-            <span className="flex items-center gap-1">
-              <Calendar className="w-3 h-3" />
-              {formatDate(guide.published_at)}
-            </span>
-            {guide.read_time && (
+        {/* Author bar (PR2) */}
+        <div className="flex items-center gap-3 mb-8 pb-6 border-b border-border">
+          <div className="w-10 h-10 rounded-full bg-aegean text-white flex items-center justify-center font-heading font-bold text-sm shrink-0">
+            CD
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-text leading-tight">Crete Direct</p>
+            <p className="flex items-center gap-2 text-xs text-text-muted mt-0.5">
               <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                {guide.read_time} {readTimeLabel}
+                <Calendar className="w-3 h-3" />
+                {formatDate(guide.published_at)}
               </span>
-            )}
+              {guide.read_time && (
+                <>
+                  <span aria-hidden>·</span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {guide.read_time} {readTimeLabel}
+                  </span>
+                </>
+              )}
+            </p>
           </div>
         </div>
 
