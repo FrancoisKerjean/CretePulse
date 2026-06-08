@@ -373,7 +373,7 @@ export default async function ArticleDetailPage({
 
       {/* Hero (PR2: editorial 70vh, category + Playfair H1 + dek) */}
       {guide.image_url ? (
-        <header className="relative h-[70vh] min-h-[480px] max-h-[720px] bg-stone overflow-hidden">
+        <header className="relative h-[60vh] min-h-[440px] max-h-[640px] bg-stone overflow-hidden">
           <img
             src={guide.image_url}
             alt={title}
