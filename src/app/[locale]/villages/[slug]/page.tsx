@@ -1,4 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { getVillageBySlug, getNearbyVillages } from "@/lib/villages";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import DiscoverCrete from "@/components/DiscoverCrete";
@@ -104,6 +105,7 @@ export default async function VillageDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
+      <Breadcrumbs schema={breadcrumb} />
       {/* Hero image */}
       {village.image_url && (
         <div className="relative h-64 md:h-80 bg-aegean">

@@ -1,4 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import sanitizeHtml from "sanitize-html";
 import { getEventBySlug } from "@/lib/events";
 import { getLocalizedField, type Locale } from "@/lib/types";
@@ -114,6 +115,7 @@ export default async function EventDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
+      <Breadcrumbs schema={breadcrumb} />
       {/* Header band */}
       <div className="bg-aegean text-white">
         <div className="max-w-4xl mx-auto px-4 py-10">

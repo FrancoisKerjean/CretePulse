@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { ChevronLeft, Clock, Calendar, BookOpen } from "lucide-react";
@@ -351,6 +352,7 @@ export default async function ArticleDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
+      <Breadcrumbs schema={breadcrumb} />
 
       {/* Article + FAQ JSON-LD */}
       <JsonLdSchemas

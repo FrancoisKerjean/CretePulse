@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { setRequestLocale } from "next-intl/server";
 import { getNewsBySlug, getLatestNews } from "@/lib/news";
 import { getLocalizedField, type Locale } from "@/lib/types";
@@ -192,6 +193,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <Breadcrumbs schema={breadcrumb} />
 
       <main className="min-h-screen bg-surface">
 

@@ -3,7 +3,7 @@
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Menu, X, Globe, ChevronDown } from "lucide-react";
+import { Menu, X, Globe, ChevronDown, Search } from "lucide-react";
 
 const LOCALES = [
   { code: "en", label: "EN", name: "English" },
@@ -155,8 +155,15 @@ export function Header() {
           ))}
         </div>
 
-        {/* Right: locale dropdown + mobile hamburger */}
+        {/* Right: search + locale dropdown + mobile hamburger */}
         <div className="flex items-center gap-2">
+          <Link
+            href="/search"
+            aria-label="Search"
+            className="p-2 text-text-muted hover:text-aegean transition-colors"
+          >
+            <Search className="w-5 h-5" />
+          </Link>
           <div className="hidden sm:block">
             <LocaleSwitcher locale={locale} pathname={pathname} router={router} />
           </div>

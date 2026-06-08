@@ -1,4 +1,5 @@
 import { breadcrumbSchema } from "@/lib/schema";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/types";
 import { MapPin, Clock, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
@@ -283,6 +284,7 @@ export default async function ItineraryPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
+      <Breadcrumbs schema={breadcrumb} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}

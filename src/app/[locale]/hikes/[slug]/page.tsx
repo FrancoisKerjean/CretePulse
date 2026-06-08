@@ -1,4 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { getHikeBySlug } from "@/lib/hikes";
 import { getLocalizedField, type Locale, type Hike } from "@/lib/types";
 import DiscoverCrete from "@/components/DiscoverCrete";
@@ -100,6 +101,7 @@ export default async function HikeDetailPage({
     <main className="min-h-screen bg-surface">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(hikeJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <Breadcrumbs schema={breadcrumbJsonLd} />
       {/* Hero image */}
       {hike.image_url && (
         <div className="relative h-64 md:h-80 bg-aegean">

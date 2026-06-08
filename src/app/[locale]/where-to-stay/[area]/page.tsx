@@ -1,4 +1,5 @@
 import { MapPin, Bed, Euro, Lightbulb, Umbrella, ChevronLeft, ChevronRight } from "lucide-react";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -373,6 +374,7 @@ export default async function WhereToStayAreaPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
+      <Breadcrumbs schema={breadcrumb} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}

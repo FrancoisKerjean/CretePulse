@@ -1,4 +1,5 @@
 import { getFoodBySlug, getNearbyFoodPlaces } from "@/lib/food";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { setRequestLocale } from "next-intl/server";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import DiscoverCrete from "@/components/DiscoverCrete";
@@ -97,6 +98,7 @@ export default async function FoodDetailPage({
     <main className="min-h-screen bg-surface">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <Breadcrumbs schema={breadcrumbJsonLd} />
       {/* Hero image */}
       {place.image_url && (
         <div className="relative h-64 md:h-80 bg-terra-faint">
