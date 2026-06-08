@@ -1,4 +1,5 @@
 import { getLatestNews } from "@/lib/news";
+import { getEditorialNews, getLocalizedGuideField } from "@/lib/guides";
 import { setRequestLocale } from "next-intl/server";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { Newspaper, ExternalLink, Clock } from "lucide-react";
@@ -78,19 +79,24 @@ const PAGE_SUBTITLES: Record<Locale, string> = {
   el: "Ελληνικός Τύπος, μετάφραση σε 4 γλώσσες κάθε 3 ώρες",
 };
 
+const ORIGINAL_LABELS: Record<Locale, string> = {
+  en: "From crete.direct",
+  fr: "Par crete.direct",
+  de: "Von crete.direct",
+  el: "Από το crete.direct",
+};
+
 export default async function NewsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const loc = locale as Locale;
 
-  let news: Awaited<ReturnType<typeof getLatestNews>> = [];
-  try {
-    news = await getLatestNews(50, locale);
-  } catch {
-    news = [];
-  }
+  const [news, editorial] = await Promise.all([
+    getLatestNews(50, locale).catch(() => [] as Awaited<ReturnType<typeof getLatestNews>>),
+    getEditorialNews(30).catch(() => [] as Awaited<ReturnType<typeof getEditorialNews>>),
+  ]);
 
-  if (news.length === 0) {
+  if (news.length === 0 && editorial.length === 0) {
     return <NewsPlaceholder locale={loc} />;
   }
 
@@ -105,6 +111,59 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
           </div>
           <p className="text-sm text-text-muted">{PAGE_SUBTITLES[loc] ?? PAGE_SUBTITLES.en}</p>
         </div>
+
+        {/* crete.direct original reporting */}
+        {editorial.length > 0 && (
+          <div className="mb-10">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-terra mb-3">
+              {ORIGINAL_LABELS[loc] ?? ORIGINAL_LABELS.en}
+            </h2>
+            <div className="divide-y divide-border">
+              {editorial.map((g) => {
+                const title = getLocalizedGuideField(g, "titles", loc);
+                const summary = getLocalizedGuideField(g, "meta_descs", loc);
+                return (
+                  <article key={g.slug} className="py-4 group">
+                    <Link href={`/${locale}/articles/${g.slug}`} className="flex gap-4 items-start hover:opacity-80 transition-opacity">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-terra-faint text-terra">
+                            crete.direct
+                          </span>
+                          <span className="text-xs text-text-light flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {timeAgo(g.published_at, loc)}
+                          </span>
+                        </div>
+
+                        <h3 className="text-base font-semibold text-text group-hover:text-aegean transition-colors leading-snug">
+                          {title}
+                        </h3>
+
+                        {summary && (
+                          <p className="text-sm text-text-muted mt-1 line-clamp-2 leading-relaxed">
+                            {summary}
+                          </p>
+                        )}
+                      </div>
+
+                      {g.image_url && (
+                        <div className="shrink-0 w-20 h-16 rounded-lg overflow-hidden bg-stone">
+                          <img
+                            src={g.image_url}
+                            alt={title || ""}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+                      )}
+                    </Link>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* News list */}
         <div className="divide-y divide-border">
