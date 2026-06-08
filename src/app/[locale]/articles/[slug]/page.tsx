@@ -78,13 +78,13 @@ function TableOfContents({ items }: { items: { id: string; label: string }[] }) 
   if (items.length === 0) return null;
   return (
     <nav className="sticky top-24 hidden lg:block w-64 shrink-0">
-      <h3 className="text-sm font-semibold text-gray-500 uppercase mb-3">Contents</h3>
+      <h3 className="text-xs font-semibold text-text-light uppercase tracking-wider mb-3">Contents</h3>
       <ul className="space-y-2 text-sm">
         {items.map((item) => (
           <li key={item.id}>
             <a
               href={`#${item.id}`}
-              className="text-gray-600 hover:text-blue-600 transition-colors"
+              className="text-text-muted hover:text-aegean transition-colors"
             >
               {item.label}
             </a>
@@ -107,7 +107,7 @@ function FaqSection({ faqs }: { faqs: { q: string; a: string }[] }) {
               {faq.q}
               <span className="ml-2 group-open:rotate-180 transition-transform">▼</span>
             </summary>
-            <div className="px-4 pb-4 text-gray-600">{faq.a}</div>
+            <div className="px-4 pb-4 text-text-muted leading-relaxed">{faq.a}</div>
           </details>
         ))}
       </div>
@@ -387,7 +387,7 @@ export default async function ArticleDetailPage({
               >
                 {categoryLabel}
               </span>
-              <h1 className="text-2xl md:text-3xl font-bold text-white leading-tight">
+              <h1 className="font-heading text-3xl md:text-5xl font-bold text-white leading-tight">
                 {title}
               </h1>
             </div>
@@ -403,7 +403,7 @@ export default async function ArticleDetailPage({
           >
             {categoryLabel}
           </span>
-          <h1 className="text-2xl md:text-3xl font-bold text-text leading-tight">{title}</h1>
+          <h1 className="font-heading text-3xl md:text-5xl font-bold text-text leading-tight">{title}</h1>
         </div>
       )}
 
@@ -448,13 +448,7 @@ export default async function ArticleDetailPage({
             )}
 
             <article
-              className="prose prose-slate max-w-none
-                prose-h2:text-aegean prose-h2:font-bold prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-3
-                prose-p:text-text prose-p:leading-relaxed prose-p:mb-4
-                prose-ul:text-text prose-ul:leading-relaxed
-                prose-li:mb-1
-                prose-a:text-aegean prose-a:underline hover:prose-a:text-aegean-light
-                prose-strong:text-text"
+              className="article-prose max-w-none"
               dangerouslySetInnerHTML={{ __html: linkedContent }}
             />
 
@@ -462,13 +456,13 @@ export default async function ArticleDetailPage({
             <FaqSection faqs={faqs} />
 
             {/* Kairos cross-link (multilingue, discret, vers l'article cible SEO) */}
-            <div className="mt-12 p-6 bg-blue-50 rounded-lg text-center">
-              <p className="text-gray-600 mb-2">{kairosCta.intro}</p>
+            <div className="mt-12 p-8 bg-sand rounded-lg border border-sand-warm">
+              <p className="font-heading italic text-aegean text-xl mb-3">{kairosCta.intro}</p>
               <a
                 href={kairosCta.href}
                 target="_blank"
                 rel="noopener"
-                className="text-blue-600 hover:underline font-medium"
+                className="inline-block mt-1 px-5 py-2.5 bg-terra text-white text-[13px] font-semibold uppercase tracking-wider rounded-md hover:bg-terra-light transition-colors"
               >
                 {kairosCta.link}
               </a>
