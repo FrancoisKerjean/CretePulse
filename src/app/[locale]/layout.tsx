@@ -55,21 +55,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       description: t("description"),
       images: [`${BASE_URL}/api/og?title=${encodeURIComponent(t("title"))}`],
     },
-    other: {
-      "script:ld+json": JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "Organization",
-        name: "Crete Direct",
-        url: "https://crete.direct",
-        logo: "https://crete.direct/icon.svg",
-        description: t("description"),
-        areaServed: {
-          "@type": "Place",
-          name: "Crete, Greece",
-        },
-        sameAs: [],
-      }),
-    },
+    // NOTE: Organization JSON-LD is rendered as a real <script> in the body below.
+    // Next.js renders `other` as <meta> tags, which Google never parses as structured data.
     robots: {
       index: true,
       follow: true,
@@ -86,10 +73,26 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params;
   const messages = await getMessages();
+  const t = await getTranslations({ locale, namespace: "meta" });
+
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Crete Direct",
+    url: BASE_URL,
+    logo: `${BASE_URL}/icon.svg`,
+    description: t("description"),
+    areaServed: { "@type": "Place", name: "Crete, Greece" },
+    sameAs: [],
+  };
 
   return (
     <html lang={locale} className={playfair.variable}>
       <body className="bg-surface text-text font-sans antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
         <NextIntlClientProvider messages={messages}>
           <Header />
           {children}

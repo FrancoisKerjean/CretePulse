@@ -1,5 +1,7 @@
 import { getFoodBySlug, getNearbyFoodPlaces } from "@/lib/food";
 import { getLocalizedField, type Locale } from "@/lib/types";
+import DiscoverCrete from "@/components/DiscoverCrete";
+import NewsletterCTA from "@/components/NewsletterCTA";
 import { restaurantSchema, breadcrumbSchema } from "@/lib/schema";
 import { UtensilsCrossed, MapPin, Phone, Globe, ChevronLeft } from "lucide-react";
 import { buildAlternates, buildFoodTitle } from "@/lib/seo";
@@ -251,6 +253,10 @@ export default async function FoodDetailPage({
             </div>
           </section>
         )}
+
+        {/* Internal linking + retention: editorial discovery grid + newsletter capture */}
+        <DiscoverCrete category={null} locale={locale} />
+        <NewsletterCTA locale={locale} />
 
         {/* Image credit */}
         {place.image_credit && (

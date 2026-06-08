@@ -34,23 +34,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const m = HOME_META[locale] || HOME_META.en;
   const url = `${BASE_URL}/${locale}`;
 
-  const websiteSchema = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "Crete Direct",
-    url: BASE_URL,
-    description: m.desc,
-    inLanguage: locale,
-    potentialAction: {
-      "@type": "SearchAction",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate: `${BASE_URL}/${locale}/beaches?q={search_term_string}`,
-      },
-      "query-input": "required name=search_term_string",
-    },
-  };
-
   return {
     title: m.title,
     description: m.desc,
@@ -61,14 +44,34 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       url,
       type: "website",
     },
-    other: {
-      "script:ld+json": JSON.stringify(websiteSchema),
+    // WebSite + SearchAction JSON-LD is rendered as a real <script> in HomePage below
+    // (Next renders `other` as <meta>, which Google does not read as structured data).
+  };
+}
+
+function buildWebsiteSchema(locale: string, desc: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Crete Direct",
+    url: BASE_URL,
+    description: desc,
+    inLanguage: locale,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${BASE_URL}/${locale}/search?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
     },
   };
 }
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  const m = HOME_META[locale] || HOME_META.en;
+  const websiteSchema = buildWebsiteSchema(locale, m.desc);
 
   const [cities, latestNews, upcomingEvents, latestGuides] = await Promise.all([
     fetchAllCitiesWeather(),
@@ -78,12 +81,18 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   ]);
 
   return (
-    <HomeClient
-      cities={cities}
-      latestNews={latestNews}
-      upcomingEvents={upcomingEvents}
-      latestGuides={latestGuides}
-      locale={locale}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+      />
+      <HomeClient
+        cities={cities}
+        latestNews={latestNews}
+        upcomingEvents={upcomingEvents}
+        latestGuides={latestGuides}
+        locale={locale}
+      />
+    </>
   );
 }

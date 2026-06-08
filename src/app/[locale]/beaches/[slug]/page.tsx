@@ -1,5 +1,7 @@
 import { getBeachBySlug, getNearbyBeaches } from "@/lib/beaches";
 import { getLocalizedField, type Locale } from "@/lib/types";
+import DiscoverCrete from "@/components/DiscoverCrete";
+import NewsletterCTA from "@/components/NewsletterCTA";
 import { beachSchema, breadcrumbSchema } from "@/lib/schema";
 import { MapPin, Car, Waves, Fish, Sun, Wind, Baby, UtensilsCrossed, ChevronLeft } from "lucide-react";
 import Image from "next/image";
@@ -365,6 +367,10 @@ export default async function BeachDetailPage({
 
         {/* Cross-link rental funnel (kairosguest.com), UTM-tracked */}
         <RentalCTA locale={locale} contentSlug={beach.slug} contentType="beach" />
+
+        {/* Internal linking + retention: editorial discovery grid + newsletter capture */}
+        <DiscoverCrete category={null} locale={locale} />
+        <NewsletterCTA locale={locale} />
 
         {/* Image credit */}
         {beach.image_credit && (

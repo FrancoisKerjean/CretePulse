@@ -1,6 +1,8 @@
 import { getTranslations } from "next-intl/server";
 import { getHikeBySlug } from "@/lib/hikes";
 import { getLocalizedField, type Locale, type Hike } from "@/lib/types";
+import DiscoverCrete from "@/components/DiscoverCrete";
+import NewsletterCTA from "@/components/NewsletterCTA";
 import { breadcrumbSchema } from "@/lib/schema";
 import { Footprints, Mountain, Droplets, MapPin, ChevronLeft, Download } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
@@ -203,6 +205,10 @@ export default async function HikeDetailPage({
             </a>
           )}
         </div>
+
+        {/* Internal linking + retention: editorial discovery grid + newsletter capture */}
+        <DiscoverCrete category={null} locale={locale} />
+        <NewsletterCTA locale={locale} />
 
         {/* Image credit */}
         {hike.image_credit && (

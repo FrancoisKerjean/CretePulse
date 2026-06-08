@@ -1,6 +1,8 @@
 import { getTranslations } from "next-intl/server";
 import { getVillageBySlug, getNearbyVillages } from "@/lib/villages";
 import { getLocalizedField, type Locale } from "@/lib/types";
+import DiscoverCrete from "@/components/DiscoverCrete";
+import NewsletterCTA from "@/components/NewsletterCTA";
 import { breadcrumbSchema, villageSchema } from "@/lib/schema";
 import { MapPin, Mountain, Users, Clock, ChevronLeft, Star } from "lucide-react";
 import { buildAlternates, buildVillageTitle, buildVillageDescription } from "@/lib/seo";
@@ -222,6 +224,10 @@ export default async function VillageDetailPage({
             </div>
           </section>
         )}
+
+        {/* Internal linking + retention: editorial discovery grid + newsletter capture */}
+        <DiscoverCrete category={null} locale={locale} />
+        <NewsletterCTA locale={locale} />
 
         {/* Image credit */}
         {village.image_credit && (
