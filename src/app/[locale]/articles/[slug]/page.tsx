@@ -373,7 +373,7 @@ export default async function ArticleDetailPage({
 
       {/* Hero */}
       {guide.image_url && (
-        <div className="relative h-64 md:h-80 bg-stone overflow-hidden">
+        <div className="relative h-72 md:h-[460px] lg:h-[560px] bg-stone overflow-hidden">
           <img
             src={guide.image_url}
             alt={title}
