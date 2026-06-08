@@ -14,6 +14,7 @@ import {
   isGuideTranslated,
   type Guide,
 } from "@/lib/guides";
+import { getAutolinkIndex, autolinkHtml } from "@/lib/autolink";
 import type { Locale } from "@/lib/types";
 import { breadcrumbSchema } from "@/lib/schema";
 import DiscoverCrete from "@/components/DiscoverCrete";
@@ -316,6 +317,9 @@ export default async function ArticleDetailPage({
   const content = getLocalizedGuideField(guide, "contents", loc);
   const faqs = getLocalizedFaqs(guide, loc);
   const toc = extractToc(content);
+  // Auto-link the first mention of known beaches/villages/hikes to their pages (in-body
+  // internal links; the most-clicked + best-for-crawl link type, absent from auto articles).
+  const linkedContent = autolinkHtml(content, await getAutolinkIndex(loc), { maxLinks: 6 });
 
   const categoryLabel = CATEGORY_LABELS[guide.category]?.[loc] || guide.category;
   const categoryColor = CATEGORY_COLORS[guide.category] || "bg-stone text-text-muted";
@@ -451,7 +455,7 @@ export default async function ArticleDetailPage({
                 prose-li:mb-1
                 prose-a:text-aegean prose-a:underline hover:prose-a:text-aegean-light
                 prose-strong:text-text"
-              dangerouslySetInnerHTML={{ __html: content }}
+              dangerouslySetInnerHTML={{ __html: linkedContent }}
             />
 
             {/* FAQ Accordion */}
