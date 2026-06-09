@@ -144,13 +144,13 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, l
       {/* ═══════════════════ HERO ═══════════════════ */}
       <section className="relative h-[80vh] min-h-[560px] max-h-[860px] overflow-hidden">
         <Image
-          src="https://images.pexels.com/photos/11401809/pexels-photo-11401809.jpeg"
+          src="https://images.pexels.com/photos/11401809/pexels-photo-11401809.jpeg?auto=compress&cs=tinysrgb&w=1920&q=70"
           alt="Crete coastline"
           fill
           priority
           className="object-cover"
           sizes="100vw"
-          quality={85}
+          quality={70}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/75" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-transparent" />
