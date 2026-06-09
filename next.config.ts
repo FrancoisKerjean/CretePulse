@@ -13,12 +13,17 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   images: {
-    unoptimized: true,
+    // Optimisation activée (AVIF/WebP + resize) — gain ~3-4x sur les images.
+    // Coût Vercel à l'usage, borné (transformations cachées 31j). Surveillé.
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 2678400, // 31j — réduit les re-transformations facturées
     remotePatterns: [
       { hostname: "upload.wikimedia.org" },
+      { hostname: "**.wikimedia.org" },
       { hostname: "images.unsplash.com" },
       { hostname: "images.pexels.com" },
-      { hostname: "**.wikimedia.org" },
+      { hostname: "a0.muscache.com" },
+      { hostname: "media.crete.direct" },
     ],
   },
   async headers() {
