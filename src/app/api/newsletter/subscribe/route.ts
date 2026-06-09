@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -28,9 +28,9 @@ export async function POST(request: NextRequest) {
   const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
   const { data: recent } = await supabase
     .from("newsletter_subscribers")
-    .select("id, created_at")
+    .select("id, subscribed_at")
     .eq("email", email)
-    .gte("created_at", fiveMinutesAgo)
+    .gte("subscribed_at", fiveMinutesAgo)
     .limit(1);
 
   if (recent && recent.length > 0) {
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     locale,
     confirmed: false,
     confirm_token,
-    created_at: new Date().toISOString(),
+    subscribed_at: new Date().toISOString(),
   });
 
   if (error) {
