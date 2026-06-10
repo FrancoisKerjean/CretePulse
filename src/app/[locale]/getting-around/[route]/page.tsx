@@ -119,6 +119,31 @@ const RELATED: Record<string, string[]> = {
 };
 
 /* ------------------------------------------------------------------ */
+/*  Airport data pages (contextual interlinking to /airport/[slug])    */
+/* ------------------------------------------------------------------ */
+
+const AIRPORT_DATA_LINK: Record<string, { airportSlug: string; labels: Record<string, string> }> = {
+  "heraklion-airport-to-city": {
+    airportSlug: "heraklion",
+    labels: {
+      en: "Heraklion Airport in numbers: monthly passenger data",
+      fr: "L’aéroport d’Héraklion en chiffres : données passagers mensuelles",
+      de: "Flughafen Heraklion in Zahlen: monatliche Passagierdaten",
+      el: "Το αεροδρόμιο Ηρακλείου σε αριθμούς: μηνιαία στοιχεία επιβατών",
+    },
+  },
+  "chania-airport-to-city": {
+    airportSlug: "chania",
+    labels: {
+      en: "Chania Airport in numbers: monthly passenger data",
+      fr: "L’aéroport de La Canée en chiffres : données passagers mensuelles",
+      de: "Flughafen Chania in Zahlen: monatliche Passagierdaten",
+      el: "Το αεροδρόμιο Χανίων σε αριθμούς: μηνιαία στοιχεία επιβατών",
+    },
+  },
+};
+
+/* ------------------------------------------------------------------ */
 /*  Labels                                                             */
 /* ------------------------------------------------------------------ */
 
@@ -408,6 +433,20 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
             ))}
           </div>
         </section>
+
+        {/* Airport passenger data (contextual link to /airport/[slug]) */}
+        {AIRPORT_DATA_LINK[slug] && (
+          <Link
+            href={`/${locale}/airport/${AIRPORT_DATA_LINK[slug].airportSlug}`}
+            className="flex items-center gap-3 px-5 py-4 bg-white border border-border rounded-xl hover:border-aegean hover:shadow-sm transition-all"
+          >
+            <Plane className="w-5 h-5 text-aegean flex-shrink-0" />
+            <span className="text-sm font-medium text-text">
+              {AIRPORT_DATA_LINK[slug].labels[locale] || AIRPORT_DATA_LINK[slug].labels.en}
+            </span>
+            <ArrowRight className="w-4 h-4 text-aegean ml-auto flex-shrink-0" />
+          </Link>
+        )}
 
         {/* Tips */}
         {tips.length > 0 && (

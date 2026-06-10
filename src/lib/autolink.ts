@@ -6,6 +6,41 @@ export type LinkEntity = { name: string; href: string };
 const BASE_LOCALES = ["en", "fr", "de", "el"];
 
 /**
+ * Static entities for the /airport/[slug] data pages (not in the beaches/villages/hikes
+ * tables). Names are the forms that actually appear in article prose; matching is
+ * case-sensitive, hence the lowercase French/Greek mid-sentence forms and both
+ * apostrophe variants in French. Bare "Nikos Kazantzakis" is deliberately NOT included:
+ * articles about the writer (museum, tomb) would link to the airport (false positive).
+ * The longest-first sort in getAutolinkIndex ensures "Heraklion Airport" is tried
+ * before a bare "Heraklion" place entity in the same text segment.
+ */
+const AIRPORT_ENTITIES: Record<string, { name: string; slug: string }[]> = {
+  en: [
+    { name: "Heraklion Airport", slug: "heraklion" },
+    { name: "Nikos Kazantzakis Airport", slug: "heraklion" },
+    { name: "Chania Airport", slug: "chania" },
+    { name: "Sitia Airport", slug: "sitia" },
+  ],
+  fr: [
+    { name: "aéroport d’Héraklion", slug: "heraklion" },
+    { name: "aéroport d'Héraklion", slug: "heraklion" },
+    { name: "aéroport de La Canée", slug: "chania" },
+    { name: "aéroport de Chania", slug: "chania" },
+    { name: "aéroport de Sitia", slug: "sitia" },
+  ],
+  de: [
+    { name: "Flughafen Heraklion", slug: "heraklion" },
+    { name: "Flughafen Chania", slug: "chania" },
+    { name: "Flughafen Sitia", slug: "sitia" },
+  ],
+  el: [
+    { name: "αεροδρόμιο Ηρακλείου", slug: "heraklion" },
+    { name: "αεροδρόμιο Χανίων", slug: "chania" },
+    { name: "αεροδρόμιο Σητείας", slug: "sitia" },
+  ],
+};
+
+/**
  * Lightweight index of beach/village/hike names -> their entity page, for the current locale.
  * Cached per render. Used to auto-link the first mention of a known place inside article HTML,
  * which adds contextual internal links (best for crawl + the most-clicked link type) to the
@@ -30,6 +65,12 @@ export const getAutolinkIndex = cache(async (locale: string): Promise<LinkEntity
   push(beaches.data as Record<string, string>[], "beaches");
   push(villages.data as Record<string, string>[], "villages");
   push(hikes.data as Record<string, string>[], "hikes");
+
+  // Airport data pages: static entities, added before the sort/de-dupe below so they
+  // participate in longest-name-first matching like every other entity.
+  for (const a of AIRPORT_ENTITIES[loc] || AIRPORT_ENTITIES.en) {
+    out.push({ name: a.name, href: `/${locale}/airport/${a.slug}` });
+  }
 
   // De-dupe by name; longest names first so multi-word places match before their substrings.
   const seen = new Set<string>();
