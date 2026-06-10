@@ -14,7 +14,8 @@ export const AFFILIATE_LINKS = {
     label: { en: "Find hotels", fr: "Trouver un hôtel", de: "Hotels finden", el: "Εύρεση ξενοδοχείου" },
   },
   tours: {
-    url: "https://www.getyourguide.com/crete-l517/?partner_id=cretedirect",
+    // Real GetYourGuide partner ID (account "Crete.direct", 8% commission, 10/06/2026)
+    url: "https://www.getyourguide.com/crete-l517/?partner_id=UIHUPYW",
     label: { en: "Book tours", fr: "Réserver des excursions", de: "Touren buchen", el: "Κράτηση εκδρομών" },
   },
   ferry: {
