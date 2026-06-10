@@ -16,6 +16,7 @@ import {
   getCreteOverall,
   getSiblingNeighbourhoods,
   getRelatedGuides,
+  type NeighbourhoodStats,
 } from "@/lib/airbnb";
 import { buildAlternates } from "@/lib/seo";
 import { routing } from "@/i18n/routing";
@@ -70,6 +71,15 @@ const L: Record<Loc, {
   ctaButton: string;
   ctaLink: string;
   dataPartner: string;
+  distTitle: string;
+  distCaption: (p25: string, p75: string, med: string) => string;
+  medianShort: string;
+  avgShort: string;
+  creteShort: string;
+  p95Short: string;
+  occCompareTitle: string;
+  creteLabel: string;
+  insight: (name: string, price: Delta, occ: Delta, rev: Delta) => string;
 }> = {
   en: {
     pageTitlePrefix: "Airbnb in",
@@ -118,6 +128,27 @@ const L: Record<Loc, {
     ctaButton: "Get a personal yield analysis",
     ctaLink: "https://kairosguest.com/rental-analyzer",
     dataPartner: "Data analysis and aggregation provided by",
+    distTitle: "How nightly prices spread",
+    distCaption: (p25, p75, med) =>
+      `Half of all listings price between ${p25} and ${p75} a night; the median is ${med}.`,
+    medianShort: "median",
+    avgShort: "average",
+    creteShort: "Crete avg",
+    p95Short: "top 5% from",
+    occCompareTitle: "Occupancy vs the rest of Crete",
+    creteLabel: "Crete",
+    insight: (name, price, occ, rev) => {
+      const p = price.dir === 0
+        ? `Nightly prices in ${name} are in line with the Crete average`
+        : `Nightly prices in ${name} run ${price.pct}% ${price.dir > 0 ? "above" : "below"} the Crete average`;
+      const o = occ.dir === 0
+        ? `occupancy matches the island norm`
+        : `listings fill ${occ.pct}% ${occ.dir > 0 ? "more" : "fewer"} nights than the island norm`;
+      const r = rev.dir === 0
+        ? `annual revenue per listing is close to the Crete average`
+        : `the average listing grosses ${rev.pct}% ${rev.dir > 0 ? "more" : "less"} per year`;
+      return `${p}; ${o}, and ${r}.`;
+    },
   },
   fr: {
     pageTitlePrefix: "Airbnb à",
@@ -166,6 +197,27 @@ const L: Record<Loc, {
     ctaButton: "Obtenir une analyse personnelle",
     ctaLink: "https://kairosguest.com/rental-analyzer",
     dataPartner: "Analyse et agrégation des données réalisées par",
+    distTitle: "Comment les prix par nuit se répartissent",
+    distCaption: (p25, p75, med) =>
+      `La moitié des logements se situe entre ${p25} et ${p75} la nuit ; la médiane est à ${med}.`,
+    medianShort: "médiane",
+    avgShort: "moyenne",
+    creteShort: "moy. Crète",
+    p95Short: "top 5 % dès",
+    occCompareTitle: "Occupation vs le reste de la Crète",
+    creteLabel: "Crète",
+    insight: (name, price, occ, rev) => {
+      const p = price.dir === 0
+        ? `Les prix par nuit à ${name} sont dans la moyenne crétoise`
+        : `Les prix par nuit à ${name} sont ${price.pct}% ${price.dir > 0 ? "au-dessus" : "en dessous"} de la moyenne crétoise`;
+      const o = occ.dir === 0
+        ? `l'occupation est dans la norme de l'île`
+        : `l'occupation est ${occ.pct}% ${occ.dir > 0 ? "au-dessus" : "en dessous"} de la norme de l'île`;
+      const r = rev.dir === 0
+        ? `le revenu annuel moyen par logement est proche de la moyenne`
+        : `le revenu annuel moyen par logement est ${rev.pct}% plus ${rev.dir > 0 ? "élevé" : "bas"}`;
+      return `${p} ; ${o}, et ${r}.`;
+    },
   },
   de: {
     pageTitlePrefix: "Airbnb in",
@@ -214,6 +266,27 @@ const L: Record<Loc, {
     ctaButton: "Persönliche Renditeanalyse anfordern",
     ctaLink: "https://kairosguest.com/rental-analyzer",
     dataPartner: "Datenanalyse und Aggregation bereitgestellt von",
+    distTitle: "So verteilen sich die Übernachtungspreise",
+    distCaption: (p25, p75, med) =>
+      `Die Hälfte aller Unterkünfte liegt zwischen ${p25} und ${p75} pro Nacht; der Median beträgt ${med}.`,
+    medianShort: "Median",
+    avgShort: "Durchschnitt",
+    creteShort: "Kreta-Schnitt",
+    p95Short: "Top 5 % ab",
+    occCompareTitle: "Auslastung im Vergleich zum Rest Kretas",
+    creteLabel: "Kreta",
+    insight: (name, price, occ, rev) => {
+      const p = price.dir === 0
+        ? `Die Übernachtungspreise in ${name} liegen im kretischen Durchschnitt`
+        : `Die Übernachtungspreise in ${name} liegen ${price.pct}% ${price.dir > 0 ? "über" : "unter"} dem kretischen Durchschnitt`;
+      const o = occ.dir === 0
+        ? `die Auslastung entspricht der Inselnorm`
+        : `die Auslastung liegt ${occ.pct}% ${occ.dir > 0 ? "über" : "unter"} der Inselnorm`;
+      const r = rev.dir === 0
+        ? `der durchschnittliche Jahresumsatz pro Unterkunft liegt nahe am Durchschnitt`
+        : `der durchschnittliche Jahresumsatz pro Unterkunft ist ${rev.pct}% ${rev.dir > 0 ? "höher" : "niedriger"}`;
+      return `${p}; ${o}, und ${r}.`;
+    },
   },
   el: {
     pageTitlePrefix: "Airbnb στ",
@@ -262,6 +335,27 @@ const L: Record<Loc, {
     ctaButton: "Λάβετε προσωπική ανάλυση",
     ctaLink: "https://kairosguest.com/rental-analyzer",
     dataPartner: "Ανάλυση και συγκέντρωση δεδομένων από",
+    distTitle: "Πώς κατανέμονται οι τιμές ανά διανυκτέρευση",
+    distCaption: (p25, p75, med) =>
+      `Τα μισά καταλύματα κοστίζουν μεταξύ ${p25} και ${p75} τη βραδιά· η διάμεσος είναι ${med}.`,
+    medianShort: "διάμεσος",
+    avgShort: "μέσος όρος",
+    creteShort: "μ.ό. Κρήτης",
+    p95Short: "top 5% από",
+    occCompareTitle: "Πληρότητα σε σχέση με την υπόλοιπη Κρήτη",
+    creteLabel: "Κρήτη",
+    insight: (name, price, occ, rev) => {
+      const p = price.dir === 0
+        ? `Στην περιοχή ${name}, οι τιμές ανά διανυκτέρευση είναι κοντά στον μέσο όρο της Κρήτης`
+        : `Στην περιοχή ${name}, οι τιμές ανά διανυκτέρευση είναι ${price.pct}% ${price.dir > 0 ? "πάνω από" : "κάτω από"} τον μέσο όρο της Κρήτης`;
+      const o = occ.dir === 0
+        ? `η πληρότητα είναι στον μέσο όρο του νησιού`
+        : `η πληρότητα είναι ${occ.pct}% ${occ.dir > 0 ? "πάνω από" : "κάτω από"} τον μέσο όρο του νησιού`;
+      const r = rev.dir === 0
+        ? `και τα μέσα ετήσια έσοδα ανά κατάλυμα είναι κοντά στον μέσο όρο`
+        : `και τα μέσα ετήσια έσοδα ανά κατάλυμα είναι ${rev.pct}% ${rev.dir > 0 ? "υψηλότερα" : "χαμηλότερα"}`;
+      return `${p}· ${o}· ${r}.`;
+    },
   },
 };
 
@@ -298,6 +392,132 @@ function fmtEur(n: number | null | undefined, locale: string): string {
     currency: "EUR",
     maximumFractionDigits: 0,
   }).format(n);
+}
+
+/** Signed comparison vs the Crete baseline; |delta| < 5% counts as "in line". */
+type Delta = { pct: number; dir: -1 | 0 | 1 };
+
+function computeDelta(value: number | null, baseline: number | null): Delta | null {
+  if (value === null || baseline === null || baseline <= 0) return null;
+  const raw = ((value - baseline) / baseline) * 100;
+  if (!Number.isFinite(raw)) return null;
+  const dir: Delta["dir"] = raw >= 5 ? 1 : raw <= -5 ? -1 : 0;
+  return { pct: Math.abs(Math.round(raw)), dir };
+}
+
+/**
+ * Server-rendered price spread: p25-p75 band, median + average markers,
+ * p95 tick, Crete-average reference triangle. Pure SVG, no client JS.
+ */
+function PriceDistribution({
+  stats, creteAvg, locale, t,
+}: {
+  stats: NeighbourhoodStats;
+  creteAvg: number | null;
+  locale: string;
+  t: (typeof L)["en"];
+}) {
+  const { p25_price: p25, median_price: med, p75_price: p75, p95_price: p95, avg_price: avg } = stats;
+  if (p25 === null || med === null || p75 === null) return null;
+
+  const W = 680;
+  const H = 134; // 3 label rows below the axis (p25/p75, average, Crete ref)
+  const PAD = 36;
+  const hi = Math.max(p95 ?? p75, avg ?? 0, creteAvg ?? 0) * 1.08;
+  const lo = Math.max(0, p25 * 0.72);
+  const x = (v: number) => PAD + ((v - lo) / (hi - lo)) * (W - 2 * PAD);
+  const BAND_Y = 44;
+  const BAND_H = 30;
+  const eur = (v: number) => fmtEur(v, locale);
+
+  return (
+    <figure className="mt-4 rounded-lg border border-stone-200 bg-white p-4">
+      <figcaption className="text-sm font-medium text-stone-700 mb-1">{t.distTitle}</figcaption>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label={t.distTitle}>
+        {/* axis */}
+        <line x1={PAD} x2={W - PAD} y1={BAND_Y + BAND_H / 2} y2={BAND_Y + BAND_H / 2} stroke="#d6d3d1" strokeWidth="1.5" />
+        {/* p25-p75 band */}
+        <rect
+          x={x(p25)} y={BAND_Y} width={Math.max(2, x(p75) - x(p25))} height={BAND_H}
+          rx="4" fill="#0e7490" fillOpacity="0.16" stroke="#0e7490" strokeOpacity="0.45"
+        />
+        <text x={x(p25)} y={BAND_Y + BAND_H + 16} textAnchor="middle" fontSize="11" fill="#57534e">{eur(p25)}</text>
+        <text x={x(p75)} y={BAND_Y + BAND_H + 16} textAnchor="middle" fontSize="11" fill="#57534e">{eur(p75)}</text>
+        {/* median */}
+        <line x1={x(med)} x2={x(med)} y1={BAND_Y - 10} y2={BAND_Y + BAND_H + 4} stroke="#0e7490" strokeWidth="2.5" />
+        <text x={x(med)} y={BAND_Y - 16} textAnchor="middle" fontSize="11.5" fontWeight="600" fill="#155e75">
+          {eur(med)} · {t.medianShort}
+        </text>
+        {/* average (often pulled up by villas) */}
+        {avg !== null && (
+          <>
+            <line x1={x(avg)} x2={x(avg)} y1={BAND_Y - 4} y2={BAND_Y + BAND_H + 4} stroke="#78716c" strokeWidth="1.5" strokeDasharray="4 3" />
+            <text x={x(avg)} y={BAND_Y + BAND_H + 30} textAnchor="middle" fontSize="10.5" fill="#78716c">
+              {eur(avg)} · {t.avgShort}
+            </text>
+          </>
+        )}
+        {/* p95 tick */}
+        {p95 !== null && (
+          <>
+            <line x1={x(p95)} x2={x(p95)} y1={BAND_Y + 6} y2={BAND_Y + BAND_H - 6} stroke="#a8a29e" strokeWidth="1.5" />
+            <text x={x(p95)} y={BAND_Y - 2} textAnchor="middle" fontSize="10.5" fill="#a8a29e">
+              {t.p95Short} {eur(p95)}
+            </text>
+          </>
+        )}
+        {/* Crete average reference */}
+        {creteAvg !== null && (
+          <>
+            <path
+              d={`M ${x(creteAvg)} ${BAND_Y + BAND_H + 36} l -5 8 l 10 0 z`}
+              fill="#b45309"
+            />
+            <text x={x(creteAvg)} y={BAND_Y + BAND_H + 58} textAnchor="middle" fontSize="10.5" fill="#b45309">
+              {t.creteShort} {eur(creteAvg)}
+            </text>
+          </>
+        )}
+      </svg>
+      <p className="text-xs text-stone-500 mt-1">{t.distCaption(eur(p25), eur(p75), eur(med))}</p>
+    </figure>
+  );
+}
+
+/** Two-bar comparison of occupancy days vs the all-Crete average. */
+function OccupancyCompare({
+  areaName, areaDays, creteDays, locale, t,
+}: {
+  areaName: string;
+  areaDays: number | null;
+  creteDays: number | null;
+  locale: string;
+  t: (typeof L)["en"];
+}) {
+  if (areaDays === null || creteDays === null) return null;
+  const max = Math.max(areaDays, creteDays) * 1.15;
+  const w = (v: number) => `${Math.max(2, (v / max) * 100)}%`;
+  return (
+    <div className="mt-4 rounded-lg border border-stone-200 bg-white p-4">
+      <p className="text-sm font-medium text-stone-700 mb-3">{t.occCompareTitle}</p>
+      <div className="space-y-2.5">
+        {[
+          { label: areaName, days: areaDays, cls: "bg-cyan-700" },
+          { label: t.creteLabel, days: creteDays, cls: "bg-stone-300" },
+        ].map(row => (
+          <div key={row.label} className="flex items-center gap-3">
+            <span className="w-28 shrink-0 truncate text-xs text-stone-600">{row.label}</span>
+            <div className="flex-1 h-5 rounded bg-stone-100 overflow-hidden">
+              <div className={`h-full rounded ${row.cls}`} style={{ width: w(row.days) }} />
+            </div>
+            <span className="w-24 shrink-0 text-right text-xs tabular-nums text-stone-700">
+              {fmtNum(row.days, locale)} {t.daysPerYear}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function fmtPct(n: number | null | undefined): string {
@@ -378,6 +598,14 @@ export default async function AirbnbNeighbourhoodPage(
 
   const siblings = getSiblingNeighbourhoods(neighbourhood);
 
+  // Computed comparison vs the all-Crete baseline (the per-page "insight"):
+  // every figure comes from the dataset, nothing is editorialized.
+  const priceDelta = overall ? computeDelta(stats.avg_price, overall.avg_price) : null;
+  const occDelta = overall ? computeDelta(stats.avg_occupancy_days, overall.avg_occupancy_days) : null;
+  const revDelta = overall ? computeDelta(stats.avg_revenue_eur, overall.avg_revenue_eur) : null;
+  const insightText =
+    priceDelta && occDelta && revDelta ? t.insight(name, priceDelta, occDelta, revDelta) : null;
+
   // Schema.org JSON-LD
   const jsonLd = {
     "@context": "https://schema.org",
@@ -453,6 +681,12 @@ export default async function AirbnbNeighbourhoodPage(
             <Card icon={<Euro />} label={t.priceRange}
                   value={`${fmtEur(stats.p25_price, locale)} - ${fmtEur(stats.p75_price, locale)}`} sub={t.perNight} />
           </div>
+          <PriceDistribution
+            stats={stats}
+            creteAvg={overall?.avg_price ?? null}
+            locale={locale}
+            t={t}
+          />
         </section>
 
         {/* Performance */}
@@ -466,6 +700,18 @@ export default async function AirbnbNeighbourhoodPage(
             <Card icon={<Star />} label={t.rating}
                   value={stats.avg_rating !== null ? stats.avg_rating.toFixed(2) : "-"} sub="/ 5" />
           </div>
+          <OccupancyCompare
+            areaName={name}
+            areaDays={stats.avg_occupancy_days}
+            creteDays={overall?.avg_occupancy_days ?? null}
+            locale={locale}
+            t={t}
+          />
+          {insightText && (
+            <div className="mt-4 rounded-lg border-l-4 border-cyan-700 bg-white border border-stone-200 p-4">
+              <p className="text-sm text-stone-800">{insightText}</p>
+            </div>
+          )}
           {overall && (
             <p className="mt-3 text-xs text-stone-500">
               {t.cretedAvg}: {fmtEur(overall.avg_price, locale)} / {t.perNight} ·
