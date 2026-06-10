@@ -11,6 +11,9 @@ import {
   buildGraph, reachableFrom, findJourneys, parseDurationMin,
   type Journey, type JourneyLeg,
 } from "@/lib/bus-journey";
+import { slugifyPlace, pairSlug } from "@/lib/bus-pairs";
+import { TaxiCompare } from "@/components/TaxiCompare";
+import partnersData from "@/data/taxi-partners.json";
 
 const TP = {
   searchTitle: {
@@ -203,6 +206,10 @@ export function JourneyPlanner({
   const noServiceThatDay = noJourney && reachable !== null && reachable.includes(toPlace);
   const westNotice = noJourney && (westOnly(fromPlace) || westOnly(toPlace));
 
+  const taxiSlugA = fromPlace ? slugifyPlace(fromPlace) : null;
+  const taxiSlugB = toPlace ? slugifyPlace(toPlace) : null;
+  const taxiPair = fromPlace && toPlace ? pairSlug(fromPlace, toPlace) : null;
+
   return (
     <div className="rounded-xl border border-border bg-white p-5 mb-6 shadow-sm">
       <p className="text-sm font-semibold text-text mb-3">{tp("searchTitle", locale)}</p>
@@ -268,6 +275,18 @@ export function JourneyPlanner({
           <p>{noServiceThatDay ? tp("noServiceThatDay", locale) : tp("noRoute", locale)}</p>
           {westNotice && <p>{tp("westPartial", locale)}</p>}
         </div>
+      )}
+
+      {taxiSlugA && taxiSlugB && taxiPair && (
+        <TaxiCompare
+          locale={locale}
+          slugA={taxiSlugA}
+          slugB={taxiSlugB}
+          pairSlug={taxiPair}
+          busPriceEur={journeys[0]?.priceTotal ?? null}
+          partnersData={partnersData}
+          compact
+        />
       )}
     </div>
   );
