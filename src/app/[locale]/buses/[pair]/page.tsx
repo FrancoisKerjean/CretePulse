@@ -6,6 +6,9 @@ import { buildAlternates } from "@/lib/seo";
 import { getBusRoutes, getBusDestinations, latestScrapedAt } from "@/lib/buses";
 import type { BusRoute } from "@/lib/buses";
 import { eligiblePairs, pairRoutes, onwardPlaces, pairSlug, slugifyPlace } from "@/lib/bus-pairs";
+import { TaxiCompare } from "@/components/TaxiCompare";
+import { taxiFareRange } from "@/lib/taxi-fare";
+import partnersData from "@/data/taxi-partners.json";
 import type { Locale } from "@/lib/types";
 
 export const revalidate = 86400;
@@ -84,6 +87,24 @@ const T = {
     fr: (a: string, b: string, f: string, l: string) => [`À quelle heure partent le premier et le dernier bus de ${a} à ${b} ?`, `Le premier bus part de ${a} à ${f} et le dernier à ${l} (selon le jour de la semaine et la saison).`],
     de: (a: string, b: string, f: string, l: string) => [`Wann fährt der erste und letzte Bus von ${a} nach ${b}?`, `Der erste Bus fährt um ${f} ab ${a}, der letzte um ${l} (je nach Wochentag und Saison).`],
     el: (a: string, b: string, f: string, l: string) => [`Τι ώρα είναι το πρώτο και το τελευταίο λεωφορείο από ${a} προς ${b};`, `Το πρώτο φεύγει στις ${f} και το τελευταίο στις ${l} (ανάλογα με την ημέρα και την εποχή).`],
+  },
+  faqTaxi: {
+    en: (a: string, b: string, lo: number, hi: number, bus: string | null) => [
+      `How much is a taxi from ${a} to ${b}?`,
+      `A taxi from ${a} to ${b} costs around ${lo}–${hi} € at the official meter rate${bus ? `; the KTEL bus costs ${bus}` : ""}. Agree the fare before departure.`,
+    ],
+    fr: (a: string, b: string, lo: number, hi: number, bus: string | null) => [
+      `Combien coûte un taxi de ${a} à ${b} ?`,
+      `Un taxi de ${a} à ${b} coûte environ ${lo}–${hi} € au compteur officiel${bus ? ` ; le bus KTEL coûte ${bus}` : ""}. Convenez du prix avant le départ.`,
+    ],
+    de: (a: string, b: string, lo: number, hi: number, bus: string | null) => [
+      `Was kostet ein Taxi von ${a} nach ${b}?`,
+      `Ein Taxi von ${a} nach ${b} kostet etwa ${lo}–${hi} € zum offiziellen Taxameter-Tarif${bus ? `; der KTEL-Bus kostet ${bus}` : ""}. Preis vor Abfahrt vereinbaren.`,
+    ],
+    el: (a: string, b: string, lo: number, hi: number, bus: string | null) => [
+      `Πόσο κοστίζει το ταξί από ${a} προς ${b};`,
+      `Το ταξί από ${a} προς ${b} κοστίζει περίπου ${lo}–${hi} € με το επίσημο ταξίμετρο${bus ? `· το ΚΤΕΛ κοστίζει ${bus}` : ""}. Συμφωνήστε την τιμή πριν την αναχώρηση.`,
+    ],
   },
 } as const;
 
@@ -221,6 +242,13 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
   if (deps.length > 1) {
     faq.push(T.faqFirstLast[ui](placeA, placeB, deps[0], deps[deps.length - 1]) as [string, string]);
   }
+  const sa = slugifyPlace(placeA)!;
+  const sb = slugifyPlace(placeB)!;
+  const taxiFare = taxiFareRange(sa, sb);
+  if (taxiFare) {
+    const busP = ref?.price_eur != null ? `${ref.price_eur.toFixed(2)} €` : null;
+    faq.push(T.faqTaxi[ui](placeA, placeB, taxiFare.low, taxiFare.high, busP) as [string, string]);
+  }
 
   const schema = {
     "@context": "https://schema.org",
@@ -276,6 +304,18 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
 
         <DirectionSection from={placeA} to={placeB} routes={pr.outbound} ui={ui} />
         <DirectionSection from={placeB} to={placeA} routes={pr.inbound} ui={ui} />
+
+        {taxiFare && (
+          <TaxiCompare
+            locale={ui}
+            slugA={sa}
+            slugB={sb}
+            pairSlug={pair}
+            busPriceEur={ref?.price_eur ?? null}
+            partnersData={partnersData}
+            compact={false}
+          />
+        )}
 
         {onwardB.length > 0 && (
           <section className="mb-8">
