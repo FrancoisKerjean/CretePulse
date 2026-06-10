@@ -46,6 +46,25 @@ CURATED_PRICES: dict[tuple[str, str], float] = {
     ("agios nikolaos", "kalo chorio lasithioy"): 2.00,
     ("agios nikolaos", "ierapetra"): 4.10,
     ("agios nikolaos", "siteia"): 8.30,
+    # Ouest (e-ktel), source greeka.com chania + rethymno 10/06/2026.
+    # Kissamos exclu : CURATED_EKTEL (operateur) dit 5.50, greeka 5.10.
+    ("chania", "sfakia"): 8.30,
+    ("chania", "chora sfakion"): 8.30,
+    ("chania", "sougia"): 4.40,
+    ("chania", "paleochora"): 8.30,
+    ("chania", "voukolies"): 3.80,
+    ("chania", "stavros"): 2.30,
+    ("chania", "sternes"): 2.30,
+    ("chania", "almyrida"): 3.20,
+    ("chania", "kalyves"): 2.70,
+    ("chania", "kalives"): 2.70,
+    ("rethymno", "plakias"): 5.00,
+    ("rethymno", "ancient eleftherna"): 3.80,
+    ("rethymno", "margarites"): 3.80,
+    ("rethymno", "ano mero"): 5.70,
+    ("rethymno", "agia galini"): 6.70,
+    ("rethymno", "koumoi"): 2.00,
+    ("rethymno", "chania airport"): 8.00,
 }
 
 # Lieux principaux est-Crete (lat, lng), orthographe DB en minuscules.
@@ -98,6 +117,30 @@ PLACE_COORDS: dict[str, tuple[float, float]] = {
     "kamares": (35.1392, 24.8294),
     "chania": (35.5138, 24.0180),
     "rethymno": (35.3644, 24.4821),
+    # Ouest (e-ktel)
+    "chania airport": (35.5317, 24.1497),
+    "kissamos": (35.4944, 23.6558),
+    "kasteli": (35.4944, 23.6558),       # = Kissamos (libelle PDF possible)
+    "elafonissi": (35.2706, 23.5400),
+    "paleochora": (35.2261, 23.6786),
+    "sougia": (35.2486, 23.8089),
+    "chora sfakion": (35.2008, 24.1364),
+    "sfakia": (35.2008, 24.1364),
+    "omalos": (35.3294, 23.8956),
+    "georgioupolis": (35.3617, 24.2581),
+    "kavros": (35.3681, 24.2767),
+    "bali": (35.4106, 24.7831),
+    "plakias": (35.1894, 24.3992),
+    "platanias": (35.5158, 23.9075),
+    "agia marina": (35.5161, 23.9219),
+    "kolymbari": (35.5394, 23.7800),
+    "almyrida": (35.4569, 24.1614),
+    "kalyves": (35.4628, 24.1283),
+    "kalives": (35.4628, 24.1283),
+    "stavros": (35.5919, 24.0958),
+    "panormo": (35.4144, 24.6906),
+    "margarites": (35.3247, 24.6594),
+    "vryses": (35.3700, 24.2069),
 }
 
 BASE_FARE = 1.20    # plancher (ticket zone urbaine herlas, greeka 10/06/2026)

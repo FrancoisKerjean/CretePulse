@@ -55,6 +55,17 @@ def test_enrich_leaves_none_when_unknown_coords():
     assert routes[0]["price_estimated"] is False
 
 
+def test_west_curated_and_estimation():
+    # Cure ouest (greeka 10/06/2026)
+    assert lookup_curated("Chania", "Paleochora") == 8.30
+    assert lookup_curated("Plakias", "Rethymno") == 5.00  # symetrique
+    # Estimation ouest : Chania -> Omalos (pas de prix cure, coords connues)
+    routes = [{"from_place": "Chania", "to_place": "Omalos", "price_eur": None}]
+    enrich_prices(routes)
+    assert routes[0]["price_estimated"] is True
+    assert 2.0 <= routes[0]["price_eur"] <= 10.0
+
+
 def test_eur_per_km_calibration():
     """EUR_PER_KM doit rester proche du ratio moyen des prix cures (±25 %)."""
     ratios = []
