@@ -21,6 +21,7 @@ CURATED_PRICES: dict[tuple[str, str], float] = {
     ("heraklion", "malia"): 4.20,
     ("heraklion", "matala"): 8.50,
     ("heraklion", "chania"): 15.00,
+    ("heraklion", "chania-express"): 15.00,  # meme liaison, libelle express herlas
     ("heraklion", "rethymno"): 8.00,
     ("heraklion", "agios nikolaos"): 7.80,
     ("heraklion", "ierapetra"): 12.00,
@@ -89,6 +90,11 @@ PLACE_COORDS: dict[str, tuple[float, float]] = {
     "mesochorio": (35.0394, 25.3550),
     "demati": (35.0617, 25.3083),
     "kroysonas": (35.2306, 24.9617),
+    "cretaquarium": (35.3325, 25.2792),            # Gournes
+    "cretaquarium (gournes)": (35.3325, 25.2792),
+    "plaka(ag.nikolaos)": (35.2828, 25.7367),
+    "kroystas": (35.1392, 25.6442),
+    "aygeniki": (35.2106, 25.0806),
     "kamares": (35.1392, 24.8294),
     "chania": (35.5138, 24.0180),
     "rethymno": (35.3644, 24.4821),
