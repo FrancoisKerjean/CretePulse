@@ -513,12 +513,11 @@ export default async function AirbnbNeighbourhoodPage(
           </p>
         </section>
 
-        {/* Related news */}
-        <section className="mb-10">
-          <h2 className="text-lg font-semibold text-stone-800 mb-4">{t.newsHeader}</h2>
-          {related.length === 0 ? (
-            <p className="text-sm text-stone-500">{t.noNews}</p>
-          ) : (
+        {/* Related news — omitted entirely when empty: a visible "no articles
+            yet" line on most of the 528 pages just advertised thin coverage. */}
+        {related.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-lg font-semibold text-stone-800 mb-4">{t.newsHeader}</h2>
             <ul className="space-y-2">
               {related.map(g => (
                 <li key={g.slug}>
@@ -532,8 +531,8 @@ export default async function AirbnbNeighbourhoodPage(
                 </li>
               ))}
             </ul>
-          )}
-        </section>
+          </section>
+        )}
 
         {/* Methodology */}
         <section className="mb-10 text-sm text-stone-600 space-y-3">
