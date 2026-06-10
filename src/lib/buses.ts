@@ -14,6 +14,8 @@ export interface BusRoute {
   season: string;
   duration: string | null;
   price_eur: number | null;
+  /** true = prix estimé au km (plan B scraper) → afficher « indicatif » */
+  price_estimated: boolean | null;
   frequency: string | null;
   departures: string[] | null;
   departures_by_day: BusDepartureGroup[] | null;
