@@ -17,6 +17,7 @@
 // competing on the same query without 0 click).
 
 import { supabase } from "@/lib/supabase";
+import { eligiblePairs } from "@/lib/bus-pairs";
 import { MONTHS, CITIES } from "@/lib/weather-monthly";
 import { CRETE_NEIGHBOURHOODS } from "@/lib/airbnb-mappings";
 import { CRETE_AIRPORTS } from "@/lib/airports";
@@ -181,6 +182,11 @@ export async function GET() {
   // for coherence with the noindex header.
   // for (const s of ROUTE_SLUGS) push(`/getting-around/${s}`, "monthly", 0.6);
   void ROUTE_SLUGS;
+  // Pages par paire de villes /buses/[pair] (spec 2026-06-10-bus-pair-pages) :
+  // data vivante (horaires MAJ hebdo scraper), indexables, revue GSC J+45.
+  const { data: busPairRoutes } = await supabase.from("bus_routes").select("from_place,to_place");
+  for (const p of eligiblePairs(busPairRoutes ?? [])) push(`/buses/${p.slug}`, "weekly", 0.7);
+
   for (const s of COMP_SLUGS) push(`/compare/${s}`, "monthly", 0.6);
   for (const s of AREA_SLUGS) push(`/where-to-stay/${s}`, "monthly", 0.6);
   for (const s of ITINERARY_SLUGS) push(`/itineraries/${s}`, "monthly", 0.7);

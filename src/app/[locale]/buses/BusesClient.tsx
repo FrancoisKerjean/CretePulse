@@ -8,6 +8,7 @@ import type { BusRoute, BusDestination, BusDepartureGroup } from "@/lib/buses";
 import { useParams } from "next/navigation";
 import { BusNetworkMap } from "@/components/BusNetworkMap";
 import { JourneyPlanner } from "./JourneyPlanner";
+import { pairSlug } from "@/lib/bus-pairs";
 
 // ---------------------------------------------------------------------------
 // Slugs valides des pages cibles (mirror des generateStaticParams cote serveur).
@@ -215,13 +216,24 @@ function RouteCard({ route, destination, locale }: { route: BusRoute; destinatio
 
   return (
     <div className="rounded-xl border border-border bg-white overflow-hidden hover:shadow-md transition-shadow flex flex-col">
-      <div className="bg-aegean px-5 py-4 text-white">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-bold text-base">{route.from_place}</span>
-          <ArrowRight className="w-4 h-4 text-white/70 shrink-0" />
-          <span className="font-bold text-base">{route.to_place}</span>
-        </div>
-      </div>
+      {(() => {
+        // Maillage SEO : le header linke la page paire quand elle existe.
+        const ps = pairSlug(route.from_place, route.to_place);
+        const header = (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-bold text-base">{route.from_place}</span>
+            <ArrowRight className="w-4 h-4 text-white/70 shrink-0" />
+            <span className="font-bold text-base">{route.to_place}</span>
+          </div>
+        );
+        return ps ? (
+          <Link href={`/${locale}/buses/${ps}`} className="block bg-aegean px-5 py-4 text-white hover:bg-aegean/90">
+            {header}
+          </Link>
+        ) : (
+          <div className="bg-aegean px-5 py-4 text-white">{header}</div>
+        );
+      })()}
 
       <div className="p-4 grid grid-cols-2 gap-4">
         {route.frequency && (
@@ -400,6 +412,9 @@ export function BusesClient({
     const p = new URLSearchParams(window.location.search);
     const f = p.get("from");
     const t = p.get("to");
+    // Sync depuis l'URL apres hydratation : un lazy initializer creerait un
+    // mismatch SSR (le HTML serveur est rendu sans query params).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (f) setFromPlace(f);
     if (t) setToPlace(t);
   }, []);
