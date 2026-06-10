@@ -7,3 +7,10 @@ node_modules/
 next-env.d.ts
 
 .vercel
+
+# local env backups + data pipeline artifacts (re-downloadable)
+.env*.bak*
+.env.local.bak.*
+__pycache__/
+/fraport_*.pdf
+/hcaa_kinisi_*.xlsx
