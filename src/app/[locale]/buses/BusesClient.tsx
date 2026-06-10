@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Bus, Clock, Euro, ArrowRight, Info } from "lucide-react";
 import Link from "next/link";
 import type { Locale } from "@/lib/types";
@@ -392,6 +392,17 @@ export function BusesClient({
 
   const [fromPlace, setFromPlace] = useState("");
   const [toPlace, setToPlace] = useState("");
+
+  // Permet aux pages paires (et au partage) de preremplir le planificateur :
+  // /buses?from=Heraklion&to=Ierapetra. window.location plutot que
+  // useSearchParams pour ne pas imposer de Suspense boundary au prerender.
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const f = p.get("from");
+    const t = p.get("to");
+    if (f) setFromPlace(f);
+    if (t) setToPlace(t);
+  }, []);
 
   const filtered = routes.filter((r) => {
     if (fromPlace && toPlace) {
