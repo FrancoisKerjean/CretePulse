@@ -22,3 +22,4 @@ def test_normalize_for_db_shapes_rows():
     assert r["season"] == "all"
     assert "scraped_at" in r and r["scraped_at"].endswith("+00:00") or "Z" in r["scraped_at"]
     assert r["price_eur"] is None  # absent -> None, pas d'invention
+    assert r["price_estimated"] is False  # absent -> False, jamais None en DB

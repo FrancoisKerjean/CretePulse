@@ -29,6 +29,7 @@ from parsers import (
     CURATED_EKTEL,
     apply_curated_overlay,
 )
+from prices import enrich_prices
 from store import replace_operator_routes, should_commit
 
 try:
@@ -109,7 +110,7 @@ def scrape_herlas() -> list:
             seen.add(key)
             routes.append(r)
         time.sleep(0.8)  # courtoisie
-    return _attach_to_slug(routes)
+    return enrich_prices(_attach_to_slug(routes))
 
 
 def _fetch_pdf_bytes(url: str) -> bytes | None:
@@ -149,7 +150,7 @@ def scrape_ektel() -> list:
     if not idx:
         log("ektel: index unreachable, fallback CURATED only")
         routes = [dict(r, season="all") for r in CURATED_EKTEL]
-        return _attach_to_slug(routes)
+        return enrich_prices(_attach_to_slug(routes))
 
     # Métadonnée freshness pour log
     groups = parse_ektel_index(idx)
@@ -193,7 +194,7 @@ def scrape_ektel() -> list:
             all_routes.append(dict(c, season="all", source_url=EKTEL_INDEX))
             seen_keys.add(key)
 
-    return _attach_to_slug(all_routes)
+    return enrich_prices(_attach_to_slug(all_routes))
 
 
 def main():
