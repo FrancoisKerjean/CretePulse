@@ -6,6 +6,7 @@ import { MapPin, Clock, Ticket, ChevronLeft, ChevronRight, Landmark } from "luci
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
+import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 
 export const revalidate = 86400;
 
@@ -380,6 +381,9 @@ export default async function ArchaeologyDetailPage({
             ))}
           </div>
         </section>
+
+        {/* Skip-the-line tickets & guided tours partner banner (GetYourGuide) */}
+        <AffiliateBanner type="tours" locale={locale} className="mt-8" />
 
         {/* Other sites */}
         <section className="mt-8 mb-8">

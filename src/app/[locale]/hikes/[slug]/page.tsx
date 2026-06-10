@@ -4,6 +4,7 @@ import { getHikeBySlug } from "@/lib/hikes";
 import { getLocalizedField, type Locale, type Hike } from "@/lib/types";
 import DiscoverCrete from "@/components/DiscoverCrete";
 import NewsletterCTA from "@/components/NewsletterCTA";
+import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 import { breadcrumbSchema } from "@/lib/schema";
 import { Footprints, Mountain, Droplets, MapPin, ChevronLeft, Download } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
@@ -209,6 +210,9 @@ export default async function HikeDetailPage({
             </a>
           )}
         </div>
+
+        {/* Guided tours partner banner (GetYourGuide, real partner ID) */}
+        <AffiliateBanner type="tours" locale={locale} className="mt-8" />
 
         {/* Internal linking + retention: editorial discovery grid + newsletter capture */}
         <DiscoverCrete category={null} locale={locale} />

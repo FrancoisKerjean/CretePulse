@@ -8,6 +8,7 @@ import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
 import { cityThingsToDoSchema } from "@/lib/schema";
 import RentalCTA from "@/components/RentalCTA";
+import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 
 export const revalidate = 86400;
 
@@ -476,6 +477,9 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
             </section>
           ))}
         </div>
+
+        {/* Tours & activities partner banner (GetYourGuide, real partner ID) */}
+        <AffiliateBanner type="tours" locale={locale} />
 
         {/* FAQ */}
         <section>
