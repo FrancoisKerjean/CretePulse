@@ -7,6 +7,7 @@ import type { Locale } from "@/lib/types";
 import type { BusRoute, BusDestination, BusDepartureGroup } from "@/lib/buses";
 import { useParams } from "next/navigation";
 import { BusNetworkMap } from "@/components/BusNetworkMap";
+import { JourneyPlanner } from "./JourneyPlanner";
 
 // ---------------------------------------------------------------------------
 // Slugs valides des pages cibles (mirror des generateStaticParams cote serveur).
@@ -392,10 +393,6 @@ export function BusesClient({
   const [fromPlace, setFromPlace] = useState("");
   const [toPlace, setToPlace] = useState("");
 
-  const places = Array.from(
-    new Set(routes.flatMap((r) => [r.from_place, r.to_place])),
-  ).sort();
-
   const filtered = routes.filter((r) => {
     if (fromPlace && toPlace) {
       return (
@@ -444,44 +441,15 @@ export function BusesClient({
           </div>
         </div>
 
-        {/* Search bar AVANT la carte → la map réagit aux sélecteurs */}
-        <div className="rounded-xl border border-border bg-white p-5 mb-6 shadow-sm">
-          <p className="text-sm font-semibold text-text mb-3">{t("searchTitle", locale)}</p>
-          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-            <select
-              value={fromPlace}
-              onChange={(e) => setFromPlace(e.target.value)}
-              className="flex-1 border border-border rounded-lg px-3 py-2 text-sm text-text bg-white focus:outline-none focus:ring-2 focus:ring-aegean/30"
-            >
-              <option value="">{t("from", locale)} – {t("allPlaces", locale)}</option>
-              {places.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-
-            <ArrowRight className="w-5 h-5 text-text-muted shrink-0 hidden sm:block" />
-
-            <select
-              value={toPlace}
-              onChange={(e) => setToPlace(e.target.value)}
-              className="flex-1 border border-border rounded-lg px-3 py-2 text-sm text-text bg-white focus:outline-none focus:ring-2 focus:ring-aegean/30"
-            >
-              <option value="">{t("to", locale)} – {t("allPlaces", locale)}</option>
-              {places.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-
-            {hasSearch && (
-              <button
-                onClick={() => { setFromPlace(""); setToPlace(""); }}
-                className="text-xs text-text-muted hover:text-text underline shrink-0 px-1"
-              >
-                ✕ Reset
-              </button>
-            )}
-          </div>
-        </div>
+        {/* Planificateur d'itineraire AVANT la carte → la map réagit aux sélecteurs */}
+        <JourneyPlanner
+          routes={routes}
+          locale={locale}
+          fromPlace={fromPlace}
+          toPlace={toPlace}
+          onFromChange={setFromPlace}
+          onToChange={setToPlace}
+        />
 
         {/* Plan réseau interactif — réagit aux sélecteurs From/To */}
         <BusNetworkMap locale={locale} fromPlace={fromPlace} toPlace={toPlace} />
