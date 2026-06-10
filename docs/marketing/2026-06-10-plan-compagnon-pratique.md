@@ -26,7 +26,9 @@
 | Inscriptions 5 programmes affiliés | **Kami** | Booking, GetYourGuide, DiscoverCars, FerryHopper, Skyscanner. Je remplace les 5 chaînes dans `affiliates.ts` à réception. |
 | OAuth GSC + goals Plausible + OAuth Insta | **Kami** | 3 × ~10 min. GSC avant le 12/06 idéalement (snapshot J+30). |
 
-**KPI vague 1** : beach finder dans le top 5 Plausible à J+14 de son lancement ; ferries live avec ID réel ; premiers € affiliés trackés.
+**Ajout 10/06 (idée Kami validée)** : **comparatif bus vs taxi sur les pages /buses + slot "partenaire taxi" vendu en direct** aux opérateurs locaux. Tarifs fixes officiels publiés (utile au lecteur), emplacement sponsorisé étiqueté, preuve de valeur par Plausible (events clic tel:). Récurrent mensuel en vente directe, prix à valider au premier rendez-vous (pas de tarif inventé). Synergie NovAI : taxis/transferts Crète est = cible exacte, slot pub = porte d'entrée vers le site 599€. Garde-fous : étiquette "sponsorisé" visible, mise à jour honnête du footer "No ads (yet)" au premier signé. Build Claude, vente Kami.
+
+**KPI vague 1** : beach finder dans le top 5 Plausible à J+14 de son lancement ; ferries live avec ID réel ; premiers € affiliés trackés ; 1er rendez-vous taxi pitché avec les chiffres Plausible.
 
 ## Vague 2 — Élargir l'utilitaire (semaines 3-6, jalon 22/07)
 
@@ -35,6 +37,7 @@
 - **Amplification du canal Facebook sans canal manuel** : OG images dynamiques soignées sur toutes les pages utilitaires + boutons de partage (les touristes font la distribution).
 - **AEO systématisé** : FAQ + réponses datées/chiffrées sur chaque page utilitaire, llms.txt enrichi. Mesure mensuelle des citations IA (méthode NovAI).
 - **Traduction 22 langues du daily content** si le snapshot GSC valide l'indexation EN (condition posée Phase 3).
+- **Ajout 10/06 (idée Kami validée)** : **vidéos explicatives bus/transport par langue** (pipeline Remotion + TTS existant, one-shot evergreen). Distribution : embed sur les pages /buses (elles circulent déjà dans les groupes Facebook : la vidéo voyage avec), YouTube @CreteDirect, page FB Crete Direct. PAS de posting automatisé dans les groupes FB (règles Meta + canal manuel refusé). Voix en/fr/de, sous-titres no/da/ar/sv/it (langues réelles du trafic bus).
 
 **KPI vague 2** : ≥150 clics GSC/28j (×3 baseline) ; ≥100 pv/mois référés IA ; pages utilitaires = ≥60% du trafic.
 
