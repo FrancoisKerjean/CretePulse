@@ -9,10 +9,10 @@ export const revalidate = 86400;
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 const META: Record<string, { title: string; desc: string }> = {
-  en: { title: "Crete Bus Schedules - KTEL Routes & Prices | Crete Direct", desc: "KTEL public bus schedules for Crete. Heraklion, Chania, Rethymno, Agios Nikolaos, Ierapetra, Sitia routes with prices and journey times." },
-  fr: { title: "Horaires Bus Crète - Lignes & Tarifs KTEL | Crete Direct", desc: "Horaires des bus KTEL pour la Crète. Lignes Héraklion, La Canée, Rethymnon, Agios Nikolaos avec prix et durées de trajet." },
-  de: { title: "Kreta Busfahrplan - KTEL Strecken & Preise | Crete Direct", desc: "KTEL Busfahrpläne für Kreta. Heraklion, Chania, Rethymno, Agios Nikolaos Strecken mit Preisen und Fahrtzeiten." },
-  el: { title: "Δρομολόγια ΚΤΕΛ Κρήτης - Γραμμές & Τιμές | Crete Direct", desc: "Δρομολόγια ΚΤΕΛ για την Κρήτη. Ηράκλειο, Χανιά, Ρέθυμνο, Άγιος Νικόλαος με τιμές και χρόνους διαδρομής." },
+  en: { title: "Crete Bus Timetables 2026 - KTEL Schedules & Ticket Prices", desc: "All KTEL bus timetables for Crete with 2026 ticket prices: Heraklion–Chania, Heraklion–Agios Nikolaos, Chania–Elafonissi, airport connections, journey times and a free route planner." },
+  fr: { title: "Horaires de Bus en Crète 2026 - Lignes et Prix KTEL", desc: "Tous les horaires de bus KTEL en Crète avec les prix 2026 : Héraklion–La Canée, Héraklion–Agios Nikolaos, La Canée–Elafonissi, liaisons aéroport, durées de trajet et planificateur d'itinéraire gratuit." },
+  de: { title: "Kreta Busfahrplan 2026 - KTEL Abfahrtszeiten & Preise", desc: "Alle KTEL-Busfahrpläne für Kreta mit Ticketpreisen 2026: Heraklion–Chania, Heraklion–Agios Nikolaos, Chania–Elafonissi, Flughafenverbindungen, Fahrzeiten und kostenloser Routenplaner." },
+  el: { title: "Δρομολόγια ΚΤΕΛ Κρήτης 2026 - Ώρες & Τιμές Εισιτηρίων", desc: "Όλα τα δρομολόγια ΚΤΕΛ Κρήτης με τιμές εισιτηρίων 2026: Ηράκλειο–Χανιά, Ηράκλειο–Άγιος Νικόλαος, Χανιά–Ελαφονήσι, συνδέσεις αεροδρομίου, χρόνοι διαδρομής και δωρεάν σχεδιασμός διαδρομής." },
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
