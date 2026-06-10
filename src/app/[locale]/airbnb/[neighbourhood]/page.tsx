@@ -342,7 +342,7 @@ export async function generateMetadata(
   return {
     title: t.metaTitle(name),
     description: t.metaDesc(name, stats.listings),
-    alternates: buildAlternates(`/airbnb/${neighbourhood}`),
+    alternates: buildAlternates(locale, `/airbnb/${neighbourhood}`),
     openGraph: {
       title: t.metaTitle(name),
       description: t.metaDesc(name, stats.listings),
