@@ -28,4 +28,48 @@ officiel apparaît un jour, c'est le seul point à implémenter.
 
 ## Prix curés, sources
 
-(Rempli en Task 3 du plan — tableau liaison / prix / source / date.)
+Règle : seules les valeurs **sourcées** entrent dans `CURATED_PRICES`
+(`price_estimated=false`). Tout le reste passe par l'estimation au km
+(`price_estimated=true`, mention « indicatif » dans l'UI).
+
+Sources consultées le 10/06/2026 :
+- **[G-H]** greeka.com/crete/heraklion/car-bus/ (grille suburbaine KTEL Héraklion)
+- **[G-L]** greeka.com/crete/lassithi/car-bus/ (liaisons depuis Agios Nikolaos)
+- **[EKTEL]** grille `CURATED_EKTEL` du scraper (e-ktel officiel, déjà en DB)
+
+Les noms suivent l'orthographe des `from_place`/`to_place` en DB.
+
+| Liaison | Prix € | Source |
+|---|---|---|
+| Heraklion ↔ Kokkini Hani | 2.10 | G-H |
+| Heraklion ↔ Malia | 4.20 | G-H |
+| Heraklion ↔ Matala | 8.50 | G-H |
+| Heraklion ↔ Chania | 15.00 | EKTEL (G-H dit 16.00 ; on aligne sur l'opérateur) |
+| Heraklion ↔ Rethymno | 8.00 | EKTEL (G-H dit 9-16 ; on aligne sur l'opérateur) |
+| Heraklion ↔ Agios Nikolaos | 7.80 | G-H |
+| Heraklion ↔ Ierapetra | 12.00 | G-H |
+| Heraklion ↔ Siteia | 16.00 | G-H |
+| Heraklion ↔ Moires | 6.00 | G-H |
+| Heraklion ↔ Agia Galini | 8.80 | G-H |
+| Heraklion ↔ Tympaki | 7.50 | G-H |
+| Heraklion ↔ Anogeia | 4.20 | G-H |
+| Heraklion ↔ Kalessa | 2.00 | G-H |
+| Heraklion ↔ Stayrakia | 2.00 | G-H |
+| Heraklion ↔ Ano Asites | 2.90 | G-H |
+| Heraklion ↔ Prinias | 3.50 | G-H |
+| Heraklion ↔ Prof.Ilias | 2.30 | G-H |
+| Heraklion ↔ Rodia | 2.10 | G-H |
+| Heraklion ↔ Dafnes | 2.80 | G-H |
+| Heraklion ↔ Ano Archanes | 2.10 | G-H |
+| Heraklion ↔ Arkalochori | 4.00 | G-H |
+| Heraklion ↔ Ano Viannos | 7.60 | G-H |
+| Heraklion ↔ Mesochorio | 5.70 | G-H (ligne Mesochorio–Asimi) |
+| Heraklion ↔ Asimi | 5.70 | G-H (ligne Mesochorio–Asimi) |
+| Heraklion ↔ Sgoyrokefali | 2.30 | G-H |
+| Agios Nikolaos ↔ Kalo Chorio Lasithioy | 2.00 | G-L |
+| Agios Nikolaos ↔ Ierapetra | 4.10 | G-L |
+| Agios Nikolaos ↔ Siteia | 8.30 | G-L |
+
+Écartés faute de source ferme (→ estimation au km) : Heraklion↔Hersonisos,
+↔Stalida ; Agios Nikolaos↔Eloynta, ↔Kritsa ; Ierapetra↔Makry Gyalos,
+↔Myrtos, ↔Siteia. Greeka ne donne que des fourchettes ou rien.
