@@ -5,10 +5,11 @@ import type { Beach } from "./types";
 // (rendered as .jpg but with `.pdf` segment in the URL). These look broken
 // and damage perceived page quality. Filter at read time to stay defensive
 // even if the source data still contains noise.
-function sanitizeImageUrl(url: string | null | undefined): string | null {
+export function sanitizeImageUrl(url: string | null | undefined): string | null {
   if (!url) return null;
   const lower = url.toLowerCase();
   if (lower.includes(".pdf")) return null;
+  if (lower.includes(".djvu")) return null;
   if (lower.includes("page1-")) return null;
   return url;
 }

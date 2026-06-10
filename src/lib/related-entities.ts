@@ -6,6 +6,7 @@
 // reach. This is rendered server-side so Google sees the links.
 
 import { supabase } from "./supabase";
+import { sanitizeImageUrl } from "./beaches";
 import type { Locale } from "./types";
 
 export type RelatedEntity = {
@@ -49,7 +50,7 @@ async function fetchBeaches(loc: Locale, limit: number): Promise<RelatedEntity[]
         title: (r[`name_${loc}`] as string) || r.name_en || r.slug,
         region: r.region || undefined,
         type: "beach" as const,
-        imageUrl: r.image_url || undefined,
+        imageUrl: sanitizeImageUrl(r.image_url) || undefined,
       }));
   } catch {
     return [];
@@ -75,7 +76,7 @@ async function fetchVillages(loc: Locale, limit: number): Promise<RelatedEntity[
         title: (r[`name_${loc}`] as string) || r.name_en || r.slug,
         region: r.region || undefined,
         type: "village" as const,
-        imageUrl: r.image_url || undefined,
+        imageUrl: sanitizeImageUrl(r.image_url) || undefined,
       }));
   } catch {
     return [];
