@@ -19,6 +19,7 @@
 import { supabase } from "@/lib/supabase";
 import { MONTHS, CITIES } from "@/lib/weather-monthly";
 import { CRETE_NEIGHBOURHOODS } from "@/lib/airbnb-mappings";
+import { CRETE_AIRPORTS } from "@/lib/airports";
 
 export const revalidate = 86400;
 
@@ -46,6 +47,7 @@ const STATIC_PAGES = [
   "/fire-alerts",
   "/property-management",
   "/airbnb",
+  "/airport",
 ];
 
 const BEACH_ACTIVITIES = ["snorkeling", "kids", "swimming", "secluded", "sandy", "pebble"];
@@ -191,6 +193,10 @@ export async function GET() {
   // ISR-served for the other 18 locales with English UI fallback + proper
   // hreflang alternates.
   for (const n of CRETE_NEIGHBOURHOODS) push(`/airbnb/${n.slug}`, "monthly", 0.7);
+
+  // HCAA airport traffic pages: 3 Crete airports, data-exclusive (official
+  // monthly XLSX parsed by our pipeline, updated as HCAA publishes).
+  for (const a of CRETE_AIRPORTS) push(`/airport/${a.slug}`, "monthly", 0.7);
 
   // Dynamic DB pages — news + guides use real published_at as lastmod
   // (huge crawl prioritization signal for Google News)
