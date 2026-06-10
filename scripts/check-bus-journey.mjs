@@ -51,6 +51,31 @@ assert.deepEqual(
   [],
 ); // samedi hors plage Mon-Fri
 
+// --- libelles de jours ektel (noms complets, plages "To", Weekend) ------------
+const ektelWeek = R(5, "Chania", "Paleochora", {
+  departures: ["07:30", "16:00", "10:00"],
+  departures_by_day: [
+    { days: "Monday To Friday", times: ["07:30", "16:00"] },
+    { days: "Weekend", times: ["10:00"] },
+  ],
+});
+assert.deepEqual(timesForDate(ektelWeek, "2026-06-09"), ["07:30", "16:00"]); // mardi
+assert.deepEqual(timesForDate(ektelWeek, "2026-06-13"), ["10:00"]);          // samedi
+assert.deepEqual(
+  timesForDate(R(6, "A", "B", {
+    departures: ["09:00"],
+    departures_by_day: [{ days: "Thursday Saktouria", times: ["09:00"] }],
+  }), "2026-06-11"),
+  ["09:00"],
+); // jeudi, libelle avec village résiduel
+assert.deepEqual(
+  timesForDate(R(7, "A", "B", {
+    departures: ["09:00"],
+    departures_by_day: [{ days: "Monday", times: ["09:00"] }],
+  }), "2026-06-09"),
+  [],
+); // mardi != Monday
+
 // --- graphe / atteignabilite -------------------------------------------------
 const routes = [
   R(10, "Makry Gyalos", "Ierapetra", {

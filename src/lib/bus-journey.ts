@@ -46,12 +46,17 @@ export function addMinutes(time: string, minutes: number): string {
   return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
 }
 
-/** Le libelle de jours KTEL ("Mon, Tue, ...", "Sun", "Mon-Fri", "EVERY DAY") couvre-t-il ce jour ? */
+/** Le libelle de jours KTEL couvre-t-il ce jour ?
+ * herlas : "Mon, Tue, Wed", "Sun", "Mon-Fri".
+ * ektel (PDF) : "Monday To Friday", "Weekend", "Every Day", "Thursday Saktouria". */
 function daysMatch(days: string, day: string): boolean {
-  const norm = days.toLowerCase();
+  let norm = days.toLowerCase();
   if (norm.includes("every") || norm.includes("daily")) return true;
   const d = day.toLowerCase();
-  const range = norm.match(/(mon|tue|wed|thu|fri|sat|sun)\s*[-–]\s*(mon|tue|wed|thu|fri|sat|sun)/);
+  if (norm.includes("weekend")) return d === "sat" || d === "sun";
+  // noms complets -> tokens 3 lettres ("monday to friday" -> "mon to fri")
+  norm = norm.replace(/\b(mon|tue|wed|thu|fri|sat|sun)[a-z]*/g, "$1");
+  const range = norm.match(/(mon|tue|wed|thu|fri|sat|sun)\s*(?:[-–]|to)\s*(mon|tue|wed|thu|fri|sat|sun)/);
   if (range) {
     const i = DAY_ORDER.indexOf(range[1]);
     const j = DAY_ORDER.indexOf(range[2]);

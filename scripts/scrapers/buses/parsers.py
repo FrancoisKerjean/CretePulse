@@ -41,6 +41,12 @@ _FREQ_HEAD = (
 # Mots à ignorer en début/fin de nom de route (résidus Joomla).
 _NAME_NOISE = {"EXPRESS", "KA", "XANIA", "EI", "BAR"}
 
+# Un segment PDF contenant un de ces mots est une footnote (note de
+# correspondance ferry, itinéraire détaillé), pas un nom de route.
+# Constaté en prod 10/06/2026 : "DEPARTURE AFTER THE ARRIVAL OF THE FERRY
+# BOAT FROM BALOS - GRAMVOUSA", "THROUGH MILONIANA", "PASSES THROUGH MYRTHIOS".
+_FOOTNOTE_WORDS = {"THROUGH", "DEPARTURE", "ARRIVAL", "PASSES", "FERRY", "VIA"}
+
 
 def _price(text):
     if not text:
@@ -278,7 +284,12 @@ def _is_freq(s: str) -> bool:
 
 
 def _is_route_name(s: str) -> bool:
-    """Un nom de route contient au moins un tiret entre 2 segments uppercase."""
+    """Un nom de route contient au moins un tiret entre 2 segments uppercase,
+    et n'est ni une frequency ni une footnote."""
+    if _is_freq(s):
+        return False
+    if any(w in s.upper().split() for w in _FOOTNOTE_WORDS):
+        return False
     parts = [p for p in s.split("-") if p.strip()]
     return len(parts) >= 2 and all(p.strip()[0].isupper() for p in parts[:2])
 
@@ -313,7 +324,9 @@ def parse_ektel_pdf(text: str, source_url: str = "") -> list[dict]:
             current["departures"] = _flatten(current["departures_by_day"])
             if current["frequency"] is None:
                 current["frequency"] = current["departures_by_day"][0]["days"]
-            routes.append(current)
+            # Crete-only : les liaisons continent (ferry) ne sont pas pour nous
+            if is_crete_route(current["from_place"], current["to_place"]):
+                routes.append(current)
         current = None
         current_grid = None
 

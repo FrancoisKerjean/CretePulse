@@ -88,3 +88,29 @@ def test_curated_ektel_is_usable_west_seed():
     assert isinstance(CURATED_EKTEL, list) and len(CURATED_EKTEL) >= 3
     r = CURATED_EKTEL[0]
     assert set(["from_place", "to_place", "frequency"]).issubset(r.keys())
+
+
+# --- ektel PDF : bruit constate en prod le 10/06/2026 -------------------------
+
+def test_parse_ektel_pdf_filters_mainland_footnotes_and_freq():
+    from parsers import parse_ektel_pdf
+    text = "\n".join([
+        "XANIA-THESSALONIKH / CHANIA-THESSALONIKI",
+        "KATHHMERINA / EVERY DAY 08:00",
+        "XANIA-RETHYMNO / CHANIA-RETHYMNO",
+        "KATHHMERINA / EVERY DAY 07:00 09:00",
+        "/ MONDAY - FRIDAY 06:30",
+        "/ DEPARTURE AFTER THE ARRIVAL OF THE FERRY BOAT FROM BALOS - GRAMVOUSA",
+        "/ THROUGH MILONIANA - VARIPETRO",
+        "/ PASSES THROUGH MYRTHIOS - MARIOU",
+    ])
+    routes = parse_ektel_pdf(text, source_url="x")
+    names = {(r["from_place"], r["to_place"]) for r in routes}
+    assert ("Chania", "Thessaloniki") not in names      # continent exclu
+    assert all("Through" not in f and "Departure" not in f for f, _ in names)
+    assert ("Monday", "Friday") not in names            # frequency, pas une route
+    assert ("Chania", "Rethymno") in names
+    # MONDAY - FRIDAY 06:30 = sous-grille de la route active, pas une route
+    cr = next(r for r in routes if r["to_place"] == "Rethymno")
+    assert any(g["days"].lower().startswith("monday") for g in cr["departures_by_day"])
+    assert "06:30" in cr["departures"]
