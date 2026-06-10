@@ -1,4 +1,4 @@
-import { ChevronLeft, Wind, Waves, Thermometer, MapPin, AlertTriangle } from "lucide-react";
+import { ChevronLeft, Wind, Waves, Thermometer, MapPin, AlertTriangle, Bus, CarTaxiFront } from "lucide-react";
 import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -36,6 +36,11 @@ const L: Record<Locale, {
   avoidNote: string;
   rating: Record<"calm" | "fair" | "exposed", string>;
   shore: Record<ShoreWind, string>;
+  gettingThere: string;
+  busVia: (stop: string, km: number) => string;
+  busSchedules: string;
+  noDirectBus: string;
+  taxiFrom: (city: string, km: number) => string;
   conditionsTitle: string;
   colCity: string;
   colWind: string;
@@ -71,6 +76,11 @@ const L: Record<Locale, {
     avoidNote: "Onshore wind and chop expected: better another day.",
     rating: { calm: "calm", fair: "fair", exposed: "exposed" },
     shore: { offshore: "offshore wind", cross: "cross-shore wind", onshore: "onshore wind" },
+    gettingThere: "Getting there",
+    busVia: (stop, km) => `KTEL bus via ${stop} (${km} km)`,
+    busSchedules: "Bus schedules",
+    noDirectBus: "No KTEL stop nearby: taxi or car",
+    taxiFrom: (city, km) => `Taxi: about ${km} km from ${city}`,
     conditionsTitle: "Live conditions by station",
     colCity: "Station",
     colWind: "Wind",
@@ -109,6 +119,11 @@ const L: Record<Locale, {
     avoidNote: "Vent de mer et clapot attendus : mieux un autre jour.",
     rating: { calm: "calme", fair: "correct", exposed: "exposée" },
     shore: { offshore: "vent de terre", cross: "vent de travers", onshore: "vent de mer" },
+    gettingThere: "S'y rendre",
+    busVia: (stop, km) => `Bus KTEL via ${stop} (${km} km)`,
+    busSchedules: "Horaires de bus",
+    noDirectBus: "Pas d'arrêt KTEL à proximité : taxi ou voiture",
+    taxiFrom: (city, km) => `Taxi : environ ${km} km depuis ${city}`,
     conditionsTitle: "Conditions en direct par station",
     colCity: "Station",
     colWind: "Vent",
@@ -147,6 +162,11 @@ const L: Record<Locale, {
     avoidNote: "Auflandiger Wind und Wellen erwartet: besser an einem anderen Tag.",
     rating: { calm: "ruhig", fair: "machbar", exposed: "exponiert" },
     shore: { offshore: "ablandiger Wind", cross: "Seitenwind", onshore: "auflandiger Wind" },
+    gettingThere: "Anreise",
+    busVia: (stop, km) => `KTEL-Bus über ${stop} (${km} km)`,
+    busSchedules: "Busfahrpläne",
+    noDirectBus: "Keine KTEL-Haltestelle in der Nähe: Taxi oder Auto",
+    taxiFrom: (city, km) => `Taxi: etwa ${km} km ab ${city}`,
     conditionsTitle: "Live-Bedingungen je Station",
     colCity: "Station",
     colWind: "Wind",
@@ -185,6 +205,11 @@ const L: Record<Locale, {
     avoidNote: "Αναμένεται θαλάσσιος άνεμος και κυματισμός: καλύτερα άλλη μέρα.",
     rating: { calm: "ήρεμη", fair: "βατή", exposed: "εκτεθειμένη" },
     shore: { offshore: "απόγειος άνεμος", cross: "πλάγιος άνεμος", onshore: "θαλάσσιος άνεμος" },
+    gettingThere: "Μετάβαση",
+    busVia: (stop, km) => `Λεωφορείο ΚΤΕΛ μέσω ${stop} (${km} χλμ)`,
+    busSchedules: "Δρομολόγια λεωφορείων",
+    noDirectBus: "Χωρίς στάση ΚΤΕΛ κοντά: ταξί ή αυτοκίνητο",
+    taxiFrom: (city, km) => `Ταξί: περίπου ${km} χλμ από ${city}`,
     conditionsTitle: "Συνθήκες live ανά σταθμό",
     colCity: "Σταθμός",
     colWind: "Άνεμος",
@@ -260,6 +285,11 @@ function BeachRow({ s, locale, uiLoc }: { s: ScoredBeach; locale: string; uiLoc:
         <p className="text-xs text-stone-500">
           {t.shore[s.shoreWind]} · {s.windSpeed} km/h · {fmtWave(s.waveHeight)}
         </p>
+        {s.busStop?.hasDirectBus && (
+          <p className="text-xs text-stone-400 inline-flex items-center gap-1">
+            <Bus className="h-3 w-3" /> {s.busStop.name} · {s.busStop.km} km
+          </p>
+        )}
       </div>
       <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${RATING_CLASS[s.rating]}`}>
         {t.rating[s.rating]}
@@ -395,6 +425,26 @@ export default async function SwimTodayPage(
               <span className="mt-4 text-sm font-medium text-cyan-800">{t.viewBeach} →</span>
             </div>
           </Link>
+
+          {/* Getting there: nearest KTEL stop + taxi distance reference */}
+          <div className="mt-3 rounded-xl border border-stone-200 bg-white px-4 py-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+            <span className="font-medium text-stone-700">{t.gettingThere}</span>
+            <span className="inline-flex items-center gap-1.5 text-stone-700">
+              <Bus className="h-4 w-4 text-cyan-800" />
+              {pick.busStop?.hasDirectBus
+                ? t.busVia(pick.busStop.name, pick.busStop.km)
+                : t.noDirectBus}
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-stone-700">
+              <CarTaxiFront className="h-4 w-4 text-stone-500" />
+              {pick.busStop
+                ? t.taxiFrom(pick.busStop.name, Math.round(pick.busStop.km))
+                : t.taxiFrom(pick.city.name, pick.cityKm)}
+            </span>
+            <Link href={`/${locale}/buses`} className="text-cyan-800 hover:underline font-medium">
+              {t.busSchedules} →
+            </Link>
+          </div>
         </section>
 
         {/* Good choices by area */}

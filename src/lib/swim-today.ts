@@ -1,5 +1,6 @@
 import { getAllBeaches } from "./beaches";
 import { fetchAllCitiesWeather, type CityWeather } from "./weather";
+import { supabase } from "./supabase";
 import type { Beach } from "./types";
 
 /**
@@ -82,6 +83,13 @@ export function cardinal(deg: number): (typeof CARDINALS)[number] {
 
 export type ShoreWind = "offshore" | "cross" | "onshore";
 
+/** Nearest KTEL-served stop, for the "getting there" line. */
+export interface NearestBusStop {
+  name: string;
+  km: number;
+  hasDirectBus: boolean;
+}
+
 export interface ScoredBeach {
   beach: Beach;
   score: number;
@@ -89,10 +97,13 @@ export interface ScoredBeach {
   shoreWind: ShoreWind;
   facing: number;
   city: CityWeather;
+  /** Distance to the nearest monitored city, km (taxi reference). */
+  cityKm: number;
   windSpeed: number;
   windCardinal: (typeof CARDINALS)[number];
   waveHeight: number | null;
   seaTemp: number | null;
+  busStop: NearestBusStop | null;
 }
 
 export interface SwimToday {
@@ -109,7 +120,26 @@ export interface SwimToday {
   scored: ScoredBeach[];
 }
 
-function scoreBeach(beach: Beach, cities: CityWeather[]): ScoredBeach | null {
+interface StopRow {
+  name: string;
+  lat: number | null;
+  lng: number | null;
+  has_direct_bus: boolean;
+}
+
+function nearestStop(beach: Beach, stops: StopRow[]): NearestBusStop | null {
+  let best: NearestBusStop | null = null;
+  for (const s of stops) {
+    if (s.lat === null || s.lng === null) continue;
+    const km = haversineKm(beach.latitude, beach.longitude, s.lat, s.lng);
+    if (km <= 12 && (!best || km < best.km)) {
+      best = { name: s.name, km: Math.round(km * 10) / 10, hasDirectBus: s.has_direct_bus };
+    }
+  }
+  return best;
+}
+
+function scoreBeach(beach: Beach, cities: CityWeather[], stops: StopRow[]): ScoredBeach | null {
   const usable = cities.filter(c => c.windSpeed > 0 || c.temp > 0);
   if (usable.length === 0) return null;
   let city = usable[0];
@@ -143,10 +173,12 @@ function scoreBeach(beach: Beach, cities: CityWeather[]): ScoredBeach | null {
     shoreWind,
     facing,
     city,
+    cityKm: Math.round(best),
     windSpeed: city.windSpeed,
     windCardinal: cardinal(city.windDir),
     waveHeight: city.waveHeight,
     seaTemp: city.seaTemp,
+    busStop: nearestStop(beach, stops),
   };
 }
 
@@ -157,12 +189,27 @@ function athensDayOfYear(now: Date): number {
   return Math.floor((athens.getTime() - start.getTime()) / 86_400_000);
 }
 
+async function fetchBusStops(): Promise<StopRow[]> {
+  try {
+    const { data } = await supabase
+      .from("bus_destinations")
+      .select("name, lat, lng, has_direct_bus");
+    return (data as StopRow[] | null) ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export async function buildSwimToday(): Promise<SwimToday | null> {
-  const [beaches, cities] = await Promise.all([getAllBeaches(), fetchAllCitiesWeather()]);
+  const [beaches, cities, stops] = await Promise.all([
+    getAllBeaches(),
+    fetchAllCitiesWeather(),
+    fetchBusStops(),
+  ]);
   if (!beaches?.length || !cities?.length) return null;
 
   const scored = beaches
-    .map(b => scoreBeach(b, cities))
+    .map(b => scoreBeach(b, cities, stops))
     .filter((s): s is ScoredBeach => s !== null)
     .sort((a, b) => b.score - a.score);
   if (scored.length === 0) return null;
