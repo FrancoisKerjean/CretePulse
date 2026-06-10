@@ -198,6 +198,9 @@ export async function GET() {
   // monthly XLSX parsed by our pipeline, updated as HCAA publishes).
   for (const a of CRETE_AIRPORTS) push(`/airport/${a.slug}`, "monthly", 0.7);
 
+  // Live utility: "where to swim today" (wind-aware daily pick, ISR 30 min).
+  push("/beaches/today", "daily", 0.9);
+
   // Dynamic DB pages — news + guides use real published_at as lastmod
   // (huge crawl prioritization signal for Google News)
   const [beaches, villages, foodPlaces, hikes, news, guides] = await Promise.all([

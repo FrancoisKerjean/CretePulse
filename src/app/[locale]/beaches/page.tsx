@@ -93,6 +93,26 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
           {beaches.length} {beachesLabels.subtitle}
         </p>
 
+        {/* Live utility entry point: today's wind-aware pick */}
+        <Link
+          href={`/${locale}/beaches/today`}
+          className="mt-5 flex items-center justify-between gap-3 rounded-xl border border-aegean/30 bg-aegean-faint px-4 py-3 hover:border-aegean transition-colors"
+        >
+          <span className="font-medium text-aegean">
+            {getLocalizedField(
+              {
+                title_en: "Where to swim today: live pick from wind and sea conditions",
+                title_fr: "Où se baigner aujourd'hui : la préco du jour selon le vent et la mer",
+                title_de: "Wo heute baden: Tagestipp nach Wind und Meer",
+                title_el: "Πού για μπάνιο σήμερα: η πρόταση της ημέρας με βάση άνεμο και θάλασσα",
+              },
+              "title",
+              loc,
+            )}
+          </span>
+          <span className="shrink-0 text-aegean">→</span>
+        </Link>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
           {beaches.map((beach) => (
             <Link
