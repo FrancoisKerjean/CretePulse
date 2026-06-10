@@ -1,4 +1,4 @@
-import { ChevronLeft, Plane, TrendingUp, CalendarDays, Globe } from "lucide-react";
+import { ChevronLeft, Plane, TrendingUp, CalendarDays } from "lucide-react";
 import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -29,6 +29,11 @@ function pickUiLoc(l: string): AirportLoc {
   return VALID_LOC(l) ? l : "en";
 }
 
+/** French élision: "de Héraklion" -> "d'Héraklion", "de La Canée" unchanged. */
+function frDe(city: string): string {
+  return /^[aeiouéèêh]/i.test(city) ? `d'${city}` : `de ${city}`;
+}
+
 const L: Record<AirportLoc, {
   metaTitle: (city: string, iata: string) => string;
   metaDesc: (city: string, pax: string, year: number) => string;
@@ -37,9 +42,8 @@ const L: Record<AirportLoc, {
   last12: string;
   latestMonth: string;
   busiest: string;
-  intlShare: string;
+  yearTotal: (year: number) => string;
   vsPrevYear: string;
-  ofAircraftMovements: string;
   seasonality: string;
   seasonalityIntro: (city: string, busy: string, quiet: string) => string;
   monthlyTable: string;
@@ -77,9 +81,8 @@ const L: Record<AirportLoc, {
     last12: "Passengers, last 12 months",
     latestMonth: "Latest month",
     busiest: "Busiest month",
-    intlShare: "International flights",
+    yearTotal: year => `Total ${year}`,
     vsPrevYear: "vs a year earlier",
-    ofAircraftMovements: "of aircraft movements, last 12 months",
     seasonality: "Monthly traffic by year",
     seasonalityIntro: (city, busy, quiet) =>
       `${city} airport traffic is strongly seasonal: ${busy} is the busiest month on average, while ${quiet} is the quietest.`,
@@ -115,20 +118,19 @@ const L: Record<AirportLoc, {
     sourceLabel: "Source file (HCAA XLSX)",
   },
   fr: {
-    metaTitle: (city, iata) => `Aéroport de ${city} (${iata}) : trafic passagers, affluence, données`,
+    metaTitle: (city, iata) => `Aéroport ${frDe(city)} (${iata}) : trafic passagers, affluence, données`,
     metaDesc: (city, pax, year) =>
-      `Données officielles HCAA pour l'aéroport de ${city}, Crète : ${pax} passagers en ${year}, trafic mensuel, saisonnalité et tendances annuelles.`,
+      `Données officielles HCAA pour l'aéroport ${frDe(city)}, Crète : ${pax} passagers en ${year}, trafic mensuel, saisonnalité et tendances annuelles.`,
     back: "Retour à la Crète",
     subtitle: (mn, mx) => `Statistiques passagers mensuelles officielles, de ${mn} à ${mx}`,
     last12: "Passagers, 12 derniers mois",
     latestMonth: "Dernier mois",
     busiest: "Mois le plus chargé",
-    intlShare: "Vols internationaux",
+    yearTotal: year => `Total ${year}`,
     vsPrevYear: "vs un an plus tôt",
-    ofAircraftMovements: "des mouvements d'avions, 12 derniers mois",
     seasonality: "Trafic mensuel par année",
     seasonalityIntro: (city, busy, quiet) =>
-      `Le trafic de l'aéroport de ${city} est très saisonnier : ${busy} est en moyenne le mois le plus chargé, ${quiet} le plus calme.`,
+      `Le trafic de l'aéroport ${frDe(city)} est très saisonnier : ${busy} est en moyenne le mois le plus chargé, ${quiet} le plus calme.`,
     monthlyTable: "Les 13 derniers mois en détail",
     colMonth: "Mois",
     colPax: "Passagers",
@@ -136,22 +138,22 @@ const L: Record<AirportLoc, {
     passengers: "passagers",
     avgPassengers: "passagers en moyenne",
     gettingThere: "Rejoindre et quitter l'aéroport",
-    transferLink: city => `De l'aéroport de ${city} au centre-ville`,
+    transferLink: city => `De l'aéroport ${frDe(city)} au centre-ville`,
     busesLink: "Lignes de bus et horaires en Crète",
     flightsCta: city => `Comparer les vols vers ${city}`,
     flightsButton: "Trouver un vol",
     stayingNearby: "Vous logez à proximité ? Données du marché locatif",
     airbnbLink: area => `Données Airbnb pour ${area}`,
     faqTitle: "Questions fréquentes",
-    faqPaxQ: (city, year) => `Combien de passagers l'aéroport de ${city} accueille-t-il par an ?`,
+    faqPaxQ: (city, year) => `Combien de passagers l'aéroport ${frDe(city)} accueille-t-il par an ?`,
     faqPaxA: (city, pax, year) =>
-      `L'aéroport de ${city} a accueilli ${pax} passagers en ${year}, selon les statistiques officielles de l'aviation civile grecque (HCAA).`,
-    faqBusyQ: city => `Quel est le mois le plus chargé à l'aéroport de ${city} ?`,
+      `L'aéroport ${frDe(city)} a accueilli ${pax} passagers en ${year}, selon les statistiques officielles de l'aviation civile grecque (HCAA).`,
+    faqBusyQ: city => `Quel est le mois le plus chargé à l'aéroport ${frDe(city)} ?`,
     faqBusyA: (busy, avg, quiet, quietAvg) =>
       `${busy} est le mois le plus chargé, avec ${avg} passagers en moyenne. Le plus calme est ${quiet} (${quietAvg}).`,
-    faqWinterQ: city => `L'aéroport de ${city} est-il ouvert en hiver ?`,
+    faqWinterQ: city => `L'aéroport ${frDe(city)} est-il ouvert en hiver ?`,
     faqWinterA: (city, quiet, quietAvg) =>
-      `Oui. L'aéroport de ${city} fonctionne toute l'année, mais le trafic hivernal est une fraction du niveau estival : ${quiet} compte ${quietAvg} passagers en moyenne.`,
+      `Oui. L'aéroport ${frDe(city)} fonctionne toute l'année, mais le trafic hivernal est une fraction du niveau estival : ${quiet} compte ${quietAvg} passagers en moyenne.`,
     kastelliTitle: "Kastelli : le futur aéroport d'Héraklion",
     kastelliText:
       "Un nouvel aéroport international est en construction à Kastelli, à environ 30 km au sud-est d'Héraklion. Son ouverture est prévue en 2028, avec une capacité visée de 18 millions de passagers par an. Il remplacera l'actuel aéroport Nikos Kazantzakis.",
@@ -169,9 +171,8 @@ const L: Record<AirportLoc, {
     last12: "Passagiere, letzte 12 Monate",
     latestMonth: "Letzter Monat",
     busiest: "Verkehrsreichster Monat",
-    intlShare: "Internationale Flüge",
+    yearTotal: year => `Gesamt ${year}`,
     vsPrevYear: "ggü. Vorjahr",
-    ofAircraftMovements: "der Flugbewegungen, letzte 12 Monate",
     seasonality: "Monatlicher Verkehr nach Jahr",
     seasonalityIntro: (city, busy, quiet) =>
       `Der Verkehr am Flughafen ${city} ist stark saisonal: ${busy} ist im Schnitt der stärkste Monat, ${quiet} der ruhigste.`,
@@ -215,9 +216,8 @@ const L: Record<AirportLoc, {
     last12: "Επιβάτες, τελευταίοι 12 μήνες",
     latestMonth: "Τελευταίος μήνας",
     busiest: "Μήνας αιχμής",
-    intlShare: "Διεθνείς πτήσεις",
+    yearTotal: year => `Σύνολο ${year}`,
     vsPrevYear: "σε σχέση με πέρυσι",
-    ofAircraftMovements: "των κινήσεων αεροσκαφών, τελευταίοι 12 μήνες",
     seasonality: "Μηνιαία κίνηση ανά έτος",
     seasonalityIntro: (city, busy, quiet) =>
       `Η κίνηση στο αεροδρόμιο ${city} είναι έντονα εποχική: ο ${busy} είναι κατά μέσο όρο ο πιο φορτωμένος μήνας, ενώ ο ${quiet} ο πιο ήσυχος.`,
@@ -552,15 +552,20 @@ export default async function AirportPage(
             <div className="text-2xl font-bold text-stone-900 capitalize">{busyName}</div>
             <div className="text-sm text-stone-500">{fmtNum(busyAvg, locale)} {t.avgPassengers}</div>
           </div>
-          <div className="rounded-xl border border-stone-200 bg-white p-4">
-            <div className="flex items-center gap-1.5 text-xs text-stone-500 mb-1">
-              <Globe className="h-3.5 w-3.5" /> {t.intlShare}
+          {/* aircraft_intl is populated on only 2 of 26 months in the HCAA
+              data, which rendered as a misleading "0% international" — show
+              the last full calendar year instead, which is solid. */}
+          {stats.lastFullYear && (
+            <div className="rounded-xl border border-stone-200 bg-white p-4">
+              <div className="flex items-center gap-1.5 text-xs text-stone-500 mb-1">
+                <Plane className="h-3.5 w-3.5" /> {t.yearTotal(stats.lastFullYear.year)}
+              </div>
+              <div className="text-2xl font-bold text-stone-900">
+                {fmtNum(stats.lastFullYear.pax, locale)}
+              </div>
+              <div className="text-sm text-stone-500">{t.passengers}</div>
             </div>
-            <div className="text-2xl font-bold text-stone-900">
-              {stats.intlAircraftSharePct !== null ? `${stats.intlAircraftSharePct.toFixed(0)}%` : "-"}
-            </div>
-            <div className="text-sm text-stone-500">{t.ofAircraftMovements}</div>
-          </div>
+          )}
         </section>
 
         {/* Seasonality */}
