@@ -5,7 +5,7 @@
 // chargees par la page). Spec : docs/superpowers/specs/2026-06-10-bus-journey-planner-design.md
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Clock, Euro, Info } from "lucide-react";
-import { CiBus } from "@/components/icons";
+import { CiBus, CiCompass } from "@/components/icons";
 import { KriKri } from "@/components/KriKri";
 import type { Locale } from "@/lib/types";
 import type { BusRoute } from "@/lib/buses";
@@ -14,6 +14,9 @@ import {
   type Journey, type JourneyLeg,
 } from "@/lib/bus-journey";
 import { slugifyPlace, pairSlug } from "@/lib/bus-pairs";
+import { SLUG_COORDS } from "@/lib/taxi-fare";
+import { nearestBy } from "@/lib/geo";
+import { useGeoPosition } from "@/components/geo/useGeoPosition";
 import { TaxiCompare } from "@/components/TaxiCompare";
 import { NextDeparture } from "@/components/NextDeparture";
 import partnersData from "@/data/taxi-partners.json";
@@ -24,6 +27,11 @@ const TP = {
     de: "Fahrt planen", el: "Σχεδιάστε τη διαδρομή σας",
   },
   from: { en: "From", fr: "Départ", de: "Von", el: "Από" },
+  fromHere: { en: "From here", fr: "Partir d'ici", de: "Von hier", el: "Από εδώ" },
+  geoUnavailable: {
+    en: "Location unavailable", fr: "Localisation indisponible",
+    de: "Standort nicht verfügbar", el: "Ο εντοπισμός δεν είναι διαθέσιμος",
+  },
   to: { en: "To", fr: "Arrivée", de: "Nach", el: "Προς" },
   date: { en: "Date", fr: "Date", de: "Datum", el: "Ημερομηνία" },
   allPlaces: { en: "All places", fr: "Tous les lieux", de: "Alle Orte", el: "Όλα τα μέρη" },
@@ -187,6 +195,36 @@ export function JourneyPlanner({
     () => Array.from(new Set(routes.flatMap((r) => [r.from_place, r.to_place]))).sort(),
     [routes],
   );
+
+  // "Partir d'ici" : géoloc 100 % client → lieu le plus proche parmi les
+  // options du graphe qui ont des coords (nom DB → slug BUS_PLACE_SLUGS →
+  // SLUG_COORDS). Appliqué UNIQUEMENT après un clic explicite (wantFromHere),
+  // jamais au mount : une init ?from= existante n'est pas écrasée.
+  const geo = useGeoPosition();
+  const [wantFromHere, setWantFromHere] = useState(false);
+  const geoBlocked = geo.status === "denied" || geo.status === "unavailable";
+
+  const placesWithCoords = useMemo(() => {
+    const out: Array<{ name: string; lat: number; lon: number }> = [];
+    for (const name of allPlaces) {
+      const slug = slugifyPlace(name);
+      const c = slug ? SLUG_COORDS[slug] : undefined;
+      if (c) out.push({ name, lat: c[0], lon: c[1] });
+    }
+    return out;
+  }, [allPlaces]);
+
+  useEffect(() => {
+    if (!wantFromHere || !geo.pos) return;
+    const nearest = nearestBy(placesWithCoords, (p) => [p.lat, p.lon], geo.pos, 1)[0];
+    setWantFromHere(false);
+    if (nearest) onFromChange(nearest.name);
+  }, [wantFromHere, geo.pos, placesWithCoords, onFromChange]);
+
+  function handleFromHere() {
+    setWantFromHere(true);
+    if (!geo.pos) geo.requestGeo();
+  }
   const reachable = useMemo(
     () => (fromPlace ? reachableFrom(graph, fromPlace) : null),
     [graph, fromPlace],
@@ -218,16 +256,35 @@ export function JourneyPlanner({
     <div className="rounded-[28px] bg-white p-6 mb-6 shadow-[0_12px_32px_rgba(11,94,120,.10)]">
       <p className="font-heading font-bold text-base text-text mb-3.5">{tp("searchTitle", locale)}</p>
       <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-        <select
-          value={fromPlace}
-          onChange={(e) => onFromChange(e.target.value)}
-          className="flex-1 border border-border rounded-full px-4 py-2.5 text-sm text-text bg-white focus:outline-none focus:ring-2 focus:ring-lagoon/40"
-        >
-          <option value="">{tp("from", locale)} · {tp("allPlaces", locale)}</option>
-          {allPlaces.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
+        <div className="flex-1 flex items-center gap-2 min-w-0">
+          <select
+            value={fromPlace}
+            onChange={(e) => onFromChange(e.target.value)}
+            className="flex-1 min-w-0 border border-border rounded-full px-4 py-2.5 text-sm text-text bg-white focus:outline-none focus:ring-2 focus:ring-lagoon/40"
+          >
+            <option value="">{tp("from", locale)} · {tp("allPlaces", locale)}</option>
+            {allPlaces.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={handleFromHere}
+            aria-label={tp("fromHere", locale)}
+            title={geoBlocked ? tp("geoUnavailable", locale) : tp("fromHere", locale)}
+            className={`shrink-0 p-2.5 rounded-full border border-border bg-white transition-colors ${
+              geoBlocked
+                ? "text-text-light cursor-help"
+                : "text-aegean hover:bg-surface"
+            }`}
+          >
+            {wantFromHere && geo.status === "prompting" ? (
+              <span className="block w-[18px] h-[18px] rounded-full border-2 border-aegean border-t-transparent animate-spin" aria-hidden />
+            ) : (
+              <CiCompass className="w-[18px] h-[18px]" />
+            )}
+          </button>
+        </div>
 
         <ArrowRight className="w-5 h-5 text-text-muted shrink-0 hidden sm:block" />
 
