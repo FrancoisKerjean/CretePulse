@@ -66,3 +66,18 @@ Critère de succès : `match_clicked` / `match_deck_start` > 25 % après 2 semai
 - **Photos lourdes** : précharger seulement les 3 prochaines cartes ; photos déjà servies par `media.crete.direct`.
 - **Échantillon biaisé monastères** (641/2296) : l'échantillonnage stratifié plafonne chaque type à ~25 % du deck.
 - **SEO** : page client-side au contenu mince ; indexable mais sans enjeu de ranking, aucune description scrapée exposée.
+
+## V1.1 — Retours Kami du 12/06/2026 (validés en session)
+
+Retour UX après test local : « comme Tinder au début faudrait cocher des centres d'intérêt, et après ça propose des matchs, et un bouton où ça dit j'ai fini de liker, et après ça fait une synthèse de ce qui a été liké et propose les lieux avec un bouton itinéraire ».
+
+### Décisions
+1. **Onboarding centres d'intérêt** : avant le premier deck, écran de chips multi-select (groupes de types : Plages / Nature & rando / Monastères & églises / Histoire & ruines / Grottes / Villes & villages / Musées / Îles & phares) + bouton « Tout me va » (skip). Effets : le deck est pondéré ~75 % types choisis / 25 % découverte, et le profil de goûts est seedé (+1 par type des groupes choisis). Choix persisté dans `cd_match_v1.interests` ; re-modifiable via un bouton discret sur l'écran de swipe.
+2. **Overlay match conservé** (décision Kami : « garder les deux ») : le match toutes les 8 cartes reste, désormais nourri par les intérêts.
+3. **Bouton « J'ai fini de liker »** : sous les boutons ❌/❤️, actif dès 1 like, ouvre la synthèse.
+4. **Synthèse** : remplace le deck : résumé des goûts (top types likés en chips), liste des lieux likés (photo, nom, type · préfecture, note) avec par lieu : lien fiche (`/explore?place=`) + **bouton Itinéraire = Google Maps directions** (`https://www.google.com/maps/dir/?api=1&destination=lat,lng`, décision Kami). Bouton « Reprendre le swipe » pour revenir au deck.
+5. **MatchPlace** : ajout `latitude`/`longitude` (nécessaires au bouton itinéraire, déjà dans cb_places).
+6. **Events Plausible ajoutés** : `interests_set` (props: groups), `finish_clicked`, `synthesis_route_clicked` (props: slug), `synthesis_place_clicked` (props: slug).
+
+### Hors scope V1.1
+Partage de la synthèse (OG dynamique), réordonnancement manuel, export PDF/itinéraire multi-étapes.
