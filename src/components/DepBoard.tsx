@@ -1,0 +1,78 @@
+"use client";
+// Board nuit des prochains departs : signature "donnees live" (style Flighty).
+// Calcule les N prochains departs toutes lignes confondues via timesForDate.
+// Reference visuelle : docs/design/kalimera/home-v8.html bloc .dep-card
+import { useEffect, useState } from "react";
+import { Link } from "@/i18n/navigation";
+import { timesForDate } from "@/lib/bus-journey";
+import type { BusRoute } from "@/lib/buses";
+import { CiBus } from "@/components/icons";
+
+const T = {
+  title: { en: "Next buses", fr: "Prochains bus", de: "Nächste Busse", el: "Επόμενα λεωφορεία" },
+  plan: { en: "Plan a journey", fr: "Planifier un trajet", de: "Fahrt planen", el: "Σχεδιασμός" },
+  inMin: { en: (m: number) => `in ${m} min`, fr: (m: number) => `dans ${m} min`, de: (m: number) => `in ${m} Min`, el: (m: number) => `σε ${m}’` },
+  last: { en: "last today", fr: "dernier du jour", de: "letzter heute", el: "τελευταίο" },
+};
+
+interface NextDep { from: string; to: string; time: string; inMin: number; isLast: boolean; price: number | null }
+
+function athens(): { iso: string; minutes: number } {
+  const p = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Athens", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).formatToParts(new Date());
+  const g = (t: string) => p.find((x) => x.type === t)?.value ?? "00";
+  return { iso: `${g("year")}-${g("month")}-${g("day")}`, minutes: (parseInt(g("hour")) % 24) * 60 + parseInt(g("minute")) };
+}
+const toMin = (t: string) => { const [h, m] = t.split(":").map(Number); return (h || 0) * 60 + (m || 0); };
+
+export function DepBoard({ routes, locale, count = 3 }: { routes: BusRoute[]; locale: string; count?: number }) {
+  const ui = (["en", "fr", "de", "el"].includes(locale) ? locale : "en") as keyof typeof T.title;
+  const [deps, setDeps] = useState<NextDep[]>([]);
+
+  useEffect(() => {
+    const { iso, minutes } = athens();
+    const out: NextDep[] = [];
+    for (const r of routes) {
+      const times = timesForDate(r, iso).map(toMin).sort((a, b) => a - b);
+      const idx = times.findIndex((m) => m >= minutes);
+      if (idx === -1) continue;
+      const m = times[idx];
+      out.push({
+        from: r.from_place, to: r.to_place,
+        time: `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`,
+        inMin: m - minutes, isLast: idx === times.length - 1,
+        price: r.price_eur ?? null,
+      });
+    }
+    out.sort((a, b) => a.inMin - b.inMin);
+    // dedup par paire from->to (garder le plus proche)
+    const seen = new Set<string>();
+    setDeps(out.filter((d) => { const k = `${d.from}>${d.to}`; if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, count));
+  }, [routes, count]);
+
+  if (deps.length === 0) return null;
+  return (
+    <div className="bg-night text-[#EAF7FA] rounded-[30px] px-7 py-6 pb-4 shadow-[0_24px_60px_rgba(7,55,74,.4)]">
+      <div className="flex items-center justify-between mb-2.5">
+        <span className="font-heading font-bold text-lg inline-flex items-center gap-2.5">
+          <span className="bg-lagoon text-night rounded-xl p-2 inline-flex"><CiBus className="w-[19px] h-[19px]" /></span>
+          {T.title[ui]}
+        </span>
+        <Link href="/buses" className="bg-lagoon text-night rounded-full px-4 py-2 text-[13.5px] font-heading font-bold">
+          {T.plan[ui]}
+        </Link>
+      </div>
+      <div className="font-data">
+        {deps.map((d) => (
+          <div key={`${d.from}-${d.to}`} className="grid grid-cols-[1fr_auto_auto_auto] gap-5 items-center py-3 border-t border-[#EAF7FA]/12">
+            <span className="font-semibold">{d.from} <span className="text-lagoon mx-1">·</span> {d.to}</span>
+            <span className="text-[25px] font-bold">{d.time}</span>
+            <span className={`text-[13px] font-bold rounded-full px-3 py-1.5 ${d.isLast ? "bg-sun/16 text-sun" : "bg-ok/18 text-[#43E89D]"}`}>
+              {d.isLast ? T.last[ui] : T.inMin[ui](d.inMin)}
+            </span>
+            <span className="text-right text-[#EAF7FA]/55 text-sm w-16">{d.price != null ? `${d.price.toFixed(2)} €` : ""}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
