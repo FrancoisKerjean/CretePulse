@@ -102,6 +102,9 @@ media.crete.direct).
 10. **RÈGLE AJOUTÉE (Kami) : aucune flèche « → » accolée aux titres et libellés de liens.**
     Les « tout → », « toutes les stations → », « → Voir la plage » sont interdits ;
     les liens d'action = pills sans flèche, les liens secondaires = texte coloré simple.
+11. **RÈGLE AJOUTÉE (Kami) : aucun tiret cadratin « — » nulle part** (micro-copy, titres,
+    légendes, données). Séparateurs autorisés : point médian « · », virgule, point,
+    deux-points. Exemple : « Καλημέρα ! Jeudi 11 juin · en direct de l'île ».
 
 ## Conservé des phases précédentes
 - Icônes propriétaires spirale/vague (icons.tsx) — cohérentes avec la nouvelle grammaire.
