@@ -4,7 +4,8 @@ import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Menu, X, Globe, ChevronDown, Search } from "lucide-react";
-import { CiMark } from "@/components/icons";
+import { Wordmark } from "@/components/Wordmark";
+import { LivePill } from "@/components/LivePill";
 
 const LOCALES = [
   { code: "en", label: "EN", name: "English" },
@@ -114,7 +115,7 @@ function LocaleSwitcher({ locale, pathname, router }: { locale: string; pathname
                 }`}
               >
                 <span>{l.name}</span>
-                <span className="text-[10px] font-mono text-text-light">{l.label}</span>
+                <span className="text-[10px] font-data text-text-light">{l.label}</span>
               </button>
             ))}
           </div>
@@ -129,15 +130,8 @@ export function Header() {
   const locale = (params?.locale as string) || "en";
   const pathname = usePathname();
   const router = useRouter();
-  const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [mobileLangOpen, setMobileLangOpen] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- close menus on route change, intentional sync from pathname
@@ -148,21 +142,11 @@ export function Header() {
   const currentLocale = LOCALES.find((l) => l.code === locale) || LOCALES[0];
 
   return (
-    <nav
-      className={`sticky top-0 z-50 bg-surface/95 backdrop-blur-md transition-shadow duration-300 ${
-        scrolled ? "shadow-[0_2px_20px_rgba(27,73,101,0.10)]" : "border-b border-border"
-      }`}
-    >
-      <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group">
-          <span className="text-xl font-extrabold tracking-tight text-aegean group-hover:text-aegean-light transition-colors">
-            CRETE
-          </span>
-          <CiMark className="w-[17px] h-[17px] text-terra group-hover:rotate-[30deg] transition-transform duration-300" />
-          <span className="text-xl font-extrabold tracking-tight text-terra group-hover:text-terra-light transition-colors">
-            DIRECT
-          </span>
+    <nav className="sticky top-3.5 z-50 mx-auto max-w-6xl px-4">
+      <div className="flex items-center justify-between rounded-full bg-white/88 backdrop-blur-xl px-3.5 py-2.5 pl-5 shadow-[0_8px_30px_rgba(11,94,120,.14)]">
+        {/* Logo : wordmark dessine */}
+        <Link href="/" className="flex items-center" aria-label="cretedirect home">
+          <Wordmark width={128} />
         </Link>
 
         {/* Desktop nav : 3 univers en dropdown (CSS hover/focus, zero JS) */}
@@ -173,15 +157,15 @@ export function Header() {
               <div key={group.key} className="relative group">
                 <button
                   type="button"
-                  className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-colors hover:text-aegean hover:bg-stone/60 ${
-                    groupActive ? "text-aegean" : ""
+                  className={`flex items-center gap-1 px-4 py-2 rounded-full transition-colors ${
+                    groupActive ? "bg-text text-white" : "hover:text-aegean hover:bg-stone/60"
                   }`}
                 >
                   {navLabel(group.label, locale)}
                   <ChevronDown className="w-3.5 h-3.5 opacity-60 group-hover:rotate-180 transition-transform" />
                 </button>
                 <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 absolute left-0 top-full pt-1 transition-all duration-150 z-50">
-                  <div className="bg-white rounded-xl border border-border shadow-xl py-1.5 w-44">
+                  <div className="bg-white rounded-3xl border border-border shadow-xl py-2 w-44">
                     {group.items.map((link) => (
                       <Link
                         key={link.href}
@@ -202,8 +186,9 @@ export function Header() {
           })}
         </div>
 
-        {/* Right: search + locale dropdown + mobile hamburger */}
+        {/* Right: LIVE pill + search + locale dropdown + mobile hamburger */}
         <div className="flex items-center gap-2">
+          <LivePill />
           <Link
             href="/search"
             aria-label="Search"
@@ -226,10 +211,10 @@ export function Header() {
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile menu : carte arrondie sous la pilule */}
       {open && (
-        <div className="md:hidden border-t border-border bg-surface/98 backdrop-blur-xl">
-          <div className="max-w-6xl mx-auto px-4 py-4 space-y-3">
+        <div className="md:hidden mt-2 rounded-[28px] bg-white/96 backdrop-blur-xl shadow-[0_18px_50px_rgba(11,94,120,.18)]">
+          <div className="px-4 py-4 space-y-3">
             {NAV_GROUPS.map((group) => (
               <div key={group.key}>
                 <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-text-light m-0">
