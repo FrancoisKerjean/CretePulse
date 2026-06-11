@@ -39,6 +39,7 @@ const NAV_LINKS = [
   { href: "/hikes", label: { en: "Hikes", fr: "Randos", de: "Wandern", el: "Πεζοπορία", it: "Escursioni", nl: "Wandelen", pl: "Szlaki", es: "Rutas", pt: "Trilhas", ru: "Походы", ja: "ハイキング", ko: "하이킹", zh: "徒步", tr: "Yürüyüş", sv: "Vandringar", da: "Vandreture", no: "Turer", fi: "Vaellukset", cs: "Túry", hu: "Túrák", ro: "Drumeții", ar: "مشي" } },
   { href: "/news", label: { en: "News", fr: "Actus", de: "Nachrichten", el: "Νέα", it: "Notizie", nl: "Nieuws", pl: "Wiadomości", es: "Noticias", pt: "Notícias", ru: "Новости", ja: "ニュース", ko: "뉴스", zh: "新闻", tr: "Haberler", sv: "Nyheter", da: "Nyheder", no: "Nyheter", fi: "Uutiset", cs: "Zprávy", hu: "Hírek", ro: "Știri", ar: "أخبار" } },
   { href: "/articles", label: { en: "Guides", fr: "Guides", de: "Guides", el: "Οδηγοί", it: "Guide", nl: "Gidsen", pl: "Przewodniki", es: "Guías", pt: "Guias", ru: "Гиды", ja: "ガイド", ko: "가이드", zh: "指南", tr: "Rehber", sv: "Guider", da: "Guides", no: "Guider", fi: "Oppaat", cs: "Průvodce", hu: "Útmutatók", ro: "Ghiduri", ar: "أدلة" } },
+  { href: "/explore", label: { en: "Explore", fr: "Explorer", de: "Entdecken", el: "Εξερεύνηση", it: "Esplora", nl: "Verkennen", pl: "Odkrywaj", es: "Explorar", pt: "Explorar", ru: "Карта", ja: "探索", ko: "탐색", zh: "探索", tr: "Keşfet", sv: "Utforska", da: "Udforsk", no: "Utforsk", fi: "Tutki", cs: "Objevuj", hu: "Felfedezés", ro: "Explorează", ar: "استكشف" } },
 ];
 
 function LocaleSwitcher({ locale, pathname, router }: { locale: string; pathname: string; router: ReturnType<typeof useRouter> }) {
