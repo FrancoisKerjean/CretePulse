@@ -93,6 +93,13 @@ const DISCLOSURE: Record<string, string> = {
   el: "Σύνδεσμος συνεργάτη",
 };
 
+/** Curated product photos (Unsplash license), committed in public/. */
+const PHOTO: Partial<Record<AffiliateKey, string>> = {
+  tours: "tours.jpg",
+  carRental: "car-rental.jpg",
+  ferry: "ferry.jpg",
+};
+
 export function AffiliateBanner({
   type,
   locale,
@@ -117,16 +124,30 @@ export function AffiliateBanner({
 
   return (
     <aside
-      className={`relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0e3a52] via-aegean to-[#b85c38] bg-[length:300%_100%] animate-gradient shadow-lg ${className}`}
+      className={`relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0e3a52] via-aegean to-[#b85c38] bg-[length:300%_100%] animate-gradient shadow-lg md:flex md:items-stretch ${className}`}
     >
+      {/* Product photo: an ad about cars must show a car (Kami's call).
+          Curated Unsplash assets committed in public/images/partners/. */}
+      <div className="relative h-32 w-full shrink-0 md:h-auto md:w-[38%] md:max-w-72">
+        <img
+          src={`/images/partners/${PHOTO[type]}`}
+          alt=""
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover"
+          aria-hidden
+        />
+        {/* blend the photo into the panel */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0e3a52]/70 via-transparent to-transparent md:bg-gradient-to-r md:from-transparent md:via-transparent md:to-[#0e3a52]" aria-hidden />
+      </div>
+
       {/* texture: soft radial glow + floating watermark icon */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(255,255,255,0.14),transparent_55%)]" aria-hidden />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(255,255,255,0.10),transparent_55%)]" aria-hidden />
       <Icon
         className="pointer-events-none absolute -right-2 -bottom-6 h-32 w-32 text-white/10 animate-pulse [animation-duration:4s]"
         strokeWidth={1.25}
         aria-hidden
       />
-      <div className="relative flex flex-wrap items-center justify-between gap-x-6 gap-y-4 p-5 md:p-6">
+      <div className="relative flex min-w-0 flex-1 flex-wrap items-center justify-between gap-x-6 gap-y-4 p-5 md:p-6">
         <div className="min-w-0 max-w-xl">
           <p className="inline-flex items-center rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-white/90 backdrop-blur-sm">
             {disclosure} · {copy.partner}
