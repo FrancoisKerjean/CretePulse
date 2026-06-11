@@ -13,9 +13,10 @@ const T = {
   plan: { en: "Plan a journey", fr: "Planifier un trajet", de: "Fahrt planen", el: "Σχεδιασμός" },
   inMin: { en: (m: number) => `in ${m} min`, fr: (m: number) => `dans ${m} min`, de: (m: number) => `in ${m} Min`, el: (m: number) => `σε ${m}’` },
   last: { en: "last today", fr: "dernier du jour", de: "letzter heute", el: "τελευταίο" },
+  tomorrow: { en: "tomorrow", fr: "demain", de: "morgen", el: "αύριο" },
 };
 
-interface NextDep { from: string; to: string; time: string; inMin: number; isLast: boolean; price: number | null }
+interface NextDep { from: string; to: string; time: string; inMin: number; isLast: boolean; isTomorrow: boolean; price: number | null }
 
 function athens(): { iso: string; minutes: number } {
   const p = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Athens", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).formatToParts(new Date());
@@ -30,16 +31,28 @@ export function DepBoard({ routes, locale, count = 3 }: { routes: BusRoute[]; lo
 
   useEffect(() => {
     const { iso, minutes } = athens();
+    const tomorrowIso = new Date(new Date(`${iso}T12:00:00`).getTime() + 86400000).toISOString().slice(0, 10);
+    const fmt = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
     const out: NextDep[] = [];
     for (const r of routes) {
       const times = timesForDate(r, iso).map(toMin).sort((a, b) => a - b);
       const idx = times.findIndex((m) => m >= minutes);
-      if (idx === -1) continue;
+      if (idx === -1) {
+        // plus rien aujourd'hui : le board vit quand meme, premier bus demain
+        const first = timesForDate(r, tomorrowIso).map(toMin).sort((a, b) => a - b)[0];
+        if (first === undefined) continue;
+        out.push({
+          from: r.from_place, to: r.to_place, time: fmt(first),
+          inMin: 1440 - minutes + first, isLast: false, isTomorrow: true,
+          price: r.price_eur ?? null,
+        });
+        continue;
+      }
       const m = times[idx];
       out.push({
         from: r.from_place, to: r.to_place,
-        time: `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`,
-        inMin: m - minutes, isLast: idx === times.length - 1,
+        time: fmt(m),
+        inMin: m - minutes, isLast: idx === times.length - 1, isTomorrow: false,
         price: r.price_eur ?? null,
       });
     }
@@ -66,8 +79,8 @@ export function DepBoard({ routes, locale, count = 3 }: { routes: BusRoute[]; lo
           <div key={`${d.from}-${d.to}`} className="grid grid-cols-[1fr_auto_auto_auto] gap-5 items-center py-3 border-t border-[#EAF7FA]/12">
             <span className="font-semibold">{d.from} <span className="text-lagoon mx-1">·</span> {d.to}</span>
             <span className="text-[25px] font-bold">{d.time}</span>
-            <span className={`text-[13px] font-bold rounded-full px-3 py-1.5 ${d.isLast ? "bg-sun/16 text-sun" : "bg-ok/18 text-[#43E89D]"}`}>
-              {d.isLast ? T.last[ui] : T.inMin[ui](d.inMin)}
+            <span className={`text-[13px] font-bold rounded-full px-3 py-1.5 ${d.isLast || d.isTomorrow ? "bg-sun/16 text-sun" : "bg-ok/18 text-[#43E89D]"}`}>
+              {d.isTomorrow ? T.tomorrow[ui] : d.isLast ? T.last[ui] : T.inMin[ui](d.inMin)}
             </span>
             <span className="text-right text-[#EAF7FA]/55 text-sm w-16">{d.price != null ? `${d.price.toFixed(2)} €` : ""}</span>
           </div>
