@@ -13,6 +13,7 @@ export interface CbBeachAttrs {
   depth: string | null;
   crowds: string | null;
   facilities: string | null;
+  accessibility: string | null;
   water_color: string | null;
   photos: string[] | null;
 }
@@ -38,7 +39,7 @@ export async function fetchCbBeaches(): Promise<CbRow[]> {
   try {
     const { data, error } = await supabase
       .from("cb_places")
-      .select("slug, latitude, longitude, rating, sea_surface, sand_type, depth, crowds, facilities, water_color, photos")
+      .select("slug, latitude, longitude, rating, sea_surface, sand_type, depth, crowds, facilities, accessibility, water_color, photos")
       .eq("place_type", "beach")
       .not("latitude", "is", null)
       .limit(1000);
@@ -46,6 +47,34 @@ export async function fetchCbBeaches(): Promise<CbRow[]> {
     return (data as unknown as CbRow[]) ?? [];
   } catch {
     return [];
+  }
+}
+
+/** Nearest cb_places beach for a single location (beach detail pages). */
+export async function getCbBeachNear(lat: number, lng: number): Promise<CbBeachAttrs | null> {
+  try {
+    const { data, error } = await supabase
+      .from("cb_places")
+      .select("slug, latitude, longitude, rating, sea_surface, sand_type, depth, crowds, facilities, accessibility, water_color, photos")
+      .eq("place_type", "beach")
+      .gte("latitude", lat - 0.02)
+      .lte("latitude", lat + 0.02)
+      .gte("longitude", lng - 0.02)
+      .lte("longitude", lng + 0.02)
+      .limit(20);
+    if (error || !data?.length) return null;
+    let best: CbRow | null = null;
+    let bestKm = MATCH_KM;
+    for (const c of data as unknown as CbRow[]) {
+      const km = haversineKm(lat, lng, c.latitude, c.longitude);
+      if (km <= bestKm) {
+        bestKm = km;
+        best = c;
+      }
+    }
+    return best;
+  } catch {
+    return null;
   }
 }
 

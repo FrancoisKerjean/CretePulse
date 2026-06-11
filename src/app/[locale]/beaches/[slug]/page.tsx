@@ -1,4 +1,9 @@
 import { getBeachBySlug, getNearbyBeaches } from "@/lib/beaches";
+import { getCbBeachNear } from "@/lib/cb-beach-match";
+import {
+  SAND_LABELS, WATER_LABELS, DEPTH_LABELS, CROWD_LABELS, SEA_LABELS,
+  FACILITY_LABELS, ACCESS_LABELS, firstLabel, allLabels,
+} from "@/lib/cb-beach-labels";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { setRequestLocale } from "next-intl/server";
 import { getLocalizedField, type Locale } from "@/lib/types";
@@ -183,7 +188,10 @@ export default async function BeachDetailPage({
   const beach = await getBeachBySlug(slug);
   if (!beach) notFound();
 
-  const nearby = await getNearbyBeaches(beach.latitude, beach.longitude, beach.slug);
+  const [nearby, cb] = await Promise.all([
+    getNearbyBeaches(beach.latitude, beach.longitude, beach.slug),
+    getCbBeachNear(beach.latitude, beach.longitude),
+  ]);
   const name = getLocalizedField(beach, "name", loc);
   const description = getLocalizedField(beach, "description", loc);
 
@@ -194,24 +202,116 @@ export default async function BeachDetailPage({
     { name, url: `${BASE_URL}/${locale}/beaches/${beach.slug}` },
   ]);
 
-  // FAQ structured data
+  // FAQ: data-driven answers from field-observed attributes (cb match) where
+  // available, generic fallbacks otherwise. Visible FAQ mirrors the JSON-LD.
+  const uiLoc: Locale = (["en", "fr", "de", "el"] as const).includes(loc as "en") ? (loc as Locale) : "en";
+  const sand = firstLabel(cb?.sand_type, SAND_LABELS[uiLoc]);
+  const water = firstLabel(cb?.water_color, WATER_LABELS[uiLoc]);
+  const depthL = firstLabel(cb?.depth, DEPTH_LABELS[uiLoc]);
+  const crowdsL = firstLabel(cb?.crowds, CROWD_LABELS[uiLoc]);
+  const seaL = cb?.sea_surface ? SEA_LABELS[uiLoc][cb.sea_surface.split(",")[0].trim()] ?? null : null;
+  const facilities = allLabels(cb?.facilities, FACILITY_LABELS[uiLoc]);
+  const access = allLabels(cb?.accessibility ?? null, ACCESS_LABELS[uiLoc]);
+  const hasLifeguard = (cb?.facilities ?? "").includes("Lifeguard");
+
+  const F = {
+    en: {
+      sandyQ: `Is ${name} a sandy beach?`,
+      sandyA: sand
+        ? `${name} is a ${sand} beach${water ? ` with ${water} water` : ""}, in the ${beach.region} region of Crete.`
+        : `${name} is a ${beach.type || "mixed"} beach located in the ${beach.region} region of Crete.`,
+      seaQ: `Is the sea calm at ${name}?`,
+      seaA: seaL ? `The sea at ${name} is ${seaL}. For today's live wind and wave conditions, see our "where to swim today" page.` : null,
+      kidsQ: `Is ${name} suitable for children?`,
+      kidsA: depthL
+        ? `The water at ${name} is ${depthL}${depthL === "shallow" ? ", which suits children well" : ""}.${hasLifeguard ? " A lifeguard operates in season." : ""}`
+        : beach.kids_friendly
+          ? `Yes, ${name} is family-friendly and suitable for children.`
+          : `${name} is not ideal for children due to conditions.`,
+      crowdQ: `Is ${name} crowded?`,
+      crowdA: crowdsL ? `${name} is ${crowdsL}.` : null,
+      facQ: `Are there sunbeds and facilities at ${name}?`,
+      facA: facilities.length ? `At ${name} you will find: ${facilities.join(", ")}.` : null,
+      parkQ: `Is there parking at ${name}?`,
+      parkA: (beach.parking
+        ? `Yes, ${name} has parking available.`
+        : `No, ${name} does not have dedicated parking.`) + (access.length ? ` Access: ${access.join(", ")}.` : ""),
+    },
+    fr: {
+      sandyQ: `${name} est-elle une plage de sable ?`,
+      sandyA: sand
+        ? `${name} est une plage de ${sand}${water ? `, à l'eau ${water}` : ""}, dans la région ${beach.region} de la Crète.`
+        : `${name} est une plage de type ${beach.type || "mixte"} située dans la région ${beach.region} de la Crète.`,
+      seaQ: `La mer est-elle calme à ${name} ?`,
+      seaA: seaL ? `La mer à ${name} est ${seaL}. Pour les conditions de vent et de houle du jour, voir notre page « où se baigner aujourd'hui ».` : null,
+      kidsQ: `${name} est-elle adaptée aux enfants ?`,
+      kidsA: depthL
+        ? `L'eau à ${name} est ${depthL}${depthL === "peu profonde" ? ", ce qui convient bien aux enfants" : ""}.${hasLifeguard ? " Un maître-nageur est présent en saison." : ""}`
+        : beach.kids_friendly
+          ? `Oui, ${name} est adaptée aux familles avec enfants.`
+          : `${name} n'est pas idéale pour les enfants en raison des conditions.`,
+      crowdQ: `${name} est-elle fréquentée ?`,
+      crowdA: crowdsL ? `${name} est ${crowdsL}.` : null,
+      facQ: `Y a-t-il des transats et des services à ${name} ?`,
+      facA: facilities.length ? `À ${name}, on trouve : ${facilities.join(", ")}.` : null,
+      parkQ: `Y a-t-il un parking à ${name} ?`,
+      parkA: (beach.parking
+        ? `Oui, ${name} dispose d'un parking.`
+        : `Non, ${name} n'a pas de parking dédié.`) + (access.length ? ` Accès : ${access.join(", ")}.` : ""),
+    },
+    de: {
+      sandyQ: `Ist ${name} ein Sandstrand?`,
+      sandyA: sand
+        ? `${name} ist ein Strand mit ${sand}${water ? ` und ${water}em Wasser` : ""}, in der Region ${beach.region} auf Kreta.`
+        : `${name} ist ein ${beach.type || "gemischter"} Strand in der Region ${beach.region} auf Kreta.`,
+      seaQ: `Ist das Meer bei ${name} ruhig?`,
+      seaA: seaL ? `Das Meer bei ${name} ist ${seaL}. Live-Wind und Wellen für heute: siehe unsere Seite "Wo heute baden".` : null,
+      kidsQ: `Ist ${name} kinderfreundlich?`,
+      kidsA: depthL
+        ? `Das Wasser bei ${name} ist ${depthL}${depthL === "flach" ? ", gut geeignet für Kinder" : ""}.${hasLifeguard ? " In der Saison gibt es einen Rettungsschwimmer." : ""}`
+        : beach.kids_friendly
+          ? `Ja, ${name} ist kinderfreundlich.`
+          : `${name} ist aufgrund der Bedingungen nicht ideal für Kinder.`,
+      crowdQ: `Ist ${name} überlaufen?`,
+      crowdA: crowdsL ? `${name} ist ${crowdsL}.` : null,
+      facQ: `Gibt es Liegen und Infrastruktur bei ${name}?`,
+      facA: facilities.length ? `Bei ${name} gibt es: ${facilities.join(", ")}.` : null,
+      parkQ: `Gibt es einen Parkplatz bei ${name}?`,
+      parkA: (beach.parking
+        ? `Ja, ${name} hat einen Parkplatz.`
+        : `Nein, ${name} hat keinen Parkplatz.`) + (access.length ? ` Zugang: ${access.join(", ")}.` : ""),
+    },
+    el: {
+      sandyQ: `Είναι η ${name} αμμώδης παραλία;`,
+      sandyA: sand
+        ? `Η ${name} είναι παραλία με ${sand}${water ? ` και ${water} νερά` : ""}, στην περιοχή ${beach.region} της Κρήτης.`
+        : `Η ${name} είναι παραλία τύπου ${beach.type || "μικτή"} στην περιοχή ${beach.region} της Κρήτης.`,
+      seaQ: `Είναι ήρεμη η θάλασσα στην ${name};`,
+      seaA: seaL ? `Η θάλασσα στην ${name} είναι ${seaL}. Για τις σημερινές συνθήκες ανέμου και κύματος, δείτε τη σελίδα «πού για μπάνιο σήμερα».` : null,
+      kidsQ: `Είναι η ${name} κατάλληλη για παιδιά;`,
+      kidsA: depthL
+        ? `Τα νερά στην ${name} είναι ${depthL}${depthL === "ρηχά" ? ", κατάλληλα για παιδιά" : ""}.${hasLifeguard ? " Τη σεζόν υπάρχει ναυαγοσώστης." : ""}`
+        : beach.kids_friendly
+          ? `Ναι, η ${name} είναι κατάλληλη για παιδιά.`
+          : `Η ${name} δεν είναι ιδανική για παιδιά.`,
+      crowdQ: `Έχει κόσμο η ${name};`,
+      crowdA: crowdsL ? `Η ${name} είναι ${crowdsL}.` : null,
+      facQ: `Υπάρχουν ξαπλώστρες και παροχές στην ${name};`,
+      facA: facilities.length ? `Στην ${name} θα βρείτε: ${facilities.join(", ")}.` : null,
+      parkQ: `Υπάρχει πάρκινγκ στην ${name};`,
+      parkA: (beach.parking
+        ? `Ναι, η ${name} διαθέτει πάρκινγκ.`
+        : `Όχι, η ${name} δεν έχει πάρκινγκ.`) + (access.length ? ` Πρόσβαση: ${access.join(", ")}.` : ""),
+    },
+  }[uiLoc];
+
   const faqItems = [
-    {
-      q: loc === "fr" ? `${name} est-elle une plage de sable ?` : loc === "de" ? `Ist ${name} ein Sandstrand?` : loc === "el" ? `Είναι η ${name} αμμώδης παραλία;` : `Is ${name} a sandy beach?`,
-      a: loc === "fr" ? `${name} est une plage de type ${beach.type || "mixte"} située dans la région ${beach.region} de la Crète.` : loc === "de" ? `${name} ist ein ${beach.type || "gemischter"} Strand in der Region ${beach.region} auf Kreta.` : loc === "el" ? `Η ${name} είναι παραλία τύπου ${beach.type || "μικτή"} στην περιοχή ${beach.region} της Κρήτης.` : `${name} is a ${beach.type || "mixed"} beach located in the ${beach.region} region of Crete.`,
-    },
-    {
-      q: loc === "fr" ? `${name} est-elle adaptée aux enfants ?` : loc === "de" ? `Ist ${name} kinderfreundlich?` : loc === "el" ? `Είναι η ${name} κατάλληλη για παιδιά;` : `Is ${name} suitable for children?`,
-      a: beach.kids_friendly
-        ? (loc === "fr" ? `Oui, ${name} est adaptée aux familles avec enfants.` : loc === "de" ? `Ja, ${name} ist kinderfreundlich.` : loc === "el" ? `Ναι, η ${name} είναι κατάλληλη για παιδιά.` : `Yes, ${name} is family-friendly and suitable for children.`)
-        : (loc === "fr" ? `${name} n'est pas idéale pour les enfants en raison des conditions.` : loc === "de" ? `${name} ist aufgrund der Bedingungen nicht ideal für Kinder.` : loc === "el" ? `Η ${name} δεν είναι ιδανική για παιδιά.` : `${name} is not ideal for children due to conditions.`),
-    },
-    {
-      q: loc === "fr" ? `Y a-t-il un parking à ${name} ?` : loc === "de" ? `Gibt es einen Parkplatz bei ${name}?` : loc === "el" ? `Υπάρχει πάρκινγκ στην ${name};` : `Is there parking at ${name}?`,
-      a: beach.parking
-        ? (loc === "fr" ? `Oui, ${name} dispose d'un parking.` : loc === "de" ? `Ja, ${name} hat einen Parkplatz.` : loc === "el" ? `Ναι, η ${name} διαθέτει πάρκινγκ.` : `Yes, ${name} has parking available.`)
-        : (loc === "fr" ? `Non, ${name} n'a pas de parking dédié.` : loc === "de" ? `Nein, ${name} hat keinen Parkplatz.` : loc === "el" ? `Όχι, η ${name} δεν έχει πάρκινγκ.` : `No, ${name} does not have dedicated parking.`),
-    },
+    { q: F.sandyQ, a: F.sandyA },
+    ...(F.seaA ? [{ q: F.seaQ, a: F.seaA }] : []),
+    { q: F.kidsQ, a: F.kidsA },
+    ...(F.crowdA ? [{ q: F.crowdQ, a: F.crowdA }] : []),
+    ...(F.facA ? [{ q: F.facQ, a: F.facA }] : []),
+    { q: F.parkQ, a: F.parkA },
   ];
 
   const faqSchema = {
@@ -312,6 +412,21 @@ export default async function BeachDetailPage({
           {beach.snorkeling && (
             <span className="inline-flex items-center gap-1 text-sm bg-stone px-3 py-1 rounded-full">
               <Fish className="w-4 h-4 text-aegean" /> {L.snorkeling}
+            </span>
+          )}
+          {seaL && (
+            <span className="inline-flex items-center gap-1 text-sm bg-aegean-faint text-aegean px-3 py-1 rounded-full">
+              <Waves className="w-4 h-4" /> {seaL}
+            </span>
+          )}
+          {crowdsL && (
+            <span className="inline-flex items-center gap-1 text-sm bg-stone px-3 py-1 rounded-full">
+              {crowdsL}
+            </span>
+          )}
+          {cb?.rating != null && cb.rating > 0 && (
+            <span className="inline-flex items-center gap-1 text-sm bg-amber-50 text-amber-800 px-3 py-1 rounded-full font-medium">
+              ★ {cb.rating.toFixed(1)}/5
             </span>
           )}
         </div>
