@@ -67,10 +67,7 @@ export default function RentalCTA({ locale, contentSlug, contentType = "page" }:
       data-cta="rental-cross-link"
     >
       <div className="w-8 h-1 bg-terra rounded-full mb-4" />
-      <h3
-        className="text-lg font-bold text-aegean mb-2"
-        style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
-      >
+      <h3 className="font-heading text-lg font-bold text-aegean mb-2">
         {t(TITLES)}
       </h3>
       <p className="text-sm text-text-muted mb-5 max-w-2xl leading-relaxed">

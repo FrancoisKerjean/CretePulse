@@ -48,7 +48,7 @@ export function AffiliateBanner({
 
   return (
     <aside
-      className={`flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-white p-4 ${className}`}
+      className={`flex flex-wrap items-center justify-between gap-3 rounded-xl border border-aegean/15 bg-aegean-faint p-4 ${className}`}
     >
       <div className="min-w-0">
         <p className="font-medium text-text">{title}</p>

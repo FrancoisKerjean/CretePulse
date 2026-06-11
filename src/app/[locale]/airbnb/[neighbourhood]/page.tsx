@@ -1,6 +1,7 @@
-import { ChevronLeft, MapPin, Home, Euro, Calendar, Star, Award, Shield } from "lucide-react";
+import { ChevronLeft, MapPin, Home, Euro, Calendar, Star, Award, Shield, TrendingUp } from "lucide-react";
 import { setRequestLocale } from "next-intl/server";
 import { BusAccessBox } from "@/components/BusAccessBox";
+import { PromoBox } from "@/components/PromoBox";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -810,17 +811,12 @@ export default async function AirbnbNeighbourhoodPage(
         />
 
         {/* CTA */}
-        <section className="mb-10 rounded-lg bg-stone-900 p-6 text-white">
-          <p className="mb-3">{t.cta}</p>
-          <a
-            href={t.ctaLink}
-            target="_blank"
-            rel="noopener"
-            className="inline-block rounded-md bg-amber-500 px-4 py-2 text-sm font-medium text-stone-900 hover:bg-amber-400"
-          >
-            {t.ctaButton}
-          </a>
-        </section>
+        <PromoBox
+          icon={TrendingUp}
+          title={t.cta}
+          ctaLabel={t.ctaButton}
+          ctaHref={t.ctaLink}
+        />
 
         {/* Sibling neighbourhoods */}
         {siblings.length > 0 && (
