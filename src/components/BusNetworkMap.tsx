@@ -3,6 +3,9 @@
 // BusNetworkMap - plan du réseau KTEL Crète style Harry Beck (Paris metro).
 // Interactif : props fromPlace/toPlace highlightent 2 stations + lignes qui
 // les relient, grisent le reste. Toujours indexable Google (SVG inline).
+// Note redesign 11/06 : conservé face à MapLibre (canvas = invisible Google,
+// perte du highlight). Replié par défaut en mobile (SVG reste dans le DOM).
+import { useEffect, useState } from "react";
 //
 // Stratégie layout :
 //   - La côte nord de la Crète est quasi-rectiligne → on aligne toutes les villes
@@ -295,6 +298,12 @@ const T = {
 
 export function BusNetworkMap({ locale, fromPlace, toPlace }: Props) {
   const loc = pickLoc(locale);
+  // Mobile : plan replié par défaut (le SVG large force un scroll horizontal
+  // mediocre). Desktop : ouvert. Le SVG reste dans le DOM (hidden) -> SEO ok.
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (window.matchMedia("(min-width: 768px)").matches) setOpen(true);
+  }, []);
   const stationById: Record<string, Station> = Object.fromEntries(
     STATIONS.map((s) => [s.id, s]),
   );
@@ -326,20 +335,28 @@ export function BusNetworkMap({ locale, fromPlace, toPlace }: Props) {
       aria-labelledby="bus-network-heading"
       className="mb-10 rounded-2xl border border-aegean/15 bg-stone p-5 md:p-8"
     >
-      <h2 id="bus-network-heading" className="text-xl font-bold text-aegean mb-1">
-        {T.heading[loc]}
-      </h2>
-      <p className="text-sm text-text-muted mb-5">
-        {loc === "fr"
-          ? "Plan schématique des lignes KTEL — clic sur une station pour voir ses horaires."
-          : loc === "de"
-            ? "Schematischer Plan der KTEL-Linien — Station klicken für Fahrpläne."
-            : loc === "el"
-              ? "Σχηματικός χάρτης ΚΤΕΛ — κάντε κλικ στους σταθμούς."
-              : "Schematic plan of KTEL bus lines — click a stop for schedules."}
-      </p>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        className="w-full text-left md:pointer-events-none"
+      >
+        <h2 id="bus-network-heading" className="text-xl font-bold text-aegean mb-1 flex items-center justify-between gap-2">
+          {T.heading[loc]}
+          <span className={`md:hidden text-text-muted transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
+        </h2>
+        <p className="text-sm text-text-muted mb-5">
+          {loc === "fr"
+            ? "Plan schématique des lignes KTEL — clic sur une station pour voir ses horaires."
+            : loc === "de"
+              ? "Schematischer Plan der KTEL-Linien — Station klicken für Fahrpläne."
+              : loc === "el"
+                ? "Σχηματικός χάρτης ΚΤΕΛ — κάντε κλικ στους σταθμούς."
+                : "Schematic plan of KTEL bus lines — click a stop for schedules."}
+        </p>
+      </button>
 
-      <div className="relative w-full overflow-x-auto">
+      <div className={`relative w-full overflow-x-auto ${open ? "" : "hidden"}`}>
         <svg
           viewBox="0 0 1200 420"
           role="img"
@@ -460,7 +477,7 @@ export function BusNetworkMap({ locale, fromPlace, toPlace }: Props) {
       </div>
 
       {/* Légende lignes */}
-      <ul className="mt-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2 list-none p-0 text-sm">
+      <ul className={`mt-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2 list-none p-0 text-sm ${open ? "grid" : "hidden"}`}>
         {LINES.filter((l) => !l.id.includes("_apt") && !l.id.includes("_knossos") && l.id !== "east_elounda").map((l) => (
           <li key={l.id} className="flex items-center gap-2">
             <span
