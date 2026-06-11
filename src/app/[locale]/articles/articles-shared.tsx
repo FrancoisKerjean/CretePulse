@@ -81,16 +81,19 @@ export function GuideCard({ guide, locale }: { guide: Guide; locale: Locale }) {
   return (
     <Link
       href={`/${locale}/articles/${guide.slug}`}
-      className="group block bg-white rounded-xl border border-border overflow-hidden hover:shadow-md transition-shadow"
+      className="group block card-base overflow-hidden"
     >
       <div className="relative h-48 overflow-hidden">
         {guide.image_url ? (
-          <img
-            src={guide.image_url}
-            alt={title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            loading="lazy"
-          />
+          <>
+            <img
+              src={guide.image_url}
+              alt={title}
+              className="w-full h-full object-cover saturate-[.88] group-hover:scale-105 transition-transform duration-500"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-aegean/10 mix-blend-multiply pointer-events-none" />
+          </>
         ) : (
           <GuideCardFallback category={guide.category} slug={guide.slug} />
         )}
