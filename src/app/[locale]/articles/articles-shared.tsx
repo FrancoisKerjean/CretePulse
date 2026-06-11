@@ -4,6 +4,7 @@ import {
   Home, Newspaper, Users, BookOpen,
 } from "lucide-react";
 import { getLocalizedGuideField, type Guide } from "@/lib/guides";
+import { AbstractFallback } from "@/components/AbstractFallback";
 import type { Locale } from "@/lib/types";
 
 export const CATEGORY_LABELS: Record<string, Record<string, string>> = {
@@ -29,40 +30,29 @@ export const CATEGORY_COLORS: Record<string, string> = {
 /**
  * Designed no-image state: 82/119 published guides have no image_url
  * (photo_library bank is empty, generators' stock fetch often yields none).
- * The previous near-white gradient read as a wall of broken grey cards on
- * /articles. Each category gets a committed gradient + a large icon so a
- * photo-less card still looks intentional; the gradient direction varies
- * deterministically per slug to break repetition.
+ * Kalimera: luminous abstraction per category (AbstractFallback) + the
+ * category icon so a photo-less card still looks intentional.
  */
-const CATEGORY_FALLBACK: Record<string, { gradient: string; Icon: typeof Waves }> = {
-  beaches: { gradient: "from-aegean via-[#1a5f82] to-[#2D6A8F]", Icon: Waves },
-  hikes: { gradient: "from-olive via-[#5a7a4a] to-[#7a9a6a]", Icon: Mountain },
-  travel: { gradient: "from-[#5a4a3a] via-[#74604a] to-[#8B7355]", Icon: Plane },
-  food: { gradient: "from-terra via-[#b85c38] to-[#c97b54]", Icon: UtensilsCrossed },
-  expat: { gradient: "from-[#44617a] via-[#54718a] to-[#6a87a0]", Icon: Home },
-  news: { gradient: "from-[#1f4e66] via-[#1a5f82] to-[#27749c]", Icon: Newspaper },
-  family: { gradient: "from-[#7a6a4a] via-[#94805a] to-[#ab9670]", Icon: Users },
+const CATEGORY_FALLBACK: Record<string, { kind: "sea" | "land" | "news"; Icon: typeof Waves }> = {
+  beaches: { kind: "sea", Icon: Waves },
+  hikes: { kind: "land", Icon: Mountain },
+  travel: { kind: "land", Icon: Plane },
+  food: { kind: "land", Icon: UtensilsCrossed },
+  expat: { kind: "land", Icon: Home },
+  news: { kind: "news", Icon: Newspaper },
+  family: { kind: "land", Icon: Users },
 };
 
-const FALLBACK_DIRECTIONS = ["bg-gradient-to-br", "bg-gradient-to-tr", "bg-gradient-to-b"];
-
-function slugHash(slug: string): number {
-  let h = 0;
-  for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) >>> 0;
-  return h;
-}
-
-export function GuideCardFallback({ category, slug }: { category: string; slug: string }) {
-  const fb = CATEGORY_FALLBACK[category] ?? { gradient: "from-aegean via-[#1a5f82] to-[#2D6A8F]", Icon: BookOpen };
-  const direction = FALLBACK_DIRECTIONS[slugHash(slug) % FALLBACK_DIRECTIONS.length];
+export function GuideCardFallback({ category }: { category: string; slug?: string }) {
+  const fb = CATEGORY_FALLBACK[category] ?? { kind: "land" as const, Icon: BookOpen };
   const Icon = fb.Icon;
   return (
-    <div className={`absolute inset-0 ${direction} ${fb.gradient}`}>
+    <AbstractFallback kind={fb.kind}>
       <Icon
-        className="absolute -bottom-4 -right-4 w-28 h-28 text-white/15 group-hover:text-white/25 transition-colors duration-500"
+        className="absolute -bottom-4 -right-4 w-28 h-28 text-white/25 group-hover:text-white/40 transition-colors duration-500"
         strokeWidth={1.5}
       />
-    </div>
+    </AbstractFallback>
   );
 }
 
@@ -89,13 +79,13 @@ export function GuideCard({ guide, locale }: { guide: Guide; locale: Locale }) {
             <img
               src={guide.image_url}
               alt={title}
-              className="w-full h-full object-cover saturate-[.88] group-hover:scale-105 transition-transform duration-500"
+              className="w-full h-full object-cover saturate-[1.08] group-hover:scale-105 transition-transform duration-500"
               loading="lazy"
             />
-            <div className="absolute inset-0 bg-aegean/10 mix-blend-multiply pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-lagoon/5 via-transparent to-night/40 pointer-events-none" />
           </>
         ) : (
-          <GuideCardFallback category={guide.category} slug={guide.slug} />
+          <GuideCardFallback category={guide.category} />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
         <span
@@ -113,7 +103,7 @@ export function GuideCard({ guide, locale }: { guide: Guide; locale: Locale }) {
         <div className="flex items-center justify-between mt-3">
           <div className="flex items-center gap-1 text-xs text-text-light">
             <Clock className="w-3 h-3" />
-            {guide.read_time ?? "—"} {READ_TIME_LABEL[locale] ?? READ_TIME_LABEL.en}
+            {guide.read_time ?? "·"} {READ_TIME_LABEL[locale] ?? READ_TIME_LABEL.en}
           </div>
           <span className="flex items-center gap-1 text-xs text-aegean font-medium">
             {locale === "fr" ? "Lire" : locale === "de" ? "Lesen" : locale === "el" ? "Διαβάστε" : "Read"}
