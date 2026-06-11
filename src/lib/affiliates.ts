@@ -6,7 +6,10 @@
 
 export const AFFILIATE_LINKS = {
   carRental: {
-    url: "https://www.discovercars.com/?a_aid=cretedirect",
+    // Real DiscoverCars affiliate ID (11/06/2026): 70% booking + 30% Full
+    // Coverage commission, 365-day cookie. Crete landing converts better
+    // than the generic homepage (their own deep-link guidance).
+    url: "https://www.discovercars.com/greece-crete?a_aid=Francoiskerjean",
     label: { en: "Rent a car", fr: "Louer une voiture", de: "Auto mieten", el: "Ενοικίαση αυτοκινήτου" },
   },
   hotels: {

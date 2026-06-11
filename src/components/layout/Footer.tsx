@@ -1,11 +1,16 @@
 "use client";
 
 import { Link } from "@/i18n/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { MapPin } from "lucide-react";
+import { AFFILIATE_LINKS } from "@/lib/affiliates";
 
 export function Footer() {
   const t = useTranslations("footer");
+  const locale = useLocale();
+  const carRental = AFFILIATE_LINKS.carRental;
+  const carRentalLabel =
+    carRental.label[locale as keyof typeof carRental.label] || carRental.label.en;
 
   return (
     <footer className="border-t border-border bg-white">
@@ -34,6 +39,16 @@ export function Footer() {
               <Link href="/hikes" className="block text-sm text-text-muted hover:text-aegean transition-colors">{t("hikes")}</Link>
               <Link href="/weather" className="block text-sm text-text-muted hover:text-aegean transition-colors">{t("weather")}</Link>
               <Link href="/airport" className="block text-sm text-text-muted hover:text-aegean transition-colors">{t("airports")}</Link>
+              {/* Affiliate (DiscoverCars). Site-wide incl. homepage: secures the
+                  partner's lifetime 80% homepage-link offer (11/06/2026). */}
+              <a
+                href={carRental.url}
+                target="_blank"
+                rel="noopener noreferrer nofollow sponsored"
+                className="block text-sm text-text-muted hover:text-aegean transition-colors"
+              >
+                {carRentalLabel}
+              </a>
               <Link href="/property-management" className="block text-sm text-text-muted hover:text-aegean transition-colors">{t("propertyManagement")}</Link>
             </div>
           </div>

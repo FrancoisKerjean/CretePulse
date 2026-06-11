@@ -3,6 +3,7 @@ import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { ChevronLeft, Bus, Car, Ship, Plane, Clock, Euro, RefreshCw, Lightbulb, ArrowRight } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
+import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 
 export const revalidate = 86400;
 
@@ -464,6 +465,10 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
             </div>
           </section>
         )}
+
+        {/* Car rental partner banner (DiscoverCars, real affiliate ID): the
+            most flexible alternative on every route */}
+        <AffiliateBanner type="carRental" locale={locale} />
 
         {/* FAQ */}
         <section>

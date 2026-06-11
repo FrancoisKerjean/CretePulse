@@ -15,6 +15,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AffiliateCTA } from "@/components/ui/affiliate-cta";
+import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 import { buildAlternates } from "@/lib/seo";
 import RentalCTA from "@/components/RentalCTA";
 
@@ -460,6 +461,9 @@ export default async function BeachDetailPage({
             ))}
           </div>
         </section>
+
+        {/* Car rental partner banner (DiscoverCars): most beaches need wheels */}
+        <AffiliateBanner type="carRental" locale={locale} className="mb-4" />
 
         {/* Property management CTA */}
         <div className="mb-12">
