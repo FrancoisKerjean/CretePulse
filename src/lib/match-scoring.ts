@@ -15,6 +15,8 @@ export interface MatchPlace {
   water_color: string | null;
   sand_type: string | null;
   crowds: string | null;
+  latitude: number | null;
+  longitude: number | null;
   photos: string[];
 }
 
@@ -87,8 +89,40 @@ function toMatchPlace(p: CbPlaceListItem): MatchPlace {
     water_color: p.water_color,
     sand_type: p.sand_type,
     crowds: p.crowds,
+    latitude: p.latitude,
+    longitude: p.longitude,
     photos: (p.photos || []).slice(0, 3),
   };
+}
+
+// Centres d'intérêt (onboarding V1.1) : groupes de types cochables.
+// Les labels localisés vivent dans MatchDeck (UI) ; ici la logique pure.
+// Les types absents de tout groupe (activity...) restent en « découverte ».
+export const INTEREST_GROUPS: { key: string; types: string[] }[] = [
+  { key: "beaches", types: ["beach"] },
+  { key: "nature", types: ["gorge", "waterfall", "river", "lake", "natural-park", "forest", "plateau", "mountain", "nature", "flora", "fauna"] },
+  { key: "monasteries", types: ["monastery", "church"] },
+  { key: "history", types: ["historical-site", "archaeological-site", "fort", "mythology", "tradition"] },
+  { key: "caves", types: ["cave", "geological"] },
+  { key: "towns", types: ["town"] },
+  { key: "museums", types: ["museum"] },
+  { key: "islands", types: ["island", "lighthouse"] },
+];
+
+// Types couverts par une sélection de groupes.
+export function interestTypes(groups: string[]): Set<string> {
+  const out = new Set<string>();
+  for (const g of INTEREST_GROUPS) {
+    if (groups.includes(g.key)) for (const t of g.types) out.add(t);
+  }
+  return out;
+}
+
+// Seed du profil de goûts : +1 sur chaque type des groupes cochés.
+export function seedProfile(groups: string[], base: TasteProfile): TasteProfile {
+  const next = { ...base };
+  for (const t of interestTypes(groups)) next[`type:${t}`] = (next[`type:${t}`] || 0) + 1;
+  return next;
 }
 
 // Côté serveur (ISR 24h) : pool stratifié de `size` lieux éligibles.
@@ -124,8 +158,21 @@ export function buildMatchPool(places: CbPlaceListItem[], size = 140): MatchPlac
 // Côté client : deck par visiteur, en excluant les lieux déjà vus.
 // S'il reste moins de 30 cartes non vues, on repart de zéro pour
 // garantir un deck complet.
-export function sampleDeck(pool: MatchPlace[], size: number, seen: Set<string>): MatchPlace[] {
+// `preferred` (types des centres d'intérêt) : ~75 % du deck vient de ces
+// types, le reste est de la découverte. Vide ou absent = pas de pondération.
+export function sampleDeck(pool: MatchPlace[], size: number, seen: Set<string>, preferred?: Set<string>): MatchPlace[] {
   let candidates = pool.filter((p) => !seen.has(p.slug));
   if (candidates.length < Math.min(size, 30)) candidates = [...pool];
-  return shuffle([...candidates]).slice(0, size);
+  if (!preferred || preferred.size === 0) return shuffle([...candidates]).slice(0, size);
+
+  const wanted = shuffle(candidates.filter((p) => preferred.has(p.place_type)));
+  const discovery = shuffle(candidates.filter((p) => !preferred.has(p.place_type)));
+  const wantedCount = Math.min(wanted.length, Math.round(size * 0.75));
+  const picked = [
+    ...wanted.slice(0, wantedCount),
+    ...discovery.slice(0, size - wantedCount),
+  ];
+  // Si la découverte ne suffit pas à remplir, on complète avec le reste des préférés.
+  if (picked.length < size) picked.push(...wanted.slice(wantedCount, wantedCount + size - picked.length));
+  return shuffle(picked);
 }

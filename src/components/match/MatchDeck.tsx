@@ -13,10 +13,13 @@ import { typeLabel } from "@/lib/cb-type-labels";
 import {
   type MatchPlace,
   type TasteProfile,
+  INTEREST_GROUPS,
   emptyProfile,
-  updateProfile,
+  interestTypes,
   pickMatch,
   sampleDeck,
+  seedProfile,
+  updateProfile,
 } from "@/lib/match-scoring";
 
 declare global {
@@ -42,6 +45,27 @@ const T: Record<string, Record<string, string>> = {
     yourSpots: "Your spots",
     empty: "You have seen every place in the deck.",
     replay: "Deal a new deck",
+    interestsTitle: "What do you like?",
+    interestsHint: "Pick your interests, the deck adapts. You can change them anytime.",
+    interestsAll: "Everything works for me",
+    interestsGo: "Let's go",
+    editInterests: "Change my interests",
+    finish: "I'm done liking",
+    synthTitle: "Your selection",
+    synthSub: "Everything you liked, ready to plan:",
+    synthTaste: "Your taste:",
+    route: "Route",
+    sheet: "Details",
+    backToDeck: "Back to swiping",
+    synthEmpty: "No likes yet. Swipe right on what you love!",
+    groupBeaches: "Beaches",
+    groupNature: "Nature & hikes",
+    groupMonasteries: "Monasteries & churches",
+    groupHistory: "History & ruins",
+    groupCaves: "Caves",
+    groupTowns: "Towns & villages",
+    groupMuseums: "Museums",
+    groupIslands: "Islands & lighthouses",
   },
   fr: {
     title: "Trouve ton spot",
@@ -53,6 +77,27 @@ const T: Record<string, Record<string, string>> = {
     yourSpots: "Tes spots",
     empty: "Tu as vu tous les lieux du paquet.",
     replay: "Nouveau paquet",
+    interestsTitle: "Qu'est-ce qui te plaît ?",
+    interestsHint: "Coche tes centres d'intérêt, le paquet s'adapte. Modifiable à tout moment.",
+    interestsAll: "Tout me va",
+    interestsGo: "C'est parti",
+    editInterests: "Modifier mes centres d'intérêt",
+    finish: "J'ai fini de liker",
+    synthTitle: "Ta sélection",
+    synthSub: "Tout ce que tu as liké, prêt à planifier :",
+    synthTaste: "Tes goûts :",
+    route: "Itinéraire",
+    sheet: "Fiche",
+    backToDeck: "Reprendre le swipe",
+    synthEmpty: "Pas encore de like. Balaie à droite ce qui te plaît !",
+    groupBeaches: "Plages",
+    groupNature: "Nature & rando",
+    groupMonasteries: "Monastères & églises",
+    groupHistory: "Histoire & ruines",
+    groupCaves: "Grottes",
+    groupTowns: "Villes & villages",
+    groupMuseums: "Musées",
+    groupIslands: "Îles & phares",
   },
   de: {
     title: "Finde deinen Ort",
@@ -64,6 +109,27 @@ const T: Record<string, Record<string, string>> = {
     yourSpots: "Deine Orte",
     empty: "Du hast alle Orte im Stapel gesehen.",
     replay: "Neuer Stapel",
+    interestsTitle: "Was gefällt dir?",
+    interestsHint: "Wähle deine Interessen, der Stapel passt sich an. Jederzeit änderbar.",
+    interestsAll: "Alles passt für mich",
+    interestsGo: "Los geht's",
+    editInterests: "Interessen ändern",
+    finish: "Fertig mit Liken",
+    synthTitle: "Deine Auswahl",
+    synthSub: "Alles, was dir gefallen hat, bereit zum Planen:",
+    synthTaste: "Dein Geschmack:",
+    route: "Route",
+    sheet: "Details",
+    backToDeck: "Weiter swipen",
+    synthEmpty: "Noch keine Likes. Wische nach rechts, was dir gefällt!",
+    groupBeaches: "Strände",
+    groupNature: "Natur & Wandern",
+    groupMonasteries: "Klöster & Kirchen",
+    groupHistory: "Geschichte & Ruinen",
+    groupCaves: "Höhlen",
+    groupTowns: "Städte & Dörfer",
+    groupMuseums: "Museen",
+    groupIslands: "Inseln & Leuchttürme",
   },
   el: {
     title: "Βρες το μέρος σου",
@@ -75,13 +141,48 @@ const T: Record<string, Record<string, string>> = {
     yourSpots: "Τα μέρη σου",
     empty: "Είδες όλα τα μέρη της τράπουλας.",
     replay: "Νέα τράπουλα",
+    interestsTitle: "Τι σου αρέσει;",
+    interestsHint: "Διάλεξε τα ενδιαφέροντά σου, η τράπουλα προσαρμόζεται. Αλλάζουν όποτε θες.",
+    interestsAll: "Όλα μου ταιριάζουν",
+    interestsGo: "Πάμε",
+    editInterests: "Αλλαγή ενδιαφερόντων",
+    finish: "Τελείωσα με τα like",
+    synthTitle: "Η επιλογή σου",
+    synthSub: "Ό,τι σου άρεσε, έτοιμο για σχεδιασμό:",
+    synthTaste: "Τα γούστα σου:",
+    route: "Διαδρομή",
+    sheet: "Λεπτομέρειες",
+    backToDeck: "Πίσω στο swipe",
+    synthEmpty: "Κανένα like ακόμα. Σύρε δεξιά ό,τι σου αρέσει!",
+    groupBeaches: "Παραλίες",
+    groupNature: "Φύση & πεζοπορία",
+    groupMonasteries: "Μοναστήρια & εκκλησίες",
+    groupHistory: "Ιστορία & ερείπια",
+    groupCaves: "Σπήλαια",
+    groupTowns: "Πόλεις & χωριά",
+    groupMuseums: "Μουσεία",
+    groupIslands: "Νησιά & φάροι",
   },
+};
+
+// Libellé localisé d'un groupe d'intérêts (clé "beaches" → t.groupBeaches).
+const GROUP_LABEL_KEYS: Record<string, string> = {
+  beaches: "groupBeaches",
+  nature: "groupNature",
+  monasteries: "groupMonasteries",
+  history: "groupHistory",
+  caves: "groupCaves",
+  towns: "groupTowns",
+  museums: "groupMuseums",
+  islands: "groupIslands",
 };
 
 interface Stored {
   profile: TasteProfile;
   liked: string[];
   seen: string[];
+  // null = onboarding jamais répondu ; [] = « tout me va » (pas de pondération).
+  interests: string[] | null;
 }
 
 function loadStored(): Stored {
@@ -89,12 +190,15 @@ function loadStored(): Stored {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const s = JSON.parse(raw) as Stored;
-      if (s && typeof s === "object" && s.profile && Array.isArray(s.liked) && Array.isArray(s.seen)) return s;
+      if (s && typeof s === "object" && s.profile && Array.isArray(s.liked) && Array.isArray(s.seen)) {
+        // Migration V1 → V1.1 : les anciens stockages n'ont pas interests.
+        return { ...s, interests: Array.isArray(s.interests) ? s.interests : null };
+      }
     }
   } catch {
     // localStorage indisponible ou corrompu : on repart de zéro.
   }
-  return { profile: emptyProfile(), liked: [], seen: [] };
+  return { profile: emptyProfile(), liked: [], seen: [], interests: null };
 }
 
 function saveStored(s: Stored) {
@@ -238,6 +342,9 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
   const [swipes, setSwipes] = useState(0);
   const [match, setMatch] = useState<MatchPlace | null>(null);
   const [exitDir, setExitDir] = useState(1);
+  const [screen, setScreen] = useState<"deck" | "interests" | "synthesis">("deck");
+  const [interests, setInterests] = useState<string[] | null>(null);
+  const [pendingGroups, setPendingGroups] = useState<string[]>([]);
   const lastSwipedRef = useRef<string | null>(null);
 
   // Hydratation au mount uniquement : localStorage + échantillonnage aléatoire
@@ -250,15 +357,38 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
     setProfile(stored.profile);
     setLikedSlugs(stored.liked);
     setSeenSlugs(stored.seen);
-    setDeck(sampleDeck(pool, DECK_SIZE, new Set(stored.seen)));
+    setInterests(stored.interests);
+    setDeck(sampleDeck(pool, DECK_SIZE, new Set(stored.seen), interestTypes(stored.interests || [])));
+    if (stored.interests === null) {
+      setScreen("interests");
+      setPendingGroups([]);
+    }
     setReady(true);
     track("match_deck_start");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Validation de l'onboarding (groups = [] pour « tout me va »).
+  // Le profil n'est seedé que sur les groupes NOUVELLEMENT cochés
+  // (pas de cumul quand on ré-édite ses centres d'intérêt).
+  function applyInterests(groups: string[]) {
+    const prev = new Set(interests || []);
+    const added = groups.filter((g) => !prev.has(g));
+    const nextProfile = added.length ? seedProfile(added, profile) : profile;
+    setProfile(nextProfile);
+    setInterests(groups);
+    setDeck(sampleDeck(pool, DECK_SIZE, new Set(seenSlugs), interestTypes(groups)));
+    setIndex(0);
+    setSwipes(0);
+    lastSwipedRef.current = null;
+    setScreen("deck");
+    saveStored({ profile: nextProfile, liked: likedSlugs, seen: seenSlugs, interests: groups });
+    track("interests_set", { groups: groups.length ? groups.join(",") : "all" });
+  }
+
   function handleSwipe(liked: boolean) {
     const place = deck[index];
-    if (!place || match) return;
+    if (!place || match || screen !== "deck") return;
     // Garde anti-double-traitement : un même slug ne peut pas être swipé deux fois
     // d'affilée (closure périmée, double event pendant l'exit).
     if (lastSwipedRef.current === place.slug) return;
@@ -286,7 +416,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
       setSwipes(nextSwipes);
     }
     setIndex(index + 1);
-    saveStored({ profile: nextProfile, liked: nextLiked, seen: nextSeen });
+    saveStored({ profile: nextProfile, liked: nextLiked, seen: nextSeen, interests });
   }
 
   // Le match sort du deck restant et compte comme vu (sinon il revient en carte).
@@ -297,13 +427,13 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
     setSeenSlugs(nextSeen);
     setDeck((d) => d.filter((p, i) => i < index || p.slug !== slug));
     setMatch(null);
-    saveStored({ profile, liked: likedSlugs, seen: nextSeen });
+    saveStored({ profile, liked: likedSlugs, seen: nextSeen, interests });
     if (replay) track("match_replay");
   }
 
   function redeal() {
     const seen = new Set(seenSlugs);
-    setDeck(sampleDeck(pool, DECK_SIZE, seen));
+    setDeck(sampleDeck(pool, DECK_SIZE, seen, interestTypes(interests || [])));
     setIndex(0);
     setSwipes(0);
     // Nouveau paquet : il peut recommencer par n'importe quel slug, et après
@@ -330,11 +460,146 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
   }, []);
 
   const visible = deck.slice(index, index + 3);
-  const likedPlaces = likedSlugs
+  // Tous les likes, du plus récent au plus ancien (synthèse = liste complète,
+  // barre de vignettes = les 12 derniers).
+  const likedPlacesAll = likedSlugs
     .map((slug) => pool.find((p) => p.slug === slug))
     .filter((p): p is MatchPlace => Boolean(p))
-    .slice(-12)
     .reverse();
+  const likedPlaces = likedPlacesAll.slice(0, 12);
+
+  // Top 3 des types likés pour le résumé de goûts de la synthèse.
+  const tasteCounts = new Map<string, number>();
+  for (const p of likedPlacesAll) tasteCounts.set(p.place_type, (tasteCounts.get(p.place_type) || 0) + 1);
+  const topTastes = [...tasteCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
+
+  // ── Écran onboarding : centres d'intérêt ──
+  if (ready && screen === "interests") {
+    return (
+      <div className="mx-auto w-full max-w-[440px] px-4 pb-16 pt-8">
+        <h1 className="m-0 text-center font-heading text-[30px] font-extrabold text-text">{t.interestsTitle}</h1>
+        <p className="mx-auto mb-7 mt-1.5 max-w-[320px] text-center text-[13.5px] text-text-muted">{t.interestsHint}</p>
+        <div className="flex flex-wrap justify-center gap-2.5">
+          {INTEREST_GROUPS.map((g) => {
+            const active = pendingGroups.includes(g.key);
+            return (
+              <button
+                key={g.key}
+                onClick={() =>
+                  setPendingGroups((prev) =>
+                    prev.includes(g.key) ? prev.filter((k) => k !== g.key) : [...prev, g.key],
+                  )
+                }
+                className={`rounded-full border px-4.5 py-2.5 font-heading text-[14px] font-bold transition-colors ${
+                  active
+                    ? "border-aegean bg-aegean text-white"
+                    : "border-border bg-white text-text hover:border-aegean"
+                }`}
+              >
+                {t[GROUP_LABEL_KEYS[g.key]]}
+              </button>
+            );
+          })}
+        </div>
+        <div className="mt-8 flex flex-col items-center gap-2.5">
+          <button
+            onClick={() => applyInterests(pendingGroups)}
+            disabled={pendingGroups.length === 0}
+            className="w-full max-w-[280px] rounded-full bg-terra px-6 py-3.5 font-heading text-[15px] font-bold text-white shadow-[0_12px_28px_rgba(237,122,92,.4)] disabled:opacity-40 disabled:shadow-none"
+          >
+            {t.interestsGo}
+          </button>
+          <button
+            onClick={() => applyInterests([])}
+            className="rounded-full px-6 py-2.5 font-heading text-[13.5px] font-bold text-text-muted hover:text-aegean"
+          >
+            {t.interestsAll}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Écran synthèse : tout ce qui a été liké + itinéraires ──
+  if (ready && screen === "synthesis") {
+    return (
+      <div className="mx-auto w-full max-w-[440px] px-4 pb-16 pt-8">
+        <h1 className="m-0 text-center font-heading text-[30px] font-extrabold text-text">{t.synthTitle}</h1>
+        <p className="mx-auto mt-1.5 max-w-[320px] text-center text-[13.5px] text-text-muted">{t.synthSub}</p>
+        {topTastes.length > 0 && (
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+            <span className="text-[12.5px] font-medium text-text-muted">{t.synthTaste}</span>
+            {topTastes.map(([type, count]) => (
+              <span key={type} className="rounded-full bg-stone px-3 py-1 font-heading text-[12.5px] font-bold text-aegean">
+                {typeLabel(type, locale)} <span className="font-data text-lagoon-deep">{count}</span>
+              </span>
+            ))}
+          </div>
+        )}
+        {likedPlacesAll.length === 0 ? (
+          <p className="mt-10 text-center text-[14px] text-text-muted">{t.synthEmpty}</p>
+        ) : (
+          <div className="mt-6 flex flex-col gap-3">
+            {likedPlacesAll.map((p) => (
+              <div key={p.slug} className="card-base flex items-center gap-3.5 p-3">
+                <img
+                  src={p.photos[0]}
+                  alt={p.name}
+                  loading="lazy"
+                  className="h-[72px] w-[72px] shrink-0 rounded-2xl object-cover"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="m-0 truncate font-heading text-[15.5px] font-bold text-text">{p.name}</p>
+                  <p className="m-0 mt-0.5 text-[12px] text-text-muted">
+                    {typeLabel(p.place_type, locale)}
+                    {p.prefecture ? ` · ${p.prefecture}` : ""}
+                    {p.rating != null && p.rating > 0 ? ` · ${p.rating.toFixed(1)} ★` : ""}
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    <Link
+                      href={`/explore?place=${p.slug}`}
+                      onClick={() => track("synthesis_place_clicked", { slug: p.slug })}
+                      className="rounded-full bg-stone px-3 py-1.5 font-heading text-[12px] font-bold text-aegean no-underline"
+                    >
+                      {t.sheet}
+                    </Link>
+                    {p.latitude != null && p.longitude != null && (
+                      <>
+                        <a
+                          href={`https://www.google.com/maps/dir/?api=1&destination=${p.latitude},${p.longitude}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => track("synthesis_route_clicked", { slug: p.slug, app: "gmaps" })}
+                          className="inline-flex items-center gap-1 rounded-full bg-aegean px-3 py-1.5 font-heading text-[12px] font-bold text-white no-underline"
+                        >
+                          <MapPin size={11} /> {t.route}
+                        </a>
+                        <a
+                          href={`https://waze.com/ul?ll=${p.latitude},${p.longitude}&navigate=yes`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => track("synthesis_route_clicked", { slug: p.slug, app: "waze" })}
+                          className="rounded-full bg-lagoon-deep px-3 py-1.5 font-heading text-[12px] font-bold text-white no-underline"
+                        >
+                          Waze
+                        </a>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        <button
+          onClick={() => setScreen("deck")}
+          className="mx-auto mt-7 flex items-center gap-2 rounded-full bg-stone px-6 py-3 font-heading text-[14px] font-bold text-aegean"
+        >
+          <RotateCcw size={15} /> {t.backToDeck}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto w-full max-w-[440px] px-4 pb-16 pt-8">
@@ -393,6 +658,32 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
             <Heart size={28} strokeWidth={2.5} fill="currentColor" />
           </button>
         </div>
+      )}
+
+      {/* J'ai fini de liker → synthèse */}
+      {ready && likedSlugs.length > 0 && (
+        <button
+          onClick={() => {
+            setScreen("synthesis");
+            track("finish_clicked", { likes: String(likedSlugs.length) });
+          }}
+          className="mx-auto mt-5 block rounded-full bg-night px-7 py-3 font-heading text-[14px] font-bold text-white shadow-[0_10px_24px_rgba(7,55,74,.35)] transition-transform hover:scale-105"
+        >
+          {t.finish} <span className="font-data text-sun">{likedSlugs.length}</span>
+        </button>
+      )}
+
+      {/* Modifier ses centres d'intérêt */}
+      {ready && (
+        <button
+          onClick={() => {
+            setPendingGroups(interests || []);
+            setScreen("interests");
+          }}
+          className="mx-auto mt-3 block text-[12.5px] font-medium text-text-muted underline-offset-2 hover:text-aegean hover:underline"
+        >
+          {t.editInterests}
+        </button>
       )}
 
       {/* Shortlist des likes */}
@@ -466,7 +757,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
                     // Marquer le lieu comme vu avant la navigation, sinon le slug
                     // du match n'est jamais persisté quand on quitte par ce lien.
                     const nextSeen = seenSlugs.includes(match.slug) ? seenSlugs : [...seenSlugs, match.slug];
-                    saveStored({ profile, liked: likedSlugs, seen: nextSeen });
+                    saveStored({ profile, liked: likedSlugs, seen: nextSeen, interests });
                   }}
                   className="mt-5 block rounded-full bg-terra px-6 py-3.5 font-heading text-[15px] font-bold text-white no-underline shadow-[0_12px_28px_rgba(237,122,92,.4)]"
                 >
