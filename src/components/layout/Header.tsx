@@ -4,6 +4,7 @@ import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Menu, X, Globe, ChevronDown, Search } from "lucide-react";
+import { CiMark } from "@/components/icons";
 
 const LOCALES = [
   { code: "en", label: "EN", name: "English" },
@@ -158,10 +159,7 @@ export function Header() {
           <span className="text-xl font-extrabold tracking-tight text-aegean group-hover:text-aegean-light transition-colors">
             CRETE
           </span>
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-terra opacity-50" />
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-terra" />
-          </span>
+          <CiMark className="w-[17px] h-[17px] text-terra group-hover:rotate-[30deg] transition-transform duration-300" />
           <span className="text-xl font-extrabold tracking-tight text-terra group-hover:text-terra-light transition-colors">
             DIRECT
           </span>

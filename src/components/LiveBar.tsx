@@ -4,7 +4,7 @@
 // Spec : docs/superpowers/specs/2026-06-11-ui-live-data-redesign-design.md
 import { fetchAllCitiesWeather, getWeatherIcon } from "@/lib/weather";
 import { WindArrow } from "@/components/WindArrow";
-import { Sun, Cloud, CloudRain, Waves } from "lucide-react";
+import { CiSun, CiCloud, CiRain, CiWave } from "@/components/icons";
 
 const SEA_LABELS: Record<string, Record<string, string>> = {
   calm: { en: "calm sea", fr: "mer calme", de: "ruhige See", el: "ήρεμη θάλασσα" },
@@ -23,9 +23,9 @@ function seaState(waveHeights: (number | null)[]): "calm" | "moderate" | "rough"
 function CodeIcon({ code }: { code: number }) {
   const icon = getWeatherIcon(code);
   const cls = "w-3.5 h-3.5";
-  if (icon === "sun") return <Sun className={cls} />;
-  if (icon === "rain") return <CloudRain className={cls} />;
-  return <Cloud className={cls} />;
+  if (icon === "sun") return <CiSun className={cls} />;
+  if (icon === "rain") return <CiRain className={cls} />;
+  return <CiCloud className={cls} />;
 }
 
 export async function LiveBar({ locale }: { locale: string }) {
@@ -65,7 +65,7 @@ export async function LiveBar({ locale }: { locale: string }) {
         )}
         {sea && (
           <span className="hidden md:inline-flex items-center gap-1">
-            <Waves className="w-3 h-3" /> {SEA_LABELS[sea][ui]}
+            <CiWave className="w-3 h-3" /> {SEA_LABELS[sea][ui]}
           </span>
         )}
         <span className="ml-auto hidden sm:inline text-sand/60">{dateStr}</span>

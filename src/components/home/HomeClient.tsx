@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 // Home "la Crete, aujourd'hui" : dashboard donnees live + outils + contenu cure.
 // Remplace l'ancienne home agregateur (hero news 80vh + 2 tickers + sidebar).
@@ -10,11 +10,11 @@ import { BlurFade } from "@/components/ui/blur-fade";
 import { NumberTicker } from "@/components/ui/number-ticker";
 import { CardThumb } from "@/components/CardThumb";
 import { WindArrow } from "@/components/WindArrow";
+import { Wind, ChevronRight, MapPin, Mail } from "lucide-react";
 import {
-  Sun, Wind, Waves, Calendar, Newspaper, ChevronRight, Mountain,
-  UtensilsCrossed, Footprints, Cloud, CloudRain, MapPin,
-  BookOpen, Mail, Bus, Compass, Plane, BarChart3,
-} from "lucide-react";
+  CiBus, CiWave, CiSun, CiCompass, CiPlane, CiChart, CiMountain,
+  CiFood, CiHike, CiCalendar, CiNews, CiCloud, CiRain, CiBook,
+} from "@/components/icons";
 import { Link } from "@/i18n/navigation";
 import type { CityWeather } from "@/lib/weather";
 import type { NewsItem, Event, Locale } from "@/lib/types";
@@ -25,9 +25,9 @@ import { type Guide, getLocalizedGuideField } from "@/lib/guides";
 function WeatherIcon({ code, wind, className }: { code: number; wind: number; className?: string }) {
   const c = className || "w-5 h-5";
   if (wind > 20) return <Wind className={`${c} text-aegean-light`} />;
-  if (code <= 1) return <Sun className={`${c} text-terra`} />;
-  if (code <= 3) return <Cloud className={`${c} text-text-light`} />;
-  return <CloudRain className={`${c} text-aegean`} />;
+  if (code <= 1) return <CiSun className={`${c} text-terra`} />;
+  if (code <= 3) return <CiCloud className={`${c} text-text-light`} />;
+  return <CiRain className={`${c} text-aegean`} />;
 }
 
 function timeAgo(dateStr: string): string {
@@ -186,12 +186,12 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
   const events = upcomingEvents.slice(0, 3);
 
   const TOOLS = [
-    { href: "/buses", icon: Bus, title: T.tools.buses[ui], line: T.tools.busesLine[ui] },
-    { href: "/beaches/today", icon: Waves, title: T.tools.swim[ui], line: T.tools.swimLine[ui] },
-    { href: "/explore", icon: Compass, title: T.tools.explore[ui], line: T.tools.exploreLine[ui] },
-    { href: "/airport", icon: Plane, title: T.tools.airports[ui], line: T.tools.airportsLine[ui] },
-    { href: "/airbnb", icon: BarChart3, title: T.tools.airbnb[ui], line: T.tools.airbnbLine[ui] },
-    { href: "/weather", icon: Sun, title: T.tools.weather[ui], line: T.tools.weatherLine[ui] },
+    { href: "/buses", icon: CiBus, title: T.tools.buses[ui], line: T.tools.busesLine[ui] },
+    { href: "/beaches/today", icon: CiWave, title: T.tools.swim[ui], line: T.tools.swimLine[ui] },
+    { href: "/explore", icon: CiCompass, title: T.tools.explore[ui], line: T.tools.exploreLine[ui] },
+    { href: "/airport", icon: CiPlane, title: T.tools.airports[ui], line: T.tools.airportsLine[ui] },
+    { href: "/airbnb", icon: CiChart, title: T.tools.airbnb[ui], line: T.tools.airbnbLine[ui] },
+    { href: "/weather", icon: CiSun, title: T.tools.weather[ui], line: T.tools.weatherLine[ui] },
   ] as const;
 
   return (
@@ -247,7 +247,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                     </span>
                     {swimPick.seaTemp !== null && (
                       <span className="inline-flex items-center gap-1">
-                        <Waves className="w-3 h-3 text-aegean" /> {swimPick.seaTemp}°
+                        <CiWave className="w-3 h-3 text-aegean" /> {swimPick.seaTemp}°
                       </span>
                     )}
                     <ChevronRight className="w-3.5 h-3.5 ml-auto text-aegean" />
@@ -272,7 +272,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                       <span className="text-text-muted">{city.windSpeed} km/h</span>
                       {city.seaTemp !== null && (
                         <span className="hidden sm:inline-flex items-center gap-0.5 text-aegean">
-                          <Waves className="w-3 h-3" />{city.seaTemp}°
+                          <CiWave className="w-3 h-3" />{city.seaTemp}°
                         </span>
                       )}
                     </p>
@@ -327,7 +327,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
           <section>
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-xs font-bold text-aegean uppercase tracking-[0.2em] flex items-center gap-2 m-0">
-                <Newspaper className="w-4 h-4" /> {t("latestNews")}
+                <CiNews className="w-4 h-4" /> {t("latestNews")}
               </h2>
               <Link href="/news" className="text-xs text-aegean hover:text-aegean-light flex items-center gap-1 font-semibold transition-colors">
                 {t("allNews")} <ChevronRight className="w-3.5 h-3.5" />
@@ -359,7 +359,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
               </div>
             ) : (
               <div className="card-base p-10 text-center">
-                <Newspaper className="w-8 h-8 text-text-light mx-auto mb-3" />
+                <CiNews className="w-8 h-8 text-text-light mx-auto mb-3" />
                 <p className="text-sm text-text-muted m-0">{t("newsFeedLoading")}</p>
               </div>
             )}
@@ -369,7 +369,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
           <section>
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-xs font-bold text-aegean uppercase tracking-[0.2em] flex items-center gap-2 m-0">
-                <BookOpen className="w-4 h-4" /> {t("editorialGuides")}
+                <CiBook className="w-4 h-4" /> {t("editorialGuides")}
               </h2>
               <Link href="/articles" className="text-xs text-aegean hover:text-aegean-light flex items-center gap-1 font-semibold transition-colors">
                 {t("allGuides")} <ChevronRight className="w-3.5 h-3.5" />
@@ -399,7 +399,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
               </div>
             ) : (
               <div className="card-base p-10 text-center">
-                <BookOpen className="w-8 h-8 text-text-light mx-auto mb-3" />
+                <CiBook className="w-8 h-8 text-text-light mx-auto mb-3" />
                 <p className="text-sm text-text-muted m-0">{t("guidesSectionSubtitle")}</p>
               </div>
             )}
@@ -407,7 +407,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
             {events.length > 0 && (
               <div className="mt-8">
                 <h3 className="text-xs font-bold text-terra uppercase tracking-[0.2em] flex items-center gap-2 mb-3">
-                  <Calendar className="w-4 h-4" /> {T.nextEvents[ui]}
+                  <CiCalendar className="w-4 h-4" /> {T.nextEvents[ui]}
                 </h3>
                 <div className="card-base divide-y divide-border px-4">
                   {events.map((event) => (
@@ -454,10 +454,10 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { href: "/beaches", icon: Waves, title: t("beachesCount"), desc: t("beachesDesc") },
-              { href: "/food", icon: UtensilsCrossed, title: t("foodLabel"), desc: t("foodDesc") },
-              { href: "/villages", icon: Mountain, title: t("villagesCount"), desc: t("villagesDesc") },
-              { href: "/hikes", icon: Footprints, title: t("hikesCount"), desc: t("hikesDesc") },
+              { href: "/beaches", icon: CiWave, title: t("beachesCount"), desc: t("beachesDesc") },
+              { href: "/food", icon: CiFood, title: t("foodLabel"), desc: t("foodDesc") },
+              { href: "/villages", icon: CiMountain, title: t("villagesCount"), desc: t("villagesDesc") },
+              { href: "/hikes", icon: CiHike, title: t("hikesCount"), desc: t("hikesDesc") },
             ].map(({ href, icon: Icon, title, desc }, idx) => (
               <BlurFade key={href} delay={Math.min(0.06 * idx, 0.3)}>
                 <Link href={href} className="card-base p-5 h-40 flex flex-col justify-between no-underline group block">

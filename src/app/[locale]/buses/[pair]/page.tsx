@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { ArrowRight, Bus, Clock, Euro, Info, ChevronLeft } from "lucide-react";
+import { ArrowRight, Clock, Euro, Info, ChevronLeft } from "lucide-react";
+import { CiBus } from "@/components/icons";
 import { buildAlternates } from "@/lib/seo";
 import { getBusRoutes, getBusDestinations, latestScrapedAt } from "@/lib/buses";
 import type { BusRoute } from "@/lib/buses";
@@ -166,7 +167,7 @@ function DirectionSection({ from, to, routes, ui }: {
   return (
     <section className="mb-8">
       <h2 className="text-xl font-semibold text-text mb-3 flex items-center gap-2 flex-wrap">
-        <Bus className="w-5 h-5 text-aegean" /> {from}
+        <CiBus className="w-5 h-5 text-aegean" /> {from}
         <ArrowRight className="w-4 h-4 text-text-muted" /> {to}
       </h2>
       {routes.length === 0 ? (
@@ -303,7 +304,7 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
           href={`/${locale}/buses?from=${encodeURIComponent(placeA)}&to=${encodeURIComponent(placeB)}`}
           className="inline-flex items-center gap-2 rounded-lg bg-aegean text-white text-sm font-semibold px-4 py-2 mb-8 hover:opacity-90"
         >
-          <Bus className="w-4 h-4" /> {T.planCta[ui]}
+          <CiBus className="w-4 h-4" /> {T.planCta[ui]}
         </Link>
 
         <DirectionSection from={placeA} to={placeB} routes={pr.outbound} ui={ui} />

@@ -4,7 +4,8 @@
 // itineraire(s) + prix. Calcul 100 % local (moteur bus-journey, routes deja
 // chargees par la page). Spec : docs/superpowers/specs/2026-06-10-bus-journey-planner-design.md
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, Bus, Clock, Euro, Info } from "lucide-react";
+import { ArrowRight, Clock, Euro, Info } from "lucide-react";
+import { CiBus } from "@/components/icons";
 import type { Locale } from "@/lib/types";
 import type { BusRoute } from "@/lib/buses";
 import {
@@ -92,7 +93,7 @@ function LegRow({ leg, locale }: { leg: JourneyLeg; locale: Locale }) {
   return (
     <div className="px-4 py-3">
       <div className="flex items-center gap-2 flex-wrap text-sm font-semibold text-text">
-        <Bus className="w-4 h-4 text-aegean shrink-0" />
+        <CiBus className="w-4 h-4 text-aegean shrink-0" />
         <span>{leg.route.from_place}</span>
         <ArrowRight className="w-3.5 h-3.5 text-text-muted shrink-0" />
         <span>{leg.route.to_place}</span>

@@ -53,7 +53,14 @@ export async function GET(request: NextRequest) {
         >
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <span style={{ fontSize: "30px", fontWeight: 800, color: "#FFFFFF", fontFamily: "system-ui, sans-serif", letterSpacing: "-0.5px" }}>CRETE</span>
-            <span style={{ width: "11px", height: "11px", borderRadius: "50%", backgroundColor: "#B85C38" }} />
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 3.2a8.8 8.8 0 1 1-8.8 8.8A7 7 0 0 1 10.2 5a5.6 5.6 0 0 1 5.6 5.6 4.4 4.4 0 0 1-4.4 4.4 3.4 3.4 0 0 1-3.4-3.4 2.5 2.5 0 0 1 2.5-2.5 1.7 1.7 0 0 1 1.7 1.7"
+                stroke="#B85C38"
+                strokeWidth="2.1"
+                strokeLinecap="round"
+              />
+            </svg>
             <span style={{ fontSize: "30px", fontWeight: 800, color: "#E8C9A0", fontFamily: "system-ui, sans-serif", letterSpacing: "-0.5px" }}>DIRECT</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>

@@ -3,7 +3,8 @@
 // planificateur (client). Les donnees partenaires arrivent en props (JSON
 // importe aux points d'usage).
 // Spec : docs/superpowers/specs/2026-06-10-taxi-partners-design.md
-import { CarTaxiFront, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
+import { CiTaxi } from "@/components/icons";
 import Link from "next/link";
 import { taxiFareRange } from "@/lib/taxi-fare";
 import { partnerForPair, type TaxiPartnersData } from "@/lib/taxi-partners";
@@ -50,7 +51,7 @@ export function TaxiCompare({ locale, slugA, slugB, pairSlug, busPriceEur, partn
     <section className={`rounded-xl border border-border bg-white ${compact ? "p-4 mt-4" : "p-5 mb-8"}`}>
       <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
         <h2 className="text-base font-semibold text-text flex items-center gap-2 m-0">
-          <CarTaxiFront className="w-5 h-5 text-aegean" /> {T.title[locale]} :{" "}
+          <CiTaxi className="w-5 h-5 text-aegean" /> {T.title[locale]} :{" "}
           {fare.low}–{fare.high} € · ~{fare.km} km
         </h2>
         {busPriceEur != null && (

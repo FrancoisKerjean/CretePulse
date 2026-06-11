@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bus, Clock, Euro, ArrowRight, Info } from "lucide-react";
+import { Clock, Euro, ArrowRight, Info } from "lucide-react";
+import { CiBus } from "@/components/icons";
 import Link from "next/link";
 import type { Locale } from "@/lib/types";
 import type { BusRoute, BusDestination, BusDepartureGroup } from "@/lib/buses";
@@ -238,7 +239,7 @@ function RouteCard({ route, destination, locale }: { route: BusRoute; destinatio
       <div className="p-4 grid grid-cols-2 gap-4">
         {route.frequency && (
           <div className="flex items-start gap-2">
-            <Bus className="w-4 h-4 text-aegean shrink-0 mt-0.5" />
+            <CiBus className="w-4 h-4 text-aegean shrink-0 mt-0.5" />
             <div>
               <p className="text-xs text-text-muted">{t("frequency", locale)}</p>
               <p className="text-sm font-semibold text-text">{route.frequency}</p>
@@ -454,7 +455,7 @@ export function BusesClient({
         {/* Header */}
         <div className="mb-8 flex items-start gap-4">
           <div className="p-3 rounded-xl bg-aegean/10 shrink-0">
-            <Bus className="w-7 h-7 text-aegean" />
+            <CiBus className="w-7 h-7 text-aegean" />
           </div>
           <div>
             <h1 className="text-3xl font-bold text-aegean">{t("title", locale)}</h1>
