@@ -185,3 +185,47 @@ export async function sendWelcomeEmail(email: string, locale: string) {
     html: WELCOME_BODIES[lang] || WELCOME_BODIES.en,
   });
 }
+
+// =============================================================================
+// Car rental lead → partner agency (wizard /car-rental)
+// =============================================================================
+
+export interface CarLead {
+  pickupLabel: string; dateFrom: string; timeFrom?: string; dateTo: string; timeTo?: string;
+  flightNo?: string; carTypeLabel: string; pax?: number;
+  customerName: string; customerEmail: string; customerPhone?: string; note?: string;
+}
+
+export async function sendCarLeadEmail(partnerEmail: string, partnerName: string, lead: CarLead) {
+  const subject = `New rental request — ${lead.pickupLabel} ${lead.dateFrom} → ${lead.dateTo} (${lead.carTypeLabel}${lead.pax ? `, ${lead.pax} pax` : ""})`;
+  const lines = [
+    `Hi ${partnerName.split(" ")[0]},`,
+    ``,
+    `New rental request via crete.direct (Kami's referral partnership, 10%):`,
+    ``,
+    `Pickup / drop-off: ${lead.pickupLabel}`,
+    `Arrival: ${lead.dateFrom}${lead.timeFrom ? ` at ${lead.timeFrom}` : ""}${lead.flightNo ? ` (flight ${lead.flightNo})` : ""}`,
+    `Departure: ${lead.dateTo}${lead.timeTo ? ` at ${lead.timeTo}` : ""}`,
+    `Car type: ${lead.carTypeLabel}`,
+    `People: ${lead.pax ?? "-"}`,
+    ``,
+    `Customer: ${lead.customerName}`,
+    `Email: ${lead.customerEmail}`,
+    `Phone / WhatsApp: ${lead.customerPhone ?? "-"}`,
+    lead.note ? `Note: ${lead.note}` : ``,
+    ``,
+    `Please reply directly to the customer (reply-to is set).`,
+  ];
+  // Le SDK Resend ne throw pas sur erreur API ({ data, error }) : on propage
+  // explicitement pour que la route marque la row email_failed + fallback WhatsApp.
+  const { data, error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: partnerEmail,
+    cc: "contact@kairosguest.com", // preuve horodatée de l'apport (10%)
+    replyTo: lead.customerEmail,
+    subject,
+    text: lines.join("\n"),
+  });
+  if (error) throw new Error(`Resend: ${error.message}`);
+  return data;
+}
