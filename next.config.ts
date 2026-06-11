@@ -26,6 +26,14 @@ const nextConfig: NextConfig = {
       { hostname: "media.crete.direct" },
     ],
   },
+  async redirects() {
+    const qr = (code: string, slug: string) => ({
+      source: `/go/${code}`,
+      destination: `/en/near-me?from=${slug}&utm_source=qr&utm_medium=print&utm_campaign=${code}`,
+      permanent: false, // 307 : garder la main sur la destination tant que la campagne print n'est pas figée
+    });
+    return [qr("her", "heraklion"), qr("chq", "chania-airport"), qr("jsh", "sitia")];
+  },
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },

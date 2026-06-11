@@ -41,6 +41,7 @@ const LINKS: Record<string, NavLink> = {
   buses: { href: "/buses", label: { en: "Buses", fr: "Bus", de: "Busse", el: "Λεωφορεία", it: "Autobus", nl: "Bussen", pl: "Autobusy", es: "Autobuses", pt: "Autocarros", ru: "Автобусы", ja: "バス", ko: "버스", zh: "巴士", tr: "Otobüsler", sv: "Bussar", da: "Busser", no: "Busser", fi: "Bussit", cs: "Autobusy", hu: "Buszok", ro: "Autobuze", ar: "حافلات" } },
   airports: { href: "/airport", label: { en: "Airports", fr: "Aéroports", de: "Flughäfen", el: "Αεροδρόμια", it: "Aeroporti", nl: "Luchthavens", pl: "Lotniska", es: "Aeropuertos", pt: "Aeroportos", ru: "Аэропорты", ja: "空港", ko: "공항", zh: "机场", tr: "Havalimanları", sv: "Flygplatser", da: "Lufthavne", no: "Flyplasser", fi: "Lentokentät", cs: "Letiště", hu: "Repülőterek", ro: "Aeroporturi", ar: "مطارات" } },
   weather: { href: "/weather", label: { en: "Weather", fr: "Météo", de: "Wetter", el: "Καιρός", it: "Meteo", nl: "Weer", pl: "Pogoda", es: "Clima", pt: "Tempo", ru: "Погода", ja: "天気", ko: "날씨", zh: "天气", tr: "Hava", sv: "Väder", da: "Vejr", no: "Vær", fi: "Sää", cs: "Počasí", hu: "Időjárás", ro: "Vreme", ar: "طقس" } },
+  nearMe: { href: "/near-me", label: { en: "Near me", fr: "Autour de moi", de: "In meiner Nähe", el: "Κοντά μου", it: "Vicino a me", nl: "In de buurt", pl: "W pobliżu", es: "Cerca de mí", pt: "Perto de mim", ru: "Рядом со мной", ja: "近くのスポット", ko: "내 주변", zh: "我附近", tr: "Yakınımda", sv: "Nära mig", da: "Nær mig", no: "Nær meg", fi: "Lähelläni", cs: "Poblíž", hu: "Közelemben", ro: "Lângă mine", ar: "بالقرب مني" } },
   beaches: { href: "/beaches", label: { en: "Beaches", fr: "Plages", de: "Strände", el: "Παραλίες", it: "Spiagge", nl: "Stranden", pl: "Plaże", es: "Playas", pt: "Praias", ru: "Пляжи", ja: "ビーチ", ko: "해변", zh: "海滩", tr: "Plajlar", sv: "Stränder", da: "Strande", no: "Strender", fi: "Rannat", cs: "Pláže", hu: "Strandok", ro: "Plaje", ar: "شواطئ" } },
   explore: { href: "/explore", label: { en: "Explore", fr: "Explorer", de: "Entdecken", el: "Εξερεύνηση", it: "Esplora", nl: "Verkennen", pl: "Odkrywaj", es: "Explorar", pt: "Explorar", ru: "Карта", ja: "探索", ko: "탐색", zh: "探索", tr: "Keşfet", sv: "Utforska", da: "Udforsk", no: "Utforsk", fi: "Tutki", cs: "Objevuj", hu: "Felfedezés", ro: "Explorează", ar: "استكشف" } },
   villages: { href: "/villages", label: { en: "Villages", fr: "Villages", de: "Dörfer", el: "Χωριά", it: "Villaggi", nl: "Dorpen", pl: "Wioski", es: "Pueblos", pt: "Aldeias", ru: "Деревни", ja: "村", ko: "마을", zh: "村庄", tr: "Köyler", sv: "Byar", da: "Landsbyer", no: "Landsbyer", fi: "Kylät", cs: "Vesnice", hu: "Falvak", ro: "Sate", ar: "قرى" } },
@@ -56,7 +57,7 @@ const NAV_GROUPS: Array<{ key: string; label: NavLabel; items: NavLink[] }> = [
   {
     key: "plan",
     label: { en: "Plan", fr: "Planifier", de: "Planen", el: "Σχεδιασμός", it: "Pianifica", nl: "Plannen", pl: "Planuj", es: "Planificar", pt: "Planear", ru: "Спланировать", ja: "プラン", ko: "계획", zh: "规划", tr: "Planla", sv: "Planera", da: "Planlæg", no: "Planlegg", fi: "Suunnittele", cs: "Plánovat", hu: "Tervezés", ro: "Planifică", ar: "خطط" },
-    items: [LINKS.buses, LINKS.airports, LINKS.weather],
+    items: [LINKS.buses, LINKS.airports, LINKS.weather, LINKS.nearMe],
   },
   {
     key: "discover",
