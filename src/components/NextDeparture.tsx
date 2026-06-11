@@ -58,11 +58,16 @@ export function NextDeparture({ route, locale }: { route: BusRoute; locale: stri
 
   if (!state) return null;
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-md bg-aegean text-white font-data text-xs px-2 py-1">
-      <Clock className="w-3 h-3" />
-      {"time" in state
-        ? `${T.next[ui]} ${state.time} · ${T.inMin[ui](state.inMin)}`
-        : `${T.tomorrow[ui]} ${state.tomorrow}`}
+    <span className="inline-flex items-center gap-2 rounded-full bg-night text-white font-data text-sm px-4 py-2">
+      <Clock className="w-3.5 h-3.5" />
+      {"time" in state ? (
+        <>
+          {T.next[ui]} <b>{state.time}</b>
+          <span className="text-[#43E89D] font-bold">· {T.inMin[ui](state.inMin)}</span>
+        </>
+      ) : (
+        <>{T.tomorrow[ui]} <b>{state.tomorrow}</b></>
+      )}
     </span>
   );
 }

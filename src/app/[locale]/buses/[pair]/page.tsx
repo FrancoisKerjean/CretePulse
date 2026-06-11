@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { ArrowRight, Clock, Euro, Info, ChevronLeft } from "lucide-react";
+import { Info, ExternalLink } from "lucide-react";
 import { CiBus } from "@/components/icons";
 import { buildAlternates } from "@/lib/seo";
 import { getBusRoutes, getBusDestinations, latestScrapedAt } from "@/lib/buses";
@@ -9,6 +9,7 @@ import type { BusRoute } from "@/lib/buses";
 import { eligiblePairs, pairRoutes, onwardPlaces, pairSlug, slugifyPlace } from "@/lib/bus-pairs";
 import { TaxiCompare } from "@/components/TaxiCompare";
 import { NextDeparture } from "@/components/NextDeparture";
+import { TimeChips } from "@/components/TimeChips";
 import { taxiFareRange } from "@/lib/taxi-fare";
 import partnersData from "@/data/taxi-partners.json";
 import type { Locale } from "@/lib/types";
@@ -60,10 +61,10 @@ const T = {
   whatToDo: { en: "What to do in", fr: "Que faire à", de: "Aktivitäten in", el: "Τι να κάνετε στο" },
   whereToStay: { en: "Where to stay", fr: "Où dormir", de: "Unterkünfte", el: "Πού να μείνετε" },
   noTimetable: {
-    en: "Departure times not published yet — check the operator site.",
-    fr: "Horaires non encore publiés — voir le site de l'opérateur.",
-    de: "Abfahrtszeiten noch nicht veröffentlicht — Betreiberseite prüfen.",
-    el: "Δεν έχουν δημοσιευτεί ώρες — δείτε τον φορέα.",
+    en: "Departure times not published yet · check the operator site.",
+    fr: "Horaires non encore publiés · voir le site de l'opérateur.",
+    de: "Abfahrtszeiten noch nicht veröffentlicht · Betreiberseite prüfen.",
+    el: "Δεν έχουν δημοσιευτεί ώρες · δείτε τον φορέα.",
   },
   officialSchedule: { en: "Official schedule", fr: "Horaires officiels", de: "Offizieller Fahrplan", el: "Επίσημο πρόγραμμα" },
   disclaimer: {
@@ -165,59 +166,38 @@ function DirectionSection({ from, to, routes, ui }: {
   from: string; to: string; routes: BusRoute[]; ui: Locale;
 }) {
   return (
-    <section className="mb-8">
-      <h2 className="text-xl font-semibold text-text mb-3 flex items-center gap-2 flex-wrap">
-        <CiBus className="w-5 h-5 text-aegean" /> {from}
-        <ArrowRight className="w-4 h-4 text-text-muted" /> {to}
-      </h2>
+    <section className="mb-6">
       {routes.length === 0 ? (
-        <p className="text-sm text-text-muted">{T.noTimetable[ui]}</p>
+        <div className="bg-white rounded-[28px] px-7 py-6 shadow-[0_12px_32px_rgba(11,94,120,.10)]">
+          <h2 className="font-heading font-bold text-[21px] text-text m-0 mb-2 flex items-center gap-2.5 flex-wrap">
+            <span className="bg-sky rounded-xl p-1.5 inline-flex text-aegean"><CiBus className="w-[18px] h-[18px]" /></span>
+            {from} <span className="text-lagoon">·</span> {to}
+          </h2>
+          <p className="text-sm text-text-muted m-0">{T.noTimetable[ui]}</p>
+        </div>
       ) : routes.map((r) => (
-        <div key={r.id} className="rounded-xl border border-border bg-white p-4 mb-3">
-          <div className="mb-2">
-            <NextDeparture route={r} locale={ui} />
-          </div>
-          <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm mb-3">
+        <div key={r.id} className="bg-white rounded-[28px] px-7 py-6 shadow-[0_12px_32px_rgba(11,94,120,.10)] mb-5">
+          <h2 className="font-heading font-bold text-[21px] text-text m-0 mb-3 flex items-center gap-2.5 flex-wrap">
+            <span className="bg-sky rounded-xl p-1.5 inline-flex text-aegean"><CiBus className="w-[18px] h-[18px]" /></span>
+            {from} <span className="text-lagoon">·</span> {to}
+          </h2>
+          <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm mb-2 font-data">
             {fmtPrice(r, ui) ? (
-              <span className="inline-flex items-center gap-1 font-semibold text-text">
-                <Euro className="w-4 h-4 text-aegean" /> {T.price[ui]} : {fmtPrice(r, ui)}
-              </span>
+              <span className="font-semibold text-text">{fmtPrice(r, ui)} <span className="font-normal text-text-muted">{T.price[ui].toLowerCase()}</span></span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-text-muted">
-                <Euro className="w-4 h-4 text-aegean" /> {T.atTicketOffice[ui]}
-              </span>
+              <span className="text-text-muted">{T.atTicketOffice[ui]}</span>
             )}
             {r.duration && (
-              <span className="inline-flex items-center gap-1 text-text">
-                <Clock className="w-4 h-4 text-aegean" /> {T.duration[ui]} : {r.duration}
-              </span>
+              <span className="text-text">{r.duration} <span className="text-text-muted">{T.duration[ui].toLowerCase()}</span></span>
             )}
             {r.frequency && (
-              <span className="text-text-muted">{T.frequency[ui]} : {r.frequency}</span>
+              <span className="text-text-muted">{r.frequency}</span>
             )}
           </div>
-          {(r.departures_by_day && r.departures_by_day.length > 0
-            ? r.departures_by_day
-            : r.departures && r.departures.length > 0
-              ? [{ days: "", times: r.departures }]
-              : []
-          ).map((g, gi) => (
-            <div key={gi} className="mb-2">
-              {g.days && (
-                <p className="text-[11px] uppercase tracking-wide text-text-muted mb-1">{g.days}</p>
-              )}
-              <ul className="flex flex-wrap gap-1.5 list-none p-0 m-0">
-                {g.times.map((time, i) => (
-                  <li key={`${time}-${i}`} className="px-2 py-0.5 rounded bg-aegean/5 border border-aegean/15 text-xs font-mono text-text">
-                    {time}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <TimeChips route={r} locale={ui} />
           <a href={r.source_url} rel="nofollow noopener" target="_blank"
-             className="text-xs text-aegean hover:underline">
-            {T.officialSchedule[ui]} →
+             className="inline-flex items-center gap-1 text-xs text-lagoon-deep font-bold hover:underline mt-3">
+            {T.officialSchedule[ui]} <ExternalLink className="w-3 h-3" />
           </a>
         </div>
       ))}
@@ -286,27 +266,56 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
   return (
     <main className="min-h-screen bg-surface">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
-      <div className="max-w-3xl mx-auto px-4 py-12">
-        <Link href={`/${locale}/buses`} className="inline-flex items-center gap-1 text-sm text-aegean hover:underline mb-6">
-          <ChevronLeft className="w-4 h-4" /> {T.allBuses[ui]}
-        </Link>
 
-        <h1 className="text-3xl font-bold text-aegean mb-1 mt-4">
-          {T.title[ui](placeA, placeB)}
-        </h1>
-        {updatedAt && (
-          <p className="text-xs text-text-muted mb-6">
-            {T.updatedOn[ui]} {new Date(updatedAt).toLocaleDateString(locale)}
-          </p>
-        )}
+      {/* En-tete trajet : gradient doux (docs/design/kalimera/bus.html .route-hero) */}
+      <header className="-mt-[74px] pt-28 pb-7 bg-gradient-to-b from-sky via-[#D8F4F9] to-surface">
+        <div className="max-w-3xl mx-auto px-4">
+          <Link href={`/${locale}/buses`}
+                className="inline-flex items-center text-[12.5px] text-lagoon-deep font-bold bg-white/70 rounded-full px-3.5 py-1.5 no-underline mb-4 hover:bg-white transition-colors">
+            {T.allBuses[ui]}
+          </Link>
+          <h1 className="flex items-center gap-4 flex-wrap font-heading font-extrabold text-3xl md:text-[42px] tracking-tight text-text m-0">
+            <span>{placeA}</span>
+            <span className="bg-white rounded-full w-11 h-11 flex items-center justify-center text-lagoon-deep text-[19px] shadow-[0_8px_22px_rgba(11,94,120,.16)]" aria-hidden>⇄</span>
+            <span>{placeB}</span>
+          </h1>
+          {ref && (
+            <div className="mt-4">
+              <NextDeparture route={ref} locale={ui} />
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2.5 mt-4 font-data">
+            {ref?.price_eur != null && (
+              <span className="bg-white rounded-2xl px-4 py-2 text-[13px] font-bold shadow-[0_8px_22px_rgba(11,94,120,.10)]">
+                {ref.price_eur.toFixed(2)} € <span className="text-text-muted font-medium">{ref.price_estimated ? T.indicative[ui] : T.price[ui].toLowerCase()}</span>
+              </span>
+            )}
+            {ref?.duration && (
+              <span className="bg-white rounded-2xl px-4 py-2 text-[13px] font-bold shadow-[0_8px_22px_rgba(11,94,120,.10)]">
+                {ref.duration} <span className="text-text-muted font-medium">{T.duration[ui].toLowerCase()}</span>
+              </span>
+            )}
+            {ref?.frequency && (
+              <span className="bg-white rounded-2xl px-4 py-2 text-[13px] font-bold shadow-[0_8px_22px_rgba(11,94,120,.10)]">
+                {ref.frequency}
+              </span>
+            )}
+            <Link
+              href={`/${locale}/buses?from=${encodeURIComponent(placeA)}&to=${encodeURIComponent(placeB)}`}
+              className="inline-flex items-center gap-2 rounded-2xl bg-sun text-text text-[13px] font-heading font-bold px-4 py-2 shadow-[0_8px_22px_rgba(11,94,120,.10)] no-underline hover:brightness-105 transition-all"
+            >
+              <CiBus className="w-4 h-4" /> {T.planCta[ui]}
+            </Link>
+          </div>
+          {updatedAt && (
+            <p className="text-xs text-text-muted mt-3 mb-0">
+              {T.updatedOn[ui]} {new Date(updatedAt).toLocaleDateString(locale)}
+            </p>
+          )}
+        </div>
+      </header>
 
-        <Link
-          href={`/${locale}/buses?from=${encodeURIComponent(placeA)}&to=${encodeURIComponent(placeB)}`}
-          className="inline-flex items-center gap-2 rounded-lg bg-aegean text-white text-sm font-semibold px-4 py-2 mb-8 hover:opacity-90"
-        >
-          <CiBus className="w-4 h-4" /> {T.planCta[ui]}
-        </Link>
-
+      <div className="max-w-3xl mx-auto px-4 pt-6 pb-12">
         <DirectionSection from={placeA} to={placeB} routes={pr.outbound} ui={ui} />
         <DirectionSection from={placeB} to={placeA} routes={pr.inbound} ui={ui} />
 
@@ -324,14 +333,14 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
 
         {onwardB.length > 0 && (
           <section className="mb-8">
-            <h2 className="text-lg font-semibold text-text mb-3">{T.onward[ui]} {placeB}</h2>
-            <div className="flex flex-wrap gap-2">
+            <h2 className="font-heading font-extrabold text-2xl text-text mb-3.5">{T.onward[ui]} {placeB}</h2>
+            <div className="flex flex-wrap gap-2.5">
               {onwardB.map((p) => {
                 const s = pairSlug(placeB, p);
                 return s ? (
                   <Link key={p} href={`/${locale}/buses/${s}`}
-                        className="px-3 py-1.5 rounded-lg border border-border bg-white text-sm text-aegean hover:shadow-sm">
-                    {placeB} → {p}
+                        className="px-4.5 py-2.5 rounded-full bg-white text-[13.5px] font-semibold text-aegean shadow-[0_8px_20px_rgba(11,94,120,.10)] no-underline hover:shadow-[0_10px_26px_rgba(11,94,120,.16)] transition-shadow">
+                    {placeB} <span className="text-lagoon font-extrabold">·</span> {p}
                   </Link>
                 ) : null;
               })}
@@ -359,9 +368,9 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
           </div>
         )}
 
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 flex gap-3">
-          <Info className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-          <p className="text-sm text-amber-800">{T.disclaimer[ui]}</p>
+        <div className="rounded-[20px] bg-sun/16 px-5.5 py-4 flex gap-3">
+          <Info className="w-5 h-5 text-[#8A6A14] shrink-0 mt-0.5" />
+          <p className="text-[13px] text-[#8A6A14] m-0">{T.disclaimer[ui]}</p>
         </div>
       </div>
     </main>

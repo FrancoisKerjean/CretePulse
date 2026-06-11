@@ -114,11 +114,11 @@ function LegRow({ leg, locale }: { leg: JourneyLeg; locale: Locale }) {
       <p className="text-[11px] uppercase tracking-wide text-text-muted mt-2 mb-1">
         {tp("departuresThatDay", locale)}
       </p>
-      <ul className="flex flex-wrap gap-1.5 list-none p-0 m-0">
+      <ul className="flex flex-wrap gap-1.5 list-none p-0 m-0 font-data">
         {leg.times.map((time, i) => (
           <li
             key={`${time}-${i}`}
-            className="px-2 py-0.5 rounded bg-aegean/5 border border-aegean/15 text-xs font-mono text-text"
+            className="px-2.5 py-1 rounded-[10px] bg-surface border-[1.5px] border-lagoon/35 text-xs font-semibold text-text"
           >
             {time}
           </li>
@@ -130,8 +130,8 @@ function LegRow({ leg, locale }: { leg: JourneyLeg; locale: Locale }) {
 
 function JourneyCard({ journey, locale }: { journey: Journey; locale: Locale }) {
   return (
-    <div className="rounded-xl border border-aegean/30 bg-white overflow-hidden shadow-sm">
-      <div className="bg-aegean px-4 py-2.5 text-white flex items-center justify-between gap-2 flex-wrap">
+    <div className="rounded-3xl bg-white overflow-hidden shadow-[0_12px_30px_rgba(11,94,120,.12)]">
+      <div className="bg-night px-5 py-3 text-white flex items-center justify-between gap-2 flex-wrap">
         <span className="text-sm font-bold">
           {tp("yourJourney", locale)}
           {journey.hub ? ` · ${tp("via", locale)} ${journey.hub}` : ""}
@@ -215,15 +215,15 @@ export function JourneyPlanner({
   const taxiPair = fromPlace && toPlace ? pairSlug(fromPlace, toPlace) : null;
 
   return (
-    <div className="rounded-xl border border-border bg-white p-5 mb-6 shadow-sm">
-      <p className="text-sm font-semibold text-text mb-3">{tp("searchTitle", locale)}</p>
+    <div className="rounded-[28px] bg-white p-6 mb-6 shadow-[0_12px_32px_rgba(11,94,120,.10)]">
+      <p className="font-heading font-bold text-base text-text mb-3.5">{tp("searchTitle", locale)}</p>
       <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
         <select
           value={fromPlace}
           onChange={(e) => onFromChange(e.target.value)}
-          className="flex-1 border border-border rounded-lg px-3 py-2 text-sm text-text bg-white focus:outline-none focus:ring-2 focus:ring-aegean/30"
+          className="flex-1 border border-border rounded-full px-4 py-2.5 text-sm text-text bg-white focus:outline-none focus:ring-2 focus:ring-lagoon/40"
         >
-          <option value="">{tp("from", locale)} – {tp("allPlaces", locale)}</option>
+          <option value="">{tp("from", locale)} · {tp("allPlaces", locale)}</option>
           {allPlaces.map((c) => (
             <option key={c} value={c}>{c}</option>
           ))}
@@ -234,9 +234,9 @@ export function JourneyPlanner({
         <select
           value={toPlace}
           onChange={(e) => onToChange(e.target.value)}
-          className="flex-1 border border-border rounded-lg px-3 py-2 text-sm text-text bg-white focus:outline-none focus:ring-2 focus:ring-aegean/30"
+          className="flex-1 border border-border rounded-full px-4 py-2.5 text-sm text-text bg-white focus:outline-none focus:ring-2 focus:ring-lagoon/40"
         >
-          <option value="">{tp("to", locale)} – {tp("allPlaces", locale)}</option>
+          <option value="">{tp("to", locale)} · {tp("allPlaces", locale)}</option>
           {toOptions.map((c) => (
             <option key={c} value={c}>{c}</option>
           ))}
@@ -249,7 +249,7 @@ export function JourneyPlanner({
           max={maxDateISO()}
           onChange={(e) => e.target.value && setDate(e.target.value)}
           aria-label={tp("date", locale)}
-          className="border border-border rounded-lg px-3 py-2 text-sm text-text bg-white focus:outline-none focus:ring-2 focus:ring-aegean/30"
+          className="border border-border rounded-full px-4 py-2.5 text-sm text-text bg-white font-data focus:outline-none focus:ring-2 focus:ring-lagoon/40"
         />
 
         {(fromPlace || toPlace) && (

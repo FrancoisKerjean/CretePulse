@@ -92,10 +92,10 @@ const T = {
   showLess: { en: "Show less", fr: "Réduire", de: "Weniger anzeigen", el: "Λιγότερα" },
   showAll: { en: "Show all", fr: "Tout afficher", de: "Alle anzeigen", el: "Όλα" },
   noTimetableYet: {
-    en: "Departure times not available yet — check the operator site.",
-    fr: "Horaires non encore disponibles — voir le site de l'opérateur.",
-    de: "Abfahrtszeiten noch nicht verfügbar — Operator-Seite prüfen.",
-    el: "Δεν υπάρχουν διαθέσιμες ώρες — δείτε τον φορέα.",
+    en: "Departure times not available yet · check the operator site.",
+    fr: "Horaires non encore disponibles · voir le site de l'opérateur.",
+    de: "Abfahrtszeiten noch nicht verfügbar · Operator-Seite prüfen.",
+    el: "Δεν υπάρχουν διαθέσιμες ώρες · δείτε τον φορέα.",
   },
   officialSchedule: {
     en: "Official schedule",
@@ -187,7 +187,7 @@ function GuideLinks({ route, destination, locale }: { route: BusRoute; destinati
 
 function NoDirectBusCard({ destination, locale }: { destination: BusDestination; locale: Locale }) {
   return (
-    <div className="rounded-xl border border-amber-200 bg-amber-50/50 overflow-hidden flex flex-col">
+    <div className="rounded-3xl border border-sun/50 bg-sand/50 overflow-hidden flex flex-col">
       <div className="px-5 py-4">
         <p className="font-bold text-base text-text">{destination.name}</p>
         <p className="text-xs text-amber-700 mt-1">
@@ -216,7 +216,7 @@ function RouteCard({ route, destination, locale }: { route: BusRoute; destinatio
   const COLLAPSED_LIMIT = 8;
 
   return (
-    <div className="rounded-xl border border-border bg-white overflow-hidden hover:shadow-md transition-shadow flex flex-col">
+    <div className="card-base overflow-hidden hover:shadow-md transition-shadow flex flex-col">
       {(() => {
         // Maillage SEO : le header linke la page paire quand elle existe.
         const ps = pairSlug(route.from_place, route.to_place);
@@ -325,7 +325,7 @@ function DepartureChips({
           {(shouldCollapse ? times.slice(0, collapsedLimit) : times).map((time, i) => (
             <li
               key={`${time}-${i}`}
-              className="px-2 py-0.5 rounded bg-aegean/5 border border-aegean/15 text-xs font-mono text-text"
+              className="px-2.5 py-1 rounded-[10px] bg-surface border-[1.5px] border-lagoon/35 text-xs font-semibold font-data text-text"
             >
               {time}
             </li>
@@ -374,7 +374,7 @@ function DepartureGroups({
               {visible.map((time, i) => (
                 <li
                   key={`${time}-${i}`}
-                  className="px-2 py-0.5 rounded bg-aegean/5 border border-aegean/15 text-xs font-mono text-text"
+                  className="px-2.5 py-1 rounded-[10px] bg-surface border-[1.5px] border-lagoon/35 text-xs font-semibold font-data text-text"
                 >
                   {time}
                 </li>
@@ -454,11 +454,11 @@ export function BusesClient({
       <div className="max-w-5xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="mb-8 flex items-start gap-4">
-          <div className="p-3 rounded-xl bg-aegean/10 shrink-0">
+          <div className="p-3 rounded-2xl bg-sky shrink-0">
             <CiBus className="w-7 h-7 text-aegean" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-aegean">{t("title", locale)}</h1>
+            <h1 className="font-heading font-extrabold text-3xl md:text-4xl tracking-tight text-text">{t("title", locale)}</h1>
             <p className="text-text-muted mt-1">{t("subtitle", locale)}</p>
             {updatedAt && (
               <p className="text-xs text-text-muted mt-1">
@@ -488,7 +488,7 @@ export function BusesClient({
               {filtered.length} route{filtered.length !== 1 ? "s" : ""}
             </h2>
             {filtered.length === 0 ? (
-              <div className="rounded-xl border border-border bg-white p-6 text-center text-text-muted text-sm">
+              <div className="rounded-3xl border border-border bg-white p-6 text-center text-text-muted text-sm">
                 {t("noRoute", locale)}
               </div>
             ) : (
@@ -527,9 +527,9 @@ export function BusesClient({
         )}
 
         {/* Disclaimer */}
-        <div className="mt-10 rounded-xl border border-amber-200 bg-amber-50 p-4 flex gap-3">
-          <Info className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-          <p className="text-sm text-amber-800">{t("disclaimer", locale)}</p>
+        <div className="mt-10 rounded-[20px] bg-sun/16 px-5 py-4 flex gap-3">
+          <Info className="w-5 h-5 text-[#8A6A14] shrink-0 mt-0.5" />
+          <p className="text-[13px] text-[#8A6A14] m-0">{t("disclaimer", locale)}</p>
         </div>
 
       </div>
