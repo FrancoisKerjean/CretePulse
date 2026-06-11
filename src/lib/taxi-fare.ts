@@ -8,6 +8,10 @@
 // 2026) + prise en charge. Fourchette volontairement large [x0.80, x1.25] :
 // c'est une estimation indicative, jamais un prix annonce.
 
+// Extension .ts explicite : requis par node type-stripping (check-taxi-fare.mjs),
+// permis par allowImportingTsExtensions (tsconfig).
+import { haversineKm } from "./geo.ts";
+
 export const TAXI_TARIFF = {
   pickup: 1.8,      // prise en charge
   perKm: 1.25,      // tarif 2 (hors agglomeration), EUR/km
@@ -97,15 +101,6 @@ export interface TaxiFareRange {
   low: number;  // EUR, arrondi aux 5
   high: number; // EUR, arrondi aux 5
   km: number;   // distance route estimee, arrondie
-}
-
-function haversineKm(a: [number, number], b: [number, number]): number {
-  const [lat1, lng1] = a.map((d) => (d * Math.PI) / 180);
-  const [lat2, lng2] = b.map((d) => (d * Math.PI) / 180);
-  const h =
-    Math.sin((lat2 - lat1) / 2) ** 2 +
-    Math.cos(lat1) * Math.cos(lat2) * Math.sin((lng2 - lng1) / 2) ** 2;
-  return 2 * 6371 * Math.asin(Math.sqrt(h));
 }
 
 const round5 = (n: number) => Math.round(n / 5) * 5;
