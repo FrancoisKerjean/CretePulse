@@ -49,6 +49,14 @@ const pickUi = (l: string): Ui => (["en", "fr", "de", "el"].includes(l) ? (l as 
 
 const T = {
   heroTitle: { en: "Crete, today", fr: "La Crète, aujourd'hui", de: "Kreta, heute", el: "Η Κρήτη σήμερα" },
+  matchTitle: { en: "Find your perfect spot", fr: "Trouve ton spot idéal", de: "Finde deinen perfekten Ort", el: "Βρες το ιδανικό σου μέρος" },
+  matchSub: {
+    en: "Swipe beaches, gorges and villages. Like or pass, and get your match.",
+    fr: "Fais défiler plages, gorges et villages. Like ou passe, et trouve ton match.",
+    de: "Wische durch Strände, Schluchten und Dörfer. Like oder weiter, und finde dein Match.",
+    el: "Κάνε swipe σε παραλίες, φαράγγια και χωριά. Like ή πέρνα, και βρες το match σου.",
+  },
+  matchCta: { en: "Start swiping", fr: "Commencer", de: "Los geht's", el: "Ξεκίνα" },
   // H1 "enfant de 5 ans" : dire ce que fait le site, en 2 phrases courtes.
   heroMain: {
     en: { pre: "Beaches, buses, weather.", hl: "Crete, live." },
@@ -197,6 +205,7 @@ interface HomeClientProps {
   swimPick: SwimPickLite | null;
   swimSides: SwimSideLite[];
   boardRoutes: BusRoute[];
+  matchTeaserPhotos: string[];
   locale: string;
 }
 
@@ -226,7 +235,7 @@ function seaState(c: CityWeather): { key: "calm" | "ok" | "rough"; warn: boolean
 const WTILE_CITIES = ["Heraklion", "Chania", "Ierapetra", "Sitia"];
 const TOOL_TINTS = ["bg-[#CFF3F7]", "bg-[#FFE9CF]", "bg-[#E4F0D5]", "bg-[#DCEBFF]", "bg-[#FFE0D6]", "bg-[#FFF1BF]"];
 
-export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, swimPick, swimSides, boardRoutes, locale }: HomeClientProps) {
+export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, swimPick, swimSides, boardRoutes, matchTeaserPhotos, locale }: HomeClientProps) {
   const loc = locale as Locale;
   const ui = pickUi(locale);
   const t = useTranslations("home");
@@ -588,6 +597,36 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
             )}
           </section>
         </div>
+
+        {/* ═══════ MATCH : trouve ton spot ═══════ */}
+        {matchTeaserPhotos.length > 0 && (
+          <section className="my-10">
+            <Link
+              href="/match"
+              className="card-base group flex flex-col items-center gap-7 overflow-hidden px-8 py-7 no-underline !rounded-[30px] sm:flex-row"
+            >
+              <div className="relative h-[120px] w-[180px] shrink-0">
+                {matchTeaserPhotos.slice(0, 3).map((src, i) => (
+                  <img
+                    key={src}
+                    src={src}
+                    alt=""
+                    loading="lazy"
+                    className="absolute left-1/2 top-1/2 h-[104px] w-[78px] rounded-2xl border-4 border-white object-cover shadow-[0_10px_24px_rgba(11,94,120,.22)] transition-transform duration-300 group-hover:scale-105"
+                    style={{ transform: `translate(-50%,-50%) rotate(${(i - 1) * 12}deg) translateX(${(i - 1) * 34}px)` }}
+                  />
+                ))}
+              </div>
+              <div className="flex-1 text-center sm:text-left">
+                <h3 className="m-0 font-heading text-[22px] font-extrabold text-text">{T.matchTitle[ui]}</h3>
+                <p className="m-0 mt-0.5 text-[13.5px] text-text-muted">{T.matchSub[ui]}</p>
+              </div>
+              <span className="rounded-full bg-terra px-6 py-3 font-heading text-[14px] font-bold text-white shadow-[0_10px_24px_rgba(237,122,92,.35)] transition-transform group-hover:scale-105">
+                {T.matchCta[ui]}
+              </span>
+            </Link>
+          </section>
+        )}
 
         {/* ═══════ NEWSLETTER bande sable ═══════ */}
         <section className="rounded-[30px] px-8 py-7 my-10 flex flex-col sm:flex-row items-center justify-between gap-6"
