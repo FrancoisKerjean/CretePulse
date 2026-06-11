@@ -6,6 +6,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Clock, Euro, Info } from "lucide-react";
 import { CiBus } from "@/components/icons";
+import { KriKri } from "@/components/KriKri";
 import type { Locale } from "@/lib/types";
 import type { BusRoute } from "@/lib/buses";
 import {
@@ -274,9 +275,12 @@ export function JourneyPlanner({
       )}
 
       {noJourney && (
-        <div className="mt-4 rounded-lg border border-border bg-surface p-4 text-sm text-text-muted space-y-1">
-          <p>{noServiceThatDay ? tp("noServiceThatDay", locale) : tp("noRoute", locale)}</p>
-          {westNotice && <p>{tp("westPartial", locale)}</p>}
+        <div className="mt-4 rounded-3xl border border-border bg-surface p-4 text-sm text-text-muted flex items-center gap-4">
+          <KriKri mood="empty" className="w-20 h-16 shrink-0" />
+          <div className="space-y-1">
+            <p>{noServiceThatDay ? tp("noServiceThatDay", locale) : tp("noRoute", locale)}</p>
+            {westNotice && <p>{tp("westPartial", locale)}</p>}
+          </div>
         </div>
       )}
 
