@@ -3,8 +3,10 @@ import { setRequestLocale } from "next-intl/server";
 import { getLatestNews } from "@/lib/news";
 import { getUpcomingEvents } from "@/lib/events";
 import { getEditorialGuides, type Guide } from "@/lib/guides";
-import { HomeClient } from "@/components/home/HomeClient";
+import { buildSwimToday } from "@/lib/swim-today";
+import { HomeClient, type SwimPickLite } from "@/components/home/HomeClient";
 import type { NewsItem, Event, Locale } from "@/lib/types";
+import { getLocalizedField } from "@/lib/types";
 import { buildAlternates } from "@/lib/seo";
 
 export const revalidate = 7200; // 2h - reduce Supabase egress
@@ -76,12 +78,29 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const m = HOME_META[locale] || HOME_META.en;
   const websiteSchema = buildWebsiteSchema(locale, m.desc);
 
-  const [cities, latestNews, upcomingEvents, latestGuides] = await Promise.all([
+  const [cities, latestNews, upcomingEvents, latestGuides, swim] = await Promise.all([
     fetchAllCitiesWeather(),
     getLatestNews(8, locale).catch((): NewsItem[] => []),
     getUpcomingEvents(5).catch((): Event[] => []),
     getEditorialGuides(12).catch((): Guide[] => []),
+    buildSwimToday().catch(() => null),
   ]);
+
+  // Extrait serialisable de la preco baignade du jour (le SwimToday complet
+  // est lourd : cities + scored ~500 plages, inutile cote client).
+  const uiLoc = (["en", "fr", "de", "el"].includes(locale) ? locale : "en") as Locale;
+  const swimPick: SwimPickLite | null = swim
+    ? {
+        name: getLocalizedField(swim.pick.beach, "name", uiLoc),
+        slug: swim.pick.beach.slug,
+        imageUrl: swim.pick.imageUrl,
+        rating: swim.pick.rating,
+        windSpeed: swim.pick.windSpeed,
+        windCardinal: swim.pick.windCardinal,
+        windDir: swim.pick.city.windDir,
+        seaTemp: swim.pick.seaTemp,
+      }
+    : null;
 
   return (
     <>
@@ -94,6 +113,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         latestNews={latestNews}
         upcomingEvents={upcomingEvents}
         latestGuides={latestGuides}
+        swimPick={swimPick}
         locale={locale}
       />
     </>
