@@ -479,7 +479,7 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
         </div>
 
         {/* Tours & activities partner banner (GetYourGuide, real partner ID) */}
-        <AffiliateBanner type="tours" locale={locale} />
+        <AffiliateBanner type="tours" locale={locale} placeName={locale === "el" ? city.nameEl : city.name} />
 
         {/* FAQ */}
         <section>

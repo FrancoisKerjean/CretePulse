@@ -468,7 +468,7 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
 
         {/* Car rental partner banner (DiscoverCars, real affiliate ID): the
             most flexible alternative on every route */}
-        <AffiliateBanner type="carRental" locale={locale} />
+        <AffiliateBanner type="carRental" locale={locale} placeName={route.to} />
 
         {/* FAQ */}
         <section>

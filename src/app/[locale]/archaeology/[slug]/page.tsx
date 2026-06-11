@@ -383,7 +383,7 @@ export default async function ArchaeologyDetailPage({
         </section>
 
         {/* Skip-the-line tickets & guided tours partner banner (GetYourGuide) */}
-        <AffiliateBanner type="tours" locale={locale} className="mt-8" />
+        <AffiliateBanner type="tours" locale={locale} placeName={site.name} className="mt-8" />
 
         {/* Other sites */}
         <section className="mt-8 mb-8">

@@ -212,7 +212,7 @@ export default async function HikeDetailPage({
         </div>
 
         {/* Guided tours partner banner (GetYourGuide, real partner ID) */}
-        <AffiliateBanner type="tours" locale={locale} className="mt-8" />
+        <AffiliateBanner type="tours" locale={locale} placeName={name} className="mt-8" />
 
         {/* Internal linking + retention: editorial discovery grid + newsletter capture */}
         <DiscoverCrete category={null} locale={locale} />

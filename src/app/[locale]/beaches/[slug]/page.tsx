@@ -463,7 +463,7 @@ export default async function BeachDetailPage({
         </section>
 
         {/* Car rental partner banner (DiscoverCars): most beaches need wheels */}
-        <AffiliateBanner type="carRental" locale={locale} className="mb-4" />
+        <AffiliateBanner type="carRental" locale={locale} placeName={name} className="mb-4" />
 
         {/* Property management CTA */}
         <div className="mb-12">
