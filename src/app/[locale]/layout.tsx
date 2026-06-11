@@ -6,7 +6,7 @@ import { routing } from "@/i18n/routing";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { LiveBar } from "@/components/LiveBar";
-import { playfair, geistMono } from "@/app/layout";
+import { baloo } from "@/app/layout";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Script from "next/script";
@@ -90,7 +90,7 @@ export default async function LocaleLayout({
   };
 
   return (
-    <html lang={locale} className={`${playfair.variable} ${geistMono.variable}`}>
+    <html lang={locale} className={baloo.variable}>
       <body className="bg-surface text-text font-sans antialiased">
         <script
           type="application/ld+json"

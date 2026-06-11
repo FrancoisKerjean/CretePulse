@@ -6,34 +6,31 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  /* Aegean blue - deep Mediterranean sea */
-  --color-aegean: #1B4965;
-  --color-aegean-light: #2D6A8F;
-  --color-aegean-faint: #E8F1F5;
-
-  /* Terra cotta - Cretan earth */
-  --color-terra: #B85C38;
-  --color-terra-light: #D4845F;
-  --color-terra-faint: #FBF0EB;
-
-  /* Olive - Cretan groves */
-  --color-olive: #5F7A3E;
-  --color-olive-light: #8BA665;
-
-  /* Sand - Cretan beaches */
-  --color-sand: #F5E6D3;
-  --color-sand-warm: #EDD9C0;
-
-  /* Limestone - Cretan stone */
-  --color-stone: #F7F4F0;
-  --color-stone-warm: #EDE8E1;
-
-  --color-surface: #FAFAF8;
-  --color-text: #1A1A2E;
-  --color-text-muted: #6B7280;
+  /* Kalimera : remap des roles existants (tout le site glisse) */
+  --color-aegean: #0B5E78;        /* ex bleu marine -> mer profonde */
+  --color-aegean-light: #2E7DB2;
+  --color-aegean-faint: #DFF7FA;
+  --color-terra: #ED7A5C;         /* terracotta vive */
+  --color-terra-light: #F29A82;
+  --color-terra-faint: #FDEEE9;
+  --color-olive: #7C9A53;
+  --color-olive-light: #9BB573;
+  --color-sand: #FFF3D6;
+  --color-sand-warm: #F2E7CE;
+  --color-stone: #EDF6F8;
+  --color-stone-warm: #E2EEF1;
+  --color-surface: #F6FBFC;
+  --color-text: #0B3954;
+  --color-text-muted: #5C7886;
   --color-text-light: #94A3B8;
-  --color-border: #E8E4DD;
-
+  --color-border: #DCE9EE;
+  /* Nouveaux tokens signature */
+  --color-lagoon: #00C2D4;
+  --color-lagoon-deep: #008C9E;
+  --color-sky: #BDEDF5;
+  --color-night: #07374A;
+  --color-sun: #FFC83D;
+  --color-ok: #14B86B;
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
@@ -198,7 +195,7 @@
     @apply font-sans;
   }
   h1, h2 {
-    font-family: var(--font-heading), "Playfair Display", Georgia, serif;
+    font-family: var(--font-heading), "Comfortaa", system-ui, sans-serif;
   }
 }
 
@@ -208,7 +205,7 @@
 }
 .card-hover:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px -4px rgba(27, 73, 101, 0.12);
+  box-shadow: 0 8px 24px -4px rgba(11, 94, 120, 0.12);
 }
 
 /* Hide scrollbar for weather strip */
@@ -234,7 +231,7 @@ a, button {
 }
 
 /* ── Editorial article body (replaces generic `prose prose-slate`) ──────────────
-   Travel-magazine styling: 18px/1.7 body, Playfair H2/H3, drop cap, framed figures,
+   Travel-magazine styling: 18px/1.7 body, Baloo H2/H3, drop cap, framed figures,
    blockquotes and elegant links. Spec: docs/marketing/audits/2026-06-08-crete-direct-article-refonte.md */
 .article-prose {
   font-family: var(--font-sans);
@@ -244,7 +241,7 @@ a, button {
 }
 .article-prose p { margin-bottom: 24px; }
 .article-prose p:first-of-type::first-letter {
-  font-family: var(--font-heading), "Playfair Display", Georgia, serif;
+  font-family: var(--font-heading), "Comfortaa", system-ui, sans-serif;
   font-weight: 700;
   font-size: 72px;
   line-height: 0.85;
@@ -253,7 +250,7 @@ a, button {
   color: var(--color-terra);
 }
 .article-prose h2 {
-  font-family: var(--font-heading), "Playfair Display", Georgia, serif;
+  font-family: var(--font-heading), "Comfortaa", system-ui, sans-serif;
   font-weight: 600;
   font-size: 32px;
   line-height: 1.15;
@@ -264,7 +261,7 @@ a, button {
   color: var(--color-text);
 }
 .article-prose h3 {
-  font-family: var(--font-heading), "Playfair Display", Georgia, serif;
+  font-family: var(--font-heading), "Comfortaa", system-ui, sans-serif;
   font-weight: 600;
   font-style: italic;
   font-size: 22px;
@@ -280,7 +277,7 @@ a, button {
 .article-prose figure { margin: 48px -40px; }
 .article-prose figure img { width: 100%; height: auto; border-radius: 4px; }
 .article-prose figure figcaption {
-  font-family: var(--font-heading), "Playfair Display", Georgia, serif;
+  font-family: var(--font-heading), "Comfortaa", system-ui, sans-serif;
   font-style: italic;
   font-size: 14px;
   color: var(--color-text-muted);
@@ -289,7 +286,7 @@ a, button {
 .article-prose blockquote {
   border-left: 4px solid var(--color-terra);
   padding-left: 24px;
-  font-family: var(--font-heading), "Playfair Display", Georgia, serif;
+  font-family: var(--font-heading), "Comfortaa", system-ui, sans-serif;
   font-style: italic;
   font-size: 22px;
   line-height: 1.4;
@@ -328,19 +325,18 @@ a, button {
 
 /* Voix typographique data : toute donnee chiffree (horaires, prix, temp, stats) */
 @utility font-data {
-  font-family: var(--font-data), ui-monospace, monospace;
+  font-family: var(--font-heading), "Comfortaa", system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
 }
 
 /* La carte unique du site : tous les styles de cartes convergent ici */
 @utility card-base {
   background: white;
   border: 1px solid var(--color-border);
-  border-radius: 0.75rem;
+  border-radius: 1.75rem;
   transition: box-shadow 150ms ease, transform 150ms ease;
   &:hover {
-    box-shadow: 0 4px 16px rgb(27 73 101 / 0.1);
+    box-shadow: 0 14px 36px rgb(11 94 120 / 0.16);
     transform: translateY(-2px);
   }
 }

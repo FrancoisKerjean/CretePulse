@@ -1,22 +1,13 @@
 import type { ReactNode } from "react";
 import { Geist } from "next/font/google";
-import { Geist_Mono } from "next/font/google";
-import { Playfair_Display } from "next/font/google";
+import { Baloo_2 } from "next/font/google";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
-export const geistMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-data",
-  weight: ["400", "600"],
-  display: "swap",
-});
-
-export const playfair = Playfair_Display({
+export const baloo = Baloo_2({
   subsets: ["latin"],
   variable: "--font-heading",
-  weight: ["400", "600", "700"],
-  style: ["normal", "italic"],
+  weight: ["500", "600", "700", "800"],
   display: "swap",
 });
 
