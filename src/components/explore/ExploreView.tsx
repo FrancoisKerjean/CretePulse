@@ -5,6 +5,9 @@ import { Star, X, MapPin, Search, ChevronLeft, ChevronRight, List, Map as MapIco
 import type { CbPlaceListItem, CbPlace } from "@/lib/cb-places";
 import { getCbPlaceBySlug } from "@/lib/cb-places";
 import { typeLabel } from "@/lib/cb-type-labels";
+import { nearestBy } from "@/lib/geo";
+import { useGeoPosition } from "@/components/geo/useGeoPosition";
+import { CiCompass } from "@/components/icons";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 type MaplibreMap = import("maplibre-gl").Map;
@@ -46,6 +49,7 @@ const T: Record<string, Record<string, string>> = {
     crowds: "Crowds", any: "Any", photos: "photos", noResults: "No place matches these filters.",
     showMap: "Map", showList: "List", facilities: "Facilities", accessibility: "Access",
     depth: "Depth", seaSurface: "Sea surface", loading: "Loading...", clear: "Clear filters",
+    nearMe: "Near me", geoUnavailable: "Location unavailable",
   },
   fr: {
     search: "Chercher un lieu...", results: "résultats", allTypes: "Tous", rating: "Note min.",
@@ -53,6 +57,7 @@ const T: Record<string, Record<string, string>> = {
     crowds: "Affluence", any: "Indifférent", photos: "photos", noResults: "Aucun lieu ne correspond à ces filtres.",
     showMap: "Carte", showList: "Liste", facilities: "Équipements", accessibility: "Accès",
     depth: "Profondeur", seaSurface: "État de la mer", loading: "Chargement...", clear: "Effacer les filtres",
+    nearMe: "Autour de moi", geoUnavailable: "Localisation indisponible",
   },
   de: {
     search: "Ort suchen...", results: "Ergebnisse", allTypes: "Alle", rating: "Min. Bewertung",
@@ -60,6 +65,7 @@ const T: Record<string, Record<string, string>> = {
     crowds: "Andrang", any: "Egal", photos: "Fotos", noResults: "Kein Ort entspricht diesen Filtern.",
     showMap: "Karte", showList: "Liste", facilities: "Ausstattung", accessibility: "Zugang",
     depth: "Tiefe", seaSurface: "Meeresoberfläche", loading: "Laden...", clear: "Filter löschen",
+    nearMe: "In meiner Nähe", geoUnavailable: "Standort nicht verfügbar",
   },
   el: {
     search: "Αναζήτηση τοποθεσίας...", results: "αποτελέσματα", allTypes: "Όλα", rating: "Ελάχ. βαθμολογία",
@@ -67,6 +73,7 @@ const T: Record<string, Record<string, string>> = {
     crowds: "Κόσμος", any: "Οποιοδήποτε", photos: "φωτογραφίες", noResults: "Κανένα μέρος δεν ταιριάζει.",
     showMap: "Χάρτης", showList: "Λίστα", facilities: "Παροχές", accessibility: "Πρόσβαση",
     depth: "Βάθος", seaSurface: "Επιφάνεια", loading: "Φόρτωση...", clear: "Καθαρισμός φίλτρων",
+    nearMe: "Κοντά μου", geoUnavailable: "Ο εντοπισμός δεν είναι διαθέσιμος",
   },
 };
 
@@ -76,6 +83,11 @@ function detectPrefecture(p: CbPlaceListItem): string | null {
   const txt = p.prefecture || "";
   for (const pref of PREFECTURES) if (txt.includes(pref)) return pref;
   return null;
+}
+
+/** "X.X km" sous 10 km, entier au-delà (badge distance Near me). */
+function fmtKm(km: number): string {
+  return km < 10 ? km.toFixed(1) : String(Math.round(km));
 }
 
 function RatingStars({ rating }: { rating: number | null }) {
@@ -103,6 +115,9 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
   const [selectedLoading, setSelectedLoading] = useState(false);
   const [photoIdx, setPhotoIdx] = useState(0);
   const [mobileView, setMobileView] = useState<"map" | "list">("map");
+  // Tri "Near me" : géoloc 100 % client (useGeoPosition), toggle on/off.
+  const geo = useGeoPosition();
+  const [nearActive, setNearActive] = useState(false);
 
   const typeCounts = useMemo(() => {
     const counts = new Map<string, number>();
@@ -136,6 +151,26 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
       return true;
     });
   }, [places, query, activeTypes, prefecture, minRating, sand, water, crowdLevel]);
+
+  // Liste affichée : tri distance quand Near me est actif et la position connue.
+  // Sinon ordre actuel, inchangé (denied/unavailable n'altèrent rien).
+  const displayed: Array<CbPlaceListItem & { km?: number }> = useMemo(() => {
+    if (!nearActive || !geo.pos) return filtered;
+    return nearestBy(
+      filtered,
+      (p) => (p.latitude != null && p.longitude != null ? [p.latitude, p.longitude] : null),
+      geo.pos,
+      filtered.length,
+    );
+  }, [filtered, nearActive, geo.pos]);
+
+  const geoBlocked = geo.status === "denied" || geo.status === "unavailable";
+
+  function toggleNearMe() {
+    if (nearActive) { setNearActive(false); return; }
+    setNearActive(true);
+    if (!geo.pos) geo.requestGeo();
+  }
 
   const hasFilters = query || activeTypes.size > 0 || prefecture || minRating > 0 || sand || water || crowdLevel;
   const beachFiltersRelevant = activeTypes.size === 0 || activeTypes.has("beach");
@@ -277,6 +312,21 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
               </select>
             </>
           )}
+          <button
+            onClick={toggleNearMe}
+            title={geoBlocked ? t.geoUnavailable : undefined}
+            aria-pressed={nearActive && Boolean(geo.pos)}
+            className={`flex items-center gap-1.5 text-sm py-1.5 px-3 rounded-lg border transition-colors ${
+              nearActive && geo.pos
+                ? "bg-aegean text-white border-aegean"
+                : geoBlocked
+                  ? "bg-surface text-text-muted border-aegean/20 opacity-60 cursor-help"
+                  : "bg-surface text-text border-aegean/20 hover:border-aegean/50"
+            }`}
+          >
+            <CiCompass className="w-4 h-4" />
+            {t.nearMe}
+          </button>
           {hasFilters && (
             <button onClick={clearFilters} className="text-xs text-terra hover:underline">{t.clear}</button>
           )}
@@ -326,10 +376,10 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
       {/* Main: list + map */}
       <div className="flex flex-1 min-h-0 relative">
         <div className={`${mobileView === "list" ? "flex" : "hidden"} md:flex flex-col w-full md:w-96 border-r border-aegean/10 bg-white overflow-y-auto`}>
-          {filtered.length === 0 && (
+          {displayed.length === 0 && (
             <p className="p-6 text-sm text-text-muted">{t.noResults}</p>
           )}
-          {filtered.slice(0, 200).map((p) => (
+          {displayed.slice(0, 200).map((p) => (
             <button
               key={p.slug}
               onClick={() => { selectPlace(p.slug); setMobileView("map"); }}
@@ -349,6 +399,11 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-sm text-text truncate">{p.name}</span>
                   <RatingStars rating={p.rating} />
+                  {p.km != null && (
+                    <span className="text-xs text-text-muted font-data whitespace-nowrap">
+                      · {fmtKm(p.km)} km
+                    </span>
+                  )}
                 </div>
                 <div className="text-xs text-text-muted mt-0.5">
                   <span className="inline-block w-2 h-2 rounded-full mr-1"
