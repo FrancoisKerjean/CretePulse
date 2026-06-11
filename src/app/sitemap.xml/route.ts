@@ -166,6 +166,7 @@ export async function GET() {
   push("/faq", "monthly", 0.7);
   push("/map", "monthly", 0.6);
   push("/search", "monthly", 0.4);
+  push("/match", "monthly", 0.6);
 
   // Programmatic pages
   for (const city of CITIES) {
