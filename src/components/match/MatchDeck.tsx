@@ -5,7 +5,7 @@
 // La logique de scoring est pure (src/lib/match-scoring.ts) ;
 // ici : gestes, écrans, persistance localStorage, events Plausible.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useTransform, AnimatePresence } from "motion/react";
 import { Heart, X, MapPin, Star, RotateCcw } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -116,6 +116,8 @@ const cardVariants = {
     x: dir * 560,
     rotate: dir * 18,
     opacity: 0,
+    // La carte sortante ne doit plus capter le geste suivant pendant l'exit.
+    pointerEvents: "none" as const,
     transition: { duration: 0.3 },
   }),
 };
@@ -164,8 +166,15 @@ function SwipeCard({
       dragElastic={0.9}
       whileDrag={{ cursor: "grabbing" }}
       onDragEnd={(_, info) => {
-        if (info.offset.x > SWIPE_OFFSET || info.velocity.x > SWIPE_VELOCITY) onSwipe(true);
-        else if (info.offset.x < -SWIPE_OFFSET || info.velocity.x < -SWIPE_VELOCITY) onSwipe(false);
+        // Vélocité dominante d'abord (fling), sinon offset si le geste final
+        // ne repart pas dans l'autre sens.
+        const vx = info.velocity.x;
+        const ox = info.offset.x;
+        let dir = 0;
+        if (Math.abs(vx) > SWIPE_VELOCITY) dir = Math.sign(vx);
+        else if (Math.abs(ox) > SWIPE_OFFSET && Math.sign(vx || ox) === Math.sign(ox)) dir = Math.sign(ox);
+        if (dir === 1) onSwipe(true);
+        else if (dir === -1) onSwipe(false);
       }}
     >
       <div className="relative h-full w-full cursor-grab overflow-hidden rounded-[28px] border border-border bg-night shadow-[0_18px_48px_rgba(11,94,120,.25)]">
@@ -229,6 +238,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
   const [swipes, setSwipes] = useState(0);
   const [match, setMatch] = useState<MatchPlace | null>(null);
   const [exitDir, setExitDir] = useState(1);
+  const lastSwipedRef = useRef<string | null>(null);
 
   // Hydratation au mount uniquement : localStorage + échantillonnage aléatoire
   // (jamais au render serveur, sinon mismatch d'hydratation).
@@ -249,6 +259,10 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
   function handleSwipe(liked: boolean) {
     const place = deck[index];
     if (!place || match) return;
+    // Garde anti-double-traitement : un même slug ne peut pas être swipé deux fois
+    // d'affilée (closure périmée, double event pendant l'exit).
+    if (lastSwipedRef.current === place.slug) return;
+    lastSwipedRef.current = place.slug;
     setExitDir(liked ? 1 : -1);
     const nextProfile = updateProfile(profile, place, liked);
     const nextLiked = liked && !likedSlugs.includes(place.slug) ? [...likedSlugs, place.slug] : likedSlugs;
@@ -279,9 +293,11 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
   function closeMatch(replay: boolean) {
     if (!match) return;
     const slug = match.slug;
-    setSeenSlugs((s) => (s.includes(slug) ? s : [...s, slug]));
+    const nextSeen = seenSlugs.includes(slug) ? seenSlugs : [...seenSlugs, slug];
+    setSeenSlugs(nextSeen);
     setDeck((d) => d.filter((p, i) => i < index || p.slug !== slug));
     setMatch(null);
+    saveStored({ profile, liked: likedSlugs, seen: nextSeen });
     if (replay) track("match_replay");
   }
 
@@ -290,18 +306,28 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
     setDeck(sampleDeck(pool, DECK_SIZE, seen));
     setIndex(0);
     setSwipes(0);
+    // Nouveau paquet : il peut recommencer par n'importe quel slug, et après
+    // reset du pool un slug déjà swipé peut légitimement revenir.
+    lastSwipedRef.current = null;
     track("match_deck_start", { redeal: "1" });
   }
 
-  // Flèches clavier (desktop). Pas de deps : closure fraîche à chaque render.
+  const handleSwipeRef = useRef(handleSwipe);
+  // Convention « latest ref » : on stocke la version courante de handleSwipe
+  // pour que le listener clavier (bindé une seule fois) ne soit jamais périmé.
+  // eslint-disable-next-line react-hooks/refs
+  handleSwipeRef.current = handleSwipe;
+
+  // Flèches clavier (desktop). Listener bindé une fois, version courante via ref
+  // (un re-bind par render laisse une fenêtre de closure périmée sous auto-repeat).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") handleSwipe(true);
-      if (e.key === "ArrowLeft") handleSwipe(false);
+      if (e.key === "ArrowRight") handleSwipeRef.current(true);
+      if (e.key === "ArrowLeft") handleSwipeRef.current(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  });
+  }, []);
 
   const visible = deck.slice(index, index + 3);
   const likedPlaces = likedSlugs
@@ -435,7 +461,13 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
                 </p>
                 <Link
                   href={`/explore?place=${match.slug}`}
-                  onClick={() => track("match_clicked", { slug: match.slug })}
+                  onClick={() => {
+                    track("match_clicked", { slug: match.slug });
+                    // Marquer le lieu comme vu avant la navigation, sinon le slug
+                    // du match n'est jamais persisté quand on quitte par ce lien.
+                    const nextSeen = seenSlugs.includes(match.slug) ? seenSlugs : [...seenSlugs, match.slug];
+                    saveStored({ profile, liked: likedSlugs, seen: nextSeen });
+                  }}
                   className="mt-5 block rounded-full bg-terra px-6 py-3.5 font-heading text-[15px] font-bold text-white no-underline shadow-[0_12px_28px_rgba(237,122,92,.4)]"
                 >
                   {t.seeSpot}
