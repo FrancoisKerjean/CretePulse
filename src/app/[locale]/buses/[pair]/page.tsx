@@ -7,6 +7,7 @@ import { getBusRoutes, getBusDestinations, latestScrapedAt } from "@/lib/buses";
 import type { BusRoute } from "@/lib/buses";
 import { eligiblePairs, pairRoutes, onwardPlaces, pairSlug, slugifyPlace } from "@/lib/bus-pairs";
 import { TaxiCompare } from "@/components/TaxiCompare";
+import { NextDeparture } from "@/components/NextDeparture";
 import { taxiFareRange } from "@/lib/taxi-fare";
 import partnersData from "@/data/taxi-partners.json";
 import type { Locale } from "@/lib/types";
@@ -172,6 +173,9 @@ function DirectionSection({ from, to, routes, ui }: {
         <p className="text-sm text-text-muted">{T.noTimetable[ui]}</p>
       ) : routes.map((r) => (
         <div key={r.id} className="rounded-xl border border-border bg-white p-4 mb-3">
+          <div className="mb-2">
+            <NextDeparture route={r} locale={ui} />
+          </div>
           <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm mb-3">
             {fmtPrice(r, ui) ? (
               <span className="inline-flex items-center gap-1 font-semibold text-text">

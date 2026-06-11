@@ -13,6 +13,7 @@ import {
 } from "@/lib/bus-journey";
 import { slugifyPlace, pairSlug } from "@/lib/bus-pairs";
 import { TaxiCompare } from "@/components/TaxiCompare";
+import { NextDeparture } from "@/components/NextDeparture";
 import partnersData from "@/data/taxi-partners.json";
 
 const TP = {
@@ -106,6 +107,7 @@ function LegRow({ leg, locale }: { leg: JourneyLeg; locale: Locale }) {
             {leg.route.price_estimated ? ` (${tp("indicative", locale)})` : ""}
           </span>
         )}
+        <NextDeparture route={leg.route} locale={locale} />
       </div>
       <p className="text-[11px] uppercase tracking-wide text-text-muted mt-2 mb-1">
         {tp("departuresThatDay", locale)}
