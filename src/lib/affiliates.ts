@@ -18,7 +18,9 @@ export const AFFILIATE_LINKS = {
   },
   tours: {
     // Real GetYourGuide partner ID (account "Crete.direct", 8% commission, 10/06/2026)
-    url: "https://www.getyourguide.com/crete-l517/?partner_id=UIHUPYW",
+    // l404 = Crete island landing; l517 was a wrong location ID (Kami caught
+    // it landing off-Crete, 12/06/2026).
+    url: "https://www.getyourguide.com/crete-l404/?partner_id=UIHUPYW",
     label: { en: "Book tours", fr: "Réserver des excursions", de: "Touren buchen", el: "Κράτηση εκδρομών" },
   },
   ferry: {
