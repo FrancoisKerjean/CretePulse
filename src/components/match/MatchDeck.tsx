@@ -234,8 +234,8 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
   // (jamais au render serveur, sinon mismatch d'hydratation).
   useEffect(() => {
     const stored = loadStored();
-    // Sync depuis localStorage apres hydratation : un lazy initializer creerait
-    // un mismatch SSR (le HTML serveur est rendu sans etat client).
+    // Sync depuis localStorage après hydratation : un lazy initializer créerait
+    // un mismatch SSR (le HTML serveur est rendu sans état client).
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setProfile(stored.profile);
     setLikedSlugs(stored.liked);
