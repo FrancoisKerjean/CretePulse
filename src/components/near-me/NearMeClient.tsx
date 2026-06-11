@@ -7,6 +7,9 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { isOnCrete, nearestBy } from "@/lib/geo";
+import { allPickups } from "@/lib/car-partners";
+import { SLUG_COORDS } from "@/lib/taxi-fare";
+import { CarPromo } from "@/components/car-rental/CarPromo";
 import { useGeoPosition } from "@/components/geo/useGeoPosition";
 import { PlacePicker } from "@/components/geo/PlacePicker";
 import { CardThumb } from "@/components/CardThumb";
@@ -354,6 +357,18 @@ export function NearMeClient({
   const nowHM = athensNowHM();
   const upcoming = sections?.stop ? sections.stop.nextTimes.filter((x) => x >= nowHM).slice(0, 3) : [];
 
+  // Encart partenaire location : pickup servi le plus proche si géolocalisé
+  // sur l'île, sinon sans pickup (le wizard ouvre à l'étape 1).
+  const carPickup = pos && onCrete
+    ? nearestBy(
+        allPickups().filter((p) => p.served),
+        (p) => SLUG_COORDS[p.slug] ?? null,
+        pos,
+        1,
+      )[0]?.slug
+    : undefined;
+  const carPromo = <CarPromo locale={locale} pickup={carPickup} source="near-me" />;
+
   // ---- Avant position : activation / fallback ------------------------------
 
   if (!pos) {
@@ -387,6 +402,7 @@ export function NearMeClient({
           <span className="text-sm text-text-muted whitespace-nowrap">{t.orPick}</span>
           <PlacePicker value={null} onChange={setManual} label={t.pickLabel} />
         </div>
+        {carPromo}
       </div>
     );
   }
@@ -404,6 +420,7 @@ export function NearMeClient({
         <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-text-muted">
           <CiMark className="w-4 h-4 text-lagoon shrink-0" /> {t.trust}
         </p>
+        {carPromo}
       </div>
     );
   }
@@ -611,6 +628,9 @@ export function NearMeClient({
           </div>
         </section>
       )}
+
+      {/* Encart partenaire location de voiture (pickup le plus proche servi) */}
+      {carPromo}
     </div>
   );
 }

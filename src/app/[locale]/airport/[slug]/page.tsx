@@ -12,6 +12,14 @@ import {
 } from "@/lib/airports";
 import { buildAlternates } from "@/lib/seo";
 import { routing } from "@/i18n/routing";
+import { CarPromo } from "@/components/car-rental/CarPromo";
+
+// Pickup contextuel du wizard /car-rental : CHQ -> chania-airport, HER ->
+// heraklion. Sitia (JSH) hors zone couverte -> encart sans pickup (étape 1).
+const CAR_PICKUP: Record<string, string> = {
+  CHQ: "chania-airport",
+  HER: "heraklion",
+};
 
 export const revalidate = 86400;
 
@@ -651,6 +659,9 @@ export default async function AirportPage(
             </a>
           </div>
         </section>
+
+        {/* Encart partenaire location de voiture (wizard interne /car-rental) */}
+        <CarPromo locale={locale} pickup={CAR_PICKUP[airport.iata]} source="airport" />
 
         {/* Staying nearby: airbnb data cross-links */}
         <section className="mb-10">

@@ -11,6 +11,8 @@ import { TaxiCompare } from "@/components/TaxiCompare";
 import { NextDeparture } from "@/components/NextDeparture";
 import { TimeChips } from "@/components/TimeChips";
 import { taxiFareRange } from "@/lib/taxi-fare";
+import { zoneForPickup } from "@/lib/car-partners";
+import { CarPromo } from "@/components/car-rental/CarPromo";
 import partnersData from "@/data/taxi-partners.json";
 import type { Locale } from "@/lib/types";
 
@@ -318,6 +320,16 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
       <div className="max-w-3xl mx-auto px-4 pt-6 pb-12">
         <DirectionSection from={placeA} to={placeB} routes={pr.outbound} ui={ui} />
         <DirectionSection from={placeB} to={placeA} routes={pr.inbound} ui={ui} />
+
+        {/* Liaison bus incomplète (au moins un sens sans horaires publiés) ->
+            encart location de voiture, pickup = placeA si en zone partenaire */}
+        {(pr.outbound.length === 0 || pr.inbound.length === 0) && (
+          <CarPromo
+            locale={locale}
+            pickup={zoneForPickup(sa) ? sa : zoneForPickup(sb) ? sb : undefined}
+            source="bus-pair"
+          />
+        )}
 
         {taxiFare && (
           <TaxiCompare

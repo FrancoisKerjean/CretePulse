@@ -18,6 +18,10 @@ import { AffiliateCTA } from "@/components/ui/affiliate-cta";
 import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 import { buildAlternates } from "@/lib/seo";
 import RentalCTA from "@/components/RentalCTA";
+import { CarPromo } from "@/components/car-rental/CarPromo";
+import { allPickups } from "@/lib/car-partners";
+import { SLUG_COORDS } from "@/lib/taxi-fare";
+import { nearestBy } from "@/lib/geo";
 
 export const revalidate = 86400;
 
@@ -531,8 +535,23 @@ export default async function BeachDetailPage({
           </div>
         </section>
 
-        {/* Car rental partner banner (DiscoverCars): most beaches need wheels */}
-        <AffiliateBanner type="carRental" locale={locale} placeName={name} className="mb-4" />
+        {/* Car rental: plages de l'ouest (zone partenaire chania-west) ->
+            encart wizard interne, pickup servi le plus proche ; ailleurs le
+            placeholder affilié DiscoverCars reste */}
+        {beach.region === "west" ? (
+          <CarPromo
+            locale={locale}
+            pickup={nearestBy(
+              allPickups().filter((p) => p.served),
+              (p) => SLUG_COORDS[p.slug] ?? null,
+              { lat: beach.latitude, lon: beach.longitude },
+              1,
+            )[0]?.slug}
+            source="beach"
+          />
+        ) : (
+          <AffiliateBanner type="carRental" locale={locale} placeName={name} className="mb-4" />
+        )}
 
         {/* Property management CTA */}
         <div className="mb-12">

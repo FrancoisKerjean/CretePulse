@@ -15,6 +15,8 @@ import {
 } from "@/lib/bus-journey";
 import { slugifyPlace, pairSlug } from "@/lib/bus-pairs";
 import { SLUG_COORDS } from "@/lib/taxi-fare";
+import { zoneForPickup } from "@/lib/car-partners";
+import { CarPromo } from "@/components/car-rental/CarPromo";
 import { nearestBy } from "@/lib/geo";
 import { useGeoPosition } from "@/components/geo/useGeoPosition";
 import { TaxiCompare } from "@/components/TaxiCompare";
@@ -252,6 +254,13 @@ export function JourneyPlanner({
   const taxiSlugB = toPlace ? slugifyPlace(toPlace) : null;
   const taxiPair = fromPlace && toPlace ? pairSlug(fromPlace, toPlace) : null;
 
+  // Pas d'itinéraire bus -> encart location de voiture, pickup contextuel :
+  // le départ s'il appartient à une zone car-partners, sinon l'arrivée.
+  const carPickup =
+    (taxiSlugA && zoneForPickup(taxiSlugA) ? taxiSlugA : null) ??
+    (taxiSlugB && zoneForPickup(taxiSlugB) ? taxiSlugB : null) ??
+    undefined;
+
   return (
     <div className="rounded-[28px] bg-white p-6 mb-6 shadow-[0_12px_32px_rgba(11,94,120,.10)]">
       <p className="font-heading font-bold text-base text-text mb-3.5">{tp("searchTitle", locale)}</p>
@@ -332,13 +341,16 @@ export function JourneyPlanner({
       )}
 
       {noJourney && (
-        <div className="mt-4 rounded-3xl border border-border bg-surface p-4 text-sm text-text-muted flex items-center gap-4">
-          <KriKri mood="empty" className="w-20 h-16 shrink-0" />
-          <div className="space-y-1">
-            <p>{noServiceThatDay ? tp("noServiceThatDay", locale) : tp("noRoute", locale)}</p>
-            {westNotice && <p>{tp("westPartial", locale)}</p>}
+        <>
+          <div className="mt-4 rounded-3xl border border-border bg-surface p-4 text-sm text-text-muted flex items-center gap-4">
+            <KriKri mood="empty" className="w-20 h-16 shrink-0" />
+            <div className="space-y-1">
+              <p>{noServiceThatDay ? tp("noServiceThatDay", locale) : tp("noRoute", locale)}</p>
+              {westNotice && <p>{tp("westPartial", locale)}</p>}
+            </div>
           </div>
-        </div>
+          <CarPromo locale={locale} pickup={carPickup} source="journey-planner" />
+        </>
       )}
 
       {taxiSlugA && taxiSlugB && taxiPair && (

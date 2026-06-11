@@ -4,6 +4,15 @@ import { notFound } from "next/navigation";
 import { ChevronLeft, Bus, Car, Ship, Plane, Clock, Euro, RefreshCw, Lightbulb, ArrowRight } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
 import { AffiliateBanner } from "@/components/ui/affiliate-banner";
+import { CarPromo } from "@/components/car-rental/CarPromo";
+
+// Routes en zone couverte par le partenaire location (chania-west) : encart
+// wizard interne au lieu du placeholder affilié DiscoverCars. Ailleurs, le
+// placeholder DiscoverCars reste (rien à perdre hors zone).
+const CAR_PARTNER_PICKUP: Record<string, string> = {
+  "chania-airport-to-city": "chania-airport",
+  "heraklion-to-chania": "chania",
+};
 
 export const revalidate = 86400;
 
@@ -466,9 +475,13 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
           </section>
         )}
 
-        {/* Car rental partner banner (DiscoverCars, real affiliate ID): the
-            most flexible alternative on every route */}
-        <AffiliateBanner type="carRental" locale={locale} placeName={route.to} />
+        {/* Car rental: encart partenaire local (zone ouest couverte) sinon
+            placeholder affilié DiscoverCars (real affiliate ID) */}
+        {CAR_PARTNER_PICKUP[slug] ? (
+          <CarPromo locale={locale} pickup={CAR_PARTNER_PICKUP[slug]} source="getting-around" />
+        ) : (
+          <AffiliateBanner type="carRental" locale={locale} placeName={route.to} />
+        )}
 
         {/* FAQ */}
         <section>

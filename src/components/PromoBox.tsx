@@ -11,6 +11,8 @@ export function PromoBox({ icon: Icon, title, line, ctaLabel, ctaHref, disclosur
   ctaHref: string;
   disclosure?: string; // ex "Partner link" · obligatoire pour l'affiliation
 }) {
+  // CTA interne (wizard /car-rental…) : même onglet, pas de rel d'affiliation.
+  const external = /^https?:\/\//.test(ctaHref);
   return (
     <aside className="rounded-[26px] border border-lagoon/20 bg-aegean-faint p-5 my-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -21,7 +23,8 @@ export function PromoBox({ icon: Icon, title, line, ctaLabel, ctaHref, disclosur
             {line && <p className="text-sm text-text-muted m-0">{line}</p>}
           </div>
         </div>
-        <a href={ctaHref} target="_blank" rel="nofollow noopener sponsored"
+        <a href={ctaHref}
+           {...(external ? { target: "_blank", rel: "nofollow noopener sponsored" } : {})}
            className="inline-flex items-center rounded-full bg-sun text-text text-sm font-heading font-bold px-5 py-2.5 hover:brightness-105 transition-all shrink-0">
           {ctaLabel}
         </a>
