@@ -1,5 +1,5 @@
 /**
- * YouTubeEmbed — Responsive iframe lazy-loaded pour les vidéos daily auto-générées.
+ * YouTubeEmbed · Responsive iframe lazy-loaded pour les vidéos daily auto-générées.
  * Aspect ratio 9:16 (vertical Shorts) sur mobile, 16:9 sur desktop.
  * Loading lazy + privacy-enhanced via youtube-nocookie.com (pas de cookies tant que pas joué).
  */

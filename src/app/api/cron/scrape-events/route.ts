@@ -8,7 +8,7 @@ function verifyCron(request: NextRequest): boolean {
   return authHeader === `Bearer ${cronSecret}`;
 }
 
-// DISABLED 2026-06-08 — this route previously used an LLM (Claude Haiku) to *fabricate*
+// DISABLED 2026-06-08 · this route previously used an LLM (Claude Haiku) to *fabricate*
 // upcoming events ("Generate 10 upcoming events in Crete with accurate coordinates") and
 // inserted them with verified=true / source_url=null. That put invented festivals with
 // invented dates live on /events. 24 fabricated rows were purged.

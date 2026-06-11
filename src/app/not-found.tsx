@@ -9,7 +9,7 @@ export default function RootNotFound() {
             <p style={{ fontSize: "96px", fontWeight: "bold", color: "rgba(27, 73, 101, 0.2)", marginBottom: "16px" }}>404</p>
             <h1 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "12px" }}>Page not found</h1>
             <p style={{ color: "#6B7280", marginBottom: "32px" }}>The page you are looking for does not exist.</p>
-            <Link href="/en" style={{ display: "inline-block", background: "#1B4965", color: "white", padding: "12px 24px", borderRadius: "12px", textDecoration: "none", fontWeight: "bold", fontSize: "14px" }}>
+            <Link href="/en" style={{ display: "inline-block", background: "#0B5E78", color: "white", padding: "12px 24px", borderRadius: "12px", textDecoration: "none", fontWeight: "bold", fontSize: "14px" }}>
               Go to Crete Direct
             </Link>
           </div>

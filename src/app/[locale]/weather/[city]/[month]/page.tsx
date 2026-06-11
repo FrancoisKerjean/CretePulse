@@ -162,7 +162,7 @@ export default async function WeatherCityMonthPage({ params }: { params: Promise
           <Link href={`/${locale}/weather`} className="inline-flex items-center gap-1 text-white/50 text-sm hover:text-white/80 mb-4">
             <ChevronLeft className="w-4 h-4" /> {L.allWeather}
           </Link>
-          <h1 className="text-3xl md:text-5xl font-bold" style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}>
+          <h1 className="text-3xl md:text-5xl font-bold" style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}>
             {heroTitles[locale] || heroTitles.en}
           </h1>
           <p className="text-white/50 text-sm mt-2">{city.nameEl}</p>

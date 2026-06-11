@@ -392,7 +392,7 @@ export default async function WhereToStayAreaPage({
           </span>
           <h1
             className="text-3xl md:text-5xl font-bold mb-3"
-            style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
+            style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}
           >
             {labels.pageTitle} {area.name}
           </h1>
@@ -483,7 +483,7 @@ export default async function WhereToStayAreaPage({
           </div>
         </section>
 
-        {/* Bus access — internal linking vers /buses */}
+        {/* Bus access · internal linking vers /buses */}
         <BusAccessBox
           locale={locale}
           destinationName={area.name}

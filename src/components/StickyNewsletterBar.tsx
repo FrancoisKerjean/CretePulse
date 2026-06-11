@@ -8,25 +8,25 @@ const COOKIE_DAYS = 30;
 
 const COPY: Record<string, { hook: string; cta: string; placeholder: string; success: string }> = {
   en: {
-    hook: "Weekly Crete briefing — news, weather, events. Free.",
+    hook: "Weekly Crete briefing · news, weather, events. Free.",
     cta: "Subscribe",
     placeholder: "you@email.com",
     success: "Check your inbox to confirm.",
   },
   fr: {
-    hook: "Briefing hebdo Crète — actus, météo, événements. Gratuit.",
+    hook: "Briefing hebdo Crète · actus, météo, événements. Gratuit.",
     cta: "S'inscrire",
     placeholder: "vous@email.com",
     success: "Vérifiez votre boîte pour confirmer.",
   },
   de: {
-    hook: "Wöchentliches Kreta-Briefing — Nachrichten, Wetter, Events. Kostenlos.",
+    hook: "Wöchentliches Kreta-Briefing · Nachrichten, Wetter, Events. Kostenlos.",
     cta: "Abonnieren",
     placeholder: "sie@email.com",
     success: "Bitte bestätigen Sie per E-Mail.",
   },
   el: {
-    hook: "Εβδομαδιαίο ενημερωτικό για την Κρήτη — νέα, καιρός, εκδηλώσεις. Δωρεάν.",
+    hook: "Εβδομαδιαίο ενημερωτικό για την Κρήτη · νέα, καιρός, εκδηλώσεις. Δωρεάν.",
     cta: "Εγγραφή",
     placeholder: "you@email.com",
     success: "Ελέγξτε το email σας.",

@@ -64,7 +64,7 @@ function FeaturedCard({ guide, locale }: { guide: Guide; locale: Locale }) {
         </h2>
         <p className="font-data text-xs text-text-light mt-4 mb-0 flex items-center gap-1.5">
           <Clock className="w-3 h-3" />
-          {guide.read_time ?? "—"} {READ_TIME_LABEL[locale] ?? READ_TIME_LABEL.en}
+          {guide.read_time ?? "·"} {READ_TIME_LABEL[locale] ?? READ_TIME_LABEL.en}
         </p>
       </div>
     </Link>

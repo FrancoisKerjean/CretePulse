@@ -553,7 +553,7 @@ export default async function AirportPage(
             <div className="text-sm text-stone-500">{fmtNum(busyAvg, locale)} {t.avgPassengers}</div>
           </div>
           {/* aircraft_intl is populated on only 2 of 26 months in the HCAA
-              data, which rendered as a misleading "0% international" — show
+              data, which rendered as a misleading "0% international" · show
               the last full calendar year instead, which is solid. */}
           {stats.lastFullYear && (
             <div className="rounded-xl border border-stone-200 bg-white p-4">

@@ -10,7 +10,7 @@ const TITLES: Record<string, string> = {
 };
 
 const SUBS: Record<string, string> = {
-  en: "Get the weekly Crete briefing — news, weather, events. No spam.",
+  en: "Get the weekly Crete briefing · news, weather, events. No spam.",
   fr: "Recevez la synthèse hebdomadaire de Crète : actualités, météo, événements. Pas de spam.",
   de: "Das wöchentliche Kreta-Briefing : Nachrichten, Wetter, Events. Kein Spam.",
   el: "Το εβδομαδιαίο ενημερωτικό για την Κρήτη : νέα, καιρός, εκδηλώσεις. Χωρίς spam.",

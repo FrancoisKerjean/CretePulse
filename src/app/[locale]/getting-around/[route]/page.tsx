@@ -383,7 +383,7 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
           <Link href={`/${locale}/buses`} className="inline-flex items-center gap-1 text-white/50 text-sm hover:text-white/80 mb-4">
             <ChevronLeft className="w-4 h-4" /> {L.back}
           </Link>
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight" style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}>
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight" style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}>
             {route.from} <ArrowRight className="inline w-8 h-8 md:w-10 md:h-10 mx-2 opacity-60" /> {route.to}
           </h1>
           <p className="text-white/70 text-lg mt-4 max-w-2xl">
@@ -499,7 +499,7 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
                   className="flex items-center gap-2 px-4 py-3 bg-white border border-border rounded-xl hover:border-aegean hover:shadow-sm transition-all text-sm font-medium text-text"
                 >
                   <ArrowRight className="w-4 h-4 text-aegean flex-shrink-0" />
-                  {r.from} → {r.to}
+                  {r.from} · {r.to}
                 </Link>
               ))}
             </div>

@@ -12,7 +12,7 @@ interface FormValues {
   location: string;
   description: string;
   email: string;
-  website: string; // honeypot — hidden from real users
+  website: string; // honeypot · hidden from real users
 }
 
 const INITIAL: FormValues = {
@@ -150,7 +150,7 @@ export function SubmitEventClient() {
           className="bg-white border border-border rounded-2xl p-7 shadow-sm flex flex-col gap-5"
           noValidate
         >
-          {/* Honeypot — hidden from humans, bots fill it */}
+          {/* Honeypot · hidden from humans, bots fill it */}
           <div className="hidden" aria-hidden="true">
             <input
               type="text"

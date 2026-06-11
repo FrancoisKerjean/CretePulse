@@ -4,7 +4,7 @@
 // (one per locale). That triggered a Next.js 16 / Turbopack bug where the `id`
 // argument passed to the sitemap function was unreliable, producing URLs like
 // /undefined/* in production. After deploying a defensive `resolveLocale()`,
-// we still observed that all sub-sitemaps emitted /en/* — the underlying bug
+// we still observed that all sub-sitemaps emitted /en/* · the underlying bug
 // could not be worked around in code.
 //
 // This route handler bypasses the framework convention entirely. It produces a
@@ -194,7 +194,7 @@ export async function GET() {
   for (const s of ARCH_SLUGS) push(`/archaeology/${s}`, "monthly", 0.6);
 
   // Inside Airbnb data pages: 24 Crete neighbourhoods x 22 locales = 528 URLs.
-  // High SEO priority — these are data-exclusive pages (ADR, occupancy, hosts
+  // High SEO priority · these are data-exclusive pages (ADR, occupancy, hosts
   // breakdown, revenue estimates from public Inside Airbnb snapshot) that
   // no competitor can replicate. Prerendered for en/fr/de/el (96 pages),
   // ISR-served for the other 18 locales with English UI fallback + proper
@@ -208,7 +208,7 @@ export async function GET() {
   // Live utility: "where to swim today" (wind-aware daily pick, ISR 30 min).
   push("/beaches/today", "daily", 0.9);
 
-  // Dynamic DB pages — news + guides use real published_at as lastmod
+  // Dynamic DB pages · news + guides use real published_at as lastmod
   // (huge crawl prioritization signal for Google News)
   const [beaches, villages, foodPlaces, hikes, news, guides] = await Promise.all([
     fetchSlugs("beaches"),

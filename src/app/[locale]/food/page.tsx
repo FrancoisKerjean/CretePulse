@@ -17,7 +17,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 const META: Record<string, { title: string; desc: string }> = {
   en: {
     title: "Best Restaurants & Tavernas in Crete",
-    desc: "Best restaurants, tavernas, cafes and bakeries across Crete. Local picks by region — east, west, central and south Crete. Authentic Cretan cuisine.",
+    desc: "Best restaurants, tavernas, cafes and bakeries across Crete. Local picks by region · east, west, central and south Crete. Authentic Cretan cuisine.",
   },
   fr: {
     title: "Meilleurs Restaurants & Tavernes en Crète",
@@ -54,10 +54,10 @@ const ALL_LABEL: Record<string, string> = {
 };
 
 const SUBTITLE: Record<string, string> = {
-  en: "Local food guide — curated picks from across the island",
-  fr: "Guide gastronomique local — sélection de bonnes adresses",
-  de: "Lokaler Gastronomieführer — kuratierte Empfehlungen",
-  el: "Τοπικός γαστρονομικός οδηγός — επιλεγμένες προτάσεις",
+  en: "Local food guide · curated picks from across the island",
+  fr: "Guide gastronomique local · sélection de bonnes adresses",
+  de: "Lokaler Gastronomieführer · kuratierte Empfehlungen",
+  el: "Τοπικός γαστρονομικός οδηγός · επιλεγμένες προτάσεις",
 };
 
 // ---------------------------------------------------------------------------
@@ -133,7 +133,7 @@ export default async function FoodPage({
     ? (regionParam as (typeof REGIONS)[number])
     : undefined;
 
-  // Fetch data — filtered when a region is active, otherwise curated overview
+  // Fetch data · filtered when a region is active, otherwise curated overview
   let places: Awaited<ReturnType<typeof getAllFoodPlaces>> = [];
   try {
     if (activeRegion || typeParam) {
@@ -205,7 +205,7 @@ export default async function FoodPage({
         {places.length === 0 ? (
           <EmptyState locale={loc} />
         ) : activeRegion ? (
-          /* Single region view — grouped by type */
+          /* Single region view · grouped by type */
           <RegionSection
             places={places}
             region={activeRegion}
@@ -213,7 +213,7 @@ export default async function FoodPage({
             activeType={typeParam}
           />
         ) : (
-          /* Overview — one section per region that has results */
+          /* Overview · one section per region that has results */
           <div className="space-y-12">
             {REGIONS.map((r) => {
               const regionPlaces = places.filter((p) => p.region === r);

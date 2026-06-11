@@ -19,7 +19,7 @@ export function buildAlternates(locale: string, path: string = "") {
 // ----- Localized SEO title templates -----------------------------------
 // Used when meta titles must be authored per locale (food, villages, etc.).
 // Keep brand suffix consistent: "| Crete Direct" stays in latin script even
-// for non-latin locales — Google uses it as a recognizable brand anchor.
+// for non-latin locales · Google uses it as a recognizable brand anchor.
 
 type TitleVars = {
   name: string;
@@ -30,17 +30,17 @@ type TitleVars = {
 
 const FOOD_TITLE_TEMPLATES: Record<string, (v: TitleVars) => string> = {
   en: (v) =>
-    `${v.name}${v.cuisine ? ` — ${v.cuisine}` : v.type ? ` — ${v.type}` : ""}${v.region ? ` in ${v.region} Crete` : " in Crete"} | Crete Direct`,
+    `${v.name}${v.cuisine ? ` · ${v.cuisine}` : v.type ? ` · ${v.type}` : ""}${v.region ? ` in ${v.region} Crete` : " in Crete"} | Crete Direct`,
   fr: (v) =>
-    `${v.name}${v.cuisine ? ` — ${v.cuisine}` : v.type ? ` — ${v.type}` : ""}${v.region ? ` à ${v.region}, Crète` : " en Crète"} | Crete Direct`,
+    `${v.name}${v.cuisine ? ` · ${v.cuisine}` : v.type ? ` · ${v.type}` : ""}${v.region ? ` à ${v.region}, Crète` : " en Crète"} | Crete Direct`,
   de: (v) =>
-    `${v.name}${v.cuisine ? ` — ${v.cuisine}` : v.type ? ` — ${v.type}` : ""}${v.region ? ` in ${v.region}, Kreta` : " auf Kreta"} | Crete Direct`,
+    `${v.name}${v.cuisine ? ` · ${v.cuisine}` : v.type ? ` · ${v.type}` : ""}${v.region ? ` in ${v.region}, Kreta` : " auf Kreta"} | Crete Direct`,
   el: (v) =>
-    `${v.name}${v.cuisine ? ` — ${v.cuisine}` : ""}${v.region ? ` στην ${v.region}, Κρήτη` : " στην Κρήτη"} | Crete Direct`,
-  it: (v) => `${v.name}${v.cuisine ? ` — ${v.cuisine}` : ""}${v.region ? ` a ${v.region}, Creta` : " a Creta"} | Crete Direct`,
-  es: (v) => `${v.name}${v.cuisine ? ` — ${v.cuisine}` : ""}${v.region ? ` en ${v.region}, Creta` : " en Creta"} | Crete Direct`,
-  pt: (v) => `${v.name}${v.cuisine ? ` — ${v.cuisine}` : ""}${v.region ? ` em ${v.region}, Creta` : " em Creta"} | Crete Direct`,
-  nl: (v) => `${v.name}${v.cuisine ? ` — ${v.cuisine}` : ""}${v.region ? ` in ${v.region}, Kreta` : " op Kreta"} | Crete Direct`,
+    `${v.name}${v.cuisine ? ` · ${v.cuisine}` : ""}${v.region ? ` στην ${v.region}, Κρήτη` : " στην Κρήτη"} | Crete Direct`,
+  it: (v) => `${v.name}${v.cuisine ? ` · ${v.cuisine}` : ""}${v.region ? ` a ${v.region}, Creta` : " a Creta"} | Crete Direct`,
+  es: (v) => `${v.name}${v.cuisine ? ` · ${v.cuisine}` : ""}${v.region ? ` en ${v.region}, Creta` : " en Creta"} | Crete Direct`,
+  pt: (v) => `${v.name}${v.cuisine ? ` · ${v.cuisine}` : ""}${v.region ? ` em ${v.region}, Creta` : " em Creta"} | Crete Direct`,
+  nl: (v) => `${v.name}${v.cuisine ? ` · ${v.cuisine}` : ""}${v.region ? ` in ${v.region}, Kreta` : " op Kreta"} | Crete Direct`,
 };
 
 export function buildFoodTitle(locale: string, vars: TitleVars): string {
@@ -49,14 +49,14 @@ export function buildFoodTitle(locale: string, vars: TitleVars): string {
 }
 
 const VILLAGE_TITLE_TEMPLATES: Record<string, (name: string, region?: string | null) => string> = {
-  en: (n, r) => `${n}${r ? `, ${r}` : ""}, Crete — Village Guide | Crete Direct`,
-  fr: (n, r) => `${n}${r ? `, ${r}` : ""}, Crète — Guide du village | Crete Direct`,
-  de: (n, r) => `${n}${r ? `, ${r}` : ""}, Kreta — Dorfführer | Crete Direct`,
-  el: (n, r) => `${n}${r ? `, ${r}` : ""}, Κρήτη — Οδηγός χωριού | Crete Direct`,
-  it: (n, r) => `${n}${r ? `, ${r}` : ""}, Creta — Guida del villaggio | Crete Direct`,
-  es: (n, r) => `${n}${r ? `, ${r}` : ""}, Creta — Guía del pueblo | Crete Direct`,
-  pt: (n, r) => `${n}${r ? `, ${r}` : ""}, Creta — Guia da aldeia | Crete Direct`,
-  nl: (n, r) => `${n}${r ? `, ${r}` : ""}, Kreta — Dorpsgids | Crete Direct`,
+  en: (n, r) => `${n}${r ? `, ${r}` : ""}, Crete · Village Guide | Crete Direct`,
+  fr: (n, r) => `${n}${r ? `, ${r}` : ""}, Crète · Guide du village | Crete Direct`,
+  de: (n, r) => `${n}${r ? `, ${r}` : ""}, Kreta · Dorfführer | Crete Direct`,
+  el: (n, r) => `${n}${r ? `, ${r}` : ""}, Κρήτη · Οδηγός χωριού | Crete Direct`,
+  it: (n, r) => `${n}${r ? `, ${r}` : ""}, Creta · Guida del villaggio | Crete Direct`,
+  es: (n, r) => `${n}${r ? `, ${r}` : ""}, Creta · Guía del pueblo | Crete Direct`,
+  pt: (n, r) => `${n}${r ? `, ${r}` : ""}, Creta · Guia da aldeia | Crete Direct`,
+  nl: (n, r) => `${n}${r ? `, ${r}` : ""}, Kreta · Dorpsgids | Crete Direct`,
 };
 
 export function buildVillageTitle(locale: string, name: string, region?: string | null): string {

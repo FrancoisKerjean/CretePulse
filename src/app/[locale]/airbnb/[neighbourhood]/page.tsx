@@ -363,7 +363,7 @@ const L: Record<Loc, {
 /**
  * Type guard : the URL locale has a full UI translation (en/fr/de/el).
  * For other site locales (it/nl/ru/es/...) we still serve the page but
- * with English UI strings — the SEO benefit comes from indexing 22 × 24
+ * with English UI strings · the SEO benefit comes from indexing 22 × 24
  * pages with proper hreflang, not from re-translating the same UI 22 times.
  */
 const VALID_LOC = (l: string): l is Loc =>
@@ -760,7 +760,7 @@ export default async function AirbnbNeighbourhoodPage(
           </p>
         </section>
 
-        {/* Related news — omitted entirely when empty: a visible "no articles
+        {/* Related news · omitted entirely when empty: a visible "no articles
             yet" line on most of the 528 pages just advertised thin coverage. */}
         {related.length > 0 && (
           <section className="mb-10">
@@ -802,7 +802,7 @@ export default async function AirbnbNeighbourhoodPage(
           </p>
         </section>
 
-        {/* Bus access — internal linking vers /buses (match opportuniste sur slug) */}
+        {/* Bus access · internal linking vers /buses (match opportuniste sur slug) */}
         <BusAccessBox
           locale={locale}
           destinationName={n.label[uiLoc] ?? n.label.en}

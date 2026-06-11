@@ -86,7 +86,7 @@ export async function GET() {
     }
   }
 
-  // Also add fresh L1 putaclick guides (last 48h) — they qualify for Top Stories
+  // Also add fresh L1 putaclick guides (last 48h) · they qualify for Top Stories
   const { data: guideData } = await supabase
     .from("guides")
     .select("slug, titles, category, published_at")

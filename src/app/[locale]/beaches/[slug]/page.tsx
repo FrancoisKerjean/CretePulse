@@ -421,7 +421,7 @@ export default async function BeachDetailPage({
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
           <div className="absolute bottom-6 left-4 right-4 md:left-8">
-            <h1 className="text-3xl md:text-5xl font-bold text-white" style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}>{name}</h1>
+            <h1 className="text-3xl md:text-5xl font-bold text-white" style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}>{name}</h1>
             <div className="flex items-center gap-2 text-white/75 text-sm mt-2">
               <MapPin className="w-4 h-4" />
               {beach.region} {L.crete}

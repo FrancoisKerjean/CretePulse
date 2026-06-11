@@ -190,7 +190,7 @@ export default async function PropertyManagementPage({ params }: { params: Promi
           </div>
           <h1
             className="text-4xl md:text-5xl font-bold leading-tight mb-4"
-            style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
+            style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}
           >
             {c.hero}
           </h1>
@@ -201,7 +201,7 @@ export default async function PropertyManagementPage({ params }: { params: Promi
       <div className="max-w-3xl mx-auto px-4 py-12 space-y-12">
         {/* Why Crete */}
         <section>
-          <h2 className="text-2xl font-bold text-aegean mb-6" style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}>
+          <h2 className="text-2xl font-bold text-aegean mb-6" style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}>
             {c.whyTitle}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -272,7 +272,7 @@ export default async function PropertyManagementPage({ params }: { params: Promi
 
         {/* CTA to Kairos */}
         <section className="p-8 bg-gradient-to-br from-aegean to-aegean-light rounded-2xl text-white text-center">
-          <h2 className="text-2xl font-bold mb-3" style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}>
+          <h2 className="text-2xl font-bold mb-3" style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}>
             {c.ctaTitle}
           </h2>
           <p className="text-white/70 text-sm mb-6 max-w-md mx-auto">{c.ctaSub}</p>

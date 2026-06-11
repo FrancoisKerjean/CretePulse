@@ -104,7 +104,7 @@ export default async function BeachesNearVillagePage({ params }: { params: Promi
           <Link href={`/${locale}/beaches`} className="inline-flex items-center gap-1 text-white/50 text-sm hover:text-white/80 mb-3">
             <ChevronLeft className="w-4 h-4" /> {loc === "fr" ? "Toutes les plages" : loc === "de" ? "Alle Strände" : loc === "el" ? "Όλες οι παραλίες" : "All beaches"}
           </Link>
-          <h1 className="text-3xl md:text-4xl font-bold" style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}>
+          <h1 className="text-3xl md:text-4xl font-bold" style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}>
             {heroTitles[locale] || heroTitles.en}
           </h1>
           <p className="text-white/60 text-sm mt-2">{village.region}</p>

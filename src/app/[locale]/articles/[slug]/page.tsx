@@ -265,22 +265,22 @@ const MORE_ARTICLES_LABEL: Record<Locale, string> = {
 const KAIROS_CTA: Record<Locale, { intro: string; link: string; href: string }> = {
   en: {
     intro: "Thinking about buying property in Crete? Read our guide on prices and steps.",
-    link: "Buy a house in Crete →",
+    link: "Buy a house in Crete",
     href: "https://kairosguest.com/en/blog/acheter-maison-crete-prix-2026",
   },
   fr: {
     intro: "Vous pensez à acheter en Crète ? Lisez notre guide complet sur les prix et démarches.",
-    link: "Acheter une maison en Crète →",
+    link: "Acheter une maison en Crète",
     href: "https://kairosguest.com/fr/blog/acheter-maison-crete-prix-2026",
   },
   de: {
     intro: "Denken Sie daran, eine Immobilie in Kreta zu kaufen? Unser Leitfaden zu Preisen und Schritten.",
-    link: "Haus in Kreta kaufen →",
+    link: "Haus in Kreta kaufen",
     href: "https://kairosguest.com/en/blog/acheter-maison-crete-prix-2026",
   },
   el: {
     intro: "Σκέφτεστε να αγοράσετε ακίνητο στην Κρήτη; Διαβάστε τον οδηγό μας για τιμές και διαδικασίες.",
-    link: "Αγοράστε σπίτι στην Κρήτη →",
+    link: "Αγοράστε σπίτι στην Κρήτη",
     href: "https://kairosguest.com/en/blog/acheter-maison-crete-prix-2026",
   },
 };
@@ -371,7 +371,7 @@ export default async function ArticleDetailPage({
         url={url}
       />
 
-      {/* Hero (PR2: editorial 60vh, category + Playfair H1 + dek) */}
+      {/* Hero (PR2: editorial 60vh, category + Baloo H1 + dek) */}
       {guide.image_url ? (
         <header className="relative h-[60vh] min-h-[440px] max-h-[640px] bg-stone overflow-hidden">
           <img

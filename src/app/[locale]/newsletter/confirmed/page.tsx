@@ -30,8 +30,8 @@ export default async function NewsletterConfirmedPage({
           Subscription confirmed
         </h1>
         <p className="text-text-muted leading-relaxed mb-7">
-          You&apos;re on the list. We&apos;ll send you the best of Crete — events,
-          weather updates, and hidden gems — straight to your inbox.
+          You&apos;re on the list. We&apos;ll send you the best of Crete · events,
+          weather updates, and hidden gems · straight to your inbox.
         </p>
         <Link
           href={`/${locale}`}

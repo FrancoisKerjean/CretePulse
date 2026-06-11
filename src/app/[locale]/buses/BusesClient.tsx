@@ -388,7 +388,7 @@ function DepartureGroups({
 }
 
 // ---------------------------------------------------------------------------
-// Main page (client component — needed for search state)
+// Main page (client component · needed for search state)
 // ---------------------------------------------------------------------------
 
 export function BusesClient({
@@ -478,7 +478,7 @@ export function BusesClient({
           onToChange={setToPlace}
         />
 
-        {/* Plan réseau interactif — réagit aux sélecteurs From/To */}
+        {/* Plan réseau interactif · réagit aux sélecteurs From/To */}
         <BusNetworkMap locale={locale} fromPlace={fromPlace} toPlace={toPlace} />
 
         {/* Results (search) or grouped directory */}

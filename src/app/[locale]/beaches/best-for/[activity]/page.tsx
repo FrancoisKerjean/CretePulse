@@ -269,7 +269,7 @@ export default async function BestBeachesForPage({ params }: { params: Promise<{
             <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
               {activity.icon}
             </div>
-            <h1 className="text-3xl md:text-5xl font-bold" style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}>
+            <h1 className="text-3xl md:text-5xl font-bold" style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}>
               {L.bestFor} {activityName}
             </h1>
           </div>

@@ -15,10 +15,10 @@ const EVENTS_LABELS: Record<Locale, {
   events: string;
   coming: string;
 }> = {
-  en: { subtitle: "upcoming events — festivals, markets, concerts, panigýria", until: "Until", event: "event", events: "events", coming: "Upcoming events coming soon." },
-  fr: { subtitle: "événements à venir — festivals, marchés, concerts, panigýria", until: "Jusqu'au", event: "événement", events: "événements", coming: "Événements à venir bientôt." },
-  de: { subtitle: "bevorstehende Events — Festivals, Märkte, Konzerte, Panigýria", until: "Bis", event: "Event", events: "Events", coming: "Bevorstehende Events demnächst." },
-  el: { subtitle: "επερχόμενες εκδηλώσεις — φεστιβάλ, αγορές, συναυλίες, πανηγύρια", until: "Έως", event: "εκδήλωση", events: "εκδηλώσεις", coming: "Επερχόμενες εκδηλώσεις σύντομα." },
+  en: { subtitle: "upcoming events · festivals, markets, concerts, panigýria", until: "Until", event: "event", events: "events", coming: "Upcoming events coming soon." },
+  fr: { subtitle: "événements à venir · festivals, marchés, concerts, panigýria", until: "Jusqu'au", event: "événement", events: "événements", coming: "Événements à venir bientôt." },
+  de: { subtitle: "bevorstehende Events · Festivals, Märkte, Konzerte, Panigýria", until: "Bis", event: "Event", events: "Events", coming: "Bevorstehende Events demnächst." },
+  el: { subtitle: "επερχόμενες εκδηλώσεις · φεστιβάλ, αγορές, συναυλίες, πανηγύρια", until: "Έως", event: "εκδήλωση", events: "εκδηλώσεις", coming: "Επερχόμενες εκδηλώσεις σύντομα." },
 };
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";

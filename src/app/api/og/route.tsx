@@ -3,29 +3,31 @@ import { NextRequest } from "next/server";
 
 export const runtime = "edge";
 
-// OG images charte "donnees vivantes" : creme + bandeau aegean + pastille LIVE
-// + filet accent par type. Chaque partage Facebook est une pub du design.
-// Spec : docs/superpowers/specs/2026-06-11-ui-live-data-redesign-design.md
-const CREAM = "#F7F4F0";
-const AEGEAN = "#1B4965";
-const INK = "#1A1A2E";
+// OG images charte Kalimera : foam + bandeau nuit avec le wordmark dessine
+// + pastille LIVE + filet lagon. Chaque partage est une pub du design.
+// Spec : docs/superpowers/specs/2026-06-11-brand-da-kalimera-design.md
+const FOAM = "#F6FBFC";
+const NIGHT = "#07374A";
+const INK = "#0B3954";
+const LAGOON = "#00C2D4";
+const SUN = "#FFC83D";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const title = searchParams.get("title") || "Crete Direct";
-  const subtitle = searchParams.get("subtitle") || "The practical companion to Crete - live data";
+  const subtitle = searchParams.get("subtitle") || "The practical companion to Crete · live data";
   const type = searchParams.get("type") || "default"; // beach, weather, news, event, guide
 
-  // Accent (filet bas + pastille type) par type de contenu
+  // Accent (pastille basse) par type de contenu ; filet bas toujours lagon.
   const ACCENTS: Record<string, string> = {
-    default: "#B85C38",
-    beach: "#2D6A8F",
-    weather: "#2D6A8F",
-    news: "#B85C38",
-    event: "#B85C38",
-    guide: "#5F7A3E",
-    compare: "#B85C38",
-    transport: "#1B4965",
+    default: LAGOON,
+    beach: LAGOON,
+    weather: LAGOON,
+    news: "#ED7A5C",
+    event: SUN,
+    guide: "#7C9A53",
+    compare: "#ED7A5C",
+    transport: "#0B5E78",
   };
   const accent = ACCENTS[type] || ACCENTS.default;
 
@@ -37,39 +39,61 @@ export async function GET(request: NextRequest) {
           width: "100%",
           display: "flex",
           flexDirection: "column",
-          backgroundColor: CREAM,
-          fontFamily: "Georgia, 'Times New Roman', serif",
+          backgroundColor: FOAM,
+          fontFamily: "system-ui, sans-serif",
         }}
       >
-        {/* Bandeau superieur aegean : logo + pastille LIVE */}
+        {/* Bandeau nuit : wordmark dessine + pastille LIVE */}
         <div
           style={{
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            backgroundColor: AEGEAN,
-            padding: "28px 60px",
+            backgroundColor: NIGHT,
+            padding: "26px 60px",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <span style={{ fontSize: "30px", fontWeight: 800, color: "#FFFFFF", fontFamily: "system-ui, sans-serif", letterSpacing: "-0.5px" }}>CRETE</span>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 3.2a8.8 8.8 0 1 1-8.8 8.8A7 7 0 0 1 10.2 5a5.6 5.6 0 0 1 5.6 5.6 4.4 4.4 0 0 1-4.4 4.4 3.4 3.4 0 0 1-3.4-3.4 2.5 2.5 0 0 1 2.5-2.5 1.7 1.7 0 0 1 1.7 1.7"
-                stroke="#B85C38"
-                strokeWidth="2.1"
-                strokeLinecap="round"
-              />
-            </svg>
-            <span style={{ fontSize: "30px", fontWeight: 800, color: "#E8C9A0", fontFamily: "system-ui, sans-serif", letterSpacing: "-0.5px" }}>DIRECT</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: "#34D399" }} />
-            <span style={{ fontSize: "20px", color: "rgba(255,255,255,0.85)", fontFamily: "ui-monospace, monospace", letterSpacing: "2px" }}>LIVE</span>
+          <svg
+            width="276"
+            height="44"
+            viewBox="0 0 460 74"
+            fill="none"
+            stroke="#FAF6EC"
+            strokeWidth="7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M38 18 a16 16 0 1 0 14 24 M38 26 a8.5 8.5 0 1 0 6 14" stroke={LAGOON} />
+            <path d="M64 52 V30 M64 38 q4 -9 13 -9" />
+            <path d="M88 41 h22 a11.5 11.5 0 1 0 -3.4 8" />
+            <path d="M126 14 V44 a8 8 0 0 0 8 8 M118 28 h16" />
+            <path d="M148 41 h22 a11.5 11.5 0 1 0 -3.4 8" />
+            <path d="M210 12 V52 M210 41 a11.5 11.5 0 1 1 -11.5 -11.5" />
+            <path d="M228 30 V52" />
+            <circle cx="228" cy="15.5" r="6" fill={SUN} stroke="none" />
+            <path d="M228 5.5 v3 M228 22.5 v3 M218 15.5 h3 M235 15.5 h3" stroke={SUN} strokeWidth="2.6" />
+            <path d="M246 52 V30 M246 38 q4 -9 13 -9" />
+            <path d="M270 41 h22 a11.5 11.5 0 1 0 -3.4 8" />
+            <path d="M324 32 a11.5 11.5 0 1 0 0 17" />
+            <path d="M340 14 V44 a8 8 0 0 0 8 8 M332 28 h16" />
+            <path d="M196 66 q9 -7 18 0 t18 0 t18 0 t18 0 t18 0 t18 0 t18 0" stroke={LAGOON} strokeWidth="4.5" />
+          </svg>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              backgroundColor: SUN,
+              borderRadius: "999px",
+              padding: "10px 22px",
+            }}
+          >
+            <span style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: "#0E9F5C" }} />
+            <span style={{ fontSize: "20px", fontWeight: 700, color: INK, letterSpacing: "2px" }}>LIVE</span>
           </div>
         </div>
 
-        {/* Corps creme : titre serif + sous-titre */}
+        {/* Corps foam : titre rond + sous-titre */}
         <div
           style={{
             display: "flex",
@@ -82,10 +106,11 @@ export async function GET(request: NextRequest) {
         >
           <h1
             style={{
-              fontSize: title.length > 40 ? "52px" : "64px",
-              fontWeight: 700,
+              fontSize: title.length > 40 ? "54px" : "66px",
+              fontWeight: 800,
               color: INK,
               lineHeight: 1.08,
+              letterSpacing: "-1px",
               margin: 0,
               maxWidth: "1020px",
             }}
@@ -96,10 +121,9 @@ export async function GET(request: NextRequest) {
             <p
               style={{
                 fontSize: "26px",
-                color: "#6B7280",
+                color: "#5C7886",
                 margin: 0,
                 maxWidth: "860px",
-                fontFamily: "system-ui, sans-serif",
               }}
             >
               {subtitle}
@@ -107,12 +131,13 @@ export async function GET(request: NextRequest) {
           )}
         </div>
 
-        {/* Pied : URL + filet accent */}
+        {/* Pied : URL + pastille type + filet lagon */}
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", padding: "0 60px 26px" }}>
-            <span style={{ fontSize: "20px", color: "#94A3B8", fontFamily: "ui-monospace, monospace" }}>crete.direct</span>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 60px 24px" }}>
+            <span style={{ fontSize: "20px", color: "#94A3B8" }}>crete.direct</span>
+            <span style={{ display: "flex", width: "16px", height: "16px", borderRadius: "50%", backgroundColor: accent }} />
           </div>
-          <div style={{ display: "flex", height: "10px", backgroundColor: accent, width: "100%" }} />
+          <div style={{ display: "flex", height: "10px", backgroundColor: LAGOON, width: "100%" }} />
         </div>
       </div>
     ),

@@ -151,25 +151,25 @@ export default async function VillageDetailPage({
             <Mountain className="w-5 h-5 text-olive mx-auto" />
             <p className="text-xs text-text-muted mt-1">Altitude</p>
             <p className="font-semibold text-sm">
-              {village.altitude_m != null ? `${village.altitude_m} m` : "—"}
+              {village.altitude_m != null ? `${village.altitude_m} m` : "·"}
             </p>
           </div>
           <div className="rounded-lg bg-white border border-border p-3 text-center">
             <Users className="w-5 h-5 text-aegean mx-auto" />
             <p className="text-xs text-text-muted mt-1">Population</p>
             <p className="font-semibold text-sm">
-              {village.population != null ? village.population.toLocaleString() : "—"}
+              {village.population != null ? village.population.toLocaleString() : "·"}
             </p>
           </div>
           <div className="rounded-lg bg-white border border-border p-3 text-center">
             <MapPin className="w-5 h-5 text-terra mx-auto" />
             <p className="text-xs text-text-muted mt-1">Region</p>
-            <p className="font-semibold text-sm capitalize">{village.region || "—"}</p>
+            <p className="font-semibold text-sm capitalize">{village.region || "·"}</p>
           </div>
           <div className="rounded-lg bg-white border border-border p-3 text-center">
             <Clock className="w-5 h-5 text-aegean mx-auto" />
             <p className="text-xs text-text-muted mt-1">Era</p>
-            <p className="font-semibold text-sm capitalize">{village.period || "—"}</p>
+            <p className="font-semibold text-sm capitalize">{village.period || "·"}</p>
           </div>
         </div>
 

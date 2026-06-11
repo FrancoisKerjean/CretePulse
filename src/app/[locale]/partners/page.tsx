@@ -21,10 +21,10 @@ function pickUiLoc(l: string): Locale {
 
 const T = {
   title: {
-    en: "Taxi partners — your company on the busiest bus pages in Crete",
-    fr: "Partenaires taxi — votre compagnie sur les pages bus les plus consultées de Crète",
-    de: "Taxi-Partner — Ihr Unternehmen auf den meistbesuchten Busseiten Kretas",
-    el: "Συνεργάτες ταξί — η εταιρεία σας στις πιο δημοφιλείς σελίδες λεωφορείων της Κρήτης",
+    en: "Taxi partners · your company on the busiest bus pages in Crete",
+    fr: "Partenaires taxi · votre compagnie sur les pages bus les plus consultées de Crète",
+    de: "Taxi-Partner · Ihr Unternehmen auf den meistbesuchten Busseiten Kretas",
+    el: "Συνεργάτες ταξί · η εταιρεία σας στις πιο δημοφιλείς σελίδες λεωφορείων της Κρήτης",
   },
   metaDesc: {
     en: "One exclusive taxi partner per zone on crete.direct bus pages. Clearly labelled, monthly traffic report, cancel anytime.",
@@ -33,16 +33,16 @@ const T = {
     el: "Ένας αποκλειστικός συνεργάτης ταξί ανά ζώνη στις σελίδες λεωφορείων του crete.direct. Με σήμανση, μηνιαία αναφορά, ακύρωση οποτεδήποτε.",
   },
   pitch: {
-    en: "Around 3 out of 4 visits to crete.direct land on our live KTEL bus pages, in 7+ languages. Travellers compare the bus with a taxi right there. One taxi company per zone gets that spot — clearly labelled as sponsored.",
-    fr: "Environ 3 visites sur 4 de crete.direct arrivent sur nos pages bus KTEL en direct, en 7+ langues. Les voyageurs y comparent le bus et le taxi. Une seule compagnie de taxi par zone obtient cet emplacement — clairement étiqueté sponsorisé.",
-    de: "Rund 3 von 4 Besuchen auf crete.direct landen auf unseren Live-KTEL-Busseiten in 7+ Sprachen. Reisende vergleichen dort Bus und Taxi. Ein Taxiunternehmen pro Zone erhält diesen Platz — klar als gesponsert gekennzeichnet.",
-    el: "Περίπου 3 στις 4 επισκέψεις στο crete.direct καταλήγουν στις σελίδες λεωφορείων ΚΤΕΛ, σε 7+ γλώσσες. Οι ταξιδιώτες συγκρίνουν εκεί λεωφορείο και ταξί. Μία εταιρεία ταξί ανά ζώνη παίρνει αυτή τη θέση — με σαφή σήμανση χορηγίας.",
+    en: "Around 3 out of 4 visits to crete.direct land on our live KTEL bus pages, in 7+ languages. Travellers compare the bus with a taxi right there. One taxi company per zone gets that spot · clearly labelled as sponsored.",
+    fr: "Environ 3 visites sur 4 de crete.direct arrivent sur nos pages bus KTEL en direct, en 7+ langues. Les voyageurs y comparent le bus et le taxi. Une seule compagnie de taxi par zone obtient cet emplacement · clairement étiqueté sponsorisé.",
+    de: "Rund 3 von 4 Besuchen auf crete.direct landen auf unseren Live-KTEL-Busseiten in 7+ Sprachen. Reisende vergleichen dort Bus und Taxi. Ein Taxiunternehmen pro Zone erhält diesen Platz · klar als gesponsert gekennzeichnet.",
+    el: "Περίπου 3 στις 4 επισκέψεις στο crete.direct καταλήγουν στις σελίδες λεωφορείων ΚΤΕΛ, σε 7+ γλώσσες. Οι ταξιδιώτες συγκρίνουν εκεί λεωφορείο και ταξί. Μία εταιρεία ταξί ανά ζώνη παίρνει αυτή τη θέση · με σαφή σήμανση χορηγίας.",
   },
   includes: {
-    en: ["Exclusive: one partner per zone", "Your name + phone on every bus page of your zone", "Monthly Plausible report: calls and page views", "No meeting, no contract — email and Stripe, cancel anytime"],
-    fr: ["Exclusif : un partenaire par zone", "Votre nom + téléphone sur chaque page bus de votre zone", "Rapport Plausible mensuel : appels et pages vues", "Sans rendez-vous, sans engagement — email et Stripe, résiliable à tout moment"],
-    de: ["Exklusiv: ein Partner pro Zone", "Ihr Name + Telefon auf jeder Busseite Ihrer Zone", "Monatlicher Plausible-Bericht: Anrufe und Seitenaufrufe", "Kein Termin, kein Vertrag — E-Mail und Stripe, jederzeit kündbar"],
-    el: ["Αποκλειστικότητα: ένας συνεργάτης ανά ζώνη", "Όνομα + τηλέφωνο σε κάθε σελίδα λεωφορείων της ζώνης σας", "Μηνιαία αναφορά Plausible: κλήσεις και προβολές", "Χωρίς ραντεβού, χωρίς δέσμευση — email και Stripe, ακύρωση οποτεδήποτε"],
+    en: ["Exclusive: one partner per zone", "Your name + phone on every bus page of your zone", "Monthly Plausible report: calls and page views", "No meeting, no contract · email and Stripe, cancel anytime"],
+    fr: ["Exclusif : un partenaire par zone", "Votre nom + téléphone sur chaque page bus de votre zone", "Rapport Plausible mensuel : appels et pages vues", "Sans rendez-vous, sans engagement · email et Stripe, résiliable à tout moment"],
+    de: ["Exklusiv: ein Partner pro Zone", "Ihr Name + Telefon auf jeder Busseite Ihrer Zone", "Monatlicher Plausible-Bericht: Anrufe und Seitenaufrufe", "Kein Termin, kein Vertrag · E-Mail und Stripe, jederzeit kündbar"],
+    el: ["Αποκλειστικότητα: ένας συνεργάτης ανά ζώνη", "Όνομα + τηλέφωνο σε κάθε σελίδα λεωφορείων της ζώνης σας", "Μηνιαία αναφορά Plausible: κλήσεις και προβολές", "Χωρίς ραντεβού, χωρίς δέσμευση · email και Stripe, ακύρωση οποτεδήποτε"],
   },
   price: {
     en: (p: number) => `${p} €/month per zone`,
@@ -60,10 +60,10 @@ const T = {
   },
   howTitle: { en: "How it works", fr: "Comment ça marche", de: "So funktioniert es", el: "Πώς λειτουργεί" },
   how: {
-    en: ["Pay via Stripe and name your zone — first come, first served (we refund if the zone is taken).", "We add your company to every bus page of the zone within 48 h.", "Every month you receive the Plausible numbers: taxi-block calls and page views. Honest data, nothing else."],
-    fr: ["Payez via Stripe en indiquant votre zone — premier arrivé, premier servi (remboursement si la zone est prise).", "Nous ajoutons votre compagnie sur chaque page bus de la zone sous 48 h.", "Chaque mois vous recevez les chiffres Plausible : appels du bloc taxi et pages vues. Des données honnêtes, rien d'autre."],
-    de: ["Per Stripe zahlen und Ihre Zone angeben — wer zuerst kommt (Erstattung, falls vergeben).", "Wir fügen Ihr Unternehmen innerhalb von 48 h auf jeder Busseite der Zone hinzu.", "Jeden Monat erhalten Sie die Plausible-Zahlen: Anrufe und Seitenaufrufe. Ehrliche Daten, sonst nichts."],
-    el: ["Πληρώστε μέσω Stripe δηλώνοντας τη ζώνη σας — σειρά προτεραιότητας (επιστροφή αν είναι κατειλημμένη).", "Προσθέτουμε την εταιρεία σας σε κάθε σελίδα λεωφορείων της ζώνης εντός 48 ωρών.", "Κάθε μήνα λαμβάνετε τα νούμερα του Plausible: κλήσεις και προβολές. Τίμια δεδομένα, τίποτα άλλο."],
+    en: ["Pay via Stripe and name your zone · first come, first served (we refund if the zone is taken).", "We add your company to every bus page of the zone within 48 h.", "Every month you receive the Plausible numbers: taxi-block calls and page views. Honest data, nothing else."],
+    fr: ["Payez via Stripe en indiquant votre zone · premier arrivé, premier servi (remboursement si la zone est prise).", "Nous ajoutons votre compagnie sur chaque page bus de la zone sous 48 h.", "Chaque mois vous recevez les chiffres Plausible : appels du bloc taxi et pages vues. Des données honnêtes, rien d'autre."],
+    de: ["Per Stripe zahlen und Ihre Zone angeben · wer zuerst kommt (Erstattung, falls vergeben).", "Wir fügen Ihr Unternehmen innerhalb von 48 h auf jeder Busseite der Zone hinzu.", "Jeden Monat erhalten Sie die Plausible-Zahlen: Anrufe und Seitenaufrufe. Ehrliche Daten, sonst nichts."],
+    el: ["Πληρώστε μέσω Stripe δηλώνοντας τη ζώνη σας · σειρά προτεραιότητας (επιστροφή αν είναι κατειλημμένη).", "Προσθέτουμε την εταιρεία σας σε κάθε σελίδα λεωφορείων της ζώνης εντός 48 ωρών.", "Κάθε μήνα λαμβάνετε τα νούμερα του Plausible: κλήσεις και προβολές. Τίμια δεδομένα, τίποτα άλλο."],
   },
 } as const;
 

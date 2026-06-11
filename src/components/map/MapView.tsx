@@ -23,9 +23,9 @@ interface MapViewProps {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  beach: "#1B4965",
+  beach: "#0B5E78",
   village: "#5F7A3E",
-  food: "#B85C38",
+  food: "#ED7A5C",
   hike: "#8B7355",
 };
 
@@ -78,7 +78,7 @@ export function MapView({ beaches, villages, food, hikes, locale }: MapViewProps
             .setHTML(`
               <div style="font-family:system-ui;padding:4px">
                 <a href="/${locale}/${poi.type === "beach" ? "beaches" : poi.type === "village" ? "villages" : poi.type === "food" ? "food" : "hikes"}/${poi.slug}"
-                   style="font-weight:600;font-size:13px;color:#1B4965;text-decoration:none">
+                   style="font-weight:600;font-size:13px;color:#0B5E78;text-decoration:none">
                   ${poi.name}
                 </a>
                 ${poi.extra ? `<div style="font-size:11px;color:#6B7280;margin-top:2px">${poi.extra}</div>` : ""}

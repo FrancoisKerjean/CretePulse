@@ -83,7 +83,7 @@ type MatchColumn = "things_to_do_slug" | "where_to_stay_slug" | "slug";
 type Props = {
   /** Locale (server). */
   locale: string;
-  /** Display name de la destination ("Malia", "Chania"…) — fallback dans le texte. */
+  /** Display name de la destination ("Malia", "Chania"…) · fallback dans le texte. */
   destinationName: string;
   /** Slug source à matcher dans bus_destinations. */
   matchSlug?: string;

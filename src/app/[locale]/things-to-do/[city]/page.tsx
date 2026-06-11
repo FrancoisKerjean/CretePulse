@@ -401,7 +401,7 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
           <Link href={`/${locale}/weather`} className="inline-flex items-center gap-1 text-white/50 text-sm hover:text-white/80 mb-4">
             <ChevronLeft className="w-4 h-4" /> {L.backToAll}
           </Link>
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight" style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}>
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight" style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}>
             {L.thingsToDo} {city.name}
           </h1>
           <p className="text-white/50 text-sm mt-2">{city.nameEl}</p>
@@ -494,7 +494,7 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
           </div>
         </section>
 
-        {/* Bus access — internal linking vers /buses */}
+        {/* Bus access · internal linking vers /buses */}
         <BusAccessBox
           locale={locale}
           destinationName={city.name}

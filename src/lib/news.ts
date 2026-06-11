@@ -27,7 +27,7 @@ function hasGermanOnlyMarkers(text: string): boolean {
 }
 
 // Heuristic: detect English-only function words / patterns that should NOT
-// appear in a French/German title or summary. Conservative — only words
+// appear in a French/German title or summary. Conservative · only words
 // extremely unlikely to appear in proper FR/DE prose (avoid false positives
 // on borrowed English words in legitimate French content).
 function hasEnglishOnlyMarkers(text: string): boolean {

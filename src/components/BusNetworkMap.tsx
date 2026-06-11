@@ -347,12 +347,12 @@ export function BusNetworkMap({ locale, fromPlace, toPlace }: Props) {
         </h2>
         <p className="text-sm text-text-muted mb-5">
           {loc === "fr"
-            ? "Plan schématique des lignes KTEL — clic sur une station pour voir ses horaires."
+            ? "Plan schématique des lignes KTEL · clic sur une station pour voir ses horaires."
             : loc === "de"
-              ? "Schematischer Plan der KTEL-Linien — Station klicken für Fahrpläne."
+              ? "Schematischer Plan der KTEL-Linien · Station klicken für Fahrpläne."
               : loc === "el"
-                ? "Σχηματικός χάρτης ΚΤΕΛ — κάντε κλικ στους σταθμούς."
-                : "Schematic plan of KTEL bus lines — click a stop for schedules."}
+                ? "Σχηματικός χάρτης ΚΤΕΛ · κάντε κλικ στους σταθμούς."
+                : "Schematic plan of KTEL bus lines · click a stop for schedules."}
         </p>
       </button>
 
@@ -465,7 +465,7 @@ export function BusNetworkMap({ locale, fromPlace, toPlace }: Props) {
               <a
                 key={s.id}
                 href={`#${s.destSlug}`}
-                aria-label={`${stationLabel(s, loc)} — schedules`}
+                aria-label={`${stationLabel(s, loc)} · schedules`}
               >
                 {innerCircle}
               </a>

@@ -1,4 +1,4 @@
-// Barre de donnees live trans-site — la signature "compagnon pratique".
+// Barre de donnees live trans-site · la signature "compagnon pratique".
 // Server component, cache 30 min, degrade en date seule si data KO.
 // Hauteur FIXE (h-8) : zero layout shift.
 // Spec : docs/superpowers/specs/2026-06-11-ui-live-data-redesign-design.md

@@ -1,4 +1,4 @@
-// /llms.txt — emerging standard for LLM crawlers (llmstxt.org).
+// /llms.txt · emerging standard for LLM crawlers (llmstxt.org).
 // Helps ChatGPT, Claude, Perplexity, and Bing Chat understand the site structure
 // and find authoritative content quickly. Markdown format. Indexes the freshest
 // guides, news, and key entity pages.

@@ -292,7 +292,7 @@ export default async function ArchaeologyDetailPage({
           </span>
           <h1
             className="text-3xl md:text-5xl font-bold text-white mb-2"
-            style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
+            style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}
           >
             {site.name}
           </h1>
@@ -345,7 +345,7 @@ export default async function ArchaeologyDetailPage({
         <section className="mb-8">
           <h2
             className="text-xl font-bold text-aegean mb-4"
-            style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
+            style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}
           >
             {L.highlights}
           </h2>
@@ -365,7 +365,7 @@ export default async function ArchaeologyDetailPage({
         <section className="mt-12 mb-8">
           <h2
             className="text-2xl font-bold text-aegean mb-6"
-            style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
+            style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}
           >
             {L.faqTitle}
           </h2>
@@ -389,7 +389,7 @@ export default async function ArchaeologyDetailPage({
         <section className="mt-8 mb-8">
           <h2
             className="text-2xl font-bold text-aegean mb-4"
-            style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
+            style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}
           >
             {L.nearbySites}
           </h2>
@@ -415,7 +415,7 @@ export default async function ArchaeologyDetailPage({
         <section className="mt-8 pb-8">
           <h2
             className="text-2xl font-bold text-aegean mb-4"
-            style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
+            style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}
           >
             {L.exploreMore}
           </h2>

@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
 
   // Honeypot: bots fill this field, humans don't see it
   if (body.website && String(body.website).trim() !== "") {
-    // Silent rejection — looks like success to the bot
+    // Silent rejection · looks like success to the bot
     return NextResponse.json({ ok: true });
   }
 
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     .limit(1);
 
   if (recent && recent.length > 0) {
-    // Silent success — don't reveal rate limiting to scrapers
+    // Silent success · don't reveal rate limiting to scrapers
     return NextResponse.json({ ok: true });
   }
 
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
   if (existing && existing.length > 0) {
     const sub = existing[0];
     if (sub.confirmed && !sub.unsubscribed_at) {
-      // Already subscribed — silent success
+      // Already subscribed · silent success
       return NextResponse.json({ ok: true });
     }
     // Resubscribe or re-confirm: delete old record and reinsert

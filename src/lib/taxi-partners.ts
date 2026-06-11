@@ -1,6 +1,6 @@
 // Zones taxi exclusives + lookup partenaire. Pur : les fonctions prennent les
 // donnees en parametre (le JSON n'est importe qu'aux points d'usage Next ;
-// les scripts check-*.mjs le lisent via fs — node type-stripping n'accepte
+// les scripts check-*.mjs le lisent via fs · node type-stripping n'accepte
 // pas les imports JSON sans attribute).
 // Spec : docs/superpowers/specs/2026-06-10-taxi-partners-design.md
 

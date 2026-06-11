@@ -4,11 +4,11 @@
  * UTM-tracked so we can measure the click-through rate in GA4 on kairosguest.
  *
  * Insertion targets (decided 15/05/2026 based on GSC intent analysis):
- *   - /articles/[slug]       — CTR 3.49%, top evergreen performer
- *   - /where-to-stay/[area]  — direct lodging intent, CTR 2.79%
- *   - /things-to-do/[city]   — leisure intent
- *   - /beaches/[slug]        — vacation intent (555 pages volume)
- *   - /compare/[slug]        — destination decision intent
+ *   - /articles/[slug]       · CTR 3.49%, top evergreen performer
+ *   - /where-to-stay/[area]  · direct lodging intent, CTR 2.79%
+ *   - /things-to-do/[city]   · leisure intent
+ *   - /beaches/[slug]        · vacation intent (555 pages volume)
+ *   - /compare/[slug]        · destination decision intent
  *
  * Skipped : /food (noindex), /visit (noindex), /getting-around (noindex),
  *           /villages (cultural, weak intent), /hikes (outdoor, weak intent),
@@ -30,10 +30,10 @@ const BODIES: Record<string, string> = {
 };
 
 const CTAS: Record<string, string> = {
-  en: "View rentals →",
-  fr: "Voir les locations →",
-  de: "Ferienunterkünfte ansehen →",
-  el: "Δείτε τα καταλύματα →",
+  en: "View rentals",
+  fr: "Voir les locations",
+  de: "Ferienunterkünfte ansehen",
+  el: "Δείτε τα καταλύματα",
 };
 
 // kairosguest.com only has fr/en locales. Route others to /en.
@@ -42,7 +42,7 @@ function targetLocale(locale: string): "fr" | "en" {
 }
 
 interface RentalCTAProps {
-  /** Page locale (en, fr, de, el, …) — used for the CTA text only */
+  /** Page locale (en, fr, de, el, …) · used for the CTA text only */
   locale: string;
   /** Page slug for UTM tracking (e.g. "samaria-gorge-hiking-guide-2026") */
   contentSlug?: string;

@@ -110,7 +110,7 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
               loc,
             )}
           </span>
-          <span className="shrink-0 text-aegean">→</span>
+          <span className="shrink-0 text-lagoon font-extrabold">·</span>
         </Link>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">

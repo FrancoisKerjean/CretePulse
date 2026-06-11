@@ -9,8 +9,8 @@ import "maplibre-gl/dist/maplibre-gl.css";
 type MaplibreMap = import("maplibre-gl").Map;
 
 const TYPE_COLORS: Record<string, string> = {
-  beach: "#1B4965",
-  gorge: "#B85C38",
+  beach: "#0B5E78",
+  gorge: "#ED7A5C",
   cave: "#6B4F8A",
   town: "#5F7A3E",
   island: "#2D9596",

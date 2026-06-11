@@ -3,7 +3,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 // Server-only Supabase client with service-role privileges.
 // Used by API routes that must WRITE to tables the public anon role cannot
 // (e.g. newsletter_subscribers, where anon lacks INSERT/UPDATE grants).
-// NEVER import this from a client component — the key must stay server-side.
+// NEVER import this from a client component · the key must stay server-side.
 //
 // Init paresseuse : SUPABASE_SERVICE_KEY n'existe que sur Vercel (pas en
 // .env.local). Un createClient au chargement du module fait planter

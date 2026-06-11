@@ -304,7 +304,7 @@ export default async function ItineraryPage({
           </div>
           <h1
             className="text-3xl md:text-5xl font-bold text-white mb-4"
-            style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
+            style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}
           >
             {title}
           </h1>
@@ -337,7 +337,7 @@ export default async function ItineraryPage({
 
                 {/* Card */}
                 <div className="flex-1 rounded-xl bg-white border border-border p-5 shadow-sm">
-                  <h2 className="text-lg font-semibold text-aegean mb-2" style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}>
+                  <h2 className="text-lg font-semibold text-aegean mb-2" style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}>
                     {getLocalized(dp.title, loc)}
                   </h2>
                   <p className="text-text leading-relaxed text-sm">
@@ -353,7 +353,7 @@ export default async function ItineraryPage({
         <section className="mt-12 mb-8">
           <h2
             className="text-2xl font-bold text-aegean mb-6"
-            style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
+            style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}
           >
             {L.faqTitle}
           </h2>
@@ -374,7 +374,7 @@ export default async function ItineraryPage({
         <section className="mt-8 mb-8">
           <h2
             className="text-2xl font-bold text-aegean mb-4"
-            style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
+            style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}
           >
             {L.relatedItineraries}
           </h2>
@@ -400,7 +400,7 @@ export default async function ItineraryPage({
         <section className="mt-8 pb-8">
           <h2
             className="text-2xl font-bold text-aegean mb-4"
-            style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
+            style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}
           >
             {L.exploreMore}
           </h2>

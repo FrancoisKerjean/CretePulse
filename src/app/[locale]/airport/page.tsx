@@ -229,7 +229,7 @@ export default async function AirportsIndexPage(
                     </div>
                   </>
                 )}
-                <div className="mt-3 text-sm text-cyan-800">{t.viewData} →</div>
+                <div className="mt-3 text-sm text-cyan-800">{t.viewData}</div>
               </Link>
             );
           })}

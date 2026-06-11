@@ -155,7 +155,7 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
                   <div>
                     <p className="text-xs text-text-muted">{cardLabels.seaTemp}</p>
                     <p className="text-sm font-semibold">
-                      {city.seaTemp != null ? `${city.seaTemp}°C` : "—"}
+                      {city.seaTemp != null ? `${city.seaTemp}°C` : "·"}
                     </p>
                   </div>
                 </div>
@@ -248,7 +248,7 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
           >
             Open-Meteo
           </a>
-          {" "}— free & open source. Updated every hour.
+          {" "}· free & open source. Updated every hour.
         </p>
       </div>
     </main>

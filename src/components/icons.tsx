@@ -1,4 +1,4 @@
-// Icônes signature Crete Direct — set propriétaire, remplace lucide aux
+// Icônes signature Crete Direct · set propriétaire, remplace lucide aux
 // points à forte visibilité (outils home, LiveBar, Explore, logo, taxi).
 // Langage : grille 24, trait 1.75, terminaisons rondes, ADN spirale/vague
 // minoenne (fresques de Knossos). Validé sur planche d'essai 11/06/2026.
