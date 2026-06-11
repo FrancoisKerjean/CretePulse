@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { buildSwimToday, type ScoredBeach, type ShoreWind } from "@/lib/swim-today";
 import { BeachImage } from "@/components/BeachImage";
+import { NearestSwimSpot, type NearestSwimBeach } from "@/components/near-me/NearestSwimSpot";
 import { buildAlternates } from "@/lib/seo";
 import { getLocalizedField } from "@/lib/types";
 import type { Locale } from "@/lib/types";
@@ -410,6 +411,20 @@ export default async function SwimTodayPage(
   const h1Pre = h1Words.slice(0, -1).join(" ");
   const h1Hl = h1Words[h1Words.length - 1];
 
+  // Payload réduit pour l'île client NearestSwimSpot : plages non exposées
+  // aujourd'hui, champs minimum (le tri par distance se fait au clic, client).
+  const nearestCandidates: NearestSwimBeach[] = data.scored
+    .filter((s) => s.rating !== "exposed")
+    .map((s) => ({
+      slug: s.beach.slug,
+      name: getLocalizedField(s.beach, "name", uiLoc),
+      latitude: s.beach.latitude,
+      longitude: s.beach.longitude,
+      score: s.score,
+      rating: s.rating as "calm" | "fair",
+      imageUrl: s.imageUrl,
+    }));
+
   return (
     <main className="min-h-screen bg-surface">
       <script
@@ -538,6 +553,9 @@ export default async function SwimTodayPage(
             </Link>
           </div>
         </section>
+
+        {/* La plage calme la plus proche (géoloc client, activée au clic) */}
+        <NearestSwimSpot locale={locale} beaches={nearestCandidates} />
 
         {/* Good choices by area */}
         <section className="mb-10">
