@@ -30,17 +30,45 @@ const LOCALES = [
   { code: "ar", label: "AR", name: "العربية" },
 ];
 
-const NAV_LINKS = [
-  { href: "/weather", label: { en: "Weather", fr: "Météo", de: "Wetter", el: "Καιρός", it: "Meteo", nl: "Weer", pl: "Pogoda", es: "Clima", pt: "Tempo", ru: "Погода", ja: "天気", ko: "날씨", zh: "天气", tr: "Hava", sv: "Väder", da: "Vejr", no: "Vær", fi: "Sää", cs: "Počasí", hu: "Időjárás", ro: "Vreme", ar: "طقس" } },
-  { href: "/beaches", label: { en: "Beaches", fr: "Plages", de: "Strände", el: "Παραλίες", it: "Spiagge", nl: "Stranden", pl: "Plaże", es: "Playas", pt: "Praias", ru: "Пляжи", ja: "ビーチ", ko: "해변", zh: "海滩", tr: "Plajlar", sv: "Stränder", da: "Strande", no: "Strender", fi: "Rannat", cs: "Pláže", hu: "Strandok", ro: "Plaje", ar: "شواطئ" } },
-  { href: "/villages", label: { en: "Villages", fr: "Villages", de: "Dörfer", el: "Χωριά", it: "Villaggi", nl: "Dorpen", pl: "Wioski", es: "Pueblos", pt: "Aldeias", ru: "Деревни", ja: "村", ko: "마을", zh: "村庄", tr: "Köyler", sv: "Byar", da: "Landsbyer", no: "Landsbyer", fi: "Kylät", cs: "Vesnice", hu: "Falvak", ro: "Sate", ar: "قرى" } },
-  { href: "/events", label: { en: "Events", fr: "Événements", de: "Events", el: "Εκδηλώσεις", it: "Eventi", nl: "Evenementen", pl: "Wydarzenia", es: "Eventos", pt: "Eventos", ru: "События", ja: "イベント", ko: "이벤트", zh: "活动", tr: "Etkinlikler", sv: "Evenemang", da: "Begivenheder", no: "Arrangementer", fi: "Tapahtumat", cs: "Události", hu: "Események", ro: "Evenimente", ar: "فعاليات" } },
-  { href: "/food", label: { en: "Food", fr: "Restaurants", de: "Essen", el: "Φαγητό", it: "Ristoranti", nl: "Eten", pl: "Restauracje", es: "Comida", pt: "Comida", ru: "Еда", ja: "グルメ", ko: "맛집", zh: "美食", tr: "Yemek", sv: "Mat", da: "Mad", no: "Mat", fi: "Ruoka", cs: "Jídlo", hu: "Éttermek", ro: "Mâncare", ar: "طعام" } },
-  { href: "/hikes", label: { en: "Hikes", fr: "Randos", de: "Wandern", el: "Πεζοπορία", it: "Escursioni", nl: "Wandelen", pl: "Szlaki", es: "Rutas", pt: "Trilhas", ru: "Походы", ja: "ハイキング", ko: "하이킹", zh: "徒步", tr: "Yürüyüş", sv: "Vandringar", da: "Vandreture", no: "Turer", fi: "Vaellukset", cs: "Túry", hu: "Túrák", ro: "Drumeții", ar: "مشي" } },
-  { href: "/news", label: { en: "News", fr: "Actus", de: "Nachrichten", el: "Νέα", it: "Notizie", nl: "Nieuws", pl: "Wiadomości", es: "Noticias", pt: "Notícias", ru: "Новости", ja: "ニュース", ko: "뉴스", zh: "新闻", tr: "Haberler", sv: "Nyheter", da: "Nyheder", no: "Nyheter", fi: "Uutiset", cs: "Zprávy", hu: "Hírek", ro: "Știri", ar: "أخبار" } },
-  { href: "/articles", label: { en: "Guides", fr: "Guides", de: "Guides", el: "Οδηγοί", it: "Guide", nl: "Gidsen", pl: "Przewodniki", es: "Guías", pt: "Guias", ru: "Гиды", ja: "ガイド", ko: "가이드", zh: "指南", tr: "Rehber", sv: "Guider", da: "Guides", no: "Guider", fi: "Oppaat", cs: "Průvodce", hu: "Útmutatók", ro: "Ghiduri", ar: "أدلة" } },
-  { href: "/explore", label: { en: "Explore", fr: "Explorer", de: "Entdecken", el: "Εξερεύνηση", it: "Esplora", nl: "Verkennen", pl: "Odkrywaj", es: "Explorar", pt: "Explorar", ru: "Карта", ja: "探索", ko: "탐색", zh: "探索", tr: "Keşfet", sv: "Utforska", da: "Udforsk", no: "Utforsk", fi: "Tutki", cs: "Objevuj", hu: "Felfedezés", ro: "Explorează", ar: "استكشف" } },
+type NavLabel = Record<string, string>;
+type NavLink = { href: string; label: NavLabel };
+
+// Nav "3 univers" (spec 2026-06-11) : Plan (preparer un deplacement),
+// Discover (explorer l'ile), Today (le flux du jour). 22 langues.
+const LINKS: Record<string, NavLink> = {
+  buses: { href: "/buses", label: { en: "Buses", fr: "Bus", de: "Busse", el: "Λεωφορεία", it: "Autobus", nl: "Bussen", pl: "Autobusy", es: "Autobuses", pt: "Autocarros", ru: "Автобусы", ja: "バス", ko: "버스", zh: "巴士", tr: "Otobüsler", sv: "Bussar", da: "Busser", no: "Busser", fi: "Bussit", cs: "Autobusy", hu: "Buszok", ro: "Autobuze", ar: "حافلات" } },
+  airports: { href: "/airport", label: { en: "Airports", fr: "Aéroports", de: "Flughäfen", el: "Αεροδρόμια", it: "Aeroporti", nl: "Luchthavens", pl: "Lotniska", es: "Aeropuertos", pt: "Aeroportos", ru: "Аэропорты", ja: "空港", ko: "공항", zh: "机场", tr: "Havalimanları", sv: "Flygplatser", da: "Lufthavne", no: "Flyplasser", fi: "Lentokentät", cs: "Letiště", hu: "Repülőterek", ro: "Aeroporturi", ar: "مطارات" } },
+  weather: { href: "/weather", label: { en: "Weather", fr: "Météo", de: "Wetter", el: "Καιρός", it: "Meteo", nl: "Weer", pl: "Pogoda", es: "Clima", pt: "Tempo", ru: "Погода", ja: "天気", ko: "날씨", zh: "天气", tr: "Hava", sv: "Väder", da: "Vejr", no: "Vær", fi: "Sää", cs: "Počasí", hu: "Időjárás", ro: "Vreme", ar: "طقس" } },
+  beaches: { href: "/beaches", label: { en: "Beaches", fr: "Plages", de: "Strände", el: "Παραλίες", it: "Spiagge", nl: "Stranden", pl: "Plaże", es: "Playas", pt: "Praias", ru: "Пляжи", ja: "ビーチ", ko: "해변", zh: "海滩", tr: "Plajlar", sv: "Stränder", da: "Strande", no: "Strender", fi: "Rannat", cs: "Pláže", hu: "Strandok", ro: "Plaje", ar: "شواطئ" } },
+  explore: { href: "/explore", label: { en: "Explore", fr: "Explorer", de: "Entdecken", el: "Εξερεύνηση", it: "Esplora", nl: "Verkennen", pl: "Odkrywaj", es: "Explorar", pt: "Explorar", ru: "Карта", ja: "探索", ko: "탐색", zh: "探索", tr: "Keşfet", sv: "Utforska", da: "Udforsk", no: "Utforsk", fi: "Tutki", cs: "Objevuj", hu: "Felfedezés", ro: "Explorează", ar: "استكشف" } },
+  villages: { href: "/villages", label: { en: "Villages", fr: "Villages", de: "Dörfer", el: "Χωριά", it: "Villaggi", nl: "Dorpen", pl: "Wioski", es: "Pueblos", pt: "Aldeias", ru: "Деревни", ja: "村", ko: "마을", zh: "村庄", tr: "Köyler", sv: "Byar", da: "Landsbyer", no: "Landsbyer", fi: "Kylät", cs: "Vesnice", hu: "Falvak", ro: "Sate", ar: "قرى" } },
+  food: { href: "/food", label: { en: "Food", fr: "Restaurants", de: "Essen", el: "Φαγητό", it: "Ristoranti", nl: "Eten", pl: "Restauracje", es: "Comida", pt: "Comida", ru: "Еда", ja: "グルメ", ko: "맛집", zh: "美食", tr: "Yemek", sv: "Mat", da: "Mad", no: "Mat", fi: "Ruoka", cs: "Jídlo", hu: "Éttermek", ro: "Mâncare", ar: "طعام" } },
+  hikes: { href: "/hikes", label: { en: "Hikes", fr: "Randos", de: "Wandern", el: "Πεζοπορία", it: "Escursioni", nl: "Wandelen", pl: "Szlaki", es: "Rutas", pt: "Trilhas", ru: "Походы", ja: "ハイキング", ko: "하이킹", zh: "徒步", tr: "Yürüyüş", sv: "Vandringar", da: "Vandreture", no: "Turer", fi: "Vaellukset", cs: "Túry", hu: "Túrák", ro: "Drumeții", ar: "مشي" } },
+  news: { href: "/news", label: { en: "News", fr: "Actus", de: "Nachrichten", el: "Νέα", it: "Notizie", nl: "Nieuws", pl: "Wiadomości", es: "Noticias", pt: "Notícias", ru: "Новости", ja: "ニュース", ko: "뉴스", zh: "新闻", tr: "Haberler", sv: "Nyheter", da: "Nyheder", no: "Nyheter", fi: "Uutiset", cs: "Zprávy", hu: "Hírek", ro: "Știri", ar: "أخبار" } },
+  events: { href: "/events", label: { en: "Events", fr: "Événements", de: "Events", el: "Εκδηλώσεις", it: "Eventi", nl: "Evenementen", pl: "Wydarzenia", es: "Eventos", pt: "Eventos", ru: "События", ja: "イベント", ko: "이벤트", zh: "活动", tr: "Etkinlikler", sv: "Evenemang", da: "Begivenheder", no: "Arrangementer", fi: "Tapahtumat", cs: "Události", hu: "Események", ro: "Evenimente", ar: "فعاليات" } },
+  daily: { href: "/daily", label: { en: "Daily", fr: "Quotidien", de: "Täglich", el: "Καθημερινά", it: "Quotidiano", nl: "Dagelijks", pl: "Codziennie", es: "Diario", pt: "Diário", ru: "Ежедневно", ja: "デイリー", ko: "데일리", zh: "每日", tr: "Günlük", sv: "Dagligen", da: "Dagligt", no: "Daglig", fi: "Päivittäin", cs: "Denně", hu: "Napi", ro: "Zilnic", ar: "يومي" } },
+  guides: { href: "/articles", label: { en: "Guides", fr: "Guides", de: "Guides", el: "Οδηγοί", it: "Guide", nl: "Gidsen", pl: "Przewodniki", es: "Guías", pt: "Guias", ru: "Гиды", ja: "ガイド", ko: "가이드", zh: "指南", tr: "Rehber", sv: "Guider", da: "Guides", no: "Guider", fi: "Oppaat", cs: "Průvodce", hu: "Útmutatók", ro: "Ghiduri", ar: "أدلة" } },
+};
+
+const NAV_GROUPS: Array<{ key: string; label: NavLabel; items: NavLink[] }> = [
+  {
+    key: "plan",
+    label: { en: "Plan", fr: "Planifier", de: "Planen", el: "Σχεδιασμός", it: "Pianifica", nl: "Plannen", pl: "Planuj", es: "Planificar", pt: "Planear", ru: "Спланировать", ja: "プラン", ko: "계획", zh: "规划", tr: "Planla", sv: "Planera", da: "Planlæg", no: "Planlegg", fi: "Suunnittele", cs: "Plánovat", hu: "Tervezés", ro: "Planifică", ar: "خطط" },
+    items: [LINKS.buses, LINKS.airports, LINKS.weather],
+  },
+  {
+    key: "discover",
+    label: { en: "Discover", fr: "Découvrir", de: "Entdecken", el: "Ανακαλύψτε", it: "Scopri", nl: "Ontdekken", pl: "Odkrywaj", es: "Descubrir", pt: "Descobrir", ru: "Открыть", ja: "発見", ko: "발견", zh: "发现", tr: "Keşfet", sv: "Upptäck", da: "Opdag", no: "Oppdag", fi: "Löydä", cs: "Objevit", hu: "Felfedezés", ro: "Descoperă", ar: "اكتشف" },
+    items: [LINKS.beaches, LINKS.explore, LINKS.villages, LINKS.food, LINKS.hikes],
+  },
+  {
+    key: "today",
+    label: { en: "Today", fr: "Aujourd'hui", de: "Heute", el: "Σήμερα", it: "Oggi", nl: "Vandaag", pl: "Dzisiaj", es: "Hoy", pt: "Hoje", ru: "Сегодня", ja: "今日", ko: "오늘", zh: "今天", tr: "Bugün", sv: "Idag", da: "I dag", no: "I dag", fi: "Tänään", cs: "Dnes", hu: "Ma", ro: "Azi", ar: "اليوم" },
+    items: [LINKS.news, LINKS.events, LINKS.daily, LINKS.guides],
+  },
 ];
+
+const navLabel = (l: NavLabel, locale: string) => l[locale] || l.en;
 
 function LocaleSwitcher({ locale, pathname, router }: { locale: string; pathname: string; router: ReturnType<typeof useRouter> }) {
   const [langOpen, setLangOpen] = useState(false);
@@ -139,21 +167,41 @@ export function Header() {
           </span>
         </Link>
 
-        {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-7 text-[13px] font-semibold text-text-muted">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`hover:text-aegean transition-colors relative pb-0.5 ${
-                pathname?.startsWith(link.href)
-                  ? "text-aegean after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-terra after:rounded-full"
-                  : ""
-              }`}
-            >
-              {link.label[locale as keyof typeof link.label] || link.label.en}
-            </Link>
-          ))}
+        {/* Desktop nav : 3 univers en dropdown (CSS hover/focus, zero JS) */}
+        <div className="hidden md:flex items-center gap-2 text-[13px] font-semibold text-text-muted">
+          {NAV_GROUPS.map((group) => {
+            const groupActive = group.items.some((l) => pathname?.startsWith(l.href));
+            return (
+              <div key={group.key} className="relative group">
+                <button
+                  type="button"
+                  className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-colors hover:text-aegean hover:bg-stone/60 ${
+                    groupActive ? "text-aegean" : ""
+                  }`}
+                >
+                  {navLabel(group.label, locale)}
+                  <ChevronDown className="w-3.5 h-3.5 opacity-60 group-hover:rotate-180 transition-transform" />
+                </button>
+                <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 absolute left-0 top-full pt-1 transition-all duration-150 z-50">
+                  <div className="bg-white rounded-xl border border-border shadow-xl py-1.5 w-44">
+                    {group.items.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className={`block px-3.5 py-2 text-sm transition-colors ${
+                          pathname?.startsWith(link.href)
+                            ? "text-aegean bg-aegean/8 font-semibold"
+                            : "text-text-muted hover:bg-stone hover:text-text"
+                        }`}
+                      >
+                        {navLabel(link.label, locale)}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {/* Right: search + locale dropdown + mobile hamburger */}
@@ -183,19 +231,28 @@ export function Header() {
       {/* Mobile menu */}
       {open && (
         <div className="md:hidden border-t border-border bg-surface/98 backdrop-blur-xl">
-          <div className="max-w-6xl mx-auto px-4 py-4 space-y-1">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`block px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                  pathname?.startsWith(link.href)
-                    ? "bg-aegean/8 text-aegean"
-                    : "text-text-muted hover:bg-stone hover:text-text"
-                }`}
-              >
-                {link.label[locale as keyof typeof link.label] || link.label.en}
-              </Link>
+          <div className="max-w-6xl mx-auto px-4 py-4 space-y-3">
+            {NAV_GROUPS.map((group) => (
+              <div key={group.key}>
+                <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-text-light m-0">
+                  {navLabel(group.label, locale)}
+                </p>
+                <div className="space-y-0.5">
+                  {group.items.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`block px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                        pathname?.startsWith(link.href)
+                          ? "bg-aegean/8 text-aegean"
+                          : "text-text-muted hover:bg-stone hover:text-text"
+                      }`}
+                    >
+                      {navLabel(link.label, locale)}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             ))}
 
             {/* Mobile locale switcher - collapsible */}
