@@ -208,3 +208,73 @@ export function CiBook(props: P) {
     </Svg>
   );
 }
+
+/** Citadine compacte, profil arrondi. */
+export function CiCarCity(props: P) {
+  return (
+    <Svg {...props}>
+      <path d="M5 11.2l1.4-3A1.8 1.8 0 0 1 8 7.2h5.4a1.8 1.8 0 0 1 1.6 1l1.5 3" />
+      <path d="M3.6 16V14a2.8 2.8 0 0 1 2.8-2.8h10.2a2.8 2.8 0 0 1 2.8 2.8v2" />
+      <circle cx="7.2" cy="16.8" r="1.7" />
+      <circle cx="16.2" cy="16.8" r="1.7" />
+      <path d="M8.9 16.8h5.6" strokeWidth={1.4} />
+      <path d="M19.4 11.1q1-.9 0-1.8" strokeWidth={1.4} />
+    </Svg>
+  );
+}
+
+/** Berline compacte : profil bas, cabine décalée, long coffre. */
+export function CiCarCompact(props: P) {
+  return (
+    <Svg {...props}>
+      <path d="M4.6 11.3l1.4-2.6a1.8 1.8 0 0 1 1.6-1h4.6a1.8 1.8 0 0 1 1.6 1l1.4 2.6" />
+      <path d="M2.6 16v-1.7a2.4 2.4 0 0 1 2.4-2.4h14a2.4 2.4 0 0 1 2.4 2.4V16" />
+      <circle cx="6.6" cy="16.6" r="1.7" />
+      <circle cx="17.4" cy="16.6" r="1.7" />
+      <path d="M8.3 16.6h7.4" strokeWidth={1.4} />
+      <path d="M9.9 7.7v3.6" strokeWidth={1.4} />
+    </Svg>
+  );
+}
+
+/** SUV / 4x4 : caisse haute, barres de toit, garde au sol, grosses roues. */
+export function CiCarSuv(props: P) {
+  return (
+    <Svg {...props}>
+      <path d="M5.9 10.2l.7-2.4A1.9 1.9 0 0 1 8.4 6.4h7.2a1.9 1.9 0 0 1 1.8 1.4l.7 2.4" />
+      <path d="M3.8 14.9v-2.5a2.2 2.2 0 0 1 2.2-2.2h12a2.2 2.2 0 0 1 2.2 2.2v2.5" />
+      <circle cx="7.1" cy="16.9" r="2" />
+      <circle cx="16.9" cy="16.9" r="2" />
+      <path d="M9.8 16.9h4.4" strokeWidth={1.4} />
+      <path d="M8.6 4.9h6.8" strokeWidth={1.4} />
+      <path d="M12 6.4v3.8" strokeWidth={1.4} />
+    </Svg>
+  );
+}
+
+/** Familiale / monospace : caisse longue, arrière droit, trois vitres. */
+export function CiCarFamily(props: P) {
+  return (
+    <Svg {...props}>
+      <path d="M4.4 11.2l1.8-3.1a1.8 1.8 0 0 1 1.6-.9h8.6a1.8 1.8 0 0 1 1.8 1.8v2.2" />
+      <path d="M2.4 16v-1.9a2.4 2.4 0 0 1 2.4-2.4h14.4a2.4 2.4 0 0 1 2.4 2.4V16" />
+      <circle cx="6.4" cy="16.7" r="1.7" />
+      <circle cx="17.6" cy="16.7" r="1.7" />
+      <path d="M8.1 16.7h7.8" strokeWidth={1.4} />
+      <path d="M9.4 7.2v4M13.4 7.2v4" strokeWidth={1.4} />
+    </Svg>
+  );
+}
+
+/** Scooter : selle arrière, plancher plat, tablier remontant au guidon. */
+export function CiScooter(props: P) {
+  return (
+    <Svg {...props}>
+      <circle cx="5.6" cy="16.8" r="2" />
+      <circle cx="17.9" cy="16.8" r="2" />
+      <path d="M3.8 10.8h3.4a2 2 0 0 1 2 2v1.6h4.3l2.7-6" />
+      <path d="M16.2 8.4l1.6 6.5" />
+      <path d="M16.2 8.4h-2.8" strokeWidth={1.4} />
+    </Svg>
+  );
+}
