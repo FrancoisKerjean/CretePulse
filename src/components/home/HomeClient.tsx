@@ -1,34 +1,28 @@
-﻿"use client";
+"use client";
 
-// Home "la Crete, aujourd'hui" : dashboard donnees live + outils + contenu cure.
-// Remplace l'ancienne home agregateur (hero news 80vh + 2 tickers + sidebar).
-// Spec : docs/superpowers/specs/2026-06-11-ui-live-data-redesign-design.md
+// Home Kalimera : hero lagon + ile carte live + board nuit + tuiles pleines.
+// Cahier des charges visuel : docs/design/kalimera/home-v8.html (transpose).
+// Spec : docs/superpowers/specs/2026-06-11-brand-da-kalimera-design.md
 import { useState } from "react";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { BlurFade } from "@/components/ui/blur-fade";
-import { NumberTicker } from "@/components/ui/number-ticker";
 import { CardThumb } from "@/components/CardThumb";
+import { AbstractFallback } from "@/components/AbstractFallback";
+import { CreteMap } from "@/components/CreteMap";
+import { DepBoard } from "@/components/DepBoard";
 import { WindArrow } from "@/components/WindArrow";
-import { Wind, ChevronRight, MapPin, Mail } from "lucide-react";
+import { MapPin } from "lucide-react";
 import {
-  CiBus, CiWave, CiSun, CiCompass, CiPlane, CiChart, CiMountain,
-  CiFood, CiHike, CiCalendar, CiNews, CiCloud, CiRain, CiBook,
+  CiBus, CiWave, CiSun, CiCompass, CiPlane, CiChart,
+  CiCalendar, CiNews, CiBook,
 } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
 import type { CityWeather } from "@/lib/weather";
+import type { BusRoute } from "@/lib/buses";
 import type { NewsItem, Event, Locale } from "@/lib/types";
 import { getLocalizedField } from "@/lib/types";
 import { localizeLocation } from "@/lib/localize-location";
 import { type Guide, getLocalizedGuideField } from "@/lib/guides";
-
-function WeatherIcon({ code, wind, className }: { code: number; wind: number; className?: string }) {
-  const c = className || "w-5 h-5";
-  if (wind > 20) return <Wind className={`${c} text-aegean-light`} />;
-  if (code <= 1) return <CiSun className={`${c} text-terra`} />;
-  if (code <= 3) return <CiCloud className={`${c} text-text-light`} />;
-  return <CiRain className={`${c} text-aegean`} />;
-}
 
 function timeAgo(dateStr: string): string {
   const diffMs = Date.now() - new Date(dateStr).getTime();
@@ -49,42 +43,66 @@ function formatEventDate(dateStr: string, locale: string): string {
   return `${month} ${day}`;
 }
 
-const CATEGORY_STYLES: Record<string, string> = {
-  politics: "bg-aegean/10 text-aegean",
-  tourism: "bg-terra/10 text-terra",
-  culture: "bg-sand text-text-muted",
-  environment: "bg-olive/10 text-olive",
-  economy: "bg-stone text-text-muted",
-  sports: "bg-aegean/10 text-aegean",
-  weather: "bg-aegean/10 text-aegean",
-  local: "bg-olive/10 text-olive",
-};
-
 // Libelles inline 4 langues (pattern du site), fallback EN pour les 18 autres.
 type Ui = "en" | "fr" | "de" | "el";
 const pickUi = (l: string): Ui => (["en", "fr", "de", "el"].includes(l) ? (l as Ui) : "en");
 
 const T = {
   heroTitle: { en: "Crete, today", fr: "La Crète, aujourd'hui", de: "Kreta, heute", el: "Η Κρήτη σήμερα" },
+  // Phrase hero : pre + <hl>rating</hl> + mid + nom de plage + "."
+  heroSea: {
+    en: { pre: "The sea is ", mid: " at " },
+    fr: { pre: "La mer est ", mid: " à " },
+    de: { pre: "Das Meer ist ", mid: " bei " },
+    el: { pre: "Η θάλασσα είναι ", mid: " στο " },
+  },
+  liveFromIsland: { en: "live from the island", fr: "en direct de l'île", de: "live von der Insel", el: "ζωντανά από το νησί" },
+  youAreHere: { en: "You are here", fr: "Vous êtes ici", de: "Sie sind hier", el: "Είστε εδώ" },
+  islandLive: { en: "the island, live", fr: "l'île en direct", de: "die Insel, live", el: "το νησί ζωντανά" },
+  heroSub: {
+    en: "Computed live · 10 weather stations × the orientation of 500 beaches.",
+    fr: "Calculé en direct · 10 stations météo × l'orientation de 500 plages.",
+    de: "Live berechnet · 10 Wetterstationen × die Ausrichtung von 500 Stränden.",
+    el: "Υπολογίζεται ζωντανά · 10 μετεωρολογικοί σταθμοί × 500 παραλίες.",
+  },
+  ctaBeach: { en: "See today's beach", fr: "Voir la plage du jour", de: "Strand des Tages", el: "Η παραλία της ημέρας" },
+  air: { en: "air", fr: "air", de: "Luft", el: "αέρας" },
+  sea: { en: "sea", fr: "mer", de: "Meer", el: "θάλασσα" },
+  islandNow: { en: "The island, right now", fr: "L'île, maintenant", de: "Die Insel, jetzt", el: "Το νησί, τώρα" },
+  allStations: { en: "All stations", fr: "Toutes les stations", de: "Alle Stationen", el: "Όλοι οι σταθμοί" },
   swimToday: { en: "Where to swim today", fr: "Où se baigner aujourd'hui", de: "Wo heute baden", el: "Πού για μπάνιο σήμερα" },
+  allBeaches: { en: "All 500 beaches", fr: "Les 500 plages", de: "Alle 500 Strände", el: "Οι 500 παραλίες" },
+  todaysPick: { en: "today's pick", fr: "la préco du jour", de: "Tipp des Tages", el: "η επιλογή της ημέρας" },
+  toolsTitle: { en: "The tools", fr: "Les outils", de: "Die Tools", el: "Τα εργαλεία" },
   ratings: {
     calm: { en: "calm", fr: "calme", de: "ruhig", el: "ήρεμη" },
     fair: { en: "fair", fr: "correct", de: "passabel", el: "καλή" },
     exposed: { en: "exposed", fr: "exposée", de: "exponiert", el: "εκτεθειμένη" },
   },
+  seaStates: {
+    calm: { en: "calm", fr: "calme", de: "ruhig", el: "ήρεμη" },
+    ok: { en: "swim ok", fr: "baignade ok", de: "Baden ok", el: "για μπάνιο" },
+    rough: { en: "choppy", fr: "agitée", de: "kabbelig", el: "κυματώδης" },
+  },
+  regions: {
+    south: { en: "South coast", fr: "Côte sud", de: "Südküste", el: "Νότια ακτή" },
+    west: { en: "West coast", fr: "Côte ouest", de: "Westküste", el: "Δυτική ακτή" },
+    east: { en: "East coast", fr: "Côte est", de: "Ostküste", el: "Ανατολική ακτή" },
+    central: { en: "Central coast", fr: "Côte centrale", de: "Zentralküste", el: "Κεντρική ακτή" },
+  },
   tools: {
-    buses: { en: "Bus planner", fr: "Planificateur bus", de: "Busplaner", el: "Δρομολόγια ΚΤΕΛ" },
-    busesLine: { en: "KTEL timetables & prices", fr: "Horaires & prix KTEL", de: "KTEL Fahrpläne & Preise", el: "Ώρες & τιμές" },
-    swim: { en: "Where to swim", fr: "Où se baigner", de: "Wo baden", el: "Πού για μπάνιο" },
-    swimLine: { en: "Live wind × 500+ beaches", fr: "Vent live × 500+ plages", de: "Live-Wind × 500+ Strände", el: "Άνεμος × 500+ παραλίες" },
+    buses: { en: "Buses", fr: "Bus", de: "Busse", el: "Λεωφορεία" },
+    busesLine: { en: "Timetables & prices", fr: "Horaires & prix", de: "Fahrpläne & Preise", el: "Ώρες & τιμές" },
+    swim: { en: "Swimming", fr: "Baignade", de: "Baden", el: "Μπάνιο" },
+    swimLine: { en: "500 beaches live", fr: "500 plages live", de: "500 Strände live", el: "500 παραλίες live" },
     explore: { en: "Explore", fr: "Explorer", de: "Erkunden", el: "Εξερεύνηση" },
-    exploreLine: { en: "2,296 places, rich filters", fr: "2 296 lieux, filtres riches", de: "2.296 Orte, Filter", el: "2.296 μέρη, φίλτρα" },
+    exploreLine: { en: "2,296 places", fr: "2 296 lieux", de: "2.296 Orte", el: "2.296 μέρη" },
     airports: { en: "Airports", fr: "Aéroports", de: "Flughäfen", el: "Αεροδρόμια" },
-    airportsLine: { en: "Traffic data & seasonality", fr: "Trafic & saisonnalité", de: "Verkehr & Saison", el: "Κίνηση & εποχικότητα" },
+    airportsLine: { en: "Traffic & seasons", fr: "Trafic & saisons", de: "Verkehr & Saison", el: "Κίνηση & εποχές" },
     airbnb: { en: "Airbnb data", fr: "Data Airbnb", de: "Airbnb-Daten", el: "Δεδομένα Airbnb" },
-    airbnbLine: { en: "Prices & occupancy by area", fr: "Prix & occupation par zone", de: "Preise & Auslastung", el: "Τιμές ανά περιοχή" },
+    airbnbLine: { en: "Prices by area", fr: "Prix par zone", de: "Preise je Gebiet", el: "Τιμές ανά περιοχή" },
     weather: { en: "Weather", fr: "Météo", de: "Wetter", el: "Καιρός" },
-    weatherLine: { en: "10 stations, sea included", fr: "10 stations, mer incluse", de: "10 Stationen, mit Meer", el: "10 σταθμοί, με θάλασσα" },
+    weatherLine: { en: "10 stations + sea", fr: "10 stations + mer", de: "10 Stationen + Meer", el: "10 σταθμοί + θάλασσα" },
   },
   nextEvents: { en: "Upcoming events", fr: "Prochains événements", de: "Nächste Events", el: "Επόμενες εκδηλώσεις" },
 } as const;
@@ -114,14 +132,14 @@ function NewsletterFormCompact({ locale }: { locale: string }) {
   if (status === "success") {
     const successMsg: Record<string, string> = { en: "Thanks!", fr: "Merci !", de: "Danke!", el: "Ευχαριστώ!" };
     return (
-      <div className="rounded-xl bg-aegean px-4 py-2.5 text-white text-center">
-        <p className="text-xs font-medium m-0">{successMsg[locale] || successMsg.en}</p>
+      <div className="rounded-full bg-night px-6 py-3 text-white text-center">
+        <p className="text-sm font-heading font-bold m-0">{successMsg[locale] || successMsg.en}</p>
       </div>
     );
   }
 
   return (
-    <form className="flex gap-2 w-full max-w-md" onSubmit={handleSubmit}>
+    <form className="flex gap-2.5 w-full max-w-md" onSubmit={handleSubmit}>
       <input type="text" name="website" className="hidden" tabIndex={-1} autoComplete="off" />
       <input
         type="email"
@@ -129,12 +147,12 @@ function NewsletterFormCompact({ locale }: { locale: string }) {
         onChange={(e) => setEmail(e.target.value)}
         placeholder={t("emailPlaceholder")}
         required
-        className="flex-1 px-3 py-2 rounded-lg border border-border bg-white text-xs text-text placeholder:text-text-light focus:outline-none focus:ring-2 focus:ring-aegean/30 focus:border-aegean/40"
+        className="flex-1 px-5 py-3 rounded-full border-none bg-white text-[13.5px] text-text placeholder:text-text-light focus:outline-none focus:ring-2 focus:ring-lagoon/40"
       />
       <button
         type="submit"
         disabled={status === "loading"}
-        className="px-4 py-2 bg-aegean text-white rounded-lg font-bold text-xs hover:bg-aegean-light transition-colors disabled:opacity-60"
+        className="px-5 py-3 bg-text text-white rounded-full font-heading font-bold text-sm hover:bg-night transition-colors disabled:opacity-60"
       >
         {status === "loading" ? "..." : t("subscribe")}
       </button>
@@ -151,6 +169,15 @@ export interface SwimPickLite {
   windCardinal: string;
   windDir: number;
   seaTemp: number | null;
+  region: string | null;
+  cityName: string;
+}
+
+export interface SwimSideLite {
+  name: string;
+  slug: string;
+  imageUrl: string | null;
+  rating: "calm" | "fair" | "exposed";
 }
 
 interface HomeClientProps {
@@ -159,16 +186,47 @@ interface HomeClientProps {
   upcomingEvents: Event[];
   latestGuides: Guide[];
   swimPick: SwimPickLite | null;
+  swimSides: SwimSideLite[];
+  boardRoutes: BusRoute[];
   locale: string;
 }
 
-const RATING_STYLES: Record<SwimPickLite["rating"], string> = {
-  calm: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  fair: "bg-amber-100 text-amber-800 border-amber-200",
-  exposed: "bg-terra-faint text-terra border-terra/30",
+const VERDICT_COLORS: Record<SwimPickLite["rating"], string> = {
+  calm: "text-[#0B8A52]",
+  fair: "text-[#8A6A14]",
+  exposed: "text-terra",
 };
 
-export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, swimPick, locale }: HomeClientProps) {
+// Position du pin plage sur la silhouette (par region, path non georeference).
+const SWIM_PIN_POS: Record<string, { left: string; top: string }> = {
+  south: { left: "40%", top: "80%" },
+  west: { left: "18%", top: "70%" },
+  east: { left: "72%", top: "70%" },
+  central: { left: "45%", top: "55%" },
+  north: { left: "45%", top: "55%" },
+};
+
+// Καλημέρα avant 12h Athens, Καλησπέρα après 17h, Γεια σου entre les deux.
+function greekGreeting(): string {
+  const h = parseInt(
+    new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Athens", hour: "2-digit", hour12: false }).format(new Date()),
+    10,
+  );
+  if (h < 12) return "Καλημέρα !";
+  if (h >= 17) return "Καλησπέρα !";
+  return "Γεια σου !";
+}
+
+function seaState(c: CityWeather): { key: "calm" | "ok" | "rough"; warn: boolean } {
+  if (c.windSpeed < 12) return { key: "calm", warn: false };
+  if (c.windSpeed < 20) return { key: "ok", warn: false };
+  return { key: "rough", warn: true };
+}
+
+const WTILE_CITIES = ["Heraklion", "Chania", "Ierapetra", "Sitia"];
+const TOOL_TINTS = ["bg-[#CFF3F7]", "bg-[#FFE9CF]", "bg-[#E4F0D5]", "bg-[#DCEBFF]", "bg-[#FFE0D6]", "bg-[#FFF1BF]"];
+
+export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, swimPick, swimSides, boardRoutes, locale }: HomeClientProps) {
   const loc = locale as Locale;
   const ui = pickUi(locale);
   const t = useTranslations("home");
@@ -177,13 +235,18 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
     weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Athens",
   }).format(new Date());
 
-  const heroCities = ["Heraklion", "Chania", "Ierapetra"]
+  const wtileCities = WTILE_CITIES
     .map((n) => cities.find((c) => c.name === n))
     .filter((c): c is CityWeather => Boolean(c));
 
-  const news = latestNews.slice(0, 8);
-  const guides = latestGuides.slice(0, 6);
+  const news = latestNews.slice(0, 6);
+  const guides = latestGuides.slice(0, 4);
   const events = upcomingEvents.slice(0, 3);
+  const heroCity = cities.find((c) => c.name === (swimPick?.cityName ?? "Heraklion")) ?? cities[0];
+
+  const swimPin = swimPick
+    ? { name: swimPick.name, ...(SWIM_PIN_POS[swimPick.region ?? "central"] ?? SWIM_PIN_POS.central) }
+    : null;
 
   const TOOLS = [
     { href: "/buses", icon: CiBus, title: T.tools.buses[ui], line: T.tools.busesLine[ui] },
@@ -194,171 +257,264 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
     { href: "/weather", icon: CiSun, title: T.tools.weather[ui], line: T.tools.weatherLine[ui] },
   ] as const;
 
+  const seaPhrase = T.heroSea[ui];
+
   return (
     <main className="min-h-screen bg-surface">
 
-      {/* ═══════ HERO "Crete, today" : titre + date + swim pick + meteo regions ═══════ */}
-      <section className="bg-stone border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 pt-10 pb-8">
-          <div className="grid lg:grid-cols-2 gap-8 items-center">
-            <div>
-              <BlurFade delay={0.05}>
-                <p className="font-data text-xs text-text-muted uppercase tracking-wider mb-2">{dateLabel}</p>
-                <h1 className="font-heading text-4xl md:text-6xl font-bold text-text leading-[1.02] tracking-tight">
-                  {T.heroTitle[ui]}
-                </h1>
-                <p className="mt-3 text-text-muted text-base md:text-lg max-w-md">{t("subtitle")}</p>
-                <p className="font-data text-[11px] text-text-light mt-5">
-                  <NumberTicker value={500} suffix="+" /> {t("beachesCount").replace(/\d+\+?\s*/, "")} · {" "}
-                  <NumberTicker value={300} suffix="+" /> {t("villagesCount").replace(/\d+\+?\s*/, "")} · {" "}
-                  <NumberTicker value={80} suffix="+" /> {t("hikesCount").replace(/\d+\+?\s*/, "")}
-                </p>
-              </BlurFade>
-            </div>
-
-            {swimPick && (
-              <BlurFade delay={0.15}>
-                <Link href="/beaches/today" className="card-base overflow-hidden block no-underline group">
-                  <div className="relative aspect-[16/8] overflow-hidden rounded-t-xl">
-                    {swimPick.imageUrl ? (
-                      <>
-                        <Image src={swimPick.imageUrl} alt={swimPick.name} fill
-                               className="object-cover saturate-[.92] group-hover:scale-[1.03] transition-transform duration-500"
-                               sizes="(max-width: 1024px) 100vw, 50vw" priority />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
-                      </>
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-aegean to-aegean-light" />
-                    )}
-                    <div className="absolute bottom-0 left-0 right-0 p-4 flex items-end justify-between gap-2">
-                      <div>
-                        <p className="text-[10px] uppercase tracking-wider text-white/70 font-semibold m-0">{T.swimToday[ui]}</p>
-                        <p className="font-heading text-xl font-bold text-white m-0">{swimPick.name}</p>
-                      </div>
-                      <span className={`text-[10px] uppercase tracking-wide font-bold border rounded px-2 py-0.5 ${RATING_STYLES[swimPick.rating]}`}>
-                        {T.ratings[swimPick.rating][ui]}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="px-4 py-2.5 flex items-center gap-4 font-data text-xs text-text-muted">
-                    <span className="inline-flex items-center gap-1">
-                      <WindArrow deg={swimPick.windDir} className="w-3 h-3 text-aegean" />
-                      {swimPick.windCardinal} {swimPick.windSpeed} km/h
-                    </span>
-                    {swimPick.seaTemp !== null && (
-                      <span className="inline-flex items-center gap-1">
-                        <CiWave className="w-3 h-3 text-aegean" /> {swimPick.seaTemp}°
-                      </span>
-                    )}
-                    <ChevronRight className="w-3.5 h-3.5 ml-auto text-aegean" />
-                  </div>
+      {/* ═══════ HERO lagon : greet + phrase mer + chips + ile carte live ═══════ */}
+      <section className="relative -mt-[74px] pt-28 pb-28 bg-gradient-to-b from-sky via-[#8FE0EC] to-lagoon overflow-hidden">
+        {/* sunball */}
+        <div
+          className="absolute top-20 right-[10%] w-[120px] h-[120px] rounded-full shadow-[0_0_76px_22px_rgba(255,200,61,.45)]"
+          style={{ background: "radial-gradient(circle at 38% 35%, #FFE08F, #FFC83D 70%)" }}
+          aria-hidden
+        />
+        <div className="relative max-w-6xl mx-auto px-4 grid lg:grid-cols-2 gap-11 items-center">
+          <div>
+            <BlurFade delay={0.05}>
+              <span className="inline-flex items-center gap-2 bg-white/72 rounded-full px-4 py-2 text-[13px] font-heading font-semibold text-aegean">
+                <span className="w-2 h-2 rounded-full bg-ok shadow-[0_0_0_4px_rgba(20,184,107,.25)]" />
+                {greekGreeting()} {dateLabel} · {T.liveFromIsland[ui]}
+              </span>
+              <h1 className="font-heading font-extrabold text-4xl md:text-[58px] leading-[1.04] tracking-tight text-text mt-4 mb-3">
+                {swimPick ? (
+                  <>
+                    {seaPhrase.pre}
+                    <span className="text-white [text-shadow:0_2px_18px_rgba(11,94,120,.35)]">{T.ratings[swimPick.rating][ui]}</span>
+                    {seaPhrase.mid}
+                    {swimPick.name}.
+                  </>
+                ) : (
+                  T.heroTitle[ui]
+                )}
+              </h1>
+              <p className="text-base text-[rgba(11,57,84,.78)] max-w-md leading-relaxed mb-6">
+                {T.heroSub[ui]}
+              </p>
+              <div className="flex flex-wrap gap-3 font-data">
+                <Link href="/beaches/today" className="bg-sun text-text rounded-[17px] px-4 py-2.5 text-sm font-heading font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)] no-underline hover:brightness-105 transition-all">
+                  {T.ctaBeach[ui]}
                 </Link>
-              </BlurFade>
-            )}
+                {heroCity && (
+                  <span className="bg-white rounded-[17px] px-4 py-2.5 text-sm font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)]">
+                    ☼ {heroCity.temp}° {T.air[ui]}
+                  </span>
+                )}
+                {swimPick?.seaTemp != null && (
+                  <span className="bg-white rounded-[17px] px-4 py-2.5 text-sm font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)]">
+                    ≈ {swimPick.seaTemp}° {T.sea[ui]}
+                  </span>
+                )}
+                {swimPick && (
+                  <span className="bg-white rounded-[17px] px-4 py-2.5 text-sm font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)] inline-flex items-center gap-1.5">
+                    <WindArrow deg={swimPick.windDir} className="w-3.5 h-3.5 text-aegean" /> {swimPick.windSpeed} km/h
+                  </span>
+                )}
+              </div>
+            </BlurFade>
           </div>
 
-          {/* Meteo 3 regions */}
-          {heroCities.length > 0 && (
-            <div className="grid grid-cols-3 gap-3 mt-8">
-              {heroCities.map((city) => (
-                <Link key={city.name} href="/weather"
-                      className="card-base px-4 py-3 flex items-center gap-3 no-underline">
-                  <WeatherIcon code={city.weatherCode} wind={city.windSpeed} />
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider leading-none m-0 truncate">{city.name}</p>
-                    <p className="font-data text-sm text-text mt-1 mb-0 flex items-center gap-1.5">
-                      {city.temp}°
-                      <WindArrow deg={city.windDir} className="w-3 h-3 text-aegean" />
-                      <span className="text-text-muted">{city.windSpeed} km/h</span>
-                      {city.seaTemp !== null && (
-                        <span className="hidden sm:inline-flex items-center gap-0.5 text-aegean">
-                          <CiWave className="w-3 h-3" />{city.seaTemp}°
-                        </span>
-                      )}
+          <BlurFade delay={0.15}>
+            <div>
+              <p className="text-[13px] font-heading font-bold uppercase tracking-[0.1em] text-aegean flex justify-between m-0 mb-2 px-2">
+                {T.youAreHere[ui]}
+                <span className="normal-case tracking-normal font-sans font-medium text-text-muted">{T.islandLive[ui]}</span>
+              </p>
+              <CreteMap cities={wtileCities} swimPin={swimPin} locale={locale} />
+            </div>
+          </BlurFade>
+        </div>
+        {/* vague separatrice */}
+        <svg className="absolute bottom-0 left-0 w-full h-[70px]" viewBox="0 0 1440 70" preserveAspectRatio="none" aria-hidden>
+          <path d="M0 40 C180 0 320 70 540 42 C760 14 900 66 1130 40 C1290 22 1380 36 1440 28 L1440 70 L0 70 Z" fill="#F6FBFC" />
+        </svg>
+      </section>
+
+      <div className="max-w-6xl mx-auto px-4">
+
+        {/* ═══════ BOARD NUIT en chevauchement ═══════ */}
+        {boardRoutes.length > 0 && (
+          <div className="relative z-[5] -mt-20">
+            <DepBoard routes={boardRoutes} locale={locale} />
+          </div>
+        )}
+
+        {/* ═══════ L'ILE, MAINTENANT : tuiles couleur pleine ═══════ */}
+        {wtileCities.length > 0 && (
+          <>
+            <div className="flex items-center justify-between mt-10 mb-4">
+              <h2 className="font-heading text-[28px] font-extrabold text-text m-0">{T.islandNow[ui]}</h2>
+              <Link href="/weather" className="text-[13.5px] font-heading font-bold text-aegean bg-white rounded-full px-4 py-2 shadow-[0_8px_20px_rgba(11,94,120,.12)] no-underline">
+                {T.allStations[ui]}
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {wtileCities.map((c, i) => {
+                const st = seaState(c);
+                const sunny = i % 2 === 0;
+                return (
+                  <Link key={c.name} href="/weather"
+                        className={`relative overflow-hidden rounded-[28px] px-5 py-4 no-underline ${sunny ? "bg-lagoon text-night" : "bg-aegean text-white"}`}>
+                    {sunny && <div className="absolute -top-5 -right-5 w-[66px] h-[66px] rounded-full bg-sun opacity-90" aria-hidden />}
+                    <p className="text-[13px] font-heading font-bold uppercase tracking-[0.08em] opacity-70 m-0">{c.name}</p>
+                    <p className="font-data text-5xl font-extrabold tracking-tight leading-[1.08] m-0">
+                      {c.temp}<sup className="text-xl opacity-75">°</sup>
+                    </p>
+                    <p className="font-data text-[12.5px] opacity-70 m-0 inline-flex items-center gap-1">
+                      <WindArrow deg={c.windDir} className="w-3 h-3" /> {c.windSpeed} km/h
+                      {c.seaTemp != null && <> · {T.sea[ui]} {c.seaTemp}°</>}
+                    </p>
+                    <p className={`mt-2 mb-0 inline-flex text-[12.5px] font-bold rounded-full px-3 py-1.5 font-data ${st.warn ? "bg-white/90 text-[#C2543A]" : "bg-white/85 text-aegean"}`}>
+                      ≈ {T.seaStates[st.key][ui]}
+                    </p>
+                  </Link>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {/* ═══════ OU SE BAIGNER AUJOURD'HUI ═══════ */}
+        {swimPick && (
+          <>
+            <div className="flex items-center justify-between mt-10 mb-4">
+              <h2 className="font-heading text-[28px] font-extrabold text-text m-0">{T.swimToday[ui]}</h2>
+              <Link href="/beaches" className="text-[13.5px] font-heading font-bold text-aegean bg-white rounded-full px-4 py-2 shadow-[0_8px_20px_rgba(11,94,120,.12)] no-underline">
+                {T.allBeaches[ui]}
+              </Link>
+            </div>
+            <div className="grid lg:grid-cols-[1.25fr_.75fr] gap-4">
+              <Link href="/beaches/today" className="relative rounded-[28px] overflow-hidden shadow-[0_18px_44px_rgba(11,94,120,.18)] min-h-[320px] block no-underline group">
+                {swimPick.imageUrl ? (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={swimPick.imageUrl} alt={swimPick.name}
+                         className="absolute inset-0 w-full h-full object-cover saturate-[1.08] group-hover:scale-[1.03] transition-transform duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-lagoon/5 via-transparent to-night/55 pointer-events-none" />
+                    <svg className="absolute inset-0 w-full h-full opacity-30 mix-blend-overlay pointer-events-none" aria-hidden>
+                      <filter id="kpick"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" /></filter>
+                      <rect width="100%" height="100%" filter="url(#kpick)" />
+                    </svg>
+                  </>
+                ) : (
+                  <AbstractFallback kind="sea" />
+                )}
+                <div className="absolute bottom-0 left-0 right-0 p-6 text-white flex justify-between items-end gap-3">
+                  <div>
+                    <p className="font-heading text-[27px] font-extrabold m-0 leading-tight">{swimPick.name}</p>
+                    <p className="text-[13px] text-white/80 m-0">
+                      {swimPick.region && T.regions[swimPick.region as keyof typeof T.regions]
+                        ? <>{T.regions[swimPick.region as keyof typeof T.regions][ui]} · </>
+                        : null}
+                      {swimPick.cityName} · {T.todaysPick[ui]}
                     </p>
                   </div>
-                </Link>
-              ))}
+                  <span className={`bg-white/92 font-heading font-extrabold rounded-full px-4 py-2 text-sm font-data whitespace-nowrap ${VERDICT_COLORS[swimPick.rating]}`}>
+                    ≈ {T.ratings[swimPick.rating][ui]}{swimPick.seaTemp != null ? ` · ${swimPick.seaTemp}°` : ""}
+                  </span>
+                </div>
+              </Link>
+              <div className="flex flex-col gap-4">
+                {swimSides.map((s) => (
+                  <Link key={s.slug} href={`/beaches/${s.slug}`}
+                        className="relative rounded-3xl overflow-hidden flex-1 shadow-[0_12px_30px_rgba(11,94,120,.12)] min-h-[150px] block no-underline group">
+                    {s.imageUrl ? (
+                      <>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={s.imageUrl} alt={s.name}
+                             className="absolute inset-0 w-full h-full object-cover saturate-[1.08] group-hover:scale-[1.03] transition-transform duration-500" />
+                        <div className="absolute inset-0 bg-gradient-to-b from-lagoon/5 to-night/50 pointer-events-none" />
+                      </>
+                    ) : (
+                      <AbstractFallback kind="sea" />
+                    )}
+                    <div className="absolute bottom-3 left-4 right-4 text-white flex justify-between items-center">
+                      <span className="font-heading font-bold text-base">{s.name}</span>
+                      <span className={`bg-white/90 rounded-full text-[11.5px] font-extrabold px-3 py-1 font-data ${VERDICT_COLORS[s.rating]}`}>
+                        ≈ {T.ratings[s.rating][ui]}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
-          )}
-        </div>
-      </section>
+          </>
+        )}
 
-      {/* ═══════ OUTILS ═══════ */}
-      <section className="bg-white border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            {TOOLS.map(({ href, icon: Icon, title, line }, idx) => (
-              <BlurFade key={href} delay={Math.min(0.05 * idx, 0.3)}>
-                <Link href={href} className="card-base p-4 block h-full no-underline">
-                  <Icon className="w-5 h-5 text-aegean mb-2" />
-                  <p className="text-sm font-semibold text-text m-0">{title}</p>
-                  <p className="text-[11px] text-text-muted mt-0.5 mb-0">{line}</p>
-                </Link>
-              </BlurFade>
-            ))}
+        {/* ═══════ LES OUTILS : tuiles pastel ═══════ */}
+        <div className="flex items-center justify-between mt-10 mb-4">
+          <h2 className="font-heading text-[28px] font-extrabold text-text m-0">{T.toolsTitle[ui]}</h2>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
+          {TOOLS.map(({ href, icon: Icon, title, line }, idx) => (
+            <BlurFade key={href} delay={Math.min(0.05 * idx, 0.3)}>
+              <Link href={href} className={`block h-full rounded-[22px] p-4 no-underline ${TOOL_TINTS[idx]}`}>
+                <span className="bg-white/85 w-[42px] h-[42px] rounded-[15px] flex items-center justify-center text-text mb-2.5">
+                  <Icon className="w-[21px] h-[21px]" />
+                </span>
+                <p className="font-heading font-bold text-[15px] text-text m-0">{title}</p>
+                <p className="text-[11.5px] text-[rgba(11,57,84,.65)] mt-0.5 mb-0">{line}</p>
+              </Link>
+            </BlurFade>
+          ))}
+        </div>
+
+        {/* ═══════ MAINTENANCE (donnees indisponibles) ═══════ */}
+        {latestNews.length === 0 && upcomingEvents.length === 0 && (
+          <div className="mt-8">
+            <div className="rounded-3xl border border-sun/60 bg-sand px-5 py-4 flex items-center gap-3">
+              <span className="text-[#8A6A14] text-lg">&#9888;</span>
+              <p className="text-sm text-[#8A6A14] m-0">
+                {loc === "fr"
+                  ? "Maintenance en cours. La météo est disponible, les actualités et événements reviendront très prochainement."
+                  : loc === "de"
+                  ? "Wartungsarbeiten. Das Wetter ist verfügbar, Nachrichten und Veranstaltungen kehren in Kürze zurück."
+                  : loc === "el"
+                  ? "Συντήρηση σε εξέλιξη. Ο καιρός είναι διαθέσιμος, τα νέα και οι εκδηλώσεις θα επιστρέψουν σύντομα."
+                  : "Maintenance in progress. Weather is available, news and events will be back shortly."}
+              </p>
+            </div>
           </div>
-        </div>
-      </section>
+        )}
 
-      {/* ═══════ MAINTENANCE (donnees indisponibles) ═══════ */}
-      {latestNews.length === 0 && upcomingEvents.length === 0 && (
-        <div className="max-w-6xl mx-auto px-4 pt-8">
-          <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 flex items-center gap-3">
-            <span className="text-amber-600 text-lg">&#9888;</span>
-            <p className="text-sm text-amber-800 m-0">
-              {loc === "fr"
-                ? "Maintenance en cours. La météo est disponible, les actualités et événements reviendront très prochainement."
-                : loc === "de"
-                ? "Wartungsarbeiten. Das Wetter ist verfügbar, Nachrichten und Veranstaltungen kehren in Kürze zurück."
-                : loc === "el"
-                ? "Συντήρηση σε εξέλιξη. Ο καιρός είναι διαθέσιμος, τα νέα και οι εκδηλώσεις θα επιστρέψουν σύντομα."
-                : "Maintenance in progress. Weather is available, news and events will be back shortly."}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* ═══════ CONTENU : News | Guides + events ═══════ */}
-      <div className="max-w-6xl mx-auto px-4 py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        {/* ═══════ NEWS | GUIDES ═══════ */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_.9fr] gap-9 mt-10">
 
           {/* News curees */}
           <section>
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xs font-bold text-aegean uppercase tracking-[0.2em] flex items-center gap-2 m-0">
-                <CiNews className="w-4 h-4" /> {t("latestNews")}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-heading text-[28px] font-extrabold text-text m-0 flex items-center gap-2.5">
+                <CiNews className="w-6 h-6 text-aegean" /> {t("latestNews")}
               </h2>
-              <Link href="/news" className="text-xs text-aegean hover:text-aegean-light flex items-center gap-1 font-semibold transition-colors">
-                {t("allNews")} <ChevronRight className="w-3.5 h-3.5" />
+              <Link href="/news" className="text-[13.5px] font-heading font-bold text-aegean bg-white rounded-full px-4 py-2 shadow-[0_8px_20px_rgba(11,94,120,.12)] no-underline">
+                {t("allNews")}
               </Link>
             </div>
 
             {news.length > 0 ? (
-              <div className="divide-y divide-border card-base px-5">
+              <div className="bg-white rounded-3xl px-6 py-1.5 shadow-[0_12px_32px_rgba(11,94,120,.08)]">
                 {news.map((item, i) => (
                   <BlurFade key={item.slug} delay={Math.min(0.04 * i, 0.3)}>
-                    <Link href={`/news/${item.slug}`} className="flex items-start gap-3 py-3.5 group no-underline">
+                    <Link href={`/news/${item.slug}`}
+                          className={`flex items-baseline gap-3.5 py-3.5 group no-underline ${i > 0 ? "border-t border-text/7" : ""}`}>
+                      <span className="font-data text-[12.5px] text-lagoon-deep font-bold min-w-[42px] shrink-0">
+                        {timeAgo(item.published_at)}
+                      </span>
                       <div className="min-w-0 flex-1">
                         <p className="text-[15px] font-semibold text-text group-hover:text-aegean transition-colors leading-snug line-clamp-2 m-0">
                           {getLocalizedField(item, "title", loc)}
                         </p>
-                        <div className="flex items-center gap-3 mt-1.5">
-                          <span className="text-[11px] text-text-light">{item.source_name}</span>
-                          {item.category && (
-                            <span className={`text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-md ${CATEGORY_STYLES[item.category] || "bg-stone text-text-muted"}`}>
-                              {item.category}
-                            </span>
-                          )}
-                          <span className="font-data text-[10px] text-text-light ml-auto">{timeAgo(item.published_at)}</span>
-                        </div>
+                        <p className="text-[11.5px] text-text-muted m-0 mt-0.5">
+                          {item.category ? `${item.category} · ` : ""}{item.source_name}
+                        </p>
                       </div>
                     </Link>
                   </BlurFade>
                 ))}
               </div>
             ) : (
-              <div className="card-base p-10 text-center">
+              <div className="bg-white rounded-3xl p-10 text-center shadow-[0_12px_32px_rgba(11,94,120,.08)]">
                 <CiNews className="w-8 h-8 text-text-light mx-auto mb-3" />
                 <p className="text-sm text-text-muted m-0">{t("newsFeedLoading")}</p>
               </div>
@@ -367,29 +523,39 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
 
           {/* Guides + events */}
           <section>
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xs font-bold text-aegean uppercase tracking-[0.2em] flex items-center gap-2 m-0">
-                <CiBook className="w-4 h-4" /> {t("editorialGuides")}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-heading text-[28px] font-extrabold text-text m-0 flex items-center gap-2.5">
+                <CiBook className="w-6 h-6 text-aegean" /> {t("editorialGuides")}
               </h2>
-              <Link href="/articles" className="text-xs text-aegean hover:text-aegean-light flex items-center gap-1 font-semibold transition-colors">
-                {t("allGuides")} <ChevronRight className="w-3.5 h-3.5" />
+              <Link href="/articles" className="text-[13.5px] font-heading font-bold text-aegean bg-white rounded-full px-4 py-2 shadow-[0_8px_20px_rgba(11,94,120,.12)] no-underline">
+                {t("allGuides")}
               </Link>
             </div>
 
             {guides.length > 0 ? (
-              <div className="grid grid-cols-2 gap-4">
+              <div>
                 {guides.map((guide, i) => {
                   const gTitle = getLocalizedGuideField(guide, "titles", locale);
                   return (
                     <BlurFade key={guide.slug} delay={Math.min(0.05 * i, 0.3)}>
-                      <Link href={`/articles/${guide.slug}`} className="card-base overflow-hidden block h-full no-underline group">
-                        <CardThumb src={guide.image_url} alt={gTitle} category="guide" />
-                        <div className="p-3.5">
-                          <p className="text-sm font-semibold text-text group-hover:text-aegean transition-colors leading-snug line-clamp-2 m-0">
-                            {gTitle}
-                          </p>
+                      <Link href={`/articles/${guide.slug}`}
+                            className="grid grid-cols-[112px_1fr] rounded-3xl overflow-hidden bg-white shadow-[0_12px_30px_rgba(11,94,120,.10)] mb-4 no-underline group">
+                        <div className="relative">
+                          {guide.image_url ? (
+                            <>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={guide.image_url} alt={gTitle}
+                                   className="absolute inset-0 w-full h-full object-cover saturate-[1.08]" />
+                              <div className="absolute inset-0 bg-gradient-to-b from-lagoon/5 to-night/35 pointer-events-none" />
+                            </>
+                          ) : (
+                            <AbstractFallback kind="land" />
+                          )}
+                        </div>
+                        <div className="px-4 py-4 font-heading font-bold text-[15px] leading-snug text-text group-hover:text-aegean transition-colors">
+                          {gTitle}
                           {guide.read_time && (
-                            <p className="font-data text-[10px] text-text-light mt-1.5 mb-0">{guide.read_time} min</p>
+                            <span className="block font-sans font-medium text-[11.5px] text-text-muted mt-1.5 font-data">{guide.read_time} min</span>
                           )}
                         </div>
                       </Link>
@@ -398,21 +564,21 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                 })}
               </div>
             ) : (
-              <div className="card-base p-10 text-center">
+              <div className="bg-white rounded-3xl p-10 text-center shadow-[0_12px_32px_rgba(11,94,120,.08)]">
                 <CiBook className="w-8 h-8 text-text-light mx-auto mb-3" />
                 <p className="text-sm text-text-muted m-0">{t("guidesSectionSubtitle")}</p>
               </div>
             )}
 
             {events.length > 0 && (
-              <div className="mt-8">
-                <h3 className="text-xs font-bold text-terra uppercase tracking-[0.2em] flex items-center gap-2 mb-3">
+              <div className="mt-7">
+                <h3 className="font-heading text-base font-extrabold text-terra flex items-center gap-2 mb-3">
                   <CiCalendar className="w-4 h-4" /> {T.nextEvents[ui]}
                 </h3>
-                <div className="card-base divide-y divide-border px-4">
-                  {events.map((event) => (
+                <div className="bg-white rounded-3xl px-5 py-1 shadow-[0_12px_32px_rgba(11,94,120,.08)]">
+                  {events.map((event, i) => (
                     <Link key={event.slug} href={`/events/${event.slug}`}
-                          className="flex items-center gap-3 py-3 group no-underline">
+                          className={`flex items-center gap-3 py-3 group no-underline ${i > 0 ? "border-t border-text/7" : ""}`}>
                       <span className="font-data text-[11px] text-terra font-bold shrink-0 w-14">
                         {formatEventDate(event.date_start, locale)}
                       </span>
@@ -429,50 +595,17 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
             )}
           </section>
         </div>
-      </div>
 
-      {/* ═══════ NEWSLETTER ═══════ */}
-      <section className="bg-aegean-faint border-y border-aegean/10">
-        <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-white border border-aegean/15 flex items-center justify-center shrink-0">
-              <Mail className="w-4 h-4 text-aegean" />
-            </div>
-            <h3 className="font-heading font-bold text-base text-text m-0">{t("newsletter")}</h3>
+        {/* ═══════ NEWSLETTER bande sable ═══════ */}
+        <section className="rounded-[30px] px-8 py-7 my-10 flex flex-col sm:flex-row items-center justify-between gap-6"
+                 style={{ background: "linear-gradient(165deg, #FFF3D6, #FFE9AE)" }}>
+          <div>
+            <h3 className="font-heading font-extrabold text-[22px] text-text m-0">{t("newsletter")}</h3>
+            <p className="text-[13.5px] text-[#8A7340] m-0 mt-0.5">{t("subtitle")}</p>
           </div>
           <NewsletterFormCompact locale={locale} />
-        </div>
-      </section>
-
-      {/* ═══════ EXPLORE ═══════ */}
-      <section className="bg-white py-12 px-4">
-        <div className="max-w-6xl mx-auto">
-          <BlurFade delay={0.05}>
-            <h2 className="font-heading text-3xl font-bold text-text mb-1">{t("explore")}</h2>
-            <p className="text-text-muted text-sm mb-7 max-w-lg">{t("exploreSubtitle")}</p>
-          </BlurFade>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[
-              { href: "/beaches", icon: CiWave, title: t("beachesCount"), desc: t("beachesDesc") },
-              { href: "/food", icon: CiFood, title: t("foodLabel"), desc: t("foodDesc") },
-              { href: "/villages", icon: CiMountain, title: t("villagesCount"), desc: t("villagesDesc") },
-              { href: "/hikes", icon: CiHike, title: t("hikesCount"), desc: t("hikesDesc") },
-            ].map(({ href, icon: Icon, title, desc }, idx) => (
-              <BlurFade key={href} delay={Math.min(0.06 * idx, 0.3)}>
-                <Link href={href} className="card-base p-5 h-40 flex flex-col justify-between no-underline group block">
-                  <Icon className="w-6 h-6 text-terra opacity-70 group-hover:opacity-100 transition-opacity" />
-                  <div>
-                    <p className="text-base font-bold text-text leading-snug m-0">{title}</p>
-                    <p className="text-[11px] text-text-muted leading-snug mt-1 mb-0">{desc}</p>
-                  </div>
-                </Link>
-              </BlurFade>
-            ))}
-          </div>
-        </div>
-      </section>
-
+        </section>
+      </div>
     </main>
   );
 }

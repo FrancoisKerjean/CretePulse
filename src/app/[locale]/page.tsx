@@ -4,7 +4,9 @@ import { getLatestNews } from "@/lib/news";
 import { getUpcomingEvents } from "@/lib/events";
 import { getEditorialGuides, type Guide } from "@/lib/guides";
 import { buildSwimToday } from "@/lib/swim-today";
-import { HomeClient, type SwimPickLite } from "@/components/home/HomeClient";
+import { getBusRoutes, type BusRoute } from "@/lib/buses";
+import { pairSlug } from "@/lib/bus-pairs";
+import { HomeClient, type SwimPickLite, type SwimSideLite } from "@/components/home/HomeClient";
 import type { NewsItem, Event, Locale } from "@/lib/types";
 import { getLocalizedField } from "@/lib/types";
 import { buildAlternates } from "@/lib/seo";
@@ -78,13 +80,32 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const m = HOME_META[locale] || HOME_META.en;
   const websiteSchema = buildWebsiteSchema(locale, m.desc);
 
-  const [cities, latestNews, upcomingEvents, latestGuides, swim] = await Promise.all([
+  const [cities, latestNews, upcomingEvents, latestGuides, swim, busRoutes] = await Promise.all([
     fetchAllCitiesWeather(),
     getLatestNews(8, locale).catch((): NewsItem[] => []),
     getUpcomingEvents(5).catch((): Event[] => []),
     getEditorialGuides(12).catch((): Guide[] => []),
     buildSwimToday().catch(() => null),
+    getBusRoutes().catch((): BusRoute[] => []),
   ]);
+
+  // Routes des liaisons principales pour le board nuit (DepBoard trie/dedup).
+  const boardPairs = new Set(
+    [
+      ["Heraklion", "Chania"],
+      ["Heraklion", "Ierapetra"],
+      ["Chania", "Paleochora"],
+      ["Heraklion", "Agios Nikolaos"],
+      ["Heraklion", "Siteia"],
+      ["Ierapetra", "Makry Gyalos"],
+    ]
+      .map(([a, b]) => pairSlug(a, b))
+      .filter((s): s is string => s !== null),
+  );
+  const boardRoutes = busRoutes.filter((r) => {
+    const p = pairSlug(r.from_place, r.to_place);
+    return p !== null && boardPairs.has(p);
+  });
 
   // Extrait serialisable de la preco baignade du jour (le SwimToday complet
   // est lourd : cities + scored ~500 plages, inutile cote client).
@@ -99,8 +120,23 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         windCardinal: swim.pick.windCardinal,
         windDir: swim.pick.city.windDir,
         seaTemp: swim.pick.seaTemp,
+        region: swim.pick.beach.region ?? null,
+        cityName: swim.pick.city.name,
       }
     : null;
+
+  // 2 alternatives pour les cartes laterales du bloc baignade.
+  const swimSides: SwimSideLite[] = swim
+    ? swim.scored
+        .filter((s) => s.beach.slug !== swim.pick.beach.slug)
+        .slice(0, 2)
+        .map((s) => ({
+          name: getLocalizedField(s.beach, "name", uiLoc),
+          slug: s.beach.slug,
+          imageUrl: s.imageUrl,
+          rating: s.rating,
+        }))
+    : [];
 
   return (
     <>
@@ -114,6 +150,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         upcomingEvents={upcomingEvents}
         latestGuides={latestGuides}
         swimPick={swimPick}
+        swimSides={swimSides}
+        boardRoutes={boardRoutes}
         locale={locale}
       />
     </>
