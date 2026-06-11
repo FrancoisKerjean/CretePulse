@@ -67,7 +67,8 @@ export function pickMatch(profile: TasteProfile, candidates: MatchPlace[]): Matc
   return best;
 }
 
-// Fisher-Yates en place.
+// Fisher-Yates : MUTE et retourne arr. Passer une copie ([...arr]) si
+// l'original doit être préservé (cf. sampleDeck).
 export function shuffle<T>(arr: T[]): T[] {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -118,7 +119,8 @@ export function buildMatchPool(places: CbPlaceListItem[], size = 140): MatchPlac
 }
 
 // Côté client : deck par visiteur, en excluant les lieux déjà vus.
-// Si le pool est presque épuisé, on repart de zéro (le visiteur a tout vu).
+// S'il reste moins de 30 cartes non vues, on repart de zéro pour
+// garantir un deck complet.
 export function sampleDeck(pool: MatchPlace[], size: number, seen: Set<string>): MatchPlace[] {
   let candidates = pool.filter((p) => !seen.has(p.slug));
   if (candidates.length < Math.min(size, 30)) candidates = [...pool];
