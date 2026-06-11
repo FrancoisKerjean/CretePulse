@@ -1,11 +1,13 @@
-# Audit visuel : screenshots prod desktop + mobile des pages cles.
+# Audit visuel : screenshots desktop + mobile des pages cles.
 # Run: py -3 scripts/audit-ui-screenshots.py
+# Env: AUDIT_BASE (defaut prod), AUDIT_OUT (defaut ui-audit)
+import os
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
-OUT = Path("ui-audit")
+OUT = Path(os.environ.get("AUDIT_OUT", "ui-audit"))
 OUT.mkdir(exist_ok=True)
-BASE = "https://crete.direct"
+BASE = os.environ.get("AUDIT_BASE", "https://crete.direct")
 
 PAGES = [
     ("home", "/en"),

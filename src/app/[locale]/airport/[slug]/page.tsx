@@ -644,7 +644,7 @@ export default async function AirportPage(
               href={skyscannerUrl}
               rel="noopener noreferrer nofollow sponsored"
               target="_blank"
-              className="inline-flex items-center gap-2 rounded-lg bg-stone-900 px-4 py-2 text-white text-sm font-medium hover:bg-stone-700"
+              className="inline-flex items-center gap-2 rounded-lg bg-aegean px-4 py-2 text-white text-sm font-medium hover:bg-aegean-light"
             >
               <Plane className="h-4 w-4" />
               {t.flightsButton}
