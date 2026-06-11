@@ -10,7 +10,11 @@ typo-architecture, color blocking), Ace Hotel Athens (modernisme grec).
 
 « Moderne, style arrondi, aux couleurs de la Crète, avec des références à la Crète qu'on
 comprenne tout de suite où on est. Transmettre une ambiance de voyage, de Crète, d'outil,
-de joie. Pas de police déjà vue. »
+de joie. Pas de police déjà vue. » Et la synthèse finale de Kami : **« on fait un peu une
+ambiance Waze »** — l'étoile polaire d'expérience : l'utilitaire compagnon joyeux, rond,
+vivant, qui te parle (données live rendues ludiques, pins expressifs, micro-copy complice,
+couleurs franches). Toute décision UI future se teste contre ça : « est-ce que Waze le
+ferait comme ça ? »
 
 ## Identité
 
@@ -23,13 +27,14 @@ Versions : fond clair (encre #0B3954), fond nuit (crème), compacte « c+soleil 
 Source dans le mockup `ui-typo-trial.html`. Remplace le texte « CRETE ◉ DIRECT » partout
 (header, footer, OG, favicon). Le CiMark spirale reste pour les usages icône seuls.
 
-### Typographie
-- **Display (titres, gros chiffres)** : **Baloo 2** (Google Fonts, 600/700/800) — ronde,
-  joyeuse assumée. Choix Kami sur planche A/B/C/D. ⚠️ couvre latin/latin-ext + devanagari,
-  PAS le grec/cyrillique/arabe/CJK → fallback display propre à définir (stack :
-  `"Baloo 2", "Comfortaa", system-ui` — Comfortaa couvre grec+cyrillique et reste ronde).
-- **UI courante** : Geist (existant).
-- **Données** : Geist Mono `--font-data` (existant, conservé tel quel).
+### Typographie — Baloo 2 VOIX UNIQUE (décision Kami 11/06, 2e planche)
+- **Baloo 2** (Google Fonts, 600/700/800) porte TOUT : titres, UI forte, et **toutes les
+  données chiffrées** (horaires, températures, prix — `font-variant-numeric: tabular-nums`).
+  Le Geist Mono est SUPPRIMÉ du système (« trop austère » — Kami) : `--font-data` est
+  remappé sur Baloo 2 + tabular-nums (les composants existants n'ont pas à changer de classe).
+- **Geist** reste pour le corps de texte courant (paragraphes, descriptions longues).
+- ⚠️ Baloo 2 couvre latin/latin-ext + devanagari, PAS le grec/cyrillique/arabe/CJK →
+  stack fallback : `"Baloo 2", "Comfortaa", system-ui` (Comfortaa : grec+cyrillique, ronde).
 
 ### Palette « Kalimera »
 | Token | Hex | Rôle |
@@ -66,6 +71,20 @@ Remplace la palette aegean/terra/stone actuelle (mapping de migration au plan).
    accroche du hero — la référence locale immédiate et chaleureuse.
 7. **Mini-références** récurrentes : mini-soleils et mini-vagues dans les coins de tuiles,
    le soleil radial dans le hero, pins gouttes arrondies.
+
+## Système d'images (décision Kami 11/06, planche round 2 : « on ne dessine pas »)
+Les styles d'illustration figuratifs (découpes, ligne continue, aplats EOT) sont REJETÉS —
+la Crète réelle bat tout dessin, et 18,4K photos réelles existent (cb_places +
+media.crete.direct).
+- **C — Photo traitée = le style** : partout où une photo existe. Traitement signature
+  uniforme : voile dégradé `rgba(lagoon .06) → transparent → rgba(night .42)` en pied,
+  `saturate(1.08)`, grain fin (feTurbulence overlay ~.35), coins du conteneur arrondis,
+  badge rond Baloo par-dessus. Remplace le voile « aegean multiply » de CardThumb.
+- **D — Abstraction lumineuse** : pour les vrais vides (guides sans image, 404, fonds de
+  section) : compositions de radial-gradients organiques (soleil/eau pour mer, terracotta/
+  olive/sable pour terre) + grain. Rien de figuratif, déclinables par catégorie. Remplace
+  les fallbacks gradient linéaires actuels.
+- Les **icônes monoline** (icons.tsx) restent la seule écriture dessinée du site.
 
 ## Conservé des phases précédentes
 - Icônes propriétaires spirale/vague (icons.tsx) — cohérentes avec la nouvelle grammaire.
