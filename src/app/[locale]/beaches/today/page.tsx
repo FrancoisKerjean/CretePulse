@@ -1,4 +1,4 @@
-import { ChevronLeft, Wind, Waves, Thermometer, MapPin, AlertTriangle, Bus, CarTaxiFront } from "lucide-react";
+import { ChevronLeft, Wind, Waves, Thermometer, MapPin, AlertTriangle, Bus, CarTaxiFront, Star, Anchor, Users } from "lucide-react";
 import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -88,7 +88,7 @@ const L: Record<Locale, {
     colSea: "Sea",
     methodology: "How this works",
     methodologyText:
-      "Every 30 minutes we combine live Open-Meteo data (wind speed and direction, wave height at the nearest marine point, sea temperature, 10 stations across Crete) with each beach's shoreline orientation, estimated from its position relative to the island's mountain ridge. Offshore or cross-shore wind means flatter water; onshore wind builds chop. Individual bays can behave differently: always judge conditions on site, especially with children.",
+      "Every 30 minutes we combine live Open-Meteo data (wind speed and direction, wave height at the nearest marine point, sea temperature, 10 stations across Crete) with each beach's shoreline orientation, estimated from its position relative to the island's mountain ridge. Offshore or cross-shore wind means flatter water; onshore wind builds chop. Individual bays can behave differently: always judge conditions on site, especially with children. For 180 of the 183 beaches, field-observed data (typical sea state of the bay, sand type, depth, crowds) corrects the geometric estimate: a bay known usually calm scores better than its exposure alone suggests.",
     updated: "Conditions updated",
     faqWhereQ: "Where should I swim in Crete today?",
     faqWhereA: (name, region, windCard, speed) =>
@@ -131,7 +131,7 @@ const L: Record<Locale, {
     colSea: "Mer",
     methodology: "Comment ça marche",
     methodologyText:
-      "Toutes les 30 minutes, nous croisons les données live Open-Meteo (vitesse et direction du vent, houle au point marin le plus proche, température de la mer, 10 stations en Crète) avec l'orientation du rivage de chaque plage, estimée d'après sa position par rapport à la crête montagneuse de l'île. Vent de terre ou de travers = eau plus plate ; vent de mer = clapot. Chaque baie peut se comporter différemment : jugez toujours les conditions sur place, surtout avec des enfants.",
+      "Toutes les 30 minutes, nous croisons les données live Open-Meteo (vitesse et direction du vent, houle au point marin le plus proche, température de la mer, 10 stations en Crète) avec l'orientation du rivage de chaque plage, estimée d'après sa position par rapport à la crête montagneuse de l'île. Vent de terre ou de travers = eau plus plate ; vent de mer = clapot. Chaque baie peut se comporter différemment : jugez toujours les conditions sur place, surtout avec des enfants. Pour 180 des 183 plages, des données observées sur le terrain (état de mer habituel de la baie, type de sable, profondeur, affluence) corrigent l'estimation géométrique : une baie réputée calme score mieux que sa seule exposition ne le suggère.",
     updated: "Conditions mises à jour",
     faqWhereQ: "Où se baigner en Crète aujourd'hui ?",
     faqWhereA: (name, region, windCard, speed) =>
@@ -174,7 +174,7 @@ const L: Record<Locale, {
     colSea: "Meer",
     methodology: "So funktioniert es",
     methodologyText:
-      "Alle 30 Minuten kombinieren wir Live-Daten von Open-Meteo (Windgeschwindigkeit und -richtung, Wellenhöhe am nächsten Meerespunkt, Wassertemperatur, 10 Stationen auf Kreta) mit der Ausrichtung jedes Strandes, geschätzt aus seiner Lage zur Bergkette der Insel. Ablandiger oder seitlicher Wind bedeutet flacheres Wasser; auflandiger Wind baut Wellen auf. Einzelne Buchten können abweichen: Bedingungen immer vor Ort prüfen, besonders mit Kindern.",
+      "Alle 30 Minuten kombinieren wir Live-Daten von Open-Meteo (Windgeschwindigkeit und -richtung, Wellenhöhe am nächsten Meerespunkt, Wassertemperatur, 10 Stationen auf Kreta) mit der Ausrichtung jedes Strandes, geschätzt aus seiner Lage zur Bergkette der Insel. Ablandiger oder seitlicher Wind bedeutet flacheres Wasser; auflandiger Wind baut Wellen auf. Einzelne Buchten können abweichen: Bedingungen immer vor Ort prüfen, besonders mit Kindern. Für 180 der 183 Strände korrigieren vor Ort beobachtete Daten (typischer Seegang der Bucht, Sandtyp, Tiefe, Andrang) die geometrische Schätzung: eine als ruhig bekannte Bucht erzielt einen besseren Wert, als ihre Exposition allein vermuten lässt.",
     updated: "Bedingungen aktualisiert",
     faqWhereQ: "Wo sollte man heute auf Kreta baden?",
     faqWhereA: (name, region, windCard, speed) =>
@@ -217,7 +217,7 @@ const L: Record<Locale, {
     colSea: "Θάλασσα",
     methodology: "Πώς λειτουργεί",
     methodologyText:
-      "Κάθε 30 λεπτά συνδυάζουμε live δεδομένα Open-Meteo (ταχύτητα και διεύθυνση ανέμου, ύψος κύματος στο πλησιέστερο θαλάσσιο σημείο, θερμοκρασία θάλασσας, 10 σταθμοί στην Κρήτη) με τον προσανατολισμό κάθε παραλίας, εκτιμημένο από τη θέση της σε σχέση με την οροσειρά του νησιού. Απόγειος ή πλάγιος άνεμος σημαίνει πιο ήρεμα νερά· θαλάσσιος άνεμος φέρνει κυματισμό. Κάθε κόλπος μπορεί να διαφέρει: κρίνετε πάντα τις συνθήκες επί τόπου, ειδικά με παιδιά.",
+      "Κάθε 30 λεπτά συνδυάζουμε live δεδομένα Open-Meteo (ταχύτητα και διεύθυνση ανέμου, ύψος κύματος στο πλησιέστερο θαλάσσιο σημείο, θερμοκρασία θάλασσας, 10 σταθμοί στην Κρήτη) με τον προσανατολισμό κάθε παραλίας, εκτιμημένο από τη θέση της σε σχέση με την οροσειρά του νησιού. Απόγειος ή πλάγιος άνεμος σημαίνει πιο ήρεμα νερά· θαλάσσιος άνεμος φέρνει κυματισμό. Κάθε κόλπος μπορεί να διαφέρει: κρίνετε πάντα τις συνθήκες επί τόπου, ειδικά με παιδιά. Για 180 από τις 183 παραλίες, δεδομένα πεδίου (συνήθης κατάσταση θάλασσας του κόλπου, τύπος άμμου, βάθος, κίνηση) διορθώνουν τη γεωμετρική εκτίμηση: ένας κόλπος γνωστός ως ήρεμος βαθμολογείται καλύτερα από όσο υποδηλώνει μόνο η έκθεσή του.",
     updated: "Ενημέρωση συνθηκών",
     faqWhereQ: "Πού να πάω για μπάνιο στην Κρήτη σήμερα;",
     faqWhereA: (name, region, windCard, speed) =>
@@ -227,6 +227,39 @@ const L: Record<Locale, {
       `Αυτή τη στιγμή ο άνεμος πνέει από ${wind} με ${min} έως ${max} χλμ/ώρα ανάλογα με την ακτή. Μία πλευρά του νησιού μένει συνήθως ήρεμη: αυτή η σελίδα τη δείχνει live.`,
   },
 };
+
+// Field-observed attribute values (cb_places dataset) -> localized labels.
+// Values may be comma-separated ("Sand, Pebbles"): the first token decides.
+const SAND_LABELS: Record<Locale, Record<string, string>> = {
+  en: { "Sand": "sand", "Fine Pebbles": "fine pebbles", "Pebbles": "pebbles", "Rocks": "rocks", "Rocks in places": "rocky in places" },
+  fr: { "Sand": "sable", "Fine Pebbles": "galets fins", "Pebbles": "galets", "Rocks": "rochers", "Rocks in places": "rocheux par endroits" },
+  de: { "Sand": "Sand", "Fine Pebbles": "feine Kiesel", "Pebbles": "Kiesel", "Rocks": "Felsen", "Rocks in places": "stellenweise felsig" },
+  el: { "Sand": "άμμος", "Fine Pebbles": "ψιλό βότσαλο", "Pebbles": "βότσαλο", "Rocks": "βράχια", "Rocks in places": "βραχώδης κατά τόπους" },
+};
+const DEPTH_LABELS: Record<Locale, Record<string, string>> = {
+  en: { "Shallow": "shallow water", "Normal": "normal depth", "Deep": "deep water" },
+  fr: { "Shallow": "eau peu profonde", "Normal": "profondeur normale", "Deep": "eau profonde" },
+  de: { "Shallow": "flaches Wasser", "Normal": "normale Tiefe", "Deep": "tiefes Wasser" },
+  el: { "Shallow": "ρηχά νερά", "Normal": "κανονικό βάθος", "Deep": "βαθιά νερά" },
+};
+const CROWD_LABELS: Record<Locale, Record<string, string>> = {
+  en: { "None": "deserted", "Quiet": "quiet", "Normal": "moderate crowds", "Crowded": "crowded" },
+  fr: { "None": "déserte", "Quiet": "tranquille", "Normal": "fréquentation modérée", "Crowded": "fréquentée" },
+  de: { "None": "menschenleer", "Quiet": "ruhig", "Normal": "mäßig besucht", "Crowded": "gut besucht" },
+  el: { "None": "ερημική", "Quiet": "ήσυχη", "Normal": "μέτρια κίνηση", "Crowded": "πολυσύχναστη" },
+};
+const KNOWN_CALM: Record<Locale, string> = {
+  en: "bay usually calm",
+  fr: "baie habituellement calme",
+  de: "Bucht meist ruhig",
+  el: "συνήθως ήρεμος κόλπος",
+};
+
+function attrLabel(raw: string | null | undefined, dict: Record<string, string>): string | null {
+  if (!raw) return null;
+  const first = raw.split(",")[0].trim();
+  return dict[first] ?? null;
+}
 
 const RATING_CLASS: Record<"calm" | "fair" | "exposed", string> = {
   calm: "bg-emerald-100 text-emerald-800",
@@ -278,12 +311,20 @@ function BeachRow({ s, locale, uiLoc }: { s: ScoredBeach; locale: string; uiLoc:
       className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-3 hover:border-stone-400 transition-colors"
     >
       <div className="relative w-16 h-12 rounded-lg overflow-hidden shrink-0">
-        <BeachImage src={s.beach.image_url} alt={name} className="w-16 h-12 object-cover" />
+        <BeachImage src={s.imageUrl} alt={name} className="w-16 h-12 object-cover" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="font-medium text-stone-900 truncate">{name}</p>
+        <p className="font-medium text-stone-900 truncate">
+          {name}
+          {s.cb?.rating != null && s.cb.rating >= 3.5 && (
+            <span className="ml-2 inline-flex items-center gap-0.5 text-xs font-semibold text-amber-600">
+              <Star className="h-3 w-3 fill-current" /> {s.cb.rating.toFixed(1)}
+            </span>
+          )}
+        </p>
         <p className="text-xs text-stone-500">
           {t.shore[s.shoreWind]} · {s.windSpeed} km/h · {fmtWave(s.waveHeight)}
+          {attrLabel(s.cb?.sand_type, SAND_LABELS[uiLoc]) ? ` · ${attrLabel(s.cb?.sand_type, SAND_LABELS[uiLoc])}` : ""}
         </p>
         {s.busStop?.hasDirectBus && (
           <p className="text-xs text-stone-400 inline-flex items-center gap-1">
@@ -398,7 +439,7 @@ export default async function SwimTodayPage(
           >
             <div className="relative h-56 md:h-full min-h-56 overflow-hidden">
               <BeachImage
-                src={pick.beach.image_url}
+                src={pick.imageUrl}
                 alt={pickName}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
@@ -421,6 +462,31 @@ export default async function SwimTodayPage(
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-stone-100 px-3 py-1 text-xs text-stone-700">
                   <Thermometer className="h-3.5 w-3.5" /> {fmtSea(pick.seaTemp)}
                 </span>
+                {pick.cb?.sea_surface?.toLowerCase().includes("calm") && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs text-emerald-800">
+                    <Anchor className="h-3.5 w-3.5" /> {KNOWN_CALM[uiLoc]}
+                  </span>
+                )}
+                {attrLabel(pick.cb?.sand_type, SAND_LABELS[uiLoc]) && (
+                  <span className="inline-flex items-center rounded-full bg-stone-100 px-3 py-1 text-xs text-stone-700">
+                    {attrLabel(pick.cb?.sand_type, SAND_LABELS[uiLoc])}
+                  </span>
+                )}
+                {attrLabel(pick.cb?.depth, DEPTH_LABELS[uiLoc]) && (
+                  <span className="inline-flex items-center rounded-full bg-stone-100 px-3 py-1 text-xs text-stone-700">
+                    {attrLabel(pick.cb?.depth, DEPTH_LABELS[uiLoc])}
+                  </span>
+                )}
+                {attrLabel(pick.cb?.crowds, CROWD_LABELS[uiLoc]) && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-stone-100 px-3 py-1 text-xs text-stone-700">
+                    <Users className="h-3.5 w-3.5" /> {attrLabel(pick.cb?.crowds, CROWD_LABELS[uiLoc])}
+                  </span>
+                )}
+                {pick.cb?.rating != null && pick.cb.rating > 0 && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800">
+                    <Star className="h-3.5 w-3.5 fill-current" /> {pick.cb.rating.toFixed(1)}/5
+                  </span>
+                )}
               </div>
               <span className="mt-4 text-sm font-medium text-cyan-800">{t.viewBeach} →</span>
             </div>

@@ -2,6 +2,12 @@ import { getAllBeaches } from "./beaches";
 import { fetchAllCitiesWeather, type CityWeather } from "./weather";
 import { supabase } from "./supabase";
 import type { Beach } from "./types";
+import {
+  fetchCbBeaches,
+  matchCbBeaches,
+  shelterFactor,
+  type CbBeachAttrs,
+} from "./cb-beach-match";
 
 /**
  * "Where to swim today" engine.
@@ -104,6 +110,10 @@ export interface ScoredBeach {
   waveHeight: number | null;
   seaTemp: number | null;
   busStop: NearestBusStop | null;
+  /** Field-observed attributes of the matched cb_places beach, if any. */
+  cb: CbBeachAttrs | null;
+  /** Hero/list image: beaches.image_url, else first cb photo. */
+  imageUrl: string | null;
 }
 
 export interface SwimToday {
@@ -139,7 +149,12 @@ function nearestStop(beach: Beach, stops: StopRow[]): NearestBusStop | null {
   return best;
 }
 
-function scoreBeach(beach: Beach, cities: CityWeather[], stops: StopRow[]): ScoredBeach | null {
+function scoreBeach(
+  beach: Beach,
+  cities: CityWeather[],
+  stops: StopRow[],
+  cb: CbBeachAttrs | null,
+): ScoredBeach | null {
   const usable = cities.filter(c => c.windSpeed > 0 || c.temp > 0);
   if (usable.length === 0) return null;
   let city = usable[0];
@@ -163,7 +178,11 @@ function scoreBeach(beach: Beach, cities: CityWeather[], stops: StopRow[]): Scor
   const code = city.weatherCode;
   const rainPenalty = code >= 95 ? 40 : code >= 80 ? 30 : code >= 51 ? 25 : 0;
 
-  const raw = 100 - effectiveWind * 1.8 - wavePenalty - rainPenalty;
+  // Observed typical sea state of the bay (cb_places) corrects the geometric
+  // estimate: a bay known usually calm takes less chop than its exposure
+  // suggests, a bay known wavy takes more.
+  const shelter = shelterFactor(cb?.sea_surface);
+  const raw = 100 - (effectiveWind * 1.8 + wavePenalty) * shelter - rainPenalty;
   const score = Math.max(0, Math.min(100, Math.round(raw)));
 
   return {
@@ -179,6 +198,8 @@ function scoreBeach(beach: Beach, cities: CityWeather[], stops: StopRow[]): Scor
     waveHeight: city.waveHeight,
     seaTemp: city.seaTemp,
     busStop: nearestStop(beach, stops),
+    cb,
+    imageUrl: beach.image_url ?? cb?.photos?.[0] ?? null,
   };
 }
 
@@ -201,15 +222,17 @@ async function fetchBusStops(): Promise<StopRow[]> {
 }
 
 export async function buildSwimToday(): Promise<SwimToday | null> {
-  const [beaches, cities, stops] = await Promise.all([
+  const [beaches, cities, stops, cbRows] = await Promise.all([
     getAllBeaches(),
     fetchAllCitiesWeather(),
     fetchBusStops(),
+    fetchCbBeaches(),
   ]);
   if (!beaches?.length || !cities?.length) return null;
 
+  const cbMatch = matchCbBeaches(beaches, cbRows);
   const scored = beaches
-    .map(b => scoreBeach(b, cities, stops))
+    .map(b => scoreBeach(b, cities, stops, cbMatch.get(b.slug) ?? null))
     .filter((s): s is ScoredBeach => s !== null)
     .sort((a, b) => b.score - a.score);
   if (scored.length === 0) return null;
@@ -218,7 +241,7 @@ export async function buildSwimToday(): Promise<SwimToday | null> {
   // (falls back to all top beaches if none has one), so the page and the
   // daily Instagram post change every day even under a stable meltemi.
   const top = scored.slice(0, 8);
-  const withPhoto = top.filter(s => s.beach.image_url);
+  const withPhoto = top.filter(s => s.imageUrl);
   const pool = withPhoto.length >= 3 ? withPhoto : top;
   const pick = pool[athensDayOfYear(new Date()) % pool.length];
 
