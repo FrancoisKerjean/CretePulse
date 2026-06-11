@@ -117,32 +117,41 @@ export function AffiliateBanner({
 
   return (
     <aside
-      className={`relative overflow-hidden rounded-xl border border-aegean/20 bg-gradient-to-r from-aegean-faint to-white p-5 ${className}`}
+      className={`relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0e3a52] via-aegean to-[#b85c38] bg-[length:300%_100%] animate-gradient shadow-lg ${className}`}
     >
+      {/* texture: soft radial glow + floating watermark icon */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(255,255,255,0.14),transparent_55%)]" aria-hidden />
       <Icon
-        className="pointer-events-none absolute -right-3 -bottom-5 h-24 w-24 text-aegean/10"
-        strokeWidth={1.5}
+        className="pointer-events-none absolute -right-2 -bottom-6 h-32 w-32 text-white/10 animate-pulse [animation-duration:4s]"
+        strokeWidth={1.25}
         aria-hidden
       />
-      <div className="relative flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+      <div className="relative flex flex-wrap items-center justify-between gap-x-6 gap-y-4 p-5 md:p-6">
         <div className="min-w-0 max-w-xl">
-          <p className="font-semibold text-text text-[15px] leading-snug">{headline}</p>
-          <p className="mt-1 flex items-center gap-1.5 text-sm text-text-muted">
-            <BadgeCheck className="h-4 w-4 shrink-0 text-aegean" aria-hidden />
-            {trust}
-          </p>
-          <p className="mt-1.5 text-[10px] text-text-light uppercase tracking-wider">
+          <p className="inline-flex items-center rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-white/90 backdrop-blur-sm">
             {disclosure} · {copy.partner}
+          </p>
+          <p className="mt-2.5 font-bold text-white text-lg md:text-xl leading-snug [text-wrap:balance]">
+            {headline}
+          </p>
+          <p className="mt-1.5 flex items-center gap-1.5 text-sm text-white/85">
+            <BadgeCheck className="h-4 w-4 shrink-0 text-white" aria-hidden />
+            {trust}
           </p>
         </div>
         <a
           href={link.url}
           target="_blank"
           rel="noopener noreferrer nofollow sponsored"
-          className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-terra px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-terra/90 hover:shadow active:scale-[0.98]"
+          className="group relative inline-flex shrink-0 items-center gap-2 overflow-hidden rounded-xl bg-white px-6 py-3 text-sm font-bold text-terra shadow-md transition-transform hover:scale-[1.03] active:scale-[0.98]"
         >
-          {cta}
-          <ExternalLink className="h-4 w-4" aria-hidden />
+          {/* periodic light sweep across the button */}
+          <span
+            className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-terra/20 to-transparent bg-[length:300%_100%] animate-gradient"
+            aria-hidden
+          />
+          <span className="relative">{cta}</span>
+          <ExternalLink className="relative h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
         </a>
       </div>
     </aside>
