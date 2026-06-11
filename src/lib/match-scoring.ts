@@ -97,6 +97,9 @@ function toMatchPlace(p: CbPlaceListItem): MatchPlace {
 export function buildMatchPool(places: CbPlaceListItem[], size = 140): MatchPlace[] {
   const eligible = places.filter(
     (p) =>
+      // Garde anti-artefacts de scraping : cb_places contient des slugs
+      // poubelles type "'+location.href+'" qui casseraient le deep-link.
+      /^[a-z0-9_-]+$/i.test(p.slug) &&
       p.photo_count > 0 &&
       Array.isArray(p.photos) &&
       p.photos.length > 0 &&
