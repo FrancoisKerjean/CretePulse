@@ -122,6 +122,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         seaTemp: swim.pick.seaTemp,
         region: swim.pick.beach.region ?? null,
         cityName: swim.pick.city.name,
+        lat: swim.pick.beach.latitude,
+        lng: swim.pick.beach.longitude,
       }
     : null;
 

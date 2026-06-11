@@ -49,12 +49,19 @@ const pickUi = (l: string): Ui => (["en", "fr", "de", "el"].includes(l) ? (l as 
 
 const T = {
   heroTitle: { en: "Crete, today", fr: "La Crète, aujourd'hui", de: "Kreta, heute", el: "Η Κρήτη σήμερα" },
-  // Phrase hero : pre + <hl>rating</hl> + mid + nom de plage + "."
-  heroSea: {
-    en: { pre: "The sea is ", mid: " at " },
-    fr: { pre: "La mer est ", mid: " à " },
-    de: { pre: "Das Meer ist ", mid: " bei " },
-    el: { pre: "Η θάλασσα είναι ", mid: " στο " },
+  // H1 "enfant de 5 ans" : dire ce que fait le site, en 2 phrases courtes.
+  heroMain: {
+    en: { pre: "Beaches, buses, weather.", hl: "Crete, live." },
+    fr: { pre: "Plages, bus, météo.", hl: "La Crète, en direct." },
+    de: { pre: "Strände, Busse, Wetter.", hl: "Kreta, live." },
+    el: { pre: "Παραλίες, λεωφορεία, καιρός.", hl: "Η Κρήτη, ζωντανά." },
+  },
+  // Sous-titre : la donnee du jour + ce qu'on fait pour le lecteur.
+  heroToday: {
+    en: (rating: string, name: string) => `Today the sea is ${rating} at ${name}. We watch the wind, the sea and the buses for you, all day long.`,
+    fr: (rating: string, name: string) => `Aujourd'hui la mer est ${rating} à ${name}. On surveille le vent, la mer et les bus pour toi, toute la journée.`,
+    de: (rating: string, name: string) => `Heute ist das Meer ${rating} bei ${name}. Wir behalten Wind, Meer und Busse für dich im Blick, den ganzen Tag.`,
+    el: (rating: string, name: string) => `Σήμερα η θάλασσα είναι ${rating} στο ${name}. Παρακολουθούμε τον άνεμο, τη θάλασσα και τα λεωφορεία για σένα, όλη μέρα.`,
   },
   liveFromIsland: { en: "live from the island", fr: "en direct de l'île", de: "live von der Insel", el: "ζωντανά από το νησί" },
   youAreHere: { en: "You are here", fr: "Vous êtes ici", de: "Sie sind hier", el: "Είστε εδώ" },
@@ -171,6 +178,8 @@ export interface SwimPickLite {
   seaTemp: number | null;
   region: string | null;
   cityName: string;
+  lat: number;
+  lng: number;
 }
 
 export interface SwimSideLite {
@@ -195,15 +204,6 @@ const VERDICT_COLORS: Record<SwimPickLite["rating"], string> = {
   calm: "text-[#0B8A52]",
   fair: "text-[#8A6A14]",
   exposed: "text-terra",
-};
-
-// Position du pin plage sur la silhouette (par region, path non georeference).
-const SWIM_PIN_POS: Record<string, { left: string; top: string }> = {
-  south: { left: "40%", top: "80%" },
-  west: { left: "18%", top: "70%" },
-  east: { left: "72%", top: "70%" },
-  central: { left: "45%", top: "55%" },
-  north: { left: "45%", top: "55%" },
 };
 
 // Καλημέρα avant 12h Athens, Καλησπέρα après 17h, Γεια σου entre les deux.
@@ -245,7 +245,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
   const heroCity = cities.find((c) => c.name === (swimPick?.cityName ?? "Heraklion")) ?? cities[0];
 
   const swimPin = swimPick
-    ? { name: swimPick.name, ...(SWIM_PIN_POS[swimPick.region ?? "central"] ?? SWIM_PIN_POS.central) }
+    ? { name: swimPick.name, lat: swimPick.lat, lng: swimPick.lng }
     : null;
 
   const TOOLS = [
@@ -256,8 +256,6 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
     { href: "/airbnb", icon: CiChart, title: T.tools.airbnb[ui], line: T.tools.airbnbLine[ui] },
     { href: "/weather", icon: CiSun, title: T.tools.weather[ui], line: T.tools.weatherLine[ui] },
   ] as const;
-
-  const seaPhrase = T.heroSea[ui];
 
   return (
     <main className="min-h-screen bg-surface">
@@ -277,20 +275,15 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                 <span className="w-2 h-2 rounded-full bg-ok shadow-[0_0_0_4px_rgba(20,184,107,.25)]" />
                 {greekGreeting()} {dateLabel} · {T.liveFromIsland[ui]}
               </span>
-              <h1 className="font-heading font-extrabold text-4xl md:text-[58px] leading-[1.04] tracking-tight text-text mt-4 mb-3">
-                {swimPick ? (
-                  <>
-                    {seaPhrase.pre}
-                    <span className="text-white [text-shadow:0_2px_18px_rgba(11,94,120,.35)]">{T.ratings[swimPick.rating][ui]}</span>
-                    {seaPhrase.mid}
-                    {swimPick.name}.
-                  </>
-                ) : (
-                  T.heroTitle[ui]
-                )}
+              <h1 className="font-heading font-extrabold text-4xl md:text-[54px] leading-[1.06] tracking-tight text-text mt-4 mb-3">
+                {T.heroMain[ui].pre}
+                <br />
+                <span className="text-white [text-shadow:0_2px_18px_rgba(11,94,120,.35)]">{T.heroMain[ui].hl}</span>
               </h1>
               <p className="text-base text-[rgba(11,57,84,.78)] max-w-md leading-relaxed mb-6">
-                {T.heroSub[ui]}
+                {swimPick
+                  ? T.heroToday[ui](T.ratings[swimPick.rating][ui], swimPick.name)
+                  : T.heroSub[ui]}
               </p>
               <div className="flex flex-wrap gap-3 font-data">
                 <Link href="/beaches/today" className="bg-sun text-text rounded-[17px] px-4 py-2.5 text-sm font-heading font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)] no-underline hover:brightness-105 transition-all">
