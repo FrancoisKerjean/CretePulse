@@ -3,25 +3,31 @@ import { NextRequest } from "next/server";
 
 export const runtime = "edge";
 
+// OG images charte "donnees vivantes" : creme + bandeau aegean + pastille LIVE
+// + filet accent par type. Chaque partage Facebook est une pub du design.
+// Spec : docs/superpowers/specs/2026-06-11-ui-live-data-redesign-design.md
+const CREAM = "#F7F4F0";
+const AEGEAN = "#1B4965";
+const INK = "#1A1A2E";
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const title = searchParams.get("title") || "Crete Direct";
-  const subtitle = searchParams.get("subtitle") || "What's happening in Crete";
+  const subtitle = searchParams.get("subtitle") || "The practical companion to Crete - live data";
   const type = searchParams.get("type") || "default"; // beach, weather, news, event, guide
 
-  // Color schemes per type
-  const schemes: Record<string, { bg: string; accent: string }> = {
-    default: { bg: "#1B4965", accent: "#B85C38" },
-    beach: { bg: "#1B4965", accent: "#F5E6D3" },
-    weather: { bg: "#0F2B4C", accent: "#87CEEB" },
-    news: { bg: "#1A1A2E", accent: "#B85C38" },
-    event: { bg: "#B85C38", accent: "#F5E6D3" },
-    guide: { bg: "#5F7A3E", accent: "#F5E6D3" },
-    compare: { bg: "#1B4965", accent: "#B85C38" },
-    transport: { bg: "#0F2B4C", accent: "#F5E6D3" },
+  // Accent (filet bas + pastille type) par type de contenu
+  const ACCENTS: Record<string, string> = {
+    default: "#B85C38",
+    beach: "#2D6A8F",
+    weather: "#2D6A8F",
+    news: "#B85C38",
+    event: "#B85C38",
+    guide: "#5F7A3E",
+    compare: "#B85C38",
+    transport: "#1B4965",
   };
-
-  const scheme = schemes[type] || schemes.default;
+  const accent = ACCENTS[type] || ACCENTS.default;
 
   return new ImageResponse(
     (
@@ -31,29 +37,50 @@ export async function GET(request: NextRequest) {
           width: "100%",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "space-between",
-          backgroundColor: scheme.bg,
-          padding: "60px",
-          fontFamily: "system-ui, sans-serif",
+          backgroundColor: CREAM,
+          fontFamily: "Georgia, 'Times New Roman', serif",
         }}
       >
-        {/* Top: Logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <span style={{ fontSize: "32px", fontWeight: 800, color: "#FFFFFF" }}>CRETE</span>
-          <span style={{ width: "12px", height: "12px", borderRadius: "50%", backgroundColor: scheme.accent }} />
-          <span style={{ fontSize: "32px", fontWeight: 800, color: scheme.accent }}>DIRECT</span>
+        {/* Bandeau superieur aegean : logo + pastille LIVE */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            backgroundColor: AEGEAN,
+            padding: "28px 60px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <span style={{ fontSize: "30px", fontWeight: 800, color: "#FFFFFF", fontFamily: "system-ui, sans-serif", letterSpacing: "-0.5px" }}>CRETE</span>
+            <span style={{ width: "11px", height: "11px", borderRadius: "50%", backgroundColor: "#B85C38" }} />
+            <span style={{ fontSize: "30px", fontWeight: 800, color: "#E8C9A0", fontFamily: "system-ui, sans-serif", letterSpacing: "-0.5px" }}>DIRECT</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <span style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: "#34D399" }} />
+            <span style={{ fontSize: "20px", color: "rgba(255,255,255,0.85)", fontFamily: "ui-monospace, monospace", letterSpacing: "2px" }}>LIVE</span>
+          </div>
         </div>
 
-        {/* Center: Title */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        {/* Corps creme : titre serif + sous-titre */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            flex: 1,
+            padding: "40px 60px",
+            gap: "20px",
+          }}
+        >
           <h1
             style={{
-              fontSize: title.length > 40 ? "48px" : "56px",
+              fontSize: title.length > 40 ? "52px" : "64px",
               fontWeight: 700,
-              color: "#FFFFFF",
-              lineHeight: 1.1,
+              color: INK,
+              lineHeight: 1.08,
               margin: 0,
-              maxWidth: "900px",
+              maxWidth: "1020px",
             }}
           >
             {title}
@@ -61,10 +88,11 @@ export async function GET(request: NextRequest) {
           {subtitle && subtitle !== title && (
             <p
               style={{
-                fontSize: "24px",
-                color: "rgba(255,255,255,0.6)",
+                fontSize: "26px",
+                color: "#6B7280",
                 margin: 0,
-                maxWidth: "700px",
+                maxWidth: "860px",
+                fontFamily: "system-ui, sans-serif",
               }}
             >
               {subtitle}
@@ -72,9 +100,12 @@ export async function GET(request: NextRequest) {
           )}
         </div>
 
-        {/* Bottom: URL */}
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ fontSize: "20px", color: "rgba(255,255,255,0.4)" }}>crete.direct</span>
+        {/* Pied : URL + filet accent */}
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <div style={{ display: "flex", padding: "0 60px 26px" }}>
+            <span style={{ fontSize: "20px", color: "#94A3B8", fontFamily: "ui-monospace, monospace" }}>crete.direct</span>
+          </div>
+          <div style={{ display: "flex", height: "10px", backgroundColor: accent, width: "100%" }} />
         </div>
       </div>
     ),
