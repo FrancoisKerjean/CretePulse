@@ -62,7 +62,14 @@ export async function getCbBeachNear(lat: number, lng: number): Promise<CbBeachA
       .gte("longitude", lng - 0.02)
       .lte("longitude", lng + 0.02)
       .limit(20);
-    if (error || !data?.length) return null;
+    if (error) {
+      console.error("[cb-beach-match] postgrest error:", JSON.stringify(error));
+      return null;
+    }
+    if (!data?.length) {
+      console.error("[cb-beach-match] empty result for", lat, lng);
+      return null;
+    }
     let best: CbRow | null = null;
     let bestKm = MATCH_KM;
     for (const c of data as unknown as CbRow[]) {
@@ -73,7 +80,8 @@ export async function getCbBeachNear(lat: number, lng: number): Promise<CbBeachA
       }
     }
     return best;
-  } catch {
+  } catch (e) {
+    console.error("[cb-beach-match] fetch threw:", e instanceof Error ? e.message : String(e));
     return null;
   }
 }
