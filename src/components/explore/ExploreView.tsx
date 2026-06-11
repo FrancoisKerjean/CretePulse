@@ -253,6 +253,15 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
     }
   }
 
+  // Deep-link ?place=slug : ouvre le drawer à l'arrivée (utilisé par /match).
+  // Lecture window au mount plutôt que useSearchParams() : évite le bailout
+  // Suspense de Next sur une page ISR.
+  useEffect(() => {
+    const slug = new URLSearchParams(window.location.search).get("place");
+    if (slug && places.some((p) => p.slug === slug)) selectPlace(slug);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function toggleType(type: string) {
     setActiveTypes((prev) => {
       const next = new Set(prev);
