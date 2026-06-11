@@ -86,6 +86,23 @@ media.crete.direct).
   les fallbacks gradient linéaires actuels.
 - Les **icônes monoline** (icons.tsx) restent la seule écriture dessinée du site.
 
+## Décisions du configurateur (wizard 11/06/2026, réponses Kami verbatim)
+1. **Intensité : Solaire** — heros en gradient plein ciel→lagon, sections colorées.
+2. **Hero home, colonne droite : l'île en carte live** (CreteMap pins) — la photo du jour
+   traitée vit dans la section « Où se baigner », pas dans le hero.
+3. **CTA : jaune soleil** (`--sun`, texte encre) pour toutes les actions principales —
+   le plus Waze. Actions secondaires : blanc ombré.
+4. **Tuiles météo : couleur pleine** — alternance lagon (texte nuit) / mer profonde
+   (texte blanc), chiffres géants, pas de pastel.
+5. **Board départs : nuit** (signature confirmée).
+6. **Arrondi : très rond** — 28-32px cartes, pills partout.
+7. **Newsletter : bande sable.**
+8. **Densité : aéré.**
+9. **Mascotte kri-kri : à explorer** (planche dédiée — pas encore actée).
+10. **RÈGLE AJOUTÉE (Kami) : aucune flèche « → » accolée aux titres et libellés de liens.**
+    Les « tout → », « toutes les stations → », « → Voir la plage » sont interdits ;
+    les liens d'action = pills sans flèche, les liens secondaires = texte coloré simple.
+
 ## Conservé des phases précédentes
 - Icônes propriétaires spirale/vague (icons.tsx) — cohérentes avec la nouvelle grammaire.
 - font-data mono pour toute donnée chiffrée.
