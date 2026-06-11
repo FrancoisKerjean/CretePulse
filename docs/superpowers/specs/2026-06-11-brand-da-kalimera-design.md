@@ -1,10 +1,11 @@
 # Design — Direction artistique « Kalimera » (identité de marque crete.direct)
 
-Date : 11/06/2026. Validée par Kami sur mockups itérés (v1 almanach → v6 finale, 7 itérations
-+ planche typo). Mockup de référence : `ui-da-v6-final.html` / `.png` (racine repo, non commité —
-à archiver dans `docs/design/` au build). Recherche fondatrice : Flighty (Apple Design Award,
-status board sémantique), Citymapper (couleur unique possédée), tendances 2026 (Figma/Fireart :
-typo-architecture, color blocking), Ace Hotel Athens (modernisme grec).
+Date : 11/06/2026. Validée par Kami sur mockups itérés (8 versions + 5 planches + wizard
+interactif 9 questions). **Mockup de référence DÉFINITIF : `docs/design/kalimera/home-v8.html`**
+(+ bus, beach, mobile, kri-kri, wordmark dans le même dossier) : c'est le cahier des charges
+visuel du re-skin, validé « oui » par Kami le 11/06. Recherche fondatrice : Flighty (Apple
+Design Award, status board sémantique), Citymapper (couleur unique possédée), tendances 2026
+(typo-architecture, color blocking), Ace Hotel Athens (modernisme grec).
 
 ## Le brief de Kami (verbatim condensé)
 
@@ -98,7 +99,10 @@ media.crete.direct).
 6. **Arrondi : très rond** — 28-32px cartes, pills partout.
 7. **Newsletter : bande sable.**
 8. **Densité : aéré.**
-9. **Mascotte kri-kri : à explorer** (planche dédiée — pas encore actée).
+9. **Mascotte kri-kri : ADOPTÉE** (validation Kami 11/06 sur planche `ui-krikri-trial.html`).
+   Usage discret au lancement : états vides, 404 (yeux-spirale), alertes (meltemi/feu),
+   pin de carte optionnel. Pas sur le hero ni dans la nav. Extensible plus tard
+   (accueil, onboarding) si elle prend. 4 états dessinés : Καλημέρα, alerte, vide, 404.
 10. **RÈGLE AJOUTÉE (Kami) : aucune flèche « → » accolée aux titres et libellés de liens.**
     Les « tout → », « toutes les stations → », « → Voir la plage » sont interdits ;
     les liens d'action = pills sans flèche, les liens secondaires = texte coloré simple.
