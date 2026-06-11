@@ -107,3 +107,63 @@ ${Object.entries(pos).slice(0, 6).map(([n, p]) => {
 }).join("")}
 </svg></div></body>`);
 console.log("preview: crete-path-preview.html");
+
+// ── Zones detourees (Sutherland-Hodgman sur le polygone projete) ──────────
+// west x<140 ; central 140-275 & y<95 ; south 140-275 & y>=95 ; east x>=275
+function clipHalf(points, test, intersect) {
+  const out = [];
+  for (let i = 0; i < points.length; i++) {
+    const cur = points[i], prev = points[(i + points.length - 1) % points.length];
+    const cIn = test(cur), pIn = test(prev);
+    if (cIn) {
+      if (!pIn) out.push(intersect(prev, cur));
+      out.push(cur);
+    } else if (pIn) {
+      out.push(intersect(prev, cur));
+    }
+  }
+  return out;
+}
+const ixV = (x0) => (a, b) => { const t = (x0 - a[0]) / (b[0] - a[0]); return [x0, a[1] + t * (b[1] - a[1])]; };
+const ixH = (y0) => (a, b) => { const t = (y0 - a[1]) / (b[1] - a[1]); return [a[0] + t * (b[0] - a[0]), y0]; };
+function clipRect(points, x1, x2, y1, y2) {
+  let p = points;
+  p = clipHalf(p, (q) => q[0] >= x1, ixV(x1));
+  p = clipHalf(p, (q) => q[0] <= x2, ixV(x2));
+  p = clipHalf(p, (q) => q[1] >= y1, ixH(y1));
+  p = clipHalf(p, (q) => q[1] <= y2, ixH(y2));
+  return p;
+}
+function smoothPath(points) {
+  if (points.length < 3) return "";
+  let dd = `M${f(mid(points[points.length - 1], points[0])[0])} ${f(mid(points[points.length - 1], points[0])[1])}`;
+  for (let i = 0; i < points.length; i++) {
+    const p = points[i];
+    const m = mid(p, points[(i + 1) % points.length]);
+    dd += ` Q${f(p[0])} ${f(p[1])} ${f(m[0])} ${f(m[1])}`;
+  }
+  return dd + " Z";
+}
+// densifier les aretes longues pour que les coupes droites restent droites apres lissage
+function densify(points, maxLen = 6) {
+  const out = [];
+  for (let i = 0; i < points.length; i++) {
+    const a = points[i], b = points[(i + 1) % points.length];
+    out.push(a);
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    const n = Math.floor(len / maxLen);
+    for (let j = 1; j <= n; j++) out.push([a[0] + ((b[0] - a[0]) * j) / (n + 1), a[1] + ((b[1] - a[1]) * j) / (n + 1)]);
+  }
+  return out;
+}
+const XW = 140, XE = 275, YS = 95;
+const ZONES = {
+  west: clipRect(pts, -10, XW, -10, 200),
+  central: clipRect(pts, XW, XE, -10, YS),
+  south: clipRect(pts, XW, XE, YS, 200),
+  east: clipRect(pts, XE, 470, -10, 200),
+};
+console.log("ZONE_PATHS:");
+for (const [name, zp] of Object.entries(ZONES)) {
+  console.log(`"${name}": "${smoothPath(densify(zp))}",`);
+}

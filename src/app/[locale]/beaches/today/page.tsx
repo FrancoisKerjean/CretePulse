@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { buildSwimToday, type ScoredBeach, type ShoreWind } from "@/lib/swim-today";
 import { BeachImage } from "@/components/BeachImage";
+import { RegionPicker, type RegionBeachLite, type ZoneKey } from "@/components/RegionPicker";
 import { NearestSwimSpot, type NearestSwimBeach } from "@/components/near-me/NearestSwimSpot";
 import { buildAlternates } from "@/lib/seo";
 import { getLocalizedField } from "@/lib/types";
@@ -262,6 +263,15 @@ function attrLabel(raw: string | null | undefined, dict: Record<string, string>)
   return dict[first] ?? null;
 }
 
+// Libelles du selecteur de zones (RegionPicker)
+const PICKER_ALL: Record<Locale, string> = { en: "All", fr: "Toutes", de: "Alle", el: "Όλες" };
+const PICKER_HINT: Record<Locale, string> = {
+  en: "Touch a zone of the island · or use the pills",
+  fr: "Touche une zone de l'île · ou utilise les pills",
+  de: "Tippe eine Zone der Insel an · oder nutze die Pills",
+  el: "Άγγιξε μια ζώνη του νησιού · ή χρησιμοποίησε τα κουμπιά",
+};
+
 const RATING_CLASS: Record<"calm" | "fair" | "exposed", string> = {
   calm: "bg-[rgba(20,184,107,.13)] text-[#0B8A52]",
   fair: "bg-sun/20 text-[#8A6A14]",
@@ -411,6 +421,25 @@ export default async function SwimTodayPage(
   const h1Pre = h1Words.slice(0, -1).join(" ");
   const h1Hl = h1Words[h1Words.length - 1];
 
+  // Donnees serialisables pour la carte selecteur de zones (client)
+  const toLite = (s: ScoredBeach): RegionBeachLite => {
+    const sand = attrLabel(s.cb?.sand_type, SAND_LABELS[uiLoc]);
+    return {
+      name: getLocalizedField(s.beach, "name", uiLoc),
+      slug: s.beach.slug,
+      imageUrl: s.imageUrl,
+      rating: s.rating,
+      metaLine: `${t.shore[s.shoreWind]} · ${s.windSpeed} km/h · ${fmtWave(s.waveHeight)}${sand ? ` · ${sand}` : ""}`,
+      busLine: s.busStop?.hasDirectBus ? `${s.busStop.name} · ${s.busStop.km} km` : null,
+      starRating: s.cb?.rating != null && s.cb.rating >= 3.5 ? s.cb.rating : null,
+      lat: s.beach.latitude,
+      lng: s.beach.longitude,
+    };
+  };
+  const pickerZones = Object.fromEntries(
+    (["west", "central", "east", "south"] as ZoneKey[]).map((z) => [z, (data.byRegion[z] ?? []).map(toLite)]),
+  ) as Record<ZoneKey, RegionBeachLite[]>;
+
   // Payload réduit pour l'île client NearestSwimSpot : plages non exposées
   // aujourd'hui, champs minimum (le tri par distance se fait au clic, client).
   const nearestCandidates: NearestSwimBeach[] = data.scored
@@ -557,25 +586,17 @@ export default async function SwimTodayPage(
         {/* La plage calme la plus proche (géoloc client, activée au clic) */}
         <NearestSwimSpot locale={locale} beaches={nearestCandidates} />
 
-        {/* Good choices by area */}
+        {/* Good choices by area : carte cliquable zones detourees (mockup valide Kami 12/06) */}
         <section className="mb-10">
           <h2 className="font-heading font-extrabold text-[28px] text-text mb-4">{t.byRegionTitle}</h2>
-          <div className="grid md:grid-cols-2 gap-5">
-            {Object.entries(data.byRegion).map(([region, list]) =>
-              list.length > 0 ? (
-                <div key={region}>
-                  <h3 className="font-heading font-bold text-sm text-text-muted mb-2.5">
-                    {t.regions[region] ?? region}
-                  </h3>
-                  <div className="space-y-3">
-                    {list.map(s => (
-                      <BeachRow key={s.beach.slug} s={s} locale={locale} uiLoc={uiLoc} />
-                    ))}
-                  </div>
-                </div>
-              ) : null,
-            )}
-          </div>
+          <RegionPicker
+            zones={pickerZones}
+            regionLabels={t.regions}
+            allLabel={PICKER_ALL[uiLoc]}
+            hint={PICKER_HINT[uiLoc]}
+            ratingLabels={t.rating}
+            locale={locale}
+          />
         </section>
 
         {/* Exposed today */}
