@@ -1,8 +1,16 @@
 import type { ReactNode } from "react";
 import { Geist } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
 import { Playfair_Display } from "next/font/google";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
+
+export const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-data",
+  weight: ["400", "600"],
+  display: "swap",
+});
 
 export const playfair = Playfair_Display({
   subsets: ["latin"],

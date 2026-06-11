@@ -324,3 +324,32 @@ a, button {
   .article-prose h2 { font-size: 26px; margin-top: 48px; }
   .article-prose figure { margin: 32px -16px; }
 }
+/* ── Design system "donnees vivantes" (spec 2026-06-11) ─────────────────── */
+
+/* Voix typographique data : toute donnee chiffree (horaires, prix, temp, stats) */
+@utility font-data {
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* La carte unique du site : tous les styles de cartes convergent ici */
+@utility card-base {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  transition: box-shadow 150ms ease, transform 150ms ease;
+  &:hover {
+    box-shadow: 0 4px 16px rgb(27 73 101 / 0.1);
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@utility animate-live-pulse {
+  animation: live-pulse 2.4s ease-in-out infinite;
+}
