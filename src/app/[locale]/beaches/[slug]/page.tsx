@@ -175,6 +175,74 @@ export async function generateMetadata({
   };
 }
 
+/**
+ * Renders the lightweight markdown stored in beaches.description_* without
+ * any dependency: "# " title (dropped, the page already has the H1),
+ * "## " sections, "**bold**", paragraphs. Some generated descriptions are
+ * truncated mid-sentence in DB: anything after the last sentence-ending
+ * punctuation is dropped so the page never ends on a dangling clause.
+ */
+function BeachDescription({ text }: { text: string }) {
+  // Cut cleanly at the last complete sentence.
+  let clean = text.trim();
+  if (!/[.!?…»")]$/.test(clean)) {
+    const lastStop = Math.max(
+      clean.lastIndexOf("."), clean.lastIndexOf("!"), clean.lastIndexOf("?"),
+    );
+    if (lastStop > clean.length * 0.5) clean = clean.slice(0, lastStop + 1);
+  }
+
+  const renderInline = (s: string) =>
+    s.split(/\*\*([^*]+)\*\*/g).map((part, i) =>
+      i % 2 === 1 ? <strong key={i}>{part}</strong> : part,
+    );
+
+  // Markdown headings may arrive inline ("... text ## Heading text ...")
+  // or on their own lines; normalize to line-based blocks first.
+  const normalized = clean
+    .replace(/\s*##\s+/g, "\n## ")
+    .replace(/^\s*#\s+[^\n]*\n?/, "");
+
+  const blocks: React.ReactNode[] = [];
+  for (const [i, rawBlock] of normalized.split(/\n/).entries()) {
+    const block = rawBlock.trim();
+    if (!block) continue;
+    if (block.startsWith("## ")) {
+      const rest = block.slice(3);
+      // Heading text runs until the next sentence would start: keep the
+      // short title (<= 8 words) as the heading, the remainder as a paragraph.
+      const words = rest.split(" ");
+      const headLen = Math.min(words.length, 8);
+      let cut = headLen;
+      for (let w = 1; w <= headLen; w++) {
+        if (/[.!?:]$/.test(words[w - 1])) { cut = w; break; }
+      }
+      const isShortTitle = words.length <= 8;
+      const title = isShortTitle ? rest : words.slice(0, cut).join(" ");
+      const tail = isShortTitle ? "" : words.slice(cut).join(" ");
+      blocks.push(
+        <h2 key={`h${i}`} className="text-lg font-semibold text-text mt-6 mb-2">
+          {renderInline(title.replace(/[.:]$/, ""))}
+        </h2>,
+      );
+      if (tail) {
+        blocks.push(
+          <p key={`hp${i}`} className="text-text leading-relaxed mt-2">
+            {renderInline(tail)}
+          </p>,
+        );
+      }
+    } else {
+      blocks.push(
+        <p key={`p${i}`} className="text-text leading-relaxed mt-3 first:mt-0">
+          {renderInline(block)}
+        </p>,
+      );
+    }
+  }
+  return <>{blocks}</>;
+}
+
 export default async function BeachDetailPage({
   params,
 }: {
@@ -432,10 +500,11 @@ export default async function BeachDetailPage({
           )}
         </div>
 
-        {/* Description */}
+        {/* Description (DB content is lightweight markdown; some generated
+            rows are truncated mid-sentence, the renderer cuts cleanly) */}
         {description && (
-          <div className="prose prose-sm max-w-none mb-8">
-            <p className="text-text leading-relaxed">{description}</p>
+          <div className="max-w-none mb-8">
+            <BeachDescription text={description} />
           </div>
         )}
 
