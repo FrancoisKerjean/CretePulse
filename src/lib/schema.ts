@@ -539,6 +539,50 @@ export function newsSchema(news: NewsItem, locale: Locale): Record<string, unkno
   };
 }
 
+export function nearMePageSchema(params: {
+  locale: string;
+  pageTitle: string;
+  description: string;
+  faqItems: Array<{ q: string; a: string }>;
+  breadcrumbLabels: { home: string; nearMe: string };
+}): Record<string, unknown> {
+  const url = `${BASE_URL}/${params.locale}/near-me`;
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": url,
+        url,
+        name: params.pageTitle,
+        description: params.description,
+        inLanguage: params.locale,
+        isPartOf: { "@type": "WebSite", name: "Crete Direct", url: BASE_URL },
+        breadcrumb: { "@id": `${url}#breadcrumb` },
+        mainEntity: { "@id": `${url}#faq` },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${url}#breadcrumb`,
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: params.breadcrumbLabels.home, item: `${BASE_URL}/${params.locale}` },
+          { "@type": "ListItem", position: 2, name: params.breadcrumbLabels.nearMe, item: url },
+        ],
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${url}#faq`,
+        inLanguage: params.locale,
+        mainEntity: params.faqItems.map((f) => ({
+          "@type": "Question",
+          name: f.q,
+          acceptedAnswer: { "@type": "Answer", text: f.a },
+        })),
+      },
+    ],
+  };
+}
+
 export function busesPageSchema(params: {
   locale: string;
   pageTitle: string;

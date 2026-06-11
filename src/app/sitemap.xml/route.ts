@@ -45,6 +45,7 @@ const STATIC_PAGES = [
   "/daily",
   "/about",
   "/buses",
+  "/near-me",
   "/fire-alerts",
   "/property-management",
   "/airbnb",
