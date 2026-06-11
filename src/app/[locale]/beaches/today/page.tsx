@@ -1,4 +1,4 @@
-import { ChevronLeft, Wind, Waves, Thermometer, MapPin, AlertTriangle, Bus, CarTaxiFront, Star, Anchor, Users } from "lucide-react";
+import { Wind, Waves, Thermometer, MapPin, AlertTriangle, Bus, CarTaxiFront, Star, Anchor, Users } from "lucide-react";
 import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -262,9 +262,9 @@ function attrLabel(raw: string | null | undefined, dict: Record<string, string>)
 }
 
 const RATING_CLASS: Record<"calm" | "fair" | "exposed", string> = {
-  calm: "bg-emerald-100 text-emerald-800",
-  fair: "bg-amber-100 text-amber-800",
-  exposed: "bg-red-100 text-red-700",
+  calm: "bg-[rgba(20,184,107,.13)] text-[#0B8A52]",
+  fair: "bg-sun/20 text-[#8A6A14]",
+  exposed: "bg-terra/15 text-[#B84B30]",
 };
 
 function fmtWave(v: number | null): string {
@@ -308,32 +308,32 @@ function BeachRow({ s, locale, uiLoc }: { s: ScoredBeach; locale: string; uiLoc:
   return (
     <Link
       href={`/${locale}/beaches/${s.beach.slug}`}
-      className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-3 hover:border-stone-400 transition-colors"
+      className="flex items-center gap-3.5 rounded-3xl bg-white p-3 shadow-[0_12px_30px_rgba(11,94,120,.10)] hover:shadow-[0_14px_36px_rgba(11,94,120,.16)] transition-shadow no-underline"
     >
-      <div className="relative w-16 h-12 rounded-lg overflow-hidden shrink-0">
-        <BeachImage src={s.imageUrl} alt={name} className="w-16 h-12 object-cover" />
+      <div className="relative w-16 h-12 rounded-2xl overflow-hidden shrink-0">
+        <BeachImage src={s.imageUrl} alt={name} className="w-16 h-12 object-cover saturate-[1.08]" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="font-medium text-stone-900 truncate">
+        <p className="font-heading font-bold text-text truncate m-0">
           {name}
           {s.cb?.rating != null && s.cb.rating >= 3.5 && (
-            <span className="ml-2 inline-flex items-center gap-0.5 text-xs font-semibold text-amber-600">
+            <span className="ml-2 inline-flex items-center gap-0.5 text-xs font-semibold text-[#8A6A14]">
               <Star className="h-3 w-3 fill-current" /> {s.cb.rating.toFixed(1)}
             </span>
           )}
         </p>
-        <p className="text-xs text-stone-500">
+        <p className="text-xs text-text-muted m-0 font-data">
           {t.shore[s.shoreWind]} · {s.windSpeed} km/h · {fmtWave(s.waveHeight)}
           {attrLabel(s.cb?.sand_type, SAND_LABELS[uiLoc]) ? ` · ${attrLabel(s.cb?.sand_type, SAND_LABELS[uiLoc])}` : ""}
         </p>
         {s.busStop?.hasDirectBus && (
-          <p className="text-xs text-stone-400 inline-flex items-center gap-1">
+          <p className="text-xs text-text-light inline-flex items-center gap-1 m-0">
             <Bus className="h-3 w-3" /> {s.busStop.name} · {s.busStop.km} km
           </p>
         )}
       </div>
-      <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${RATING_CLASS[s.rating]}`}>
-        {t.rating[s.rating]}
+      <span className={`shrink-0 rounded-full px-3 py-1.5 text-[11.5px] font-extrabold font-data ${RATING_CLASS[s.rating]}`}>
+        ≈ {t.rating[s.rating]}
       </span>
     </Link>
   );
@@ -406,124 +406,150 @@ export default async function SwimTodayPage(
     ],
   };
 
+  const h1Words = t.h1.split(" ");
+  const h1Pre = h1Words.slice(0, -1).join(" ");
+  const h1Hl = h1Words[h1Words.length - 1];
+
   return (
-    <main className="min-h-screen bg-gradient-to-b from-stone-50 to-white">
+    <main className="min-h-screen bg-surface">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <div className="mx-auto max-w-5xl px-4 py-8 md:py-12">
-        <Link
-          href={`/${locale}/beaches`}
-          className="inline-flex items-center gap-1 text-sm text-stone-600 hover:text-stone-900 mb-6"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          {t.back}
-        </Link>
+      {/* Hero lagon : greet + h1 + intro + pick-card (docs/design/kalimera/beach.html) */}
+      <section className="relative -mt-[74px] pt-28 pb-24 bg-gradient-to-b from-sky via-[#8FE0EC] to-lagoon overflow-hidden">
+        <div
+          className="absolute top-20 right-[9%] w-[110px] h-[110px] rounded-full shadow-[0_0_70px_20px_rgba(255,200,61,.45)]"
+          style={{ background: "radial-gradient(circle at 38% 35%, #FFE08F, #FFC83D 70%)" }}
+          aria-hidden
+        />
+        <div className="relative mx-auto max-w-5xl px-4 grid lg:grid-cols-2 gap-11 items-center">
+          <div>
+            <span className="inline-flex items-center gap-2 bg-white/72 rounded-full px-4 py-2 text-[12.5px] font-heading font-bold text-aegean capitalize">
+              <span className="w-2 h-2 rounded-full bg-ok shadow-[0_0_0_4px_rgba(20,184,107,.25)]" />
+              {dateLabel} · {timeLabel}
+            </span>
+            <h1 className="font-heading font-extrabold text-4xl md:text-[50px] leading-[1.05] tracking-tight text-text mt-4 mb-3">
+              {h1Pre} <span className="text-white [text-shadow:0_2px_16px_rgba(11,94,120,.35)]">{h1Hl}</span>
+            </h1>
+            <p className="text-[15.5px] text-[rgba(11,57,84,.78)] max-w-md leading-relaxed m-0">
+              {t.intro(data.wind.cardinal, data.wind.minSpeed, data.wind.maxSpeed)}
+            </p>
+            <Link
+              href={`/${locale}/beaches`}
+              className="inline-flex mt-5 bg-white/80 rounded-full px-4 py-2 text-[13px] font-heading font-bold text-aegean no-underline hover:bg-white transition-colors"
+            >
+              {t.back}
+            </Link>
+          </div>
 
-        <header className="mb-8">
-          <p className="text-sm text-stone-500 capitalize">{dateLabel}</p>
-          <h1 className="text-3xl md:text-4xl font-bold text-stone-900 mt-1">{t.h1}</h1>
-          <p className="mt-3 text-stone-600 max-w-3xl">
-            {t.intro(data.wind.cardinal, data.wind.minSpeed, data.wind.maxSpeed)}
-          </p>
-        </header>
-
-        {/* Today's pick */}
-        <section className="mb-10">
-          <h2 className="text-lg font-semibold text-stone-800 mb-3">{t.pickTitle}</h2>
           <Link
             href={`/${locale}/beaches/${pick.beach.slug}`}
-            className="group block rounded-2xl overflow-hidden border border-stone-200 bg-white hover:border-stone-400 transition-colors md:grid md:grid-cols-2"
+            className="block bg-white rounded-[30px] overflow-hidden shadow-[0_22px_54px_rgba(7,55,74,.28)] no-underline group"
           >
-            <div className="relative h-56 md:h-full min-h-56 overflow-hidden">
+            <div className="relative h-[230px] overflow-hidden">
               <BeachImage
                 src={pick.imageUrl}
                 alt={pickName}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-cover saturate-[1.08] group-hover:scale-[1.03] transition-transform duration-500"
               />
+              <div className="absolute inset-0 bg-gradient-to-b from-lagoon/5 via-transparent to-night/30 pointer-events-none" />
             </div>
-            <div className="p-5 md:p-6 flex flex-col justify-center">
-              <div className="flex items-center gap-2 text-sm text-stone-500 mb-1.5">
-                <MapPin className="h-4 w-4" /> {pickRegion}
+            <div className="px-5.5 py-4 flex justify-between items-center gap-3.5">
+              <div>
+                <p className="font-heading font-bold text-[21px] text-text m-0">{pickName}</p>
+                <p className="text-xs text-text-muted m-0">{pickRegion} · {pick.city.name} · {t.pickTitle.toLowerCase()}</p>
               </div>
-              <p className="text-2xl font-bold text-stone-900">{pickName}</p>
-              <p className="mt-2 text-stone-600">
-                {t.pickWhy(pick.windCardinal, pick.windSpeed, pick.shoreWind, fmtWave(pick.waveHeight), fmtSea(pick.seaTemp))}
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-stone-100 px-3 py-1 text-xs text-stone-700">
-                  <Wind className="h-3.5 w-3.5" /> {t.shore[pick.shoreWind]} · {pick.windSpeed} km/h
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-stone-100 px-3 py-1 text-xs text-stone-700">
-                  <Waves className="h-3.5 w-3.5" /> {fmtWave(pick.waveHeight)}
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-stone-100 px-3 py-1 text-xs text-stone-700">
-                  <Thermometer className="h-3.5 w-3.5" /> {fmtSea(pick.seaTemp)}
-                </span>
-                {pick.cb?.sea_surface?.toLowerCase().includes("calm") && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs text-emerald-800">
-                    <Anchor className="h-3.5 w-3.5" /> {KNOWN_CALM[uiLoc]}
-                  </span>
-                )}
-                {attrLabel(pick.cb?.sand_type, SAND_LABELS[uiLoc]) && (
-                  <span className="inline-flex items-center rounded-full bg-stone-100 px-3 py-1 text-xs text-stone-700">
-                    {attrLabel(pick.cb?.sand_type, SAND_LABELS[uiLoc])}
-                  </span>
-                )}
-                {attrLabel(pick.cb?.depth, DEPTH_LABELS[uiLoc]) && (
-                  <span className="inline-flex items-center rounded-full bg-stone-100 px-3 py-1 text-xs text-stone-700">
-                    {attrLabel(pick.cb?.depth, DEPTH_LABELS[uiLoc])}
-                  </span>
-                )}
-                {attrLabel(pick.cb?.crowds, CROWD_LABELS[uiLoc]) && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-stone-100 px-3 py-1 text-xs text-stone-700">
-                    <Users className="h-3.5 w-3.5" /> {attrLabel(pick.cb?.crowds, CROWD_LABELS[uiLoc])}
-                  </span>
-                )}
-                {pick.cb?.rating != null && pick.cb.rating > 0 && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800">
-                    <Star className="h-3.5 w-3.5 fill-current" /> {pick.cb.rating.toFixed(1)}/5
-                  </span>
-                )}
-              </div>
-              <span className="mt-4 text-sm font-medium text-cyan-800">{t.viewBeach} →</span>
+              <span className="bg-[rgba(20,184,107,.14)] text-[#0B8A52] font-extrabold rounded-full px-4 py-2 text-[13px] font-data whitespace-nowrap">
+                ≈ {t.rating[pick.rating]}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-x-4.5 gap-y-1 border-t border-text/8 px-5.5 py-3 text-[13px] text-text-muted font-data">
+              <span><Wind className="inline h-3.5 w-3.5 mr-1" /><b className="text-text">{pick.windCardinal} {pick.windSpeed} km/h</b></span>
+              <span><Thermometer className="inline h-3.5 w-3.5 mr-1" /><b className="text-text">{fmtSea(pick.seaTemp)}</b></span>
+              <span><Waves className="inline h-3.5 w-3.5 mr-1" /><b className="text-text">{fmtWave(pick.waveHeight)}</b></span>
+              {pick.busStop?.hasDirectBus && (
+                <span><Bus className="inline h-3.5 w-3.5 mr-1" /><b className="text-text">{pick.busStop.km} km</b></span>
+              )}
             </div>
           </Link>
+        </div>
+        <svg className="absolute bottom-0 left-0 w-full h-[70px]" viewBox="0 0 1440 70" preserveAspectRatio="none" aria-hidden>
+          <path d="M0 40 C180 0 320 70 540 42 C760 14 900 66 1130 40 C1290 22 1380 36 1440 28 L1440 70 L0 70 Z" fill="#F6FBFC" />
+        </svg>
+      </section>
 
-          {/* Getting there: nearest KTEL stop + taxi distance reference */}
-          <div className="mt-3 rounded-xl border border-stone-200 bg-white px-4 py-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
-            <span className="font-medium text-stone-700">{t.gettingThere}</span>
-            <span className="inline-flex items-center gap-1.5 text-stone-700">
-              <Bus className="h-4 w-4 text-cyan-800" />
+      <div className="mx-auto max-w-5xl px-4 pt-8 pb-12">
+        {/* Pourquoi cette plage : argumentaire + attributs terrain + s'y rendre */}
+        <section className="mb-10 rounded-[28px] bg-white px-7 py-6 shadow-[0_12px_32px_rgba(11,94,120,.10)]">
+          <div className="flex items-center gap-2 text-sm text-text-muted mb-1.5">
+            <MapPin className="h-4 w-4" /> {pickRegion}
+          </div>
+          <p className="text-[17px] text-text m-0">
+            {t.pickWhy(pick.windCardinal, pick.windSpeed, pick.shoreWind, fmtWave(pick.waveHeight), fmtSea(pick.seaTemp))}
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {pick.cb?.sea_surface?.toLowerCase().includes("calm") && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[rgba(20,184,107,.13)] px-3.5 py-1.5 text-xs text-[#0B8A52] font-bold">
+                <Anchor className="h-3.5 w-3.5" /> {KNOWN_CALM[uiLoc]}
+              </span>
+            )}
+            {attrLabel(pick.cb?.sand_type, SAND_LABELS[uiLoc]) && (
+              <span className="inline-flex items-center rounded-full bg-stone px-3.5 py-1.5 text-xs text-text-muted font-semibold">
+                {attrLabel(pick.cb?.sand_type, SAND_LABELS[uiLoc])}
+              </span>
+            )}
+            {attrLabel(pick.cb?.depth, DEPTH_LABELS[uiLoc]) && (
+              <span className="inline-flex items-center rounded-full bg-stone px-3.5 py-1.5 text-xs text-text-muted font-semibold">
+                {attrLabel(pick.cb?.depth, DEPTH_LABELS[uiLoc])}
+              </span>
+            )}
+            {attrLabel(pick.cb?.crowds, CROWD_LABELS[uiLoc]) && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-stone px-3.5 py-1.5 text-xs text-text-muted font-semibold">
+                <Users className="h-3.5 w-3.5" /> {attrLabel(pick.cb?.crowds, CROWD_LABELS[uiLoc])}
+              </span>
+            )}
+            {pick.cb?.rating != null && pick.cb.rating > 0 && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-sun/20 px-3.5 py-1.5 text-xs font-bold text-[#8A6A14]">
+                <Star className="h-3.5 w-3.5 fill-current" /> {pick.cb.rating.toFixed(1)}/5
+              </span>
+            )}
+          </div>
+          <div className="mt-5 pt-4 border-t border-text/8 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+            <span className="font-heading font-bold text-text">{t.gettingThere}</span>
+            <span className="inline-flex items-center gap-1.5 text-text-muted">
+              <Bus className="h-4 w-4 text-lagoon-deep" />
               {pick.busStop?.hasDirectBus
                 ? t.busVia(pick.busStop.name, pick.busStop.km)
                 : t.noDirectBus}
             </span>
-            <span className="inline-flex items-center gap-1.5 text-stone-700">
-              <CarTaxiFront className="h-4 w-4 text-stone-500" />
+            <span className="inline-flex items-center gap-1.5 text-text-muted">
+              <CarTaxiFront className="h-4 w-4 text-text-light" />
               {pick.busStop
                 ? t.taxiFrom(pick.busStop.name, Math.round(pick.busStop.km))
                 : t.taxiFrom(pick.city.name, pick.cityKm)}
             </span>
-            <Link href={`/${locale}/buses`} className="text-cyan-800 hover:underline font-medium">
-              {t.busSchedules} →
+            <Link href={`/${locale}/buses`} className="bg-sun text-text rounded-full px-4 py-2 text-[13px] font-heading font-bold no-underline hover:brightness-105 transition-all">
+              {t.busSchedules}
+            </Link>
+            <Link href={`/${locale}/beaches/${pick.beach.slug}`} className="text-lagoon-deep font-bold hover:underline">
+              {t.viewBeach}
             </Link>
           </div>
         </section>
 
         {/* Good choices by area */}
         <section className="mb-10">
-          <h2 className="text-lg font-semibold text-stone-800 mb-3">{t.byRegionTitle}</h2>
+          <h2 className="font-heading font-extrabold text-[28px] text-text mb-4">{t.byRegionTitle}</h2>
           <div className="grid md:grid-cols-2 gap-5">
             {Object.entries(data.byRegion).map(([region, list]) =>
               list.length > 0 ? (
                 <div key={region}>
-                  <h3 className="text-sm font-medium text-stone-500 mb-2">
+                  <h3 className="font-heading font-bold text-sm text-text-muted mb-2.5">
                     {t.regions[region] ?? region}
                   </h3>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {list.map(s => (
                       <BeachRow key={s.beach.slug} s={s} locale={locale} uiLoc={uiLoc} />
                     ))}
@@ -537,11 +563,11 @@ export default async function SwimTodayPage(
         {/* Exposed today */}
         {data.avoid.length > 0 && (
           <section className="mb-10">
-            <h2 className="flex items-center gap-2 text-lg font-semibold text-stone-800 mb-1">
-              <AlertTriangle className="h-4 w-4 text-amber-600" /> {t.avoidTitle}
+            <h2 className="flex items-center gap-2 font-heading font-extrabold text-[22px] text-text mb-1">
+              <AlertTriangle className="h-5 w-5 text-[#B84B30]" /> {t.avoidTitle}
             </h2>
-            <p className="text-sm text-stone-500 mb-3">{t.avoidNote}</p>
-            <div className="grid md:grid-cols-2 gap-2">
+            <p className="text-sm text-text-muted mb-3.5">{t.avoidNote}</p>
+            <div className="grid md:grid-cols-2 gap-3">
               {data.avoid.map(s => (
                 <BeachRow key={s.beach.slug} s={s} locale={locale} uiLoc={uiLoc} />
               ))}
@@ -549,50 +575,40 @@ export default async function SwimTodayPage(
           </section>
         )}
 
-        {/* Live conditions table */}
-        <section className="mb-10">
-          <h2 className="text-lg font-semibold text-stone-800 mb-3">{t.conditionsTitle}</h2>
-          <div className="overflow-x-auto rounded-xl border border-stone-200 bg-white">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-stone-200 text-left text-stone-500">
-                  <th className="px-4 py-2.5 font-medium">{t.colCity}</th>
-                  <th className="px-4 py-2.5 font-medium text-right">{t.colWind}</th>
-                  <th className="px-4 py-2.5 font-medium text-right">{t.colWaves}</th>
-                  <th className="px-4 py-2.5 font-medium text-right">{t.colSea}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.cities.map(c => (
-                  <tr key={c.name} className="border-b border-stone-100 last:border-0">
-                    <td className="px-4 py-2">{c.name}</td>
-                    <td className="px-4 py-2 text-right tabular-nums">
-                      {c.windSpeed} km/h
-                    </td>
-                    <td className="px-4 py-2 text-right tabular-nums">{fmtWave(c.waveHeight)}</td>
-                    <td className="px-4 py-2 text-right tabular-nums">{fmtSea(c.seaTemp)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {/* Conditions par station : bandeau nuit (st-grid du mockup) */}
+        <section className="mb-10 bg-night rounded-[32px] text-[#EAF7FA] px-8 py-6">
+          <div className="flex justify-between items-baseline mb-3.5">
+            <h2 className="font-heading font-bold text-xl m-0">{t.conditionsTitle}</h2>
+            <span className="text-xs text-[#EAF7FA]/50 font-data">live · {timeLabel}</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 font-data">
+            {data.cities.map(c => (
+              <div key={c.name} className="bg-[#EAF7FA]/7 rounded-[18px] px-4 py-3">
+                <p className="text-[11px] font-bold tracking-[0.1em] uppercase text-lagoon m-0">{c.name}</p>
+                <p className="text-[21px] font-bold m-0 mt-0.5">{Math.round(c.temp)}°</p>
+                <p className="text-[11.5px] text-[#EAF7FA]/60 m-0">
+                  {c.windSpeed} km/h · {fmtWave(c.waveHeight)} · {fmtSea(c.seaTemp)}
+                </p>
+              </div>
+            ))}
           </div>
         </section>
 
         {/* FAQ (visible, matches JSON-LD) */}
         <section className="mb-10 space-y-3">
           {faq.map(f => (
-            <details key={f.q} className="rounded-xl border border-stone-200 bg-white p-4">
-              <summary className="font-medium text-stone-900 cursor-pointer">{f.q}</summary>
-              <p className="mt-2 text-stone-700">{f.a}</p>
+            <details key={f.q} className="rounded-3xl bg-white p-5 shadow-[0_12px_30px_rgba(11,94,120,.08)]">
+              <summary className="font-heading font-bold text-text cursor-pointer">{f.q}</summary>
+              <p className="mt-2 text-text-muted">{f.a}</p>
             </details>
           ))}
         </section>
 
         {/* Methodology */}
-        <section className="rounded-xl bg-stone-100 p-5 text-sm text-stone-600">
-          <h2 className="font-semibold text-stone-800 mb-2">{t.methodology}</h2>
+        <section className="rounded-[28px] bg-stone px-7 py-6 text-sm text-text-muted">
+          <h2 className="font-heading font-bold text-text mb-2">{t.methodology}</h2>
           <p>{t.methodologyText}</p>
-          <p className="mt-2 text-xs text-stone-500">
+          <p className="mt-2 text-xs text-text-light">
             {t.updated}: {dateLabel}, {timeLabel} (Europe/Athens)
           </p>
         </section>

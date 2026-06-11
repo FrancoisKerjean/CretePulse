@@ -2,7 +2,6 @@
 // noir/jaune Kairos, le style custom AffiliateBanner, l'encart "Stay in...").
 // Spec : docs/superpowers/specs/2026-06-11-ui-live-data-redesign-design.md
 import type { LucideIcon } from "lucide-react";
-import { ArrowRight } from "lucide-react";
 
 export function PromoBox({ icon: Icon, title, line, ctaLabel, ctaHref, disclosure }: {
   icon: LucideIcon;
@@ -10,21 +9,21 @@ export function PromoBox({ icon: Icon, title, line, ctaLabel, ctaHref, disclosur
   line?: string;
   ctaLabel: string;
   ctaHref: string;
-  disclosure?: string; // ex "Partner link" — obligatoire pour l'affiliation
+  disclosure?: string; // ex "Partner link" · obligatoire pour l'affiliation
 }) {
   return (
-    <aside className="rounded-xl border border-aegean/15 bg-aegean-faint p-5 my-8">
+    <aside className="rounded-[26px] border border-lagoon/20 bg-aegean-faint p-5 my-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
           <Icon className="w-5 h-5 text-aegean shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-semibold text-text m-0">{title}</p>
+            <p className="text-sm font-heading font-bold text-text m-0">{title}</p>
             {line && <p className="text-sm text-text-muted m-0">{line}</p>}
           </div>
         </div>
         <a href={ctaHref} target="_blank" rel="nofollow noopener sponsored"
-           className="inline-flex items-center gap-1.5 rounded-lg bg-aegean text-white text-sm font-semibold px-4 py-2 hover:opacity-90 shrink-0">
-          {ctaLabel} <ArrowRight className="w-4 h-4" />
+           className="inline-flex items-center rounded-full bg-sun text-text text-sm font-heading font-bold px-5 py-2.5 hover:brightness-105 transition-all shrink-0">
+          {ctaLabel}
         </a>
       </div>
       {disclosure && (

@@ -124,7 +124,7 @@ export function AffiliateBanner({
 
   return (
     <aside
-      className={`relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0e3a52] via-aegean to-[#b85c38] bg-[length:300%_100%] animate-gradient shadow-lg md:flex md:items-stretch ${className}`}
+      className={`relative overflow-hidden rounded-[26px] bg-gradient-to-r from-[#0e3a52] via-aegean to-[#b85c38] bg-[length:300%_100%] animate-gradient shadow-lg md:flex md:items-stretch ${className}`}
     >
       {/* Product photo: an ad about cars must show a car (Kami's call).
           Curated Unsplash assets committed in public/images/partners/. */}
