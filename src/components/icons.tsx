@@ -307,3 +307,33 @@ export function CiScooter(props: P) {
     </Svg>
   );
 }
+
+/** Instagram (monoline Kalimera : carré arrondi + lens + point). */
+export function CiInstagram(props: P) {
+  return (
+    <Svg {...props}>
+      <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.2" cy="6.8" r="0.9" fill="currentColor" stroke="none" />
+    </Svg>
+  );
+}
+
+/** Facebook (monoline Kalimera : "f" courbé dans coin arrondi). */
+export function CiFacebook(props: P) {
+  return (
+    <Svg {...props}>
+      <path d="M15.5 4.5h-2A3.5 3.5 0 0 0 10 8v2.5H8v3h2V21h3v-7.5h2.3l.7-3H13V8a.8.8 0 0 1 .8-.8h1.7V4.5z" />
+    </Svg>
+  );
+}
+
+/** YouTube (monoline Kalimera : rectangle arrondi + play). */
+export function CiYouTube(props: P) {
+  return (
+    <Svg {...props}>
+      <rect x="2.5" y="6" width="19" height="12" rx="3.5" />
+      <path d="M10.5 9.4v5.2l4.5-2.6z" />
+    </Svg>
+  );
+}

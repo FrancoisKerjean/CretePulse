@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { Wordmark } from "@/components/Wordmark";
 import { AFFILIATE_LINKS } from "@/lib/affiliates";
+import { CiInstagram, CiFacebook, CiYouTube } from "@/components/icons";
 
 type Ui = "en" | "fr" | "de" | "el";
 const pickUi = (l: string): Ui => (["en", "fr", "de", "el"].includes(l) ? (l as Ui) : "en");
@@ -69,6 +70,36 @@ export function Footer() {
             <p className="text-[13px] leading-relaxed mt-3.5 max-w-[280px]">
               {F.tagline[ui]}
             </p>
+            {/* Socials Kalimera : lagoon hover sun */}
+            <div className="mt-4 flex items-center gap-3">
+              <a
+                href="https://www.instagram.com/cretedirect/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Crete Direct on Instagram"
+                className="text-lagoon/85 hover:text-sun transition-colors"
+              >
+                <CiInstagram className="w-5 h-5" />
+              </a>
+              <a
+                href="https://www.facebook.com/1098023870060924"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Crete Direct on Facebook"
+                className="text-lagoon/85 hover:text-sun transition-colors"
+              >
+                <CiFacebook className="w-5 h-5" />
+              </a>
+              <a
+                href="https://www.youtube.com/@CreteDirect"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Crete Direct on YouTube"
+                className="text-lagoon/85 hover:text-sun transition-colors"
+              >
+                <CiYouTube className="w-5 h-5" />
+              </a>
+            </div>
           </div>
 
           <Col title={F.plan[ui]}>
