@@ -11,6 +11,9 @@ export interface BusRoute {
   from_place: string;
   to_place: string;
   to_slug: string | null;
+  /** Arrêts intermédiaires de la ligne, dans l'ordre (PDF e-ktel). Heures de
+   * passage non publiées par KTEL : seul le départ du terminus est connu. */
+  via_stops: string[] | null;
   season: string;
   duration: string | null;
   price_eur: number | null;

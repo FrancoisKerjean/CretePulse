@@ -39,7 +39,26 @@ _FREQ_HEAD = (
 )
 
 # Mots à ignorer en début/fin de nom de route (résidus Joomla).
-_NAME_NOISE = {"EXPRESS", "KA", "XANIA", "EI", "BAR"}
+# NB : XANIA n'est PAS du bruit, c'est la translittération grecque de Chania
+# (bug pré-13/06 : jeté comme noise -> endpoints faux type 'Maleme-Creta Paradise').
+_NAME_NOISE = {"EXPRESS", "KA", "EI", "BAR"}
+
+# Translittérations/abréviations -> orthographe DB canonique.
+# Les 2 formes 'MUSEUM OF ANCIENT...' viennent du wrap des PDF 2 colonnes
+# (nom coupé selon la colonne) : même lieu canonique.
+_STOP_ALIASES = {
+    "XANIA": "CHANIA",
+    "CHANIA": "CHANIA",
+    "AG. MARINA": "AGIA MARINA",
+    "AG MARINA": "AGIA MARINA",
+    "MUSEUM OF ANCIENT": "ANCIENT ELEFTHERNA MUSEUM",
+    "MUSEUM OF ANCIENT ELEFTHERNA": "ANCIENT ELEFTHERNA MUSEUM",
+}
+
+# Un arrêt contenant un de ces mots est un point hôtel/POI de navette,
+# pas un lieu desservi publiable (constaté PDF CHANIA 06/06/2026 :
+# 'CRETA PARADISE', 'VILLA HELIOS', 'AEGEAN PALACE HOTELS').
+_HOTEL_STOP_WORDS = {"HOTEL", "HOTELS", "VILLA", "PALACE", "PARADISE", "RESORT", "BEACH CLUB"}
 
 # Un segment PDF contenant un de ces mots est une footnote (note de
 # correspondance ferry, itinéraire détaillé), pas un nom de route.
@@ -267,15 +286,37 @@ def _clean_route_name(raw: str) -> str:
     return s
 
 
-def _route_endpoints(name: str) -> tuple[str, str] | None:
-    """De 'CHANIA-GEORGIOUPOLIS-KAVROS-RETHYMNO-BALI-HERAKLION' renvoie
-    ('Chania', 'Heraklion'). Garde first et last segments, jette intermediaires."""
-    parts = [p.strip() for p in name.split("-") if p.strip()]
-    parts = [p for p in parts if p not in _NAME_NOISE]
-    if len(parts) < 2:
+def _clean_stop(raw: str) -> str | None:
+    """Normalise un segment d'arrêt : retire '*' (renvoi footnote), applique
+    les alias (XANIA->CHANIA, AG. MARINA->AGIA MARINA), filtre bruit et
+    arrêts hôtels. None = segment à jeter."""
+    s = raw.strip().strip("*").strip()
+    if not s or s in _NAME_NOISE:
         return None
-    f, t = parts[0], parts[-1]
-    return (f.title(), t.title())
+    s = _STOP_ALIASES.get(s, s)
+    words = set(s.split())
+    if words & _HOTEL_STOP_WORDS:
+        return None
+    return s.title()
+
+
+def _route_stops(name: str) -> list[str] | None:
+    """De 'CHANIA-GEORGIOUPOLIS-KAVROS-RETHYMNO-BALI-HERAKLION' renvoie la
+    séquence complète ['Chania', 'Georgioupolis', ..., 'Heraklion'].
+    Les arrêts hôtels/bruit sont filtrés ; None si < 2 arrêts valides."""
+    stops = [s for p in name.split("-") if (s := _clean_stop(p)) is not None]
+    # dédoublonne en préservant l'ordre (PDF répète parfois un arrêt)
+    seen: set[str] = set()
+    stops = [s for s in stops if not (s in seen or seen.add(s))]
+    if len(stops) < 2:
+        return None
+    return stops
+
+
+def _route_endpoints(name: str) -> tuple[str, str] | None:
+    """Terminus (premier, dernier) de la séquence d'arrêts, None si invalide."""
+    stops = _route_stops(name)
+    return (stops[0], stops[-1]) if stops else None
 
 
 def _is_freq(s: str) -> bool:
@@ -342,12 +383,12 @@ def parse_ektel_pdf(text: str, source_url: str = "") -> list[dict]:
             if _is_route_name(seg):
                 # Nouvelle route : flush + ouvre
                 flush()
-                endpoints = _route_endpoints(_clean_route_name(seg))
-                if endpoints:
-                    from_place, to_place = endpoints
+                stops = _route_stops(_clean_route_name(seg))
+                if stops:
                     current = {
-                        "from_place": from_place,
-                        "to_place": to_place,
+                        "from_place": stops[0],
+                        "to_place": stops[-1],
+                        "via_stops": stops[1:-1] or None,
                         "duration": None,
                         "price_eur": None,
                         "frequency": None,

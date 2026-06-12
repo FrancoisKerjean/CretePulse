@@ -90,6 +90,84 @@ def test_curated_ektel_is_usable_west_seed():
     assert set(["from_place", "to_place", "frequency"]).issubset(r.keys())
 
 
+# --- ektel PDF : arrets intermediaires (via_stops) ---------------------------
+# Les noms de lignes PDF contiennent la sequence complete d'arrets
+# ('CHANIA-GEORGIOUPOLIS-KAVROS-RETHYMNO-BALI-HERAKLION'). Avant le 13/06/2026
+# on jetait les intermediaires ; desormais ils sont conserves dans via_stops.
+
+def test_route_stops_extracts_full_sequence():
+    from parsers import _route_stops
+    stops = _route_stops("CHANIA-GEORGIOUPOLIS-KAVROS-RETHYMNO-BALI-HERAKLION")
+    assert stops == ["Chania", "Georgioupolis", "Kavros", "Rethymno", "Bali", "Heraklion"]
+
+
+def test_route_stops_aliases_xania_to_chania():
+    # XANIA = translitteration grecque de Chania : c'est un VRAI terminus,
+    # pas du bruit (bug pre-13/06 : il etait jete -> 'Maleme -> Creta Paradise').
+    from parsers import _route_stops
+    assert _route_stops("RETHYMNO-XANIA") == ["Rethymno", "Chania"]
+
+
+def test_route_stops_aliases_truncated_museum():
+    # PDF Rethymno 2 colonnes : le nom 'MUSEUM OF ANCIENT ELEFTHERNA' est
+    # coupe au wrap de colonne -> les 2 formes pointent le meme lieu canonique.
+    from parsers import _route_stops
+    assert _route_stops("PANORMO-PERAMA-MARGARITES-MUSEUM OF ANCIENT") == \
+        ["Panormo", "Perama", "Margarites", "Ancient Eleftherna Museum"]
+    assert _route_stops("RETHYMNO-ARKADI-MUSEUM OF ANCIENT ELEFTHERNA") == \
+        ["Rethymno", "Arkadi", "Ancient Eleftherna Museum"]
+
+
+def test_route_stops_drops_hotel_stops():
+    # Arrets hotels de la navette Maleme : jamais des terminus ni des vias.
+    from parsers import _route_stops
+    stops = _route_stops("MALEME-HOTELS AEGEAN PALACE-VILLA HELIOS-CRETA PARADISE-XANIA")
+    assert stops == ["Maleme", "Chania"]
+    # ligne entierement hotels sauf un bout -> pas une route exploitable
+    assert _route_stops("CHANIA-CRETA PARADISE-VILLA HELIOS-AEGEAN PALACE HOTELS") is None
+
+
+def test_route_stops_cleans_star_and_abbreviations():
+    from parsers import _route_stops
+    stops = _route_stops("CHANIA-KASTELI*-PLATANOS-FALASARNA")
+    assert stops == ["Chania", "Kasteli", "Platanos", "Falasarna"]
+    stops = _route_stops("CHANIA - STALOS - AG. MARINA - PLATANIAS - GERANI - MALEME - TAVRONITIS - KAMISIANA - SKOYTELONAS - KOLYMBARI")
+    assert stops is not None
+    assert stops[0] == "Chania" and stops[-1] == "Kolymbari"
+    assert "Agia Marina" in stops and "Platanias" in stops
+
+
+def test_parse_ektel_pdf_real_fixture_emits_via_stops():
+    from parsers import parse_ektel_pdf
+    routes = parse_ektel_pdf(_read("ektel_chania_2026-06.txt"), source_url="x")
+    # premiere occurrence par paire (l'EXPRESS Chania-Heraklion sans via vient apres)
+    by_pair: dict = {}
+    for r in routes:
+        by_pair.setdefault((r["from_place"], r["to_place"]), r)
+    # Ligne principale : vias conserves dans l'ordre
+    main = by_pair[("Chania", "Heraklion")]
+    assert main["via_stops"] == ["Georgioupolis", "Kavros", "Rethymno", "Bali"]
+    # Retour symetrique
+    back = by_pair[("Heraklion", "Chania")]
+    assert back["via_stops"] == ["Bali", "Rethymno", "Kavros", "Georgioupolis"]
+    # Route sans intermediaires -> via_stops None
+    assert by_pair[("Rethymno", "Chania")]["via_stops"] is None
+    # Plus aucun endpoint hotel (bruit pre-13/06)
+    for f, t in by_pair:
+        for w in ("Hotel", "Villa", "Palace", "Paradise"):
+            assert w not in f and w not in t, (f, t)
+
+
+def test_parse_ektel_pdf_real_fixture_no_regression():
+    # La fixture reelle doit produire un volume plausible et que du Crete-only.
+    from parsers import parse_ektel_pdf
+    routes = parse_ektel_pdf(_read("ektel_chania_2026-06.txt"), source_url="x")
+    assert len(routes) >= 15
+    for r in routes:
+        assert is_crete_route(r["from_place"], r["to_place"])
+        assert r["departures"], r
+
+
 # --- ektel PDF : bruit constate en prod le 10/06/2026 -------------------------
 
 def test_parse_ektel_pdf_filters_mainland_footnotes_and_freq():

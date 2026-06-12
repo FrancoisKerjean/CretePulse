@@ -83,6 +83,18 @@ const TP = {
     de: "Mit „Richtwert“ markierte Preise sind aus der Entfernung geschätzt; andere stammen von Betreibern oder veröffentlichten Tarifen.",
     el: "Οι «ενδεικτικές» τιμές εκτιμώνται από την απόσταση· οι υπόλοιπες προέρχονται από τους φορείς ή δημοσιευμένους τιμοκαταλόγους.",
   },
+  alightAt: {
+    en: "get off at", fr: "descendre à", de: "Ausstieg in", el: "κατεβείτε στο",
+  },
+  lineLabel: {
+    en: "line", fr: "ligne", de: "Linie", el: "γραμμή",
+  },
+  stopTimeUnknown: {
+    en: "Times shown are departures from the origin – KTEL does not publish the stop time at intermediate stops.",
+    fr: "Les horaires affichés sont les départs du terminus – KTEL ne publie pas l'heure de passage aux arrêts intermédiaires.",
+    de: "Angezeigte Zeiten sind Abfahrten am Ausgangsort – KTEL veröffentlicht keine Durchfahrtszeiten an Zwischenhalten.",
+    el: "Οι ώρες είναι αναχωρήσεις από την αφετηρία – η ΚΤΕΛ δεν δημοσιεύει ώρες διέλευσης στις ενδιάμεσες στάσεις.",
+  },
 } as const satisfies Record<string, Record<Locale, string>>;
 
 function tp(key: keyof typeof TP, locale: Locale): string {
@@ -100,20 +112,28 @@ function maxDateISO(): string {
 }
 
 function LegRow({ leg, locale }: { leg: JourneyLeg; locale: Locale }) {
-  const dur = parseDurationMin(leg.route.duration);
+  // Descente a un arret intermediaire : duree/prix de la route entiere non
+  // applicables au tronçon partiel -> on ne les affiche pas (no-invention).
+  const alight = leg.alightAt != null;
+  const dur = alight ? null : parseDurationMin(leg.route.duration);
   return (
     <div className="px-4 py-3">
       <div className="flex items-center gap-2 flex-wrap text-sm font-semibold text-text">
         <CiBus className="w-4 h-4 text-aegean shrink-0" />
         <span>{leg.route.from_place}</span>
         <ArrowRight className="w-3.5 h-3.5 text-text-muted shrink-0" />
-        <span>{leg.route.to_place}</span>
+        <span>{leg.alightAt ?? leg.route.to_place}</span>
+        {alight && (
+          <span className="text-[11px] font-normal text-text-muted bg-surface border border-border rounded-full px-2 py-0.5">
+            {tp("lineLabel", locale)} {leg.route.from_place} – {leg.route.to_place} · {tp("alightAt", locale)} {leg.alightAt}
+          </span>
+        )}
         {dur != null && (
           <span className="text-xs font-normal text-text-muted inline-flex items-center gap-1">
             <Clock className="w-3 h-3" /> {leg.route.duration}
           </span>
         )}
-        {leg.route.price_eur != null && (
+        {!alight && leg.route.price_eur != null && (
           <span className="text-xs font-normal text-text-muted">
             {leg.route.price_eur.toFixed(2)} €
             {leg.route.price_estimated ? ` (${tp("indicative", locale)})` : ""}
@@ -121,6 +141,9 @@ function LegRow({ leg, locale }: { leg: JourneyLeg; locale: Locale }) {
         )}
         <NextDeparture route={leg.route} locale={locale} />
       </div>
+      {alight && (
+        <p className="text-[11px] text-text-muted mt-1 mb-0">{tp("stopTimeUnknown", locale)}</p>
+      )}
       <p className="text-[11px] uppercase tracking-wide text-text-muted mt-2 mb-1">
         {tp("departuresThatDay", locale)}
       </p>

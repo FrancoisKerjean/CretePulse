@@ -80,6 +80,7 @@ const T = {
     el: "Δυτική Κρήτη (ΚΤΕΛ Χανίων-Ρεθύμνου)",
   },
   frequency: { en: "Frequency", fr: "Fréquence", de: "Häufigkeit", el: "Συχνότητα" },
+  viaStops: { en: "via", fr: "via", de: "über", el: "μέσω" },
   price: { en: "Price", fr: "Prix", de: "Preis", el: "Τιμή" },
   departures: { en: "Departures", fr: "Départs", de: "Abfahrten", el: "Αναχωρήσεις" },
   perDay: { en: "/ day", fr: "/ jour", de: "/ Tag", el: "/ ημέρα" },
@@ -221,10 +222,17 @@ function RouteCard({ route, destination, locale }: { route: BusRoute; destinatio
         // Maillage SEO : le header linke la page paire quand elle existe.
         const ps = pairSlug(route.from_place, route.to_place);
         const header = (
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-bold text-base">{route.from_place}</span>
-            <ArrowRight className="w-4 h-4 text-white/70 shrink-0" />
-            <span className="font-bold text-base">{route.to_place}</span>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-bold text-base">{route.from_place}</span>
+              <ArrowRight className="w-4 h-4 text-white/70 shrink-0" />
+              <span className="font-bold text-base">{route.to_place}</span>
+            </div>
+            {route.via_stops && route.via_stops.length > 0 && (
+              <p className="text-xs text-white/75 mt-1 mb-0">
+                {t("viaStops", locale)} {route.via_stops.join(" · ")}
+              </p>
+            )}
           </div>
         );
         return ps ? (

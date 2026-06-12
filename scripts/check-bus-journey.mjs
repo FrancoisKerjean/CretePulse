@@ -132,4 +132,50 @@ assert.equal(est[0].priceEstimated, true);
 // --- inconnu -----------------------------------------------------------------
 assert.equal(findJourneys(g, "Heraklion", "Nulle Part", "2026-06-10").length, 0);
 
+// --- arrets intermediaires (via_stops, 13/06/2026) -----------------------------
+const viaRoutes = [
+  R(20, "Chania", "Heraklion", {
+    operator_id: "ektel",
+    via_stops: ["Georgioupolis", "Kavros", "Rethymno", "Bali"],
+    departures: ["05:15", "09:30"],
+    departures_by_day: [{ days: "EVERY DAY", times: ["05:15", "09:30"] }],
+    duration: "2h 30min", price_eur: 15.0,
+  }),
+  R(21, "Kavros", "Spili", {
+    operator_id: "ektel",
+    departures: ["12:00"],
+    departures_by_day: [{ days: "EVERY DAY", times: ["12:00"] }],
+    price_eur: 3.0,
+  }),
+];
+const gv = buildGraph(viaRoutes);
+
+// atteignable : les vias comptent comme destinations (direct + correspondance)
+const reachVia = reachableFrom(gv, "Chania");
+assert.ok(reachVia.includes("Kavros"));
+assert.ok(reachVia.includes("Spili")); // Chania -> (descente Kavros) -> Spili
+
+// direct vers un via : leg unique avec alightAt, prix inconnu (tronçon partiel)
+const toKavros = findJourneys(gv, "Chania", "Kavros", "2026-06-10");
+assert.equal(toKavros.length, 1);
+assert.equal(toKavros[0].legs[0].alightAt, "Kavros");
+assert.equal(toKavros[0].priceTotal, null);
+assert.equal(toKavros[0].priceIncomplete, true);
+assert.equal(toKavros[0].durationKnown, false); // duree route entiere non applicable
+
+// direct au terminus : alightAt null, prix connu, rien ne change
+const toHerakl = findJourneys(gv, "Chania", "Heraklion", "2026-06-10");
+assert.equal(toHerakl[0].legs[0].alightAt, null);
+assert.equal(toHerakl[0].priceTotal, 15.0);
+
+// correspondance via descente intermediaire : hub = via, pas de filtre horaire
+// (duree du tronçon partiel inconnue) -> correspondance non garantie
+const toSpili = findJourneys(gv, "Chania", "Spili", "2026-06-10");
+assert.equal(toSpili.length, 1);
+assert.equal(toSpili[0].hub, "Kavros");
+assert.equal(toSpili[0].legs[0].alightAt, "Kavros");
+assert.equal(toSpili[0].legs[1].alightAt, null);
+assert.deepEqual(toSpili[0].legs[1].times, ["12:00"]);
+assert.equal(toSpili[0].durationKnown, false);
+
 console.log("OK check-bus-journey: toutes les assertions passent");

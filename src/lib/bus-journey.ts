@@ -8,6 +8,9 @@ export interface JourneyLeg {
   route: BusRoute;
   /** Departs du jour choisi (filtres par la marge de correspondance pour le tronçon 2). */
   times: string[];
+  /** Arret intermediaire ou descendre (via_stops). null = terminus de la route.
+   * KTEL ne publie pas les heures de passage : prix et duree du tronçon inconnus. */
+  alightAt: string | null;
 }
 
 export interface Journey {
@@ -80,17 +83,36 @@ export function timesForDate(route: BusRoute, dateISO: string): string[] {
   return route.departures ?? [];
 }
 
+/** Arc du graphe : on monte au terminus de depart de `route` et on descend
+ * soit au terminus d'arrivee (alightAt null), soit a un arret intermediaire
+ * de via_stops. On ne MONTE jamais a un arret intermediaire : KTEL ne publie
+ * que les heures de depart du terminus (regle no-invention). */
+export interface BusEdge {
+  route: BusRoute;
+  alightAt: string | null;
+}
+
+export function edgeDest(e: BusEdge): string {
+  return e.alightAt ?? e.route.to_place;
+}
+
 export interface BusGraph {
   routes: BusRoute[];
-  byFrom: Map<string, BusRoute[]>;
+  byFrom: Map<string, BusEdge[]>;
 }
 
 export function buildGraph(routes: BusRoute[]): BusGraph {
-  const byFrom = new Map<string, BusRoute[]>();
+  const byFrom = new Map<string, BusEdge[]>();
+  const push = (from: string, e: BusEdge) => {
+    const list = byFrom.get(from) ?? [];
+    list.push(e);
+    byFrom.set(from, list);
+  };
   for (const r of routes) {
-    const list = byFrom.get(r.from_place) ?? [];
-    list.push(r);
-    byFrom.set(r.from_place, list);
+    push(r.from_place, { route: r, alightAt: null });
+    for (const v of r.via_stops ?? []) {
+      if (v !== r.from_place && v !== r.to_place) push(r.from_place, { route: r, alightAt: v });
+    }
   }
   return { routes, byFrom };
 }
@@ -98,40 +120,71 @@ export function buildGraph(routes: BusRoute[]): BusGraph {
 /** Destinations atteignables (direct ou 1 correspondance), triees, sans le depart. */
 export function reachableFrom(g: BusGraph, from: string): string[] {
   const out = new Set<string>();
-  for (const r1 of g.byFrom.get(from) ?? []) {
-    out.add(r1.to_place);
-    for (const r2 of g.byFrom.get(r1.to_place) ?? []) out.add(r2.to_place);
+  for (const e1 of g.byFrom.get(from) ?? []) {
+    const mid = edgeDest(e1);
+    out.add(mid);
+    for (const e2 of g.byFrom.get(mid) ?? []) out.add(edgeDest(e2));
   }
   out.delete(from);
   return [...out].sort((a, b) => a.localeCompare(b));
 }
 
+/** Duree exploitable du tronçon : connue seulement si on va au terminus
+ * (la duree publiee couvre la route entiere, pas un arret intermediaire). */
+function legDurationMin(route: BusRoute, alightAt: string | null): number | null {
+  return alightAt == null ? parseDurationMin(route.duration) : null;
+}
+
 export function findJourneys(g: BusGraph, from: string, to: string, dateISO: string): Journey[] {
   const directs: Journey[] = [];
-  for (const r of g.byFrom.get(from) ?? []) {
-    if (r.to_place !== to) continue;
-    const times = timesForDate(r, dateISO);
+  for (const e of g.byFrom.get(from) ?? []) {
+    if (edgeDest(e) !== to) continue;
+    const times = timesForDate(e.route, dateISO);
     if (times.length === 0) continue;
-    directs.push(makeJourney([{ route: r, times }], null));
+    directs.push(makeJourney([{ route: e.route, times, alightAt: e.alightAt }], null));
   }
-  if (directs.length > 0) return directs.slice(0, MAX_JOURNEYS);
+  if (directs.length > 0) {
+    // La ligne commune Chania-Rethymno-Heraklion est publiee par les DEUX
+    // KTEL : memes horaires, meme prix -> un seul itineraire affiche.
+    const seen = new Set<string>();
+    const unique = directs.filter((j) => {
+      const l = j.legs[0];
+      const key = `${l.alightAt ?? ""}|${l.times.join(",")}|${j.priceTotal ?? "?"}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    // terminus direct d'abord (prix/duree connus), descentes en route ensuite
+    return unique
+      .sort((a, b) =>
+        Number(a.legs[0].alightAt != null) - Number(b.legs[0].alightAt != null) ||
+        score(b) - score(a))
+      .slice(0, MAX_JOURNEYS);
+  }
 
   const transfers: Journey[] = [];
-  for (const r1 of g.byFrom.get(from) ?? []) {
-    if (r1.to_place === to) continue;
-    const t1 = timesForDate(r1, dateISO);
+  for (const e1 of g.byFrom.get(from) ?? []) {
+    const hub = edgeDest(e1);
+    if (hub === to) continue;
+    const t1 = timesForDate(e1.route, dateISO);
     if (t1.length === 0) continue;
-    for (const r2 of g.byFrom.get(r1.to_place) ?? []) {
-      if (r2.to_place !== to) continue;
-      let t2 = timesForDate(r2, dateISO);
+    for (const e2 of g.byFrom.get(hub) ?? []) {
+      if (edgeDest(e2) !== to) continue;
+      let t2 = timesForDate(e2.route, dateISO);
       if (t2.length === 0) continue;
-      const dur = parseDurationMin(r1.duration);
+      const dur = legDurationMin(e1.route, e1.alightAt);
       if (dur != null) {
         const earliestArrival = addMinutes(t1[0], dur + TRANSFER_MARGIN_MIN);
         t2 = t2.filter((t) => t >= earliestArrival);
         if (t2.length === 0) continue;
       }
-      transfers.push(makeJourney([{ route: r1, times: t1 }, { route: r2, times: t2 }], r1.to_place));
+      transfers.push(makeJourney(
+        [
+          { route: e1.route, times: t1, alightAt: e1.alightAt },
+          { route: e2.route, times: t2, alightAt: e2.alightAt },
+        ],
+        hub,
+      ));
     }
   }
   // un seul itineraire par hub, les mieux desservis d'abord
@@ -144,11 +197,16 @@ export function findJourneys(g: BusGraph, from: string, to: string, dateISO: str
 }
 
 function score(j: Journey): number {
-  return j.legs.reduce((n, l) => n + l.times.length, 0);
+  // a volume de departs egal, un itineraire sans descente en route prime
+  // (prix et duree connus, correspondance verifiable)
+  const alightPenalty = j.legs.filter((l) => l.alightAt != null).length;
+  return j.legs.reduce((n, l) => n + l.times.length, 0) - alightPenalty;
 }
 
 function makeJourney(legs: JourneyLeg[], hub: string | null): Journey {
-  const prices = legs.map((l) => l.route.price_eur);
+  // Descente a un arret intermediaire : le prix publie couvre la route entiere,
+  // pas le tronçon partiel -> prix inconnu (no-invention), « tarif au guichet ».
+  const prices = legs.map((l) => (l.alightAt != null ? null : l.route.price_eur));
   const priceIncomplete = prices.some((p) => p == null);
   const priceTotal = priceIncomplete
     ? null
@@ -157,8 +215,8 @@ function makeJourney(legs: JourneyLeg[], hub: string | null): Journey {
     legs,
     hub,
     priceTotal,
-    priceEstimated: legs.some((l) => l.route.price_estimated === true),
+    priceEstimated: legs.some((l) => l.alightAt == null && l.route.price_estimated === true),
     priceIncomplete,
-    durationKnown: parseDurationMin(legs[0].route.duration) != null,
+    durationKnown: legDurationMin(legs[0].route, legs[0].alightAt) != null,
   };
 }
