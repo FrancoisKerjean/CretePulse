@@ -21,7 +21,12 @@ export const CAR_ZONES: CarZone[] = [
 
 export const CAR_PARTNERS: CarPartner[] = [
   {
-    zoneIds: ["chania-west"],
+    // Couverture vérifiée 12/06/2026 sur le site officiel (chaniacarrental.gr,
+    // pages terms + locations) : pickup/dropoff "all over Crete" dont
+    // Rethymno Port, Heraklion Airport et Heraklion Port. L'est (Lasithi :
+    // Agios Nikolaos, Sitia, Ierapetra) n'est PAS listé → lasithi-east reste
+    // volontairement sans partenaire (slot vendable à une agence locale).
+    zoneIds: ["chania-west", "rethymno", "heraklion-center"],
     name: "Auto Smart Car Rental",
     email: "autosmartrental@gmail.com",
     phone: "+306974147291",

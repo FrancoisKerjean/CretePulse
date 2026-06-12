@@ -75,15 +75,15 @@ const L: Record<string, PageStrings> = {
       },
       {
         q: "Can I pay in cash?",
-        a: "Yes. The partner agency accepts cash as well as cards. You pay when you pick up the car or as agreed with the agency.",
+        a: "Yes. The partner agency accepts cash as well as cards. You pay when you pick up the car or as agreed with the agency; a refundable security deposit typically applies, with the exact amount confirmed in the quote.",
       },
       {
         q: "What insurance is included?",
-        a: "Quotes from the agency include third-party liability as required by Greek law, normally with a collision damage waiver (CDW) with an excess. Full coverage with zero excess is available for an extra daily fee — ask for it in the request notes if you want it quoted.",
+        a: "Quotes from the agency include third-party liability as required by Greek law, normally with a collision damage waiver (CDW) and a damage excess: the exact excess amount and conditions are confirmed in the quote. Full coverage with zero or near-zero excess is available for an extra daily fee. Ask for it in the request notes if you want it quoted.",
       },
       {
         q: "Can I pick the car up at the airport?",
-        a: "Yes. Chania airport pick-up and drop-off is standard — add your flight number in the form and the agency tracks delays. Pick-up in Chania town and around the west is also possible.",
+        a: "Yes. Chania airport pick-up and drop-off is standard, and the agency also covers Heraklion airport, the ports and Rethymno: add your flight number in the form and the agency tracks delays. Pick-up in town or at your accommodation is typically possible too.",
       },
     ],
     breadcrumbHome: "Home",
@@ -120,15 +120,15 @@ const L: Record<string, PageStrings> = {
       },
       {
         q: "Puis-je payer en espèces ?",
-        a: "Oui. L'agence partenaire accepte les espèces comme les cartes. Vous payez à la prise du véhicule ou selon ce que vous convenez avec l'agence.",
+        a: "Oui. L'agence partenaire accepte les espèces comme les cartes. Vous payez à la prise du véhicule ou selon ce que vous convenez avec l'agence ; un dépôt de garantie restituable s'applique généralement, son montant exact est confirmé au devis.",
       },
       {
         q: "Quelle assurance est incluse ?",
-        a: "Les devis de l'agence incluent la responsabilité civile exigée par la loi grecque, normalement avec une assurance collision (CDW) à franchise. La couverture complète sans franchise est disponible pour un supplément journalier — demandez-la dans les notes si vous voulez qu'elle soit chiffrée.",
+        a: "Les devis de l'agence incluent la responsabilité civile exigée par la loi grecque, normalement avec une assurance collision (CDW) à franchise : le montant exact de la franchise et les conditions sont confirmés au devis. La couverture complète sans franchise ou presque est disponible pour un supplément journalier. Demandez-la dans les notes si vous voulez qu'elle soit chiffrée.",
       },
       {
         q: "Puis-je prendre la voiture à l'aéroport ?",
-        a: "Oui. La prise et la restitution à l'aéroport de La Canée sont courantes — indiquez votre numéro de vol dans le formulaire et l'agence suit les retards. La prise en ville à La Canée et dans l'ouest est aussi possible.",
+        a: "Oui. La prise et la restitution à l'aéroport de La Canée sont courantes, et l'agence couvre aussi l'aéroport d'Héraklion, les ports et Réthymnon : indiquez votre numéro de vol dans le formulaire et l'agence suit les retards. La prise en ville ou à votre hébergement est généralement possible aussi.",
       },
     ],
     breadcrumbHome: "Accueil",
@@ -165,15 +165,15 @@ const L: Record<string, PageStrings> = {
       },
       {
         q: "Kann ich bar bezahlen?",
-        a: "Ja. Die Partneragentur akzeptiert Bargeld ebenso wie Karten. Sie zahlen bei der Abholung des Wagens oder wie mit der Agentur vereinbart.",
+        a: "Ja. Die Partneragentur akzeptiert Bargeld ebenso wie Karten. Sie zahlen bei der Abholung des Wagens oder wie mit der Agentur vereinbart; in der Regel fällt eine erstattungsfähige Kaution an, deren genaue Höhe im Angebot bestätigt wird.",
       },
       {
         q: "Welche Versicherung ist enthalten?",
-        a: "Die Angebote der Agentur enthalten die nach griechischem Recht vorgeschriebene Haftpflicht, üblicherweise mit einer Kaskoversicherung (CDW) mit Selbstbeteiligung. Vollschutz ohne Selbstbeteiligung gibt es gegen einen täglichen Aufpreis — erwähnen Sie es im Anfragefeld, wenn Sie ein Angebot dafür möchten.",
+        a: "Die Angebote der Agentur enthalten die nach griechischem Recht vorgeschriebene Haftpflicht, üblicherweise mit einer Kaskoversicherung (CDW) mit Selbstbeteiligung: die genaue Höhe und die Bedingungen werden im Angebot bestätigt. Vollschutz ohne oder mit minimaler Selbstbeteiligung gibt es gegen einen täglichen Aufpreis. Erwähnen Sie es im Anfragefeld, wenn Sie ein Angebot dafür möchten.",
       },
       {
         q: "Kann ich das Auto am Flughafen abholen?",
-        a: "Ja. Abholung und Rückgabe am Flughafen Chania sind Standard — tragen Sie Ihre Flugnummer in das Formular ein, die Agentur verfolgt Verspätungen. Abholung in der Stadt Chania und im Westen ist ebenfalls möglich.",
+        a: "Ja. Abholung und Rückgabe am Flughafen Chania sind Standard, und die Agentur deckt auch den Flughafen Heraklion, die Häfen und Rethymno ab: tragen Sie Ihre Flugnummer in das Formular ein, die Agentur verfolgt Verspätungen. Abholung in der Stadt oder an Ihrer Unterkunft ist in der Regel ebenfalls möglich.",
       },
     ],
     breadcrumbHome: "Startseite",
@@ -210,15 +210,15 @@ const L: Record<string, PageStrings> = {
       },
       {
         q: "Μπορώ να πληρώσω με μετρητά;",
-        a: "Ναι. Το συνεργαζόμενο γραφείο δέχεται μετρητά όπως και κάρτες. Πληρώνετε κατά την παραλαβή του αυτοκινήτου ή όπως συμφωνήσετε με το γραφείο.",
+        a: "Ναι. Το συνεργαζόμενο γραφείο δέχεται μετρητά όπως και κάρτες. Πληρώνετε κατά την παραλαβή του αυτοκινήτου ή όπως συμφωνήσετε με το γραφείο· συνήθως ισχύει επιστρεφόμενη εγγύηση, με το ακριβές ποσό να επιβεβαιώνεται στην προσφορά.",
       },
       {
         q: "Ποια ασφάλεια περιλαμβάνεται;",
-        a: "Οι προσφορές του γραφείου περιλαμβάνουν την αστική ευθύνη που απαιτεί ο ελληνικός νόμος, συνήθως με μικτή ασφάλεια (CDW) με απαλλαγή. Πλήρης κάλυψη με μηδενική απαλλαγή διατίθεται με μικρή ημερήσια επιβάρυνση — ζητήστε την στις σημειώσεις του αιτήματος αν θέλετε να τιμολογηθεί.",
+        a: "Οι προσφορές του γραφείου περιλαμβάνουν την αστική ευθύνη που απαιτεί ο ελληνικός νόμος, συνήθως με μικτή ασφάλεια (CDW) με απαλλαγή: το ακριβές ποσό της απαλλαγής και οι όροι επιβεβαιώνονται στην προσφορά. Πλήρης κάλυψη με μηδενική ή σχεδόν μηδενική απαλλαγή διατίθεται με μικρή ημερήσια επιβάρυνση. Ζητήστε την στις σημειώσεις του αιτήματος αν θέλετε να τιμολογηθεί.",
       },
       {
         q: "Μπορώ να παραλάβω το αυτοκίνητο στο αεροδρόμιο;",
-        a: "Ναι. Η παραλαβή και επιστροφή στο αεροδρόμιο των Χανίων είναι στάνταρ — προσθέστε τον αριθμό πτήσης σας στη φόρμα και το γραφείο παρακολουθεί τις καθυστερήσεις. Παραλαβή στην πόλη των Χανίων και στα δυτικά είναι επίσης δυνατή.",
+        a: "Ναι. Η παραλαβή και επιστροφή στο αεροδρόμιο των Χανίων είναι στάνταρ, και το γραφείο καλύπτει επίσης το αεροδρόμιο του Ηρακλείου, τα λιμάνια και το Ρέθυμνο: προσθέστε τον αριθμό πτήσης σας στη φόρμα και το γραφείο παρακολουθεί τις καθυστερήσεις. Παραλαβή στην πόλη ή στο κατάλυμά σας είναι συνήθως δυνατή επίσης.",
       },
     ],
     breadcrumbHome: "Αρχική",

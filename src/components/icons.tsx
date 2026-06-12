@@ -252,6 +252,35 @@ export function CiCarSuv(props: P) {
   );
 }
 
+/** Berline : trois volumes, cabine centrée, long capot et coffre marqué. */
+export function CiCarSedan(props: P) {
+  return (
+    <Svg {...props}>
+      <path d="M6.2 11.2l1.3-2.6a1.8 1.8 0 0 1 1.6-1h5.6a1.8 1.8 0 0 1 1.6 1l1.3 2.6" />
+      <path d="M2.6 16v-1.6a2.4 2.4 0 0 1 2.4-2.4h14a2.4 2.4 0 0 1 2.4 2.4V16" />
+      <circle cx="6.6" cy="16.6" r="1.7" />
+      <circle cx="17.4" cy="16.6" r="1.7" />
+      <path d="M8.3 16.6h7.4" strokeWidth={1.4} />
+      <path d="M9.7 7.6v3.6M14.1 7.6v3.6" strokeWidth={1.4} />
+    </Svg>
+  );
+}
+
+/** Boîte automatique : silhouette compacte + badge rond "A" en haut à droite. */
+export function CiCarAuto(props: P) {
+  return (
+    <Svg {...props}>
+      <path d="M4.9 12.9l1.2-2.4a1.8 1.8 0 0 1 1.6-1h4.2a1.8 1.8 0 0 1 1.6 1l1.2 2.4" />
+      <path d="M2.6 17.4v-1.1a2.4 2.4 0 0 1 2.4-2.4h10.4a2.4 2.4 0 0 1 2.4 2.4v1.1" />
+      <circle cx="6.5" cy="17.6" r="1.7" />
+      <circle cx="14.1" cy="17.6" r="1.7" />
+      <path d="M8.2 17.6h4.2" strokeWidth={1.4} />
+      <circle cx="18.6" cy="6.9" r="3.7" />
+      <path d="M17.1 8.7l1.5-3.6 1.5 3.6M17.7 7.4h1.8" strokeWidth={1.4} />
+    </Svg>
+  );
+}
+
 /** Familiale / monospace : caisse longue, arrière droit, trois vitres. */
 export function CiCarFamily(props: P) {
   return (
