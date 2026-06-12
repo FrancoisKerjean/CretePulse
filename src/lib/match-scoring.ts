@@ -4,6 +4,7 @@
 // Aucune dépendance React ni Supabase : fonctions pures uniquement.
 
 import type { CbPlaceListItem } from "./cb-places";
+import { haversineKm, type GeoPos } from "./geo.ts";
 
 // Carte légère envoyée au client : ni description (copyright), ni champs lourds.
 export interface MatchPlace {
@@ -26,6 +27,30 @@ export type TasteProfile = Record<string, number>;
 const LIKE_WEIGHT = 1;
 const PASS_WEIGHT = -0.5;
 const TYPE_CAP_RATIO = 0.25; // un type ne dépasse jamais ~25 % du pool
+
+export const NEAR_RATIO = 0.65; // part du deck ancrée localement
+const NEAR_RADII_KM = [40, 70, 100]; // rayon adaptatif
+const NEAR_MIN_PLACES = 25; // en dessous, on élargit le rayon
+
+// Slugs du pool dans le premier rayon contenant au moins `min` lieux.
+// Set vide = pool trop clairsemé autour de pos, pas de pondération.
+export function nearSlugs(
+  pool: MatchPlace[],
+  pos: GeoPos,
+  radii: number[] = NEAR_RADII_KM,
+  min = NEAR_MIN_PLACES,
+): Set<string> {
+  const withKm: { slug: string; km: number }[] = [];
+  for (const p of pool) {
+    if (p.latitude == null || p.longitude == null) continue;
+    withKm.push({ slug: p.slug, km: haversineKm([p.latitude, p.longitude], [pos.lat, pos.lon]) });
+  }
+  for (const r of radii) {
+    const inRadius = withKm.filter((x) => x.km <= r);
+    if (inRadius.length >= min) return new Set(inRadius.map((x) => x.slug));
+  }
+  return new Set();
+}
 
 export function emptyProfile(): TasteProfile {
   return {};
@@ -155,16 +180,10 @@ export function buildMatchPool(places: CbPlaceListItem[], size = 140): MatchPlac
   return picked.slice(0, size).map(toMatchPlace);
 }
 
-// Côté client : deck par visiteur, en excluant les lieux déjà vus.
-// S'il reste moins de 30 cartes non vues, on repart de zéro pour
-// garantir un deck complet.
-// `preferred` (types des centres d'intérêt) : ~75 % du deck vient de ces
-// types, le reste est de la découverte. Vide ou absent = pas de pondération.
-export function sampleDeck(pool: MatchPlace[], size: number, seen: Set<string>, preferred?: Set<string>): MatchPlace[] {
-  let candidates = pool.filter((p) => !seen.has(p.slug));
-  if (candidates.length < Math.min(size, 30)) candidates = [...pool];
+// Pondération intérêts (75/25) sur un ensemble de candidats. Logique
+// historique de sampleDeck, extraite pour être appliquée par moitié near/far.
+function pickWeighted(candidates: MatchPlace[], size: number, preferred?: Set<string>): MatchPlace[] {
   if (!preferred || preferred.size === 0) return shuffle([...candidates]).slice(0, size);
-
   const wanted = shuffle(candidates.filter((p) => preferred.has(p.place_type)));
   const discovery = shuffle(candidates.filter((p) => !preferred.has(p.place_type)));
   const wantedCount = Math.min(wanted.length, Math.round(size * 0.75));
@@ -174,5 +193,40 @@ export function sampleDeck(pool: MatchPlace[], size: number, seen: Set<string>, 
   ];
   // Si la découverte ne suffit pas à remplir, on complète avec le reste des préférés.
   if (picked.length < size) picked.push(...wanted.slice(wantedCount, wantedCount + size - picked.length));
+  return picked;
+}
+
+// Côté client : deck par visiteur, en excluant les lieux déjà vus.
+// S'il reste moins de 30 cartes non vues, on repart de zéro pour
+// garantir un deck complet.
+// `preferred` (types des centres d'intérêt) : ~75 % du deck vient de ces
+// types, le reste est de la découverte. Vide ou absent = pas de pondération.
+// `near` (slugs proches de la position) : ~65 % du deck vient de ce set,
+// le reste = découverte toute l'île ; la pondération intérêts s'applique
+// dans chaque moitié. Vide ou absent = pas de pondération géo.
+export function sampleDeck(
+  pool: MatchPlace[],
+  size: number,
+  seen: Set<string>,
+  preferred?: Set<string>,
+  near?: Set<string>,
+): MatchPlace[] {
+  let candidates = pool.filter((p) => !seen.has(p.slug));
+  if (candidates.length < Math.min(size, 30)) candidates = [...pool];
+  if (!near || near.size === 0) return shuffle(pickWeighted(candidates, size, preferred));
+
+  const nearC = candidates.filter((p) => near.has(p.slug));
+  const farC = candidates.filter((p) => !near.has(p.slug));
+  const nearCount = Math.min(nearC.length, Math.round(size * NEAR_RATIO));
+  const picked = [
+    ...pickWeighted(nearC, nearCount, preferred),
+    ...pickWeighted(farC, size - nearCount, preferred),
+  ];
+  // Complétion croisée : si une moitié n'a pas pu remplir sa part.
+  if (picked.length < size) {
+    const pickedSlugs = new Set(picked.map((p) => p.slug));
+    const rest = shuffle(candidates.filter((p) => !pickedSlugs.has(p.slug)));
+    picked.push(...rest.slice(0, size - picked.length));
+  }
   return shuffle(picked);
 }
