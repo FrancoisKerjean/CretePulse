@@ -29,6 +29,7 @@ def normalize_for_db(operator_id: str, source_url: str, rows: list) -> list:
         "via_stops": r.get("via_stops"),
         "season": r.get("season", "all"),
         "duration": r.get("duration"),
+        "duration_estimated": r.get("duration_estimated", False),
         "price_eur": r.get("price_eur"),
         "price_estimated": r.get("price_estimated", False),
         "frequency": r.get("frequency"),

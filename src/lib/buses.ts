@@ -16,6 +16,8 @@ export interface BusRoute {
   via_stops: string[] | null;
   season: string;
   duration: string | null;
+  /** true = durée estimée au km (enveloppe haute, plan B) → afficher « indicatif » */
+  duration_estimated: boolean | null;
   price_eur: number | null;
   /** true = prix estimé au km (plan B scraper) → afficher « indicatif » */
   price_estimated: boolean | null;

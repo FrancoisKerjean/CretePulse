@@ -130,7 +130,8 @@ function LegRow({ leg, locale }: { leg: JourneyLeg; locale: Locale }) {
         )}
         {dur != null && (
           <span className="text-xs font-normal text-text-muted inline-flex items-center gap-1">
-            <Clock className="w-3 h-3" /> {leg.route.duration}
+            <Clock className="w-3 h-3" />
+            {leg.route.duration_estimated ? `≈ ${leg.route.duration} (${tp("indicative", locale)})` : leg.route.duration}
           </span>
         )}
         {!alight && leg.route.price_eur != null && (

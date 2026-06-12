@@ -141,6 +141,42 @@ PLACE_COORDS: dict[str, tuple[float, float]] = {
     "panormo": (35.4144, 24.6906),
     "margarites": (35.3247, 24.6594),
     "vryses": (35.3700, 24.2069),
+    # Orthographes DB alternatives constatées le 13/06/2026 (mêmes lieux) :
+    # sans ces clés, l'estimation au km ne s'applique pas (lookup exact).
+    "elafonisi": (35.2706, 23.5400),     # = elafonissi
+    "almirida": (35.4569, 24.1614),      # = almyrida
+    "anogia": (35.2899, 24.8826),        # = anogeia
+    # Villages/sites ouest desservis par e-ktel (ajout chantier 3, 13/06/2026).
+    # Précision ~1 km, suffisante pour une estimation au km flaggée indicatif.
+    "maleme": (35.5220, 23.8280),
+    "spili": (35.2130, 24.5370),
+    "perama": (35.3680, 24.6920),
+    "arkadi": (35.3100, 24.6290),
+    "ancient eleftherna museum": (35.3296, 24.6726),
+    "theriso": (35.4130, 23.9920),
+    "meskla": (35.4080, 23.9380),
+    "vamos": (35.4120, 24.2000),
+    "sternes": (35.5210, 24.1310),
+    "voukolies": (35.4600, 23.7850),
+    "ano mero": (35.2320, 24.6330),
+    "ano meros": (35.2320, 24.6330),
+    "falasarna": (35.4770, 23.5810),
+    "platanos": (35.4640, 23.5940),
+    "fragokastelo": (35.1810, 24.2320),
+    "anopoli": (35.2130, 24.0850),
+    "xyloskalo": (35.3080, 23.9180),     # entrée gorge de Samaria (Omalos)
+    "agia roumeli": (35.2290, 23.9640),
+    "preveli": (35.1560, 24.4670),
+    "myrthio": (35.2050, 24.4010),
+    "myrthios": (35.2050, 24.4010),
+    "tavronitis": (35.5120, 23.7490),
+    "gerani": (35.5180, 23.8790),
+    "pano stalos": (35.5120, 23.9510),
+    "stalos": (35.5120, 23.9510),
+    "kamisiana": (35.5130, 23.7280),
+    "kissamos port": (35.5030, 23.6450),
+    "aradena": (35.2220, 24.0620),
+    "kefalas": (35.4310, 24.2520),
 }
 
 BASE_FARE = 1.20    # plancher (ticket zone urbaine herlas, greeka 10/06/2026)
