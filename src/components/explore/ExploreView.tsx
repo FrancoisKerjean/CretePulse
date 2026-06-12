@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Star, X, MapPin, Search, ChevronLeft, ChevronRight, List, Map as MapIcon } from "lucide-react";
+import { Star, X, MapPin, Search, ChevronLeft, ChevronRight, List, Map as MapIcon, SlidersHorizontal } from "lucide-react";
 import type { CbPlaceListItem, CbPlace } from "@/lib/cb-places";
 import { getCbPlaceBySlug } from "@/lib/cb-places";
 import { typeLabel } from "@/lib/cb-type-labels";
@@ -51,7 +51,7 @@ const T: Record<string, Record<string, string>> = {
     crowds: "Crowds", any: "Any", photos: "photos", noResults: "No place matches these filters.",
     showMap: "Map", showList: "List", facilities: "Facilities", accessibility: "Access",
     depth: "Depth", seaSurface: "Sea surface", loading: "Loading...", clear: "Clear filters",
-    nearMe: "Near me", geoUnavailable: "Location unavailable",
+    nearMe: "Near me", geoUnavailable: "Location unavailable", filters: "Filters",
   },
   fr: {
     search: "Chercher un lieu...", results: "résultats", allTypes: "Tous", rating: "Note min.",
@@ -59,7 +59,7 @@ const T: Record<string, Record<string, string>> = {
     crowds: "Affluence", any: "Indifférent", photos: "photos", noResults: "Aucun lieu ne correspond à ces filtres.",
     showMap: "Carte", showList: "Liste", facilities: "Équipements", accessibility: "Accès",
     depth: "Profondeur", seaSurface: "État de la mer", loading: "Chargement...", clear: "Effacer les filtres",
-    nearMe: "Autour de moi", geoUnavailable: "Localisation indisponible",
+    nearMe: "Autour de moi", geoUnavailable: "Localisation indisponible", filters: "Filtres",
   },
   de: {
     search: "Ort suchen...", results: "Ergebnisse", allTypes: "Alle", rating: "Min. Bewertung",
@@ -67,7 +67,7 @@ const T: Record<string, Record<string, string>> = {
     crowds: "Andrang", any: "Egal", photos: "Fotos", noResults: "Kein Ort entspricht diesen Filtern.",
     showMap: "Karte", showList: "Liste", facilities: "Ausstattung", accessibility: "Zugang",
     depth: "Tiefe", seaSurface: "Meeresoberfläche", loading: "Laden...", clear: "Filter löschen",
-    nearMe: "In meiner Nähe", geoUnavailable: "Standort nicht verfügbar",
+    nearMe: "In meiner Nähe", geoUnavailable: "Standort nicht verfügbar", filters: "Filter",
   },
   el: {
     search: "Αναζήτηση τοποθεσίας...", results: "αποτελέσματα", allTypes: "Όλα", rating: "Ελάχ. βαθμολογία",
@@ -75,7 +75,7 @@ const T: Record<string, Record<string, string>> = {
     crowds: "Κόσμος", any: "Οποιοδήποτε", photos: "φωτογραφίες", noResults: "Κανένα μέρος δεν ταιριάζει.",
     showMap: "Χάρτης", showList: "Λίστα", facilities: "Παροχές", accessibility: "Πρόσβαση",
     depth: "Βάθος", seaSurface: "Επιφάνεια", loading: "Φόρτωση...", clear: "Καθαρισμός φίλτρων",
-    nearMe: "Κοντά μου", geoUnavailable: "Ο εντοπισμός δεν είναι διαθέσιμος",
+    nearMe: "Κοντά μου", geoUnavailable: "Ο εντοπισμός δεν είναι διαθέσιμος", filters: "Φίλτρα",
   },
 };
 
@@ -117,6 +117,9 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
   const [selectedLoading, setSelectedLoading] = useState(false);
   const [photoIdx, setPhotoIdx] = useState(0);
   const [mobileView, setMobileView] = useState<"map" | "list">("map");
+  // Filtres avances replies par defaut sur mobile (gain ~5 lignes de viewport,
+  // critique pour voir la carte au-dessus du fold). Toggle "Filtres" en haut.
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   // Tri "Near me" : géoloc 100 % client (useGeoPosition), toggle on/off.
   const geo = useGeoPosition();
   const [nearActive, setNearActive] = useState(false);
@@ -176,6 +179,9 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
 
   const hasFilters = query || activeTypes.size > 0 || prefecture || minRating > 0 || sand || water || crowdLevel;
   const beachFiltersRelevant = activeTypes.size === 0 || activeTypes.has("beach");
+  // Compteur "filtres avances actifs" pour le badge du bouton mobile (les chips
+  // de type et la search sont visibles ailleurs, on les exclut).
+  const advancedActiveCount = [prefecture, minRating > 0, sand, water, crowdLevel].filter(Boolean).length;
 
   // --- Map init ---
   useEffect(() => {
@@ -283,17 +289,54 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
   return (
     <div className="flex flex-col" style={{ height: "calc(100vh - 56px)" }}>
       {/* Filter bar */}
-      <div className="border-b border-aegean/10 bg-white px-4 py-3 space-y-2.5">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative">
+      <div className="border-b border-aegean/10 bg-white px-4 py-2.5 space-y-2">
+        {/* Row 1 : search + Filtres (mobile) + Near me + count */}
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1 md:flex-none min-w-0">
             <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t.search}
-              className="pl-8 pr-3 py-1.5 text-sm rounded-lg border border-aegean/20 bg-surface focus:outline-none focus:border-aegean w-52"
+              className="w-full md:w-52 pl-8 pr-3 py-1.5 text-sm rounded-lg border border-aegean/20 bg-surface focus:outline-none focus:border-aegean"
             />
           </div>
+          <button
+            type="button"
+            onClick={() => setMobileFiltersOpen((v) => !v)}
+            aria-expanded={mobileFiltersOpen}
+            className="md:hidden flex items-center gap-1.5 text-sm py-1.5 px-3 rounded-lg border border-aegean/20 bg-surface text-text shrink-0"
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            {t.filters}
+            {advancedActiveCount > 0 && (
+              <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] text-[10px] font-bold bg-aegean text-white rounded-full px-1">
+                {advancedActiveCount}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={toggleNearMe}
+            title={geoBlocked ? t.geoUnavailable : undefined}
+            aria-pressed={nearActive && Boolean(geo.pos)}
+            className={`flex items-center gap-1.5 text-sm py-1.5 px-2.5 md:px-3 rounded-lg border transition-colors shrink-0 ${
+              nearActive && geo.pos
+                ? "bg-aegean text-white border-aegean"
+                : geoBlocked
+                  ? "bg-surface text-text-muted border-aegean/20 opacity-60 cursor-help"
+                  : "bg-surface text-text border-aegean/20 hover:border-aegean/50"
+            }`}
+          >
+            <CiCompass className="w-4 h-4" />
+            <span className="hidden sm:inline">{t.nearMe}</span>
+          </button>
+          <span className="hidden md:inline ml-auto text-xs text-text-muted font-medium whitespace-nowrap">
+            {filtered.length} {t.results}
+          </span>
+        </div>
+
+        {/* Row 2 : selects avances (desktop : tjrs visibles ; mobile : collapse) */}
+        <div className={`${mobileFiltersOpen ? "flex" : "hidden"} md:flex flex-wrap items-center gap-2`}>
           <select value={prefecture} onChange={(e) => setPrefecture(e.target.value)}
             className="text-sm py-1.5 px-2 rounded-lg border border-aegean/20 bg-surface">
             <option value="">{t.anyPref}</option>
@@ -323,29 +366,13 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
               </select>
             </>
           )}
-          <button
-            onClick={toggleNearMe}
-            title={geoBlocked ? t.geoUnavailable : undefined}
-            aria-pressed={nearActive && Boolean(geo.pos)}
-            className={`flex items-center gap-1.5 text-sm py-1.5 px-3 rounded-lg border transition-colors ${
-              nearActive && geo.pos
-                ? "bg-aegean text-white border-aegean"
-                : geoBlocked
-                  ? "bg-surface text-text-muted border-aegean/20 opacity-60 cursor-help"
-                  : "bg-surface text-text border-aegean/20 hover:border-aegean/50"
-            }`}
-          >
-            <CiCompass className="w-4 h-4" />
-            {t.nearMe}
-          </button>
           {hasFilters && (
             <button onClick={clearFilters} className="text-xs text-terra hover:underline">{t.clear}</button>
           )}
-          <span className="ml-auto text-xs text-text-muted font-medium">
-            {filtered.length} {t.results}
-          </span>
         </div>
-        <div className="flex flex-wrap gap-1.5">
+
+        {/* Row 3 : types — single-row horizontal scroll mobile, wrap desktop */}
+        <div className="flex md:flex-wrap overflow-x-auto md:overflow-visible gap-1.5 -mx-4 px-4 md:mx-0 md:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {typeCounts.map(([type, count]) => {
             const active = activeTypes.size === 0 || activeTypes.has(type);
             const explicit = activeTypes.has(type);
@@ -353,7 +380,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
               <button
                 key={type}
                 onClick={() => toggleType(type)}
-                className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
+                className={`shrink-0 md:shrink px-2.5 py-1 rounded-full text-xs font-medium border transition-colors whitespace-nowrap ${
                   explicit
                     ? "text-white border-transparent"
                     : active
@@ -369,6 +396,11 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
             );
           })}
         </div>
+
+        {/* Count mobile (desktop : dans la row 1) */}
+        <p className="md:hidden text-[11px] text-text-muted text-right m-0">
+          {filtered.length} {t.results}
+        </p>
       </div>
 
       {/* Mobile toggle */}

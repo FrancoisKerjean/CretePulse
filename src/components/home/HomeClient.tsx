@@ -347,9 +347,20 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
           </div>
 
           <BlurFade delay={0.15}>
-            <div>
+            <Link
+              href="/explore"
+              aria-label={locale === "fr" ? "Ouvrir l'explorateur interactif de la Crète" : locale === "de" ? "Interaktiven Kreta-Explorer öffnen" : locale === "el" ? "Άνοιγμα διαδραστικού εξερευνητή" : "Open the interactive Crete explorer"}
+              className="group relative block focus:outline-none focus-visible:ring-4 focus-visible:ring-sun/60 rounded-[30px]"
+            >
               <CreteMap cities={wtileCities} swimPin={swimPin} locale={locale} />
-            </div>
+              <span
+                className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-aegean text-white text-xs font-bold shadow-[0_8px_22px_rgba(11,94,120,.22)] opacity-95 group-hover:opacity-100 group-hover:-translate-y-0.5 transition-all"
+                aria-hidden
+              >
+                <CiCompass className="w-3.5 h-3.5" />
+                {locale === "fr" ? "Explorer la carte" : locale === "de" ? "Karte erkunden" : locale === "el" ? "Εξερεύνηση χάρτη" : "Explore the map"}
+              </span>
+            </Link>
           </BlurFade>
         </div>
         {/* vague separatrice */}
