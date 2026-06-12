@@ -15,6 +15,7 @@ import { Heart, MapPin } from "lucide-react";
 import {
   CiBus, CiWave, CiSun, CiCompass, CiPlane, CiChart,
   CiCalendar, CiNews, CiBook,
+  CiInstagram, CiFacebook, CiYouTube,
 } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
 import type { CityWeather } from "@/lib/weather";
@@ -311,6 +312,36 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                     <WindArrow deg={swimPick.windDir} className="w-3.5 h-3.5 text-aegean" /> {swimPick.windSpeed} km/h
                   </span>
                 )}
+              </div>
+              {/* Socials Kalimera : chips blancs hover sun, cohérents avec chips météo */}
+              <div className="flex flex-wrap gap-2 mt-5">
+                <a
+                  href="https://www.instagram.com/cretedirect/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Crete Direct on Instagram"
+                  className="bg-white/90 hover:bg-sun rounded-full p-2.5 shadow-[0_8px_22px_rgba(11,94,120,.12)] transition-all"
+                >
+                  <CiInstagram className="w-4 h-4 text-aegean" />
+                </a>
+                <a
+                  href="https://www.facebook.com/1098023870060924"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Crete Direct on Facebook"
+                  className="bg-white/90 hover:bg-sun rounded-full p-2.5 shadow-[0_8px_22px_rgba(11,94,120,.12)] transition-all"
+                >
+                  <CiFacebook className="w-4 h-4 text-aegean" />
+                </a>
+                <a
+                  href="https://www.youtube.com/@CreteDirect"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Crete Direct on YouTube"
+                  className="bg-white/90 hover:bg-sun rounded-full p-2.5 shadow-[0_8px_22px_rgba(11,94,120,.12)] transition-all"
+                >
+                  <CiYouTube className="w-4 h-4 text-aegean" />
+                </a>
               </div>
             </BlurFade>
           </div>
