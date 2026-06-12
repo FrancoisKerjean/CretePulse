@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
 
   const { data, error } = await supabase
     .from("cb_places")
-    .select("slug, name, place_type, latitude, longitude")
+    .select("slug, name, place_type, latitude, longitude, photos")
     .in("slug", slugs);
   if (error || !data || data.length === 0) {
     return NextResponse.json({ error: "Selection not found" }, { status: 422 });
@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
         p.latitude != null && p.longitude != null
           ? `https://www.google.com/maps/dir/?api=1&destination=${p.latitude},${p.longitude}`
           : null,
+      photoUrl: Array.isArray(p.photos) && p.photos.length > 0 ? (p.photos[0] as string) : null,
     }));
 
   try {
