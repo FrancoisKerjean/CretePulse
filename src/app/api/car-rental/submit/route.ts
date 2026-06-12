@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const { sendCarLeadEmail } = await import("@/lib/email");
-    await sendCarLeadEmail(partner.email, partner.name, {
+    await sendCarLeadEmail(partner, {
       pickupLabel: label(pickup), dateFrom, timeFrom: row.time_from ?? undefined,
       dateTo, timeTo: row.time_to ?? undefined, flightNo: row.flight_no ?? undefined,
       carTypeLabel: carType.labels.en, pax: row.pax ?? undefined,

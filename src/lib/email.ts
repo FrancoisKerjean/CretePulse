@@ -196,13 +196,14 @@ export interface CarLead {
   customerName: string; customerEmail: string; customerPhone?: string; note?: string;
 }
 
-export async function sendCarLeadEmail(partnerEmail: string, partnerName: string, lead: CarLead) {
-  const subject = `New rental request — ${lead.pickupLabel} ${lead.dateFrom} → ${lead.dateTo} (${lead.carTypeLabel}${lead.pax ? `, ${lead.pax} pax` : ""})`;
-  const lines = [
-    `Hi ${partnerName.split(" ")[0]},`,
-    ``,
-    `New rental request via crete.direct (Kami's referral partnership, 10%):`,
-    ``,
+// Mode relais (par défaut tant que l'agence n'est pas prévenue du flux
+// automatique) : le lead arrive UNIQUEMENT chez Kami, avec un lien WhatsApp
+// prérempli pour le transférer à l'agence en un clic. Bascule en envoi
+// direct : leadRouting "direct" sur le partenaire (car-partners.ts).
+const RELAY_EMAIL = "contact@kairosguest.com";
+
+function leadSummary(lead: CarLead): string[] {
+  return [
     `Pickup / drop-off: ${lead.pickupLabel}`,
     `Arrival: ${lead.dateFrom}${lead.timeFrom ? ` at ${lead.timeFrom}` : ""}${lead.flightNo ? ` (flight ${lead.flightNo})` : ""}`,
     `Departure: ${lead.dateTo}${lead.timeTo ? ` at ${lead.timeTo}` : ""}`,
@@ -213,17 +214,68 @@ export async function sendCarLeadEmail(partnerEmail: string, partnerName: string
     `Email: ${lead.customerEmail}`,
     `Phone / WhatsApp: ${lead.customerPhone ?? "-"}`,
     lead.note ? `Note: ${lead.note}` : ``,
-    ``,
-    `Please reply directly to the customer (reply-to is set).`,
   ];
+}
+
+export interface CarLeadPartner {
+  email: string;
+  name: string;
+  phone: string;
+  whatsapp?: string;
+  leadRouting?: "relay" | "direct";
+}
+
+export async function sendCarLeadEmail(partner: CarLeadPartner, lead: CarLead) {
+  const subject = `New rental request — ${lead.pickupLabel} ${lead.dateFrom} → ${lead.dateTo} (${lead.carTypeLabel}${lead.pax ? `, ${lead.pax} pax` : ""})`;
+  const relay = partner.leadRouting !== "direct";
+
+  let to: string;
+  let cc: string | undefined;
+  let lines: string[];
+  if (relay) {
+    // Message WhatsApp prêt à transférer, calé sur les champs convenus avec
+    // l'agence (arrival/departure time, car type, pax, dates).
+    const wa = [
+      `Hi ${partner.name.split(" ")[0]}, new rental request:`,
+      `${lead.pickupLabel}, ${lead.dateFrom}${lead.timeFrom ? ` ${lead.timeFrom}` : ""}${lead.flightNo ? ` (flight ${lead.flightNo})` : ""} to ${lead.dateTo}${lead.timeTo ? ` ${lead.timeTo}` : ""}`,
+      `${lead.carTypeLabel}, ${lead.pax ?? "?"} people`,
+      `Guest: ${lead.customerName}, ${lead.customerPhone ?? lead.customerEmail}`,
+    ].join("\n");
+    const waNumber = (partner.whatsapp ?? partner.phone).replace(/\D/g, "");
+    to = RELAY_EMAIL;
+    cc = undefined;
+    lines = [
+      `Lead voiture à transmettre à ${partner.name}.`,
+      ``,
+      ...leadSummary(lead),
+      ``,
+      `>>> Transférer en 1 clic (WhatsApp prérempli) :`,
+      `https://wa.me/${waNumber}?text=${encodeURIComponent(wa)}`,
+      ``,
+      `Répondre au client : reply direct à cet email (reply-to = client).`,
+    ];
+  } else {
+    to = partner.email;
+    cc = RELAY_EMAIL; // preuve horodatée de l'apport (10%)
+    lines = [
+      `Hi ${partner.name.split(" ")[0]},`,
+      ``,
+      `New rental request via crete.direct (Kami's referral partnership, 10%):`,
+      ``,
+      ...leadSummary(lead),
+      ``,
+      `Please reply directly to the customer (reply-to is set).`,
+    ];
+  }
+
   // Le SDK Resend ne throw pas sur erreur API ({ data, error }) : on propage
   // explicitement pour que la route marque la row email_failed + fallback WhatsApp.
   const { data, error } = await resend.emails.send({
     from: FROM_EMAIL,
-    to: partnerEmail,
-    cc: "contact@kairosguest.com", // preuve horodatée de l'apport (10%)
+    to,
+    ...(cc ? { cc } : {}),
     replyTo: lead.customerEmail,
-    subject,
+    subject: relay ? `[Lead voiture — à transmettre] ${subject}` : subject,
     text: lines.join("\n"),
   });
   if (error) throw new Error(`Resend: ${error.message}`);

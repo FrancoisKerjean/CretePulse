@@ -9,6 +9,10 @@ export interface CarZone { id: string; pickups: string[] }
 export interface CarPartner {
   zoneIds: string[]; name: string; email: string; phone: string;
   whatsapp?: string; website?: string; commission: number; since: string;
+  /** "relay" (défaut) : lead envoyé à Kami qui transfère manuellement (WhatsApp
+   *  prérempli dans l'email). "direct" : email envoyé à l'agence, CC Kami.
+   *  Basculer en "direct" une fois l'agence prévenue / canal auto branché. */
+  leadRouting?: "relay" | "direct";
 }
 
 // Slugs = clés existantes de SLUG_COORDS (taxi-fare.ts), vérifiés par check-car-partners.mjs.
@@ -34,6 +38,9 @@ export const CAR_PARTNERS: CarPartner[] = [
     website: "https://chaniacarrental.gr",
     commission: 0.10,
     since: "2026-05-12",
+    // Relais manuel tant que Panagoula n'est pas prévenue du flux automatique
+    // (à terme : canal WhatsApp automatisé, puis "direct").
+    leadRouting: "relay",
   },
 ];
 
