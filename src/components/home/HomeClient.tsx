@@ -343,38 +343,61 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
           </div>
         )}
 
-        {/* ═══════ MATCH : le Tinder de la Crète ═══════ */}
+        {/* ═══════ MATCH : le Tinder de la Crète (photo plein bloc, pattern bandeaux v5) ═══════ */}
         {matchTeaserPhotos.length > 0 && (
           <section className="mt-10">
             <Link
               href="/match"
-              className="group relative flex flex-col items-center gap-7 overflow-hidden rounded-[30px] px-8 py-8 no-underline sm:flex-row"
-              style={{ background: "linear-gradient(135deg, #ED7A5C 0%, #E8643F 55%, #C2543A 100%)" }}
+              className="group relative block overflow-hidden rounded-[30px] no-underline shadow-lg"
             >
-              <div className="absolute -right-7 -top-7 h-[88px] w-[88px] rounded-full bg-sun opacity-90" aria-hidden />
-              <div className="relative h-[130px] w-[190px] shrink-0">
-                {matchTeaserPhotos.slice(0, 3).map((src, i) => (
-                  <img
-                    key={src}
-                    src={src}
-                    alt=""
-                    loading="lazy"
-                    className="absolute left-1/2 top-1/2 h-[112px] w-[84px] rounded-2xl border-4 border-white object-cover shadow-[0_14px_30px_rgba(7,55,74,.35)] transition-transform duration-300 group-hover:scale-105"
-                    style={{ transform: `translate(-50%,-50%) rotate(${(i - 1) * 12}deg) translateX(${(i - 1) * 36}px)` }}
-                  />
-                ))}
-                <span className="absolute -bottom-1 left-1/2 flex h-9 w-9 -translate-x-1/2 items-center justify-center rounded-full bg-white shadow-[0_8px_18px_rgba(7,55,74,.3)]">
-                  <Heart size={17} className="text-terra" fill="currentColor" />
-                </span>
+              {/* Visuel plein bloc : lagon Balos (visuel Kami, public/images/partners/) */}
+              <img
+                src="/images/partners/tours.jpg"
+                alt=""
+                loading="lazy"
+                aria-hidden
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-[4000ms] ease-out group-hover:scale-105"
+              />
+              {/* Scrim de lisibilité : dense sur le texte, laisse respirer la photo à droite */}
+              <div className="absolute inset-0 bg-gradient-to-r from-[#08263a]/85 via-[#08263a]/50 to-[#08263a]/10" aria-hidden />
+              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#08263a]/60 to-transparent md:hidden" aria-hidden />
+
+              <div className="relative flex min-w-0 flex-wrap items-center justify-between gap-x-8 gap-y-6 p-6 md:min-h-[210px] md:p-8">
+                <div className="min-w-0 max-w-xl">
+                  <p className="m-0 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 font-heading text-[10.5px] font-bold uppercase tracking-widest text-white/90 backdrop-blur-sm">
+                    <Heart size={11} fill="currentColor" aria-hidden /> {T.matchKicker[ui]}
+                  </p>
+                  <h2 className="m-0 mt-3 font-heading text-[28px] font-extrabold leading-tight text-white [text-wrap:balance] drop-shadow-[0_1px_3px_rgba(8,38,58,0.6)] md:text-[32px]">
+                    {T.matchTitle[ui]}
+                  </h2>
+                  <p className="m-0 mt-1.5 text-[14px] text-white/90 drop-shadow-[0_1px_2px_rgba(8,38,58,0.6)]">
+                    {T.matchSub[ui]}
+                  </p>
+                  <span className="relative mt-5 inline-flex items-center gap-2 overflow-hidden rounded-full bg-white px-7 py-3 font-heading text-[14.5px] font-bold text-terra shadow-md transition-transform group-hover:scale-[1.03]">
+                    <span
+                      className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-terra/20 to-transparent bg-[length:300%_100%] animate-gradient"
+                      aria-hidden
+                    />
+                    <span className="relative">{T.matchCta[ui]}</span>
+                  </span>
+                </div>
+                {/* Éventail de cartes : raconte le deck par-dessus la photo */}
+                <div className="relative hidden h-[140px] w-[200px] shrink-0 sm:block">
+                  {matchTeaserPhotos.slice(0, 3).map((src, i) => (
+                    <img
+                      key={src}
+                      src={src}
+                      alt=""
+                      loading="lazy"
+                      className="absolute left-1/2 top-1/2 h-[118px] w-[88px] rounded-2xl border-4 border-white object-cover shadow-[0_14px_30px_rgba(7,55,74,.45)] transition-transform duration-300 group-hover:scale-105"
+                      style={{ transform: `translate(-50%,-50%) rotate(${(i - 1) * 12}deg) translateX(${(i - 1) * 38}px)` }}
+                    />
+                  ))}
+                  <span className="absolute -bottom-1 left-1/2 flex h-9 w-9 -translate-x-1/2 items-center justify-center rounded-full bg-white shadow-[0_8px_18px_rgba(7,55,74,.4)]">
+                    <Heart size={17} className="text-terra" fill="currentColor" />
+                  </span>
+                </div>
               </div>
-              <div className="relative flex-1 text-center sm:text-left">
-                <p className="m-0 font-heading text-[12.5px] font-bold uppercase tracking-[0.1em] text-white/75">{T.matchKicker[ui]}</p>
-                <h2 className="m-0 mt-0.5 font-heading text-[30px] font-extrabold leading-tight text-white">{T.matchTitle[ui]}</h2>
-                <p className="m-0 mt-1 text-[14px] text-white/85">{T.matchSub[ui]}</p>
-              </div>
-              <span className="relative rounded-full bg-white px-7 py-3.5 font-heading text-[15px] font-bold text-terra shadow-[0_12px_28px_rgba(7,55,74,.3)] transition-transform group-hover:scale-105">
-                {T.matchCta[ui]}
-              </span>
             </Link>
           </section>
         )}
