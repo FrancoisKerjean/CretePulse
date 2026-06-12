@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Star, X, MapPin, Search, ChevronLeft, ChevronRight, List, Map as MapIcon, SlidersHorizontal } from "lucide-react";
+import {
+  Star, X, MapPin, Search, ChevronLeft, ChevronRight, ChevronUp,
+  SlidersHorizontal, Waves, Mountain, Home, Landmark, TreePine, Sparkles,
+} from "lucide-react";
 import type { CbPlaceListItem, CbPlace } from "@/lib/cb-places";
 import { getCbPlaceBySlug } from "@/lib/cb-places";
 import { typeLabel } from "@/lib/cb-type-labels";
@@ -13,6 +16,8 @@ import { CbPlaceActions } from "@/components/explore/CbPlaceActions";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 type MaplibreMap = import("maplibre-gl").Map;
+type MaplibreModule = typeof import("maplibre-gl");
+type MaplibreMarker = import("maplibre-gl").Marker;
 
 const TYPE_COLORS: Record<string, string> = {
   beach: "#0B5E78",
@@ -44,42 +49,77 @@ const TYPE_COLORS: Record<string, string> = {
 };
 const FALLBACK_COLOR = "#64748B";
 
+// 26 types regroupes en 6 familles : le rail de categories reste lisible,
+// le detail par type reste accessible via la recherche et les fiches.
+const FAMILIES: Array<{ key: string; types: string[]; Icon: typeof Waves }> = [
+  { key: "beaches", types: ["beach"], Icon: Waves },
+  { key: "gorges", types: ["gorge"], Icon: Mountain },
+  { key: "villages", types: ["town"], Icon: Home },
+  {
+    key: "culture",
+    types: ["monastery", "church", "museum", "fort", "archaeological-site", "historical-site", "mythology", "tradition", "lighthouse"],
+    Icon: Landmark,
+  },
+  {
+    key: "nature",
+    types: ["cave", "island", "lake", "mountain", "plateau", "natural-park", "geological", "river", "waterfall", "forest", "flora", "fauna", "nature"],
+    Icon: TreePine,
+  },
+  { key: "activities", types: ["activity"], Icon: Sparkles },
+];
+
 const T: Record<string, Record<string, string>> = {
   en: {
-    search: "Search a place...", results: "results", allTypes: "All", rating: "Min. rating",
+    search: "Search a place...", results: "places", rating: "Min. rating",
     prefecture: "Region", anyPref: "All Crete", sand: "Sand type", water: "Water color",
-    crowds: "Crowds", any: "Any", photos: "photos", noResults: "No place matches these filters.",
-    showMap: "Map", showList: "List", facilities: "Facilities", accessibility: "Access",
+    crowds: "Crowds", any: "Any", noResults: "No place matches these filters.",
+    facilities: "Facilities", accessibility: "Access",
     depth: "Depth", seaSurface: "Sea surface", loading: "Loading...", clear: "Clear filters",
     nearMe: "Near me", geoUnavailable: "Location unavailable", filters: "Filters",
+    beaches: "Beaches", gorges: "Gorges", villages: "Villages", culture: "Culture",
+    nature: "Nature", activities: "Activities", all: "All",
+    sortRating: "Best rated", sortNear: "Nearest", fullList: "Full list",
   },
   fr: {
-    search: "Chercher un lieu...", results: "résultats", allTypes: "Tous", rating: "Note min.",
+    search: "Chercher un lieu...", results: "lieux", rating: "Note min.",
     prefecture: "Région", anyPref: "Toute la Crète", sand: "Type de sable", water: "Couleur de l'eau",
-    crowds: "Affluence", any: "Indifférent", photos: "photos", noResults: "Aucun lieu ne correspond à ces filtres.",
-    showMap: "Carte", showList: "Liste", facilities: "Équipements", accessibility: "Accès",
+    crowds: "Affluence", any: "Indifférent", noResults: "Aucun lieu ne correspond à ces filtres.",
+    facilities: "Équipements", accessibility: "Accès",
     depth: "Profondeur", seaSurface: "État de la mer", loading: "Chargement...", clear: "Effacer les filtres",
     nearMe: "Autour de moi", geoUnavailable: "Localisation indisponible", filters: "Filtres",
+    beaches: "Plages", gorges: "Gorges", villages: "Villages", culture: "Culture",
+    nature: "Nature", activities: "Activités", all: "Tout",
+    sortRating: "Mieux notés", sortNear: "Au plus près", fullList: "Liste complète",
   },
   de: {
-    search: "Ort suchen...", results: "Ergebnisse", allTypes: "Alle", rating: "Min. Bewertung",
+    search: "Ort suchen...", results: "Orte", rating: "Min. Bewertung",
     prefecture: "Region", anyPref: "Ganz Kreta", sand: "Sandtyp", water: "Wasserfarbe",
-    crowds: "Andrang", any: "Egal", photos: "Fotos", noResults: "Kein Ort entspricht diesen Filtern.",
-    showMap: "Karte", showList: "Liste", facilities: "Ausstattung", accessibility: "Zugang",
+    crowds: "Andrang", any: "Egal", noResults: "Kein Ort entspricht diesen Filtern.",
+    facilities: "Ausstattung", accessibility: "Zugang",
     depth: "Tiefe", seaSurface: "Meeresoberfläche", loading: "Laden...", clear: "Filter löschen",
     nearMe: "In meiner Nähe", geoUnavailable: "Standort nicht verfügbar", filters: "Filter",
+    beaches: "Strände", gorges: "Schluchten", villages: "Dörfer", culture: "Kultur",
+    nature: "Natur", activities: "Aktivitäten", all: "Alle",
+    sortRating: "Bestbewertet", sortNear: "Am nächsten", fullList: "Ganze Liste",
   },
   el: {
-    search: "Αναζήτηση τοποθεσίας...", results: "αποτελέσματα", allTypes: "Όλα", rating: "Ελάχ. βαθμολογία",
+    search: "Αναζήτηση τοποθεσίας...", results: "μέρη", rating: "Ελάχ. βαθμολογία",
     prefecture: "Περιοχή", anyPref: "Όλη η Κρήτη", sand: "Τύπος άμμου", water: "Χρώμα νερού",
-    crowds: "Κόσμος", any: "Οποιοδήποτε", photos: "φωτογραφίες", noResults: "Κανένα μέρος δεν ταιριάζει.",
-    showMap: "Χάρτης", showList: "Λίστα", facilities: "Παροχές", accessibility: "Πρόσβαση",
+    crowds: "Κόσμος", any: "Οποιοδήποτε", noResults: "Κανένα μέρος δεν ταιριάζει.",
+    facilities: "Παροχές", accessibility: "Πρόσβαση",
     depth: "Βάθος", seaSurface: "Επιφάνεια", loading: "Φόρτωση...", clear: "Καθαρισμός φίλτρων",
     nearMe: "Κοντά μου", geoUnavailable: "Ο εντοπισμός δεν είναι διαθέσιμος", filters: "Φίλτρα",
+    beaches: "Παραλίες", gorges: "Φαράγγια", villages: "Χωριά", culture: "Πολιτισμός",
+    nature: "Φύση", activities: "Δραστηριότητες", all: "Όλα",
+    sortRating: "Κορυφαία", sortNear: "Πιο κοντά", fullList: "Πλήρης λίστα",
   },
 };
 
 const PREFECTURES = ["Chania", "Rethymnon", "Heraklion", "Lassithi"];
+
+// Au-dela de ce zoom les clusters laissent place aux points + photo-pins.
+const PHOTO_PIN_ZOOM = 11.5;
+const PHOTO_PIN_MAX = 12;
 
 function detectPrefecture(p: CbPlaceListItem): string | null {
   const txt = p.prefecture || "";
@@ -95,7 +135,7 @@ function fmtKm(km: number): string {
 function RatingStars({ rating }: { rating: number | null }) {
   if (rating == null || rating <= 0) return null;
   return (
-    <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600">
+    <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600">
       <Star size={12} fill="currentColor" /> {rating.toFixed(1)}
     </span>
   );
@@ -105,48 +145,51 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
   const t = T[locale] || T.en;
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MaplibreMap | null>(null);
+  const maplibreRef = useRef<MaplibreModule | null>(null);
+  const photoMarkersRef = useRef<MaplibreMarker[]>([]);
   const [mapReady, setMapReady] = useState(false);
+  const [mapViewport, setMapViewport] = useState(0); // bump a chaque moveend -> recalcul photo-pins
   const [query, setQuery] = useState("");
-  const [activeTypes, setActiveTypes] = useState<Set<string>>(new Set());
+  const [family, setFamily] = useState<string | null>(null);
   const [prefecture, setPrefecture] = useState("");
   const [minRating, setMinRating] = useState(0);
   const [sand, setSand] = useState("");
   const [water, setWater] = useState("");
   const [crowdLevel, setCrowdLevel] = useState("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [selected, setSelected] = useState<CbPlace | null>(null);
   const [selectedLoading, setSelectedLoading] = useState(false);
   const [photoIdx, setPhotoIdx] = useState(0);
-  const [mobileView, setMobileView] = useState<"map" | "list">("map");
-  // Filtres avances replies par defaut sur mobile (gain ~5 lignes de viewport,
-  // critique pour voir la carte au-dessus du fold). Toggle "Filtres" en haut.
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  // Mobile : bottom sheet liste complete (le carousel reste toujours visible).
+  const [listExpanded, setListExpanded] = useState(false);
   // Tri "Near me" : géoloc 100 % client (useGeoPosition), toggle on/off.
   const geo = useGeoPosition();
   const [nearActive, setNearActive] = useState(false);
 
-  const typeCounts = useMemo(() => {
+  const familyTypes = useMemo(() => {
+    if (!family) return null;
+    const fam = FAMILIES.find((f) => f.key === family);
+    return fam ? new Set(fam.types) : null;
+  }, [family]);
+
+  const familyCounts = useMemo(() => {
+    const byType = new Map<string, number>();
+    for (const p of places) byType.set(p.place_type, (byType.get(p.place_type) || 0) + 1);
     const counts = new Map<string, number>();
-    for (const p of places) counts.set(p.place_type, (counts.get(p.place_type) || 0) + 1);
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+    for (const f of FAMILIES) {
+      counts.set(f.key, f.types.reduce((acc, ty) => acc + (byType.get(ty) || 0), 0));
+    }
+    return counts;
   }, [places]);
 
-  const sandOptions = useMemo(
-    () => uniqueValues(places, "sand_type"),
-    [places]
-  );
-  const waterOptions = useMemo(
-    () => uniqueValues(places, "water_color"),
-    [places]
-  );
-  const crowdOptions = useMemo(
-    () => uniqueValues(places, "crowds"),
-    [places]
-  );
+  const sandOptions = useMemo(() => uniqueValues(places, "sand_type"), [places]);
+  const waterOptions = useMemo(() => uniqueValues(places, "water_color"), [places]);
+  const crowdOptions = useMemo(() => uniqueValues(places, "crowds"), [places]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return places.filter((p) => {
-      if (activeTypes.size > 0 && !activeTypes.has(p.place_type)) return false;
+      if (familyTypes && !familyTypes.has(p.place_type)) return false;
       if (q && !p.name.toLowerCase().includes(q)) return false;
       if (prefecture && detectPrefecture(p) !== prefecture) return false;
       if (minRating > 0 && (p.rating == null || p.rating < minRating)) return false;
@@ -155,18 +198,24 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
       if (crowdLevel && !(p.crowds || "").includes(crowdLevel)) return false;
       return true;
     });
-  }, [places, query, activeTypes, prefecture, minRating, sand, water, crowdLevel]);
+  }, [places, query, familyTypes, prefecture, minRating, sand, water, crowdLevel]);
 
-  // Liste affichée : tri distance quand Near me est actif et la position connue.
-  // Sinon ordre actuel, inchangé (denied/unavailable n'altèrent rien).
+  // Liste affichée : distance quand Near me actif, sinon note décroissante
+  // (les lieux notés et photographiés d'abord, plus engageant que l'ordre slug).
   const displayed: Array<CbPlaceListItem & { km?: number }> = useMemo(() => {
-    if (!nearActive || !geo.pos) return filtered;
-    return nearestBy(
-      filtered,
-      (p) => (p.latitude != null && p.longitude != null ? [p.latitude, p.longitude] : null),
-      geo.pos,
-      filtered.length,
-    );
+    if (nearActive && geo.pos) {
+      return nearestBy(
+        filtered,
+        (p) => (p.latitude != null && p.longitude != null ? [p.latitude, p.longitude] : null),
+        geo.pos,
+        filtered.length,
+      );
+    }
+    // Note ponderee par le nombre de photos : un 4.8 bien documente passe
+    // devant un 5.0 obscur a 1 photo.
+    const score = (p: CbPlaceListItem) =>
+      (p.rating ?? 0) + Math.min(p.photo_count ?? 0, 20) * 0.02;
+    return [...filtered].sort((a, b) => score(b) - score(a));
   }, [filtered, nearActive, geo.pos]);
 
   const geoBlocked = geo.status === "denied" || geo.status === "unavailable";
@@ -177,19 +226,18 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
     if (!geo.pos) geo.requestGeo();
   }
 
-  const hasFilters = query || activeTypes.size > 0 || prefecture || minRating > 0 || sand || water || crowdLevel;
-  const beachFiltersRelevant = activeTypes.size === 0 || activeTypes.has("beach");
-  // Compteur "filtres avances actifs" pour le badge du bouton mobile (les chips
-  // de type et la search sont visibles ailleurs, on les exclut).
+  const hasFilters = query || family || prefecture || minRating > 0 || sand || water || crowdLevel;
+  const beachFiltersRelevant = !family || family === "beaches";
   const advancedActiveCount = [prefecture, minRating > 0, sand, water, crowdLevel].filter(Boolean).length;
 
   // --- Map init ---
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return;
     let cancelled = false;
-    import("maplibre-gl").then(({ Map, NavigationControl }) => {
+    import("maplibre-gl").then((maplibre) => {
       if (cancelled || !mapContainer.current) return;
-      const map = new Map({
+      maplibreRef.current = maplibre;
+      const map = new maplibre.Map({
         container: mapContainer.current,
         style: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
         center: [25.0, 35.25],
@@ -198,32 +246,76 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
         maxZoom: 17,
       });
       mapRef.current = map;
-      map.addControl(new NavigationControl({ showCompass: false }), "top-right");
+      map.addControl(new maplibre.NavigationControl({ showCompass: false }), "bottom-right");
       map.on("load", () => {
-        map.addSource("places", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+        map.addSource("places", {
+          type: "geojson",
+          data: { type: "FeatureCollection", features: [] },
+          cluster: true,
+          clusterMaxZoom: 13,
+          clusterRadius: 55,
+        });
+        map.addLayer({
+          id: "clusters",
+          type: "circle",
+          source: "places",
+          filter: ["has", "point_count"],
+          paint: {
+            "circle-color": ["step", ["get", "point_count"], "#2E7DB2", 50, "#0B5E78", 250, "#083D4E"],
+            "circle-radius": ["step", ["get", "point_count"], 16, 50, 22, 250, 28],
+            "circle-stroke-width": 2.5,
+            "circle-stroke-color": "#ffffff",
+            "circle-opacity": 0.95,
+          },
+        });
+        map.addLayer({
+          id: "cluster-count",
+          type: "symbol",
+          source: "places",
+          filter: ["has", "point_count"],
+          layout: {
+            "text-field": ["get", "point_count_abbreviated"],
+            "text-font": ["Montserrat Medium"],
+            "text-size": 13,
+          },
+          paint: { "text-color": "#ffffff" },
+        });
         map.addLayer({
           id: "places-circles",
           type: "circle",
           source: "places",
+          filter: ["!", ["has", "point_count"]],
           paint: {
-            "circle-radius": ["interpolate", ["linear"], ["zoom"], 7, 4, 12, 8, 16, 12],
+            "circle-radius": ["interpolate", ["linear"], ["zoom"], 7, 5, 12, 8, 16, 12],
             "circle-color": ["get", "color"],
             "circle-stroke-width": 1.5,
             "circle-stroke-color": "#ffffff",
             "circle-opacity": 0.9,
           },
         });
+        map.on("click", "clusters", async (e) => {
+          const f = e.features?.[0];
+          if (!f) return;
+          const src = map.getSource("places") as import("maplibre-gl").GeoJSONSource;
+          const zoom = await src.getClusterExpansionZoom(f.properties!.cluster_id as number);
+          map.easeTo({ center: (f.geometry as GeoJSON.Point).coordinates as [number, number], zoom: zoom + 0.3 });
+        });
         map.on("click", "places-circles", (e) => {
           const f = e.features?.[0];
           if (f?.properties?.slug) selectPlace(String(f.properties.slug));
         });
-        map.on("mouseenter", "places-circles", () => (map.getCanvas().style.cursor = "pointer"));
-        map.on("mouseleave", "places-circles", () => (map.getCanvas().style.cursor = ""));
+        for (const layer of ["clusters", "places-circles"]) {
+          map.on("mouseenter", layer, () => (map.getCanvas().style.cursor = "pointer"));
+          map.on("mouseleave", layer, () => (map.getCanvas().style.cursor = ""));
+        }
+        map.on("moveend", () => setMapViewport((v) => v + 1));
         setMapReady(true);
       });
     });
     return () => {
       cancelled = true;
+      for (const m of photoMarkersRef.current) m.remove();
+      photoMarkersRef.current = [];
       mapRef.current?.remove();
       mapRef.current = null;
     };
@@ -248,9 +340,54 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
     });
   }, [filtered, mapReady]);
 
+  // --- Photo-pins : au zoom, les meilleurs lieux visibles deviennent des
+  // vignettes photo cliquables (DOM markers), les autres restent des points. ---
+  useEffect(() => {
+    const map = mapRef.current;
+    const maplibre = maplibreRef.current;
+    if (!map || !maplibre || !mapReady) return;
+    for (const m of photoMarkersRef.current) m.remove();
+    photoMarkersRef.current = [];
+    if (map.getZoom() < PHOTO_PIN_ZOOM) return;
+    const bounds = map.getBounds();
+    const visible = filtered
+      .filter((p) =>
+        p.latitude != null && p.longitude != null && p.photos?.[0] &&
+        bounds.contains([p.longitude, p.latitude]))
+      .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+      .slice(0, PHOTO_PIN_MAX);
+    for (const p of visible) {
+      const el = document.createElement("button");
+      el.className = "cd-photo-pin";
+      el.setAttribute("aria-label", p.name);
+      el.style.cssText =
+        "width:60px;height:60px;border-radius:14px;border:3px solid #fff;box-shadow:0 6px 16px rgba(7,40,52,.35);overflow:hidden;cursor:pointer;position:relative;padding:0;background:#DFF7FA";
+      const img = document.createElement("img");
+      img.src = p.photos![0];
+      img.alt = p.name;
+      img.loading = "lazy";
+      img.style.cssText = "width:100%;height:100%;object-fit:cover;display:block";
+      el.appendChild(img);
+      if (p.rating != null && p.rating > 0) {
+        const badge = document.createElement("span");
+        badge.textContent = `★ ${p.rating.toFixed(1)}`;
+        badge.style.cssText =
+          "position:absolute;bottom:0;left:0;right:0;background:rgba(11,94,120,.88);color:#fff;font-size:10px;font-weight:700;text-align:center;padding:1px 0;line-height:1.4";
+        el.appendChild(badge);
+      }
+      el.addEventListener("click", () => selectPlace(p.slug));
+      const marker = new maplibre.Marker({ element: el, anchor: "bottom", offset: [0, -4] })
+        .setLngLat([p.longitude!, p.latitude!])
+        .addTo(map);
+      photoMarkersRef.current.push(marker);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtered, mapReady, mapViewport]);
+
   async function selectPlace(slug: string) {
     const base = places.find((p) => p.slug === slug);
     setPhotoIdx(0);
+    setListExpanded(false);
     setSelectedLoading(true);
     setSelected(base ? ({ ...base, description: null, meta_description: null, other_info: null, source_url: null } as CbPlace) : null);
     const full = await getCbPlaceBySlug(slug);
@@ -270,319 +407,383 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function toggleType(type: string) {
-    setActiveTypes((prev) => {
-      const next = new Set(prev);
-      if (next.has(type)) next.delete(type);
-      else next.add(type);
-      return next;
-    });
-  }
-
   function clearFilters() {
-    setQuery(""); setActiveTypes(new Set()); setPrefecture(""); setMinRating(0);
+    setQuery(""); setFamily(null); setPrefecture(""); setMinRating(0);
     setSand(""); setWater(""); setCrowdLevel("");
   }
 
   const selectedPhotos = selected?.photos || [];
 
+  const filtersPanel = (
+    <div className="space-y-2.5">
+      <select value={prefecture} onChange={(e) => setPrefecture(e.target.value)}
+        className="w-full text-sm py-2 px-2.5 rounded-lg border border-aegean/20 bg-surface">
+        <option value="">{t.prefecture}: {t.anyPref}</option>
+        {PREFECTURES.map((p) => <option key={p} value={p}>{p}</option>)}
+      </select>
+      <select value={minRating} onChange={(e) => setMinRating(Number(e.target.value))}
+        className="w-full text-sm py-2 px-2.5 rounded-lg border border-aegean/20 bg-surface">
+        <option value={0}>{t.rating}: {t.any}</option>
+        {[3, 3.5, 4, 4.5].map((r) => <option key={r} value={r}>≥ {r} ★</option>)}
+      </select>
+      {beachFiltersRelevant && (
+        <>
+          <select value={sand} onChange={(e) => setSand(e.target.value)}
+            className="w-full text-sm py-2 px-2.5 rounded-lg border border-aegean/20 bg-surface">
+            <option value="">{t.sand}: {t.any}</option>
+            {sandOptions.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <select value={water} onChange={(e) => setWater(e.target.value)}
+            className="w-full text-sm py-2 px-2.5 rounded-lg border border-aegean/20 bg-surface">
+            <option value="">{t.water}: {t.any}</option>
+            {waterOptions.map((w) => <option key={w} value={w}>{w}</option>)}
+          </select>
+          <select value={crowdLevel} onChange={(e) => setCrowdLevel(e.target.value)}
+            className="w-full text-sm py-2 px-2.5 rounded-lg border border-aegean/20 bg-surface">
+            <option value="">{t.crowds}: {t.any}</option>
+            {crowdOptions.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </>
+      )}
+      {hasFilters && (
+        <button onClick={clearFilters} className="text-xs text-terra font-semibold hover:underline">{t.clear}</button>
+      )}
+    </div>
+  );
+
+  // Card riche partagee entre le panneau desktop et la liste mobile.
+  function PlaceRow({ p }: { p: CbPlaceListItem & { km?: number } }) {
+    return (
+      <button
+        onClick={() => selectPlace(p.slug)}
+        className="flex gap-3 p-2 rounded-xl border border-aegean/10 bg-white shadow-sm hover:shadow-md hover:border-aegean/30 text-left transition-all w-full"
+      >
+        <div className="w-[72px] h-[64px] rounded-lg overflow-hidden bg-sand shrink-0">
+          {p.photos?.[0] ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={p.photos[0]} alt={p.name} loading="lazy" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-aegean/30">
+              <MapPin size={20} />
+            </div>
+          )}
+        </div>
+        <div className="min-w-0 flex-1 py-0.5">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-sm text-text truncate">{p.name}</span>
+            <RatingStars rating={p.rating} />
+            {p.km != null && (
+              <span className="text-xs text-text-muted font-data whitespace-nowrap">· {fmtKm(p.km)} km</span>
+            )}
+          </div>
+          <div className="text-xs text-text-muted mt-0.5">
+            <span className="inline-block w-2 h-2 rounded-full mr-1"
+              style={{ backgroundColor: TYPE_COLORS[p.place_type] || FALLBACK_COLOR }} />
+            {typeLabel(p.place_type, locale)}
+            {detectPrefecture(p) ? ` · ${detectPrefecture(p)}` : ""}
+          </div>
+          {(p.sand_type || p.water_color) && (
+            <div className="flex gap-1 mt-1.5 overflow-hidden">
+              {[p.sand_type, p.water_color].filter(Boolean).slice(0, 2).map((v) => (
+                <span key={v} className="text-[10px] font-medium bg-surface border border-aegean/10 text-text-muted px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                  {v}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </button>
+    );
+  }
+
   return (
-    <div className="flex flex-col" style={{ height: "calc(100vh - 56px)" }}>
-      {/* Filter bar */}
-      <div className="border-b border-aegean/10 bg-white px-4 py-2.5 space-y-2">
-        {/* Row 1 : search + Filtres (mobile) + Near me + count */}
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1 md:flex-none min-w-0">
-            <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" />
+    <div className="relative overflow-hidden" style={{ height: "calc(100vh - 56px)" }}>
+      {/* Carte plein ecran : tout le reste flotte par-dessus.
+          Wrapper separe : maplibre-gl.css force position:relative sur le
+          conteneur de la carte, ce qui annulerait notre `absolute`. */}
+      <div className="absolute inset-0">
+        <div ref={mapContainer} className="h-full w-full" />
+      </div>
+
+      {/* ===== Barre flottante haute (desktop : a droite du panneau liste) ===== */}
+      <div className="absolute top-3 left-3 right-3 md:left-[360px] md:right-4 z-20 flex flex-col gap-2 pointer-events-none">
+        <div className="flex items-center gap-2 pointer-events-auto">
+          <div className="relative flex-1 md:max-w-[320px]">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t.search}
-              className="w-full md:w-52 pl-8 pr-3 py-1.5 text-sm rounded-lg border border-aegean/20 bg-surface focus:outline-none focus:border-aegean"
+              className="w-full pl-9 pr-3 py-2.5 text-sm rounded-full border border-white/60 bg-white shadow-[0_6px_24px_rgba(11,94,120,0.18)] focus:outline-none focus:border-aegean"
             />
           </div>
-          <button
-            type="button"
-            onClick={() => setMobileFiltersOpen((v) => !v)}
-            aria-expanded={mobileFiltersOpen}
-            className="md:hidden flex items-center gap-1.5 text-sm py-1.5 px-3 rounded-lg border border-aegean/20 bg-surface text-text shrink-0"
-          >
-            <SlidersHorizontal className="w-4 h-4" />
-            {t.filters}
-            {advancedActiveCount > 0 && (
-              <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] text-[10px] font-bold bg-aegean text-white rounded-full px-1">
-                {advancedActiveCount}
-              </span>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setFiltersOpen((v) => !v)}
+              aria-expanded={filtersOpen}
+              className="flex items-center gap-1.5 text-sm font-semibold py-2.5 px-4 rounded-full bg-white shadow-[0_6px_24px_rgba(11,94,120,0.18)] text-text shrink-0"
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              <span className="hidden sm:inline">{t.filters}</span>
+              {advancedActiveCount > 0 && (
+                <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] text-[10px] font-bold bg-terra text-white rounded-full px-1">
+                  {advancedActiveCount}
+                </span>
+              )}
+            </button>
+            {filtersOpen && (
+              <div className="absolute right-0 top-12 w-64 bg-white rounded-2xl shadow-2xl border border-aegean/10 p-3 z-30">
+                {filtersPanel}
+              </div>
             )}
-          </button>
+          </div>
           <button
             onClick={toggleNearMe}
             title={geoBlocked ? t.geoUnavailable : undefined}
             aria-pressed={nearActive && Boolean(geo.pos)}
-            className={`flex items-center gap-1.5 text-sm py-1.5 px-2.5 md:px-3 rounded-lg border transition-colors shrink-0 ${
+            className={`hidden md:flex items-center gap-1.5 text-sm font-semibold py-2.5 px-4 rounded-full shadow-[0_6px_24px_rgba(11,94,120,0.18)] transition-colors shrink-0 ${
               nearActive && geo.pos
-                ? "bg-aegean text-white border-aegean"
+                ? "bg-aegean text-white"
                 : geoBlocked
-                  ? "bg-surface text-text-muted border-aegean/20 opacity-60 cursor-help"
-                  : "bg-surface text-text border-aegean/20 hover:border-aegean/50"
+                  ? "bg-white text-text-muted opacity-60 cursor-help"
+                  : "bg-white text-text hover:text-aegean"
             }`}
           >
             <CiCompass className="w-4 h-4" />
-            <span className="hidden sm:inline">{t.nearMe}</span>
+            {t.nearMe}
           </button>
-          <span className="hidden md:inline ml-auto text-xs text-text-muted font-medium whitespace-nowrap">
-            {filtered.length} {t.results}
-          </span>
         </div>
 
-        {/* Row 2 : selects avances (desktop : tjrs visibles ; mobile : collapse) */}
-        <div className={`${mobileFiltersOpen ? "flex" : "hidden"} md:flex flex-wrap items-center gap-2`}>
-          <select value={prefecture} onChange={(e) => setPrefecture(e.target.value)}
-            className="text-sm py-1.5 px-2 rounded-lg border border-aegean/20 bg-surface">
-            <option value="">{t.anyPref}</option>
-            {PREFECTURES.map((p) => <option key={p} value={p}>{p}</option>)}
-          </select>
-          <select value={minRating} onChange={(e) => setMinRating(Number(e.target.value))}
-            className="text-sm py-1.5 px-2 rounded-lg border border-aegean/20 bg-surface">
-            <option value={0}>{t.rating}: {t.any}</option>
-            {[3, 3.5, 4, 4.5].map((r) => <option key={r} value={r}>≥ {r} ★</option>)}
-          </select>
-          {beachFiltersRelevant && (
-            <>
-              <select value={sand} onChange={(e) => setSand(e.target.value)}
-                className="text-sm py-1.5 px-2 rounded-lg border border-aegean/20 bg-surface">
-                <option value="">{t.sand}: {t.any}</option>
-                {sandOptions.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
-              <select value={water} onChange={(e) => setWater(e.target.value)}
-                className="text-sm py-1.5 px-2 rounded-lg border border-aegean/20 bg-surface">
-                <option value="">{t.water}: {t.any}</option>
-                {waterOptions.map((w) => <option key={w} value={w}>{w}</option>)}
-              </select>
-              <select value={crowdLevel} onChange={(e) => setCrowdLevel(e.target.value)}
-                className="text-sm py-1.5 px-2 rounded-lg border border-aegean/20 bg-surface">
-                <option value="">{t.crowds}: {t.any}</option>
-                {crowdOptions.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </>
-          )}
-          {hasFilters && (
-            <button onClick={clearFilters} className="text-xs text-terra hover:underline">{t.clear}</button>
-          )}
-        </div>
-
-        {/* Row 3 : types — single-row horizontal scroll mobile, wrap desktop */}
-        <div className="flex md:flex-wrap overflow-x-auto md:overflow-visible gap-1.5 -mx-4 px-4 md:mx-0 md:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {typeCounts.map(([type, count]) => {
-            const active = activeTypes.size === 0 || activeTypes.has(type);
-            const explicit = activeTypes.has(type);
+        {/* Rail de familles : 6 categories scannables au lieu de 26 chips */}
+        <div className="flex gap-1.5 overflow-x-auto pointer-events-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {FAMILIES.map(({ key, Icon }) => {
+            const active = family === key;
+            const count = familyCounts.get(key) || 0;
+            if (count === 0) return null;
             return (
               <button
-                key={type}
-                onClick={() => toggleType(type)}
-                className={`shrink-0 md:shrink px-2.5 py-1 rounded-full text-xs font-medium border transition-colors whitespace-nowrap ${
-                  explicit
-                    ? "text-white border-transparent"
-                    : active
-                      ? "bg-white text-text border-aegean/20 hover:border-aegean/50"
-                      : "bg-surface text-text-muted border-transparent opacity-50"
+                key={key}
+                onClick={() => setFamily(active ? null : key)}
+                className={`flex items-center gap-1.5 shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold shadow-[0_4px_16px_rgba(11,94,120,0.15)] transition-colors whitespace-nowrap ${
+                  active ? "bg-aegean text-white" : "bg-white/95 text-text hover:text-aegean"
                 }`}
-                style={explicit ? { backgroundColor: TYPE_COLORS[type] || FALLBACK_COLOR } : undefined}
               >
-                <span className="inline-block w-2 h-2 rounded-full mr-1.5 align-middle"
-                  style={{ backgroundColor: explicit ? "#fff" : TYPE_COLORS[type] || FALLBACK_COLOR }} />
-                {typeLabel(type, locale)} ({count})
+                <Icon size={14} />
+                {t[key]}
+                <span className={active ? "text-white/70" : "text-text-muted"}>{count}</span>
               </button>
             );
           })}
         </div>
-
-        {/* Count mobile (desktop : dans la row 1) */}
-        <p className="md:hidden text-[11px] text-text-muted text-right m-0">
-          {filtered.length} {t.results}
-        </p>
       </div>
 
-      {/* Mobile toggle */}
-      <div className="md:hidden flex border-b border-aegean/10 bg-white">
-        {(["map", "list"] as const).map((v) => (
-          <button key={v} onClick={() => setMobileView(v)}
-            className={`flex-1 py-2 text-sm font-medium flex items-center justify-center gap-1.5 ${
-              mobileView === v ? "text-aegean border-b-2 border-aegean" : "text-text-muted"
-            }`}>
-            {v === "map" ? <MapIcon size={15} /> : <List size={15} />}
-            {v === "map" ? t.showMap : t.showList}
-          </button>
-        ))}
-      </div>
-
-      {/* Main: list + map */}
-      <div className="flex flex-1 min-h-0 relative">
-        <div className={`${mobileView === "list" ? "flex" : "hidden"} md:flex flex-col w-full md:w-96 border-r border-aegean/10 bg-white overflow-y-auto`}>
+      {/* ===== Panneau liste flottant (desktop) ===== */}
+      <div className="hidden md:flex absolute left-3 top-3 bottom-3 w-[336px] z-10 flex-col bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_14px_44px_rgba(11,94,120,0.22)] overflow-hidden">
+        <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5">
+          <span className="text-sm text-text-muted">
+            <b className="text-text text-base font-bold">{filtered.length}</b> {t.results}
+          </span>
+          <span className="text-xs font-semibold text-aegean bg-aegean-faint px-2.5 py-1 rounded-full">
+            {nearActive && geo.pos ? t.sortNear : t.sortRating}
+          </span>
+        </div>
+        <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-2">
           {displayed.length === 0 && (
-            <p className="p-6 text-sm text-text-muted">{t.noResults}</p>
+            <p className="p-4 text-sm text-text-muted">{t.noResults}</p>
           )}
-          {displayed.slice(0, 200).map((p) => (
-            <button
-              key={p.slug}
-              onClick={() => { selectPlace(p.slug); setMobileView("map"); }}
-              className="flex gap-3 p-3 border-b border-aegean/5 hover:bg-aegean-faint/50 text-left transition-colors"
-            >
-              <div className="w-20 h-16 rounded-lg overflow-hidden bg-sand shrink-0">
-                {p.photos?.[0] ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={p.photos[0]} alt={p.name} loading="lazy" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-aegean/30">
-                    <MapPin size={20} />
-                  </div>
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-sm text-text truncate">{p.name}</span>
-                  <RatingStars rating={p.rating} />
-                  {p.km != null && (
-                    <span className="text-xs text-text-muted font-data whitespace-nowrap">
-                      · {fmtKm(p.km)} km
-                    </span>
-                  )}
-                </div>
-                <div className="text-xs text-text-muted mt-0.5">
-                  <span className="inline-block w-2 h-2 rounded-full mr-1"
-                    style={{ backgroundColor: TYPE_COLORS[p.place_type] || FALLBACK_COLOR }} />
-                  {typeLabel(p.place_type, locale)}
-                  {detectPrefecture(p) ? ` · ${detectPrefecture(p)}` : ""}
-                </div>
-                {(p.sand_type || p.water_color) && (
-                  <div className="text-xs text-text-muted mt-0.5 truncate">
-                    {[p.sand_type, p.water_color].filter(Boolean).join(" · ")}
-                  </div>
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
-
-        <div className={`${mobileView === "map" ? "block" : "hidden"} md:block flex-1 relative`}>
-          <div ref={mapContainer} className="h-full w-full" />
-
-          {/* Detail drawer */}
-          {selected && (
-            <div className="absolute top-0 right-0 h-full w-full sm:w-[400px] bg-white shadow-xl overflow-y-auto z-10">
-              <div className="relative">
-                {selectedPhotos.length > 0 ? (
-                  <div className="relative h-56 bg-sand">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={selectedPhotos[photoIdx]} alt={selected.name} className="w-full h-full object-cover" />
-                    {selectedPhotos.length > 1 && (
-                      <>
-                        <button onClick={() => setPhotoIdx((photoIdx - 1 + selectedPhotos.length) % selectedPhotos.length)}
-                          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full p-1.5 hover:bg-black/60">
-                          <ChevronLeft size={18} />
-                        </button>
-                        <button onClick={() => setPhotoIdx((photoIdx + 1) % selectedPhotos.length)}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full p-1.5 hover:bg-black/60">
-                          <ChevronRight size={18} />
-                        </button>
-                        <span className="absolute bottom-2 right-2 text-xs bg-black/50 text-white px-2 py-0.5 rounded-full">
-                          {photoIdx + 1}/{selectedPhotos.length}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                ) : (
-                  <div className="h-20 bg-aegean-faint" />
-                )}
-                <button onClick={() => setSelected(null)}
-                  className="absolute top-2 left-2 bg-black/40 text-white rounded-full p-1.5 hover:bg-black/60">
-                  <X size={16} />
-                </button>
-              </div>
-
-              <div className="p-4 space-y-3">
-                <div>
-                  <div className="flex items-start justify-between gap-2">
-                    <h2 className="text-lg font-bold text-aegean leading-tight">{selected.name}</h2>
-                    <RatingStars rating={selected.rating} />
-                  </div>
-                  <p className="text-xs text-text-muted mt-1">
-                    {typeLabel(selected.place_type, locale)}
-                    {selected.prefecture ? ` · ${selected.prefecture}` : ""}
-                  </p>
-                </div>
-
-                <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
-                  {([
-                    [t.sand, selected.sand_type],
-                    [t.water, selected.water_color],
-                    [t.depth, selected.depth],
-                    [t.seaSurface, selected.sea_surface],
-                    [t.crowds, selected.crowds],
-                    [t.accessibility, selected.accessibility],
-                  ] as const).filter(([, v]) => v).map(([label, v]) => (
-                    <div key={label}>
-                      <dt className="text-text-muted">{label}</dt>
-                      <dd className="font-medium text-text">{v}</dd>
-                    </div>
-                  ))}
-                  {selected.facilities && (
-                    <div className="col-span-2">
-                      <dt className="text-text-muted">{t.facilities}</dt>
-                      <dd className="font-medium text-text">{selected.facilities}</dd>
-                    </div>
-                  )}
-                </dl>
-
-                <div className="border-t border-aegean/10 pt-3">
-                  <CbPlaceActions
-                    slug={selected.slug}
-                    name={selected.name}
-                    latitude={selected.latitude}
-                    longitude={selected.longitude}
-                    locale={locale}
-                    compact
-                  />
-                </div>
-
-                {selectedLoading && <p className="text-xs text-text-muted">{t.loading}</p>}
-                {(() => {
-                  const { paragraphs, nearby } = cleanCbDescription(selected.description);
-                  if (paragraphs.length === 0 && nearby.length === 0) return null;
-                  return (
-                    <div className="space-y-3 border-t border-aegean/10 pt-3">
-                      {paragraphs.length > 0 && (
-                        <div className="text-sm text-text/90 leading-relaxed space-y-2.5">
-                          {paragraphs.slice(0, 8).map((para, i) => (
-                            <p key={i}>{para}</p>
-                          ))}
-                        </div>
-                      )}
-                      {nearby.length > 0 && (
-                        <details className="rounded-lg bg-aegean-faint/30 p-2">
-                          <summary className="text-xs font-semibold text-aegean cursor-pointer">
-                            {nearby.length} {locale === "fr" ? "lieux à proximité" : locale === "de" ? "Orte in der Nähe" : locale === "el" ? "κοντινά μέρη" : "places nearby"}
-                          </summary>
-                          <ul className="mt-2 space-y-1 text-xs">
-                            {nearby.slice(0, 12).map((n, i) => (
-                              <li key={i} className="flex justify-between gap-2">
-                                <span className="truncate text-text">{n.name}</span>
-                                <span className="text-text-muted font-data shrink-0">
-                                  {n.km < 10 ? n.km.toFixed(1) : Math.round(n.km)} km
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
-                        </details>
-                      )}
-                    </div>
-                  );
-                })()}
-              </div>
-            </div>
-          )}
+          {displayed.slice(0, 200).map((p) => <PlaceRow key={p.slug} p={p} />)}
         </div>
       </div>
+
+      {/* ===== Mobile : Near me flottant + carousel bottom sheet ===== */}
+      {!selected && (
+        <>
+          <button
+            onClick={toggleNearMe}
+            aria-pressed={nearActive && Boolean(geo.pos)}
+            className={`md:hidden absolute right-3 bottom-[178px] z-20 flex items-center gap-1.5 text-xs font-bold py-2 px-3.5 rounded-full shadow-[0_8px_22px_rgba(11,94,120,0.3)] ${
+              nearActive && geo.pos ? "bg-aegean text-white" : "bg-white text-aegean"
+            }`}
+          >
+            <CiCompass className="w-4 h-4" />
+            {t.nearMe}
+          </button>
+
+          <div className="md:hidden absolute bottom-0 left-0 right-0 z-20">
+            <button
+              onClick={() => setListExpanded(true)}
+              className="mx-auto mb-1.5 flex items-center gap-1.5 bg-white/95 text-aegean text-xs font-bold px-4 py-1.5 rounded-full shadow-[0_4px_14px_rgba(11,94,120,0.25)]"
+            >
+              <ChevronUp size={14} /> {filtered.length} {t.results}
+            </button>
+            <div className="flex gap-2.5 overflow-x-auto px-3 pb-3 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {displayed.slice(0, 30).map((p) => (
+                <button
+                  key={p.slug}
+                  onClick={() => selectPlace(p.slug)}
+                  className="snap-start shrink-0 w-[196px] bg-white rounded-2xl overflow-hidden shadow-[0_10px_30px_rgba(11,94,120,0.28)] text-left"
+                >
+                  <div className="h-[84px] bg-sand relative">
+                    {p.photos?.[0] ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={p.photos[0]} alt={p.name} loading="lazy" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-aegean/30"><MapPin size={22} /></div>
+                    )}
+                    <span className="absolute top-1.5 left-1.5 text-[9px] font-bold text-white px-2 py-0.5 rounded-full"
+                      style={{ backgroundColor: TYPE_COLORS[p.place_type] || FALLBACK_COLOR }}>
+                      {typeLabel(p.place_type, locale)}
+                    </span>
+                  </div>
+                  <div className="px-2.5 py-2">
+                    <div className="flex items-center justify-between gap-1.5">
+                      <span className="font-semibold text-[13px] text-text truncate">{p.name}</span>
+                      <RatingStars rating={p.rating} />
+                    </div>
+                    <div className="text-[11px] text-text-muted mt-0.5 truncate">
+                      {detectPrefecture(p) || ""}
+                      {p.km != null ? ` · ${fmtKm(p.km)} km` : ""}
+                      {p.sand_type ? ` · ${p.sand_type}` : ""}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Mobile : liste complete (sheet plein ecran) */}
+      {listExpanded && (
+        <div className="md:hidden absolute inset-0 z-30 bg-surface flex flex-col">
+          <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-aegean/10">
+            <span className="text-sm font-bold text-text">{filtered.length} {t.results}</span>
+            <button onClick={() => setListExpanded(false)}
+              className="bg-aegean-faint text-aegean rounded-full p-2"><X size={16} /></button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            {displayed.length === 0 && <p className="p-4 text-sm text-text-muted">{t.noResults}</p>}
+            {displayed.slice(0, 200).map((p) => <PlaceRow key={p.slug} p={p} />)}
+          </div>
+        </div>
+      )}
+
+      {/* ===== Fiche lieu ===== */}
+      {selected && (
+        <div className="absolute z-30 bg-white shadow-2xl overflow-y-auto inset-x-0 bottom-0 max-h-[78%] rounded-t-3xl md:inset-x-auto md:right-3 md:top-3 md:bottom-3 md:max-h-none md:w-[360px] md:rounded-2xl">
+          <div className="relative">
+            {selectedPhotos.length > 0 ? (
+              <div className="relative h-52 bg-sand">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={selectedPhotos[photoIdx]} alt={selected.name} className="w-full h-full object-cover" />
+                {selectedPhotos.length > 1 && (
+                  <>
+                    <button onClick={() => setPhotoIdx((photoIdx - 1 + selectedPhotos.length) % selectedPhotos.length)}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full p-1.5 hover:bg-black/60">
+                      <ChevronLeft size={18} />
+                    </button>
+                    <button onClick={() => setPhotoIdx((photoIdx + 1) % selectedPhotos.length)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full p-1.5 hover:bg-black/60">
+                      <ChevronRight size={18} />
+                    </button>
+                    <span className="absolute bottom-2 right-2 text-xs bg-black/50 text-white px-2 py-0.5 rounded-full">
+                      {photoIdx + 1}/{selectedPhotos.length}
+                    </span>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="h-20 bg-aegean-faint" />
+            )}
+            <button onClick={() => setSelected(null)}
+              className="absolute top-2 right-2 md:right-auto md:left-2 bg-black/40 text-white rounded-full p-1.5 hover:bg-black/60">
+              <X size={16} />
+            </button>
+          </div>
+
+          <div className="p-4 space-y-3">
+            <div>
+              <div className="flex items-start justify-between gap-2">
+                <h2 className="text-lg font-bold text-aegean leading-tight">{selected.name}</h2>
+                <RatingStars rating={selected.rating} />
+              </div>
+              <p className="text-xs text-text-muted mt-1">
+                {typeLabel(selected.place_type, locale)}
+                {selected.prefecture ? ` · ${selected.prefecture}` : ""}
+              </p>
+            </div>
+
+            {/* Attributs en grille de tuiles : plus scannable qu'une dl seche */}
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                [t.sand, selected.sand_type],
+                [t.water, selected.water_color],
+                [t.depth, selected.depth],
+                [t.seaSurface, selected.sea_surface],
+                [t.crowds, selected.crowds],
+                [t.accessibility, selected.accessibility],
+              ] as const).filter(([, v]) => v).map(([label, v]) => (
+                <div key={label} className="bg-surface border border-aegean/10 rounded-xl px-2.5 py-2">
+                  <div className="text-[10px] uppercase tracking-wide font-semibold text-text-muted">{label}</div>
+                  <div className="text-xs font-semibold text-text mt-0.5">{v}</div>
+                </div>
+              ))}
+              {selected.facilities && (
+                <div className="col-span-2 bg-surface border border-aegean/10 rounded-xl px-2.5 py-2">
+                  <div className="text-[10px] uppercase tracking-wide font-semibold text-text-muted">{t.facilities}</div>
+                  <div className="text-xs font-semibold text-text mt-0.5">{selected.facilities}</div>
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-aegean/10 pt-3">
+              <CbPlaceActions
+                slug={selected.slug}
+                name={selected.name}
+                latitude={selected.latitude}
+                longitude={selected.longitude}
+                locale={locale}
+                compact
+              />
+            </div>
+
+            {selectedLoading && <p className="text-xs text-text-muted">{t.loading}</p>}
+            {(() => {
+              const { paragraphs, nearby } = cleanCbDescription(selected.description);
+              if (paragraphs.length === 0 && nearby.length === 0) return null;
+              return (
+                <div className="space-y-3 border-t border-aegean/10 pt-3">
+                  {paragraphs.length > 0 && (
+                    <div className="text-sm text-text/90 leading-relaxed space-y-2.5">
+                      {paragraphs.slice(0, 8).map((para, i) => (
+                        <p key={i}>{para}</p>
+                      ))}
+                    </div>
+                  )}
+                  {nearby.length > 0 && (
+                    <details className="rounded-lg bg-aegean-faint/30 p-2">
+                      <summary className="text-xs font-semibold text-aegean cursor-pointer">
+                        {nearby.length} {locale === "fr" ? "lieux à proximité" : locale === "de" ? "Orte in der Nähe" : locale === "el" ? "κοντινά μέρη" : "places nearby"}
+                      </summary>
+                      <ul className="mt-2 space-y-1 text-xs">
+                        {nearby.slice(0, 12).map((n, i) => (
+                          <li key={i} className="flex justify-between gap-2">
+                            <span className="truncate text-text">{n.name}</span>
+                            <span className="text-text-muted font-data shrink-0">
+                              {n.km < 10 ? n.km.toFixed(1) : Math.round(n.km)} km
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
