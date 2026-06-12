@@ -10,6 +10,10 @@ import { motion, useMotionValue, useTransform, AnimatePresence } from "motion/re
 import { Heart, X, MapPin, Star, RotateCcw } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { typeLabel } from "@/lib/cb-type-labels";
+import { useGeoPosition } from "@/components/geo/useGeoPosition";
+import { PlacePicker } from "@/components/geo/PlacePicker";
+import { haversineKm, isOnCrete, type GeoPos } from "@/lib/geo";
+import { SLUG_COORDS } from "@/lib/taxi-fare";
 import { CarPromo } from "@/components/car-rental/CarPromo";
 import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 import {
@@ -18,6 +22,7 @@ import {
   INTEREST_GROUPS,
   emptyProfile,
   interestTypes,
+  nearSlugs,
   pickMatch,
   sampleDeck,
   seedProfile,
@@ -74,6 +79,14 @@ const T: Record<string, Record<string, string>> = {
     emailSent: "Sent! Check your inbox.",
     emailError: "Something went wrong. Try again.",
     emailOptin: "Also send me the weekly Crete briefing",
+    geoNearMe: "Around me",
+    geoActive: "Nearby first",
+    geoOff: "Disable",
+    geoPick: "Choose a place",
+    prepTitle: "Trip-prep mode",
+    prepSub: "You're not in Crete yet. Where will you stay?",
+    prepFrom: "Distances from your stay",
+    synthSubPrep: "Everything you liked, ready for your trip:",
   },
   fr: {
     title: "Trouve ton spot",
@@ -112,6 +125,14 @@ const T: Record<string, Record<string, string>> = {
     emailSent: "Envoyé ! Regarde ta boîte mail.",
     emailError: "Un souci est survenu. Réessaie.",
     emailOptin: "Et envoie-moi le briefing hebdo Crète",
+    geoNearMe: "Autour de moi",
+    geoActive: "Proche d'abord",
+    geoOff: "Désactiver",
+    geoPick: "Choisis un lieu",
+    prepTitle: "Mode préparation",
+    prepSub: "Tu n'es pas encore sur place. Où vas-tu loger ?",
+    prepFrom: "Distances depuis ton logement",
+    synthSubPrep: "Tout ce que tu as liké, prêt pour ton voyage :",
   },
   de: {
     title: "Finde deinen Ort",
@@ -150,6 +171,14 @@ const T: Record<string, Record<string, string>> = {
     emailSent: "Gesendet! Schau in dein Postfach.",
     emailError: "Etwas ist schiefgelaufen. Versuch es nochmal.",
     emailOptin: "Schick mir auch das wöchentliche Kreta-Briefing",
+    geoNearMe: "In meiner Nähe",
+    geoActive: "Nahes zuerst",
+    geoOff: "Deaktivieren",
+    geoPick: "Ort wählen",
+    prepTitle: "Reiseplanungs-Modus",
+    prepSub: "Du bist noch nicht auf Kreta. Wo wirst du wohnen?",
+    prepFrom: "Entfernungen von deiner Unterkunft",
+    synthSubPrep: "Alles, was dir gefallen hat, bereit für deine Reise:",
   },
   el: {
     title: "Βρες το μέρος σου",
@@ -188,6 +217,14 @@ const T: Record<string, Record<string, string>> = {
     emailSent: "Στάλθηκε! Δες τα εισερχόμενά σου.",
     emailError: "Κάτι πήγε στραβά. Δοκίμασε ξανά.",
     emailOptin: "Στείλε μου και το εβδομαδιαίο briefing Κρήτης",
+    geoNearMe: "Κοντά μου",
+    geoActive: "Κοντινά πρώτα",
+    geoOff: "Απενεργοποίηση",
+    geoPick: "Διάλεξε μέρος",
+    prepTitle: "Λειτουργία προετοιμασίας",
+    prepSub: "Δεν είσαι ακόμα στην Κρήτη. Πού θα μείνεις;",
+    prepFrom: "Αποστάσεις από το κατάλυμά σου",
+    synthSubPrep: "Ό,τι σου άρεσε, έτοιμο για το ταξίδι σου:",
   },
 };
 
@@ -273,6 +310,7 @@ function SwipeCard({
   exitDir,
   locale,
   t,
+  km,
   onSwipe,
 }: {
   place: MatchPlace;
@@ -281,6 +319,7 @@ function SwipeCard({
   exitDir: number;
   locale: string;
   t: Record<string, string>;
+  km?: number | null; // distance à l'ancrage (position ou logement), null = pas de géo
   onSwipe: (liked: boolean) => void;
 }) {
   const x = useMotionValue(0);
@@ -351,6 +390,11 @@ function SwipeCard({
           <p className="m-0 mt-1 flex items-center gap-1.5 text-[13.5px] text-white/85">
             <MapPin size={13} /> {typeLabel(place.place_type, locale)}
             {place.prefecture ? ` · ${place.prefecture}` : ""}
+            {km != null && (
+              <span className="font-data ml-1 rounded-full bg-white/15 px-2 py-0.5 text-[12px] font-bold">
+                {Math.max(1, Math.round(km))} km
+              </span>
+            )}
           </p>
           <div className="mt-2.5 flex flex-wrap gap-1.5">
             {[place.water_color, place.sand_type, place.crowds].filter(Boolean).map((v) => (
@@ -382,6 +426,18 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
   const [newsletterOptin, setNewsletterOptin] = useState(false);
   const lastSwipedRef = useRef<string | null>(null);
 
+  const { status: geoStatus, pos, requestGeo, setManual } = useGeoPosition();
+  const [geoOff, setGeoOff] = useState(false); // opt-out utilisateur (session courante)
+  const [prepPos, setPrepPos] = useState<GeoPos | null>(null); // futur logement (mode prépa)
+  const [prepSlug, setPrepSlug] = useState<string | null>(null);
+
+  // Mode dérivé : off (pas de position / désactivé), near (sur l'île),
+  // prep (position hors Crète => on prépare le voyage).
+  const onCrete = pos != null && isOnCrete(pos);
+  const geoMode: "off" | "near" | "prep" = geoOff || !pos ? "off" : onCrete ? "near" : "prep";
+  // Point d'ancrage des distances et de la pondération du deck.
+  const anchor: GeoPos | null = geoMode === "near" ? pos : geoMode === "prep" ? prepPos : null;
+
   // Hydratation au mount uniquement : localStorage + échantillonnage aléatoire
   // (jamais au render serveur, sinon mismatch d'hydratation).
   useEffect(() => {
@@ -393,7 +449,8 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
     setLikedSlugs(stored.liked);
     setSeenSlugs(stored.seen);
     setInterests(stored.interests);
-    setDeck(sampleDeck(pool, DECK_SIZE, new Set(stored.seen), interestTypes(stored.interests || [])));
+    // L'échantillonnage du deck vit dans l'effet anchorKey ci-dessous
+    // (déclenché quand ready passe à true, puis à chaque changement d'ancrage).
     if (stored.interests === null) {
       setScreen("interests");
       setPendingGroups([]);
@@ -402,6 +459,31 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
     track("match_deck_start");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Clé stable de l'ancrage (évite de re-sampler sur chaque render).
+  const anchorKey = anchor ? `${anchor.lat.toFixed(3)},${anchor.lon.toFixed(3)}` : "none";
+
+  // (Ré)échantillonne le deck à l'init et à chaque changement d'ancrage.
+  // Profil, likes et seen sont conservés ; l'index repart à zéro.
+  useEffect(() => {
+    if (!ready) return;
+    const near = anchor ? nearSlugs(pool, anchor) : undefined;
+    setDeck(sampleDeck(pool, DECK_SIZE, new Set(seenSlugs), interestTypes(interests || []), near));
+    setIndex(0);
+    setSwipes(0);
+    lastSwipedRef.current = null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [anchorKey, ready]);
+
+  // match_geo_enabled : uniquement sur une activation par clic (transition
+  // prompting→granted), pas sur une restauration sessionStorage.
+  const prevGeoStatus = useRef(geoStatus);
+  useEffect(() => {
+    if (prevGeoStatus.current === "prompting" && geoStatus === "granted" && pos) {
+      track("match_geo_enabled", { on_crete: isOnCrete(pos) ? "yes" : "no" });
+    }
+    prevGeoStatus.current = geoStatus;
+  }, [geoStatus, pos]);
 
   // Validation de l'onboarding (groups = [] pour « tout me va »).
   // Le profil n'est seedé que sur les groupes NOUVELLEMENT cochés
@@ -412,7 +494,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
     const nextProfile = added.length ? seedProfile(added, profile) : profile;
     setProfile(nextProfile);
     setInterests(groups);
-    setDeck(sampleDeck(pool, DECK_SIZE, new Set(seenSlugs), interestTypes(groups)));
+    setDeck(sampleDeck(pool, DECK_SIZE, new Set(seenSlugs), interestTypes(groups), anchor ? nearSlugs(pool, anchor) : undefined));
     setIndex(0);
     setSwipes(0);
     lastSwipedRef.current = null;
@@ -495,7 +577,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
 
   function redeal() {
     const seen = new Set(seenSlugs);
-    setDeck(sampleDeck(pool, DECK_SIZE, seen, interestTypes(interests || [])));
+    setDeck(sampleDeck(pool, DECK_SIZE, seen, interestTypes(interests || []), anchor ? nearSlugs(pool, anchor) : undefined));
     setIndex(0);
     setSwipes(0);
     // Nouveau paquet : il peut recommencer par n'importe quel slug, et après
@@ -523,11 +605,20 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
 
   const visible = deck.slice(index, index + 3);
   // Tous les likes, du plus récent au plus ancien (synthèse = liste complète,
-  // barre de vignettes = les 12 derniers).
+  // barre de vignettes = les 12 derniers). Si un ancrage existe, tri par
+  // distance croissante + km affiché (itinéraires actionnables).
   const likedPlacesAll = likedSlugs
     .map((slug) => pool.find((p) => p.slug === slug))
     .filter((p): p is MatchPlace => Boolean(p))
-    .reverse();
+    .reverse()
+    .map((p) => ({
+      ...p,
+      km:
+        anchor && p.latitude != null && p.longitude != null
+          ? haversineKm([p.latitude, p.longitude], [anchor.lat, anchor.lon])
+          : null,
+    }));
+  if (anchor) likedPlacesAll.sort((a, b) => (a.km ?? Infinity) - (b.km ?? Infinity));
   const likedPlaces = likedPlacesAll.slice(0, 12);
 
   // Top 3 des types likés pour le résumé de goûts de la synthèse.
@@ -584,10 +675,55 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
 
   // ── Écran synthèse : tout ce qui a été liké + itinéraires ──
   if (ready && screen === "synthesis") {
+    // Bloc email extrait : en mode préparation il remonte AVANT CarPromo/GYG
+    // (la conversion logique quand on prépare son voyage).
+    const emailBlock = (
+      <div className="card-base mt-4 px-6 py-5 !rounded-[24px]">
+        <p className="m-0 font-heading text-[15px] font-bold text-text">{t.emailTitle}</p>
+        {synthEmailStatus === "sent" ? (
+          <p className="m-0 mt-2 text-[13.5px] font-medium text-ok">{t.emailSent}</p>
+        ) : (
+          <form onSubmit={submitSelectionEmail} className="mt-3">
+            <div className="flex gap-2">
+              <input
+                type="email"
+                required
+                value={synthEmail}
+                onChange={(e) => setSynthEmail(e.target.value)}
+                placeholder={t.emailPlaceholder}
+                className="min-w-0 flex-1 rounded-full border border-border bg-white px-4 py-2.5 text-[14px] text-text outline-none focus:border-aegean"
+              />
+              <button
+                type="submit"
+                disabled={synthEmailStatus === "loading"}
+                className="shrink-0 rounded-full bg-aegean px-5 py-2.5 font-heading text-[13px] font-bold text-white disabled:opacity-50"
+              >
+                {synthEmailStatus === "loading" ? "..." : t.emailSend}
+              </button>
+            </div>
+            <label className="mt-2.5 flex cursor-pointer items-center gap-2 text-[12.5px] text-text-muted">
+              <input
+                type="checkbox"
+                checked={newsletterOptin}
+                onChange={(e) => setNewsletterOptin(e.target.checked)}
+                className="h-4 w-4 accent-aegean"
+              />
+              {t.emailOptin}
+            </label>
+            {synthEmailStatus === "error" && (
+              <p className="m-0 mt-2 text-[12.5px] font-medium text-terra">{t.emailError}</p>
+            )}
+          </form>
+        )}
+      </div>
+    );
+
     return (
       <div className="mx-auto w-full max-w-[440px] px-4 pb-16 pt-8">
         <h1 className="m-0 text-center font-heading text-[30px] font-extrabold text-text">{t.synthTitle}</h1>
-        <p className="mx-auto mt-1.5 max-w-[320px] text-center text-[13.5px] text-text-muted">{t.synthSub}</p>
+        <p className="mx-auto mt-1.5 max-w-[320px] text-center text-[13.5px] text-text-muted">
+          {geoMode === "prep" ? t.synthSubPrep : t.synthSub}
+        </p>
         {topTastes.length > 0 && (
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
             <span className="text-[12.5px] font-medium text-text-muted">{t.synthTaste}</span>
@@ -616,6 +752,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
                     {typeLabel(p.place_type, locale)}
                     {p.prefecture ? ` · ${p.prefecture}` : ""}
                     {p.rating != null && p.rating > 0 ? ` · ${p.rating.toFixed(1)} ★` : ""}
+                    {p.km != null ? ` · ${Math.max(1, Math.round(p.km))} km` : ""}
                   </p>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     <Link
@@ -655,55 +792,16 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
         )}
         {likedPlacesAll.length > 0 && (
           <>
-            {/* Conversion 1 : voiture (partenaire local), l'intention est routière */}
-            <div className="mt-6">
+            {/* Mode préparation : l'email d'abord, puis voiture et tours.
+                Sur place : voiture (intention routière) puis tours puis email. */}
+            {geoMode === "prep" && emailBlock}
+            <div className={geoMode === "prep" ? "mt-4" : "mt-6"}>
               <CarPromo locale={locale} source="match-synthesis" />
             </div>
-
-            {/* Conversion 2 : tours GYG, seulement si la sélection s'y prête */}
             {likedPlacesAll.some((p) => TOURABLE_TYPES.has(p.place_type)) && (
               <AffiliateBanner type="tours" locale={locale} className="mt-4" />
             )}
-
-            {/* Conversion 3 : la sélection par email */}
-            <div className="card-base mt-4 px-6 py-5 !rounded-[24px]">
-              <p className="m-0 font-heading text-[15px] font-bold text-text">{t.emailTitle}</p>
-              {synthEmailStatus === "sent" ? (
-                <p className="m-0 mt-2 text-[13.5px] font-medium text-ok">{t.emailSent}</p>
-              ) : (
-                <form onSubmit={submitSelectionEmail} className="mt-3">
-                  <div className="flex gap-2">
-                    <input
-                      type="email"
-                      required
-                      value={synthEmail}
-                      onChange={(e) => setSynthEmail(e.target.value)}
-                      placeholder={t.emailPlaceholder}
-                      className="min-w-0 flex-1 rounded-full border border-border bg-white px-4 py-2.5 text-[14px] text-text outline-none focus:border-aegean"
-                    />
-                    <button
-                      type="submit"
-                      disabled={synthEmailStatus === "loading"}
-                      className="shrink-0 rounded-full bg-aegean px-5 py-2.5 font-heading text-[13px] font-bold text-white disabled:opacity-50"
-                    >
-                      {synthEmailStatus === "loading" ? "..." : t.emailSend}
-                    </button>
-                  </div>
-                  <label className="mt-2.5 flex cursor-pointer items-center gap-2 text-[12.5px] text-text-muted">
-                    <input
-                      type="checkbox"
-                      checked={newsletterOptin}
-                      onChange={(e) => setNewsletterOptin(e.target.checked)}
-                      className="h-4 w-4 accent-aegean"
-                    />
-                    {t.emailOptin}
-                  </label>
-                  {synthEmailStatus === "error" && (
-                    <p className="m-0 mt-2 text-[12.5px] font-medium text-terra">{t.emailError}</p>
-                  )}
-                </form>
-              )}
-            </div>
+            {geoMode !== "prep" && emailBlock}
           </>
         )}
 
@@ -720,7 +818,67 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
   return (
     <div className="mx-auto w-full max-w-[440px] px-4 pb-16 pt-8">
       <h1 className="m-0 text-center font-heading text-[30px] font-extrabold text-text">{t.title}</h1>
-      <p className="mx-auto mb-6 mt-1.5 max-w-[320px] text-center text-[13.5px] text-text-muted">{t.hint}</p>
+      <p className="mx-auto mb-5 mt-1.5 max-w-[320px] text-center text-[13.5px] text-text-muted">{t.hint}</p>
+
+      {/* Géoloc opt-in : pill état idle/actif, PlacePicker si refusée.
+          La position ne quitte jamais le navigateur (sessionStorage cd-geo). */}
+      {ready && (
+        <div className="mb-5 flex flex-wrap items-center justify-center gap-2">
+          {geoMode === "off" && geoStatus !== "denied" && geoStatus !== "unavailable" && (
+            <button
+              onClick={() => {
+                if (pos) setGeoOff(false); // position déjà connue : réactiver
+                else requestGeo();
+              }}
+              disabled={geoStatus === "prompting"}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-4 py-2 font-heading text-[13px] font-bold text-aegean transition-colors hover:border-aegean disabled:opacity-50"
+            >
+              <MapPin size={13} /> {geoStatus === "prompting" ? "..." : t.geoNearMe}
+            </button>
+          )}
+          {(geoStatus === "denied" || geoStatus === "unavailable") && geoMode === "off" && (
+            <PlacePicker value={null} onChange={(slug) => setManual(slug)} label={t.geoPick} />
+          )}
+          {geoMode !== "off" && (
+            <>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-aegean px-4 py-2 font-heading text-[13px] font-bold text-white">
+                <MapPin size={13} /> {t.geoActive}
+              </span>
+              <button
+                onClick={() => setGeoOff(true)}
+                className="rounded-full px-3 py-2 text-[12px] font-medium text-text-muted underline-offset-2 hover:text-aegean hover:underline"
+              >
+                {t.geoOff}
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Hors Crète : mode préparation, ancrage optionnel sur le futur logement.
+          On ne passe PAS par setManual (pos doit rester la vraie position pour
+          que le mode reste "prep") : l'ancrage vit dans prepPos, jamais persisté. */}
+      {ready && geoMode === "prep" && (
+        <div className="mb-5 rounded-2xl border border-border bg-sand px-4 py-3">
+          <p className="m-0 font-heading text-[13.5px] font-bold text-text">{t.prepTitle}</p>
+          <p className="m-0 mt-0.5 text-[12.5px] text-text-muted">
+            {prepSlug ? t.prepFrom : t.prepSub}
+          </p>
+          <div className="mt-2 flex">
+            <PlacePicker
+              value={prepSlug}
+              onChange={(slug) => {
+                const c = SLUG_COORDS[slug];
+                if (!c) return;
+                setPrepSlug(slug);
+                setPrepPos({ lat: c[0], lon: c[1] });
+                track("match_prep_place_set", { slug });
+              }}
+              label={t.geoPick}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Deck */}
       <div className="relative h-[520px] w-full">
@@ -738,6 +896,11 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
                   exitDir={exitDir}
                   locale={locale}
                   t={t}
+                  km={
+                    anchor && place.latitude != null && place.longitude != null
+                      ? haversineKm([place.latitude, place.longitude], [anchor.lat, anchor.lon])
+                      : null
+                  }
                   onSwipe={handleSwipe}
                 />
               ))
