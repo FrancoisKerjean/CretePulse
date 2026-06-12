@@ -6,8 +6,10 @@ import type { CbPlaceListItem, CbPlace } from "@/lib/cb-places";
 import { getCbPlaceBySlug } from "@/lib/cb-places";
 import { typeLabel } from "@/lib/cb-type-labels";
 import { nearestBy } from "@/lib/geo";
+import { cleanCbDescription } from "@/lib/cb-place-helpers";
 import { useGeoPosition } from "@/components/geo/useGeoPosition";
 import { CiCompass } from "@/components/icons";
+import { CbPlaceActions } from "@/components/explore/CbPlaceActions";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 type MaplibreMap = import("maplibre-gl").Map;
@@ -500,14 +502,50 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
                   )}
                 </dl>
 
+                <div className="border-t border-aegean/10 pt-3">
+                  <CbPlaceActions
+                    slug={selected.slug}
+                    name={selected.name}
+                    latitude={selected.latitude}
+                    longitude={selected.longitude}
+                    locale={locale}
+                    compact
+                  />
+                </div>
+
                 {selectedLoading && <p className="text-xs text-text-muted">{t.loading}</p>}
-                {selected.description && (
-                  <div className="text-sm text-text/90 leading-relaxed space-y-2 border-t border-aegean/10 pt-3">
-                    {selected.description.split("\n\n").slice(0, 12).map((para, i) => (
-                      <p key={i}>{para}</p>
-                    ))}
-                  </div>
-                )}
+                {(() => {
+                  const { paragraphs, nearby } = cleanCbDescription(selected.description);
+                  if (paragraphs.length === 0 && nearby.length === 0) return null;
+                  return (
+                    <div className="space-y-3 border-t border-aegean/10 pt-3">
+                      {paragraphs.length > 0 && (
+                        <div className="text-sm text-text/90 leading-relaxed space-y-2.5">
+                          {paragraphs.slice(0, 8).map((para, i) => (
+                            <p key={i}>{para}</p>
+                          ))}
+                        </div>
+                      )}
+                      {nearby.length > 0 && (
+                        <details className="rounded-lg bg-aegean-faint/30 p-2">
+                          <summary className="text-xs font-semibold text-aegean cursor-pointer">
+                            {nearby.length} {locale === "fr" ? "lieux à proximité" : locale === "de" ? "Orte in der Nähe" : locale === "el" ? "κοντινά μέρη" : "places nearby"}
+                          </summary>
+                          <ul className="mt-2 space-y-1 text-xs">
+                            {nearby.slice(0, 12).map((n, i) => (
+                              <li key={i} className="flex justify-between gap-2">
+                                <span className="truncate text-text">{n.name}</span>
+                                <span className="text-text-muted font-data shrink-0">
+                                  {n.km < 10 ? n.km.toFixed(1) : Math.round(n.km)} km
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </details>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           )}
