@@ -6,30 +6,32 @@
 import { Car } from "lucide-react";
 import { PromoBox } from "@/components/PromoBox";
 
+// Disclosure sans mention de commission (decision Kami 12/06) : la pastille
+// dit "Partenaire local", point. Pas de tiret cadratin (regle Kairos).
 const COPY: Record<string, { title: string; line: string; cta: string; disclosure: string }> = {
   en: {
     title: "Need a car?",
-    line: "Local partner agency — fair price, no prepayment, cash welcome",
+    line: "Local partner agency · fair price, no prepayment, cash welcome",
     cta: "Get a quote",
-    disclosure: "Partner — we earn a commission",
+    disclosure: "Local partner",
   },
   fr: {
     title: "Besoin d'une voiture ?",
-    line: "Agence partenaire locale — prix juste, aucun prépaiement, espèces acceptées",
+    line: "Agence partenaire locale · prix juste, aucun prépaiement, espèces acceptées",
     cta: "Obtenir un devis",
-    disclosure: "Partenaire — nous touchons une commission",
+    disclosure: "Partenaire local",
   },
   de: {
     title: "Mietwagen gesucht?",
-    line: "Lokale Partneragentur — fairer Preis, keine Vorauszahlung, Barzahlung willkommen",
+    line: "Lokale Partneragentur · fairer Preis, keine Vorauszahlung, Barzahlung willkommen",
     cta: "Angebot anfordern",
-    disclosure: "Partner — wir erhalten eine Provision",
+    disclosure: "Lokaler Partner",
   },
   el: {
     title: "Χρειάζεστε αυτοκίνητο;",
-    line: "Τοπικό συνεργαζόμενο γραφείο — δίκαιη τιμή, καμία προπληρωμή, δεκτά μετρητά",
+    line: "Τοπικό συνεργαζόμενο γραφείο · δίκαιη τιμή, καμία προπληρωμή, δεκτά μετρητά",
     cta: "Ζητήστε προσφορά",
-    disclosure: "Συνεργάτης — λαμβάνουμε προμήθεια",
+    disclosure: "Τοπικός συνεργάτης",
   },
 };
 
@@ -57,6 +59,7 @@ export function CarPromo({
       ctaLabel={c.cta}
       ctaHref={`/${locale}/car-rental${qs ? `?${qs}` : ""}`}
       disclosure={c.disclosure}
+      photo="/images/partners/car-rental.jpg"
     />
   );
 }

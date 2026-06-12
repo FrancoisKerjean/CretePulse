@@ -47,7 +47,7 @@ const L: Record<string, PageStrings> = {
   en: {
     h1: "Rent a car in Crete",
     intro:
-      "This form sends your request to a local rental agency we actually work with — Auto Smart Car Rental in Chania, clearly labelled, nothing hidden. The agency replies directly with a quote; you pay them, on the spot if you like, cash accepted, no online prepayment. We earn a commission from the agency when a rental happens — the price you pay does not change because of it.",
+      "This form sends your request to a local rental agency we actually work with: Auto Smart Car Rental in Chania, clearly labelled, nothing hidden. The agency replies directly with a quote; you pay them, on the spot if you like, cash accepted, no online prepayment.",
     drivingTitle: "Driving in Crete: what to know before you book",
     driving: [
       {
@@ -92,7 +92,7 @@ const L: Record<string, PageStrings> = {
   fr: {
     h1: "Louer une voiture en Crète",
     intro:
-      "Ce formulaire transmet votre demande à une agence de location locale avec laquelle nous travaillons vraiment — Auto Smart Car Rental à La Canée, clairement étiquetée, rien de caché. L'agence vous répond directement avec un devis ; vous la payez, sur place si vous voulez, espèces acceptées, aucun prépaiement en ligne. Nous touchons une commission de l'agence quand une location se conclut — le prix que vous payez ne change pas pour autant.",
+      "Ce formulaire transmet votre demande à une agence de location locale avec laquelle nous travaillons vraiment : Auto Smart Car Rental à La Canée, clairement étiquetée, rien de caché. L'agence vous répond directement avec un devis ; vous la payez, sur place si vous voulez, espèces acceptées, aucun prépaiement en ligne.",
     drivingTitle: "Conduire en Crète : à savoir avant de réserver",
     driving: [
       {
@@ -137,7 +137,7 @@ const L: Record<string, PageStrings> = {
   de: {
     h1: "Mietwagen auf Kreta",
     intro:
-      "Dieses Formular sendet Ihre Anfrage an eine lokale Mietwagenagentur, mit der wir wirklich zusammenarbeiten — Auto Smart Car Rental in Chania, klar gekennzeichnet, nichts versteckt. Die Agentur antwortet Ihnen direkt mit einem Angebot; Sie zahlen an die Agentur, gern vor Ort, Barzahlung möglich, keine Online-Vorauszahlung. Wir erhalten von der Agentur eine Provision, wenn eine Vermietung zustande kommt — der Preis, den Sie zahlen, ändert sich dadurch nicht.",
+      "Dieses Formular sendet Ihre Anfrage an eine lokale Mietwagenagentur, mit der wir wirklich zusammenarbeiten: Auto Smart Car Rental in Chania, klar gekennzeichnet, nichts versteckt. Die Agentur antwortet Ihnen direkt mit einem Angebot; Sie zahlen an die Agentur, gern vor Ort, Barzahlung möglich, keine Online-Vorauszahlung.",
     drivingTitle: "Autofahren auf Kreta: das sollten Sie vorher wissen",
     driving: [
       {
@@ -182,7 +182,7 @@ const L: Record<string, PageStrings> = {
   el: {
     h1: "Ενοικίαση αυτοκινήτου στην Κρήτη",
     intro:
-      "Αυτή η φόρμα στέλνει το αίτημά σας σε ένα τοπικό γραφείο ενοικίασης με το οποίο πραγματικά συνεργαζόμαστε — το Auto Smart Car Rental στα Χανιά, με σαφή επισήμανση, τίποτα κρυφό. Το γραφείο σας απαντά απευθείας με προσφορά· πληρώνετε το γραφείο, και επί τόπου αν θέλετε, δεκτά μετρητά, καμία online προπληρωμή. Λαμβάνουμε προμήθεια από το γραφείο όταν γίνει μια ενοικίαση — η τιμή που πληρώνετε δεν αλλάζει εξαιτίας αυτού.",
+      "Αυτή η φόρμα στέλνει το αίτημά σας σε ένα τοπικό γραφείο ενοικίασης με το οποίο πραγματικά συνεργαζόμαστε: το Auto Smart Car Rental στα Χανιά, με σαφή επισήμανση, τίποτα κρυφό. Το γραφείο σας απαντά απευθείας με προσφορά· πληρώνετε το γραφείο, και επί τόπου αν θέλετε, δεκτά μετρητά, καμία online προπληρωμή.",
     drivingTitle: "Οδήγηση στην Κρήτη: τι να ξέρετε πριν κλείσετε",
     driving: [
       {
