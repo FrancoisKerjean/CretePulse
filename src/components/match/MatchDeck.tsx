@@ -842,7 +842,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
           {geoMode !== "off" && (
             <>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-aegean px-4 py-2 font-heading text-[13px] font-bold text-white">
-                <MapPin size={13} /> {t.geoActive}
+                <MapPin size={13} /> {geoMode === "prep" ? t.prepTitle : t.geoActive}
               </span>
               <button
                 onClick={() => setGeoOff(true)}
