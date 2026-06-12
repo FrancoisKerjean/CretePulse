@@ -81,3 +81,11 @@ Retour UX après test local : « comme Tinder au début faudrait cocher des cent
 
 ### Hors scope V1.1
 Partage de la synthèse (OG dynamique), réordonnancement manuel, export PDF/itinéraire multi-étapes.
+
+## V1.2 — Conversions de la synthèse (validé Kami 12/06 : « les 3 »)
+
+Constat : la synthèse ne convertissait vers rien. Trois branchements, du plus fort au plus faible :
+1. **Voiture** : `CarPromo` (produit partenaire Auto Smart, lead interne `/car-rental`) avec `source="match-synthesis"`, affiché sous la liste des likes. L'intention est routière par construction (boutons Waze/Maps juste au-dessus).
+2. **Tours GetYourGuide** : `AffiliateBanner type="tours"` affiché UNIQUEMENT si la sélection contient au moins un lieu « excursionnable » (types : gorge, island, beach, cave, natural-park, waterfall, archaeological-site, historical-site).
+3. **Email** : formulaire « Reçois ta sélection par email » : nouvelle route `POST /api/match/selection-email` (honeypot + validation slugs + cap 60) qui envoie la liste (nom, type, lien fiche, lien Maps) via Resend (`sendSelectionEmail` dans `src/lib/email.ts`), + case à cocher NON pré-cochée « et inscris-moi au briefing hebdo » qui poste aussi sur `/api/newsletter/subscribe` (double opt-in existant).
+Events Plausible ajoutés : `synthesis_car_promo` (clic relayé par le wizard via source), `synthesis_email_sent`, `synthesis_email_newsletter_optin`.
