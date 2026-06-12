@@ -281,3 +281,70 @@ export async function sendCarLeadEmail(partner: CarLeadPartner, lead: CarLead) {
   if (error) throw new Error(`Resend: ${error.message}`);
   return data;
 }
+
+// ── Sélection Match Swipe (« Le Tinder de la Crète ») ──────────────────────
+
+export interface SelectionPlace {
+  name: string;
+  typeLabel: string;
+  exploreUrl: string;
+  mapsUrl: string | null;
+}
+
+const SELECTION_SUBJECTS: Record<string, string> = {
+  en: "Your Crete spots selection",
+  fr: "Ta sélection de spots en Crète",
+  de: "Deine Auswahl an Orten auf Kreta",
+  el: "Η επιλογή σου από μέρη στην Κρήτη",
+};
+
+const SELECTION_INTRO: Record<string, string> = {
+  en: "Here is everything you liked on the Tinder of Crete. Sheet to learn more, Route to drive there.",
+  fr: "Voici tout ce que tu as liké sur le Tinder de la Crète. Fiche pour en savoir plus, Itinéraire pour y aller.",
+  de: "Alles, was dir auf dem Tinder Kretas gefallen hat. Details zum Nachlesen, Route zum Hinfahren.",
+  el: "Ό,τι σου άρεσε στο Tinder της Κρήτης. Λεπτομέρειες για να μάθεις, Διαδρομή για να πας.",
+};
+
+const SELECTION_LABELS: Record<string, { sheet: string; route: string }> = {
+  en: { sheet: "Sheet", route: "Route" },
+  fr: { sheet: "Fiche", route: "Itinéraire" },
+  de: { sheet: "Details", route: "Route" },
+  el: { sheet: "Λεπτομέρειες", route: "Διαδρομή" },
+};
+
+export async function sendSelectionEmail(email: string, locale: string, places: SelectionPlace[]) {
+  const loc = SELECTION_SUBJECTS[locale] ? locale : "en";
+  const labels = SELECTION_LABELS[loc];
+  const rows = places
+    .map(
+      (p) => `
+      <tr>
+        <td style="padding: 12px 0; border-bottom: 1px solid #EDF6F8;">
+          <p style="margin: 0; font-weight: 700; color: #0B3954; font-size: 15px;">${p.name}</p>
+          <p style="margin: 2px 0 6px; color: #5C7886; font-size: 12.5px;">${p.typeLabel}</p>
+          <a href="${p.exploreUrl}" style="display: inline-block; margin-right: 10px; color: #0B5E78; font-weight: 700; font-size: 13px;">${labels.sheet}</a>
+          ${p.mapsUrl ? `<a href="${p.mapsUrl}" style="display: inline-block; color: #ED7A5C; font-weight: 700; font-size: 13px;">${labels.route}</a>` : ""}
+        </td>
+      </tr>`,
+    )
+    .join("");
+  const html = `
+    <div style="font-family: system-ui, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
+      <div style="text-align: center; margin-bottom: 28px;">
+        <span style="font-size: 24px; font-weight: 800; color: #0B5E78;">CRETE</span>
+        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ED7A5C; margin: 0 4px; vertical-align: middle;"></span>
+        <span style="font-size: 24px; font-weight: 800; color: #ED7A5C;">DIRECT</span>
+      </div>
+      <p style="color: #5C7886; line-height: 1.6; margin-bottom: 20px;">${SELECTION_INTRO[loc]}</p>
+      <table style="width: 100%; border-collapse: collapse;">${rows}</table>
+      <p style="color: #94A3B8; font-size: 12px; text-align: center; margin-top: 28px;">crete.direct</p>
+    </div>`;
+  const { data, error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: email,
+    subject: SELECTION_SUBJECTS[loc],
+    html,
+  });
+  if (error) throw new Error(`Resend: ${error.message}`);
+  return data;
+}

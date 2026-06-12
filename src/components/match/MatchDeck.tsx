@@ -10,6 +10,8 @@ import { motion, useMotionValue, useTransform, AnimatePresence } from "motion/re
 import { Heart, X, MapPin, Star, RotateCcw } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { typeLabel } from "@/lib/cb-type-labels";
+import { CarPromo } from "@/components/car-rental/CarPromo";
+import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 import {
   type MatchPlace,
   type TasteProfile,
@@ -66,6 +68,12 @@ const T: Record<string, Record<string, string>> = {
     groupTowns: "Towns & villages",
     groupMuseums: "Museums",
     groupIslands: "Islands & lighthouses",
+    emailTitle: "Get your selection by email",
+    emailPlaceholder: "your@email.com",
+    emailSend: "Send me my spots",
+    emailSent: "Sent! Check your inbox.",
+    emailError: "Something went wrong. Try again.",
+    emailOptin: "Also send me the weekly Crete briefing",
   },
   fr: {
     title: "Trouve ton spot",
@@ -98,6 +106,12 @@ const T: Record<string, Record<string, string>> = {
     groupTowns: "Villes & villages",
     groupMuseums: "Musées",
     groupIslands: "Îles & phares",
+    emailTitle: "Reçois ta sélection par email",
+    emailPlaceholder: "ton@email.com",
+    emailSend: "Envoyer mes spots",
+    emailSent: "Envoyé ! Regarde ta boîte mail.",
+    emailError: "Un souci est survenu. Réessaie.",
+    emailOptin: "Et envoie-moi le briefing hebdo Crète",
   },
   de: {
     title: "Finde deinen Ort",
@@ -130,6 +144,12 @@ const T: Record<string, Record<string, string>> = {
     groupTowns: "Städte & Dörfer",
     groupMuseums: "Museen",
     groupIslands: "Inseln & Leuchttürme",
+    emailTitle: "Erhalte deine Auswahl per E-Mail",
+    emailPlaceholder: "deine@email.com",
+    emailSend: "Meine Orte senden",
+    emailSent: "Gesendet! Schau in dein Postfach.",
+    emailError: "Etwas ist schiefgelaufen. Versuch es nochmal.",
+    emailOptin: "Schick mir auch das wöchentliche Kreta-Briefing",
   },
   el: {
     title: "Βρες το μέρος σου",
@@ -162,8 +182,20 @@ const T: Record<string, Record<string, string>> = {
     groupTowns: "Πόλεις & χωριά",
     groupMuseums: "Μουσεία",
     groupIslands: "Νησιά & φάροι",
+    emailTitle: "Λάβε την επιλογή σου με email",
+    emailPlaceholder: "to@email.com",
+    emailSend: "Στείλε μου τα μέρη μου",
+    emailSent: "Στάλθηκε! Δες τα εισερχόμενά σου.",
+    emailError: "Κάτι πήγε στραβά. Δοκίμασε ξανά.",
+    emailOptin: "Στείλε μου και το εβδομαδιαίο briefing Κρήτης",
   },
 };
+
+// Types « excursionnables » : déclenchent le bandeau GetYourGuide en synthèse.
+const TOURABLE_TYPES = new Set([
+  "gorge", "island", "beach", "cave", "natural-park", "waterfall",
+  "archaeological-site", "historical-site",
+]);
 
 // Libellé localisé d'un groupe d'intérêts (clé "beaches" → t.groupBeaches).
 const GROUP_LABEL_KEYS: Record<string, string> = {
@@ -345,6 +377,9 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
   const [screen, setScreen] = useState<"deck" | "interests" | "synthesis">("deck");
   const [interests, setInterests] = useState<string[] | null>(null);
   const [pendingGroups, setPendingGroups] = useState<string[]>([]);
+  const [synthEmail, setSynthEmail] = useState("");
+  const [synthEmailStatus, setSynthEmailStatus] = useState<"idle" | "loading" | "sent" | "error">("idle");
+  const [newsletterOptin, setNewsletterOptin] = useState(false);
   const lastSwipedRef = useRef<string | null>(null);
 
   // Hydratation au mount uniquement : localStorage + échantillonnage aléatoire
@@ -429,6 +464,33 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
     setMatch(null);
     saveStored({ profile, liked: likedSlugs, seen: nextSeen, interests });
     if (replay) track("match_replay");
+  }
+
+  // Envoi de la sélection par email (+ opt-in newsletter séparé, double opt-in existant).
+  async function submitSelectionEmail(e: React.FormEvent) {
+    e.preventDefault();
+    if (synthEmailStatus === "loading" || likedSlugs.length === 0) return;
+    setSynthEmailStatus("loading");
+    try {
+      const res = await fetch("/api/match/selection-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: synthEmail, locale, slugs: likedSlugs, website: "" }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      setSynthEmailStatus("sent");
+      track("synthesis_email_sent", { likes: String(likedSlugs.length) });
+      if (newsletterOptin) {
+        fetch("/api/newsletter/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: synthEmail, locale, website: "" }),
+        }).catch(() => undefined);
+        track("synthesis_email_newsletter_optin");
+      }
+    } catch {
+      setSynthEmailStatus("error");
+    }
   }
 
   function redeal() {
@@ -591,6 +653,60 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
             ))}
           </div>
         )}
+        {likedPlacesAll.length > 0 && (
+          <>
+            {/* Conversion 1 : voiture (partenaire local), l'intention est routière */}
+            <div className="mt-6">
+              <CarPromo locale={locale} source="match-synthesis" />
+            </div>
+
+            {/* Conversion 2 : tours GYG, seulement si la sélection s'y prête */}
+            {likedPlacesAll.some((p) => TOURABLE_TYPES.has(p.place_type)) && (
+              <AffiliateBanner type="tours" locale={locale} className="mt-4" />
+            )}
+
+            {/* Conversion 3 : la sélection par email */}
+            <div className="card-base mt-4 px-6 py-5 !rounded-[24px]">
+              <p className="m-0 font-heading text-[15px] font-bold text-text">{t.emailTitle}</p>
+              {synthEmailStatus === "sent" ? (
+                <p className="m-0 mt-2 text-[13.5px] font-medium text-ok">{t.emailSent}</p>
+              ) : (
+                <form onSubmit={submitSelectionEmail} className="mt-3">
+                  <div className="flex gap-2">
+                    <input
+                      type="email"
+                      required
+                      value={synthEmail}
+                      onChange={(e) => setSynthEmail(e.target.value)}
+                      placeholder={t.emailPlaceholder}
+                      className="min-w-0 flex-1 rounded-full border border-border bg-white px-4 py-2.5 text-[14px] text-text outline-none focus:border-aegean"
+                    />
+                    <button
+                      type="submit"
+                      disabled={synthEmailStatus === "loading"}
+                      className="shrink-0 rounded-full bg-aegean px-5 py-2.5 font-heading text-[13px] font-bold text-white disabled:opacity-50"
+                    >
+                      {synthEmailStatus === "loading" ? "..." : t.emailSend}
+                    </button>
+                  </div>
+                  <label className="mt-2.5 flex cursor-pointer items-center gap-2 text-[12.5px] text-text-muted">
+                    <input
+                      type="checkbox"
+                      checked={newsletterOptin}
+                      onChange={(e) => setNewsletterOptin(e.target.checked)}
+                      className="h-4 w-4 accent-aegean"
+                    />
+                    {t.emailOptin}
+                  </label>
+                  {synthEmailStatus === "error" && (
+                    <p className="m-0 mt-2 text-[12.5px] font-medium text-terra">{t.emailError}</p>
+                  )}
+                </form>
+              )}
+            </div>
+          </>
+        )}
+
         <button
           onClick={() => setScreen("deck")}
           className="mx-auto mt-7 flex items-center gap-2 rounded-full bg-stone px-6 py-3 font-heading text-[14px] font-bold text-aegean"
