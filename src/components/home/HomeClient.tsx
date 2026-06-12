@@ -11,7 +11,7 @@ import { AbstractFallback } from "@/components/AbstractFallback";
 import { CreteMap } from "@/components/CreteMap";
 import { DepBoard } from "@/components/DepBoard";
 import { WindArrow } from "@/components/WindArrow";
-import { MapPin } from "lucide-react";
+import { Heart, MapPin } from "lucide-react";
 import {
   CiBus, CiWave, CiSun, CiCompass, CiPlane, CiChart,
   CiCalendar, CiNews, CiBook,
@@ -49,7 +49,8 @@ const pickUi = (l: string): Ui => (["en", "fr", "de", "el"].includes(l) ? (l as 
 
 const T = {
   heroTitle: { en: "Crete, today", fr: "La Crète, aujourd'hui", de: "Kreta, heute", el: "Η Κρήτη σήμερα" },
-  matchTitle: { en: "Find your perfect spot", fr: "Trouve ton spot idéal", de: "Finde deinen perfekten Ort", el: "Βρες το ιδανικό σου μέρος" },
+  matchKicker: { en: "Swipe & match", fr: "Swipe & match", de: "Swipe & match", el: "Swipe & match" },
+  matchTitle: { en: "The Tinder of Crete", fr: "Le Tinder de la Crète", de: "Das Tinder Kretas", el: "Το Tinder της Κρήτης" },
   matchSub: {
     en: "Swipe beaches, gorges and villages. Like or pass, and get your match.",
     fr: "Fais défiler plages, gorges et villages. Like ou passe, et trouve ton match.",
@@ -342,6 +343,42 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
           </div>
         )}
 
+        {/* ═══════ MATCH : le Tinder de la Crète ═══════ */}
+        {matchTeaserPhotos.length > 0 && (
+          <section className="mt-10">
+            <Link
+              href="/match"
+              className="group relative flex flex-col items-center gap-7 overflow-hidden rounded-[30px] px-8 py-8 no-underline sm:flex-row"
+              style={{ background: "linear-gradient(135deg, #ED7A5C 0%, #E8643F 55%, #C2543A 100%)" }}
+            >
+              <div className="absolute -right-7 -top-7 h-[88px] w-[88px] rounded-full bg-sun opacity-90" aria-hidden />
+              <div className="relative h-[130px] w-[190px] shrink-0">
+                {matchTeaserPhotos.slice(0, 3).map((src, i) => (
+                  <img
+                    key={src}
+                    src={src}
+                    alt=""
+                    loading="lazy"
+                    className="absolute left-1/2 top-1/2 h-[112px] w-[84px] rounded-2xl border-4 border-white object-cover shadow-[0_14px_30px_rgba(7,55,74,.35)] transition-transform duration-300 group-hover:scale-105"
+                    style={{ transform: `translate(-50%,-50%) rotate(${(i - 1) * 12}deg) translateX(${(i - 1) * 36}px)` }}
+                  />
+                ))}
+                <span className="absolute -bottom-1 left-1/2 flex h-9 w-9 -translate-x-1/2 items-center justify-center rounded-full bg-white shadow-[0_8px_18px_rgba(7,55,74,.3)]">
+                  <Heart size={17} className="text-terra" fill="currentColor" />
+                </span>
+              </div>
+              <div className="relative flex-1 text-center sm:text-left">
+                <p className="m-0 font-heading text-[12.5px] font-bold uppercase tracking-[0.1em] text-white/75">{T.matchKicker[ui]}</p>
+                <h2 className="m-0 mt-0.5 font-heading text-[30px] font-extrabold leading-tight text-white">{T.matchTitle[ui]}</h2>
+                <p className="m-0 mt-1 text-[14px] text-white/85">{T.matchSub[ui]}</p>
+              </div>
+              <span className="relative rounded-full bg-white px-7 py-3.5 font-heading text-[15px] font-bold text-terra shadow-[0_12px_28px_rgba(7,55,74,.3)] transition-transform group-hover:scale-105">
+                {T.matchCta[ui]}
+              </span>
+            </Link>
+          </section>
+        )}
+
         {/* ═══════ L'ILE, MAINTENANT : tuiles couleur pleine ═══════ */}
         {wtileCities.length > 0 && (
           <>
@@ -597,36 +634,6 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
             )}
           </section>
         </div>
-
-        {/* ═══════ MATCH : trouve ton spot ═══════ */}
-        {matchTeaserPhotos.length > 0 && (
-          <section className="my-10">
-            <Link
-              href="/match"
-              className="card-base group flex flex-col items-center gap-7 overflow-hidden px-8 py-7 no-underline !rounded-[30px] sm:flex-row"
-            >
-              <div className="relative h-[120px] w-[180px] shrink-0">
-                {matchTeaserPhotos.slice(0, 3).map((src, i) => (
-                  <img
-                    key={src}
-                    src={src}
-                    alt=""
-                    loading="lazy"
-                    className="absolute left-1/2 top-1/2 h-[104px] w-[78px] rounded-2xl border-4 border-white object-cover shadow-[0_10px_24px_rgba(11,94,120,.22)] transition-transform duration-300 group-hover:scale-105"
-                    style={{ transform: `translate(-50%,-50%) rotate(${(i - 1) * 12}deg) translateX(${(i - 1) * 34}px)` }}
-                  />
-                ))}
-              </div>
-              <div className="flex-1 text-center sm:text-left">
-                <h3 className="m-0 font-heading text-[22px] font-extrabold text-text">{T.matchTitle[ui]}</h3>
-                <p className="m-0 mt-0.5 text-[13.5px] text-text-muted">{T.matchSub[ui]}</p>
-              </div>
-              <span className="rounded-full bg-terra px-6 py-3 font-heading text-[14px] font-bold text-white shadow-[0_10px_24px_rgba(237,122,92,.35)] transition-transform group-hover:scale-105">
-                {T.matchCta[ui]}
-              </span>
-            </Link>
-          </section>
-        )}
 
         {/* ═══════ NEWSLETTER bande sable ═══════ */}
         <section className="rounded-[30px] px-8 py-7 my-10 flex flex-col sm:flex-row items-center justify-between gap-6"
