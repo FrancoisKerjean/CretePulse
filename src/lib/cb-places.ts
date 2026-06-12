@@ -60,19 +60,3 @@ export async function getCbPlaceBySlug(slug: string): Promise<CbPlace | null> {
   if (error) return null;
   return data as unknown as CbPlace;
 }
-
-// 3 photos de plages très bien notées pour le teaser /match de la home.
-export async function getMatchTeaserPhotos(): Promise<string[]> {
-  const { data, error } = await supabase
-    .from("cb_places")
-    .select("photos")
-    .eq("place_type", "beach")
-    .gt("photo_count", 0)
-    .gte("rating", 4.5)
-    .order("rating", { ascending: false })
-    .limit(3);
-  if (error) return [];
-  return ((data as { photos: string[] | null }[]) || [])
-    .map((r) => r.photos?.[0])
-    .filter((u): u is string => Boolean(u));
-}

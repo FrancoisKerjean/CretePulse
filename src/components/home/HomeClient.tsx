@@ -206,7 +206,6 @@ interface HomeClientProps {
   swimPick: SwimPickLite | null;
   swimSides: SwimSideLite[];
   boardRoutes: BusRoute[];
-  matchTeaserPhotos: string[];
   locale: string;
 }
 
@@ -236,7 +235,7 @@ function seaState(c: CityWeather): { key: "calm" | "ok" | "rough"; warn: boolean
 const WTILE_CITIES = ["Heraklion", "Chania", "Ierapetra", "Sitia"];
 const TOOL_TINTS = ["bg-[#CFF3F7]", "bg-[#FFE9CF]", "bg-[#E4F0D5]", "bg-[#DCEBFF]", "bg-[#FFE0D6]", "bg-[#FFF1BF]"];
 
-export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, swimPick, swimSides, boardRoutes, matchTeaserPhotos, locale }: HomeClientProps) {
+export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, swimPick, swimSides, boardRoutes, locale }: HomeClientProps) {
   const loc = locale as Locale;
   const ui = pickUi(locale);
   const t = useTranslations("home");
@@ -344,15 +343,14 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
         )}
 
         {/* ═══════ MATCH : le Tinder de la Crète (photo plein bloc, pattern bandeaux v5) ═══════ */}
-        {matchTeaserPhotos.length > 0 && (
-          <section className="mt-10">
+        <section className="mt-10">
             <Link
               href="/match"
               className="group relative block overflow-hidden rounded-[30px] no-underline shadow-lg"
             >
-              {/* Visuel plein bloc : lagon Balos (visuel Kami, public/images/partners/) */}
+              {/* Visuel dédié Gemini (Kami 12/06) : cartes de lieux en éventail face à la mer */}
               <img
-                src="/images/partners/tours.jpg"
+                src="/images/match/tinder-hero.jpg"
                 alt=""
                 loading="lazy"
                 aria-hidden
@@ -381,26 +379,9 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                     <span className="relative">{T.matchCta[ui]}</span>
                   </span>
                 </div>
-                {/* Éventail de cartes : raconte le deck par-dessus la photo */}
-                <div className="relative hidden h-[140px] w-[200px] shrink-0 sm:block">
-                  {matchTeaserPhotos.slice(0, 3).map((src, i) => (
-                    <img
-                      key={src}
-                      src={src}
-                      alt=""
-                      loading="lazy"
-                      className="absolute left-1/2 top-1/2 h-[118px] w-[88px] rounded-2xl border-4 border-white object-cover shadow-[0_14px_30px_rgba(7,55,74,.45)] transition-transform duration-300 group-hover:scale-105"
-                      style={{ transform: `translate(-50%,-50%) rotate(${(i - 1) * 12}deg) translateX(${(i - 1) * 38}px)` }}
-                    />
-                  ))}
-                  <span className="absolute -bottom-1 left-1/2 flex h-9 w-9 -translate-x-1/2 items-center justify-center rounded-full bg-white shadow-[0_8px_18px_rgba(7,55,74,.4)]">
-                    <Heart size={17} className="text-terra" fill="currentColor" />
-                  </span>
-                </div>
               </div>
             </Link>
           </section>
-        )}
 
         {/* ═══════ L'ILE, MAINTENANT : tuiles couleur pleine ═══════ */}
         {wtileCities.length > 0 && (

@@ -5,7 +5,6 @@ import { getUpcomingEvents } from "@/lib/events";
 import { getEditorialGuides, type Guide } from "@/lib/guides";
 import { buildSwimToday } from "@/lib/swim-today";
 import { getBusRoutes, type BusRoute } from "@/lib/buses";
-import { getMatchTeaserPhotos } from "@/lib/cb-places";
 import { pairSlug } from "@/lib/bus-pairs";
 import { HomeClient, type SwimPickLite, type SwimSideLite } from "@/components/home/HomeClient";
 import type { NewsItem, Event, Locale } from "@/lib/types";
@@ -81,14 +80,13 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const m = HOME_META[locale] || HOME_META.en;
   const websiteSchema = buildWebsiteSchema(locale, m.desc);
 
-  const [cities, latestNews, upcomingEvents, latestGuides, swim, busRoutes, matchTeaserPhotos] = await Promise.all([
+  const [cities, latestNews, upcomingEvents, latestGuides, swim, busRoutes] = await Promise.all([
     fetchAllCitiesWeather(),
     getLatestNews(8, locale).catch((): NewsItem[] => []),
     getUpcomingEvents(5).catch((): Event[] => []),
     getEditorialGuides(12).catch((): Guide[] => []),
     buildSwimToday().catch(() => null),
     getBusRoutes().catch((): BusRoute[] => []),
-    getMatchTeaserPhotos().catch((): string[] => []),
   ]);
 
   // Routes des liaisons principales pour le board nuit (DepBoard trie/dedup).
@@ -156,7 +154,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         swimPick={swimPick}
         swimSides={swimSides}
         boardRoutes={boardRoutes}
-        matchTeaserPhotos={matchTeaserPhotos}
         locale={locale}
       />
     </>
