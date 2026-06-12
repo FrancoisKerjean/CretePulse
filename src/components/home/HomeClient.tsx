@@ -73,8 +73,6 @@ const T = {
     el: (rating: string, name: string) => `Σήμερα η θάλασσα είναι ${rating} στο ${name}. Παρακολουθούμε τον άνεμο, τη θάλασσα και τα λεωφορεία για σένα, όλη μέρα.`,
   },
   liveFromIsland: { en: "live from the island", fr: "en direct de l'île", de: "live von der Insel", el: "ζωντανά από το νησί" },
-  youAreHere: { en: "You are here", fr: "Vous êtes ici", de: "Sie sind hier", el: "Είστε εδώ" },
-  islandLive: { en: "the island, live", fr: "l'île en direct", de: "die Insel, live", el: "το νησί ζωντανά" },
   heroSub: {
     en: "Computed live · 10 weather stations × the orientation of 500 beaches.",
     fr: "Calculé en direct · 10 stations météo × l'orientation de 500 plages.",
@@ -319,10 +317,6 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
 
           <BlurFade delay={0.15}>
             <div>
-              <p className="text-[13px] font-heading font-bold uppercase tracking-[0.1em] text-aegean flex justify-between m-0 mb-2 px-2">
-                {T.youAreHere[ui]}
-                <span className="normal-case tracking-normal font-sans font-medium text-text-muted">{T.islandLive[ui]}</span>
-              </p>
               <CreteMap cities={wtileCities} swimPin={swimPin} locale={locale} />
             </div>
           </BlurFade>
