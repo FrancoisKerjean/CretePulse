@@ -4,14 +4,14 @@
 // itineraire(s) + prix. Calcul 100 % local (moteur bus-journey, routes deja
 // chargees par la page). Spec : docs/superpowers/specs/2026-06-10-bus-journey-planner-design.md
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, Clock, Info, ChevronDown } from "lucide-react";
+import { ArrowRight, Clock, Info } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { CiBus, CiCompass } from "@/components/icons";
 import { KriKri } from "@/components/KriKri";
 import type { Locale } from "@/lib/types";
 import type { BusRoute } from "@/lib/buses";
 import {
-  buildGraph, reachableFrom, findJourneys, parseDurationMin,
+  buildGraph, reachableFrom, findJourneys, parseDurationMin, addMinutes,
   type Journey, type JourneyLeg,
 } from "@/lib/bus-journey";
 import { slugifyPlace, pairSlug } from "@/lib/bus-pairs";
@@ -67,6 +67,11 @@ const TP = {
   seeDetail: { en: "See detail", fr: "Voir le détail", de: "Detail anzeigen", el: "Λεπτομέρειες" },
   hideDetail: { en: "Hide detail", fr: "Masquer le détail", de: "Detail ausblenden", el: "Απόκρυψη" },
   buyTicket: { en: "Buy a ticket", fr: "Acheter un ticket", de: "Ticket kaufen", el: "Αγορά εισιτηρίου" },
+  depCol: { en: "Departure", fr: "Départ", de: "Abfahrt", el: "Αναχώρηση" },
+  arrCol: { en: "Arrival", fr: "Arrivée", de: "Ankunft", el: "Άφιξη" },
+  changesCol: { en: "Changes", fr: "Changements", de: "Umstiege", el: "Αλλαγές" },
+  priceCol: { en: "Price", fr: "Prix", de: "Preis", el: "Τιμή" },
+  seeMore: { en: "Show more departures", fr: "Voir plus de départs", de: "Mehr Abfahrten", el: "Περισσότερα" },
   atTicketOffice: {
     en: "+ fare at the ticket office for one leg",
     fr: "+ tarif au guichet pour un tronçon",
@@ -119,6 +124,11 @@ const TP = {
 
 function tp(key: keyof typeof TP, locale: Locale): string {
   return TP[key][locale] ?? TP[key].en;
+}
+
+function toMin(t: string): number {
+  const [h, m] = t.split(":").map(Number);
+  return (h || 0) * 60 + (m || 0);
 }
 
 function todayISO(): string {
@@ -188,22 +198,12 @@ function LegRow({ leg, locale }: { leg: JourneyLeg; locale: Locale }) {
   );
 }
 
-function JourneyCard({ journey, locale }: { journey: Journey; locale: Locale }) {
-  const [open, setOpen] = useState(false);
-  const legs = journey.legs;
-  const from = legs[0].route.from_place;
-  const last = legs[legs.length - 1];
-  const to = last.alightAt ?? last.route.to_place;
-  const changes = legs.slice(0, -1).map((l) => l.alightAt ?? l.route.to_place);
-  const nChanges = changes.length;
-  // Durée affichée seulement pour un trajet DIRECT : aux correspondances les
-  // temps d'attente ne sont pas publiés -> total non fiable (no-invention).
-  const directDur = legs.length === 1 && legs[0].alightAt == null ? legs[0].route.duration : null;
-  const routing =
-    nChanges === 0 ? tp("direct", locale)
-    : nChanges === 1 ? tp("oneChange", locale)
-    : `${nChanges} ${tp("changes", locale)}`;
+function fmtChanges(n: number, locale: Locale): string {
+  return n === 0 ? tp("direct", locale) : n === 1 ? tp("oneChange", locale) : `${n} ${tp("changes", locale)}`;
+}
 
+// CTA fake-door : mesure de l'intention d'achat (billetterie pas encore dispo).
+function BuyTicketCTA({ from, to, locale }: { from: string; to: string; locale: Locale }) {
   function onBuy() {
     const plausible = (window as unknown as {
       plausible?: (e: string, o?: { props?: Record<string, string | number> }) => void;
@@ -212,66 +212,135 @@ function JourneyCard({ journey, locale }: { journey: Journey; locale: Locale }) 
       props: { from: slugifyPlace(from) || from.toLowerCase(), to: slugifyPlace(to) || to.toLowerCase() },
     });
   }
+  return (
+    <Link
+      href={`/buses/tickets?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`}
+      onClick={onBuy}
+      className="block text-center bg-sun text-night font-bold text-sm py-3 hover:brightness-95 transition"
+    >
+      {tp("buyTicket", locale)}
+    </Link>
+  );
+}
+
+interface Trip {
+  key: string;
+  dep: string;
+  arr: string | null;        // calculee seulement pour un direct (duree connue)
+  changes: number;
+  via: string[];
+  price: number | null;
+  priceEstimated: boolean;
+  priceIncomplete: boolean;
+  journey: Journey;
+}
+
+// Eclate les itineraires en TRIPS (1 ligne par depart), facon tableau SNCF.
+function buildTrips(journeys: Journey[]): Trip[] {
+  const byDep = new Map<string, Trip>();
+  for (const j of journeys) {
+    const direct = j.legs.length === 1 && j.legs[0].alightAt == null;
+    const durMin = direct ? parseDurationMin(j.legs[0].route.duration) : null;
+    const via = j.legs.slice(0, -1).map((l) => l.alightAt ?? l.route.to_place);
+    for (const t of j.legs[0].times) {
+      const trip: Trip = {
+        key: `${t}-${j.legs.length}`,
+        dep: t,
+        arr: durMin != null ? addMinutes(t, durMin) : null,
+        changes: j.legs.length - 1,
+        via,
+        price: j.priceTotal,
+        priceEstimated: j.priceEstimated,
+        priceIncomplete: j.priceIncomplete,
+        journey: j,
+      };
+      const prev = byDep.get(t);
+      // a heure de depart egale, garder le trajet avec le MOINS de changements
+      if (!prev || trip.changes < prev.changes) byDep.set(t, trip);
+    }
+  }
+  return [...byDep.values()].sort((a, b) => toMin(a.dep) - toMin(b.dep));
+}
+
+// Tableau de resultats facon SNCF : Depart | Arrivee | Changements | Prix.
+// Une ligne par depart, clic = detail (troncons + horaires + CTA).
+function TripsTable({ journeys, locale }: { journeys: Journey[]; locale: Locale }) {
+  const [limit, setLimit] = useState(6);
+  const [openKey, setOpenKey] = useState<string | null>(null);
+  const trips = useMemo(() => buildTrips(journeys), [journeys]);
+  const visible = trips.slice(0, limit);
+  const cols = "grid grid-cols-[1fr_1fr_1.5fr_auto] gap-2";
 
   return (
-    <div className="rounded-3xl bg-white overflow-hidden shadow-[0_12px_30px_rgba(11,94,120,.12)]">
-      {/* Synthèse (cliquable -> détail) */}
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="w-full text-left bg-night text-white px-5 py-3.5 flex items-center justify-between gap-3"
-      >
-        <span className="min-w-0">
-          <span className="block font-bold text-sm">
-            {routing}
-            {changes.length > 0 ? ` · ${tp("via", locale)} ${changes.join(", ")}` : ""}
-          </span>
-          <span className="block text-xs text-sky/85 mt-0.5">
-            {from} · {to}{directDur ? ` · ${directDur}` : ""}
-          </span>
-        </span>
-        <span className="text-right shrink-0">
-          {journey.priceTotal != null && (
-            <span className="block font-heading font-extrabold text-lg leading-none">
-              {journey.priceTotal.toFixed(2)} €
-              {journey.priceEstimated && (
-                <span className="text-[10px] font-normal align-top ml-0.5">{tp("indicative", locale)}</span>
-              )}
-            </span>
-          )}
-          <span className="text-[11px] text-sky/85 inline-flex items-center gap-0.5 mt-1">
-            {open ? tp("hideDetail", locale) : tp("seeDetail", locale)}
-            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
-          </span>
-        </span>
-      </button>
+    <div className="mt-4 rounded-3xl bg-white overflow-hidden shadow-[0_12px_30px_rgba(11,94,120,.12)]">
+      <div className={`${cols} px-4 py-2.5 bg-night text-white text-[11px] font-bold uppercase tracking-wide`}>
+        <span>{tp("depCol", locale)}</span>
+        <span>{tp("arrCol", locale)}</span>
+        <span>{tp("changesCol", locale)}</span>
+        <span className="text-right">{tp("priceCol", locale)}</span>
+      </div>
 
-      {/* Détail (replié par défaut) */}
-      {open && (
-        <>
-          <div className="divide-y divide-border">
-            {legs.map((leg) => (
-              <LegRow key={leg.route.id} leg={leg} locale={locale} />
-            ))}
+      {visible.map((trip) => {
+        const isOpen = openKey === trip.key;
+        const last = trip.journey.legs[trip.journey.legs.length - 1];
+        const to = last.alightAt ?? last.route.to_place;
+        return (
+          <div key={trip.key} className="border-t border-border">
+            <button
+              type="button"
+              onClick={() => setOpenKey((k) => (k === trip.key ? null : trip.key))}
+              aria-expanded={isOpen}
+              className={`${cols} w-full px-4 py-3 items-center text-left hover:bg-surface ${isOpen ? "bg-surface" : ""}`}
+            >
+              <span className="font-data font-bold text-text">{trip.dep}</span>
+              <span className="font-data text-text">{trip.arr ?? "—"}</span>
+              <span className="text-xs min-w-0">
+                {trip.changes === 0 ? (
+                  <span className="font-semibold text-[#0E7C3A]">{tp("direct", locale)}</span>
+                ) : (
+                  <span className="text-text-muted">
+                    {fmtChanges(trip.changes, locale)}
+                    {trip.via.length > 0 ? ` · ${tp("via", locale)} ${trip.via.join(", ")}` : ""}
+                  </span>
+                )}
+              </span>
+              <span className="text-right font-bold text-text">
+                {trip.price != null ? `${trip.price.toFixed(2)} €` : "—"}
+                {trip.priceEstimated && (
+                  <span className="block text-[10px] font-normal text-text-muted">{tp("indicative", locale)}</span>
+                )}
+              </span>
+            </button>
+
+            {isOpen && (
+              <div className="bg-surface/50">
+                <div className="divide-y divide-border">
+                  {trip.journey.legs.map((leg) => (
+                    <LegRow key={leg.route.id} leg={leg} locale={locale} />
+                  ))}
+                </div>
+                {(trip.priceIncomplete || trip.changes > 0) && (
+                  <div className="px-4 py-2 border-t border-border bg-amber-50 text-xs text-amber-800 space-y-0.5">
+                    {trip.changes > 0 && <p>{tp("connectionNotGuaranteed", locale)}</p>}
+                    {trip.priceIncomplete && <p>{tp("atTicketOffice", locale)}</p>}
+                  </div>
+                )}
+                <BuyTicketCTA from={trip.journey.legs[0].route.from_place} to={to} locale={locale} />
+              </div>
+            )}
           </div>
-          {(journey.priceIncomplete || legs.length > 1) && (
-            <div className="px-4 py-2 border-t border-border bg-amber-50 text-xs text-amber-800 space-y-0.5">
-              {legs.length > 1 && <p>{tp("connectionNotGuaranteed", locale)}</p>}
-              {journey.priceIncomplete && <p>{tp("atTicketOffice", locale)}</p>}
-            </div>
-          )}
-        </>
-      )}
+        );
+      })}
 
-      {/* CTA fake-door : mesure de l'intention d'achat (billetterie pas encore dispo) */}
-      <Link
-        href={`/buses/tickets?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`}
-        onClick={onBuy}
-        className="block text-center bg-sun text-night font-bold text-sm py-3 hover:brightness-95 transition"
-      >
-        {tp("buyTicket", locale)}
-      </Link>
+      {trips.length > limit && (
+        <button
+          type="button"
+          onClick={() => setLimit((l) => l + 6)}
+          className="w-full border-t border-border py-2.5 text-xs font-semibold text-aegean hover:bg-surface"
+        >
+          {tp("seeMore", locale)}
+        </button>
+      )}
     </div>
   );
 }
@@ -511,15 +580,13 @@ export function JourneyPlanner({
       )}
 
       {searched && journeys.length > 0 && (
-        <div className="mt-4 space-y-3">
-          {journeys.map((j, i) => (
-            <JourneyCard key={`${j.hub ?? "direct"}-${i}`} journey={j} locale={locale} />
-          ))}
-          <p className="text-xs text-text-muted flex items-start gap-1.5">
+        <>
+          <TripsTable journeys={journeys} locale={locale} />
+          <p className="mt-3 text-xs text-text-muted flex items-start gap-1.5">
             <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
             {tp("priceMethodo", locale)}
           </p>
-        </div>
+        </>
       )}
 
       {searched && noJourney && (
