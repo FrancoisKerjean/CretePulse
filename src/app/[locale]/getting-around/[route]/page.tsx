@@ -9,9 +9,16 @@ import { CarPromo } from "@/components/car-rental/CarPromo";
 // Routes en zone couverte par le partenaire location (chania-west) : encart
 // wizard interne au lieu du placeholder affilié DiscoverCars. Ailleurs, le
 // placeholder DiscoverCars reste (rien à perdre hors zone).
+// Routes dont la destination est dans une zone servie par Auto Smart
+// (chania-ouest, rethymno, heraklion-centre) -> wizard interne. Agios Nikolaos
+// et Sitia (lasithi-est, non couvert) tombent volontairement sur le repli
+// affilié DiscoverCars. Étendu le 13/06 (audit Vague B) : Rethymno + Heraklion
+// centre étaient oubliés alors qu'Auto Smart les couvre.
 const CAR_PARTNER_PICKUP: Record<string, string> = {
   "chania-airport-to-city": "chania-airport",
   "heraklion-to-chania": "chania",
+  "heraklion-to-rethymno": "rethymno",
+  "heraklion-airport-to-city": "heraklion",
 };
 
 export const revalidate = 86400;

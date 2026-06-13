@@ -535,23 +535,25 @@ export default async function BeachDetailPage({
           </div>
         </section>
 
-        {/* Car rental: plages de l'ouest (zone partenaire chania-west) ->
-            encart wizard interne, pickup servi le plus proche ; ailleurs le
-            placeholder affilié DiscoverCars reste */}
-        {beach.region === "west" ? (
-          <CarPromo
-            locale={locale}
-            pickup={nearestBy(
-              allPickups().filter((p) => p.served),
-              (p) => SLUG_COORDS[p.slug] ?? null,
-              { lat: beach.latitude, lon: beach.longitude },
-              1,
-            )[0]?.slug}
-            source="beach"
-          />
-        ) : (
-          <AffiliateBanner type="carRental" locale={locale} placeName={name} className="mb-4" />
-        )}
+        {/* Car rental (audit 13/06, Vague B) : Auto Smart primaire partout où
+            il couvre réellement. On route vers le wizard quand le pickup le plus
+            proche de la plage est dans une zone servie (chania-ouest, rethymno,
+            heraklion-centre), sinon repli affilié DiscoverCars (lasithi-est non
+            couvert). Remplace l'ancien `region === "west"` qui envoyait à tort
+            les plages du centre/rethymno vers DiscoverCars. */}
+        {(() => {
+          const nearestPickup = nearestBy(
+            allPickups(),
+            (p) => SLUG_COORDS[p.slug] ?? null,
+            { lat: beach.latitude, lon: beach.longitude },
+            1,
+          )[0];
+          return nearestPickup?.served ? (
+            <CarPromo locale={locale} pickup={nearestPickup.slug} source="beach" />
+          ) : (
+            <AffiliateBanner type="carRental" locale={locale} placeName={name} className="mb-4" />
+          );
+        })()}
 
         {/* Property management CTA */}
         <div className="mb-12">
