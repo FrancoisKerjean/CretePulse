@@ -5,7 +5,7 @@
 // les relient, grisent le reste. Toujours indexable Google (SVG inline).
 // Note redesign 11/06 : conservé face à MapLibre (canvas = invisible Google,
 // perte du highlight). Replié par défaut en mobile (SVG reste dans le DOM).
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 //
 // Stratégie layout :
 //   - La côte nord de la Crète est quasi-rectiligne → on aligne toutes les villes
@@ -292,10 +292,17 @@ const LINES: Line[] = [
   },
 ];
 
+// Palette Kalimera (alignée sur le DepartureBoard : lagoon/night/sun).
+const NIGHT = "#07374A";
+const SUN = "#FFC83D";
+const TERRA = "#ED7A5C";
+const WHITE = "#FFFFFF";
+const SKY = "#E7F6FA";
+
 const COLOR_HEX = {
-  terra: "var(--color-terra)",
-  aegean: "var(--color-aegean)",
-  olive: "var(--color-olive)",
+  aegean: "#00C2D4", // lagoon (ouest)
+  terra: "#ED7A5C",  // terracotta (est)
+  olive: "#7C9A53",  // olive (branches sud)
 } as const;
 
 const STATION_RADIUS = 5.5;
@@ -307,6 +314,11 @@ type Props = {
   fromPlace?: string;
   /** Place name to. */
   toPlace?: string;
+  /** Lieux de depart reels (bus_routes.from_place) : rend une station cliquable
+   *  seulement si elle correspond a un vrai depart. */
+  originPlaces?: string[];
+  /** Clic sur une station-origine -> remonte le lieu (pilote le board + planner). */
+  onStationSelect?: (place: string) => void;
 };
 
 // Mapping nom de lieu (bus_routes.from_place / to_place) → station.id de la map.
@@ -417,17 +429,28 @@ const T = {
   },
 };
 
-export function BusNetworkMap({ locale, fromPlace, toPlace }: Props) {
+export function BusNetworkMap({ locale, fromPlace, toPlace, originPlaces, onStationSelect }: Props) {
   const loc = pickLoc(locale);
   // Mobile : plan replié par défaut (le SVG large force un scroll horizontal
   // mediocre). Desktop : ouvert. Le SVG reste dans le DOM (hidden) -> SEO ok.
   const [open, setOpen] = useState(false);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
   useEffect(() => {
     if (window.matchMedia("(min-width: 768px)").matches) setOpen(true);
   }, []);
   const stationById: Record<string, Station> = Object.fromEntries(
     STATIONS.map((s) => [s.id, s]),
   );
+
+  // station.id -> nom de lieu DB cliquable (premier vrai depart qui matche).
+  const stationToPlace = useMemo(() => {
+    const m: Record<string, string> = {};
+    for (const p of originPlaces ?? []) {
+      const sid = placeToStationId(p);
+      if (sid && !m[sid]) m[sid] = p;
+    }
+    return m;
+  }, [originPlaces]);
 
   // Highlight logic : 2 stations matchées + lignes qui les couvrent.
   const fromId = placeToStationId(fromPlace);
@@ -451,10 +474,19 @@ export function BusNetworkMap({ locale, fromPlace, toPlace }: Props) {
   const isLineActive = (id: string) =>
     !hasHighlight || highlightedLineIds.has(id);
 
+  const subtitle =
+    loc === "fr" ? "Plan schématique KTEL · touchez une ville pour voir ses départs"
+    : loc === "de" ? "Schematischer KTEL-Plan · Stadt antippen für Abfahrten"
+    : loc === "el" ? "Σχηματικός χάρτης ΚΤΕΛ · πατήστε μια πόλη για αναχωρήσεις"
+    : "Schematic KTEL plan · tap a town to see its departures";
+  const tapHint =
+    loc === "fr" ? "voir les départs" : loc === "de" ? "Abfahrten ansehen"
+    : loc === "el" ? "δείτε αναχωρήσεις" : "see departures";
+
   return (
     <section
       aria-labelledby="bus-network-heading"
-      className="mb-10 rounded-2xl border border-aegean/15 bg-stone p-5 md:p-8"
+      className="mb-8 rounded-[28px] bg-white p-5 md:p-7 shadow-[0_12px_32px_rgba(11,94,120,.10)]"
     >
       <button
         type="button"
@@ -462,19 +494,11 @@ export function BusNetworkMap({ locale, fromPlace, toPlace }: Props) {
         aria-expanded={open}
         className="w-full text-left md:pointer-events-none"
       >
-        <h2 id="bus-network-heading" className="text-xl font-bold text-aegean mb-1 flex items-center justify-between gap-2">
+        <h2 id="bus-network-heading" className="font-heading font-extrabold text-lg md:text-xl text-text mb-0.5 flex items-center justify-between gap-2">
           {T.heading[loc]}
-          <span className={`md:hidden text-text-muted transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
+          <span className={`md:hidden text-lagoon-deep transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
         </h2>
-        <p className="text-sm text-text-muted mb-5">
-          {loc === "fr"
-            ? "Plan schématique des lignes KTEL · clic sur une station pour voir ses horaires."
-            : loc === "de"
-              ? "Schematischer Plan der KTEL-Linien · Station klicken für Fahrpläne."
-              : loc === "el"
-                ? "Σχηματικός χάρτης ΚΤΕΛ · κάντε κλικ στους σταθμούς."
-                : "Schematic plan of KTEL bus lines · click a stop for schedules."}
-        </p>
+        <p className="text-sm text-text-muted mb-5">{subtitle}</p>
       </button>
 
       <div className={`relative w-full overflow-x-auto ${open ? "" : "hidden"}`}>
@@ -485,8 +509,8 @@ export function BusNetworkMap({ locale, fromPlace, toPlace }: Props) {
           className="block min-w-[700px] w-full h-auto"
           xmlns="http://www.w3.org/2000/svg"
         >
-          {/* Fond très léger */}
-          <rect width="1200" height="420" fill="var(--color-sand-warm)" rx="12" />
+          {/* Fond doux Kalimera */}
+          <rect width="1200" height="420" fill={SKY} rx="18" />
 
           {/* Lignes (dessinées AVANT les stations pour passer dessous) */}
           {LINES.map((line) => {
@@ -509,7 +533,7 @@ export function BusNetworkMap({ locale, fromPlace, toPlace }: Props) {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeDasharray={line.dashed ? "8 8" : undefined}
-                opacity={active ? 0.95 : 0.18}
+                opacity={active ? 0.95 : 0.22}
                 style={{ transition: "opacity 280ms ease, stroke-width 280ms ease" }}
               />
             );
@@ -519,81 +543,76 @@ export function BusNetworkMap({ locale, fromPlace, toPlace }: Props) {
           {STATIONS.map((s) => {
             const isHub = s.id === "heraklion" || s.id === "chania" || s.id === "agios";
             const labelDx = s.anchor === "right" ? 12 : s.anchor === "left" ? -12 : 0;
-            const labelDy =
-              s.anchor === "above"
-                ? -14
-                : s.anchor === "below"
-                  ? 22
-                  : -14;
+            const labelDy = s.anchor === "below" ? 22 : -14;
             const textAnchor =
               s.anchor === "right" ? "start" : s.anchor === "left" ? "end" : "middle";
 
             const active = isStationActive(s.id);
             const isPinned = highlightedStationIds.has(s.id);
-            // Couleur de pin pour from = aegean, pour to = terra (différenciation)
-            const pinColor =
-              s.id === fromId ? "var(--color-aegean)"
-              : s.id === toId ? "var(--color-terra)"
-              : null;
+            const hovered = hoveredId === s.id;
+            const place = stationToPlace[s.id];
+            const clickable = !!place && !!onStationSelect;
+            // from = sun, to = terracotta ; survol = sun.
+            const pinColor = s.id === fromId ? SUN : s.id === toId ? TERRA : null;
+            const ringColor = pinColor ?? (hovered ? SUN : null);
+            const r = isPinned || hovered ? STATION_RADIUS + 3 : isHub ? STATION_RADIUS + 2 : STATION_RADIUS;
 
-            const innerCircle = (
+            return (
               <g
-                opacity={active ? 1 : 0.35}
-                style={{ transition: "opacity 280ms ease" }}
+                key={s.id}
+                opacity={active ? 1 : 0.3}
+                style={{ transition: "opacity 280ms ease", cursor: clickable ? "pointer" : "default" }}
+                onClick={clickable ? () => onStationSelect!(place) : undefined}
+                onMouseEnter={() => setHoveredId(s.id)}
+                onMouseLeave={() => setHoveredId((h) => (h === s.id ? null : h))}
+                role={clickable ? "button" : undefined}
+                aria-label={clickable ? `${stationLabel(s, loc)} · ${tapHint}` : undefined}
               >
-                {isPinned && pinColor && (
-                  <circle
-                    cx={s.x}
-                    cy={s.y}
-                    r={STATION_RADIUS + 8}
-                    fill="none"
-                    stroke={pinColor}
-                    strokeWidth={3}
-                    opacity={0.9}
-                  />
+                {/* zone de clic large (confort tactile) */}
+                {clickable && <circle cx={s.x} cy={s.y} r={16} fill="transparent" />}
+                {ringColor && (
+                  <circle cx={s.x} cy={s.y} r={r + 6} fill="none" stroke={ringColor} strokeWidth={3} opacity={0.9} />
                 )}
                 <circle
                   cx={s.x}
                   cy={s.y}
-                  r={isPinned ? STATION_RADIUS + 3 : isHub ? STATION_RADIUS + 2 : STATION_RADIUS}
-                  fill={isPinned && pinColor ? pinColor : "#FFFFFF"}
-                  stroke="var(--color-text)"
+                  r={r}
+                  fill={isPinned && pinColor ? pinColor : isHub ? NIGHT : WHITE}
+                  stroke={NIGHT}
                   strokeWidth={2}
                 />
-                {isHub && !isPinned && (
-                  <circle
-                    cx={s.x}
-                    cy={s.y}
-                    r={STATION_RADIUS - 1.5}
-                    fill="var(--color-text)"
-                  />
-                )}
+                {isHub && !isPinned && <circle cx={s.x} cy={s.y} r={STATION_RADIUS - 1.5} fill={WHITE} />}
                 <text
                   x={s.x + labelDx}
                   y={s.y + labelDy}
-                  fontSize={isPinned ? 13 : isHub ? 14 : 11}
-                  fontWeight={isPinned || isHub ? 700 : 500}
+                  fontSize={isPinned || hovered ? 13 : isHub ? 14 : 11}
+                  fontWeight={isPinned || isHub || hovered ? 700 : 500}
                   fontFamily="ui-sans-serif, system-ui, sans-serif"
-                  fill="var(--color-text)"
+                  fill={NIGHT}
                   textAnchor={textAnchor}
                 >
                   {stationLabel(s, loc)}
                 </text>
               </g>
             );
-
-            return s.destSlug ? (
-              <a
-                key={s.id}
-                href={`#${s.destSlug}`}
-                aria-label={`${stationLabel(s, loc)} · schedules`}
-              >
-                {innerCircle}
-              </a>
-            ) : (
-              <g key={s.id}>{innerCircle}</g>
-            );
           })}
+
+          {/* Infobulle survol : pastille night au-dessus de la station */}
+          {hoveredId && (() => {
+            const s = stationById[hoveredId];
+            if (!s) return null;
+            const clickable = !!stationToPlace[s.id];
+            const txt = clickable ? `${stationLabel(s, loc)} · ${tapHint}` : stationLabel(s, loc);
+            const w = txt.length * 6.6 + 22;
+            const cx = Math.max(w / 2 + 4, Math.min(1200 - w / 2 - 4, s.x));
+            const top = s.y - 34;
+            return (
+              <g pointerEvents="none">
+                <rect x={cx - w / 2} y={top - 13} width={w} height={22} rx={11} fill={NIGHT} />
+                <text x={cx} y={top + 2} fontSize={12} fontWeight={700} fill="#fff" textAnchor="middle">{txt}</text>
+              </g>
+            );
+          })()}
         </svg>
       </div>
 

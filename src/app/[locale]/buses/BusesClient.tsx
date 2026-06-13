@@ -12,6 +12,7 @@ import { BusNetworkMap } from "@/components/BusNetworkMap";
 import { JourneyPlanner } from "./JourneyPlanner";
 import { DepartureBoard } from "@/components/DepartureBoard";
 import { RouteLine } from "@/components/RouteLine";
+import { originPlaces } from "@/lib/bus-departures";
 import { pairSlug } from "@/lib/bus-pairs";
 
 // ---------------------------------------------------------------------------
@@ -664,9 +665,17 @@ export function BusesClient({
     return [...best.values()].sort((a, b) => b.deps - a.deps).slice(0, 6);
   }, [routes]);
 
+  const originList = useMemo(() => originPlaces(routes), [routes]);
+
   function pick(from: string, to: string) {
     setFromPlace(from);
     setToPlace(to);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  // Clic sur une station de la carte : devient le départ -> pilote le board.
+  function selectStation(place: string) {
+    setFromPlace(place);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -711,8 +720,14 @@ export function BusesClient({
           isToday={isToday}
         />
 
-        {/* Plan réseau interactif · réagit aux sélecteurs From/To */}
-        <BusNetworkMap locale={locale} fromPlace={fromPlace} toPlace={toPlace} />
+        {/* Plan réseau interactif · réagit aux sélecteurs + stations cliquables */}
+        <BusNetworkMap
+          locale={locale}
+          fromPlace={fromPlace}
+          toPlace={toPlace}
+          originPlaces={originList}
+          onStationSelect={selectStation}
+        />
 
         {/* Results (search) or grouped directory */}
         {hasSearch ? (
