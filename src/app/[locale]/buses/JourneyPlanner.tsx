@@ -3,7 +3,7 @@
 // Planificateur d'itineraire : depart -> arrivees atteignables -> date ->
 // itineraire(s) + prix. Calcul 100 % local (moteur bus-journey, routes deja
 // chargees par la page). Spec : docs/superpowers/specs/2026-06-10-bus-journey-planner-design.md
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, Clock, Euro, Info } from "lucide-react";
 import { CiBus, CiCompass } from "@/components/icons";
 import { KriKri } from "@/components/KriKri";
@@ -40,6 +40,7 @@ const TP = {
   today: { en: "Today", fr: "Aujourd'hui", de: "Heute", el: "Σήμερα" },
   tomorrow: { en: "Tomorrow", fr: "Demain", de: "Morgen", el: "Αύριο" },
   swap: { en: "swap", fr: "inverser", de: "tauschen", el: "εναλλαγή" },
+  whereTo: { en: "Where to?", fr: "Où allez-vous ?", de: "Wohin?", el: "Πού πηγαίνετε;" },
   allPlaces: { en: "All places", fr: "Tous les lieux", de: "Alle Orte", el: "Όλα τα μέρη" },
   yourJourney: {
     en: "Your journey", fr: "Votre itinéraire", de: "Ihre Verbindung", el: "Η διαδρομή σας",
@@ -264,6 +265,18 @@ export function JourneyPlanner({
     if (nearest) onFromChange(nearest.name);
   }, [wantFromHere, geo.pos, placesWithCoords, onFromChange]);
 
+  // "Où allez-vous ?" facon SNCF : si la geoloc est DEJA accordee/connue
+  // (cd-geo en sessionStorage, partage avec le reste du site), on pre-remplit le
+  // Depart au chargement -> l'utilisateur n'a plus qu'a taper l'arrivee. Jamais
+  // de prompt non sollicite ; une seule fois ; n'ecrase pas un ?from= ni un choix.
+  const autoFilledFrom = useRef(false);
+  useEffect(() => {
+    if (autoFilledFrom.current || fromPlace || !geo.pos) return;
+    if (geo.status !== "granted" && geo.status !== "manual") return;
+    const nearest = nearestBy(placesWithCoords, (p) => [p.lat, p.lon], geo.pos, 1)[0];
+    if (nearest) { autoFilledFrom.current = true; onFromChange(nearest.name); }
+  }, [geo.status, geo.pos, fromPlace, placesWithCoords, onFromChange]);
+
   function handleFromHere() {
     setWantFromHere(true);
     if (!geo.pos) geo.requestGeo();
@@ -306,6 +319,16 @@ export function JourneyPlanner({
     <div className="rounded-[28px] bg-white p-6 mb-6 shadow-[0_12px_32px_rgba(11,94,120,.10)]">
       <p className="font-heading font-bold text-base text-text mb-3.5">{tp("searchTitle", locale)}</p>
       <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+        {/* Arrivée d'abord (destination-first, esprit "où allez-vous ?") */}
+        <PlaceCombobox
+          value={toPlace}
+          onChange={onToChange}
+          options={toOptions}
+          placeholder={tp("whereTo", locale)}
+          ariaLabel={tp("to", locale)}
+        />
+
+        {/* Départ : pré-rempli depuis la géoloc si déjà accordée, + compas */}
         <div className="flex-1 flex items-center gap-2 min-w-0">
           <PlaceCombobox
             value={fromPlace}
@@ -332,16 +355,6 @@ export function JourneyPlanner({
             )}
           </button>
         </div>
-
-        <ArrowRight className="w-5 h-5 text-text-muted shrink-0 hidden sm:block" />
-
-        <PlaceCombobox
-          value={toPlace}
-          onChange={onToChange}
-          options={toOptions}
-          placeholder={`${tp("to", locale)} · ${tp("allPlaces", locale)}`}
-          ariaLabel={tp("to", locale)}
-        />
 
         <div className="flex gap-1.5 items-center flex-wrap">
           {[
