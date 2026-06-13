@@ -27,6 +27,13 @@ const DAY_ORDER = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 const TRANSFER_MARGIN_MIN = 15;
 const MAX_JOURNEYS = 3;
 
+// Hubs majeurs (service frequent) : on n'autorise une 2e correspondance QUE par
+// ces villes. Ailleurs un double changement serait theorique (1 bus/jour) et
+// non fiable. Cross-ile (est<->ouest) passe toujours par Heraklion/Chania.
+const HUB_TRANSFER = new Set([
+  "Heraklion", "Chania", "Rethymno", "Agios Nikolaos", "Siteia", "Ierapetra", "Kissamos",
+]);
+
 /** Jour de semaine ("Mon".."Sun") d'une date calendaire YYYY-MM-DD. */
 export function dayToken(dateISO: string): string {
   return DAY_TOKENS[new Date(`${dateISO}T12:00:00Z`).getUTCDay()];
@@ -117,13 +124,21 @@ export function buildGraph(routes: BusRoute[]): BusGraph {
   return { routes, byFrom };
 }
 
-/** Destinations atteignables (direct ou 1 correspondance), triees, sans le depart. */
+/** Destinations atteignables (direct, 1 correspondance, ou 2 via hubs majeurs),
+ *  triees, sans le depart. Coherent avec findJourneys. */
 export function reachableFrom(g: BusGraph, from: string): string[] {
   const out = new Set<string>();
   for (const e1 of g.byFrom.get(from) ?? []) {
-    const mid = edgeDest(e1);
-    out.add(mid);
-    for (const e2 of g.byFrom.get(mid) ?? []) out.add(edgeDest(e2));
+    const m1 = edgeDest(e1);
+    out.add(m1);
+    for (const e2 of g.byFrom.get(m1) ?? []) {
+      const m2 = edgeDest(e2);
+      out.add(m2);
+      // 2e correspondance uniquement de hub a hub (cross-ile)
+      if (HUB_TRANSFER.has(m1) && HUB_TRANSFER.has(m2)) {
+        for (const e3 of g.byFrom.get(m2) ?? []) out.add(edgeDest(e3));
+      }
+    }
   }
   out.delete(from);
   return [...out].sort((a, b) => a.localeCompare(b));
@@ -193,7 +208,43 @@ export function findJourneys(g: BusGraph, from: string, to: string, dateISO: str
     const prev = byHub.get(j.hub!);
     if (!prev || score(j) > score(prev)) byHub.set(j.hub!, j);
   }
-  return [...byHub.values()].sort((a, b) => score(b) - score(a)).slice(0, MAX_JOURNEYS);
+  const oneTransfer = [...byHub.values()].sort((a, b) => score(b) - score(a)).slice(0, MAX_JOURNEYS);
+  if (oneTransfer.length > 0) return oneTransfer;
+
+  // Dernier recours : 2 correspondances via 2 hubs majeurs (cross-ile est<->ouest).
+  // KTEL ne publie pas les heures de passage -> on ne filtre pas par horaire,
+  // l'UI affiche "correspondances non officielles, prevoyez de la marge".
+  const two: Journey[] = [];
+  const seen2 = new Set<string>();
+  for (const e1 of g.byFrom.get(from) ?? []) {
+    const h1 = edgeDest(e1);
+    if (h1 === to || !HUB_TRANSFER.has(h1)) continue;
+    const t1 = timesForDate(e1.route, dateISO);
+    if (t1.length === 0) continue;
+    for (const e2 of g.byFrom.get(h1) ?? []) {
+      const h2 = edgeDest(e2);
+      if (h2 === to || h2 === from || h2 === h1 || !HUB_TRANSFER.has(h2)) continue;
+      const t2 = timesForDate(e2.route, dateISO);
+      if (t2.length === 0) continue;
+      for (const e3 of g.byFrom.get(h2) ?? []) {
+        if (edgeDest(e3) !== to) continue;
+        const t3 = timesForDate(e3.route, dateISO);
+        if (t3.length === 0) continue;
+        const key = `${h1}|${h2}`;
+        if (seen2.has(key)) continue;
+        seen2.add(key);
+        two.push(makeJourney(
+          [
+            { route: e1.route, times: t1, alightAt: e1.alightAt },
+            { route: e2.route, times: t2, alightAt: e2.alightAt },
+            { route: e3.route, times: t3, alightAt: e3.alightAt },
+          ],
+          h1,
+        ));
+      }
+    }
+  }
+  return two.sort((a, b) => score(b) - score(a)).slice(0, MAX_JOURNEYS);
 }
 
 function score(j: Journey): number {

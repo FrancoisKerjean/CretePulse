@@ -58,10 +58,10 @@ const TP = {
     el: "+ εισιτήριο στο εκδοτήριο για ένα σκέλος",
   },
   connectionNotGuaranteed: {
-    en: "Leg durations unknown – allow time for the connection, it is not guaranteed.",
-    fr: "Durées inconnues – prévoyez de la marge, la correspondance n'est pas garantie.",
-    de: "Fahrzeiten unbekannt – Puffer einplanen, der Anschluss ist nicht garantiert.",
-    el: "Άγνωστη διάρκεια – αφήστε περιθώριο, η ανταπόκριση δεν είναι εγγυημένη.",
+    en: "Unofficial connection: KTEL does not guarantee transfers, allow extra time.",
+    fr: "Correspondance non officielle : le KTEL ne la garantit pas, prévoyez de la marge.",
+    de: "Inoffizieller Anschluss: KTEL garantiert keine Umstiege, planen Sie Puffer ein.",
+    el: "Ανεπίσημη ανταπόκριση: το ΚΤΕΛ δεν την εγγυάται, αφήστε περιθώριο.",
   },
   noServiceThatDay: {
     en: "No departure on that date – try another day.",
@@ -173,12 +173,16 @@ function LegRow({ leg, locale }: { leg: JourneyLeg; locale: Locale }) {
 }
 
 function JourneyCard({ journey, locale }: { journey: Journey; locale: Locale }) {
+  // Points de correspondance = lieu d'arrivee de chaque troncon sauf le dernier.
+  const changes = journey.legs
+    .slice(0, -1)
+    .map((l) => l.alightAt ?? l.route.to_place);
   return (
     <div className="rounded-3xl bg-white overflow-hidden shadow-[0_12px_30px_rgba(11,94,120,.12)]">
       <div className="bg-night px-5 py-3 text-white flex items-center justify-between gap-2 flex-wrap">
         <span className="text-sm font-bold">
           {tp("yourJourney", locale)}
-          {journey.hub ? ` · ${tp("via", locale)} ${journey.hub}` : ""}
+          {changes.length > 0 ? ` · ${tp("via", locale)} ${changes.join(", ")}` : ""}
         </span>
         {journey.priceTotal != null && (
           <span className="text-sm font-bold inline-flex items-center gap-1">
@@ -197,12 +201,12 @@ function JourneyCard({ journey, locale }: { journey: Journey; locale: Locale }) 
           <LegRow key={leg.route.id} leg={leg} locale={locale} />
         ))}
       </div>
-      {(journey.priceIncomplete || (journey.legs.length > 1 && !journey.durationKnown)) && (
+      {(journey.priceIncomplete || journey.legs.length > 1) && (
         <div className="px-4 py-2 border-t border-border bg-amber-50 text-xs text-amber-800 space-y-0.5">
-          {journey.priceIncomplete && <p>{tp("atTicketOffice", locale)}</p>}
-          {journey.legs.length > 1 && !journey.durationKnown && (
+          {journey.legs.length > 1 && (
             <p>{tp("connectionNotGuaranteed", locale)}</p>
           )}
+          {journey.priceIncomplete && <p>{tp("atTicketOffice", locale)}</p>}
         </div>
       )}
     </div>
