@@ -2,6 +2,7 @@ import { BusesClient } from "./BusesClient";
 import { setRequestLocale } from "next-intl/server";
 import { buildAlternates } from "@/lib/seo";
 import { getBusRoutes, getBusDestinations, latestScrapedAt } from "@/lib/buses";
+import { getBusAlerts } from "@/lib/bus-alerts";
 import { busesPageSchema } from "@/lib/schema";
 
 export const revalidate = 86400;
@@ -44,7 +45,11 @@ const FAQ: Record<string, Array<{ q: string; a: string }>> = {
 export default async function BusesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [routes, destinations] = await Promise.all([getBusRoutes(), getBusDestinations()]);
+  const [routes, destinations, alerts] = await Promise.all([
+    getBusRoutes(),
+    getBusDestinations(),
+    getBusAlerts(),
+  ]);
   const updatedAt = latestScrapedAt(routes);
   const m = META[locale] || META.en;
 
@@ -65,6 +70,7 @@ export default async function BusesPage({ params }: { params: Promise<{ locale: 
         routes={routes}
         destinations={destinations}
         updatedAt={updatedAt}
+        alerts={alerts}
       />
     </>
   );

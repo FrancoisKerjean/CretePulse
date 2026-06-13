@@ -22,6 +22,7 @@ import { useGeoPosition } from "@/components/geo/useGeoPosition";
 import { TaxiCompare } from "@/components/TaxiCompare";
 import { NextDeparture } from "@/components/NextDeparture";
 import partnersData from "@/data/taxi-partners.json";
+import { PlaceCombobox } from "@/components/PlaceCombobox";
 
 const TP = {
   searchTitle: {
@@ -36,6 +37,9 @@ const TP = {
   },
   to: { en: "To", fr: "Arrivée", de: "Nach", el: "Προς" },
   date: { en: "Date", fr: "Date", de: "Datum", el: "Ημερομηνία" },
+  today: { en: "Today", fr: "Aujourd'hui", de: "Heute", el: "Σήμερα" },
+  tomorrow: { en: "Tomorrow", fr: "Demain", de: "Morgen", el: "Αύριο" },
+  swap: { en: "swap", fr: "inverser", de: "tauschen", el: "εναλλαγή" },
   allPlaces: { en: "All places", fr: "Tous les lieux", de: "Alle Orte", el: "Όλα τα μέρη" },
   yourJourney: {
     en: "Your journey", fr: "Votre itinéraire", de: "Ihre Verbindung", el: "Η διαδρομή σας",
@@ -103,6 +107,12 @@ function tp(key: keyof typeof TP, locale: Locale): string {
 
 function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+function tomorrowISO(): string {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().slice(0, 10);
 }
 
 function maxDateISO(): string {
@@ -206,6 +216,8 @@ export function JourneyPlanner({
   toPlace,
   onFromChange,
   onToChange,
+  date,
+  onDateChange,
 }: {
   routes: BusRoute[];
   locale: Locale;
@@ -213,8 +225,9 @@ export function JourneyPlanner({
   toPlace: string;
   onFromChange: (v: string) => void;
   onToChange: (v: string) => void;
+  date: string;
+  onDateChange: (v: string) => void;
 }) {
-  const [date, setDate] = useState(todayISO);
 
   const graph = useMemo(() => buildGraph(routes), [routes]);
   const allPlaces = useMemo(
@@ -290,16 +303,13 @@ export function JourneyPlanner({
       <p className="font-heading font-bold text-base text-text mb-3.5">{tp("searchTitle", locale)}</p>
       <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
         <div className="flex-1 flex items-center gap-2 min-w-0">
-          <select
+          <PlaceCombobox
             value={fromPlace}
-            onChange={(e) => onFromChange(e.target.value)}
-            className="flex-1 min-w-0 border border-border rounded-full px-4 py-2.5 text-sm text-text bg-white focus:outline-none focus:ring-2 focus:ring-lagoon/40"
-          >
-            <option value="">{tp("from", locale)} · {tp("allPlaces", locale)}</option>
-            {allPlaces.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
+            onChange={onFromChange}
+            options={allPlaces}
+            placeholder={`${tp("from", locale)} · ${tp("allPlaces", locale)}`}
+            ariaLabel={tp("from", locale)}
+          />
           <button
             type="button"
             onClick={handleFromHere}
@@ -321,33 +331,44 @@ export function JourneyPlanner({
 
         <ArrowRight className="w-5 h-5 text-text-muted shrink-0 hidden sm:block" />
 
-        <select
+        <PlaceCombobox
           value={toPlace}
-          onChange={(e) => onToChange(e.target.value)}
-          className="flex-1 border border-border rounded-full px-4 py-2.5 text-sm text-text bg-white focus:outline-none focus:ring-2 focus:ring-lagoon/40"
-        >
-          <option value="">{tp("to", locale)} · {tp("allPlaces", locale)}</option>
-          {toOptions.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
-
-        <input
-          type="date"
-          value={date}
-          min={todayISO()}
-          max={maxDateISO()}
-          onChange={(e) => e.target.value && setDate(e.target.value)}
-          aria-label={tp("date", locale)}
-          className="border border-border rounded-full px-4 py-2.5 text-sm text-text bg-white font-data focus:outline-none focus:ring-2 focus:ring-lagoon/40"
+          onChange={onToChange}
+          options={toOptions}
+          placeholder={`${tp("to", locale)} · ${tp("allPlaces", locale)}`}
+          ariaLabel={tp("to", locale)}
         />
 
+        <div className="flex gap-1.5 items-center flex-wrap">
+          {[
+            { v: todayISO(), label: tp("today", locale) },
+            { v: tomorrowISO(), label: tp("tomorrow", locale) },
+          ].map((c) => (
+            <button key={c.v} type="button" onClick={() => onDateChange(c.v)}
+              className={`rounded-full px-3 py-2 text-sm font-semibold border-[1.5px] ${
+                date === c.v ? "bg-night text-white border-night" : "bg-white text-text border-border"}`}>
+              {c.label}
+            </button>
+          ))}
+          <input
+            type="date"
+            value={date}
+            min={todayISO()}
+            max={maxDateISO()}
+            onChange={(e) => e.target.value && onDateChange(e.target.value)}
+            aria-label={tp("date", locale)}
+            className="border border-border rounded-full px-3 py-2 text-sm text-text bg-white font-data focus:outline-none focus:ring-2 focus:ring-lagoon/40"
+          />
+        </div>
+
+        <button type="button" onClick={() => { onFromChange(toPlace); onToChange(fromPlace); }}
+          className="text-xs font-semibold text-lagoon-deep border-[1.5px] border-lagoon rounded-full px-3 py-2 shrink-0">
+          {tp("swap", locale)}
+        </button>
         {(fromPlace || toPlace) && (
-          <button
-            onClick={() => { onFromChange(""); onToChange(""); }}
-            className="text-xs text-text-muted hover:text-text underline shrink-0 px-1"
-          >
-            ✕ Reset
+          <button type="button" onClick={() => { onFromChange(""); onToChange(""); }}
+            className="text-xs text-text-muted hover:text-text underline shrink-0 px-1">
+            {locale === "fr" ? "Effacer" : "Clear"}
           </button>
         )}
       </div>

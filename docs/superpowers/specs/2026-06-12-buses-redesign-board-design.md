@@ -91,3 +91,20 @@ La page actuelle est un annuaire : 2 selects natifs, puis 292 grosses cartes de 
 - Refonte des pages paires `[pair]` (déjà récentes).
 - MapLibre / carte canvas (rejetée Phase 14, SVG conservé).
 - Top routes dynamiques via API Plausible.
+
+## Mise à jour 13/06/2026 — réconciliation avec l'état réel de la page
+
+Entre la validation (12/06) et l'implémentation (13/06), la page `/buses` a évolué (même session) : durcissement du scraper + ajout d'un bandeau d'alertes + restructuration "planner-first" intermédiaire (toutes non committées sur master). Trois ajustements à la spec :
+
+1. **Compteurs de routes** : la spec dit "292 routes, East 228 / West 64". Après durcissement du scraper PDF ektel (commit `99d8b83`, prod), c'est **383 routes : East (herlas) 236, West (ektel) 147**. Les pills de la section 6 deviennent `East · 236`, `West · 147`. Le nombre exact se lit au runtime (`routes.filter(operator_id)`), pas en dur.
+
+2. **Bandeau d'alertes service (nouveau, déjà construit)** : module `lib/bus-alerts.ts` + `BusAlertsBanner` (commit scraper `1d55984`, table `bus_alerts` live). Il s'insère dans l'anatomie comme **section 1bis**, juste sous le header compact et **au-dessus du planner** : bandeau ambre, alertes KTEL Est datées (itinéraires modifiés/travaux), lien annonce officielle. Conservé tel quel dans la refonte (déjà i18n 4 langues, déjà testé). Le board et le bandeau sont indépendants.
+
+3. **Réutilisation du travail planner-first intermédiaire** :
+   - Le bloc "Lignes populaires" déjà codé (paires les plus desservies, dérivées de `routes` par nombre de départs) **devient la section 5 "Top routes"** : on garde l'approche **data-driven** (réutilise le `useMemo` `popular` existant) plutôt que la liste curée GSC de la spec initiale — plus simple, déjà construit, pas d'appel runtime (YAGNI tenu autrement). Rendu en lignes compactes (langage section 6).
+   - Les **accordéons de cartes** (planner-first intermédiaire) sont **remplacés** par la section 6 "all routes compacté en lignes" (`RouteLine.tsx`). Le `CollapsibleRegion` + `Grid` de cartes sont retirés au profit des lignes + pills `East/West`.
+   - Le fix badge prix `(indicatif)`, la mention "horaires non publiés" et la règle zéro-flèche déjà en place sont **repris** dans `RouteLine`.
+
+4. **Base d'implémentation** : on construit **sur l'état actuel non committé** de `BusesClient.tsx` (planner-first + bandeau alertes), pas depuis la version committée. Vu le working tree partagé multi-terminal (autres chantiers non committés), **pas de branche `feat/buses-board` séparée** : travail sur le working tree master, **captures Playwright montrées à Kami AVANT qu'il committe/déploie** (même garde-fou "mockup avant deploy", adapté). Déploiement = commit du bundle `/buses` complet + push `master→main` (Vercel), sur go explicite Kami.
+
+Le reste de la spec (board Solari, planner combobox, desktop 2 colonnes, garde-fous SEO) est inchangé.

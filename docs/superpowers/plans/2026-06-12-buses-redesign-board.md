@@ -8,7 +8,19 @@
 
 **Tech Stack:** Next.js 16 (App Router), TypeScript, Tailwind v4, next-intl, Supabase (données déjà chargées server-side), test node par type-stripping (Node ≥ 23).
 
-**Spec:** `docs/superpowers/specs/2026-06-12-buses-redesign-board-design.md`
+**Spec:** `docs/superpowers/specs/2026-06-12-buses-redesign-board-design.md` (voir section "Mise à jour 13/06/2026 — réconciliation")
+
+---
+
+## Mise à jour 13/06/2026 (réconciliation avant exécution)
+
+La page a évolué depuis l'écriture du plan (même session, non committé). Ajustements :
+
+- **Compteurs** : 292 → **383 routes** (East/herlas 236, West/ektel 147). Les pills section annuaire lisent le compte au runtime, pas en dur.
+- **Bandeau d'alertes DÉJÀ construit** (`lib/bus-alerts.ts` + `BusAlertsBanner`, table `bus_alerts` live) : **ne pas le reconstruire**. Il est conservé tel quel dans `BusesClient`, inséré sous le header, au-dessus du planner (section 1bis).
+- **Top routes = data-driven** : réutiliser le `useMemo` `popular` (paires les plus desservies) déjà présent dans `BusesClient`, rendu en `RouteLine`. Pas de liste curée GSC (YAGNI).
+- **Base = working tree actuel non committé** (planner-first + alertes). Le Task 7 (BusesClient) **remplace** `CollapsibleRegion`/`Grid` de cartes par `RouteLine` + pills `East/West`. Reprendre le badge prix `(indicatif)`, la mention "horaires non publiés" et la règle zéro-flèche déjà en place.
+- **Pas de branche séparée** (working tree partagé multi-terminal) : travail sur master non committé, **captures Playwright à Kami avant commit/push** `master→main`.
 
 ---
 
