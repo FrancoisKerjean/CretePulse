@@ -3,6 +3,7 @@ Architecture reelle (cf. spec + decision Kami 21/05) :
   - herlas (est) = Next.js : index liste des liens detail `ds=`, page detail = blocs route.
   - ektel (ouest) = Joomla : index = groupes + dates 'valid from' (curation pour les routes).
 """
+import json
 import os
 import re
 
@@ -20,6 +21,21 @@ FIXDIR = os.path.join(os.path.dirname(__file__), "fixtures")
 def _read(name):
     with open(os.path.join(FIXDIR, name), encoding="utf-8") as f:
         return f.read()
+
+
+def _columnized_text(words_json):
+    """Charge une fixture mots (x0/x1/top par page) et renvoie le texte
+    de-entrelace en colonnes, pret pour parse_ektel_pdf."""
+    from parsers import columnize_words
+    data = json.loads(_read(words_json))
+    return "\n".join(columnize_words(p["words"], p["width"]) for p in data["pages"])
+
+
+def _pairs(routes):
+    out = {}
+    for r in routes:
+        out.setdefault((r["from_place"], r["to_place"]), r)
+    return out
 
 
 # --- herlas (est) -----------------------------------------------------------
@@ -129,8 +145,9 @@ def test_route_stops_drops_hotel_stops():
 
 def test_route_stops_cleans_star_and_abbreviations():
     from parsers import _route_stops
+    # KASTELI canonise en KISSAMOS (meme ville, alias 13/06) -> '*' retire aussi.
     stops = _route_stops("CHANIA-KASTELI*-PLATANOS-FALASARNA")
-    assert stops == ["Chania", "Kasteli", "Platanos", "Falasarna"]
+    assert stops == ["Chania", "Kissamos", "Platanos", "Falasarna"]
     stops = _route_stops("CHANIA - STALOS - AG. MARINA - PLATANIAS - GERANI - MALEME - TAVRONITIS - KAMISIANA - SKOYTELONAS - KOLYMBARI")
     assert stops is not None
     assert stops[0] == "Chania" and stops[-1] == "Kolymbari"
@@ -192,3 +209,58 @@ def test_parse_ektel_pdf_filters_mainland_footnotes_and_freq():
     cr = next(r for r in routes if r["to_place"] == "Rethymno")
     assert any(g["days"].lower().startswith("monday") for g in cr["departures_by_day"])
     assert "06:30" in cr["departures"]
+
+
+# --- ektel PDF : de-entrelacement 2 colonnes (columnize_words) ---------------
+# Bug pre-13/06 : extract_text() aplatit 'ALLER ... RETOUR ...' sur une ligne
+# -> horaires des paires cote a cote melanges (Elafonisi, Kissamos, Airport
+# restaient sans horaires, repli sur CURATED_EKTEL = carte vide).
+
+def test_columnize_mono_column_is_noop():
+    # Une page mono-colonne (aucune gouttiere) ne doit jamais etre coupee.
+    from parsers import columnize_words
+    words = [
+        {"text": "CHANIA-HERAKLION", "x0": 45, "x1": 200, "top": 10},
+        {"text": "EVERY", "x0": 45, "x1": 80, "top": 24},
+        {"text": "DAY", "x0": 82, "x1": 110, "top": 24},
+        {"text": "08:00", "x0": 45, "x1": 75, "top": 38},
+    ]
+    out = columnize_words(words, page_width=595)
+    assert out.splitlines() == ["CHANIA-HERAKLION", "EVERY DAY", "08:00"]
+
+
+def test_columnize_recovers_elafonisi_and_kissamos_times():
+    from parsers import parse_ektel_pdf
+    routes = parse_ektel_pdf(_columnized_text("ektel_chania_words.json"), source_url="x")
+    by = _pairs(routes)
+    # Elafonissi (alias 1s->2s) : aller 09:00 (gauche), retour 16:00 (droite)
+    assert ("Chania", "Elafonissi") in by
+    assert "09:00" in by[("Chania", "Elafonissi")]["departures"]
+    assert "16:00" in by[("Elafonissi", "Chania")]["departures"]
+    # Kissamos (ex-"Kasteli (Kissamos)") : ligne reelle 06:00->21:30
+    assert ("Chania", "Kissamos") in by
+    deps = by[("Chania", "Kissamos")]["departures"]
+    assert "06:00" in deps and "21:30" in deps
+
+
+def test_columnize_airport_recovers_chania_airport_times():
+    from parsers import parse_ektel_pdf
+    routes = parse_ektel_pdf(_columnized_text("ektel_airport_words.json"), source_url="x")
+    by = _pairs(routes)
+    # PDF aeroport dedie : noms anglais sans '/' + 2 colonnes -> 0 route avant le fix
+    assert ("Chania", "Chania Airport") in by
+    assert len(by[("Chania", "Chania Airport")]["departures"]) >= 20
+    assert ("Chania Airport", "Chania") in by
+
+
+def test_pdf_seg_regex_captures_parenthesized_name():
+    # Suffixe entre parentheses ne doit plus jeter la route (fix lookahead '(').
+    from parsers import parse_ektel_pdf
+    text = "\n".join([
+        "XANIA-KAΣΤΕΛΙ/CHANIA-KASTELI (KISSAMOS)",
+        "KAΘΕ ΜΕΡΑ/EVERY DAY",
+        "06:00 07:00 21:30",
+    ])
+    by = _pairs(parse_ektel_pdf(text, source_url="x"))
+    assert ("Chania", "Kissamos") in by
+    assert "21:30" in by[("Chania", "Kissamos")]["departures"]

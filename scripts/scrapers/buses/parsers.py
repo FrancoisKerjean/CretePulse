@@ -31,7 +31,10 @@ _HHMM_RE = re.compile(r"\b(\d{1,2}:\d{2})\b")
 # Le PDF e-ktel double chaque label : GREEK/ENGLISH. On ignore le grec et on
 # matche tous les segments anglais derrière `/`. Un segment route contient un
 # tiret ('CHANIA-HERAKLION'), un segment frequency commence par un jour ou EVERY.
-_PDF_SEG_RE = re.compile(r"/\s*([A-Z][A-Z0-9 .\-]+?)(?=\s*[/]|\s*\d{1,2}:\d{2}|\s*$)")
+# Le `(` est aussi un terminateur : sans lui, un suffixe entre parentheses
+# ('CHANIA-KASTELI (KISSAMOS)') empechait le segment de matcher (la lookahead
+# exigeait /, une heure ou la fin de ligne) -> ligne Kissamos jetee (fix 13/06).
+_PDF_SEG_RE = re.compile(r"/\s*([A-Z][A-Z0-9 .\-]+?)(?=\s*[/(]|\s*\d{1,2}:\d{2}|\s*$)")
 
 _FREQ_HEAD = (
     "EVERY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY",
@@ -53,6 +56,15 @@ _STOP_ALIASES = {
     "AG MARINA": "AGIA MARINA",
     "MUSEUM OF ANCIENT": "ANCIENT ELEFTHERNA MUSEUM",
     "MUSEUM OF ANCIENT ELEFTHERNA": "ANCIENT ELEFTHERNA MUSEUM",
+    # Kasteli = chef-lieu de l'eparchie de Kissamos : meme ville, l'index/DB
+    # et bus-pairs canonisent en "Kissamos" (la ligne CHANIA-KASTELI est LA
+    # liaison Chania-Kissamos, horaires reels 06:00->21:30).
+    "KASTELI": "KISSAMOS",
+    "KASTELI (KISSAMOS)": "KISSAMOS",
+    # PDF e-ktel ecrit "ELAFONISI" (1 s) ; DB/bus-pairs/CURATED canonisent en
+    # "Elafonissi" (2 s) -> sans alias, la ligne scrapee (horaires) et la curee
+    # (prix) restent 2 routes distinctes dont une vide (constat prod 13/06).
+    "ELAFONISI": "ELAFONISSI",
 }
 
 # Un arrêt contenant un de ces mots est un point hôtel/POI de navette,
@@ -349,6 +361,51 @@ def _is_route_name(s: str) -> bool:
     return len(parts) >= 2 and all(p.strip()[0].isupper() for p in parts[:2])
 
 
+def columnize_words(words: list[dict], page_width: float,
+                    row_tol: float = 3.0, gutter_min: float = 22.0) -> str:
+    """Dé-entrelace une page e-ktel en 2 colonnes à partir des coordonnées mots.
+
+    Les PDF e-ktel posent les paires aller/retour côte à côte (gauche=aller,
+    droite=retour). `extract_text()` aplatit chaque ligne visuelle en
+    'ALLER ... RETOUR ...' -> horaires de l'aller et du retour mélangés
+    (bug Chora Sfakion/Elafonisi). On regroupe les mots par ligne (même `top`),
+    et si une ligne a une vraie gouttière qui enjambe le centre de page, on la
+    coupe en gauche/droite. On émet ensuite toute la colonne gauche (ordre
+    haut->bas, les lignes pleine largeur restent inline) puis toute la colonne
+    droite. Chaque bloc de route reste ainsi contigu et `parse_ektel_pdf` le
+    lit comme une grille mono-colonne propre.
+
+    Chaque mot : {text, x0, x1, top}. Robuste au mono-colonne (aucune coupe).
+    """
+    rows: list[tuple[float, list[dict]]] = []
+    for w in sorted(words, key=lambda w: (w["top"], w["x0"])):
+        if rows and abs(w["top"] - rows[-1][0]) <= row_tol:
+            rows[-1][1].append(w)
+        else:
+            rows.append((w["top"], [w]))
+
+    center = page_width / 2.0
+    left_lines: list[str] = []
+    right_lines: list[str] = []
+    for _top, ws in rows:
+        ws = sorted(ws, key=lambda w: w["x0"])
+        # Cherche la coupe : plus grand vide entre 2 mots consecutifs qui
+        # enjambe le centre (fin du mot gauche <= centre <= debut du mot droit).
+        split_idx = None
+        best_gap = gutter_min
+        for i in range(len(ws) - 1):
+            gap = ws[i + 1]["x0"] - ws[i]["x1"]
+            if gap > best_gap and ws[i]["x1"] <= center <= ws[i + 1]["x0"]:
+                best_gap = gap
+                split_idx = i + 1
+        if split_idx is not None:
+            left_lines.append(" ".join(w["text"] for w in ws[:split_idx]))
+            right_lines.append(" ".join(w["text"] for w in ws[split_idx:]))
+        else:
+            left_lines.append(" ".join(w["text"] for w in ws))
+    return "\n".join(left_lines + right_lines)
+
+
 def parse_ektel_pdf(text: str, source_url: str = "") -> list[dict]:
     """Parse le texte extrait d'un PDF e-ktel en liste de routes normalisées.
 
@@ -391,6 +448,12 @@ def parse_ektel_pdf(text: str, source_url: str = "") -> list[dict]:
             continue
 
         segments = [s.strip() for s in _PDF_SEG_RE.findall(line)]
+        # Fallback PDF AEROPORT : le nom anglais est sur sa propre ligne SANS le
+        # prefixe grec '/', ex. 'CHANIA-CHANIA AIRPORT' (le grec est au-dessus).
+        # _PDF_SEG_RE n'y voit rien -> on accepte une ligne 100% ASCII en forme
+        # de nom de route comme segment. Garde-fou isascii() = jamais une ligne grecque.
+        if not segments and "/" not in line and line.isascii() and _is_route_name(line):
+            segments = [line]
         times = _HHMM_RE.findall(line)
 
         for seg in segments:

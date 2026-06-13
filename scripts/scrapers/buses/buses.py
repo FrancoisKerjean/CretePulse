@@ -25,6 +25,7 @@ from parsers import (
     parse_herlas_detail,
     parse_ektel_index,
     parse_ektel_pdf,
+    columnize_words,
     fetch_ektel_pdfs,
     CURATED_EKTEL,
     apply_curated_overlay,
@@ -137,7 +138,17 @@ def _parse_pdf(content: bytes, source_url: str) -> list[dict]:
         return []
     try:
         with pdfplumber.open(io.BytesIO(content)) as doc:
-            text = "\n".join((p.extract_text() or "") for p in doc.pages)
+            # Dé-entrelacement 2 colonnes par coordonnées des mots (aller à gauche,
+            # retour à droite) au lieu d'extract_text() qui mélange les horaires
+            # des paires côte à côte (Elafonisi/Chora Sfakion/Airport).
+            text = "\n".join(
+                columnize_words(
+                    [{"text": w["text"], "x0": w["x0"], "x1": w["x1"], "top": w["top"]}
+                     for w in page.extract_words(use_text_flow=False, keep_blank_chars=False)],
+                    page.width,
+                )
+                for page in doc.pages
+            )
     except Exception as e:
         log(f"pdfplumber error on {source_url}: {e}")
         return []
