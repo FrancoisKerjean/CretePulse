@@ -293,6 +293,29 @@ export function JourneyPlanner({
     if (toPlace && reachable && !reachable.includes(toPlace)) onToChange("");
   }, [toPlace, reachable, onToChange]);
 
+  // Instrumentation `bus_search` (signal #1 du site, spec docs/instrumentation) :
+  // quel trajet on cherche. Planner reactif -> debounce 1.2s (comme search_query),
+  // pas a chaque frappe. results=0 = trou de couverture (le signal en or).
+  const journeyCount = journeys.length;
+  useEffect(() => {
+    if (!fromPlace || !toPlace) return;
+    const id = setTimeout(() => {
+      const dateChoice = date === todayISO() ? "today" : date === tomorrowISO() ? "tomorrow" : date;
+      const plausible = (window as unknown as {
+        plausible?: (e: string, o?: { props?: Record<string, string | number> }) => void;
+      }).plausible;
+      plausible?.("bus_search", {
+        props: {
+          from: slugifyPlace(fromPlace) || fromPlace.toLowerCase(),
+          to: slugifyPlace(toPlace) || toPlace.toLowerCase(),
+          date: dateChoice,
+          results: journeyCount,
+        },
+      });
+    }, 1200);
+    return () => clearTimeout(id);
+  }, [fromPlace, toPlace, date, journeyCount]);
+
   const westOnly = useMemo(() => {
     const east = new Set(
       routes.filter((r) => r.operator_id === "herlas").flatMap((r) => [r.from_place, r.to_place]),

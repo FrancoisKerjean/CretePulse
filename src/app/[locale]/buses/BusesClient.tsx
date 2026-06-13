@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Clock, Euro, Info, ChevronDown, TriangleAlert } from "lucide-react";
+import { Info, ChevronDown, TriangleAlert } from "lucide-react";
 import { CiBus } from "@/components/icons";
 import Link from "next/link";
 import type { Locale } from "@/lib/types";
-import type { BusRoute, BusDestination, BusDepartureGroup } from "@/lib/buses";
+import type { BusRoute, BusDestination } from "@/lib/buses";
 import type { BusAlert } from "@/lib/bus-alerts";
 import { useParams } from "next/navigation";
 import { BusNetworkMap } from "@/components/BusNetworkMap";
@@ -23,19 +23,6 @@ const THINGS_TO_DO_SLUGS = new Set([
   "heraklion", "chania", "rethymno", "agios-nikolaos", "sitia",
   "ierapetra", "malia", "hersonissos", "elounda", "makrigialos",
 ]);
-const WHERE_TO_STAY_SLUGS = new Set([
-  "chania", "heraklion", "rethymno", "agios-nikolaos",
-  "elounda", "plakias", "paleochora", "matala",
-]);
-const GETTING_AROUND_SLUGS = new Set([
-  "heraklion-to-chania", "heraklion-to-rethymno",
-  "heraklion-to-agios-nikolaos", "heraklion-to-sitia",
-]);
-
-function slugifyRoute(from: string, to: string): string {
-  const s = (x: string) => x.toLowerCase().trim().replace(/\s+/g, "-");
-  return `${s(from)}-to-${s(to)}`;
-}
 
 // ---------------------------------------------------------------------------
 // Translations
@@ -164,53 +151,6 @@ function t(key: keyof typeof T, locale: Locale): string {
 // Sub-components
 // ---------------------------------------------------------------------------
 
-function GuideLinks({ route, destination, locale }: { route: BusRoute; destination?: BusDestination; locale: Locale }) {
-  const routeSlug = slugifyRoute(route.from_place, route.to_place);
-  const showCompare = GETTING_AROUND_SLUGS.has(routeSlug);
-  const ttd = destination?.things_to_do_slug && THINGS_TO_DO_SLUGS.has(destination.things_to_do_slug)
-    ? destination.things_to_do_slug : null;
-  const wts = destination?.where_to_stay_slug && WHERE_TO_STAY_SLUGS.has(destination.where_to_stay_slug)
-    ? destination.where_to_stay_slug : null;
-  const beaches = destination?.beaches_near;
-
-  if (!destination && !showCompare) return null;
-
-  return (
-    <div className="px-4 pb-4 pt-3 border-t border-border space-y-2">
-      {destination && destination.has_direct_bus === false && (
-        <p className="text-xs text-amber-700">
-          {t("noDirectBus", locale)} {destination.name}.
-        </p>
-      )}
-      <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
-        {ttd && (
-          <Link href={`/${locale}/things-to-do/${ttd}`} className="text-aegean hover:underline">
-            {t("whatToDo", locale)} {destination!.name}
-          </Link>
-        )}
-        {wts && (
-          <Link href={`/${locale}/where-to-stay/${wts}`} className="text-aegean hover:underline">
-            {t("whereToStay", locale)}
-          </Link>
-        )}
-        {beaches && (
-          <Link href={`/${locale}/beaches`} className="text-aegean hover:underline">
-            {t("beachesNear", locale)} {destination!.name}
-          </Link>
-        )}
-      </div>
-      {showCompare && (
-        <Link
-          href={`/${locale}/getting-around/${routeSlug}`}
-          className="inline-block text-xs text-text-muted hover:text-text underline"
-        >
-          {t("compareModes", locale)}
-        </Link>
-      )}
-    </div>
-  );
-}
-
 function NoDirectBusCard({ destination, locale }: { destination: BusDestination; locale: Locale }) {
   return (
     <div className="rounded-3xl border border-sun/50 bg-sand/50 overflow-hidden flex flex-col">
@@ -232,211 +172,6 @@ function NoDirectBusCard({ destination, locale }: { destination: BusDestination;
           </Link>
         )}
       </div>
-    </div>
-  );
-}
-
-function RouteCard({ route, destination, locale }: { route: BusRoute; destination?: BusDestination; locale: Locale }) {
-  const deps = route.departures ?? [];
-  const range = deps.length > 0 ? `${deps[0]} – ${deps[deps.length - 1]}` : null;
-  const COLLAPSED_LIMIT = 8;
-
-  return (
-    <div className="card-base overflow-hidden hover:shadow-md transition-shadow flex flex-col">
-      {(() => {
-        // Maillage SEO : le header linke la page paire quand elle existe.
-        const ps = pairSlug(route.from_place, route.to_place);
-        const header = (
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-bold text-base">{route.from_place}</span>
-              <span className="text-white/70 shrink-0 font-bold" aria-hidden>·</span>
-              <span className="font-bold text-base">{route.to_place}</span>
-            </div>
-            {route.via_stops && route.via_stops.length > 0 && (
-              <p className="text-xs text-white/75 mt-1 mb-0">
-                {t("viaStops", locale)} {route.via_stops.join(" · ")}
-              </p>
-            )}
-          </div>
-        );
-        return ps ? (
-          <Link href={`/${locale}/buses/${ps}`} className="block bg-aegean px-5 py-4 text-white hover:bg-aegean/90">
-            {header}
-          </Link>
-        ) : (
-          <div className="bg-aegean px-5 py-4 text-white">{header}</div>
-        );
-      })()}
-
-      <div className="p-4 grid grid-cols-2 gap-4">
-        {route.frequency && (
-          <div className="flex items-start gap-2">
-            <CiBus className="w-4 h-4 text-aegean shrink-0 mt-0.5" />
-            <div>
-              <p className="text-xs text-text-muted">{t("frequency", locale)}</p>
-              <p className="text-sm font-semibold text-text">{route.frequency}</p>
-            </div>
-          </div>
-        )}
-
-        {range && (
-          <div className="flex items-start gap-2">
-            <Clock className="w-4 h-4 text-aegean shrink-0 mt-0.5" />
-            <div>
-              <p className="text-xs text-text-muted">{t("departures", locale)}</p>
-              <p className="text-sm font-semibold text-text">{range}</p>
-              {deps.length > 1 && (
-                <p className="text-xs text-text-muted">{deps.length} {t("perDay", locale)}</p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {route.price_eur != null && (
-          <div className="flex items-start gap-2">
-            <Euro className="w-4 h-4 text-aegean shrink-0 mt-0.5" />
-            <div>
-              <p className="text-xs text-text-muted">{t("price", locale)}</p>
-              <p className="text-sm font-semibold text-text">
-                {route.price_estimated ? "≈ " : ""}{route.price_eur.toFixed(2)} €
-              </p>
-              {route.price_estimated && (
-                <p className="text-[11px] text-text-muted">{t("indicative", locale)}</p>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {deps.length > 0 ? (
-        <DepartureChips
-          groups={route.departures_by_day ?? null}
-          times={deps}
-          collapsedLimit={COLLAPSED_LIMIT}
-          locale={locale}
-        />
-      ) : (
-        // Pas d'horaires captés pour cette ligne (ex. navettes haute fréquence du
-        // hub Chania) : on évite la carte "vide" en orientant vers l'opérateur.
-        <div className="px-4 pb-4 pt-1">
-          <p className="text-xs text-text-muted mb-1.5">{t("noTimetableYet", locale)}</p>
-          {route.source_url && (
-            <a
-              href={route.source_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs text-aegean font-semibold hover:underline"
-            >
-              {t("officialSchedule", locale)}
-            </a>
-          )}
-        </div>
-      )}
-
-      <div className="mt-auto">
-        <GuideLinks route={route} destination={destination} locale={locale} />
-      </div>
-    </div>
-  );
-}
-
-// Liste détaillée des horaires de départ : SEO + utilité = on rend tout
-// dans le HTML (pas de <details> qui masque côté Google), avec un toggle
-// client pour le confort visuel quand il y a beaucoup de départs.
-// Si `departures_by_day` est fourni, on rend une sous-liste par grille
-// (Mon-Fri / Sat / Sun, etc.) pour eviter que l'utilisateur confonde des
-// horaires de jours differents.
-function DepartureChips({
-  groups,
-  times,
-  collapsedLimit,
-  locale,
-}: {
-  groups: BusDepartureGroup[] | null;
-  times: string[];
-  collapsedLimit: number;
-  locale: Locale;
-}) {
-  const [expanded, setExpanded] = useState(false);
-  const total = times.length;
-  const shouldCollapse = total > collapsedLimit && !expanded;
-
-  return (
-    <div className="px-4 pb-4 pt-1">
-      <p className="text-xs font-semibold uppercase tracking-wide text-text-muted mb-2">
-        {t("allDepartures", locale)}
-      </p>
-
-      {groups && groups.length > 0 ? (
-        <DepartureGroups
-          groups={groups}
-          collapsed={shouldCollapse}
-          collapsedLimit={collapsedLimit}
-        />
-      ) : (
-        <ul className="flex flex-wrap gap-1.5 list-none p-0 m-0">
-          {(shouldCollapse ? times.slice(0, collapsedLimit) : times).map((time, i) => (
-            <li
-              key={`${time}-${i}`}
-              className="px-2.5 py-1 rounded-[10px] bg-surface border-[1.5px] border-lagoon/35 text-xs font-semibold font-data text-text"
-            >
-              {time}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {total > collapsedLimit && (
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          className="mt-2 text-xs text-aegean font-semibold hover:underline"
-        >
-          {expanded ? t("showLess", locale) : `${t("showAll", locale)} (${total})`}
-        </button>
-      )}
-    </div>
-  );
-}
-
-function DepartureGroups({
-  groups,
-  collapsed,
-  collapsedLimit,
-}: {
-  groups: BusDepartureGroup[];
-  collapsed: boolean;
-  collapsedLimit: number;
-}) {
-  // En mode collapsed, on rend une fenetre des `collapsedLimit` premiers horaires
-  // groupes par jour, en gardant la structure (pas un slice flat brut).
-  let remaining = collapsed ? collapsedLimit : Infinity;
-  return (
-    <div className="space-y-2">
-      {groups.map((g, gi) => {
-        if (remaining <= 0) return null;
-        const visible = g.times.slice(0, remaining);
-        remaining -= visible.length;
-        if (visible.length === 0) return null;
-        return (
-          <div key={`${g.days}-${gi}`}>
-            <p className="text-[11px] uppercase tracking-wide text-text-muted mb-1">
-              {g.days}
-            </p>
-            <ul className="flex flex-wrap gap-1.5 list-none p-0 m-0">
-              {visible.map((time, i) => (
-                <li
-                  key={`${time}-${i}`}
-                  className="px-2.5 py-1 rounded-[10px] bg-surface border-[1.5px] border-lagoon/35 text-xs font-semibold font-data text-text"
-                >
-                  {time}
-                </li>
-              ))}
-            </ul>
-          </div>
-        );
-      })}
     </div>
   );
 }
