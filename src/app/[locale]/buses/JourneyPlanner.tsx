@@ -4,7 +4,8 @@
 // itineraire(s) + prix. Calcul 100 % local (moteur bus-journey, routes deja
 // chargees par la page). Spec : docs/superpowers/specs/2026-06-10-bus-journey-planner-design.md
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, Clock, Euro, Info } from "lucide-react";
+import { ArrowRight, Clock, Info, ChevronDown } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import { CiBus, CiCompass } from "@/components/icons";
 import { KriKri } from "@/components/KriKri";
 import type { Locale } from "@/lib/types";
@@ -60,6 +61,12 @@ const TP = {
   },
   total: { en: "Total", fr: "Total", de: "Gesamt", el: "Σύνολο" },
   indicative: { en: "indicative", fr: "indicatif", de: "Richtwert", el: "ενδεικτική" },
+  direct: { en: "Direct", fr: "Direct", de: "Direkt", el: "Απευθείας" },
+  oneChange: { en: "1 change", fr: "1 correspondance", de: "1 Umstieg", el: "1 αλλαγή" },
+  changes: { en: "changes", fr: "correspondances", de: "Umstiege", el: "αλλαγές" },
+  seeDetail: { en: "See detail", fr: "Voir le détail", de: "Detail anzeigen", el: "Λεπτομέρειες" },
+  hideDetail: { en: "Hide detail", fr: "Masquer le détail", de: "Detail ausblenden", el: "Απόκρυψη" },
+  buyTicket: { en: "Buy a ticket", fr: "Acheter un ticket", de: "Ticket kaufen", el: "Αγορά εισιτηρίου" },
   atTicketOffice: {
     en: "+ fare at the ticket office for one leg",
     fr: "+ tarif au guichet pour un tronçon",
@@ -182,42 +189,89 @@ function LegRow({ leg, locale }: { leg: JourneyLeg; locale: Locale }) {
 }
 
 function JourneyCard({ journey, locale }: { journey: Journey; locale: Locale }) {
-  // Points de correspondance = lieu d'arrivee de chaque troncon sauf le dernier.
-  const changes = journey.legs
-    .slice(0, -1)
-    .map((l) => l.alightAt ?? l.route.to_place);
+  const [open, setOpen] = useState(false);
+  const legs = journey.legs;
+  const from = legs[0].route.from_place;
+  const last = legs[legs.length - 1];
+  const to = last.alightAt ?? last.route.to_place;
+  const changes = legs.slice(0, -1).map((l) => l.alightAt ?? l.route.to_place);
+  const nChanges = changes.length;
+  // Durée affichée seulement pour un trajet DIRECT : aux correspondances les
+  // temps d'attente ne sont pas publiés -> total non fiable (no-invention).
+  const directDur = legs.length === 1 && legs[0].alightAt == null ? legs[0].route.duration : null;
+  const routing =
+    nChanges === 0 ? tp("direct", locale)
+    : nChanges === 1 ? tp("oneChange", locale)
+    : `${nChanges} ${tp("changes", locale)}`;
+
+  function onBuy() {
+    const plausible = (window as unknown as {
+      plausible?: (e: string, o?: { props?: Record<string, string | number> }) => void;
+    }).plausible;
+    plausible?.("ticket_intent", {
+      props: { from: slugifyPlace(from) || from.toLowerCase(), to: slugifyPlace(to) || to.toLowerCase() },
+    });
+  }
+
   return (
     <div className="rounded-3xl bg-white overflow-hidden shadow-[0_12px_30px_rgba(11,94,120,.12)]">
-      <div className="bg-night px-5 py-3 text-white flex items-center justify-between gap-2 flex-wrap">
-        <span className="text-sm font-bold">
-          {tp("yourJourney", locale)}
-          {changes.length > 0 ? ` · ${tp("via", locale)} ${changes.join(", ")}` : ""}
-        </span>
-        {journey.priceTotal != null && (
-          <span className="text-sm font-bold inline-flex items-center gap-1">
-            <Euro className="w-4 h-4" />
-            {tp("total", locale)} {journey.priceTotal.toFixed(2)} €
-            {journey.priceEstimated && (
-              <span className="text-[11px] font-normal bg-white/20 rounded px-1.5 py-0.5">
-                {tp("indicative", locale)}
-              </span>
-            )}
+      {/* Synthèse (cliquable -> détail) */}
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="w-full text-left bg-night text-white px-5 py-3.5 flex items-center justify-between gap-3"
+      >
+        <span className="min-w-0">
+          <span className="block font-bold text-sm">
+            {routing}
+            {changes.length > 0 ? ` · ${tp("via", locale)} ${changes.join(", ")}` : ""}
           </span>
-        )}
-      </div>
-      <div className="divide-y divide-border">
-        {journey.legs.map((leg) => (
-          <LegRow key={leg.route.id} leg={leg} locale={locale} />
-        ))}
-      </div>
-      {(journey.priceIncomplete || journey.legs.length > 1) && (
-        <div className="px-4 py-2 border-t border-border bg-amber-50 text-xs text-amber-800 space-y-0.5">
-          {journey.legs.length > 1 && (
-            <p>{tp("connectionNotGuaranteed", locale)}</p>
+          <span className="block text-xs text-sky/85 mt-0.5">
+            {from} · {to}{directDur ? ` · ${directDur}` : ""}
+          </span>
+        </span>
+        <span className="text-right shrink-0">
+          {journey.priceTotal != null && (
+            <span className="block font-heading font-extrabold text-lg leading-none">
+              {journey.priceTotal.toFixed(2)} €
+              {journey.priceEstimated && (
+                <span className="text-[10px] font-normal align-top ml-0.5">{tp("indicative", locale)}</span>
+              )}
+            </span>
           )}
-          {journey.priceIncomplete && <p>{tp("atTicketOffice", locale)}</p>}
-        </div>
+          <span className="text-[11px] text-sky/85 inline-flex items-center gap-0.5 mt-1">
+            {open ? tp("hideDetail", locale) : tp("seeDetail", locale)}
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
+          </span>
+        </span>
+      </button>
+
+      {/* Détail (replié par défaut) */}
+      {open && (
+        <>
+          <div className="divide-y divide-border">
+            {legs.map((leg) => (
+              <LegRow key={leg.route.id} leg={leg} locale={locale} />
+            ))}
+          </div>
+          {(journey.priceIncomplete || legs.length > 1) && (
+            <div className="px-4 py-2 border-t border-border bg-amber-50 text-xs text-amber-800 space-y-0.5">
+              {legs.length > 1 && <p>{tp("connectionNotGuaranteed", locale)}</p>}
+              {journey.priceIncomplete && <p>{tp("atTicketOffice", locale)}</p>}
+            </div>
+          )}
+        </>
       )}
+
+      {/* CTA fake-door : mesure de l'intention d'achat (billetterie pas encore dispo) */}
+      <Link
+        href={`/buses/tickets?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`}
+        onClick={onBuy}
+        className="block text-center bg-sun text-night font-bold text-sm py-3 hover:brightness-95 transition"
+      >
+        {tp("buyTicket", locale)}
+      </Link>
     </div>
   );
 }
