@@ -6,6 +6,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, Clock, Info } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { athensNow } from "@/lib/athens-time";
 import { CiBus, CiCompass } from "@/components/icons";
 import { KriKri } from "@/components/KriKri";
 import type { Locale } from "@/lib/types";
@@ -72,6 +73,12 @@ const TP = {
   changesCol: { en: "Changes", fr: "Changements", de: "Umstiege", el: "Αλλαγές" },
   priceCol: { en: "Price", fr: "Prix", de: "Preis", el: "Τιμή" },
   seeMore: { en: "Show more departures", fr: "Voir plus de départs", de: "Mehr Abfahrten", el: "Περισσότερα" },
+  noMoreToday: {
+    en: "No more departures today. Try Tomorrow.",
+    fr: "Plus de départs aujourd'hui. Essayez Demain.",
+    de: "Heute keine Abfahrten mehr. Versuchen Sie Morgen.",
+    el: "Δεν υπάρχουν άλλες αναχωρήσεις σήμερα. Δοκιμάστε Αύριο.",
+  },
   atTicketOffice: {
     en: "+ fare at the ticket office for one leg",
     fr: "+ tarif au guichet pour un tronçon",
@@ -264,12 +271,24 @@ function buildTrips(journeys: Journey[]): Trip[] {
 
 // Tableau de resultats facon SNCF : Depart | Arrivee | Changements | Prix.
 // Une ligne par depart, clic = detail (troncons + horaires + CTA).
-function TripsTable({ journeys, locale }: { journeys: Journey[]; locale: Locale }) {
+function TripsTable({ journeys, locale, nowMin }: { journeys: Journey[]; locale: Locale; nowMin: number | null }) {
   const [limit, setLimit] = useState(6);
   const [openKey, setOpenKey] = useState<string | null>(null);
-  const trips = useMemo(() => buildTrips(journeys), [journeys]);
+  // "Prochains trains" : aujourd'hui, on ne montre que les departs a venir (>= now).
+  const trips = useMemo(() => {
+    const all = buildTrips(journeys);
+    return nowMin == null ? all : all.filter((t) => toMin(t.dep) >= nowMin);
+  }, [journeys, nowMin]);
   const visible = trips.slice(0, limit);
   const cols = "grid grid-cols-[1fr_1fr_1.5fr_auto] gap-2";
+
+  if (trips.length === 0) {
+    return (
+      <div className="mt-4 rounded-3xl border border-border bg-surface p-4 text-sm text-text-muted text-center">
+        {tp("noMoreToday", locale)}
+      </div>
+    );
+  }
 
   return (
     <div className="mt-4 rounded-3xl bg-white overflow-hidden shadow-[0_12px_30px_rgba(11,94,120,.12)]">
@@ -581,7 +600,11 @@ export function JourneyPlanner({
 
       {searched && journeys.length > 0 && (
         <>
-          <TripsTable journeys={journeys} locale={locale} />
+          <TripsTable
+            journeys={journeys}
+            locale={locale}
+            nowMin={date === todayISO() ? athensNow().minutes : null}
+          />
           <p className="mt-3 text-xs text-text-muted flex items-start gap-1.5">
             <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
             {tp("priceMethodo", locale)}
