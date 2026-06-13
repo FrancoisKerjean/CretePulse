@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Search as SearchIcon } from "lucide-react";
@@ -222,6 +222,22 @@ export default function SearchPage() {
   }, [query, locale]);
 
   const showResults = query.trim().length >= 2;
+
+  // Capture décisionnelle (instrumentation 13/06) : ce que les gens cherchent
+  // = signal de demande / trou de contenu (une requête à 0 résultat = page à
+  // créer). Debounce 1,2s pour ne logger que la requête "finie", pas chaque
+  // frappe. Le pathname est attaché automatiquement par Plausible.
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 3) return;
+    const t = setTimeout(() => {
+      type Plausible = (e: string, o?: { props?: Record<string, string | number> }) => void;
+      (window as unknown as { plausible?: Plausible }).plausible?.("search_query", {
+        props: { q: q.toLowerCase().slice(0, 60), results: results.length, locale },
+      });
+    }, 1200);
+    return () => clearTimeout(t);
+  }, [query, results.length, locale]);
 
   return (
     <main className="min-h-screen bg-surface">
