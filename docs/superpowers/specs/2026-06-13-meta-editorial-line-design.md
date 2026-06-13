@@ -37,6 +37,44 @@ répondent :
 Cohérence : même plage héros du jour dans les deux, même charte couleur/typo. La vidéo
 accroche, le carrousel délivre. Cross-link explicite entre les deux légendes.
 
+## Direction visuelle (décision Kami 13/06) : charte graphique + Kriri, PAS l'immersif photo
+
+**Pivot assumé.** Les photos plage du jour (`imageUrl` du feed) sont de qualité
+insuffisante. On **abandonne l'immersif photo** (ken burns / fonds photo plein cadre) au
+profit de la **charte graphique « Kalimera »** + la mascotte **Kriri** (le kri-kri) en
+**présentateur des infos**.
+
+Cohérence avec la DA du site : la DA Kalimera (`2026-06-11-brand-da-kalimera-design.md`)
+prévoit déjà le **style D « abstraction lumineuse »** (compositions de radial-gradients
+organiques soleil/eau/terracotta + grain, zéro figuratif) **pour les vrais vides**. On
+traite les mauvaises photos comme des vides → fonds abstraction lumineuse, pas de photo.
+
+⚠️ **Divergence volontaire** : sur le site, Kriri est « discret, jamais hero ni nav » et
+les illustrations figuratives sont rejetées au profit de la photo. **Sur Meta on élève
+Kriri au rôle de présentateur récurrent** — choix brand-building social assumé par Kami,
+distinct du site. Kriri reste fidèle à son design SVG existant (`src/components/KriKri.tsx`,
+4 humeurs : `hello`/`alert`/`empty`/`lost`).
+
+### Système visuel commun (vidéo + carrousel)
+- **Palette Kalimera** : `--lagoon #00C2D4`, `--lagoon-deep #008C9E`, `--sun #FFC83D`,
+  `--terracotta #ED7A5C` (plage du jour / alertes douces), `--night #07374A` (surfaces
+  sombres type board), `--ink #0B3954` (texte), `--foam #F6FBFC`, `--sand #FFF3D6`.
+  Statuts sémantiques : ok `#14B86B` · warn `#FFC83D` · alert `#E5484D`.
+- **Typo** : **Baloo 2** (600/700/800) pour titres, UI forte et **toutes les données
+  chiffrées** (`tabular-nums`) ; **Geist** pour corps long. Fallback grec/cyrillique :
+  Comfortaa (Baloo 2 ne couvre pas le grec).
+- **Fonds** : abstraction lumineuse (radial-gradients + grain), jamais photo plein cadre.
+- **Données en grosses tuiles couleur** (alternance lagon texte-nuit / mer profonde
+  texte-blanc, chiffres géants) — principe « Waze » de la DA, données live rendues ludiques.
+- **CreteMap** : silhouette de la Crète (depuis coordonnées réelles) + pins lat/lng pour
+  « où est la plage » (pin plage du jour en terracotta).
+- **Kriri présentateur** : pose `hello` (Καλημέρα) en intro/accueil, `alert` quand vent
+  fort / plages à éviter, expression cohérente avec la donnée.
+- **Arrondi généreux** (cartes 24-32px, pills), ombres douces colorées.
+- **Règles micro-copy DA** : Καλημέρα/Καλησπέρα selon l'heure ; **aucune flèche « → »**
+  accolée aux libellés ; **aucun tiret cadratin « — »** (séparateurs : « · », virgule,
+  point, deux-points).
+
 ## Source de données unique : feed `swim-today`
 
 `GET {SITE_URL}/api/internal/swim-today?secret=…` renvoie **tout** le nécessaire pour les
@@ -65,23 +103,29 @@ timestamps Whisper → `totalFrames` calé sur la durée VO → render Remotion
 (cron `cretepulse-daily-video` 06:00 UTC inchangé).
 
 **On refait uniquement la composition Remotion** avec le `motion-design-system` (projet
-`~/my-video` conventions de moves), pour passer de « slideshow » à « reel dynamique » :
+`~/my-video` conventions de moves) **dans la charte Kalimera, sans immersif photo**, pour
+passer de « slideshow photo mou » à « reel graphique branché données + Kriri » :
 
-- **Intro punchée** : titre animé « Crète · [date] » + nom de la plage héros, fond plage
-  héros en **ken burns serré** (scale + pan continus, pas statique).
-- **Mini-carte localisation animée** : point qui se pose sur `lat`/`lng` (où est la
-  plage), zoom léger.
-- **Stats en compteurs animés** : temp eau (`seaTemp`), vent (`windCardinal` +
-  `windSpeed`), note baignade (`rating`) — chiffres qui s'incrémentent / s'imposent, pas
-  juste posés.
-- **Transitions dynamiques** entre plans (wipes/reveals rythmés), **captions VO animées
-  mot-à-mot** (timestamps Whisper déjà produits), micro beat-sync si simple.
-- **Outro CTA brandée** `crete.direct` (réflexe marque) + teasing « alternatives en
-  carrousel ».
-- Format 1080×1920, durée = durée VO + tail (déjà géré).
+- **Intro Kriri** : Kriri pose `hello` + « Καλημέρα ! » (ou Καλησπέρα selon l'heure),
+  fond abstraction lumineuse (radial-gradients lagon/soleil + grain), titre Baloo 2
+  « Crète · [date] ». Kriri introduit la plage du jour.
+- **Carte plage du jour** : `CreteMap` silhouette + pin terracotta animé qui se pose sur
+  `lat`/`lng` (où est la plage), nom de la plage en Baloo 2.
+- **Tuiles données animées** : temp eau (`seaTemp`), vent (`windCardinal` + `windSpeed`),
+  note baignade (`rating`) en **grosses tuiles couleur** (lagon / mer profonde),
+  chiffres Baloo 2 `tabular-nums` qui s'imposent (compteurs / pop-in), pins gouttes.
+- **Kriri `alert`** si vent fort ou si la donnée pousse une plage à éviter (meltemi).
+- **Transitions dynamiques** (wipes/reveals rythmés, vagues séparatrices SVG),
+  **captions VO animées mot-à-mot** (timestamps Whisper déjà produits), micro beat-sync
+  si simple.
+- **Outro CTA brandée** wordmark `crete.direct` + soleil, teasing « alternatives +
+  météo détaillée → carrousel ce soir ».
+- Format 1080×1920, durée = durée VO + tail (déjà géré). Mouvement Remotion-driven.
 
 Contrainte : rester **déterministe et render-safe** (Remotion seek), pas de
-state/async non maîtrisé. La VO et le contenu restent pilotés par le feed.
+state/async non maîtrisé. La VO et le contenu restent pilotés par le feed. La photo plage
+n'est PAS utilisée en fond (abstraction lumineuse à la place) ; si on veut un rappel photo,
+vignette secondaire traitée (voile DA) seulement, jamais plein cadre.
 
 ## Chantier 2 — Carrousel : réutiliser l'infra, nouveau générateur thématisé
 
@@ -89,20 +133,26 @@ state/async non maîtrisé. La VO et le contenu restent pilotés par le feed.
 `upload-instagram-carousel.mjs`, déjà fonctionnels) **avec un nouveau générateur** branché
 sur `swim-today` (et non plus le news-recap) :
 
-- **~6 slides** (au lieu de 9, plus serré) :
-  1. **Hook** — météo du jour (vent global, ciel) + plage héros teasée (« On se baigne
-     où aujourd'hui ? »)
+- **~6 slides** (au lieu de 9, plus serré), **tout en charte Kalimera + Kriri, fonds
+  abstraction lumineuse (pas de photo plein cadre)** :
+  1. **Hook** — Kriri `hello` + « Καλησπέρα ! » (soir), météo du jour (vent global) +
+     plage héros teasée (« On se baigne où demain ? »), wordmark crete.direct.
   2-4. **3 plages alternatives** notées `calm`/abritées : nom, région, note baignade,
-     vent, temp eau, image.
-  5. **Météo détaillée par zone** (vent cardinal + force, temp eau, vagues ; éventuel
-     bloc « à éviter aujourd'hui » depuis `avoid`).
-  6. **CTA** — `crete.direct` (et lien planner bus `crete.direct/buses` pour « comment y
-     aller »).
-- **Charte alignée sur la vidéo du jour** (mêmes couleurs, même plage héros, typo
-  Playfair/Inter cohérente avec la marque crete.direct).
+     vent, temp eau — en **tuiles couleur** (lagon / mer), chiffres Baloo 2 `tabular-nums`.
+     Mini-`CreteMap` avec pin par plage si lisible.
+  5. **Météo détaillée par zone** (vent cardinal + force, temp eau, vagues) + bloc
+     **« à éviter aujourd'hui »** (Kriri `alert`) depuis `avoid`.
+  6. **CTA** — wordmark `crete.direct` + lien planner bus `crete.direct/buses` (« comment
+     y aller »), sur bande sable.
+- **Charte alignée sur la vidéo du jour** (palette Kalimera, **Baloo 2** titres+données /
+  Geist corps / Comfortaa fallback grec, arrondi 24-32px, ombres colorées). Même plage
+  héros que la vidéo du matin.
+- **Rendu HTML→PNG** : le template HTML charge la charte Kalimera (CSS tokens) — référence
+  visuelle `docs/design/kalimera/krikri.html` + `home-v8.html` (mockups validés).
 - Upload carrousel IG via le script existant (token partagé
   `/opt/cretepulse-video/instagram-tokens.json`, `ig_user_id 17841448998722881`).
 - **Pas de langage influenceur** (« follow/save ») — convention déjà en place sur le reel.
+- **Règles DA** : aucune flèche « → », aucun tiret cadratin « — » (séparateur « · »).
 - Idempotence par jour (slug date) conservée.
 
 NB : le runner `render-carousel-today.sh` actuel est neutralisé (`.DISABLED-*`). On crée un
