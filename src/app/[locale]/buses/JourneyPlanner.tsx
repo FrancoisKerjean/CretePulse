@@ -41,6 +41,14 @@ const TP = {
   tomorrow: { en: "Tomorrow", fr: "Demain", de: "Morgen", el: "Αύριο" },
   swap: { en: "swap", fr: "inverser", de: "tauschen", el: "εναλλαγή" },
   whereTo: { en: "Where to?", fr: "Où allez-vous ?", de: "Wohin?", el: "Πού πηγαίνετε;" },
+  locateMe: { en: "Locate me", fr: "Me localiser", de: "Standort", el: "Εντοπισμός" },
+  seeJourney: { en: "See the route", fr: "Voir l'itinéraire", de: "Route anzeigen", el: "Δείτε τη διαδρομή" },
+  pickDestination: {
+    en: "Pick a destination above to see the route.",
+    fr: "Choisissez une destination ci-dessus pour voir l'itinéraire.",
+    de: "Wählen Sie oben ein Ziel, um die Route zu sehen.",
+    el: "Επιλέξτε προορισμό πιο πάνω για να δείτε τη διαδρομή.",
+  },
   allPlaces: { en: "All places", fr: "Tous les lieux", de: "Alle Orte", el: "Όλα τα μέρη" },
   yourJourney: {
     en: "Your journey", fr: "Votre itinéraire", de: "Ihre Verbindung", el: "Η διαδρομή σας",
@@ -246,6 +254,7 @@ export function JourneyPlanner({
   // jamais au mount : une init ?from= existante n'est pas écrasée.
   const geo = useGeoPosition();
   const [wantFromHere, setWantFromHere] = useState(false);
+  const [searched, setSearched] = useState(false);
   const geoBlocked = geo.status === "denied" || geo.status === "unavailable";
 
   const placesWithCoords = useMemo(() => {
@@ -277,9 +286,29 @@ export function JourneyPlanner({
     if (nearest) { autoFilledFrom.current = true; onFromChange(nearest.name); }
   }, [geo.status, geo.pos, fromPlace, placesWithCoords, onFromChange]);
 
+  // Defaut "fait le travail a la place de l'utilisateur" : sans geoloc accordee
+  // ni ?from=, on pre-remplit Heraklion (hub central) pour qu'une recherche
+  // aboutisse toujours. 400ms laissent la geoloc (sessionStorage) remplir d'abord.
+  const defaultedFrom = useRef(false);
+  useEffect(() => {
+    if (defaultedFrom.current) return;
+    const t = setTimeout(() => {
+      defaultedFrom.current = true;
+      if (!fromPlace) onFromChange("Heraklion");
+    }, 400);
+    return () => clearTimeout(t);
+  }, [fromPlace, onFromChange]);
+
   function handleFromHere() {
     setWantFromHere(true);
     if (!geo.pos) geo.requestGeo();
+  }
+
+  // Bouton "Voir l'itineraire" : action explicite. Garantit un Depart (Heraklion
+  // par defaut) et revele les resultats.
+  function handleSearch() {
+    if (!fromPlace) onFromChange("Heraklion");
+    setSearched(true);
   }
   const reachable = useMemo(
     () => (fromPlace ? reachableFrom(graph, fromPlace) : null),
@@ -294,11 +323,11 @@ export function JourneyPlanner({
   }, [toPlace, reachable, onToChange]);
 
   // Instrumentation `bus_search` (signal #1 du site, spec docs/instrumentation) :
-  // quel trajet on cherche. Planner reactif -> debounce 1.2s (comme search_query),
-  // pas a chaque frappe. results=0 = trou de couverture (le signal en or).
+  // quel trajet on cherche. Emis APRES un clic "Voir l'itineraire" (searched),
+  // puis suit les changements de date/arrivee. results=0 = trou de couverture.
   const journeyCount = journeys.length;
   useEffect(() => {
-    if (!fromPlace || !toPlace) return;
+    if (!searched || !fromPlace || !toPlace) return;
     const id = setTimeout(() => {
       const dateChoice = date === todayISO() ? "today" : date === tomorrowISO() ? "tomorrow" : date;
       const plausible = (window as unknown as {
@@ -312,9 +341,9 @@ export function JourneyPlanner({
           results: journeyCount,
         },
       });
-    }, 1200);
+    }, 400);
     return () => clearTimeout(id);
-  }, [fromPlace, toPlace, date, journeyCount]);
+  }, [searched, fromPlace, toPlace, date, journeyCount]);
 
   const westOnly = useMemo(() => {
     const east = new Set(
@@ -363,19 +392,20 @@ export function JourneyPlanner({
           <button
             type="button"
             onClick={handleFromHere}
-            aria-label={tp("fromHere", locale)}
-            title={geoBlocked ? tp("geoUnavailable", locale) : tp("fromHere", locale)}
-            className={`shrink-0 p-2.5 rounded-full border border-border bg-white transition-colors ${
+            aria-label={tp("locateMe", locale)}
+            title={geoBlocked ? tp("geoUnavailable", locale) : tp("locateMe", locale)}
+            className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-2.5 text-xs font-semibold transition-colors ${
               geoBlocked
                 ? "text-text-light cursor-help"
                 : "text-aegean hover:bg-surface"
             }`}
           >
             {wantFromHere && geo.status === "prompting" ? (
-              <span className="block w-[18px] h-[18px] rounded-full border-2 border-aegean border-t-transparent animate-spin" aria-hidden />
+              <span className="block w-[16px] h-[16px] rounded-full border-2 border-aegean border-t-transparent animate-spin" aria-hidden />
             ) : (
-              <CiCompass className="w-[18px] h-[18px]" />
+              <CiCompass className="w-[16px] h-[16px]" />
             )}
+            <span>{tp("locateMe", locale)}</span>
           </button>
         </div>
 
@@ -406,14 +436,27 @@ export function JourneyPlanner({
           {tp("swap", locale)}
         </button>
         {(fromPlace || toPlace) && (
-          <button type="button" onClick={() => { onFromChange(""); onToChange(""); }}
+          <button type="button" onClick={() => { onFromChange(""); onToChange(""); setSearched(false); }}
             className="text-xs text-text-muted hover:text-text underline shrink-0 px-1">
             {locale === "fr" ? "Effacer" : "Clear"}
           </button>
         )}
       </div>
 
-      {journeys.length > 0 && (
+      {/* Action explicite "Voir l'itineraire" (clarte du flow) */}
+      <button
+        type="button"
+        onClick={handleSearch}
+        className="mt-4 w-full rounded-full bg-night text-white py-3 text-sm font-bold hover:bg-night/90 transition-colors"
+      >
+        {tp("seeJourney", locale)}
+      </button>
+
+      {searched && fromPlace && !toPlace && (
+        <p className="mt-3 text-sm text-text-muted text-center">{tp("pickDestination", locale)}</p>
+      )}
+
+      {searched && journeys.length > 0 && (
         <div className="mt-4 space-y-3">
           {journeys.map((j, i) => (
             <JourneyCard key={`${j.hub ?? "direct"}-${i}`} journey={j} locale={locale} />
@@ -425,7 +468,7 @@ export function JourneyPlanner({
         </div>
       )}
 
-      {noJourney && (
+      {searched && noJourney && (
         <>
           <div className="mt-4 rounded-3xl border border-border bg-surface p-4 text-sm text-text-muted flex items-center gap-4">
             <KriKri mood="empty" className="w-20 h-16 shrink-0" />
@@ -438,7 +481,7 @@ export function JourneyPlanner({
         </>
       )}
 
-      {taxiSlugA && taxiSlugB && taxiPair && (
+      {searched && taxiSlugA && taxiSlugB && taxiPair && (
         <TaxiCompare
           locale={locale}
           slugA={taxiSlugA}
