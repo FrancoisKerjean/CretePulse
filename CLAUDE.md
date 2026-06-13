@@ -15,6 +15,16 @@
 - npm run dev : lancer en local
 - npm run build : build production
 
+## Workflow multi-terminal (NON NÉGOCIABLE)
+Plusieurs terminaux Claude tournent en parallèle sur ce repo. Convention complète :
+`docs/WORKFLOW-MULTI-TERMINAL.md`. Règles minimales :
+- **1 chantier = 1 branche** `feat/<sujet>` (ou `fix/`/`seo/`) partant de `master`. On ne bricole PAS directement sur `master`, JAMAIS sur `main`.
+- **`main` = prod** (Vercel déploie depuis main). On y arrive uniquement par merge depuis `master`. Déploiement = `git push origin master:main`, acte conscient.
+- **`git add -A` / `git add .` INTERDITS** (emballent artefacts + travail d'autres terminaux). Stage tes fichiers explicitement.
+- **Vert avant push** : `tsc` (+ `next build` si dispo) OK. Vercel ne sert jamais un build cassé (prod reste sur le dernier OK).
+- **Preview** : pousser une branche `feat/*` → Vercel génère une URL preview pour valider la page hors prod.
+- **Dev server simultané** : prendre un `git worktree` dédié (dossier + `.next` + port isolés), seulement si besoin réel de dev live en parallèle.
+
 ## Règles NON NÉGOCIABLES
 - Git author : kerjeanfrancois29 (sinon Vercel bloque)
 - Funnel Kairos discret (pas de branding Kairos visible)
