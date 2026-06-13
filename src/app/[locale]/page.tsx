@@ -1,4 +1,4 @@
-import { fetchAllCitiesWeather } from "@/lib/weather";
+import { fetchAllCitiesWeather, type CityWeather } from "@/lib/weather";
 import { setRequestLocale } from "next-intl/server";
 import { getLatestNews } from "@/lib/news";
 import { getUpcomingEvents } from "@/lib/events";
@@ -81,7 +81,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const websiteSchema = buildWebsiteSchema(locale, m.desc);
 
   const [cities, latestNews, upcomingEvents, latestGuides, swim, busRoutes] = await Promise.all([
-    fetchAllCitiesWeather(),
+    fetchAllCitiesWeather().catch((): CityWeather[] => []),
     getLatestNews(8, locale).catch((): NewsItem[] => []),
     getUpcomingEvents(5).catch((): Event[] => []),
     getEditorialGuides(12).catch((): Guide[] => []),

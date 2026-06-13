@@ -5,6 +5,7 @@
 // Spec : docs/superpowers/specs/2026-06-12-car-rental-wizard-design.md (§5)
 import { Car } from "lucide-react";
 import { PromoBox } from "@/components/PromoBox";
+import { ImpressionTracker } from "@/components/ui/ImpressionTracker";
 
 // Disclosure sans mention de commission (decision Kami 12/06) : la pastille
 // dit "Partenaire local", point. Pas de tiret cadratin (regle Kairos).
@@ -52,14 +53,19 @@ export function CarPromo({
   if (source) params.set("source", source);
   const qs = params.toString();
   return (
-    <PromoBox
-      icon={Car}
-      title={c.title}
-      line={c.line}
-      ctaLabel={c.cta}
-      ctaHref={`/${locale}/car-rental${qs ? `?${qs}` : ""}`}
-      disclosure={c.disclosure}
-      photo="/images/partners/car-rental.jpg"
-    />
+    <>
+      {/* Capture décisionnelle : impression du bloc Auto Smart (CTR vs Car
+          Wizard Step, pathname attaché par Plausible). */}
+      <ImpressionTracker event="promo_impression" props={{ block: "car-promo", source: source ?? "" }} />
+      <PromoBox
+        icon={Car}
+        title={c.title}
+        line={c.line}
+        ctaLabel={c.cta}
+        ctaHref={`/${locale}/car-rental${qs ? `?${qs}` : ""}`}
+        disclosure={c.disclosure}
+        photo="/images/partners/car-rental.jpg"
+      />
+    </>
   );
 }
