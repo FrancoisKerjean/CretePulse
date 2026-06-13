@@ -10,6 +10,7 @@ import { buildAlternates, buildVillageTitle, buildVillageDescription } from "@/l
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AffiliateCTA } from "@/components/ui/affiliate-cta";
+import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 
 export const revalidate = 86400;
 
@@ -204,6 +205,12 @@ export default async function VillageDetailPage({
         >
           <MapPin className="w-4 h-4" /> Open in Google Maps
         </a>
+
+        {/* Monétisation (audit 13/06/2026, A3) : tours/excursions au départ du
+            village, GetYourGuide contextualisé. */}
+        <div className="mb-12">
+          <AffiliateBanner type="tours" locale={locale} placeName={name} />
+        </div>
 
         {/* Property management CTA */}
         <div className="mb-12">

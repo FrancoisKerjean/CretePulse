@@ -4,6 +4,8 @@ import { CloudSun, Newspaper } from "lucide-react";
 import { getDailyPosts, getLocalizedGuideField, type Guide } from "@/lib/guides";
 import { buildAlternates } from "@/lib/seo";
 import type { Locale } from "@/lib/types";
+import { CarPromo } from "@/components/car-rental/CarPromo";
+import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 
 export const revalidate = 3600;
 
@@ -120,6 +122,13 @@ export default async function DailyPage({ params }: { params: Promise<{ locale: 
             <h2 className="text-lg font-semibold text-aegean">Daily news recaps</h2>
           </div>
           <PostList posts={news} locale={loc} type="news" />
+        </section>
+
+        {/* Monétisation (audit 13/06/2026, A2+A3) : hub planification quotidienne
+            → CarPromo (Auto Smart primaire) + tours GetYourGuide. */}
+        <section className="mt-12 space-y-4">
+          <CarPromo locale={loc} source="daily" />
+          <AffiliateBanner type="tours" locale={loc} />
         </section>
       </div>
     </main>

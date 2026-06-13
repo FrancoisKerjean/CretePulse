@@ -7,6 +7,7 @@ import { buildSwimToday, type ScoredBeach, type ShoreWind } from "@/lib/swim-tod
 import { BeachImage } from "@/components/BeachImage";
 import { RegionPicker, type RegionBeachLite, type ZoneKey } from "@/components/RegionPicker";
 import { NearestSwimSpot, type NearestSwimBeach } from "@/components/near-me/NearestSwimSpot";
+import { CarPromo } from "@/components/car-rental/CarPromo";
 import { buildAlternates } from "@/lib/seo";
 import { getLocalizedField } from "@/lib/types";
 import type { Locale } from "@/lib/types";
@@ -583,8 +584,15 @@ export default async function SwimTodayPage(
           </div>
         </section>
 
+        {/* Monétisation (audit 13/06/2026, A2) : la préco du jour est souvent
+            une plage sans bus direct ("taxi ou voiture" ci-dessus) → intention
+            voiture. Auto Smart primaire (CarPromo → wizard). */}
+        <CarPromo locale={locale} source="beaches-today" />
+
         {/* La plage calme la plus proche (géoloc client, activée au clic) */}
-        <NearestSwimSpot locale={locale} beaches={nearestCandidates} />
+        <div className="mt-10">
+          <NearestSwimSpot locale={locale} beaches={nearestCandidates} />
+        </div>
 
         {/* Good choices by area : carte cliquable zones detourees (mockup valide Kami 12/06) */}
         <section className="mb-10">

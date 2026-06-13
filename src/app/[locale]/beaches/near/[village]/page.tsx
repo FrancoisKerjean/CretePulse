@@ -6,6 +6,7 @@ import { Waves, MapPin, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
+import { CarPromo } from "@/components/car-rental/CarPromo";
 
 export const revalidate = 86400;
 
@@ -139,6 +140,12 @@ export default async function BeachesNearVillagePage({ params }: { params: Promi
               </div>
             </Link>
           ))}
+        </div>
+
+        {/* Monétisation (audit 13/06/2026, A2) : "within driving distance"
+            = intention voiture. Auto Smart primaire (CarPromo → wizard). */}
+        <div className="mt-10">
+          <CarPromo locale={locale} source="beaches-near" />
         </div>
 
         {/* Other villages */}

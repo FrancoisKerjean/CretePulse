@@ -495,8 +495,6 @@ export default async function AirportPage(
     ],
   };
 
-  const skyscannerUrl = `https://www.skyscanner.com/transport/flights-to/${airport.iata.toLowerCase()}/?associateid=cretedirect`;
-
   return (
     <main className="min-h-screen bg-gradient-to-b from-stone-50 to-white">
       <script
@@ -627,8 +625,11 @@ export default async function AirportPage(
           </section>
         )}
 
-        {/* Getting there + flights CTA */}
-        <section className="mb-10 grid md:grid-cols-2 gap-4">
+        {/* Getting there (liens transport). CTA vols Skyscanner RETIRÉ le
+            13/06/2026 : associateid=cretedirect = placeholder non tracké (cf
+            docs/marketing/2026-06-13-audit-placement-affiliation.md, P1). À
+            réintégrer une fois le programme affilié vols réellement inscrit. */}
+        <section className="mb-10">
           <div className="rounded-xl border border-stone-200 bg-white p-5">
             <h2 className="text-lg font-semibold text-stone-900 mb-3">{t.gettingThere}</h2>
             <ul className="space-y-2 text-stone-700">
@@ -645,18 +646,6 @@ export default async function AirportPage(
                 </Link>
               </li>
             </ul>
-          </div>
-          <div className="rounded-xl border border-stone-200 bg-white p-5">
-            <h2 className="text-lg font-semibold text-stone-900 mb-3">{t.flightsCta(city)}</h2>
-            <a
-              href={skyscannerUrl}
-              rel="noopener noreferrer nofollow sponsored"
-              target="_blank"
-              className="inline-flex items-center gap-2 rounded-lg bg-aegean px-4 py-2 text-white text-sm font-medium hover:bg-aegean-light"
-            >
-              <Plane className="h-4 w-4" />
-              {t.flightsButton}
-            </a>
           </div>
         </section>
 

@@ -10,6 +10,17 @@ import { routing } from "@/i18n/routing";
 import { buildAlternates } from "@/lib/seo";
 import { carRentalPageSchema } from "@/lib/schema";
 import { CarRentalWizard } from "@/components/car-rental/CarRentalWizard";
+import { AffiliateCTA } from "@/components/ui/affiliate-cta";
+
+// Option secondaire DiscoverCars (audit 13/06/2026, A4). Auto Smart (wizard)
+// reste le CTA primaire : décision Kami 13/06. DiscoverCars = affilié réel
+// (70 %), proposé en repli pour qui veut une réservation en ligne immédiate.
+const ONLINE_FALLBACK: Record<string, string> = {
+  en: "Prefer to book online right now? Compare every rental company in Crete on DiscoverCars, with free cancellation.",
+  fr: "Vous préférez réserver en ligne tout de suite ? Comparez tous les loueurs de Crète sur DiscoverCars, annulation gratuite.",
+  de: "Lieber sofort online buchen? Vergleichen Sie alle Vermieter Kretas auf DiscoverCars, mit kostenloser Stornierung.",
+  el: "Προτιμάτε κράτηση online τώρα; Συγκρίνετε όλες τις εταιρείες στην Κρήτη στο DiscoverCars, με δωρεάν ακύρωση.",
+};
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
@@ -289,6 +300,15 @@ export default async function CarRentalPage(
         <Suspense fallback={null}>
           <CarRentalWizard locale={locale} />
         </Suspense>
+
+        {/* Repli online secondaire : DiscoverCars (affilié réel). Volontairement
+            discret pour ne pas concurrencer le wizard Auto Smart primaire. */}
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-white/60 px-5 py-4">
+          <p className="m-0 max-w-md text-sm text-text-muted">
+            {ONLINE_FALLBACK[locale] || ONLINE_FALLBACK.en}
+          </p>
+          <AffiliateCTA type="carRental" locale={locale} />
+        </div>
 
         {/* Section éditoriale : conduire en Crète, rédigée honnête */}
         <section className="mt-12">

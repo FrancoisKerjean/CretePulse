@@ -5,6 +5,8 @@ import { Sun, Users, Euro, Shirt, Calendar, Waves, Thermometer, ChevronRight, Ch
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
+import { CarPromo } from "@/components/car-rental/CarPromo";
+import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 
 export const revalidate = 86400;
 
@@ -478,6 +480,13 @@ export default async function VisitMonthPage({ params }: { params: Promise<{ loc
         <section className="mb-10 rounded-2xl border border-blue-100 bg-blue-50 p-6">
           <h2 className="mb-3 text-2xl font-semibold text-gray-900">{L.verdict}</h2>
           <p className="text-lg leading-relaxed text-gray-700">{verdict}</p>
+        </section>
+
+        {/* Monétisation (audit 13/06/2026, A3) : le voyageur planifie son mois
+            → voiture (Auto Smart primaire) + excursions GetYourGuide. */}
+        <section className="mb-10 space-y-4">
+          <CarPromo locale={locale} source="visit-month" />
+          <AffiliateBanner type="tours" locale={locale} />
         </section>
 
         {/* Weather links per city */}
