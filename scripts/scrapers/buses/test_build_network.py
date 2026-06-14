@@ -37,3 +37,33 @@ def test_should_build_network_guardrail():
     assert should_build_network([{}] * MIN_STOPS, [{}] * MIN_LINES) is True
     assert should_build_network([{}] * (MIN_STOPS - 1), [{}] * MIN_LINES) is False
     assert should_build_network([{}] * MIN_STOPS, []) is False
+
+from build_network import curate_routes
+
+def test_curate_drops_noise_terminus():
+    routes = [
+        {"id": 1, "operator_id": "herlas", "from_place": "Heraklion",
+         "to_place": "Hotel Serita (Anissaras Hotels)", "via_stops": None, "duration": "10min"},
+    ]
+    out = curate_routes(routes)
+    assert out == []
+
+def test_curate_strips_noise_via_keeps_route():
+    routes = [
+        {"id": 2, "operator_id": "herlas", "from_place": "Heraklion", "to_place": "Malia",
+         "via_stops": ["A1 Super Market", "Gouves"], "duration": "45min"},
+    ]
+    out = curate_routes(routes)
+    assert len(out) == 1
+    assert out[0]["from_place"] == "heraklion"
+    assert out[0]["to_place"] == "malia"
+    assert out[0]["via_stops"] == ["gouves"]
+
+def test_curate_canonises_aliases_and_typos():
+    routes = [
+        {"id": 3, "operator_id": "ektel", "from_place": "Rerhymno", "to_place": "Elafonisi",
+         "via_stops": None, "duration": "1h"},
+    ]
+    out = curate_routes(routes)
+    assert out[0]["from_place"] == "rethymno"
+    assert out[0]["to_place"] == "elafonissi"

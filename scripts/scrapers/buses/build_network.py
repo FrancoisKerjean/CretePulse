@@ -1,12 +1,13 @@
 """Pipeline réseau : lit bus_routes, assemble bus_stops/bus_lines/bus_line_stops
 (fonctions pures + OSRM injecté), écrit en delete+insert avec garde-fou.
 Lancé par buses.py après le scrape. Aucun réseau vide en prod."""
-from prices import PLACE_COORDS, haversine_km
-from net_geocode import collect_stops, geocode_stop, stop_slug
+from prices import PLACE_COORDS, _norm, haversine_km
+from net_geocode import collect_stops, stop_slug, coords_index_by_slug, geocode_slug
 from net_lines import merge_into_lines
 from net_osrm import build_geometry
 from net_timeprofile import cumulative_profile
 from net_nomenclature import assign_codes, color_for, prefecture_for
+from net_places import canonical_slug, display_name, load_allowlist
 
 MIN_STOPS = 20    # sous ce seuil = assemblage suspect, on ne touche pas la DB
 MIN_LINES = 5
@@ -41,18 +42,41 @@ def _seq_length_km(seq_stops):
     return round(total, 2)
 
 
+def curate_routes(routes):
+    """Canonise from/to/via en slugs (filtrage hybride). Jette une route dont un
+    terminus est du bruit ; retire les via bruit ; dédoublonne via les slugs."""
+    out = []
+    for r in routes:
+        a, b = canonical_slug(r["from_place"]), canonical_slug(r["to_place"])
+        if a is None or b is None:
+            continue  # terminus bruit -> route entière écartée
+        via = []
+        for v in (r.get("via_stops") or []):
+            cs = canonical_slug(v)
+            if cs is not None and cs not in (a, b) and cs not in via:
+                via.append(cs)
+        out.append({**r, "from_place": a, "to_place": b, "via_stops": via or None})
+    return out
+
+
 def assemble_network(routes, place_coords, cb_index, fetch=None, nominatim=None, existing_codes=None):
     """Retourne (stops, lines, line_stops). Pur hormis OSRM (fetch injecté)."""
-    # 1) référentiel d'arrêts géocodés, indexé par slug
+    # 1) référentiel d'arrêts géocodés par slug + flag needs_review
+    allow_slugs = set(load_allowlist().values())
     raw_stops = collect_stops(routes)
+    names_by_slug = {s["slug"]: display_name(s["name"]) for s in raw_stops}
+    coords_index = coords_index_by_slug(place_coords, cb_index, names_by_slug)
     stops, stop_by_slug = [], {}
     for s in raw_stops:
-        lat, lng, source, conf = geocode_stop(s["name"], place_coords, cb_index, nominatim=nominatim)
-        rec = {"slug": s["slug"], "name": s["name"], "name_el": None,
+        slug = s["slug"]
+        disp = names_by_slug[slug]
+        lat, lng, source, conf = geocode_slug(slug, disp, coords_index, nominatim=nominatim)
+        rec = {"slug": slug, "name": disp, "name_el": None,
                "lat": lat, "lng": lng, "prefecture": prefecture_for(lat, lng),
-               "coords_source": source, "coords_confidence": conf}
+               "coords_source": source, "coords_confidence": conf,
+               "needs_review": slug not in allow_slugs}
         stops.append(rec)
-        stop_by_slug[s["slug"]] = rec
+        stop_by_slug[slug] = rec
 
     # 2) lignes (corridors) + durée connue par couple terminus
     lines_raw = merge_into_lines(routes)
@@ -109,11 +133,13 @@ def assemble_network(routes, place_coords, cb_index, fetch=None, nominatim=None,
 
 
 def _load_cb_index(sb):
-    """cb_places -> {slug: (lat,lng)} (lecture best-effort, vide si table absente)."""
+    """cb_places -> {nom_normalisé: (lat,lng)} (best-effort, vide si absente).
+    NB : PostgREST cape à 1000 lignes ; cb_places ne sert que d'appoint au géocodage
+    (le filet principal = PLACE_COORDS + Nominatim), la troncature est tolérée."""
     try:
-        rows = sb.table("cb_places").select("slug,latitude,longitude").execute().data
-        return {r["slug"]: (r["latitude"], r["longitude"]) for r in rows
-                if r.get("latitude") is not None and r.get("longitude") is not None}
+        rows = sb.table("cb_places").select("name,latitude,longitude").execute().data
+        return {_norm(r["name"]): (r["latitude"], r["longitude"]) for r in rows
+                if r.get("name") and r.get("latitude") is not None and r.get("longitude") is not None}
     except Exception:
         return {}
 
@@ -161,9 +187,10 @@ def store_network(sb, stops, lines, line_stops):
 
 
 def build_network(sb, nominatim=None):
-    """Point d'entrée : lit bus_routes, assemble, écrit. Retourne (n_stops,n_lines,n_ls)."""
+    """Point d'entrée : lit bus_routes, cure, assemble, écrit. Retourne (n_stops,n_lines,n_ls)."""
     routes = sb.table("bus_routes").select(
         "id,operator_id,from_place,to_place,via_stops,duration").execute().data
+    routes = curate_routes(routes)
     cb_index = _load_cb_index(sb)
     existing = _load_existing_codes(sb)
     stops, lines, line_stops = assemble_network(
