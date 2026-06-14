@@ -59,5 +59,13 @@ export function useGeoPosition(initialSlug?: string | null) {
     setPos(p); setStatus("manual"); save(p, "manual");
   }, []);
 
-  return { status, pos, requestGeo, setManual };
+  // Position à coordonnées libres (point posé/glissé sur la carte Explorer).
+  // Réutilise le statut "manual" : pas de nouvelle valeur dans GeoStatus, donc
+  // aucun impact sur les 6 autres consommateurs du hook.
+  const setPosition = useCallback((lat: number, lon: number) => {
+    const p = { lat, lon };
+    setPos(p); setStatus("manual"); save(p, "manual");
+  }, []);
+
+  return { status, pos, requestGeo, setManual, setPosition };
 }
