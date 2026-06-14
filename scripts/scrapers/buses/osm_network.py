@@ -10,8 +10,8 @@ from net_timeprofile import cumulative_profile
 from net_nomenclature import assign_codes, color_for, prefecture_for
 from build_network import _title, store_network
 
-MIN_OSM_STOPS = 500   # sous ces seuils = réponse Overpass partielle, on ne touche pas la DB
-MIN_OSM_LINES = 50
+MIN_OSM_STOPS = 400   # sous ces seuils = réponse Overpass partielle, on ne touche pas la DB.
+MIN_OSM_LINES = 50    # Calibré sur le réel mesuré 14/06/2026 (489 stops / 78 lignes) avec ~20% de marge sous le réel.
 
 
 def should_build_osm(stops, lines):
