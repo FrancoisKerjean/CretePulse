@@ -2,7 +2,8 @@
 // (Node >= 23 : importe le .ts par type-stripping)
 import assert from "node:assert/strict";
 import {
-  normalizePlace, placeSimilarity, orientRoute, elapsedToKm, kmToPoint, activeDepartures,
+  normalizePlace, placeSimilarity, orientRoute, elapsedToKm, kmToPoint,
+  activeDepartures, busesAt,
 } from "../src/lib/bus-live/position.ts";
 
 // --- normalisation ----------------------------------------------------------
@@ -93,5 +94,37 @@ const routeWk = R(4, "A", "B", {
   departures_by_day: [{ days: "Mon-Fri", times: ["09:00"] }],
 });
 assert.deepEqual(activeDepartures(routeWk, 37, { iso: "2026-06-14", minutes: 545 }), []); // dimanche
+
+const netFwd = {
+  lines: new Map([[7, lineLAS07]]),
+  routes: [R(10, "Agios Nikolaos", "Elounda", {
+    line_id: 7,
+    departures: ["09:00"],
+    departures_by_day: [{ days: "EVERY DAY", times: ["09:00"] }],
+  })],
+};
+const busesFwd = busesAt({ iso: "2026-06-15", minutes: 562 }, netFwd); // 09:22
+assert.equal(busesFwd.length, 1);
+const b = busesFwd[0];
+assert.equal(b.lineId, 7);
+assert.equal(b.direction, "fwd");
+assert.equal(b.degraded, false);
+assert.equal(b.headsign, "Elounda");
+assert.equal(b.nextStop, "Schisma");                 // après Ellinika (22 min) à 22 min écoulées
+assert.ok(b.lat > 35.18 && b.lat < 35.26);
+assert.ok(Math.abs(b.progress - 22 / 37) < 1e-6);
+
+// hors plage horaire -> 0 bus
+assert.equal(busesAt({ iso: "2026-06-15", minutes: 400 }, netFwd).length, 0);
+
+// dédoublonnage : même ligne/sens/heure publiée 2x -> 1 seul bus
+const netDup = {
+  lines: new Map([[7, lineLAS07]]),
+  routes: [
+    R(11, "Agios Nikolaos", "Elounda", { line_id: 7, departures: ["09:00"], departures_by_day: [{ days: "EVERY DAY", times: ["09:00"] }] }),
+    R(12, "Agios Nikolaos", "Elounda", { line_id: 7, departures: ["09:00"], departures_by_day: [{ days: "EVERY DAY", times: ["09:00"] }] }),
+  ],
+};
+assert.equal(busesAt({ iso: "2026-06-15", minutes: 562 }, netDup).length, 1);
 
 console.log("OK check-bus-live: toutes les assertions passent");

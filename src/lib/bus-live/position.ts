@@ -8,7 +8,7 @@ import { haversineKm } from "../geo.ts";
 import { timesForDate } from "../bus-journey.ts";
 import { toMin } from "../athens-time.ts";
 import type { BusRoute } from "../buses";
-import type { LiveLine, LiveStop } from "./types";
+import type { LiveLine, LiveStop, LiveNetwork, LiveBus } from "./types";
 
 /** Normalise un nom de lieu : minuscules, sans diacritiques, alphanum + espaces. */
 export function normalizePlace(s: string): string {
@@ -134,4 +134,57 @@ export function activeDepartures(route: BusRoute, totalMinutes: number, now: Now
     const h = toMin(H);
     return h <= now.minutes && now.minutes <= h + totalMinutes;
   });
+}
+
+/** Prochain arrêt strictement devant le bus (dans le temps) + ETA minutes. */
+function nextStopAndEta(
+  orientedStops: LiveStop[],
+  profMin: number[],
+  elapsed: number,
+): { name: string | null; eta: number | null } {
+  for (let k = 0; k < orientedStops.length; k++) {
+    if (profMin[k] > elapsed) {
+      return { name: orientedStops[k].name, eta: Math.round(profMin[k] - elapsed) };
+    }
+  }
+  return { name: null, eta: null };
+}
+
+/** Tous les bus en circulation à l'instant `now` (Athens). Déterministe. */
+export function busesAt(now: NowAthens, network: LiveNetwork): LiveBus[] {
+  const out: LiveBus[] = [];
+  const seen = new Set<string>();
+  for (const route of network.routes) {
+    if (route.line_id == null) continue;
+    const line = network.lines.get(route.line_id);
+    if (!line || line.stops.length < 2 || line.totalMinutes <= 0 || line.geometry.length < 2) {
+      continue;
+    }
+    const oriented = orientRoute(route, line);
+    for (const H of activeDepartures(route, line.totalMinutes, now)) {
+      const key = `${line.id}|${oriented.reversed ? "rev" : "fwd"}|${H}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const elapsed = now.minutes - toMin(H);
+      const dParcours = elapsedToKm(elapsed, oriented.profMin, oriented.profKm);
+      const dGeo = oriented.reversed ? oriented.lengthKm - dParcours : dParcours;
+      const pt = kmToPoint(line.geometry, dGeo);
+      const ns = nextStopAndEta(oriented.orientedStops, oriented.profMin, elapsed);
+      out.push({
+        lineId: line.id,
+        code: line.code,
+        codeOfficial: line.codeOfficial,
+        lat: pt.lat,
+        lng: pt.lng,
+        bearing: oriented.reversed ? (pt.bearing + 180) % 360 : pt.bearing,
+        progress: Math.min(1, Math.max(0, elapsed / line.totalMinutes)),
+        nextStop: ns.name,
+        etaMinNext: ns.eta,
+        headsign: route.to_place,
+        direction: oriented.reversed ? "rev" : "fwd",
+        degraded: line.source === "ktel" || line.partialGeo,
+      });
+    }
+  }
+  return out;
 }
