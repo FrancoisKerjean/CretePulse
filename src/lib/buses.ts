@@ -7,6 +7,7 @@ export interface BusDepartureGroup {
 
 export interface BusRoute {
   id: number;
+  line_id: number | null; // FK SP2 vers bus_lines.id (NULL = non apparié)
   operator_id: string;
   from_place: string;
   to_place: string;
