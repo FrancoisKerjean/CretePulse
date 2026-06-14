@@ -8,7 +8,7 @@ import {
 import type { CbPlaceListItem, CbPlace } from "@/lib/cb-places";
 import { getCbPlaceBySlug } from "@/lib/cb-places";
 import { typeLabel } from "@/lib/cb-type-labels";
-import { nearestBy } from "@/lib/geo";
+import { nearestBy, circlePolygon } from "@/lib/geo";
 import { cleanCbDescription } from "@/lib/cb-place-helpers";
 import { useGeoPosition } from "@/components/geo/useGeoPosition";
 import { CiCompass } from "@/components/icons";
@@ -128,6 +128,9 @@ const PREFECTURES = ["Chania", "Rethymnon", "Heraklion", "Lassithi"];
 // Au-dela de ce zoom les clusters laissent place aux points + photo-pins.
 const PHOTO_PIN_ZOOM = 11.5;
 const PHOTO_PIN_MAX = 12;
+
+// Rayon du disque "autour de moi" (visuel uniquement, ne filtre pas la liste).
+const NEAR_RADIUS_KM = 10;
 
 function detectPrefecture(p: CbPlaceListItem): string | null {
   const txt = p.prefecture || "";
@@ -256,6 +259,22 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
       mapRef.current = map;
       map.addControl(new maplibre.NavigationControl({ showCompass: false }), "bottom-right");
       map.on("load", () => {
+        map.addSource("user-radius", {
+          type: "geojson",
+          data: { type: "FeatureCollection", features: [] },
+        });
+        map.addLayer({
+          id: "user-radius-fill",
+          type: "fill",
+          source: "user-radius",
+          paint: { "fill-color": "#0B5E78", "fill-opacity": 0.08 },
+        });
+        map.addLayer({
+          id: "user-radius-line",
+          type: "line",
+          source: "user-radius",
+          paint: { "line-color": "#0B5E78", "line-opacity": 0.5, "line-width": 1.5, "line-dasharray": [2, 2] },
+        });
         map.addSource("places", {
           type: "geojson",
           data: { type: "FeatureCollection", features: [] },
@@ -347,6 +366,26 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
         })),
     });
   }, [filtered, mapReady]);
+
+  // Disque "autour de moi" : suit geo.pos quand le tri proximité est actif, vidé sinon.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+    const src = map.getSource("user-radius") as import("maplibre-gl").GeoJSONSource | undefined;
+    if (!src) return;
+    if (nearActive && geo.pos) {
+      src.setData({
+        type: "FeatureCollection",
+        features: [{
+          type: "Feature",
+          properties: {},
+          geometry: { type: "Polygon", coordinates: [circlePolygon(geo.pos, NEAR_RADIUS_KM)] },
+        }],
+      });
+    } else {
+      src.setData({ type: "FeatureCollection", features: [] });
+    }
+  }, [nearActive, geo.pos, mapReady]);
 
   // --- Photo-pins : au zoom, les meilleurs lieux visibles deviennent des
   // vignettes photo cliquables (DOM markers), les autres restent des points. ---
