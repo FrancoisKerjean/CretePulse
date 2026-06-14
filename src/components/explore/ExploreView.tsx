@@ -8,7 +8,7 @@ import {
 import type { CbPlaceListItem, CbPlace } from "@/lib/cb-places";
 import { getCbPlaceBySlug } from "@/lib/cb-places";
 import { typeLabel } from "@/lib/cb-type-labels";
-import { nearestBy, circlePolygon } from "@/lib/geo";
+import { nearestBy, circlePolygon, isOnCrete } from "@/lib/geo";
 import { cleanCbDescription } from "@/lib/cb-place-helpers";
 import { useGeoPosition } from "@/components/geo/useGeoPosition";
 import { CiCompass } from "@/components/icons";
@@ -177,6 +177,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
   // Tri "Near me" : géoloc 100 % client (useGeoPosition), toggle on/off.
   const geo = useGeoPosition();
   const [nearActive, setNearActive] = useState(false);
+  const [hint, setHint] = useState<string | null>(null);
 
   const familyTypes = useMemo(() => {
     if (!family) return null;
@@ -233,7 +234,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
   const geoBlocked = geo.status === "denied" || geo.status === "unavailable";
 
   function toggleNearMe() {
-    if (nearActive) { setNearActive(false); return; }
+    if (nearActive) { setNearActive(false); setHint(null); return; }
     setNearActive(true);
     if (!geo.pos) geo.requestGeo();
   }
@@ -418,6 +419,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
     marker.on("dragend", () => {
       const ll = marker.getLngLat();
       geo.setPosition(ll.lat, ll.lng);
+      setHint(null);
     });
     userMarkerRef.current = marker;
 
@@ -434,6 +436,38 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
     const m = userMarkerRef.current;
     if (m && geo.pos) m.setLngLat([geo.pos.lon, geo.pos.lat]);
   }, [geo.pos]);
+
+  // Réaction asynchrone à la résolution GPS (le refus/succès arrive dans un callback,
+  // pas au moment du clic). Pattern repris de MatchDeck (prevGeoStatus).
+  const prevGeoStatus = useRef(geo.status);
+  useEffect(() => {
+    const map = mapRef.current;
+    const prev = prevGeoStatus.current;
+    prevGeoStatus.current = geo.status;
+    if (!map || !nearActive) return;
+
+    // Succès GPS : recentrer si on est en Crète, sinon garder la carte sur l'île
+    // et poser le point déplaçable au centre de la vue (persona "préparation voyage").
+    if (prev === "prompting" && geo.status === "granted" && geo.pos) {
+      if (isOnCrete(geo.pos)) {
+        map.flyTo({ center: [geo.pos.lon, geo.pos.lat], zoom: Math.max(map.getZoom(), 11) });
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setHint(null);
+      } else {
+        const c = map.getCenter();
+        geo.setPosition(c.lat, c.lng);
+        setHint(t.notOnCrete);
+      }
+      return;
+    }
+    // Refus / indisponible : placement manuel au centre de la vue.
+    if ((geo.status === "denied" || geo.status === "unavailable") && !geo.pos) {
+      const c = map.getCenter();
+      geo.setPosition(c.lat, c.lng);
+      setHint(t.dragToAdjust);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [geo.status, geo.pos, nearActive]);
 
   // --- Photo-pins : au zoom, les meilleurs lieux visibles deviennent des
   // vignettes photo cliquables (DOM markers), les autres restent des points. ---
@@ -600,6 +634,14 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
         <div ref={mapContainer} className="h-full w-full" />
       </div>
 
+      {hint && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30 pointer-events-none max-w-[90%] md:max-w-md">
+          <div className="bg-aegean text-white text-xs font-semibold px-3.5 py-2 rounded-full shadow-[0_8px_22px_rgba(11,94,120,0.35)] text-center">
+            {hint}
+          </div>
+        </div>
+      )}
+
       {/* ===== Barre flottante haute (desktop : a droite du panneau liste) ===== */}
       <div className="absolute top-3 left-3 right-3 md:left-[360px] md:right-4 z-20 flex flex-col gap-2 pointer-events-none">
         <div className="flex items-center gap-2 pointer-events-auto">
@@ -638,11 +680,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
             title={geoBlocked ? t.geoUnavailable : undefined}
             aria-pressed={nearActive && Boolean(geo.pos)}
             className={`hidden md:flex items-center gap-1.5 text-sm font-semibold py-2.5 px-4 rounded-full shadow-[0_6px_24px_rgba(11,94,120,0.18)] transition-colors shrink-0 ${
-              nearActive && geo.pos
-                ? "bg-aegean text-white"
-                : geoBlocked
-                  ? "bg-white text-text-muted opacity-60 cursor-help"
-                  : "bg-white text-text hover:text-aegean"
+              nearActive && geo.pos ? "bg-aegean text-white" : "bg-white text-text hover:text-aegean"
             }`}
           >
             <CiCompass className="w-4 h-4" />
