@@ -1,7 +1,7 @@
 """Construction de lignes minimales pour les paires KTEL absentes d'OSM.
 Une paire = 2 terminus + horaires ; on crée 2 bus_stops si manquants, 1 bus_line
 source='ktel' avec géométrie OSRM(a->b), 2 bus_line_stops (seq 0/1). Pur sauf OSRM."""
-from prices import haversine_km
+from prices import haversine_km, _norm
 from ktel_resolve import resolve
 from net_osrm import build_geometry
 from net_nomenclature import assign_codes, color_for, prefecture_for
@@ -14,28 +14,14 @@ def _avg_duration_min(routes):
     return round(sum(mins) / len(mins)) if mins else None
 
 
-def _terminus_dict(slug, place_coords):
-    """Construit le dict d'un nouveau bus_stops 'ktel' depuis PLACE_COORDS."""
-    coords = place_coords.get(slug)
-    if not coords:
-        return None
-    lat, lng = coords
-    return {"slug": slug, "name": _title(slug), "name_el": None,
-            "lat": lat, "lng": lng, "prefecture": prefecture_for(lat, lng),
-            "coords_source": "ktel", "coords_confidence": "medium",
-            "osm_id": None, "needs_review": False}
-
-
-def _resolve_or_create(slug_hint, name, stops_by_slug, aliases, place_coords, pending_stops):
+def _resolve_or_create(slug_hint, name, stops_by_slug, place_coords, pending_stops):
     """Retourne le dict stop (déjà connu ou créé à la volée). None si impossible."""
     if slug_hint in stops_by_slug:
         return stops_by_slug[slug_hint]
     if slug_hint in pending_stops:
         return pending_stops[slug_hint]
     # PLACE_COORDS indexé par nom normalisé : essayer le nom original puis le slug
-    from prices import _norm
     pc = {_norm(k): v for k, v in place_coords.items()}
-    pc.update({k.lower(): v for k, v in place_coords.items()})
     coords = pc.get(_norm(name or "")) or pc.get(slug_hint)
     if not coords:
         return None
@@ -65,8 +51,8 @@ def build_fallback_lines(gaps, stops_by_slug, aliases, place_coords, existing_co
         b_name = next((r.get("from_place") if resolve(r.get("from_place"), stops_by_slug, aliases, place_coords) == b_slug
                        else r.get("to_place") if resolve(r.get("to_place"), stops_by_slug, aliases, place_coords) == b_slug
                        else None for r in routes), None)
-        a_stop = _resolve_or_create(a_slug, a_name, stops_by_slug, aliases, place_coords, pending_stops)
-        b_stop = _resolve_or_create(b_slug, b_name, stops_by_slug, aliases, place_coords, pending_stops)
+        a_stop = _resolve_or_create(a_slug, a_name, stops_by_slug, place_coords, pending_stops)
+        b_stop = _resolve_or_create(b_slug, b_name, stops_by_slug, place_coords, pending_stops)
         if not a_stop or not b_stop:
             continue
         pairs.append((operator, a_slug, b_slug, a_stop, b_stop, routes))
