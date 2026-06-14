@@ -1,4 +1,10 @@
 {
+  "activityNudge": {
+    "title": "Noch unentschlossen?",
+    "subtitle": "Swipe durch die besten Orte Kretas und finde den, der zu dir passt.",
+    "dismiss": "Später",
+    "cta": "Los swipen"
+  },
   "meta": {
     "title": "Crete Direct - Was auf Kreta los ist",
     "description": "Wetter, Events, Strände, lokale Nachrichten. Ganz Kreta, stündlich aktualisiert. Kostenlos, in 4 Sprachen."

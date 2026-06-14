@@ -1,4 +1,10 @@
 {
+  "activityNudge": {
+    "title": "Still undecided?",
+    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
+    "dismiss": "Later",
+    "cta": "Start swiping"
+  },
   "meta": {
     "title": "Crete Direct - Что происходит на Крите",
     "description": "Погода, события, пляжи, местные новости. Всё о Крите, обновляется каждый час. Бесплатно, на нескольких языках."

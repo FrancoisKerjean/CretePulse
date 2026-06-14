@@ -1,4 +1,10 @@
 {
+  "activityNudge": {
+    "title": "Still undecided?",
+    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
+    "dismiss": "Later",
+    "cta": "Start swiping"
+  },
   "meta": {
     "title": "Crete Direct - Ce se întâmplă în Creta",
     "description": "Vreme, evenimente, plaje, știri locale. Totul despre Creta, actualizat în fiecare oră. Gratuit, multilingv."

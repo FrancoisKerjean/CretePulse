@@ -1,4 +1,10 @@
 {
+  "activityNudge": {
+    "title": "Still undecided?",
+    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
+    "dismiss": "Later",
+    "cta": "Start swiping"
+  },
   "meta": {
     "title": "Crete Direct - 크레타에서 무슨 일이 일어나고 있나요",
     "description": "날씨, 이벤트, 해변, 지역 뉴스. 크레타의 모든 것, 매시간 업데이트. 무료, 다국어 지원."
