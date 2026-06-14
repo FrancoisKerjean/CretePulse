@@ -3,90 +3,15 @@
 // (page, sitemap) et node (scripts/check-bus-pairs.mjs).
 // Spec : docs/superpowers/specs/2026-06-10-bus-pair-pages-design.md
 import type { BusRoute } from "./buses";
+import busPlaceSlugs from "../data/bus-places.json" with { type: "json" };
 
 /** Route minimale acceptee par les helpers (le sitemap ne select que from/to). */
 export type PairRouteLike = Pick<BusRoute, "from_place" | "to_place">;
 
-// Lieu DB (orthographe exacte bus_routes) -> slug URL. Un lieu absent de
-// cette table n'a JAMAIS de page (arrets hotels, supermarches, bruit).
-// Est = lieux PLACE_COORDS du scraper ; ouest = villes/villages reconnus
-// des PDF e-ktel (orthographe DB constatee le 10/06/2026).
-export const BUS_PLACE_SLUGS: Record<string, string> = {
-  // Est (herlas)
-  "Heraklion": "heraklion",
-  "Agios Nikolaos": "agios-nikolaos",
-  "Ierapetra": "ierapetra",
-  "Siteia": "sitia",
-  "Malia": "malia",
-  "Hersonisos": "hersonissos",
-  "Matala": "matala",
-  "Moires": "moires",
-  "Anogeia": "anogeia",
-  "Ano Viannos": "ano-viannos",
-  "Kokkini Hani": "kokkini-hani",
-  "Eloynta": "elounda",
-  "Kritsa": "kritsa",
-  "Makry Gyalos": "makry-gyalos",
-  "Myrtos": "myrtos",
-  "Mochos": "mochos",
-  "Stalida": "stalida",
-  "Sisi": "sisi",
-  "Gouves": "gouves",
-  "Tympaki": "tympaki",
-  "Agia Galini": "agia-galini",
-  "Faistos": "phaistos",
-  "Arkalochori": "arkalochori",
-  "Kastelli Pediados": "kastelli-pediados",
-  "Ano Archanes": "archanes",
-  "Thrapsano": "thrapsano",
-  "Myrtia": "myrtia",
-  "Zakros": "zakros",
-  "Palaiokastro Sitia": "palekastro",
-  "Ziros": "ziros",
-  "Mochlos": "mochlos",
-  "Kalo Chorio Lasithioy": "kalo-chorio",
-  "Ferma": "ferma",
-  "Mesochorio": "mesochorio",
-  "Demati": "demati",
-  "Kroysonas": "krousonas",
-  "Kamares": "kamares",
-  "Cretaquarium": "cretaquarium",
-  "Cretaquarium (Gournes)": "cretaquarium",
-  "Plaka(Ag.Nikolaos)": "plaka",
-  "Kroystas": "kroustas",
-  "Aygeniki": "avgeniki",
-  // Ouest (ektel)
-  "Chania": "chania",
-  "Rethymno": "rethymno",
-  "Chania Airport": "chania-airport",
-  "Kissamos": "kissamos",
-  "Kasteli": "kissamos",
-  "Elafonissi": "elafonissi",
-  "Elafonisi": "elafonissi",
-  "Paleochora": "paleochora",
-  "Sougia": "sougia",
-  "Chora Sfakion": "chora-sfakion",
-  "Georgioupolis": "georgioupolis",
-  "Kavros": "kavros",
-  "Bali": "bali",
-  "Plakias": "plakias",
-  "Almirida": "almyrida",
-  "Kalives": "kalyves",
-  "Stavros": "stavros",
-  "Panormo": "panormo",
-  "Margarites": "margarites",
-  "Theriso": "theriso",
-  "Meskla": "meskla",
-  "Vamos": "vamos",
-  "Spili": "spili",
-  "Perama": "perama",
-  "Anogia": "anogeia-west",
-  "Voukolies": "voukolies",
-  "Sternes": "sternes",
-  "Maleme": "maleme",
-  "Arkadi": "arkadi",
-  "Ano Meros": "ano-meros",
-};
+// Lieu DB (orthographe exacte bus_routes) -> slug URL. Source unique partagée avec
+// le pipeline réseau (scripts/scrapers/buses/net_places.py). Un lieu absent = jamais
+// de page (arrets hotels, supermarches, bruit).
+export const BUS_PLACE_SLUGS: Record<string, string> = busPlaceSlugs;
 
 export interface BusPair {
   slug: string;
