@@ -79,6 +79,8 @@ const T: Record<string, Record<string, string>> = {
     beaches: "Beaches", gorges: "Gorges", villages: "Villages", culture: "Culture",
     nature: "Nature", activities: "Activities", all: "All",
     sortRating: "Best rated", sortNear: "Nearest", fullList: "Full list",
+    youAreHere: "You are here", dragToAdjust: "Drag the dot to your spot",
+    notOnCrete: "You're not in Crete — drop the dot where you'll be.",
   },
   fr: {
     search: "Chercher un lieu...", results: "lieux", rating: "Note min.",
@@ -90,6 +92,8 @@ const T: Record<string, Record<string, string>> = {
     beaches: "Plages", gorges: "Gorges", villages: "Villages", culture: "Culture",
     nature: "Nature", activities: "Activités", all: "Tout",
     sortRating: "Mieux notés", sortNear: "Au plus près", fullList: "Liste complète",
+    youAreHere: "Vous êtes ici", dragToAdjust: "Glisse le point sur ta position",
+    notOnCrete: "Tu n'es pas en Crète, place ton point là où tu seras.",
   },
   de: {
     search: "Ort suchen...", results: "Orte", rating: "Min. Bewertung",
@@ -101,6 +105,8 @@ const T: Record<string, Record<string, string>> = {
     beaches: "Strände", gorges: "Schluchten", villages: "Dörfer", culture: "Kultur",
     nature: "Natur", activities: "Aktivitäten", all: "Alle",
     sortRating: "Bestbewertet", sortNear: "Am nächsten", fullList: "Ganze Liste",
+    youAreHere: "Sie sind hier", dragToAdjust: "Punkt auf Ihren Standort ziehen",
+    notOnCrete: "Sie sind nicht auf Kreta — setzen Sie den Punkt an Ihr Ziel.",
   },
   el: {
     search: "Αναζήτηση τοποθεσίας...", results: "μέρη", rating: "Ελάχ. βαθμολογία",
@@ -112,6 +118,8 @@ const T: Record<string, Record<string, string>> = {
     beaches: "Παραλίες", gorges: "Φαράγγια", villages: "Χωριά", culture: "Πολιτισμός",
     nature: "Φύση", activities: "Δραστηριότητες", all: "Όλα",
     sortRating: "Κορυφαία", sortNear: "Πιο κοντά", fullList: "Πλήρης λίστα",
+    youAreHere: "Είστε εδώ", dragToAdjust: "Σύρε το σημείο στη θέση σου",
+    notOnCrete: "Δεν είσαι στην Κρήτη — βάλε το σημείο εκεί που θα είσαι.",
   },
 };
 
