@@ -8,7 +8,6 @@ PREFECTURE_CENTERS = {
     "CHA": (35.5138, 24.0180),   # Chania
     "RET": (35.3644, 24.4821),   # Rethymno
 }
-_PREF_ORDER = ["CHA", "RET", "HER", "LAS"]   # ouest -> est, ordre d'affichage stable
 
 # Palette par préfecture (charte aegean/lagon), variée par hash du code.
 _PREF_BASE = {"HER": "#0B5E78", "LAS": "#00838F", "CHA": "#ED7A5C", "RET": "#C8A35F"}
