@@ -5,6 +5,7 @@ import { getMessages, getTranslations, setRequestLocale } from "next-intl/server
 import { routing } from "@/i18n/routing";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { ActivityNudge } from "@/components/nudge/ActivityNudge";
 import { baloo } from "@/app/layout";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -99,6 +100,7 @@ export default async function LocaleLayout({
           <Header />
           {children}
           <Footer />
+          <ActivityNudge />
         </NextIntlClientProvider>
         <Analytics />
         <SpeedInsights />
