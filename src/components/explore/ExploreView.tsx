@@ -398,7 +398,8 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
   useEffect(() => {
     const map = mapRef.current;
     const maplibre = maplibreRef.current;
-    if (!map || !maplibre || !mapReady || !nearActive || !hasPos || !geo.pos) return;
+    const pos = geo.pos;
+    if (!map || !maplibre || !mapReady || !nearActive || !pos) return;
 
     const el = document.createElement("div");
     el.title = t.youAreHere;
@@ -414,7 +415,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
     el.appendChild(dot);
 
     const marker = new maplibre.Marker({ element: el, anchor: "center", draggable: true })
-      .setLngLat([geo.pos.lon, geo.pos.lat])
+      .setLngLat([pos.lon, pos.lat])
       .addTo(map);
     marker.on("dragend", () => {
       const ll = marker.getLngLat();
