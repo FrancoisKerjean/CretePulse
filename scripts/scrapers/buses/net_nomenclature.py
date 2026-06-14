@@ -26,13 +26,20 @@ def assign_codes(lines, existing=None):
     existing = dict(existing or {})
     out = {}
     used = {}  # prefecture -> set(rangs pris)
+    # 0) tous les codes deja emis sont reserves (evite collision avec PK unique
+    #    cote bus_lines.code quand `lines` contient des nouveautes alors que
+    #    `existing` contient aussi des lignes hors-batch — cas SP2 fallback).
+    for code in existing.values():
+        try:
+            pref, num = code.split("-")
+            used.setdefault(pref, set()).add(int(num))
+        except (ValueError, AttributeError):
+            continue
     # 1) honorer l'existant
     for ln in lines:
         code = existing.get(ln["key"])
         if code:
-            pref, num = code.split("-")
             out[ln["key"]] = code
-            used.setdefault(pref, set()).add(int(num))
     # 2) numéroter les nouvelles
     by_pref = {}
     for ln in lines:
