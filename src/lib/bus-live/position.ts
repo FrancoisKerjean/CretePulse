@@ -68,3 +68,15 @@ export function orientRoute(route: BusRoute, line: LiveLine): OrientedRoute {
   const orientedStops = [...stops].reverse();
   return { reversed, profMin, profKm, orientedStops, lengthKm: L };
 }
+
+/** Distance (km) parcourue après `elapsed` minutes, le long du profil orienté. */
+export function elapsedToKm(elapsed: number, profMin: number[], profKm: number[]): number {
+  const N = profMin.length - 1;
+  if (elapsed <= profMin[0]) return profKm[0];
+  if (elapsed >= profMin[N]) return profKm[N];
+  let i = 0;
+  while (i < N - 1 && profMin[i + 1] < elapsed) i++;
+  const span = profMin[i + 1] - profMin[i];
+  const f = span > 0 ? (elapsed - profMin[i]) / span : 0;
+  return profKm[i] + f * (profKm[i + 1] - profKm[i]);
+}
