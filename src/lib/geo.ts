@@ -37,3 +37,25 @@ export const ON_CRETE_RADIUS_KM = 150;
 export function isOnCrete(pos: GeoPos): boolean {
   return haversineKm(CRETE_CENTER, [pos.lat, pos.lon]) <= ON_CRETE_RADIUS_KM;
 }
+
+/**
+ * Anneau fermé approximant un cercle géographique de `radiusKm` autour de `center`,
+ * sous forme de coordonnées [lon, lat] (ordre GeoJSON). Premier point = dernier point.
+ * Approximation équirectangulaire (suffisante à l'échelle ~10 km en Crète).
+ * Usage : géométrie d'un Polygon GeoJSON pour le disque "autour de moi".
+ */
+export function circlePolygon(
+  center: GeoPos,
+  radiusKm: number,
+  segments = 64,
+): Array<[number, number]> {
+  const dLat = radiusKm / 111.32;
+  const dLon = radiusKm / (111.32 * Math.cos((center.lat * Math.PI) / 180));
+  const ring: Array<[number, number]> = [];
+  for (let i = 0; i < segments; i++) {
+    const theta = (2 * Math.PI * i) / segments;
+    ring.push([center.lon + dLon * Math.cos(theta), center.lat + dLat * Math.sin(theta)]);
+  }
+  ring.push(ring[0]); // fermer l'anneau
+  return ring;
+}
