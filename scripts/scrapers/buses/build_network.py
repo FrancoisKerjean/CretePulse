@@ -62,10 +62,20 @@ def curate_routes(routes):
 def assemble_network(routes, place_coords, cb_index, fetch=None, nominatim=None, existing_codes=None):
     """Retourne (stops, lines, line_stops). Pur hormis OSRM (fetch injecté)."""
     # 1) référentiel d'arrêts géocodés par slug + flag needs_review
-    allow_slugs = set(load_allowlist().values())
+    allowlist = load_allowlist()
+    allow_slugs = set(allowlist.values())
     raw_stops = collect_stops(routes)
     names_by_slug = {s["slug"]: display_name(s["name"]) for s in raw_stops}
     coords_index = coords_index_by_slug(place_coords, cb_index, names_by_slug)
+    # Pont allowlist : indexe les coords PLACE_COORDS sous le slug CANONIQUE quand
+    # l'orthographe DB diffère du slug (ex "Siteia"->"sitia", "Hersonisos"->
+    # "hersonissos", "Faistos"->"phaistos"). Sans ce pont, ces hubs ne seraient pas
+    # géocodés par le référentiel (slug canonique != stop_slug de la clé PLACE_COORDS).
+    for nom_db, slug in allowlist.items():
+        if slug not in coords_index:
+            k = _norm(nom_db)
+            if k in place_coords:
+                coords_index[slug] = place_coords[k]
     stops, stop_by_slug = [], {}
     for s in raw_stops:
         slug = s["slug"]

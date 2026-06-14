@@ -67,3 +67,14 @@ def test_curate_canonises_aliases_and_typos():
     out = curate_routes(routes)
     assert out[0]["from_place"] == "rethymno"
     assert out[0]["to_place"] == "elafonissi"
+
+def test_assemble_bridges_allowlist_slug_divergent_from_placecoords():
+    # "Siteia" est dans PLACE_COORDS sous _norm("Siteia")="siteia", mais son slug
+    # canonique allowlist est "sitia" -> le pont allowlist doit quand même le géocoder.
+    routes = curate_routes([{"id": 1, "operator_id": "herlas", "from_place": "Heraklion",
+                             "to_place": "Siteia", "via_stops": None, "duration": "3h"}])
+    place_coords = {"heraklion": (35.34, 25.14), "siteia": (35.21, 26.10)}
+    stops, _, _ = assemble_network(
+        routes, place_coords, {}, fetch=lambda url: _fake_osrm([(35.34, 25.14), (35.21, 26.10)]))
+    sitia = next(s for s in stops if s["slug"] == "sitia")
+    assert sitia["lat"] == 35.21 and sitia["coords_source"] == "referentiel"
