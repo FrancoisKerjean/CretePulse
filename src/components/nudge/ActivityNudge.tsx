@@ -90,7 +90,7 @@ export function ActivityNudge() {
       {/* Overlay : clic = fermeture douce */}
       <button
         type="button"
-        aria-label={t("dismiss")}
+        aria-label={t("close")}
         onClick={handleLater}
         className="absolute inset-0 cursor-default bg-black/50 backdrop-blur-sm"
       />
@@ -99,7 +99,7 @@ export function ActivityNudge() {
         <button
           type="button"
           onClick={handleLater}
-          aria-label={t("dismiss")}
+          aria-label={t("close")}
           className="absolute right-3 top-3 rounded-full p-1.5 text-foreground/40 transition hover:bg-black/5 hover:text-foreground"
         >
           <X className="h-5 w-5" />
