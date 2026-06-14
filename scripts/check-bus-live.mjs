@@ -145,4 +145,27 @@ assert.ok(rb.lat > 35.22, `lat=${rb.lat} doit être côté nord (Elounda), pas e
 // prochain arrêt dans le sens retour : Ellinika (à 7 min écoulées, profMin rev = [0,7,15,36,37])
 assert.equal(rb.nextStop, "Ellinika");
 
+// ligne KTEL-fallback : 2 arrêts, géométrie droite, source ktel
+const lineKtel = {
+  id: 99, code: "LAS-10", codeOfficial: null, source: "ktel",
+  totalMinutes: 60, lengthKm: 40.0, partialGeo: true,
+  geometry: [[25.10, 35.00], [25.50, 35.20]],
+  stops: [
+    { seq: 0, slug: "agios-nikolaos", name: "Agios Nikolaos", lat: 35.00, lng: 25.10, cumKm: 0.0, cumMin: 0 },
+    { seq: 1, slug: "heraklion", name: "Heraklion", lat: 35.20, lng: 25.50, cumKm: 40.0, cumMin: 60 },
+  ],
+};
+const netKtel = {
+  lines: new Map([[99, lineKtel]]),
+  routes: [R(30, "Agios Nikolaos", "Heraklion", {
+    line_id: 99, departures: ["10:00"],
+    departures_by_day: [{ days: "EVERY DAY", times: ["10:00"] }],
+  })],
+};
+const kbuses = busesAt({ iso: "2026-06-15", minutes: 630 }, netKtel); // 10:30, mi-parcours
+assert.equal(kbuses.length, 1);
+assert.equal(kbuses[0].degraded, true);
+assert.ok(Math.abs(kbuses[0].progress - 0.5) < 1e-6);
+assert.ok(kbuses[0].lat > 35.09 && kbuses[0].lat < 35.11); // ~milieu du segment droit
+
 console.log("OK check-bus-live: toutes les assertions passent");
