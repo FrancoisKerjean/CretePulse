@@ -39,3 +39,33 @@ def test_geocode_stop_nominatim_third():
 def test_geocode_stop_none_when_unresolvable():
     lat, lng, source, conf = geocode_stop("Nowhere", {}, {}, nominatim=lambda n: None)
     assert lat is None and lng is None and source == "none"
+
+from net_geocode import coords_index_by_slug, geocode_slug
+
+def test_coords_index_reindexes_place_coords_by_slug():
+    place_coords = {"agios nikolaos": (35.19, 25.71), "heraklion": (35.34, 25.14)}
+    idx = coords_index_by_slug(place_coords, cb_by_name={})
+    assert idx["agios-nikolaos"] == (35.19, 25.71)
+    assert idx["heraklion"] == (35.34, 25.14)
+
+def test_coords_index_adds_cb_places_by_name():
+    place_coords = {}
+    cb_by_name = {"garazo": (35.28, 24.86)}
+    idx = coords_index_by_slug(place_coords, cb_by_name, names_by_slug={"garazo": "Garazo"})
+    assert idx["garazo"] == (35.28, 24.86)
+
+def test_geocode_slug_index_first():
+    idx = {"heraklion": (35.34, 25.14)}
+    lat, lng, source, conf = geocode_slug("heraklion", "Heraklion", idx, nominatim=None)
+    assert (round(lat, 2), round(lng, 2)) == (35.34, 25.14)
+    assert source == "referentiel" and conf == "high"
+
+def test_geocode_slug_nominatim_fallback():
+    lat, lng, source, conf = geocode_slug(
+        "garazo", "Garazo", {}, nominatim=lambda n: (35.28, 24.86))
+    assert (lat, lng) == (35.28, 24.86)
+    assert source == "geocoded" and conf == "low"
+
+def test_geocode_slug_none_when_unresolvable():
+    lat, lng, source, conf = geocode_slug("nowhere", "Nowhere", {}, nominatim=lambda n: None)
+    assert lat is None and source == "none"
