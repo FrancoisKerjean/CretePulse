@@ -3,9 +3,11 @@
 - run_apparier : entrée prod (charge DB, appelle assemble, écrit en transaction).
 Réutilise net_osrm/net_nomenclature et build_network.store_network (delete+insert
 là où c'est déjà fait, pour les lignes OSM). Ici on n'écrit QUE des nouveautés
-(stops/lines/line_stops source='ktel') + des UPDATEs sur bus_routes.line_id."""
+(stops/lines/line_stops source='ktel') + des UPDATEs sur bus_routes.line_id, en séquence (pas de transaction Postgres — un crash mid-write laisse des nouvelles bus_lines orphelines, ré-injectables au prochain run via les ids preservés)."""
 from ktel_match import match_routes_to_lines
 from ktel_fallback import build_fallback_lines
+from prices import PLACE_COORDS
+from ktel_alias import load_aliases
 
 MIN_BUS_LINES = 50   # sous ce seuil = SP1 OSM est cassé ou en cours, on n'apparier pas
 
@@ -66,7 +68,7 @@ def _load_state(sb):
 
 
 def _persist(sb, result):
-    """Écrit en transaction : nouveaux stops + lignes + line_stops + UPDATE bus_routes.line_id."""
+    """Écrit séquentiellement (REST supabase-py, pas de transaction) : nouveaux stops + lignes + line_stops + UPDATE bus_routes.line_id. Idempotent grâce aux PK uniques (slug, code) ; un crash partiel est rattrapé au run suivant."""
     if result["new_stops"]:
         sb.table("bus_stops").insert(result["new_stops"]).execute()
     if result["new_lines"]:
@@ -92,23 +94,23 @@ def _persist(sb, result):
             if ls["line_code"] in code_to_id and ls["stop_slug"] in slug_to_id]
         if payload:
             sb.table("bus_line_stops").insert(payload).execute()
-    # UPDATEs bus_routes.line_id (OSM matches + fallback matches)
-    n_updates = 0
+    # UPDATEs bus_routes.line_id groupés par line_id (1 UPDATE par ligne, pas par route)
+    by_line = {}
     for route_id, line_id in result["matched_to_osm"].items():
-        sb.table("bus_routes").update({"line_id": line_id}).eq("id", route_id).execute()
-        n_updates += 1
+        by_line.setdefault(line_id, []).append(route_id)
     for route_id, code in result["matched_to_fallback"].items():
         line_id = code_to_id.get(code)
         if line_id is not None:
-            sb.table("bus_routes").update({"line_id": line_id}).eq("id", route_id).execute()
-            n_updates += 1
+            by_line.setdefault(line_id, []).append(route_id)
+    n_updates = 0
+    for line_id, route_ids in by_line.items():
+        sb.table("bus_routes").update({"line_id": line_id}).in_("id", route_ids).execute()
+        n_updates += len(route_ids)
     return n_updates
 
 
 def run_apparier(sb):
     """Entrée prod : charge DB, apparier, écrit. Retourne un dict de compteurs."""
-    from prices import PLACE_COORDS
-    from ktel_alias import load_aliases
     routes, osm_lines, stops_by_slug = _load_state(sb)
     if not should_run(osm_lines):
         raise ValueError(f"refuse run SP2 : {len(osm_lines)} bus_lines (seuil {MIN_BUS_LINES})")
