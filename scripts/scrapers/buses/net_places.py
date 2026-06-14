@@ -36,6 +36,14 @@ _NOISE = [
     re.compile(r"\(.*hotels?\)", re.I),
 ]
 
+# POI/hôtels nommés SANS mot-clé (échappent aux patterns) : denylist explicite
+# (constatée à la mesure du 14/06). Noms DB exacts.
+DENYLIST_POI = {
+    "Ag.Pelagia(Kapsis)", "Athina Palace", "Blue Bay", "Botanical Garden",
+    "Chania Express", "Irida", "Loytraki", "Malia Palace", "Peninsula",
+    "Seaside", "University Gallou",
+}
+
 _allowlist_cache = None
 
 
@@ -51,11 +59,15 @@ def _fixed(name):
     return ALIAS_FIX.get(_norm(name), name)
 
 
+def _is_noise(name):
+    return name in DENYLIST_POI or any(p.search(name) for p in _NOISE)
+
+
 def status_of(name):
     fixed = _fixed(name)
     if fixed in load_allowlist():
         return "allowlist"
-    if any(p.search(name) for p in _NOISE):
+    if _is_noise(name):
         return "noise"
     return "admitted"
 
@@ -66,7 +78,7 @@ def canonical_slug(name):
     al = load_allowlist()
     if fixed in al:
         return al[fixed]
-    if any(p.search(name) for p in _NOISE):
+    if _is_noise(name):
         return None
     return stop_slug(fixed)
 

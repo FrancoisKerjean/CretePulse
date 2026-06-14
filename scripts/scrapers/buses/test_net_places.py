@@ -40,3 +40,9 @@ def test_display_name_prefers_clean():
     assert display_name("Heraklion") == "Heraklion"
     assert display_name("Plaka(Ag.Nikolaos)") == "Plaka"
     assert display_name("Garazo") == "Garazo"
+
+def test_denylist_poi_is_noise():
+    assert status_of("Athina Palace") == "noise"
+    assert status_of("Seaside") == "noise"
+    assert canonical_slug("Blue Bay") is None
+    assert canonical_slug("University Gallou") is None
