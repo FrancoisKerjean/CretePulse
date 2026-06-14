@@ -158,6 +158,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
   const mapRef = useRef<MaplibreMap | null>(null);
   const maplibreRef = useRef<MaplibreModule | null>(null);
   const photoMarkersRef = useRef<MaplibreMarker[]>([]);
+  const userMarkerRef = useRef<MaplibreMarker | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [mapViewport, setMapViewport] = useState(0); // bump a chaque moveend -> recalcul photo-pins
   const [query, setQuery] = useState("");
@@ -343,6 +344,8 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
       cancelled = true;
       for (const m of photoMarkersRef.current) m.remove();
       photoMarkersRef.current = [];
+      userMarkerRef.current?.remove();
+      userMarkerRef.current = null;
       mapRef.current?.remove();
       mapRef.current = null;
     };
@@ -386,6 +389,51 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
       src.setData({ type: "FeatureCollection", features: [] });
     }
   }, [nearActive, geo.pos, mapReady]);
+
+  // Marqueur utilisateur : créé une seule fois quand une position existe + tri actif,
+  // retiré sinon. La POSITION est mise à jour par un effet séparé (Step 3) pour éviter
+  // une recréation (et un re-binding des handlers) à chaque drag.
+  const hasPos = geo.pos != null;
+  useEffect(() => {
+    const map = mapRef.current;
+    const maplibre = maplibreRef.current;
+    if (!map || !maplibre || !mapReady || !nearActive || !hasPos || !geo.pos) return;
+
+    const el = document.createElement("div");
+    el.title = t.youAreHere;
+    el.style.cssText =
+      "position:relative;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:grab;z-index:5";
+    const ring = document.createElement("div");
+    ring.style.cssText =
+      "position:absolute;width:44px;height:44px;border-radius:50%;background:rgba(11,94,120,.16);animation:cd-pulse 2s ease-out infinite";
+    const dot = document.createElement("div");
+    dot.style.cssText =
+      "width:18px;height:18px;border-radius:50%;background:#0B5E78;border:3px solid #fff;box-shadow:0 2px 8px rgba(7,40,52,.45)";
+    el.appendChild(ring);
+    el.appendChild(dot);
+
+    const marker = new maplibre.Marker({ element: el, anchor: "center", draggable: true })
+      .setLngLat([geo.pos.lon, geo.pos.lat])
+      .addTo(map);
+    marker.on("dragend", () => {
+      const ll = marker.getLngLat();
+      geo.setPosition(ll.lat, ll.lng);
+    });
+    userMarkerRef.current = marker;
+
+    return () => {
+      marker.remove();
+      userMarkerRef.current = null;
+    };
+    // geo.pos lu à la création seulement ; les MAJ de position passent par l'effet Step 3.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nearActive, mapReady, hasPos, t.youAreHere]);
+
+  // Met à jour la position du marqueur existant sans le recréer.
+  useEffect(() => {
+    const m = userMarkerRef.current;
+    if (m && geo.pos) m.setLngLat([geo.pos.lon, geo.pos.lat]);
+  }, [geo.pos]);
 
   // --- Photo-pins : au zoom, les meilleurs lieux visibles deviennent des
   // vignettes photo cliquables (DOM markers), les autres restent des points. ---
