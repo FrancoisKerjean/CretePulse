@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import type { BentoTiles } from "./bento-tiles";
 
 // Places scraped from cretanbeaches.com (cb_places table).
 // List payload excludes `description` (heavy); the explorer drawer
@@ -29,6 +30,7 @@ export interface CbPlace extends CbPlaceListItem {
   description: string | null;
   other_info: string | null;
   source_url: string | null;
+  bento_tiles: BentoTiles | null;
 }
 
 const LIST_FIELDS =
