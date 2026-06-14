@@ -21,11 +21,12 @@ def merge_osm_lines(relations):
             s = r["stop_slugs"]
             oriented.append(s if s[0] == a else list(reversed(s)))
         stops = max(oriented, key=lambda s: (len(s), s))   # tie-break déterministe
-        ref = next((r["ref"] for r in members if r["ref"]), None)
+        refs = sorted(r["ref"] for r in members if r["ref"])
+        ref = refs[0] if refs else None
         lines.append({
             "operator_id": operator, "origin": a, "dest": b,
             "stops": stops, "ref": ref,
-            "osm_ids": [r["osm_id"] for r in members],
+            "osm_ids": sorted(r["osm_id"] for r in members),
             "key": f"{a}|{b}|{operator}",
         })
     lines.sort(key=lambda l: l["key"])
