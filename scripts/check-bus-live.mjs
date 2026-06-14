@@ -127,4 +127,22 @@ const netDup = {
 };
 assert.equal(busesAt({ iso: "2026-06-15", minutes: 562 }, netDup).length, 1);
 
+// route RETOUR : Elounda -> Agios Nikolaos, départ 09:00, now 09:07 (547)
+const netRev = {
+  lines: new Map([[7, lineLAS07]]),
+  routes: [R(20, "Elounda", "Agios Nikolaos", {
+    line_id: 7, departures: ["09:00"],
+    departures_by_day: [{ days: "EVERY DAY", times: ["09:00"] }],
+  })],
+};
+const rbuses = busesAt({ iso: "2026-06-15", minutes: 547 }, netRev); // 7 min écoulées
+assert.equal(rbuses.length, 1);
+const rb = rbuses[0];
+assert.equal(rb.direction, "rev");
+assert.equal(rb.headsign, "Agios Nikolaos");
+// 7 min en sens arrière -> dParcours=2.0 km -> dGeo = 10-2 = 8.0 km (côté Elounda/Schisma)
+assert.ok(rb.lat > 35.22, `lat=${rb.lat} doit être côté nord (Elounda), pas en miroir`);
+// prochain arrêt dans le sens retour : Ellinika (à 7 min écoulées, profMin rev = [0,7,15,36,37])
+assert.equal(rb.nextStop, "Ellinika");
+
 console.log("OK check-bus-live: toutes les assertions passent");
