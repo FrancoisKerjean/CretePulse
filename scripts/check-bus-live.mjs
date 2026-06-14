@@ -1,7 +1,9 @@
 // Assertions du moteur bus-live. Run: node scripts/check-bus-live.mjs
 // (Node >= 23 : importe le .ts par type-stripping)
 import assert from "node:assert/strict";
-import { normalizePlace, placeSimilarity, orientRoute, elapsedToKm } from "../src/lib/bus-live/position.ts";
+import {
+  normalizePlace, placeSimilarity, orientRoute, elapsedToKm, kmToPoint,
+} from "../src/lib/bus-live/position.ts";
 
 // --- normalisation ----------------------------------------------------------
 assert.equal(normalizePlace("Chaniá"), "chania");
@@ -60,5 +62,18 @@ assert.equal(elapsedToKm(-5, pm, pk), 0.0);           // clamp avant départ
 assert.equal(elapsedToKm(99, pm, pk), 10.0);          // clamp après arrivée
 assert.equal(elapsedToKm(22, pm, pk), 5.9);           // pile sur Ellinika
 assert.ok(Math.abs(elapsedToKm(26, pm, pk) - 6.95) < 1e-9); // entre Ellinika et Schisma
+
+// polyline N-S le long de lng=25 (geometry en [lng,lat]) : 3 points
+// segment 0: (25,35.0)->(25,35.1) ≈ 11.12 km ; segment 1: ->(25,35.2) ≈ 11.12 km
+const geo = [[25, 35.0], [25, 35.1], [25, 35.2]];
+const p0 = kmToPoint(geo, 0);
+assert.ok(Math.abs(p0.lat - 35.0) < 1e-6 && Math.abs(p0.lng - 25) < 1e-6);
+const pHalf = kmToPoint(geo, 5.56);             // ~moitié du 1er segment
+assert.ok(pHalf.lat > 35.04 && pHalf.lat < 35.06);
+assert.ok(pHalf.bearing < 1 || pHalf.bearing > 359); // plein nord ≈ 0°
+const pSeg2 = kmToPoint(geo, 16.7);             // dans le 2e segment
+assert.ok(pSeg2.lat > 35.14 && pSeg2.lat < 35.16);
+const pEnd = kmToPoint(geo, 999);               // au-delà → dernier point
+assert.ok(Math.abs(pEnd.lat - 35.2) < 1e-6);
 
 console.log("OK check-bus-live: toutes les assertions passent");

@@ -4,6 +4,7 @@
 // allowImportingTsExtensions est activé donc tsc accepte l'extension).
 // Spec : docs/superpowers/specs/2026-06-15-bus-live-engine-design.md
 
+import { haversineKm } from "../geo.ts";
 import type { BusRoute } from "../buses";
 import type { LiveLine, LiveStop } from "./types";
 
@@ -79,4 +80,46 @@ export function elapsedToKm(elapsed: number, profMin: number[], profKm: number[]
   const span = profMin[i + 1] - profMin[i];
   const f = span > 0 ? (elapsed - profMin[i]) / span : 0;
   return profKm[i] + f * (profKm[i + 1] - profKm[i]);
+}
+
+export interface PointOnLine {
+  lat: number;
+  lng: number;
+  bearing: number; // cap du segment courant, sens seq 0 -> N
+}
+
+function bearingDeg(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const p1 = toRad(lat1), p2 = toRad(lat2), dl = toRad(lng2 - lng1);
+  const y = Math.sin(dl) * Math.cos(p2);
+  const x = Math.cos(p1) * Math.sin(p2) - Math.sin(p1) * Math.cos(p2) * Math.cos(dl);
+  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+}
+
+/** Point à `km` le long de la polyline (geometry en [lng,lat]) + cap. */
+export function kmToPoint(geometry: [number, number][], km: number): PointOnLine {
+  if (geometry.length === 0) return { lat: 0, lng: 0, bearing: 0 };
+  if (geometry.length === 1) {
+    return { lat: geometry[0][1], lng: geometry[0][0], bearing: 0 };
+  }
+  const target = Math.max(0, km);
+  let acc = 0;
+  for (let i = 0; i < geometry.length - 1; i++) {
+    const [lng1, lat1] = geometry[i];
+    const [lng2, lat2] = geometry[i + 1];
+    const segLen = haversineKm([lat1, lng1], [lat2, lng2]); // swap -> [lat,lng]
+    const last = i === geometry.length - 2;
+    if (acc + segLen >= target || last) {
+      const raw = segLen > 0 ? (target - acc) / segLen : 0;
+      const f = Math.min(1, Math.max(0, raw));
+      return {
+        lat: lat1 + f * (lat2 - lat1),
+        lng: lng1 + f * (lng2 - lng1),
+        bearing: bearingDeg(lat1, lng1, lat2, lng2),
+      };
+    }
+    acc += segLen;
+  }
+  const end = geometry[geometry.length - 1];
+  return { lat: end[1], lng: end[0], bearing: 0 };
 }
