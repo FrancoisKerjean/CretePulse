@@ -4,8 +4,14 @@
 // l'alias @/ et n'accepte pas les imports JSON sans attribute — même raison
 // que taxi-partners. Décision à l'exécution prévue par le plan (Task 1 Step 4).
 // Spec : docs/superpowers/specs/2026-06-12-car-rental-wizard-design.md
+//
+// SOURCE UNIQUE : ce fichier. Le rapport partenaire VPS (vps/partner_report.py)
+// ne peut pas importer du TS → on en génère une projection JSON versionnée via
+// `npm run gen:car-partners-json` → src/data/car-partners.json (déployée sur le
+// VPS comme taxi-partners.json). NE PAS éditer le JSON à la main ;
+// check-car-partners.mjs vérifie qu'il reste en phase avec ce fichier.
 
-export interface CarZone { id: string; pickups: string[] }
+export interface CarZone { id: string; label?: string; pickups: string[] }
 export interface CarPartner {
   zoneIds: string[]; name: string; email: string; phone: string;
   whatsapp?: string; website?: string; commission: number; since: string;
@@ -17,10 +23,10 @@ export interface CarPartner {
 
 // Slugs = clés existantes de SLUG_COORDS (taxi-fare.ts), vérifiés par check-car-partners.mjs.
 export const CAR_ZONES: CarZone[] = [
-  { id: "chania-west", pickups: ["chania-airport", "chania", "kissamos", "paleochora", "kalyves", "georgioupolis"] },
-  { id: "rethymno", pickups: ["rethymno", "plakias", "panormo", "bali"] },
-  { id: "heraklion-center", pickups: ["heraklion", "hersonissos", "malia", "matala", "agia-galini", "gouves"] },
-  { id: "lasithi-east", pickups: ["agios-nikolaos", "elounda", "sitia", "ierapetra", "makry-gyalos", "sisi"] },
+  { id: "chania-west", label: "Chania & the west", pickups: ["chania-airport", "chania", "kissamos", "paleochora", "kalyves", "georgioupolis"] },
+  { id: "rethymno", label: "Rethymno", pickups: ["rethymno", "plakias", "panormo", "bali"] },
+  { id: "heraklion-center", label: "Heraklion & central", pickups: ["heraklion", "hersonissos", "malia", "matala", "agia-galini", "gouves"] },
+  { id: "lasithi-east", label: "Lasithi & the east", pickups: ["agios-nikolaos", "elounda", "sitia", "ierapetra", "makry-gyalos", "sisi"] },
 ];
 
 export const CAR_PARTNERS: CarPartner[] = [

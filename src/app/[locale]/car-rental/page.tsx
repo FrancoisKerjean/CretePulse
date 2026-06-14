@@ -249,6 +249,7 @@ export async function generateMetadata(
   const { locale } = await params;
   setRequestLocale(locale);
   const m = META[locale] || META.en;
+  const ogImage = `${BASE_URL}/images/partners/car-rental.jpg`;
   return {
     title: m.title,
     description: m.desc,
@@ -258,6 +259,13 @@ export async function generateMetadata(
       description: m.desc,
       url: `${BASE_URL}/${locale}/car-rental`,
       type: "website",
+      images: [{ url: ogImage, width: 1200, height: 600, alt: m.title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: m.title,
+      description: m.desc,
+      images: [ogImage],
     },
   };
 }
