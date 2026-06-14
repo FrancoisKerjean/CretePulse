@@ -1,0 +1,2856 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-06-14T14:17:16Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "relation",
+  "id": 12320727,
+  "members": [
+    {
+      "type": "node",
+      "ref": 8426566054,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8426566058,
+      "role": "stop"
+    },
+    {
+      "type": "node",
+      "ref": 411493842,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 989046640,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8414938289,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8414938286,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8414938283,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8414938281,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8414938280,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8414938277,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 3673445484,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8485458436,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8414938272,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 5186606722,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8414938270,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 4424774889,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 7680987908,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 7680987905,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 7680987904,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 4424766038,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8414938269,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 4424758886,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 4424759413,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8429439036,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 4424734260,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 4424726532,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 4424707476,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 4424704214,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8414938266,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8429439034,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 3598993817,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 3616465362,
+      "role": "stop"
+    },
+    {
+      "type": "way",
+      "ref": 913941850,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 498339536,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 913941851,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 177585516,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 489937358,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 489686489,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 26267844,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 42255065,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1409170771,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1409170772,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1409170773,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 59604106,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 517046596,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 26813009,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 517046583,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 42126279,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1409170768,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1409170769,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1409170770,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 827392140,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 499313663,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 886353736,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1069712163,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 559584420,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1069712164,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 886353732,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 41531858,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 901241896,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 901241895,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 307986492,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 307986493,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 493208772,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 46140268,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 46140267,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 785235382,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 785235410,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 785235409,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1151372499,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 42307859,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 893735864,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 952785834,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 893735865,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 42307857,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 972363733,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 447972611,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 46140269,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 893622215,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 893622214,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822539186,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822539185,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822539184,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822539183,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822539182,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822539181,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822539180,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822539179,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 46140270,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 829677335,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 180913068,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 180913064,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 180913066,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 180913065,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835041315,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835041314,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 829677336,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 857408441,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 46140254,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 825235751,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 825235750,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 374979934,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 374979931,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822539170,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822539171,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835041313,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 926287113,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 818542394,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 818542393,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822615238,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1518529983,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1518529980,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1518529982,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1518529979,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1518529981,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 369252753,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 821832295,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 821832294,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 821832293,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 821832292,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 821832290,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 821832291,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822633326,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822633325,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 821832217,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 821832218,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 307574431,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 926287112,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 62256181,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 818542410,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 818542409,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 62256182,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 377721434,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835102620,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835102619,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835102617,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835102616,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835041278,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835102609,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 829677279,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 829677278,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 829677281,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 829677280,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 26183078,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 435705889,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835041285,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835041286,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 62256183,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 740926668,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 740926667,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835041296,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835041295,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 435705888,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 44033419,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835041302,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 35417335,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1116724352,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 166362399,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 372800718,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 740926666,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 740926665,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 62256178,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 44033408,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 62256179,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 46140253,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 372944901,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 740926664,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 740926663,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 62256180,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 687776976,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 559586522,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1011908901,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 687776977,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 35417314,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 907818425,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 35417283,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 35417301,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 35417298,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 519059375,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 35417307,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 368363567,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 519059381,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1304559105,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1304559106,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 276056025,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1304559108,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1304559107,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 440390308,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 46140356,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 75912661,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 358715141,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 180923032,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 972357543,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 972357541,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 4821844,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 356136765,
+      "role": ""
+    }
+  ],
+  "tags": {
+    "from": "ΑΓΙΟΣ ΝΙΚΟΛΑΟΣ",
+    "name": "Bus AGIOS NIKOLAOS => SITIA",
+    "operator": "ΚΤΕΛ ΗΡΑΚΛΕΙΟΥ-ΛΑΣΙΘΙΟΥ ΑΕ",
+    "public_transport:version": "2",
+    "route": "bus",
+    "to": "ΣΗΤΕΙΑ",
+    "type": "route"
+  }
+},
+{
+  "type": "relation",
+  "id": 12325536,
+  "members": [
+    {
+      "type": "node",
+      "ref": 3616465362,
+      "role": "stop"
+    },
+    {
+      "type": "node",
+      "ref": 3598993817,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 4424697972,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8414938267,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8414938268,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 4424707477,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 4424726533,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 4424734261,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8429439035,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8429602954,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 4424758887,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 7680987921,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 4424766039,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8429439037,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8429439038,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8429439039,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 4424772787,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8414938271,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 5186606821,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8414938273,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8485458437,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8414938274,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8414938278,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8414938279,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8414938282,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8414938284,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8414938285,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8414938290,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8489692449,
+      "role": "platform"
+    },
+    {
+      "type": "node",
+      "ref": 8426566058,
+      "role": "stop"
+    },
+    {
+      "type": "node",
+      "ref": 8426566054,
+      "role": "platform"
+    },
+    {
+      "type": "way",
+      "ref": 907662419,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 907818427,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 907818426,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 972356308,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 94846517,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 972357542,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 930699895,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 972357545,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 972357544,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 180923031,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 358715141,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 75912661,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 46140356,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 440390308,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1304559107,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1304559108,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 276056025,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1304559106,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1304559105,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 519059383,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 559586521,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 368363567,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 35417307,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 519059375,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 35417298,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 35417301,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 35417283,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 687776978,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1119403042,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1119403041,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 800985985,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 115682625,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 687776976,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 62256180,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 740926663,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 740926664,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 372944901,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 46140253,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 62256179,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 44033408,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 62256178,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 740926665,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 740926666,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 372800718,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 166362399,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1116724352,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 35417335,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835041302,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 44033419,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 435705888,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835041295,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835041296,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 740926667,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 740926668,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 62256183,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835041286,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835041285,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 435705889,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 26183078,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 829677280,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 829677281,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 829677278,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 829677279,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835102609,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835041278,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835102616,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835102617,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835102619,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835102620,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 377721434,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 62256182,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 818542409,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 818542410,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 62256181,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 926287112,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 307574431,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 821832218,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 821832217,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822633325,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822633326,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 821832291,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 821832290,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 821832292,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 821832293,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 821832294,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 821832295,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 369252753,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1518529982,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1518529979,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1518529981,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1518529980,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1518529983,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822615238,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 818542393,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 818542394,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 926287113,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835041313,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822539171,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822539170,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 374979931,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 374979934,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 825235750,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 825235751,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 46140254,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 857408441,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 829677336,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835041314,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 835041315,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 180913065,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 180913066,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 180913064,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 180913068,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 829677335,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 46140270,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822539179,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822539180,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822539181,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822539182,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822539183,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822539184,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822539185,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 822539186,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 893622214,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 893622215,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 46140269,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 447972611,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 972363733,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 42307857,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 893735865,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 952785834,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 893735864,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 42307859,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 785235400,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 785235407,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 785235376,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 46140267,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 46140268,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 493208772,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 307986493,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 307986492,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 901241895,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 901241896,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 41531858,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 886353731,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 519076138,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 972374708,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 517045649,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 517045652,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1409170768,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1409170769,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1409170770,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 827392140,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 517046588,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 827392135,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 517046592,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 517046599,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1409170771,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1409170772,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 1409170773,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 59604106,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 180847325,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 180847322,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 41900441,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 850945455,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 26779202,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 489686489,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 489937358,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 907493819,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 42200328,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 699440539,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 907493820,
+      "role": ""
+    },
+    {
+      "type": "way",
+      "ref": 913941850,
+      "role": ""
+    }
+  ],
+  "tags": {
+    "from": "ΣΗΤΕΙΑ",
+    "name": "Bus SITIA => AGIOS NIKOLAOS",
+    "operator": "ΚΤΕΛ ΗΡΑΚΛΕΙΟΥ-ΛΑΣΙΘΙΟΥ ΑΕ",
+    "public_transport:version": "2",
+    "route": "bus",
+    "to": "ΑΓΙΟΣ ΝΙΚΟΛΑΟΣ",
+    "type": "route"
+  }
+},
+{
+  "type": "node",
+  "id": 411493842,
+  "lat": 35.1901040,
+  "lon": 25.7137110,
+  "tags": {
+    "bench": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "note": "Opposite direction?",
+    "operator": "ΚΤΕΛ ΗΡΑΚΛΕΙΟΥ-ΛΑΣΙΘΙΟΥ ΑΕ;ΑΣΤΙΚΟ ΚΤΕΛ",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 989046640,
+  "lat": 35.1864805,
+  "lon": 25.7089684,
+  "tags": {
+    "bench": "yes",
+    "bin": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "no",
+    "note": "Opposite direction?",
+    "public_transport": "platform",
+    "shelter": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 3598993817,
+  "lat": 35.2044492,
+  "lon": 26.1043470,
+  "tags": {
+    "name": "ΣΗΤΕΙΑ",
+    "name:el": "ΣΗΤΕΙΑ",
+    "name:en": "SITIA",
+    "public_transport": "platform"
+  }
+},
+{
+  "type": "node",
+  "id": 3616465362,
+  "lat": 35.2045275,
+  "lon": 26.1043027,
+  "tags": {
+    "bus": "yes",
+    "name": "ΣΗΤΕΙΑ",
+    "name:el": "ΣΗΤΕΙΑ",
+    "name:en": "SITIA",
+    "public_transport": "stop_position"
+  }
+},
+{
+  "type": "node",
+  "id": 3673445484,
+  "lat": 35.1251004,
+  "lon": 25.7386907,
+  "tags": {
+    "bench": "yes",
+    "bin": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 4424697972,
+  "lat": 35.2073888,
+  "lon": 26.0955641,
+  "tags": {
+    "bench": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "ETHNIKO STADIO",
+    "name:en": "ETHNIKO STADIO",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 4424704214,
+  "lat": 35.1787625,
+  "lon": 26.0405330,
+  "tags": {
+    "bench": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "ΣΚΟΠΗ",
+    "name:el": "ΣΚΟΠΗ",
+    "name:en": "SKOPI",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 4424707476,
+  "lat": 35.1744892,
+  "lon": 26.0190299,
+  "tags": {
+    "bench": "yes",
+    "highway": "bus_stop",
+    "name": "ΧΑΜΕΖΙ",
+    "name:el": "ΧΑΜΕΖΙ",
+    "name:en": "CHAMEZI",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 4424707477,
+  "lat": 35.1745713,
+  "lon": 26.0189790,
+  "tags": {
+    "highway": "bus_stop",
+    "name": "ΧΑΜΕΖΙ",
+    "name:el": "ΧΑΜΕΖΙ",
+    "name:en": "CHAMEZI",
+    "public_transport": "platform"
+  }
+},
+{
+  "type": "node",
+  "id": 4424726532,
+  "lat": 35.1671367,
+  "lon": 25.9883326,
+  "tags": {
+    "bench": "no",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "no",
+    "name": "ΕΞΩ ΜΟΥΛΙΑΝΑ",
+    "name:el": "ΕΞΩ ΜΟΥΛΙΑΝΑ",
+    "name:en": "EXO MOULIANA",
+    "public_transport": "platform",
+    "shelter": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 4424726533,
+  "lat": 35.1672259,
+  "lon": 25.9882655,
+  "tags": {
+    "bench": "yes",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "yes",
+    "name": "ΕΞΩ ΜΟΥΛΙΑΝΑ",
+    "name:el": "ΕΞΩ ΜΟΥΛΙΑΝΑ",
+    "name:en": "EXO MOULIANA",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 4424734260,
+  "lat": 35.1596863,
+  "lon": 25.9710482,
+  "tags": {
+    "bench": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "ΜΕΣΑ ΜΟΥΛΙΑΝΑ",
+    "name:el": "ΜΕΣΑ ΜΟΥΛΙΑΝΑ",
+    "name:en": "MESA MOULIANA",
+    "network": "KTEL",
+    "network:wikidata": "Q1391110",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 4424734261,
+  "lat": 35.1598115,
+  "lon": 25.9710314,
+  "tags": {
+    "bench": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "ΜΕΣΑ ΜΟΥΛΙΑΝΑ",
+    "name:el": "ΜΕΣΑ ΜΟΥΛΙΑΝΑ",
+    "name:en": "MESA MOULIANA",
+    "network": "KTEL",
+    "network:wikidata": "Q1391110",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 4424758886,
+  "lat": 35.1545747,
+  "lon": 25.9234587,
+  "tags": {
+    "bench": "yes",
+    "highway": "bus_stop",
+    "name": "ΣΦΑΚΑ",
+    "name:el": "ΣΦΑΚΑ",
+    "name:en": "SFAKA",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 4424758887,
+  "lat": 35.1547353,
+  "lon": 25.9229573,
+  "tags": {
+    "bench": "yes",
+    "highway": "bus_stop",
+    "name": "ΣΦΑΚΑ",
+    "name:el": "ΣΦΑΚΑ",
+    "name:en": "SFAKA",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 4424759413,
+  "lat": 35.1586518,
+  "lon": 25.9398702,
+  "tags": {
+    "highway": "bus_stop",
+    "name": "ΤΟΥΡΛΩΤΗ",
+    "name:el": "ΤΟΥΡΛΩΤΗ",
+    "name:en": "TOURLOTI",
+    "public_transport": "platform"
+  }
+},
+{
+  "type": "node",
+  "id": 4424766038,
+  "lat": 35.1233188,
+  "lon": 25.8580299,
+  "tags": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "ΚΑΒΟΥΣΙ",
+    "name:el": "ΚΑΒΟΥΣΙ",
+    "name:en": "KAVOUSI",
+    "network": "ΚΤΕΛ Hρακλείου-Λασιθίου",
+    "public_transport": "platform",
+    "shelter": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 4424766039,
+  "lat": 35.1234637,
+  "lon": 25.8582090,
+  "tags": {
+    "bench": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "ΚΑΒΟΥΣΙ",
+    "name:el": "ΚΑΒΟΥΣΙ",
+    "name:en": "KAVOUSI",
+    "network": "ΚΤΕΛ Hρακλείου-Λασιθίου",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 4424772787,
+  "lat": 35.1091132,
+  "lon": 25.8048485,
+  "tags": {
+    "bench": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Παχειά Άμμος",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 4424774889,
+  "lat": 35.1090186,
+  "lon": 25.8049748,
+  "tags": {
+    "bench": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Παχειά Άμμος",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 5186606722,
+  "lat": 35.1111144,
+  "lon": 25.7926099,
+  "tags": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "ΓΟΥΡΝΙΑ",
+    "name:el": "ΓΟΥΡΝΙΑ",
+    "name:en": "GOURNIA",
+    "public_transport": "platform"
+  }
+},
+{
+  "type": "node",
+  "id": 5186606821,
+  "lat": 35.1112403,
+  "lon": 25.7924846,
+  "tags": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "ΓΟΥΡΝΙΑ",
+    "name:el": "ΓΟΥΡΝΙΑ",
+    "name:en": "GOURNIA",
+    "public_transport": "platform"
+  }
+},
+{
+  "type": "node",
+  "id": 7680987904,
+  "lat": 35.1170671,
+  "lon": 25.8472856,
+  "tags": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "public_transport": "platform"
+  }
+},
+{
+  "type": "node",
+  "id": 7680987905,
+  "lat": 35.1087764,
+  "lon": 25.8330857,
+  "tags": {
+    "bench": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "public_transport": "platform",
+    "shelter": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 7680987908,
+  "lat": 35.1058412,
+  "lon": 25.8176327,
+  "tags": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Δ.ΞΗΡΌΚΑΜΠΟΣ",
+    "name:el": "Δ.ΞΗΡΌΚΑΜΠΟΣ",
+    "name:en": "CROSS XIROKAMPOS",
+    "note": "Name should be validated",
+    "public_transport": "platform",
+    "shelter": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 7680987921,
+  "lat": 35.1573313,
+  "lon": 25.8946732,
+  "tags": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "public_transport": "platform"
+  }
+},
+{
+  "type": "node",
+  "id": 8414938266,
+  "lat": 35.1942838,
+  "lon": 26.0726965,
+  "tags": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "public_transport": "platform"
+  }
+},
+{
+  "type": "node",
+  "id": 8414938267,
+  "lat": 35.1945381,
+  "lon": 26.0726938,
+  "tags": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "public_transport": "platform"
+  }
+},
+{
+  "type": "node",
+  "id": 8414938268,
+  "lat": 35.1788826,
+  "lon": 26.0405709,
+  "tags": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "ΣΚΟΠΗ",
+    "name:el": "ΣΚΟΠΗ",
+    "name:en": "SKOPI",
+    "public_transport": "platform"
+  }
+},
+{
+  "type": "node",
+  "id": 8414938269,
+  "lat": 35.1570123,
+  "lon": 25.8949256,
+  "tags": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "public_transport": "platform"
+  }
+},
+{
+  "type": "node",
+  "id": 8414938270,
+  "lat": 35.1092542,
+  "lon": 25.7996763,
+  "tags": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "public_transport": "platform"
+  }
+},
+{
+  "type": "node",
+  "id": 8414938271,
+  "lat": 35.1093903,
+  "lon": 25.7996160,
+  "tags": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "network": "KTEL",
+    "network:wikidata": "Q1391110",
+    "public_transport": "platform"
+  }
+},
+{
+  "type": "node",
+  "id": 8414938272,
+  "lat": 35.1244959,
+  "lon": 25.7463232,
+  "tags": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "MISTRAL MARE",
+    "public_transport": "platform"
+  }
+},
+{
+  "type": "node",
+  "id": 8414938273,
+  "lat": 35.1246198,
+  "lon": 25.7459434,
+  "tags": {
+    "bench": "yes",
+    "bin": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "MISTRAL MARE",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 8414938274,
+  "lat": 35.1252363,
+  "lon": 25.7386762,
+  "tags": {
+    "bench": "yes",
+    "bin": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 8414938277,
+  "lat": 35.1207346,
+  "lon": 25.7318996,
+  "tags": {
+    "bench": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 8414938278,
+  "lat": 35.1209046,
+  "lon": 25.7318580,
+  "tags": {
+    "bench": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 8414938279,
+  "lat": 35.1212578,
+  "lon": 25.7271078,
+  "tags": {
+    "bench": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 8414938280,
+  "lat": 35.1211821,
+  "lon": 25.7269442,
+  "tags": {
+    "bench": "yes",
+    "bin": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 8414938281,
+  "lat": 35.1267862,
+  "lon": 25.7246724,
+  "tags": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Β. ΠΑΓΚΑΛΟΥ",
+    "name:el": "Β. ΠΑΓΚΑΛΟΥ",
+    "name:en": "V. PAGALOU",
+    "public_transport": "platform"
+  }
+},
+{
+  "type": "node",
+  "id": 8414938282,
+  "lat": 35.1269672,
+  "lon": 25.7246751,
+  "tags": {
+    "bench": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Β. ΠΑΓΚΑΛΟΥ",
+    "name:el": "Β. ΠΑΓΚΑΛΟΥ",
+    "name:en": "V. PAGALOU",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 8414938283,
+  "lat": 35.1332881,
+  "lon": 25.7156789,
+  "tags": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "public_transport": "platform"
+  }
+},
+{
+  "type": "node",
+  "id": 8414938284,
+  "lat": 35.1334603,
+  "lon": 25.7159284,
+  "tags": {
+    "bench": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "public_transport": "platform"
+  }
+},
+{
+  "type": "node",
+  "id": 8414938285,
+  "lat": 35.1486821,
+  "lon": 25.7184577,
+  "tags": {
+    "bench": "yes",
+    "highway": "bus_stop",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 8414938286,
+  "lat": 35.1478690,
+  "lon": 25.7180239,
+  "tags": {
+    "highway": "bus_stop",
+    "public_transport": "platform"
+  }
+},
+{
+  "type": "node",
+  "id": 8414938289,
+  "lat": 35.1774137,
+  "lon": 25.7087468,
+  "tags": {
+    "bench": "no",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "public_transport": "platform",
+    "shelter": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 8414938290,
+  "lat": 35.1773849,
+  "lon": 25.7088913,
+  "tags": {
+    "bench": "no",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "public_transport": "platform",
+    "shelter": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 8426566054,
+  "lat": 35.1928032,
+  "lon": 25.7118320,
+  "tags": {
+    "bench": "yes",
+    "bin": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "int_name": "AGIOS NIKOLAOS",
+    "name": "ΑΓΙΟΣ ΝΙΚΟΛΑΟΣ",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 8426566058,
+  "lat": 35.1928158,
+  "lon": 25.7118246,
+  "tags": {
+    "bus": "yes",
+    "name": "ΑΓΙΟΣ ΝΙΚΟΛΑΟΣ",
+    "public_transport": "stop_position"
+  }
+},
+{
+  "type": "node",
+  "id": 8429439034,
+  "lat": 35.2072825,
+  "lon": 26.0954261,
+  "tags": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "ETHNIKO STADIO",
+    "name:en": "ETHNIKO STADIO",
+    "public_transport": "platform"
+  }
+},
+{
+  "type": "node",
+  "id": 8429439035,
+  "lat": 35.1680990,
+  "lon": 25.9465340,
+  "tags": {
+    "highway": "bus_stop",
+    "name": "ΜΥΡΣΙΝΗ",
+    "name:el": "ΜΥΡΣΙΝΗ",
+    "name:en": "MYRSINI",
+    "public_transport": "platform"
+  }
+},
+{
+  "type": "node",
+  "id": 8429439036,
+  "lat": 35.1679345,
+  "lon": 25.9468210,
+  "tags": {
+    "highway": "bus_stop",
+    "name": "ΜΥΡΣΙΝΗ",
+    "name:el": "ΜΥΡΣΙΝΗ",
+    "name:en": "MYRSINI",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 8429439037,
+  "lat": 35.1170279,
+  "lon": 25.8468966,
+  "tags": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 8429439038,
+  "lat": 35.1088549,
+  "lon": 25.8329679,
+  "tags": {
+    "bench": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "public_transport": "platform",
+    "shelter": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 8429439039,
+  "lat": 35.1059245,
+  "lon": 25.8176894,
+  "tags": {
+    "bus": "yes",
+    "highway": "bus_stop",
+    "name": "Δ.ΞΗΡΌΚΑΜΠΟΣ",
+    "name:el": "Δ.ΞΗΡΌΚΑΜΠΟΣ",
+    "name:en": "CROSS XIROKAMPOS",
+    "note": "Name should be validated",
+    "public_transport": "platform"
+  }
+},
+{
+  "type": "node",
+  "id": 8429602954,
+  "lat": 35.1587546,
+  "lon": 25.9398466,
+  "tags": {
+    "highway": "bus_stop",
+    "name": "ΤΟΥΡΛΩΤΗ",
+    "name:el": "ΤΟΥΡΛΩΤΗ",
+    "name:en": "TOURLOTI",
+    "public_transport": "platform"
+  }
+},
+{
+  "type": "node",
+  "id": 8485458436,
+  "lat": 35.1250455,
+  "lon": 25.7421684,
+  "tags": {
+    "bench": "no",
+    "bin": "no",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "no",
+    "name": "VOULISMA",
+    "public_transport": "platform",
+    "shelter": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 8485458437,
+  "lat": 35.1251881,
+  "lon": 25.7422248,
+  "tags": {
+    "bench": "yes",
+    "bin": "yes",
+    "bus": "yes",
+    "highway": "bus_stop",
+    "lit": "yes",
+    "name": "VOULISMA",
+    "public_transport": "platform",
+    "shelter": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 8489692449,
+  "lat": 35.1883967,
+  "lon": 25.7151438,
+  "tags": {
+    "bin": "no",
+    "bus": "yes",
+    "covered": "no",
+    "highway": "bus_stop",
+    "operator": "ΚΤΕΛ ΗΡΑΚΛΕΙΟΥ-ΛΑΣΙΘΙΟΥ ΑΕ",
+    "passenger_information_display": "yes",
+    "public_transport": "platform"
+  }
+}
+
+  ]
+}
