@@ -4,6 +4,9 @@
 // allowImportingTsExtensions est activé donc tsc accepte l'extension).
 // Spec : docs/superpowers/specs/2026-06-15-bus-live-engine-design.md
 
+import type { BusRoute } from "../buses";
+import type { LiveLine, LiveStop } from "./types";
+
 /** Normalise un nom de lieu : minuscules, sans diacritiques, alphanum + espaces. */
 export function normalizePlace(s: string): string {
   return s
@@ -37,4 +40,31 @@ export function placeSimilarity(a: string, b: string): number {
     if (c > 0) { inter++; count.set(g, c - 1); }
   }
   return (2 * inter) / (ba.length + bb.length);
+}
+
+export interface OrientedRoute {
+  reversed: boolean;
+  profMin: number[];      // minutes cumulées dans le sens de parcours, k=0..N
+  profKm: number[];       // km cumulés dans le sens de parcours
+  orientedStops: LiveStop[];
+  lengthKm: number;
+}
+
+/** Oriente la route sur la géométrie de la ligne (stockée seq0→N). */
+export function orientRoute(route: BusRoute, line: LiveLine): OrientedRoute {
+  const stops = line.stops;
+  const N = stops.length - 1;
+  const m = stops.map((s) => s.cumMin);
+  const c = stops.map((s) => s.cumKm);
+  const L = c[N];
+  const simFirst = placeSimilarity(route.from_place, stops[0].name);
+  const simLast = placeSimilarity(route.from_place, stops[N].name);
+  const reversed = simLast > simFirst; // from ≈ seqN → arrière
+  if (!reversed) {
+    return { reversed, profMin: m, profKm: c, orientedStops: stops, lengthKm: L };
+  }
+  const profMin = m.map((_, k) => m[N] - m[N - k]);
+  const profKm = c.map((_, k) => L - c[N - k]);
+  const orientedStops = [...stops].reverse();
+  return { reversed, profMin, profKm, orientedStops, lengthKm: L };
 }
