@@ -73,7 +73,5 @@ def test_match_against_real_fixture_doesnt_explode():
              "matala":   {"slug": "matala",   "lat": 34.99, "lng": 24.74}}
     aliases = {"heraklion": "erakleio"}
     matched, gaps = match_routes_to_lines(routes, lines, stops, aliases, place_coords={})
-    # au moins une route Heraklion↔Matala matche
-    assert any(line_id == 10 for line_id in matched.values()) or any(
-        ("herlas", frozenset({"erakleio", "matala"})) == key for key in gaps
-    )
+    # au moins une route Heraklion↔Matala matche la ligne 10 (alias résout les deux terminus)
+    assert 10 in matched.values()
