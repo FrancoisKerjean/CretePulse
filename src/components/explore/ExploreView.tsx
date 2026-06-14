@@ -179,6 +179,14 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
   const [nearActive, setNearActive] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
 
+  // L'indice est instructif et transitoire : auto-effacement après 6 s pour qu'il
+  // ne reste pas collé (ex. GPS refusé sans drag). Réinitialisé à chaque nouvel indice.
+  useEffect(() => {
+    if (!hint) return;
+    const id = window.setTimeout(() => setHint(null), 6000);
+    return () => window.clearTimeout(id);
+  }, [hint]);
+
   const familyTypes = useMemo(() => {
     if (!family) return null;
     const fam = FAMILIES.find((f) => f.key === family);
@@ -637,7 +645,12 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
 
       {hint && (
         <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30 pointer-events-none max-w-[90%] md:max-w-md">
-          <div className="bg-aegean text-white text-xs font-semibold px-3.5 py-2 rounded-full shadow-[0_8px_22px_rgba(11,94,120,0.35)] text-center">
+          <div
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            className="bg-aegean text-white text-xs font-semibold px-3.5 py-2 rounded-full shadow-[0_8px_22px_rgba(11,94,120,0.35)] text-center"
+          >
             {hint}
           </div>
         </div>
