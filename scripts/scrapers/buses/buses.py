@@ -33,7 +33,6 @@ from parsers import (
 from durations import enrich_durations
 from prices import enrich_prices
 from store import replace_operator_routes, should_commit
-from build_network import build_network
 
 try:
     from dotenv import load_dotenv
@@ -228,18 +227,9 @@ def main():
             continue
         n = replace_operator_routes(sb, op_id, src, rows)
         log(f"OK {op_id}: {n} routes written")
-    # Réseau dérivé (arrêts + lignes + séquences) reconstruit après le scrape.
-    # Ne build que si au moins un opérateur a commité ses routes ce run.
-    committed = len(plan) - len(failures)
-    if committed > 0:
-        try:
-            ns, nl, nls = build_network(sb)
-            log(f"OK network: {ns} stops, {nl} lines, {nls} line_stops")
-        except Exception as e:
-            log(f"network build skipped: {e}")
-            send_telegram(f"Bus network build failed: {e}")
-    else:
-        log("network build skipped: no operator committed")
+    # Réseau (arrêts/lignes/séquences) : désormais construit depuis OSM par
+    # osm_network.py (cron dédié), plus depuis les titres KTEL. bus_routes reste
+    # la source des horaires (apparié aux lignes OSM en SP2).
     if failures:
         send_telegram("Bus scraper warning:\n" + "\n".join(failures))
 
