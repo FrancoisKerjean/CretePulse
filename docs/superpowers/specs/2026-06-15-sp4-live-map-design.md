@@ -5,7 +5,7 @@
 **Statut** : design validé, prêt pour plan d'implémentation
 **Prédécesseurs** :
 - SP1 (`2026-06-14-osm-bus-network-ingestion-design.md`) : réseau OSM en prod (489 stops / 78 lignes / 835 line_stops, `geometry` + `bus_line_stops.cumulative_km/minutes`).
-- SP2 (`2026-06-14-ktel-apparier-design.md`) : horaires KTEL appariés aux tracés. Code prêt (129 tests verts), déploiement VPS = Task 8 (en attente GO Kami). Fournit `bus_routes.line_id`.
+- SP2 (`2026-06-14-ktel-apparier-design.md`) : horaires KTEL appariés aux tracés. **Déployé en prod le 15/06** : `bus_routes.line_id` peuplé (196 routes appariées, ~48 % des paires) + 78 lignes fallback `source='ktel'`. La dépendance de SP4 est levée.
 
 ## Vision
 
@@ -35,7 +35,7 @@ La donnée nécessaire existe déjà en base (Postgres self-hosted VPS, lu via P
 | Infra | **Zéro temps réel** : tout se calcule dans le navigateur à partir des horaires/tracés. |
 | Surface | Nouvelle page `/live`, carte **MapLibre** géographique. Pas le SVG Beck (réservé SEO). |
 | Honnêteté | Badge « estimé selon l'horaire ». Le style « EN DIRECT » reste en réserve pour le GPS. |
-| Découplage SP2 | Démarrer sur **N lignes** via mapping temporaire horaire<->tracé ; bascule « tout le réseau » dès que `bus_routes.line_id` est en prod, sans toucher au moteur. |
+| Source réseau | `bus_routes.line_id` (SP2, **en prod depuis le 15/06**) joint horaires et tracés. v1 affiche les lignes appariées (~48 % et croissant) ; les lignes sans `line_id` sont ignorées. Mapping temporaire = secours, plus nécessaire. |
 | Fuseau | Heure de référence = **Europe/Athens** (les `departures` KTEL sont en heure locale Crète, le visiteur peut être ailleurs). |
 | Charte | Palette aegean/terra/sand, chiffres en mono, pastille live pulsante (cohérent design « données vivantes » 11/06). |
 
@@ -76,7 +76,7 @@ Fonctions pures séparées et testées : `activeDepartures()`, `elapsedToKm()`, 
 
 ## Dépendances & déploiement
 
-- **Données** : SP1 en prod (tracés/arrêts) -> OK. SP2 (`bus_routes.line_id`) pour « tous les bus » -> code prêt, deploy VPS = main de Kami. Démarrage sans SP2 via mapping temporaire.
+- **Données** : SP1 (tracés/arrêts) **et SP2** (`bus_routes.line_id`, 196 routes) **tous deux en prod le 15/06** -> SP4 joint horaires<->tracés directement, aucun mapping requis. La couverture (~48 % des paires) monte avec la curation des alias KTEL ; les lignes sans `line_id` ne sont pas affichées en v1.
 - **MapLibre** : déjà installé (utilisé par `ExploreView`).
 - **Déploiement** : preview Vercel d'abord (voir la carte bouger hors prod). Merge `master` -> `main` = acte conscient, après validation Kami. SP4 est la première surface front qui lit `bus_lines`/`bus_line_stops`/`bus_routes`.
 
