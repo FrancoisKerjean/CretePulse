@@ -18,8 +18,7 @@ export function ActivityNudge() {
   const pathname = usePathname();
   const t = useTranslations("activityNudge");
   const [open, setOpen] = useState(false);
-  // Focus falls on the "Later" button (next-intl Link does not forward ref in this codebase)
-  const laterRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   // Armement des déclencheurs (20 s OU scroll > 60 %), selon route + persistance.
   useEffect(() => {
@@ -59,12 +58,13 @@ export function ActivityNudge() {
     // la navigation est gérée par <Link href="/match">
   }, []);
 
-  // Verrou de scroll, focus initial, fermeture par Échap.
+  // Verrou de scroll, focus initial, fermeture par Échap, restitution du focus.
   useEffect(() => {
     if (!open) return;
+    const prevActive = document.activeElement as HTMLElement | null;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    laterRef.current?.focus();
+    dialogRef.current?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") handleLater();
     };
@@ -72,6 +72,7 @@ export function ActivityNudge() {
     return () => {
       document.body.style.overflow = prevOverflow;
       window.removeEventListener("keydown", onKey);
+      prevActive?.focus?.();
     };
   }, [open, handleLater]);
 
@@ -79,7 +80,9 @@ export function ActivityNudge() {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      ref={dialogRef}
+      tabIndex={-1}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 outline-none"
       role="dialog"
       aria-modal="true"
       aria-labelledby="activity-nudge-title"
@@ -119,7 +122,6 @@ export function ActivityNudge() {
             {t("cta")}
           </Link>
           <button
-            ref={laterRef}
             type="button"
             onClick={handleLater}
             className="rounded-full px-5 py-2 text-sm font-medium text-foreground/60 transition hover:text-foreground"
