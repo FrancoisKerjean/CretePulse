@@ -76,6 +76,10 @@ def assemble_network(routes, place_coords, cb_index, fetch=None, nominatim=None,
     lines, line_stops = [], []
     for ln in lines_raw:
         code = codes[ln["key"]]
+        # Invariant : tout slug de ln["stops"] vient de route_sequence (stop_slug),
+        # comme les clés de stop_by_slug (collect_stops/stop_slug) -> le filtre ne
+        # retire jamais rien, donc seq_stops et ln["stops"] restent index-alignés
+        # avec cum_km/profile ci-dessous (la garde `if s in stop_by_slug` est défensive).
         seq_stops = [stop_by_slug[s] for s in ln["stops"] if s in stop_by_slug]
         geo = build_geometry(seq_stops, fetch=fetch)
         total = dur_by_termini.get(frozenset({ln["origin"], ln["dest"]}))
