@@ -20,7 +20,9 @@ def test_merge_bidirectional_is_one_line():
     ]
     lines = merge_into_lines(routes)
     assert len(lines) == 1
-    assert lines[0]["origin"] in ("heraklion", "sitia")
+    # orientation canonique = terminus alphabétiquement premier (invariant testé)
+    assert lines[0]["origin"] == "heraklion"
+    assert lines[0]["dest"] == "sitia"
 
 def test_merge_distinct_corridors_stay_separate():
     routes = [

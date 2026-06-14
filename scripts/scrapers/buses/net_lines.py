@@ -35,8 +35,9 @@ def merge_into_lines(routes):
         for seq, r in members:
             oriented.append(seq if seq[0] == a else list(reversed(seq)))
         # superset = la plus longue séquence observée (conservateur : on ne fabrique
-        # pas d'ordre inédit en combinant des séquences partielles)
-        stops = max(oriented, key=len)
+        # pas d'ordre inédit en combinant des séquences partielles). Tie-break sur la
+        # séquence elle-même = déterministe entre builds (stabilité des codes PREF-NN).
+        stops = max(oriented, key=lambda s: (len(s), s))
         route_ids = [r.get("id") for _, r in members if r.get("id") is not None]
         lines.append({
             "operator_id": operator,
