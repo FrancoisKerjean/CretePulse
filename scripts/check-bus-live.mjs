@@ -1,6 +1,7 @@
 // Assertions du moteur bus-live. Run: node scripts/check-bus-live.mjs
 // (Node >= 23 : importe le .ts par type-stripping)
 import assert from "node:assert/strict";
+import { readFileSync, existsSync } from "node:fs";
 import {
   normalizePlace, placeSimilarity, orientRoute, elapsedToKm, kmToPoint,
   activeDepartures, busesAt,
@@ -167,5 +168,38 @@ assert.equal(kbuses.length, 1);
 assert.equal(kbuses[0].degraded, true);
 assert.ok(Math.abs(kbuses[0].progress - 0.5) < 1e-6);
 assert.ok(kbuses[0].lat > 35.09 && kbuses[0].lat < 35.11); // ~milieu du segment droit
+
+// --- intégration sur fixture réelle (sautée si absente) ---------------------
+const FIXTURE = "src/lib/bus-live/fixtures/bus_live_sample.json";
+if (existsSync(FIXTURE)) {
+  const raw = JSON.parse(readFileSync(FIXTURE, "utf8"));
+  const stopById = new Map(raw.stops.map((s) => [s.id, s]));
+  const stopsByLine = new Map();
+  for (const ls of raw.lineStops) {
+    const s = stopById.get(ls.stop_id); if (!s) continue;
+    const arr = stopsByLine.get(ls.line_id) ?? [];
+    arr.push({ seq: ls.seq, slug: s.slug, name: s.name, lat: s.lat, lng: s.lng, cumKm: ls.cumulative_km ?? 0, cumMin: ls.cumulative_minutes ?? 0 });
+    stopsByLine.set(ls.line_id, arr);
+  }
+  const lines = new Map();
+  for (const l of raw.lines) {
+    const stops = stopsByLine.get(l.id) ?? [];
+    if (stops.length < 2 || !(l.total_minutes > 0)) continue;
+    let geometry = l.geometry ?? []; let partialGeo = l.partial_geo ?? false;
+    if (geometry.length < 2) { const a = stops[0], b = stops[stops.length - 1]; geometry = [[a.lng, a.lat], [b.lng, b.lat]]; partialGeo = true; }
+    lines.set(l.id, { id: l.id, code: l.code, codeOfficial: l.code_official, source: l.source, totalMinutes: l.total_minutes, lengthKm: l.length_km ?? stops.at(-1).cumKm, partialGeo, geometry, stops });
+  }
+  const net = { lines, routes: raw.routes.filter((r) => r.line_id != null) };
+  // mi-journée : il doit exister au moins 1 bus, tous dans la bbox Crète
+  const mid = busesAt({ iso: "2026-06-15", minutes: 12 * 60 }, net);
+  for (const bus of mid) {
+    assert.ok(bus.lat > 34.7 && bus.lat < 35.8, `lat hors Crète: ${bus.lat}`);
+    assert.ok(bus.lng > 23.4 && bus.lng < 26.4, `lng hors Crète: ${bus.lng}`);
+    assert.ok(bus.progress >= 0 && bus.progress <= 1);
+  }
+  console.log(`OK intégration: ${mid.length} bus à midi sur fixture réelle`);
+} else {
+  console.log("intégration sautée (fixture absente)");
+}
 
 console.log("OK check-bus-live: toutes les assertions passent");
