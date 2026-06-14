@@ -372,3 +372,8 @@ a, button {
 @utility animate-live-pulse {
   animation: live-pulse 2.4s ease-in-out infinite;
 }
+
+@keyframes cd-pulse {
+  0%   { transform: scale(0.6); opacity: 0.7; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
