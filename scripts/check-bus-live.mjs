@@ -2,7 +2,7 @@
 // (Node >= 23 : importe le .ts par type-stripping)
 import assert from "node:assert/strict";
 import {
-  normalizePlace, placeSimilarity, orientRoute, elapsedToKm, kmToPoint,
+  normalizePlace, placeSimilarity, orientRoute, elapsedToKm, kmToPoint, activeDepartures,
 } from "../src/lib/bus-live/position.ts";
 
 // --- normalisation ----------------------------------------------------------
@@ -75,5 +75,23 @@ const pSeg2 = kmToPoint(geo, 16.7);             // dans le 2e segment
 assert.ok(pSeg2.lat > 35.14 && pSeg2.lat < 35.16);
 const pEnd = kmToPoint(geo, 999);               // au-delà → dernier point
 assert.ok(Math.abs(pEnd.lat - 35.2) < 1e-6);
+
+const routeAD = R(3, "Agios Nikolaos", "Elounda", {
+  line_id: 7,
+  departures: ["09:00", "12:00", "18:00"],
+  departures_by_day: [{ days: "EVERY DAY", times: ["09:00", "12:00", "18:00"] }],
+});
+// totalMinutes = 37. now = 09:22 (562) -> seul 09:00 (540) est en cours (540..577)
+assert.deepEqual(activeDepartures(routeAD, 37, { iso: "2026-06-15", minutes: 562 }), ["09:00"]);
+// now = 08:30 (510) -> aucun départ en cours
+assert.deepEqual(activeDepartures(routeAD, 37, { iso: "2026-06-15", minutes: 510 }), []);
+// now = 12:10 (730) -> 12:00 en cours (720..757)
+assert.deepEqual(activeDepartures(routeAD, 37, { iso: "2026-06-15", minutes: 730 }), ["12:00"]);
+// jour hors plage (departures_by_day "Mon-Fri") -> aucun le dimanche
+const routeWk = R(4, "A", "B", {
+  line_id: 7, departures: ["09:00"],
+  departures_by_day: [{ days: "Mon-Fri", times: ["09:00"] }],
+});
+assert.deepEqual(activeDepartures(routeWk, 37, { iso: "2026-06-14", minutes: 545 }), []); // dimanche
 
 console.log("OK check-bus-live: toutes les assertions passent");

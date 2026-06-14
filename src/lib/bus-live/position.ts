@@ -5,6 +5,8 @@
 // Spec : docs/superpowers/specs/2026-06-15-bus-live-engine-design.md
 
 import { haversineKm } from "../geo.ts";
+import { timesForDate } from "../bus-journey.ts";
+import { toMin } from "../athens-time.ts";
 import type { BusRoute } from "../buses";
 import type { LiveLine, LiveStop } from "./types";
 
@@ -122,4 +124,14 @@ export function kmToPoint(geometry: [number, number][], km: number): PointOnLine
   }
   const end = geometry[geometry.length - 1];
   return { lat: end[1], lng: end[0], bearing: 0 };
+}
+
+export interface NowAthens { iso: string; minutes: number; }
+
+/** Heures de départ (HH:MM) actuellement en cours de trajet à `now`. */
+export function activeDepartures(route: BusRoute, totalMinutes: number, now: NowAthens): string[] {
+  return timesForDate(route, now.iso).filter((H) => {
+    const h = toMin(H);
+    return h <= now.minutes && now.minutes <= h + totalMinutes;
+  });
 }
