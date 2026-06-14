@@ -16,11 +16,16 @@ def _http_fetch(url):
 
 
 def osrm_route(coords, fetch=None):
-    """coords : liste (lat,lng). Retourne {geometry:[[lng,lat],...], leg_km:[...]} ou None."""
+    """coords : liste (lat,lng). Retourne {geometry:[[lng,lat],...], leg_km:[...]} ou None.
+    Si fetch lève une exception (réseau down, stub mal formé), on retourne None
+    pour laisser build_geometry basculer sur le fallback haversine."""
     fetch = fetch or _http_fetch
     pts = ";".join(f"{lng},{lat}" for lat, lng in coords)
     url = f"{OSRM_BASE}{pts}?overview=full&geometries=geojson"
-    data = fetch(url)
+    try:
+        data = fetch(url)
+    except Exception:
+        return None
     if not data or data.get("code") != "Ok" or not data.get("routes"):
         return None
     route = data["routes"][0]
