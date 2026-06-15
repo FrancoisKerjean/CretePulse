@@ -2,3 +2,4 @@ supabase
 python-dotenv
 feedparser
 pytest
+pywebpush
