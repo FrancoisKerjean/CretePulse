@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useInView } from "motion/react";
 
-export default function Beat({ side, topPct, reduce, kicker, title, sub, hero, inline }: {
+export default function Beat({ side, topPct, reduce, kicker, title, sub, hero, inline, mobile }: {
   side: "center" | "left" | "right";
   topPct: number;
   reduce: boolean;
@@ -11,6 +11,7 @@ export default function Beat({ side, topPct, reduce, kicker, title, sub, hero, i
   sub?: string;
   hero?: boolean;
   inline?: boolean;
+  mobile?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
@@ -19,14 +20,28 @@ export default function Beat({ side, topPct, reduce, kicker, title, sub, hero, i
   // no-JS / pre-hydratation : visible. Apres hydratation : cache jusqu'a in-view (sauf reduce/hero).
   const hidden = mounted && !reduce && !hero && !inView;
 
-  const align =
-    side === "right"
+  // Mobile : colonne etroite plaquee du cote oppose a la route. left -> colonne gauche
+  // alignee a gauche ; right ou center -> colonne droite alignee a droite. hero/inline restent centres.
+  const mobileColumn = mobile && !hero && !inline;
+  // hero/inline mobile : on force le centrage meme si side != center.
+  const effectiveCenter = (side === "center" || hero || inline) && !mobileColumn;
+  const mobileLeftCol = mobileColumn && side === "left";
+
+  const align = mobileColumn
+    ? mobileLeftCol
+      ? "items-start text-left"
+      : "items-end text-right"
+    : side === "right"
       ? "items-end text-right"
       : side === "left"
         ? "items-start text-left"
         : "items-center text-center";
-  const pos =
-    side === "center"
+
+  const pos = mobileColumn
+    ? mobileLeftCol
+      ? "left-[clamp(14px,4vw,28px)] w-[56%]"
+      : "right-[clamp(14px,4vw,28px)] w-[56%]"
+    : effectiveCenter
       ? "left-0 right-0 mx-auto w-[min(92%,820px)]"
       : side === "left"
         ? "left-[clamp(16px,5vw,80px)] w-[min(86%,540px)]"

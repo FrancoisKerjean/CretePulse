@@ -42,7 +42,7 @@ export default function ParcoursClient({ locale, copy }: { locale: string; copy:
         </div>
 
         {/* HERO */}
-        <Beat side="center" topPct={3} reduce={reduce} title={copy.hero.title} sub={copy.hero.sub} hero />
+        <Beat side="center" topPct={3} reduce={reduce} title={copy.hero.title} sub={copy.hero.sub} hero mobile={variant === "mobile"} />
 
         {/* BEATS (topPct par variante : table de waypoints exportee par RoadScene) */}
         {copy.beats.map((b, i) => (
@@ -54,15 +54,16 @@ export default function ParcoursClient({ locale, copy }: { locale: string; copy:
             kicker={b.kicker}
             title={b.title}
             sub={b.sub}
+            mobile={variant === "mobile"}
           />
         ))}
 
         {/* CTA */}
         <div
-          className="absolute left-0 right-0 mx-auto w-[min(92%,920px)] text-center"
+          className="absolute left-0 right-0 z-[5] mx-auto w-[min(92%,920px)] text-center"
           style={{ top: `${CTA_TOP[variant]}%` }}
         >
-          <Beat side="center" topPct={0} reduce={reduce} title={copy.cta.title} inline />
+          <Beat side="center" topPct={0} reduce={reduce} title={copy.cta.title} inline mobile={variant === "mobile"} />
           <HelpButtons locale={locale} copy={copy} />
           <p className="mt-5 text-[clamp(15px,2.6vw,20px)] font-semibold text-[var(--color-text)]">{copy.cta.micro}</p>
         </div>

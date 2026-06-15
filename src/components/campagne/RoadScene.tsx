@@ -5,17 +5,18 @@ import type { RoadVariant } from "@/lib/campagne";
 // top en % de la hauteur du stage, pour chaque variante. Index = ordre des 6 beats narratifs.
 export const BEAT_TOP: Record<RoadVariant, number[]> = {
   desktop: [18.6, 31.4, 44.9, 54.2, 69.9, 80.1], // = top px mockup / 4720
-  mobile: [16, 28, 40, 52, 66, 78], // colonne centree, route serpentin
+  // colonnes etroites cote oppose a la route ; co-concu avec ROAD_D.mobile
+  mobile: [15, 28, 41, 54, 66.5, 78],
 };
-export const CTA_TOP: Record<RoadVariant, number> = { desktop: 93.6, mobile: 92 };
+export const CTA_TOP: Record<RoadVariant, number> = { desktop: 93.6, mobile: 91.5 };
 export const ROAD_D: Record<RoadVariant, string> = {
   desktop:
     "M600 470 C980 700 1080 870 1050 1020 C1020 1320 175 1430 155 1720 C135 2030 1070 2110 1050 2420 C1045 2600 1045 2780 1015 2880 C900 3000 720 3110 600 3120 C480 3130 215 3470 190 3760 C170 4050 560 4290 600 4400",
   mobile:
-    "M210 360 C330 760 90 1080 210 1480 C330 1880 90 2200 210 2600 C330 3000 90 3320 210 3720 C330 4120 120 4440 210 4840 C300 5240 210 5600 210 6100",
+    "M210 360 C340 520 360 620 345 800 C320 1080 90 1180 70 1456 C45 1720 350 1860 350 2132 C350 2420 90 2560 70 2808 C58 3050 85 3250 75 3484 C70 3720 90 3900 80 4056 C76 4250 200 4450 210 4576",
 };
-export const ROAD_VIEWBOX: Record<RoadVariant, string> = { desktop: "0 0 1200 4720", mobile: "0 0 420 6400" };
-export const STAGE_RATIO: Record<RoadVariant, number> = { desktop: 4720 / 1200, mobile: 6400 / 420 };
+export const ROAD_VIEWBOX: Record<RoadVariant, string> = { desktop: "0 0 1200 4720", mobile: "0 0 420 5200" };
+export const STAGE_RATIO: Record<RoadVariant, number> = { desktop: 4720 / 1200, mobile: 5200 / 420 };
 
 export default function RoadScene({ variant, progress, reduce, pathRef }: {
   variant: RoadVariant;
@@ -150,7 +151,7 @@ export default function RoadScene({ variant, progress, reduce, pathRef }: {
           opacity={0.85}
         />
         {/* pin destination au bout de la route */}
-        <g transform={variant === "mobile" ? "translate(210,6100)" : "translate(600,4400)"}>
+        <g transform={variant === "mobile" ? "translate(210,4576)" : "translate(600,4400)"}>
           <path
             d="M0 8 C-26 -34 -34 -52 -34 -70 A34 34 0 1 1 34 -70 C34 -52 26 -34 0 8 Z"
             fill="#ED7A5C"
