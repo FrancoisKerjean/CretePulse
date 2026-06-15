@@ -9,13 +9,16 @@ import { MapCell } from "./shared/MapCell";
 import { PhotoCell } from "./shared/PhotoCell";
 import { NearbyCell } from "./shared/NearbyCell";
 import { DetailCell } from "./shared/DetailCell";
+import { RatingTile } from "./shared/RatingTile";
 
 export function DefaultBento({
-  place, nearby, locale,
+  place, nearby, locale, communityAvg, communityCount,
 }: {
   place: CbPlace;
   nearby: NearbyPlace[];
   locale: string;
+  communityAvg?: number | null;
+  communityCount?: number;
 }) {
   const t = place.bento_tiles ?? {};
   const photos = place.photos ?? [];
@@ -25,9 +28,13 @@ export function DefaultBento({
   return (
     <section className="grid grid-cols-4 gap-2 md:grid-cols-6">
       <HeroCell name={place.name} tag={tag} photo={photos[0]} className="col-span-4 row-span-2 min-h-[220px] md:col-span-4" />
-      {place.rating != null && place.rating > 0 && (
-        <Tile variant="sun" icon="★" big={place.rating.toFixed(1)} label={bentoLabel("rating", locale)} className="col-span-2 md:col-span-1" />
-      )}
+      <RatingTile
+        slug={place.slug}
+        scrapedRating={place.rating ?? null}
+        communityAvg={communityAvg ?? null}
+        communityCount={communityCount ?? 0}
+        locale={locale}
+      />
       {t.best_time && (
         <Tile variant="lagoon" icon="🗓️" big={t.best_time} label={bentoLabel("bestTime", locale)} className="col-span-2 md:col-span-1" />
       )}
