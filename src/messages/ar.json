@@ -1,4 +1,11 @@
 {
+  "activityNudge": {
+    "close": "Close",
+    "title": "Still undecided?",
+    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
+    "dismiss": "Later",
+    "cta": "Start swiping"
+  },
   "meta": {
     "title": "Crete Direct - ماذا يحدث في كريت",
     "description": "الطقس، الفعاليات، الشواطئ، الأخبار المحلية. كل شيء عن كريت، يُحدَّث كل ساعة. مجاني، متعدد اللغات."

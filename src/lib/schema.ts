@@ -680,6 +680,17 @@ export function carRentalPageSchema(params: {
           acceptedAnswer: { "@type": "Answer", text: f.a },
         })),
       },
+      {
+        "@type": "Service",
+        "@id": `${url}#service`,
+        name: params.pageTitle,
+        description: params.description,
+        serviceType: "Car rental",
+        inLanguage: params.locale,
+        provider: { "@type": "Organization", name: "Crete Direct", url: BASE_URL },
+        areaServed: { "@type": "Place", name: "Crete, Greece" },
+        url,
+      },
     ],
   };
 }

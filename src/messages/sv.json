@@ -1,4 +1,11 @@
 {
+  "activityNudge": {
+    "close": "Close",
+    "title": "Still undecided?",
+    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
+    "dismiss": "Later",
+    "cta": "Start swiping"
+  },
   "meta": {
     "title": "Crete Direct - Vad händer på Kreta",
     "description": "Väder, evenemang, stränder, lokala nyheter. Allt om Kreta, uppdaterat varje timme. Gratis, på flera språk."

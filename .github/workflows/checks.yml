@@ -1,0 +1,23 @@
+name: checks
+
+# Vérifs déterministes (pures, sans secret/DB) avant intégration : assertions
+# node des libs + typecheck. Complète le build Vercel (qui couvre next build).
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      # npm install (pas ci) : le package-lock.json du repo est desynchronise
+      # (drift pre-existant, ex. @swc/helpers manquant) ; npm install reconcilie
+      # dans le runner sans exiger un lockfile parfait.
+      - run: npm install --no-audit --no-fund
+      - run: npm run check

@@ -1,4 +1,11 @@
 {
+  "activityNudge": {
+    "close": "Close",
+    "title": "Still undecided?",
+    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
+    "dismiss": "Later",
+    "cta": "Start swiping"
+  },
   "meta": {
     "title": "Crete Direct - 克里特岛正在发生什么",
     "description": "天气、活动、海滩、本地新闻。克里特岛的一切，每小时更新。免费，多语言支持。"

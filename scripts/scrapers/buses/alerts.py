@@ -165,6 +165,20 @@ def main():
     sb.table("bus_alerts").upsert(rows, on_conflict="slug").execute()
     log(f"OK {len(rows)} annonces écrites (upsert par slug)")
 
+    # Push web des nouvelles alertes (best-effort, jamais bloquant pour le scrape).
+    try:
+        sys.path.insert(0, "/opt/cretepulse")  # push_sender deploye ici sur le VPS
+        import push_sender
+        res = sb.table("bus_alerts").select("*").eq("pushed", False).execute()
+        for row in (res.data or []):
+            push_sender.send_topic(sb, "bus_alerts", row, push_sender.build_alert_payload)
+            try:
+                sb.table("bus_alerts").update({"pushed": True}).eq("slug", row["slug"]).execute()
+            except Exception as e:
+                log(f"mark pushed failed for {row.get('slug')}: {e}")
+    except Exception as e:
+        log(f"push skipped: {e}")
+
 
 if __name__ == "__main__":
     main()

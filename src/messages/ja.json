@@ -1,4 +1,11 @@
 {
+  "activityNudge": {
+    "close": "Close",
+    "title": "Still undecided?",
+    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
+    "dismiss": "Later",
+    "cta": "Start swiping"
+  },
   "meta": {
     "title": "Crete Direct - クレタ島の最新情報",
     "description": "天気、イベント、ビーチ、地元ニュース。クレタ島のすべてを毎時更新。無料、多言語対応。"

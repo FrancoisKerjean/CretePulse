@@ -1,4 +1,11 @@
 {
+  "activityNudge": {
+    "close": "Fermer",
+    "title": "Pas encore décidé ?",
+    "subtitle": "Swipe les meilleurs spots de Crète et trouve celui qui te ressemble.",
+    "dismiss": "Plus tard",
+    "cta": "Je swipe"
+  },
   "meta": {
     "title": "Crete Direct - Ce qui se passe en Crète",
     "description": "Météo, événements, plages, actus locales. Toute la Crète, mise à jour chaque heure. Gratuit, en 4 langues."

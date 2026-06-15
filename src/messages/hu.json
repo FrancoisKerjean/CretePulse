@@ -1,4 +1,11 @@
 {
+  "activityNudge": {
+    "close": "Close",
+    "title": "Still undecided?",
+    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
+    "dismiss": "Later",
+    "cta": "Start swiping"
+  },
   "meta": {
     "title": "Crete Direct - Mi történik Krétán",
     "description": "Időjárás, események, strandok, helyi hírek. Minden Krétáról, óránként frissítve. Ingyenes, többnyelvű."

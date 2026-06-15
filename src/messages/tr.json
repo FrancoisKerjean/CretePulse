@@ -1,4 +1,11 @@
 {
+  "activityNudge": {
+    "close": "Close",
+    "title": "Still undecided?",
+    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
+    "dismiss": "Later",
+    "cta": "Start swiping"
+  },
   "meta": {
     "title": "Crete Direct - Girit'te neler oluyor",
     "description": "Hava durumu, etkinlikler, plajlar, yerel haberler. Girit hakkında her şey, saatlik güncelleme. Ücretsiz, çok dilli."
