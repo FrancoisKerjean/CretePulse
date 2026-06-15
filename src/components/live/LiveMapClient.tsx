@@ -7,7 +7,6 @@ import {
 } from "@/lib/bus-live";
 import { athensNow } from "@/lib/athens-time";
 import { createBusEl, setBusArrow } from "./busMarker";
-import { NumberTicker } from "@/components/ui/number-ticker";
 
 type MaplibreMap = import("maplibre-gl").Map;
 type MaplibreMarker = import("maplibre-gl").Marker;
@@ -130,7 +129,7 @@ export function LiveMapClient({ locale }: { locale: string }) {
           {t.estimated}
         </span>
         <span className="pointer-events-auto inline-flex items-baseline gap-1.5 rounded-full bg-surface/90 px-3 py-1.5 text-sm text-text shadow backdrop-blur">
-          <NumberTicker value={count} className="font-data font-bold text-aegean" /> {t.circulating}
+          <span className="font-data font-bold text-aegean tabular-nums">{count}</span> {t.circulating}
         </span>
       </div>
     </div>
