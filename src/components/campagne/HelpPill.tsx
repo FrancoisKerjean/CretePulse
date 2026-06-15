@@ -2,13 +2,13 @@
 import { useEffect, useState } from "react";
 import type { CampagneCopy } from "@/lib/campagne";
 
-export default function HelpPill({ ctaTop, copy }: { locale: string; ctaTop: number; copy: CampagneCopy }) {
+export default function HelpPill({ ctaTop, copy }: { ctaTop: number; copy: CampagneCopy }) {
   const [show, setShow] = useState(false);
   useEffect(() => {
     const onScroll = () => {
       const p = window.scrollY / (document.body.scrollHeight - window.innerHeight || 1);
-      // visible sauf tout en haut et au niveau du CTA
-      setShow(p > 0.05 && p < ctaTop / 100 - 0.05);
+      const next = p > 0.05 && p < (ctaTop / 100) - 0.05;
+      setShow(prev => (prev === next ? prev : next));
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -19,8 +19,7 @@ export default function HelpPill({ ctaTop, copy }: { locale: string; ctaTop: num
     const top = (ctaTop / 100) * document.body.scrollHeight;
     window.scrollTo({ top, behavior: "smooth" });
   };
-  // label derive de la copie pour rester localise sans prop supplementaire (FR "Aider" / EN "Help")
-  const label = copy.buttons.share === "Share" ? "Help" : "Aider";
+  const label = copy.buttons.help;
 
   return (
     <button

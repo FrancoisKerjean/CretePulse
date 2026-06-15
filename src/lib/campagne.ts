@@ -23,7 +23,7 @@ export type CampagneCopy = {
   hero: { title: string; sub: string };
   beats: Beat[];
   cta: { title: string; micro: string };
-  buttons: { instagram: string; facebook: string; share: string };
+  buttons: { instagram: string; facebook: string; share: string; help: string };
 };
 
 const FR: CampagneCopy = {
@@ -41,7 +41,7 @@ const FR: CampagneCopy = {
     { id: "aide", kicker: "entre nous", side: "right", title: "On fait tout ça nous-mêmes.<br>Et on a besoin de <hl>toi</hl>.", sub: "crete.direct est libre, sans pub, et le restera. Pas de grande entreprise derrière nous. Juste des gens qui aiment la Crète. Pour continuer, on a besoin d'un coup de main." },
   ],
   cta: { title: "Tu veux nous aider ?<br>C'est <hl>tout simple</hl>.", micro: "Suis-nous et partage autour de toi. Ça nous aide énormément. Merci !" },
-  buttons: { instagram: "Suivre sur Instagram", facebook: "Suivre sur Facebook", share: "Partager" },
+  buttons: { instagram: "Suivre sur Instagram", facebook: "Suivre sur Facebook", share: "Partager", help: "Aider" },
 };
 
 const EN: CampagneCopy = {
@@ -59,7 +59,7 @@ const EN: CampagneCopy = {
     { id: "aide", kicker: "between us", side: "right", title: "We do all of this ourselves.<br>And we need <hl>you</hl>.", sub: "crete.direct is free, with no ads, and it'll stay that way. No big company behind us. Just people who love Crete. To go further, we need a hand." },
   ],
   cta: { title: "Want to help?<br>It's <hl>super easy</hl>.", micro: "Follow us and share around you. It helps us so much. Thank you!" },
-  buttons: { instagram: "Follow on Instagram", facebook: "Follow on Facebook", share: "Share" },
+  buttons: { instagram: "Follow on Instagram", facebook: "Follow on Facebook", share: "Share", help: "Help" },
 };
 
 const COPY: Record<string, CampagneCopy> = { fr: FR, en: EN };

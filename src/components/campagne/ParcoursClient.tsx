@@ -69,7 +69,7 @@ export default function ParcoursClient({ locale, copy }: { locale: string; copy:
       </div>
 
       <ScrollCue reduce={reduce} />
-      <HelpPill locale={locale} ctaTop={CTA_TOP[variant]} copy={copy} />
+      <HelpPill ctaTop={CTA_TOP[variant]} copy={copy} />
     </main>
   );
 }
