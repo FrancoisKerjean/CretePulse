@@ -7,6 +7,7 @@ import { buildAlternates } from "@/lib/seo";
 import { getBusRoutes, getBusDestinations, latestScrapedAt } from "@/lib/buses";
 import type { BusRoute } from "@/lib/buses";
 import { eligiblePairs, pairRoutes, onwardPlaces, pairSlug, slugifyPlace } from "@/lib/bus-pairs";
+import { pairHasTimetable, type SeoRoute } from "@/lib/bus-seo";
 import { getBusAlerts } from "@/lib/bus-alerts";
 import { RouteAlertBanner } from "@/components/RouteAlertBanner";
 import { TaxiCompare } from "@/components/TaxiCompare";
@@ -137,10 +138,12 @@ export async function generateMetadata({ params }: { params: Promise<Params> }) 
   const title = `${T.title[ui](pr.pair.placeA, pr.pair.placeB)} | Crete Direct`;
   const description = T.metaDesc[ui](pr.pair.placeA, pr.pair.placeB);
   const url = `${BASE_URL}/${locale}/buses/${pair}`;
+  const indexable = pairHasTimetable(routes as SeoRoute[], pair);
   return {
     title, description,
     alternates: buildAlternates(locale, `/buses/${pair}`),
     openGraph: { title, description, url, type: "website" },
+    robots: indexable ? undefined : { index: false, follow: true },
   };
 }
 
