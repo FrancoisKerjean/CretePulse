@@ -3,7 +3,9 @@ import type { LiveBus } from "@/lib/bus-live";
 /** Crée l'élément DOM d'un marqueur bus (flèche orientée + halo cd-pulse). */
 export function createBusEl(bus: LiveBus): HTMLDivElement {
   const el = document.createElement("div");
-  el.style.cssText = "position:relative;width:26px;height:26px;will-change:transform";
+  // position:absolute (pas relative) : sinon l'élément reste dans le flux DOM et
+  // s'empile sous les précédents (décalage vertical cumulé visible au dézoom).
+  el.style.cssText = "position:absolute;top:0;left:0;width:26px;height:26px;will-change:transform";
   const color = bus.degraded ? "#5C7886" : "#0B5E78";
   el.innerHTML =
     `<span style="position:absolute;inset:-8px;border-radius:50%;background:rgba(11,94,120,.16);animation:cd-pulse 2s ease-out infinite"></span>` +
