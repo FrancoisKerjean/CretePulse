@@ -28,7 +28,7 @@ export type CampagneCopy = {
 
 const FR: CampagneCopy = {
   meta: {
-    title: "Notre projet — crete.direct",
+    title: "Notre projet · crete.direct",
     description: "L'histoire de crete.direct, le bus en Crète enfin clair. Un projet indépendant et gratuit. Aide-nous à continuer.",
   },
   hero: { title: "Coucou ! Moi, c'est <hl>Kriri</hl>.", sub: "Je prends le bus partout en Crète. Viens, je te montre." },
@@ -46,7 +46,7 @@ const FR: CampagneCopy = {
 
 const EN: CampagneCopy = {
   meta: {
-    title: "Our project — crete.direct",
+    title: "Our project · crete.direct",
     description: "The story of crete.direct, Crete's buses made simple. An independent, free project. Help us keep going.",
   },
   hero: { title: "Hi! I'm <hl>Kriri</hl>.", sub: "I take the bus all over Crete. Come on, I'll show you." },
@@ -68,10 +68,10 @@ export function getCampagneCopy(locale: string): CampagneCopy {
 }
 
 export const SHARE: Record<string, { title: string; text: string }> = {
-  fr: { title: "crete.direct — le bus en Crète, en clair", text: "Un projet indépendant et gratuit pour les bus crétois. Soutiens-le en suivant et en partageant." },
-  en: { title: "crete.direct — Crete's buses, made simple", text: "A free, independent project for Crete's buses. Support it by following and sharing." },
+  fr: { title: "crete.direct · le bus en Crète, en clair", text: "Un projet indépendant et gratuit pour les bus crétois. Soutiens-le en suivant et en partageant." },
+  en: { title: "crete.direct · Crete's buses, made simple", text: "A free, independent project for Crete's buses. Support it by following and sharing." },
 };
-export function getShare(locale: string) { return SHARE[locale] ?? SHARE.en; }
+export function getShare(locale: string): { title: string; text: string } { return SHARE[locale] ?? SHARE.en; }
 
 export const LINKS = {
   instagram: "https://instagram.com/cretedirect",

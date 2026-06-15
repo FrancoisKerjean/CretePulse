@@ -25,4 +25,12 @@ for (const c of [fr, en]) {
 // 4) payload de partage localisé non vide
 assert.ok(SHARE.fr.title.length > 5 && SHARE.en.title.length > 5);
 
+// 5) zéro tiret cadratin (—) dans toute la copie
+function strings(o){ return typeof o === "string" ? [o] : (o && typeof o === "object") ? Object.values(o).flatMap(strings) : []; }
+for (const loc of ["fr", "en"]) {
+  for (const s of [...strings(getCampagneCopy(loc)), ...strings(SHARE[loc])]) {
+    assert.ok(!s.includes("—"), `em-dash interdit dans: ${s}`);
+  }
+}
+
 console.log("check-campagne OK");
