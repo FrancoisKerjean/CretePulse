@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { Info, ExternalLink } from "lucide-react";
+import { Info } from "lucide-react";
 import { CiBus } from "@/components/icons";
 import { buildAlternates } from "@/lib/seo";
 import { getBusRoutes, getBusDestinations, latestScrapedAt } from "@/lib/buses";
@@ -77,12 +77,11 @@ const T = {
     de: "Abfahrtszeiten noch nicht veröffentlicht · Betreiberseite prüfen.",
     el: "Δεν έχουν δημοσιευτεί ώρες · δείτε τον φορέα.",
   },
-  officialSchedule: { en: "Official schedule", fr: "Horaires officiels", de: "Offizieller Fahrplan", el: "Επίσημο πρόγραμμα" },
   disclaimer: {
-    en: "Times follow the operators' seasonal timetables and may change. Always confirm on the official KTEL sites before travelling. Prices marked “indicative” are estimated from distance.",
-    fr: "Les horaires suivent les calendriers saisonniers des opérateurs et peuvent changer. Vérifiez toujours sur les sites officiels KTEL avant de partir. Les prix « indicatifs » sont estimés à partir de la distance.",
-    de: "Die Zeiten folgen den saisonalen Fahrplänen der Betreiber und können sich ändern. Immer auf den offiziellen KTEL-Seiten bestätigen. Mit „Richtwert“ markierte Preise sind aus der Entfernung geschätzt.",
-    el: "Οι ώρες ακολουθούν τα εποχικά δρομολόγια των φορέων και μπορεί να αλλάξουν. Επιβεβαιώνετε πάντα στις επίσημες σελίδες ΚΤΕΛ. Οι «ενδεικτικές» τιμές εκτιμώνται από την απόσταση.",
+    en: "Times follow the operators' seasonal timetables and may change. Always confirm with the operator before travelling. Prices marked “indicative” are estimated from distance.",
+    fr: "Les horaires suivent les calendriers saisonniers des opérateurs et peuvent changer. Vérifiez toujours auprès de l'opérateur avant de partir. Les prix « indicatifs » sont estimés à partir de la distance.",
+    de: "Die Zeiten folgen den saisonalen Fahrplänen der Betreiber und können sich ändern. Immer beim Betreiber bestätigen. Mit „Richtwert“ markierte Preise sind aus der Entfernung geschätzt.",
+    el: "Οι ώρες ακολουθούν τα εποχικά δρομολόγια των φορέων και μπορεί να αλλάξουν. Επιβεβαιώνετε πάντα με τον μεταφορέα. Οι «ενδεικτικές» τιμές εκτιμώνται από την απόσταση.",
   },
   faqPrice: {
     en: (a: string, b: string, p: string) => [`How much is the bus from ${a} to ${b}?`, `A one-way KTEL ticket from ${a} to ${b} costs ${p}.`],
@@ -217,10 +216,6 @@ function DirectionSection({ from, to, routes, ui }: {
             )}
           </div>
           <TimeChips route={r} locale={ui} />
-          <a href={r.source_url} rel="nofollow noopener" target="_blank"
-             className="inline-flex items-center gap-1 text-xs text-lagoon-deep font-bold hover:underline mt-3">
-            {T.officialSchedule[ui]} <ExternalLink className="w-3 h-3" />
-          </a>
         </div>
       ))}
     </section>
