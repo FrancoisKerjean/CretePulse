@@ -77,7 +77,7 @@ export function LiveMapClient({ locale }: { locale: string }) {
           const { entering, leaving } = reconcile(poses, buses);
           for (const bus of entering) {
             const el = createBusEl(bus);
-            const marker = new ml.Marker({ element: el }).setLngLat([bus.lng, bus.lat]).addTo(map);
+            const marker = new ml.Marker({ element: el, anchor: "center" }).setLngLat([bus.lng, bus.lat]).addTo(map);
             markers.set(bus.id, { marker, el, cur: { lat: bus.lat, lng: bus.lng, bearing: bus.bearing } });
           }
           for (const id of leaving) { markers.get(id)?.marker.remove(); markers.delete(id); }
