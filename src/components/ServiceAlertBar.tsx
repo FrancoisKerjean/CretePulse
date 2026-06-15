@@ -43,6 +43,7 @@ export function ServiceAlertBar({
 
       <div
         id={detailId}
+        inert={!open ? true : undefined}
         className={`overflow-hidden transition-all duration-200 motion-reduce:transition-none ${
           open ? "max-h-[1000px] opacity-100 mt-2" : "max-h-0 opacity-0"
         }`}
