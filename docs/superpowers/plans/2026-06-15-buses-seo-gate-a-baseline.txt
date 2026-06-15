@@ -1,0 +1,23 @@
+Gate A baseline — SEO bus indexation (snapshot 2026-06-15)
+Source: GSC API sc-domain:crete.direct (siteOwner), 28j 17/05-13/06/2026.
+
+PAGES-TRAJET /buses/[pair]
+- Impressions: 0 sur TOUTES les /buses/<slug> (robuste, independant du slug).
+- Sitemap: 89 pairs declarees.
+- URL Inspection (vrais slugs alphabetiques):
+  - chania-to-heraklion        : "URL is unknown to Google" + ABSENT du sitemap (bug eligiblePairs, trajet majeur -> Task 0 Step 4 a investiguer)
+  - agios-nikolaos-to-heraklion: "Discovered - currently not indexed" (sitemap: oui)
+  - heraklion-to-malia         : "Discovered - currently not indexed" (sitemap: oui)
+- Diagnostic: Google CONNAIT les pages (sitemap) mais DECIDE de ne pas les indexer = signal qualite (89 templates minces). Levier = elaguer + meriter l'index.
+
+INDEX /en/buses
+- pos 15.3 | 1396 impressions | ~20 clics.
+- non-EN deja page 1-2 dans leur langue: /fr 9.8, /nl 7.6, /de 9.3, /fi 12.9.
+
+TETE DE REQUETE
+- crete bus: pos 26 | bus crete: 32 | crete buses: 23 | crete bus schedule: 17 | crete bus routes: 12.
+
+GATE A (objet de ce chantier, mesure J+30 ~= 15/07, sauve checkpoint Phase 10 = 25/07)
+- Cible: les ~40 pairs DIGNES passent de "Discovered - not indexed" -> "Indexed" + 1re impression GSC.
+- Decouple de Gate B (ranking index buses, 8-12 sem, depend backlinks = P2 hors scope).
+- Re-mesure: re-inspecter les memes slugs + impressions /buses/<slug> a J+30.
