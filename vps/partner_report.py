@@ -6,9 +6,9 @@
    Stats API v2 Plausible self-hosted -> events "Taxi Call" (props.zone)
    + pageviews des pages /buses contenant un slug de la zone.
 2. Location de voiture : leads `car_requests` du mois precedent via
-   PostgREST (service key) + clics outbound Plausible vers le site du
-   partenaire. Partenaires definis dans CAR_RENTAL_PARTNERS (sync manuel
-   avec src/lib/car-partners.ts). Base de reconciliation des 10 %.
+   PostgREST (service key). Partenaires lus depuis car-partners.json
+   (projection de src/lib/car-partners.ts = source unique, deployee a cote de
+   ce script). Base de reconciliation de la commission convenue.
 
 Zero partenaire (taxi ET voiture) -> exit 0 silencieux.
 Email via Resend (from = hello@crete.direct, domaine deja verifie pour la
@@ -35,17 +35,27 @@ SITE_ID = "crete.direct"
 FROM_EMAIL = "Crete Direct <hello@crete.direct>"
 COPY_TO = "contact@kairosguest.com"
 
-# Partenaires location de voiture — garder en phase avec src/lib/car-partners.ts
-# (CAR_PARTNERS). `domain` sert au filtre des clics outbound Plausible.
-CAR_RENTAL_PARTNERS = [
-    {
-        "name": "Auto Smart Car Rental",
-        "email": "autosmartrental@gmail.com",
-        "domain": "chaniacarrental.gr",
-        "zoneLabel": "Chania & the west",
-        "commission": "10%",
-    },
-]
+def load_car_partners() -> list[dict]:
+    """Partenaires location de voiture, lus depuis la SOURCE UNIQUE
+    src/lib/car-partners.ts -> car-partners.json (genere par
+    scripts/gen-car-partners-json.mjs, deploye a cote de ce script). Absent
+    (pas encore deploye) -> [] : la section voiture est sautee sans echec.
+    Renvoie par partenaire : name, email, commission ("10%"), zoneLabel."""
+    path = BASE / "car-partners.json"
+    if not path.exists():
+        return []
+    data = json.loads(path.read_text(encoding="utf-8-sig"))
+    zone_label = {z["id"]: z.get("label", z["id"]) for z in data["zones"]}
+    partners = []
+    for p in data["partners"]:
+        labels = [zone_label.get(z, z) for z in p["zoneIds"]]
+        partners.append({
+            "name": p["name"],
+            "email": p["email"],
+            "commission": f"{round(p['commission'] * 100)}%",
+            "zoneLabel": ", ".join(labels),
+        })
+    return partners
 
 
 def load_env() -> None:
@@ -151,26 +161,7 @@ def fetch_car_requests(period: list[str]) -> list[dict]:
         return json.load(resp)
 
 
-def outbound_clicks(domain: str, date_range: list[str]) -> dict | None:
-    """Clics outbound (script Plausible outbound-links) vers le site du
-    partenaire. None si le goal/prop n'existe pas encore (pas bloquant)."""
-    try:
-        out = plausible_query({
-            "site_id": SITE_ID,
-            "metrics": ["visitors", "events"],
-            "date_range": date_range,
-            "filters": [
-                ["is", "event:name", ["Outbound Link: Click"]],
-                ["contains", "event:props:url", [domain]],
-            ],
-        })
-        m = (out.get("results") or [{}])[0].get("metrics", [0, 0])
-        return {"visitors": m[0], "clicks": m[1]}
-    except Exception:
-        return None
-
-
-def build_car_email(partner: dict, rows: list[dict], clicks: dict | None,
+def build_car_email(partner: dict, rows: list[dict],
                     period: list[str]) -> dict:
     month = period[0][:7]
     sent = [r for r in rows if r.get("status") == "sent"]
@@ -185,11 +176,6 @@ def build_car_email(partner: dict, rows: list[dict], clicks: dict | None,
         ]
     else:
         lead_lines = ["  No leads this month."]
-    if clicks is not None:
-        lead_lines.append(
-            f"  Clicks from crete.direct to {partner['domain']}: "
-            f"{clicks['clicks']} ({clicks['visitors']} unique visitors)"
-        )
     body = "\n".join(lead_lines)
     text = f"""Hello {partner['name']},
 
@@ -235,7 +221,8 @@ def main() -> int:
     load_env()
     # utf-8-sig : tolere un BOM si le JSON a ete copie depuis Windows
     data = json.loads((BASE / "taxi-partners.json").read_text(encoding="utf-8-sig"))
-    if not data["partners"] and not CAR_RENTAL_PARTNERS:
+    car_partners = load_car_partners()
+    if not data["partners"] and not car_partners:
         return 0
     period = list(prev_month_range(date.today()))
     zones = {z["id"]: z for z in data["zones"]}
@@ -252,20 +239,19 @@ def main() -> int:
         except Exception as exc:  # un partenaire en echec ne bloque pas les autres
             failures.append(f"{partner['name']}: {exc}")
 
-    # Section location de voiture (reconciliation des 10 %)
-    if CAR_RENTAL_PARTNERS:
+    # Section location de voiture (reconciliation de la commission)
+    if car_partners:
         try:
             car_rows = fetch_car_requests(period)
         except Exception as exc:
             car_rows = None
             failures.append(f"car_requests fetch: {exc}")
         if car_rows is not None:
-            for partner in CAR_RENTAL_PARTNERS:
+            for partner in car_partners:
                 try:
                     rows = [r for r in car_rows
                             if r.get("partner_email") == partner["email"]]
-                    clicks = outbound_clicks(partner["domain"], period)
-                    email = build_car_email(partner, rows, clicks, period)
+                    email = build_car_email(partner, rows, period)
                     if dry:
                         print(json.dumps(email, indent=2))
                     else:

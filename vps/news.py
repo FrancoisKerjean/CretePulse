@@ -18,6 +18,7 @@ from email.utils import parsedate_to_datetime
 from dotenv import load_dotenv
 import feedparser
 from supabase import create_client
+import news_urgency
 
 load_dotenv()
 
@@ -233,6 +234,9 @@ def get_existing_urls(supabase, source_name: str) -> set:
 # Slugs inserted during this run, collected for a single IndexNow ping at the end.
 _INSERTED_SLUGS: list[str] = []
 
+# Slugs of urgent news inserted this run, collected for a single push at the end.
+_URGENT_SLUGS: list[str] = []
+
 
 def process_feed(supabase, feed_config: dict) -> tuple[int, int]:
     source = feed_config["source"]
@@ -341,11 +345,16 @@ def process_feed(supabase, feed_config: dict) -> tuple[int, int]:
             base["title_el"] = title_raw
             base["summary_el"] = summary or ""
         row = base
+        _u_title = row.get("title_en") or row.get("title_fr") or row.get("title_de") or row.get("title_el") or ""
+        _u_summary = row.get("summary_en") or row.get("summary_fr") or row.get("summary_de") or row.get("summary_el") or ""
+        row["is_urgent"] = news_urgency.classify_urgency(_u_title, _u_summary)
 
         try:
             supabase.table("news").insert(row).execute()
             inserted += 1
             _INSERTED_SLUGS.append(slug)
+            if row.get("is_urgent"):
+                _URGENT_SLUGS.append(slug)
             print(f"[news] + {title_raw[:60]}...")
         except Exception as e:
             err_str = str(e)
@@ -389,6 +398,22 @@ def main():
             indexnow.submit(urls)
         except Exception as e:
             print(f"[news] indexnow skipped: {e}")
+
+    # Push web des news urgentes fraichement inserees (best-effort, jamais bloquant).
+    if _URGENT_SLUGS:
+        try:
+            import push_sender
+            for slug in _URGENT_SLUGS:
+                r = supabase.table("news").select("*").eq("slug", slug).eq("pushed", False).execute()
+                if r.data:
+                    row = r.data[0]
+                    push_sender.send_topic(supabase, "urgent_news", row, push_sender.build_news_payload)
+                    try:
+                        supabase.table("news").update({"pushed": True}).eq("slug", slug).execute()
+                    except Exception as e:
+                        print(f"[news] mark pushed failed for {slug}: {e}")
+        except Exception as e:
+            print(f"[news] push skipped: {e}")
 
     if feed_errors == len(RSS_FEEDS):
         print("[news] FATAL: all feeds failed")
