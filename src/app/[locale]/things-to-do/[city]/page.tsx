@@ -1,7 +1,7 @@
 import { CITIES, MONTH_NAMES } from "@/lib/weather-monthly";
 import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/types";
-import { Waves, Sun, UtensilsCrossed, Mountain, Calendar, ChevronLeft, MapPin, ChevronRight } from "lucide-react";
+import { Waves, Sun, UtensilsCrossed, Mountain, Calendar, ChevronLeft, MapPin, ChevronRight, Bus } from "lucide-react";
 import { BusAccessBox } from "@/components/BusAccessBox";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -9,6 +9,9 @@ import { buildAlternates } from "@/lib/seo";
 import { cityThingsToDoSchema } from "@/lib/schema";
 import RentalCTA from "@/components/RentalCTA";
 import { AffiliateBanner } from "@/components/ui/affiliate-banner";
+import { getBusRoutes } from "@/lib/buses";
+import { qualityPairSlugs, type SeoRoute } from "@/lib/bus-seo";
+import { eligiblePairs } from "@/lib/bus-pairs";
 
 export const revalidate = 86400;
 
@@ -111,12 +114,22 @@ const CITY_INFO: Record<string, {
   },
 };
 
+// Maps things-to-do city slug -> bus place slug (for cities where they differ).
+// For most cities the slugs are identical; only exceptions need an entry.
+const CITY_TO_BUS_SLUG: Record<string, string> = {
+  "makrigialos": "makry-gyalos",
+};
+
+function cityBusSlug(citySlug: string): string {
+  return CITY_TO_BUS_SLUG[citySlug] ?? citySlug;
+}
+
 const LABELS: Record<string, {
   thingsToDo: string; bestBeaches: string; weather: string; whereToEat: string;
   hiking: string; events: string; backToAll: string; allCities: string;
   bestTimeToVisit: string; topHighlights: string; faq: string;
   exploreBeaches: string; checkWeather: string; discoverFood: string;
-  exploreHikes: string; browseEvents: string;
+  exploreHikes: string; browseEvents: string; gettingThereBus: string;
 }> = {
   en: {
     thingsToDo: "Things to do in",
@@ -135,6 +148,7 @@ const LABELS: Record<string, {
     discoverFood: "Discover restaurants",
     exploreHikes: "Explore hikes",
     browseEvents: "Browse events",
+    gettingThereBus: "Getting there by bus",
   },
   fr: {
     thingsToDo: "Que faire à",
@@ -153,6 +167,7 @@ const LABELS: Record<string, {
     discoverFood: "Découvrir les restaurants",
     exploreHikes: "Explorer les randonnées",
     browseEvents: "Voir les événements",
+    gettingThereBus: "Comment y aller en bus",
   },
   de: {
     thingsToDo: "Aktivitäten in",
@@ -171,6 +186,7 @@ const LABELS: Record<string, {
     discoverFood: "Restaurants entdecken",
     exploreHikes: "Wanderungen erkunden",
     browseEvents: "Veranstaltungen ansehen",
+    gettingThereBus: "Anreise mit dem Bus",
   },
   el: {
     thingsToDo: "Τι να κάνετε στ",
@@ -189,6 +205,7 @@ const LABELS: Record<string, {
     discoverFood: "Ανακαλύψτε εστιατόρια",
     exploreHikes: "Εξερευνήστε μονοπάτια",
     browseEvents: "Δείτε εκδηλώσεις",
+    gettingThereBus: "Μετάβαση με λεωφορείο",
   },
 };
 
@@ -243,6 +260,25 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
 
   const L = LABELS[locale] || LABELS.en;
   const desc = locale === "fr" ? info.descFr : locale === "de" ? info.descDe : locale === "el" ? info.descEl : info.descEn;
+
+  // Bus pair links: find quality pairs that involve this city.
+  const busRoutes = (await getBusRoutes()) as SeoRoute[];
+  const busCitySlug = cityBusSlug(citySlug);
+  const allPairs = eligiblePairs(busRoutes);
+  const qualitySlugs = qualityPairSlugs(busRoutes);
+  const busPairLinks = qualitySlugs
+    .filter((s) => {
+      const sepIdx = s.indexOf("-to-");
+      if (sepIdx === -1) return false;
+      const a = s.slice(0, sepIdx);
+      const b = s.slice(sepIdx + 4);
+      return a === busCitySlug || b === busCitySlug;
+    })
+    .slice(0, 5)
+    .map((pairSlug) => {
+      const pair = allPairs.find((p) => p.slug === pairSlug);
+      return { slug: pairSlug, placeA: pair?.placeA ?? "", placeB: pair?.placeB ?? "" };
+    });
 
   // Pick 4 season months for weather links
   const seasonMonths = ["march", "june", "september", "december"];
@@ -501,6 +537,40 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
           matchSlug={citySlug}
           matchOn="things_to_do_slug"
         />
+
+        {/* Bus pair links · internal authority flow to quality bus pair pages */}
+        {busPairLinks.length > 0 && (
+          <section className="rounded-xl bg-white border border-border p-6 hover:border-aegean/30 transition-colors">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-surface flex items-center justify-center">
+                <Bus className="w-6 h-6 text-aegean" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-lg font-bold text-text mb-3">{L.gettingThereBus}</h2>
+                <ul className="space-y-2">
+                  {busPairLinks.map(({ slug: pSlug, placeA, placeB }) => {
+                    const connector =
+                      locale === "fr" ? "bus" :
+                      locale === "de" ? "Bus nach" :
+                      locale === "el" ? "λεωφορείο προς" :
+                      "bus to";
+                    return (
+                      <li key={pSlug}>
+                        <Link
+                          href={`/${locale}/buses/${pSlug}`}
+                          className="inline-flex items-center gap-1 text-sm font-semibold text-aegean hover:text-aegean/80 transition-colors"
+                        >
+                          <ChevronRight className="w-4 h-4 flex-shrink-0" />
+                          {placeA} {connector} {placeB}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Other cities */}
         <section>
