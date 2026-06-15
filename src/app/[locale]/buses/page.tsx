@@ -14,6 +14,8 @@ const META: Record<string, { title: string; desc: string }> = {
   fr: { title: "Horaires de Bus en Crète 2026 - Lignes et Prix KTEL", desc: "Tous les horaires de bus KTEL en Crète avec les prix 2026 : Héraklion–La Canée, Héraklion–Agios Nikolaos, La Canée–Elafonissi, liaisons aéroport, durées de trajet et planificateur d'itinéraire gratuit." },
   de: { title: "Kreta Busfahrplan 2026 - KTEL Abfahrtszeiten & Preise", desc: "Alle KTEL-Busfahrpläne für Kreta mit Ticketpreisen 2026: Heraklion–Chania, Heraklion–Agios Nikolaos, Chania–Elafonissi, Flughafenverbindungen, Fahrzeiten und kostenloser Routenplaner." },
   el: { title: "Δρομολόγια ΚΤΕΛ Κρήτης 2026 - Ώρες & Τιμές Εισιτηρίων", desc: "Όλα τα δρομολόγια ΚΤΕΛ Κρήτης με τιμές εισιτηρίων 2026: Ηράκλειο–Χανιά, Ηράκλειο–Άγιος Νικόλαος, Χανιά–Ελαφονήσι, συνδέσεις αεροδρομίου, χρόνοι διαδρομής και δωρεάν σχεδιασμός διαδρομής." },
+  fi: { title: "Kreetan bussiaikataulut 2026 - KTEL-reitit ja hinnat", desc: "Kaikki KTEL-bussiaikataulut Kreetalla 2026: Heraklion-Chania, Heraklion-Agios Nikolaos, lentokenttayhteydet, matka-ajat ja ilmainen reittiopas." },
+  nl: { title: "Bus dienstregeling Kreta 2026 - KTEL routes en prijzen", desc: "Alle KTEL busdienstregelingen op Kreta 2026: Heraklion-Chania, Heraklion-Agios Nikolaos, luchthavenverbindingen, reistijden en gratis routeplanner." },
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
