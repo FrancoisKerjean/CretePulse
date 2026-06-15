@@ -7,6 +7,8 @@
 - SP1 (`2026-06-14-osm-bus-network-ingestion-design.md`) : réseau OSM en prod (489 stops / 78 lignes / 835 line_stops, `geometry` + `bus_line_stops.cumulative_km/minutes`).
 - SP2 (`2026-06-14-ktel-apparier-design.md`) : horaires KTEL appariés aux tracés. **Déployé en prod le 15/06** : `bus_routes.line_id` peuplé (196 routes appariées, ~48 % des paires) + 78 lignes fallback `source='ktel'`. La dépendance de SP4 est levée.
 
+**Coordination moteur (arbitrage Kami 15/06)** : le moteur de position est une **couche partagée unique** `src/lib/bus-live/` (spec `2026-06-15-bus-live-engine-design.md`), développée dans **ce même worktree** (`cretepulse-live`, branche `feat/bus-live-map`) — pas d'endpoint serveur, pas de second worktree. L'ancien découpage « moteur = autre terminal (cretepulse-sp3) » est abandonné ; moteur + carte vivent ensemble, le découpage reste une frontière de **couches** (headless vs rendu), pas de terminaux.
+
 ## Vision
 
 Une carte animée de la Crète où **tous les bus avancent en direct estimatif** : leur position est calculée à l'instant courant depuis l'horaire de départ + le tracé + le profil de temps. Aucun GPS. Badge honnête « position estimée selon l'horaire ». C'est la preuve visible que la chaîne données -> carte fonctionne, et la fondation sur laquelle le GPS réel se branchera plus tard.
@@ -43,30 +45,30 @@ La donnée nécessaire existe déjà en base (Postgres self-hosted VPS, lu via P
 
 | Fichier | Responsabilité |
 |---|---|
-| `src/lib/live-position.ts` | **Moteur pur** (zéro I/O). `busesAt(nowAthens, network) -> LiveBus[]`. Interpolation temps -> distance (cumulative_minutes) puis distance -> point (geometry). Filtre les départs en cours et le jour de la semaine. Calcule prochain arrêt + ETA + cap. |
-| `src/lib/live-network.ts` | Chargement réseau : lignes (geometry, profil) + horaires. v0 = mapping temporaire de N lignes ; v1 = jointure via `bus_routes.line_id`. Renvoie la structure consommée par le moteur. |
+| `@/lib/bus-live/` (couche moteur — spec `2026-06-15-bus-live-engine-design.md`, **même worktree**) | **Importé, jamais réécrit ici.** `busesAt(now, network) -> LiveBus[]` (moteur pur `position.ts`) + `loadLiveNetwork()` (`network.ts`, chargement client `supabase` anon, jointure `bus_routes.line_id`) + types (`LiveBus`). SP4 ne contient AUCUN code moteur. |
 | `src/components/live/LiveMap.tsx` | Carte MapLibre (réutilise le setup `ExploreView`/`MapView`) : fond + tracés des lignes. |
 | `src/components/live/LiveBusLayer.tsx` | Animation : tick (`setInterval` ~2 s) + interpolation fluide (`requestAnimationFrame`, `setLngLat`) pour que les marqueurs glissent sans saut. |
 | `src/app/[locale]/live/page.tsx` | Page : carte plein écran + badge « estimé » + légende + compteur de bus en circulation. |
 
-## Le moteur (cœur testable)
+## Le moteur (délégué à la couche `bus-live`)
 
-Pour chaque ligne (un sens = une route `from -> to`) :
-1. Filtrer les `departures` actifs aujourd'hui (`departures_by_day`/`frequency` -> jour courant) dont `H <= now <= H + total_minutes`.
-2. Pour chaque départ actif : `elapsed = now - H`. Trouver les 2 arrêts encadrant `elapsed` dans le profil (`cumulative_minutes[i] <= elapsed <= cumulative_minutes[i+1]`), interpoler `targetKm` (`cumulative_km`).
-3. Projeter `targetKm` sur `geometry` : parcourir la polyligne en cumulant la longueur des segments jusqu'à `targetKm` -> `{lat, lng}` + cap (bearing) du segment courant.
-4. Émettre `LiveBus { lineId, code, lat, lng, bearing, nextStop, etaMinNext, headsign }`.
+Le moteur de position n'est **pas (re)défini ici**. Il est spécifié, testé et possédé par `2026-06-15-bus-live-engine-design.md` (couche `src/lib/bus-live/`, même worktree). SP4 l'**importe** :
 
-Fonctions pures séparées et testées : `activeDepartures()`, `elapsedToKm()`, `kmToPoint()`, `busesAt()`.
+```ts
+import { busesAt, loadLiveNetwork, type LiveBus } from "@/lib/bus-live";
+```
+
+SP4 consomme le contrat `LiveBus` (`lat`, `lng`, `bearing`, `nextStop`, `etaMinNext`, `headsign`, `progress`, `direction`, `degraded`) et **ne teste pas l'interpolation** (couverte par `scripts/check-bus-live.mjs`). Voir « Gestion du sens » et « Type LiveBus » dans le spec moteur.
 
 ## Tests (TDD)
 
+Les tests du **moteur** (`elapsedToKm`, `kmToPoint`, `activeDepartures`, `busesAt`, sens arrière, KTEL-fallback) appartiennent à la couche `bus-live` (`scripts/check-bus-live.mjs`). SP4 teste ce qui lui est **propre** :
+
 | Test | Assertion |
 |---|---|
-| `elapsedToKm` | 09:22 sur LAS-07 (profil 0/1/22/30/37 min, 0/0.4/5.9/8.0/10.0 km) -> entre Ellinika et l'arrêt suivant, km interpolé attendu. |
-| `kmToPoint` | une polyligne connue + un km -> point attendu sur le bon segment + cap. |
-| `activeDepartures` | avant le 1er départ -> 0 bus ; après le dernier -> 0 bus ; un mardi vs un dimanche selon `frequency`. |
-| `busesAt` | réseau fixture 1 ligne + heure donnée -> liste de bus positionnés correctement. |
+| interpolation d'animation | entre deux ticks (≈2 s), le marqueur glisse de façon monotone de `posₜ` vers `posₜ₊Δ` (RAF, `setLngLat`), sans saut. |
+| `visibilitychange` | au retour de focus, recalcul complet `busesAt(athensNow(), network)` (pas de dérive des timers throttlés). |
+| compteur | « N bus en circulation » = `busesAt(...).length`, honnête (0 hors plage horaire). |
 
 ## Périmètre
 
@@ -86,6 +88,6 @@ Fonctions pures séparées et testées : `activeDepartures()`, `elapsedToKm()`, 
 |---|---|
 | Position estimée prise pour du réel | Badge explicite « selon l'horaire », jamais « live » avant le GPS. |
 | Profil de temps OSM approximatif | Suffisant pour de l'estimatif ; l'IA d'affinage viendra plus tard. |
-| Lignes fallback KTEL (géométrie droite 2 terminus) | Position grossière ; les exclure de la v1 ou les marquer « tracé approximatif ». |
+| Lignes fallback KTEL (géométrie droite 2 terminus) | **Décision Kami 15/06** : le moteur les produit (`degraded:true`), la carte les **affiche marquées « tracé approximatif »** (densité visible dès la v1, honnêteté préservée par le marquage). |
 | Onglet inactif (timers throttlés) | Recalcul complet au retour de focus (`visibilitychange`). |
 | Densité visuelle faible hors saison | Compteur honnête « N bus en circulation » ; la densité monte avec la saison. |
