@@ -14,7 +14,7 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   return out;
 }
 
-type State = "unsupported" | "idle" | "subscribed" | "denied" | "working";
+type State = "unsupported" | "ios-install" | "idle" | "subscribed" | "denied" | "working";
 
 const T = {
   cta: {
@@ -32,6 +32,12 @@ const T = {
     de: "Benachrichtigungen im Browser blockiert.",
     el: "Οι ειδοποιήσεις είναι αποκλεισμένες στο πρόγραμμα περιήγησης.",
   },
+  iosInstall: {
+    en: "Bus alerts: add this site to your Home Screen (Share, then Add to Home Screen) to enable them.",
+    fr: "Alertes bus : ajoute le site à ton écran d'accueil (Partager, puis Sur l'écran d'accueil) pour les activer.",
+    de: "Bus-Meldungen: Seite zum Home-Bildschirm hinzufügen (Teilen, dann Zum Home-Bildschirm), um sie zu aktivieren.",
+    el: "Ειδοποιήσεις λεωφορείων: πρόσθεσε τον ιστότοπο στην αρχική οθόνη (Κοινή χρήση, μετά Προσθήκη) για ενεργοποίηση.",
+  },
 } as const;
 type Ui = keyof (typeof T)["cta"];
 
@@ -41,8 +47,15 @@ export function PushBell({ locale, label }: { locale: string; label?: string }) 
 
   useEffect(() => {
     if (typeof window === "undefined" || !("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
+      // iOS Safari (onglet) n'expose PushManager qu'en PWA installée : on guide
+      // vers "Ajouter à l'écran d'accueil" au lieu de masquer le bouton.
+      const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+      const isiOS = /iP(hone|ad|od)/.test(ua);
+      const standalone =
+        window.matchMedia?.("(display-mode: standalone)").matches === true ||
+        (navigator as unknown as { standalone?: boolean }).standalone === true;
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setState("unsupported");
+      setState(isiOS && !standalone ? "ios-install" : "unsupported");
       return;
     }
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -79,6 +92,14 @@ export function PushBell({ locale, label }: { locale: string; label?: string }) 
   }
 
   if (state === "unsupported") return null;
+  if (state === "ios-install") {
+    return (
+      <p className="text-xs text-text-muted m-0 inline-flex items-start gap-1.5 max-w-sm">
+        <span aria-hidden>🔔</span>
+        <span>{T.iosInstall[ui]}</span>
+      </p>
+    );
+  }
   if (state === "denied") {
     return <p className="text-xs text-text-muted m-0">{T.blocked[ui]}</p>;
   }
