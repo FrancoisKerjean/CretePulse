@@ -39,6 +39,7 @@ type NavLink = { href: string; label: NavLabel };
 // Discover (explorer l'ile), Today (le flux du jour). 22 langues.
 const LINKS: Record<string, NavLink> = {
   buses: { href: "/buses", label: { en: "Buses", fr: "Bus", de: "Busse", el: "Λεωφορεία", it: "Autobus", nl: "Bussen", pl: "Autobusy", es: "Autobuses", pt: "Autocarros", ru: "Автобусы", ja: "バス", ko: "버스", zh: "巴士", tr: "Otobüsler", sv: "Bussar", da: "Busser", no: "Busser", fi: "Bussit", cs: "Autobusy", hu: "Buszok", ro: "Autobuze", ar: "حافلات" } },
+  live: { href: "/live", label: { en: "Live", fr: "Live", de: "Live", el: "Live", it: "Live", nl: "Live", pl: "Live", es: "Live", pt: "Live", ru: "Live", ja: "Live", ko: "Live", zh: "Live", tr: "Live", sv: "Live", da: "Live", no: "Live", fi: "Live", cs: "Live", hu: "Live", ro: "Live", ar: "Live" } },
   airports: { href: "/airport", label: { en: "Airports", fr: "Aéroports", de: "Flughäfen", el: "Αεροδρόμια", it: "Aeroporti", nl: "Luchthavens", pl: "Lotniska", es: "Aeropuertos", pt: "Aeroportos", ru: "Аэропорты", ja: "空港", ko: "공항", zh: "机场", tr: "Havalimanları", sv: "Flygplatser", da: "Lufthavne", no: "Flyplasser", fi: "Lentokentät", cs: "Letiště", hu: "Repülőterek", ro: "Aeroporturi", ar: "مطارات" } },
   weather: { href: "/weather", label: { en: "Weather", fr: "Météo", de: "Wetter", el: "Καιρός", it: "Meteo", nl: "Weer", pl: "Pogoda", es: "Clima", pt: "Tempo", ru: "Погода", ja: "天気", ko: "날씨", zh: "天气", tr: "Hava", sv: "Väder", da: "Vejr", no: "Vær", fi: "Sää", cs: "Počasí", hu: "Időjárás", ro: "Vreme", ar: "طقس" } },
   nearMe: { href: "/near-me", label: { en: "Near me", fr: "Autour de moi", de: "In meiner Nähe", el: "Κοντά μου", it: "Vicino a me", nl: "In de buurt", pl: "W pobliżu", es: "Cerca de mí", pt: "Perto de mim", ru: "Рядом со мной", ja: "近くのスポット", ko: "내 주변", zh: "我附近", tr: "Yakınımda", sv: "Nära mig", da: "Nær mig", no: "Nær meg", fi: "Lähelläni", cs: "Poblíž", hu: "Közelemben", ro: "Lângă mine", ar: "بالقرب مني" } },
@@ -58,7 +59,7 @@ const NAV_GROUPS: Array<{ key: string; label: NavLabel; items: NavLink[] }> = [
   {
     key: "plan",
     label: { en: "Plan", fr: "Planifier", de: "Planen", el: "Σχεδιασμός", it: "Pianifica", nl: "Plannen", pl: "Planuj", es: "Planificar", pt: "Planear", ru: "Спланировать", ja: "プラン", ko: "계획", zh: "规划", tr: "Planla", sv: "Planera", da: "Planlæg", no: "Planlegg", fi: "Suunnittele", cs: "Plánovat", hu: "Tervezés", ro: "Planifică", ar: "خطط" },
-    items: [LINKS.buses, LINKS.airports, LINKS.carRental, LINKS.weather, LINKS.nearMe],
+    items: [LINKS.buses, LINKS.live, LINKS.airports, LINKS.carRental, LINKS.weather, LINKS.nearMe],
   },
   {
     key: "discover",
