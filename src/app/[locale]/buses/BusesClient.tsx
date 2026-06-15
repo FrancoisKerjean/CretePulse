@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Info, ChevronDown, TriangleAlert } from "lucide-react";
+import { Info, ChevronDown } from "lucide-react";
 import { CiBus } from "@/components/icons";
 import Link from "next/link";
 import type { Locale } from "@/lib/types";
@@ -15,6 +15,7 @@ import { RouteLine } from "@/components/RouteLine";
 import { originPlaces } from "@/lib/bus-departures";
 import { pairSlug } from "@/lib/bus-pairs";
 import { PushBell } from "@/components/PushBell";
+import { ServiceAlertBar } from "@/components/ServiceAlertBar";
 
 // ---------------------------------------------------------------------------
 // Slugs valides des pages cibles (mirror des generateStaticParams cote serveur).
@@ -82,18 +83,6 @@ const T = {
   seeAllRoutes: {
     en: "See all routes", fr: "Voir toutes les lignes",
     de: "Alle Linien anzeigen", el: "Δείτε όλες τις γραμμές",
-  },
-  alertsTitle: {
-    en: "Service alerts · KTEL East",
-    fr: "Alertes service · KTEL Est",
-    de: "Betriebsmeldungen · KTEL Ost",
-    el: "Ειδοποιήσεις · ΚΤΕΛ Ανατολικής",
-  },
-  alertsSource: {
-    en: "From KTEL Heraklion-Lasithi announcements. Click to read the official notice before travelling.",
-    fr: "Annonces KTEL Héraklion-Lassithi. Cliquez pour lire l'avis officiel avant de partir.",
-    de: "Meldungen von KTEL Heraklion-Lasithi. Vor der Fahrt die offizielle Mitteilung lesen.",
-    el: "Ανακοινώσεις ΚΤΕΛ Ηρακλείου-Λασιθίου. Διαβάστε την επίσημη ανακοίνωση πριν ταξιδέψετε.",
   },
   departures: { en: "Departures", fr: "Départs", de: "Abfahrten", el: "Αναχωρήσεις" },
   perDay: { en: "/ day", fr: "/ jour", de: "/ Tag", el: "/ ημέρα" },
@@ -173,45 +162,6 @@ function NoDirectBusCard({ destination, locale }: { destination: BusDestination;
           </Link>
         )}
       </div>
-    </div>
-  );
-}
-
-// Bandeau d'alertes service (KTEL Est) : perturbations/itinéraires modifiés du
-// jour, pour ne pas se fier à un horaire d'une ligne suspendue. Titres en
-// anglais (libellé officiel KTEL) ; lien vers l'annonce officielle (détail
-// souvent en pièce jointe PDF -> on renvoie à la source plutôt que d'inventer).
-function BusAlertsBanner({ alerts, locale }: { alerts: BusAlert[]; locale: Locale }) {
-  if (alerts.length === 0) return null;
-  return (
-    <div className="mb-6 rounded-[20px] border border-amber-300 bg-amber-50 px-5 py-4">
-      <div className="flex items-center gap-2 mb-2.5">
-        <TriangleAlert className="w-5 h-5 text-amber-700 shrink-0" />
-        <p className="font-heading font-bold text-sm text-amber-900 m-0">{t("alertsTitle", locale)}</p>
-      </div>
-      <ul className="space-y-2 list-none p-0 m-0">
-        {alerts.map((a) => (
-          <li key={a.slug} className="text-sm leading-snug">
-            <a
-              href={a.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-amber-900 hover:underline font-semibold"
-            >
-              {a.published_date && (
-                <span className="font-data text-xs text-amber-700 mr-1.5">
-                  {new Date(a.published_date).toLocaleDateString(locale)}
-                </span>
-              )}
-              {a.title}
-            </a>
-            {a.matched_routes && a.matched_routes.length > 0 && (
-              <span className="text-xs text-amber-700"> · {a.matched_routes.join(" · ")}</span>
-            )}
-          </li>
-        ))}
-      </ul>
-      <p className="text-[11px] text-amber-700 mt-2.5 mb-0">{t("alertsSource", locale)}</p>
     </div>
   );
 }
@@ -436,7 +386,7 @@ export function BusesClient({
         </div>
 
         {/* Alertes service KTEL Est (perturbations/itinéraires modifiés du jour) */}
-        <BusAlertsBanner alerts={alerts} locale={locale} />
+        <ServiceAlertBar alerts={alerts} locale={locale} variant="global" />
 
         {/* Planificateur d'itineraire (combobox + chips date + swap) */}
         <JourneyPlanner
