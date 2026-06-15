@@ -1,9 +1,16 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { loadLiveNetwork, type LiveNetwork } from "@/lib/bus-live";
+import {
+  loadLiveNetwork, busesAt, reconcile, lerp, lerpAngle,
+  type LiveNetwork, type LiveBus,
+} from "@/lib/bus-live";
+import { athensNow } from "@/lib/athens-time";
+import { createBusEl, setBusArrow } from "./busMarker";
 
 type MaplibreMap = import("maplibre-gl").Map;
+type MaplibreMarker = import("maplibre-gl").Marker;
+type Pose = { lat: number; lng: number; bearing: number };
 
 function linesGeoJSON(net: LiveNetwork) {
   return {
@@ -20,10 +27,16 @@ export function LiveMapClient({ locale }: { locale: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MaplibreMap | null>(null);
   const netRef = useRef<LiveNetwork | null>(null);
-  const [ready, setReady] = useState(false);
+  const markersRef = useRef(new Map<string, { marker: MaplibreMarker; el: HTMLDivElement; cur: Pose }>());
+  const targetsRef = useRef(new Map<string, LiveBus>());
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
+    let iv: ReturnType<typeof setInterval> | undefined;
+    let raf = 0;
+    let onVis: (() => void) | undefined;
+
     Promise.all([import("maplibre-gl"), loadLiveNetwork()]).then(([ml, net]) => {
       if (cancelled || !containerRef.current) return;
       netRef.current = net;
@@ -34,6 +47,7 @@ export function LiveMapClient({ locale }: { locale: string }) {
       });
       map.addControl(new ml.NavigationControl({ showCompass: false }), "top-right");
       mapRef.current = map;
+
       map.on("load", () => {
         if (cancelled) return;
         map.addSource("bus-lines", { type: "geojson", data: linesGeoJSON(net) });
@@ -47,10 +61,54 @@ export function LiveMapClient({ locale }: { locale: string }) {
           filter: ["get", "degraded"],
           paint: { "line-color": "#5C7886", "line-width": 2, "line-dasharray": [2, 2], "line-opacity": 0.5 },
         });
-        setReady(true);
+
+        const markers = markersRef.current;
+        const tick = () => {
+          const n = netRef.current; if (!n) return;
+          const buses = busesAt(athensNow(), n);
+          setCount(buses.length);
+          const poses = new Map([...markers].map(([id, m]) => [id, m.cur]));
+          const { entering, leaving } = reconcile(poses, buses);
+          for (const bus of entering) {
+            const el = createBusEl(bus);
+            const marker = new ml.Marker({ element: el }).setLngLat([bus.lng, bus.lat]).addTo(map);
+            markers.set(bus.id, { marker, el, cur: { lat: bus.lat, lng: bus.lng, bearing: bus.bearing } });
+          }
+          for (const id of leaving) { markers.get(id)?.marker.remove(); markers.delete(id); }
+          targetsRef.current = new Map(buses.map((bus) => [bus.id, bus]));
+        };
+        tick();
+        iv = setInterval(tick, 2000);
+
+        const animate = () => {
+          for (const [id, m] of markers) {
+            const t = targetsRef.current.get(id);
+            if (!t) continue;
+            m.cur.lat = lerp(m.cur.lat, t.lat, 0.08);
+            m.cur.lng = lerp(m.cur.lng, t.lng, 0.08);
+            m.cur.bearing = lerpAngle(m.cur.bearing, t.bearing, 0.12);
+            m.marker.setLngLat([m.cur.lng, m.cur.lat]);
+            setBusArrow(m.el, m.cur.bearing);
+          }
+          raf = requestAnimationFrame(animate);
+        };
+        raf = requestAnimationFrame(animate);
+
+        onVis = () => { if (document.visibilityState === "visible") tick(); };
+        document.addEventListener("visibilitychange", onVis);
       });
     });
-    return () => { cancelled = true; mapRef.current?.remove(); mapRef.current = null; };
+
+    return () => {
+      cancelled = true;
+      if (iv) clearInterval(iv);
+      if (raf) cancelAnimationFrame(raf);
+      if (onVis) document.removeEventListener("visibilitychange", onVis);
+      for (const m of markersRef.current.values()) m.marker.remove();
+      markersRef.current.clear();
+      mapRef.current?.remove();
+      mapRef.current = null;
+    };
   }, []);
 
   return (
