@@ -343,3 +343,42 @@ export async function sendSelectionEmail(email: string, locale: string, places: 
   if (error) throw new Error(`Resend: ${error.message}`);
   return data;
 }
+
+// =============================================================================
+// Community reviews — magic-link confirmation + e-mail-based deletion
+// =============================================================================
+
+type ReviewMailLocale = "en" | "fr" | "de" | "el";
+
+const REVIEW_SUBJECT: Record<ReviewMailLocale, string> = {
+  en: "Confirm your review on crete.direct",
+  fr: "Confirme ton avis sur crete.direct",
+  de: "Bestätige deine Bewertung auf crete.direct",
+  el: "Επιβεβαίωσε την κριτική σου στο crete.direct",
+};
+
+const REVIEW_BODY: Record<ReviewMailLocale, (placeName: string, confirmUrl: string, deleteUrl: string) => string> = {
+  en: (p, c, d) => `Hi,\n\nThanks for reviewing ${p} on crete.direct.\n\nConfirm your review (one click):\n${c}\n\nChanged your mind? Delete it:\n${d}\n\n— crete.direct`,
+  fr: (p, c, d) => `Bonjour,\n\nMerci pour ton avis sur ${p} sur crete.direct.\n\nConfirme ton avis (un clic) :\n${c}\n\nTu as changé d'avis ? Supprime-le :\n${d}\n\n— crete.direct`,
+  de: (p, c, d) => `Hallo,\n\nDanke für deine Bewertung von ${p} auf crete.direct.\n\nBewertung bestätigen (ein Klick):\n${c}\n\nMeinung geändert? Löschen:\n${d}\n\n— crete.direct`,
+  el: (p, c, d) => `Γεια,\n\nΕυχαριστούμε για την κριτική σου για το ${p} στο crete.direct.\n\nΕπιβεβαίωσε (ένα κλικ):\n${c}\n\nΆλλαξες γνώμη; Διαγραφή:\n${d}\n\n— crete.direct`,
+};
+
+export async function sendReviewConfirmationEmail(opts: {
+  email: string;
+  confirmToken: string;
+  deleteToken: string;
+  locale: string;
+  placeName: string;
+}): Promise<void> {
+  const l = (["en", "fr", "de", "el"].includes(opts.locale) ? opts.locale : "en") as ReviewMailLocale;
+  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://crete.direct";
+  const confirmUrl = `${base}/api/reviews/confirm?token=${encodeURIComponent(opts.confirmToken)}`;
+  const deleteUrl  = `${base}/api/reviews/delete?token=${encodeURIComponent(opts.deleteToken)}`;
+  await resend.emails.send({
+    from: `crete.direct <${process.env.RESEND_FROM ?? "noreply@crete.direct"}>`,
+    to: opts.email,
+    subject: REVIEW_SUBJECT[l],
+    text: REVIEW_BODY[l](opts.placeName, confirmUrl, deleteUrl),
+  });
+}
