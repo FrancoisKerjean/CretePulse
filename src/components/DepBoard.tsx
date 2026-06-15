@@ -96,7 +96,7 @@ export function DepBoard({ routes, locale, count = 3 }: { routes: BusRoute[]; lo
       </div>
       <div className="font-data">
         {deps.map((d) => {
-          const rowClass = "grid grid-cols-[1fr_auto_auto_auto_auto] gap-5 items-center py-3 border-t border-[#EAF7FA]/12";
+          const rowClass = "grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-3 sm:gap-x-5 items-center py-3 border-t border-[#EAF7FA]/12";
           const inner = (
             <>
               <span className="font-semibold">{d.from} <span className="text-lagoon mx-1">·</span> {d.to}</span>
