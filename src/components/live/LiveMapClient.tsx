@@ -7,14 +7,15 @@ import {
 } from "@/lib/bus-live";
 import { athensNow } from "@/lib/athens-time";
 import { createBusEl, setBusArrow } from "./busMarker";
+import { Link } from "@/i18n/navigation";
 
 type MaplibreMap = import("maplibre-gl").Map;
 type MaplibreMarker = import("maplibre-gl").Marker;
 type Pose = { lat: number; lng: number; bearing: number };
 
-const T: Record<string, { estimated: string; circulating: string; osm: string; ktel: string }> = {
-  en: { estimated: "Estimated from the timetable", circulating: "buses running", osm: "mapped line", ktel: "approximate route" },
-  fr: { estimated: "Estimé selon l'horaire", circulating: "bus en circulation", osm: "ligne tracée", ktel: "tracé approximatif" },
+const T: Record<string, { estimated: string; circulating: string; planTrip: string; rentCar: string }> = {
+  en: { estimated: "Estimated from the timetable", circulating: "buses running", planTrip: "Plan a trip", rentCar: "Rent a car" },
+  fr: { estimated: "Estimé selon l'horaire", circulating: "bus en circulation", planTrip: "Planifier un trajet", rentCar: "Louer une voiture" },
 };
 
 // v1 : on ne trace que les lignes à vraie géométrie OSM. Les lignes KTEL-fallback
@@ -131,6 +132,23 @@ export function LiveMapClient({ locale }: { locale: string }) {
         <span className="pointer-events-auto inline-flex items-baseline gap-1.5 rounded-full bg-surface/90 px-3 py-1.5 text-sm text-text shadow backdrop-blur">
           <span className="font-data font-bold text-aegean tabular-nums">{count}</span> {t.circulating}
         </span>
+      </div>
+
+      <div className="pointer-events-none absolute inset-x-0 bottom-14 z-10 flex justify-center px-3 sm:bottom-6">
+        <div className="flex w-full max-w-sm gap-2 sm:w-auto">
+          <Link
+            href="/buses"
+            className="pointer-events-auto inline-flex flex-1 items-center justify-center rounded-full bg-aegean px-5 py-2.5 text-sm font-heading font-semibold text-white shadow-lg transition hover:bg-aegean/90 sm:flex-none"
+          >
+            {t.planTrip}
+          </Link>
+          <Link
+            href="/car-rental"
+            className="pointer-events-auto inline-flex flex-1 items-center justify-center rounded-full bg-terra px-5 py-2.5 text-sm font-heading font-semibold text-white shadow-lg transition hover:bg-terra/90 sm:flex-none"
+          >
+            {t.rentCar}
+          </Link>
+        </div>
       </div>
     </div>
   );
