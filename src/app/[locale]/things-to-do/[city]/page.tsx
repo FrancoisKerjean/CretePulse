@@ -550,7 +550,7 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
                 <ul className="space-y-2">
                   {busPairLinks.map(({ slug: pSlug, placeA, placeB }) => {
                     const connector =
-                      locale === "fr" ? "bus" :
+                      locale === "fr" ? "bus pour" :
                       locale === "de" ? "Bus nach" :
                       locale === "el" ? "λεωφορείο προς" :
                       "bus to";
