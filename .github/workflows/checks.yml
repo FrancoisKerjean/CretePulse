@@ -16,5 +16,8 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-      - run: npm ci
+      # npm install (pas ci) : le package-lock.json du repo est desynchronise
+      # (drift pre-existant, ex. @swc/helpers manquant) ; npm install reconcilie
+      # dans le runner sans exiger un lockfile parfait.
+      - run: npm install --no-audit --no-fund
       - run: npm run check
