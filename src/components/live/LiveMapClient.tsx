@@ -7,10 +7,16 @@ import {
 } from "@/lib/bus-live";
 import { athensNow } from "@/lib/athens-time";
 import { createBusEl, setBusArrow } from "./busMarker";
+import { NumberTicker } from "@/components/ui/number-ticker";
 
 type MaplibreMap = import("maplibre-gl").Map;
 type MaplibreMarker = import("maplibre-gl").Marker;
 type Pose = { lat: number; lng: number; bearing: number };
+
+const T: Record<string, { estimated: string; circulating: string; osm: string; ktel: string }> = {
+  en: { estimated: "Estimated from the timetable", circulating: "buses running", osm: "mapped line", ktel: "approximate route" },
+  fr: { estimated: "Estimé selon l'horaire", circulating: "bus en circulation", osm: "ligne tracée", ktel: "tracé approximatif" },
+};
 
 function linesGeoJSON(net: LiveNetwork) {
   return {
@@ -111,9 +117,26 @@ export function LiveMapClient({ locale }: { locale: string }) {
     };
   }, []);
 
+  const t = T[locale] ?? T.en;
+
   return (
     <div className="relative overflow-hidden" style={{ height: "calc(100vh - 56px)" }}>
       <div className="absolute inset-0"><div ref={containerRef} className="h-full w-full" /></div>
+
+      <div className="pointer-events-none absolute left-3 top-3 z-10 flex flex-col gap-2">
+        <span className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full bg-night/90 px-3 py-1.5 text-xs font-medium text-sand backdrop-blur">
+          <span className="h-1.5 w-1.5 rounded-full bg-sun animate-live-pulse" />
+          {t.estimated}
+        </span>
+        <span className="pointer-events-auto inline-flex items-baseline gap-1.5 rounded-full bg-surface/90 px-3 py-1.5 text-sm text-text shadow backdrop-blur">
+          <NumberTicker value={count} className="font-data font-bold text-aegean" /> {t.circulating}
+        </span>
+      </div>
+
+      <div className="pointer-events-none absolute bottom-3 left-3 z-10 flex flex-col gap-1 rounded-lg bg-surface/90 px-3 py-2 text-[11px] text-text-muted shadow backdrop-blur">
+        <span className="flex items-center gap-2"><span className="inline-block h-0.5 w-5 bg-aegean" /> {t.osm}</span>
+        <span className="flex items-center gap-2"><span className="inline-block h-0.5 w-5 border-t-2 border-dashed border-text-muted" /> {t.ktel}</span>
+      </div>
     </div>
   );
 }
