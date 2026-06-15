@@ -25,11 +25,12 @@ for (const c of [fr, en]) {
 // 4) payload de partage localisé non vide
 assert.ok(SHARE.fr.title.length > 5 && SHARE.en.title.length > 5);
 
-// 5) zéro tiret cadratin (—) dans toute la copie
+// 5) zero tiret cadratin (U+2014) dans toute la copie
+const EMDASH = String.fromCharCode(0x2014);
 function strings(o){ return typeof o === "string" ? [o] : (o && typeof o === "object") ? Object.values(o).flatMap(strings) : []; }
 for (const loc of ["fr", "en"]) {
   for (const s of [...strings(getCampagneCopy(loc)), ...strings(SHARE[loc])]) {
-    assert.ok(!s.includes("—"), `em-dash interdit dans: ${s}`);
+    assert.ok(!s.includes(EMDASH), `em-dash interdit dans: ${s}`);
   }
 }
 
