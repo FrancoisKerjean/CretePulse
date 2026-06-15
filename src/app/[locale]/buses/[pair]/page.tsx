@@ -120,6 +120,15 @@ const T = {
       `Το ταξί από ${a} προς ${b} κοστίζει περίπου ${lo}–${hi} € με το επίσημο ταξίμετρο${bus ? `· το ΚΤΕΛ κοστίζει ${bus}` : ""}. Συμφωνήστε την τιμή πριν την αναχώρηση.`,
     ],
   },
+  introParts: {
+    runs: { en: "KTEL runs", fr: "KTEL assure", de: "KTEL betreibt", el: "Το ΚΤΕΛ εκτελεί" },
+    departures: { en: "bus departures between", fr: "départs de bus entre", de: "Busabfahrten zwischen", el: "αναχωρήσεις λεωφορείου μεταξύ" },
+    and: { en: "and", fr: "et", de: "und", el: "και" },
+    first: { en: "First at", fr: "Premier départ à", de: "Erste Abfahrt um", el: "Πρώτη αναχώρηση στις" },
+    last: { en: "last at", fr: "dernier à", de: "letzte um", el: "τελευταία στις" },
+    journey: { en: "Journey about", fr: "Durée environ", de: "Fahrtzeit ca.", el: "Διαδρομή περίπου" },
+    ticket: { en: "Ticket", fr: "Billet", de: "Ticket", el: "Εισιτήριο" },
+  },
 } as const;
 
 interface Params { locale: string; pair: string }
@@ -230,6 +239,20 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
 
   // FAQ data-driven : uniquement les questions dont on a la donnee.
   const ref = pr.outbound[0] ?? pr.inbound[0];
+
+  // Paragraphe intro (Task 9) : construit depuis les données réelles, sans invention.
+  const hasTimetable = pairHasTimetable(routes as SeoRoute[], pair);
+  const introDeps: string[] = pr.outbound.flatMap((r) => r.departures ?? []);
+  const introCount = introDeps.length;
+  const introFirst = introDeps[0] ?? null;
+  const introLast = introDeps.length > 1 ? introDeps[introDeps.length - 1] : null;
+  const introDuration = ref?.duration ?? null;
+  // Prix : omis si null OU si estimé (aucun fait inventé/estimé en prose).
+  const introPrice =
+    ref?.price_eur != null && !ref.price_estimated
+      ? `${ref.price_eur.toFixed(2)} €`
+      : null;
+
   const faq: Array<[string, string]> = [];
   if (ref?.price_eur != null) {
     const p = `${ref.price_eur.toFixed(2)} €${ref.price_estimated ? ` (${T.indicative[ui]})` : ""}`;
@@ -297,6 +320,14 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
           <h1 className="font-heading font-extrabold text-3xl md:text-[42px] tracking-tight text-text m-0">
             Bus {placeA} <span className="text-lagoon-deep">{T.connector[ui]}</span> {placeB}
           </h1>
+          {hasTimetable && introCount > 0 && (
+            <p className="text-[15px] text-text-muted mt-3 mb-0 leading-relaxed">
+              {T.introParts.runs[ui]} {introCount} {T.introParts.departures[ui]} {placeA} {T.introParts.and[ui]} {placeB}.
+              {introFirst && ` ${T.introParts.first[ui]} ${introFirst}${introLast ? `, ${T.introParts.last[ui]} ${introLast}.` : "."}`}
+              {introDuration && ` ${T.introParts.journey[ui]} ${introDuration}.`}
+              {introPrice && ` ${T.introParts.ticket[ui]} ${introPrice}.`}
+            </p>
+          )}
           {ref && (
             <div className="mt-4">
               <NextDeparture route={ref} locale={ui} />
