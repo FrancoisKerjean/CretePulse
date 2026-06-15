@@ -23,6 +23,8 @@ const LABELS: Dict = {
   crowds:        { en: "crowds", fr: "affluence", de: "Andrang", el: "κόσμος" },
   access:        { en: "access", fr: "accès", de: "Zugang", el: "πρόσβαση" },
   rare:          { en: "Rare", fr: "Rare", de: "Selten", el: "Σπάνιο" },
+  notable:       { en: "Notable", fr: "À noter", de: "Sehenswert", el: "Αξιοσημείωτο" },
+  bestTime:      { en: "best time", fr: "quand", de: "wann", el: "πότε" },
   nearby:        { en: "nearby", fr: "à proximité", de: "in der Nähe", el: "κοντά" },
 };
 

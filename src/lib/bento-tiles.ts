@@ -19,6 +19,8 @@ export interface BentoTiles {
   population?: number | null;
   altitude_m?: number | null;
   specialty?: string | null;        // EN court, ex "Famous for chestnuts"
+  // discovery (activity / flora / fauna / lighthouse / other)
+  best_time?: string | null;        // EN court, ex "Spring", "Early morning"
   // commun / fallback
   access_note?: string | null;      // EN court, ex "Reached on foot via village alleys"
 }
