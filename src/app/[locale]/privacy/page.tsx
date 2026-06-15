@@ -82,6 +82,13 @@ const CONTENT: Record<
         ],
       },
       {
+        heading: "Push Notifications",
+        content: [
+          "If you explicitly opt in, we store the pseudonymous push endpoint your browser provides (no email, no personal data) solely to send you bus and urgent Crete alerts.",
+          "You can revoke it anytime from your browser settings or by turning the bell off.",
+        ],
+      },
+      {
         heading: "Data Storage & Security",
         content: [
           "All data is stored in the EU (Supabase EU region).",
@@ -137,6 +144,13 @@ const CONTENT: Record<
           "Vous pouvez vous désabonner à tout moment en cliquant sur le lien de désabonnement dans n'importe quel e-mail.",
           "Votre e-mail est utilisé uniquement pour vous envoyer notre infolettre.",
           "Nous ne partageons pas votre e-mail avec des tiers.",
+        ],
+      },
+      {
+        heading: "Notifications Push",
+        content: [
+          "Si vous y consentez explicitement, nous stockons l'endpoint push pseudonyme fourni par votre navigateur (pas d'e-mail, aucune donnée personnelle), uniquement pour vous envoyer les alertes bus et infos urgentes de Crète.",
+          "Vous pouvez le révoquer à tout moment depuis les réglages de votre navigateur ou en désactivant la cloche.",
         ],
       },
       {
@@ -198,6 +212,13 @@ const CONTENT: Record<
         ],
       },
       {
+        heading: "Push-Benachrichtigungen",
+        content: [
+          "Wenn Sie ausdrücklich zustimmen, speichern wir den pseudonymen Push-Endpoint Ihres Browsers (keine E-Mail, keine personenbezogenen Daten), ausschließlich um Ihnen Bus- und Eilmeldungen für Kreta zu senden.",
+          "Sie können dies jederzeit in den Browsereinstellungen oder durch Deaktivieren der Glocke widerrufen.",
+        ],
+      },
+      {
         heading: "Datenspeicherung und Sicherheit",
         content: [
           "Alle Daten werden in der EU gespeichert (Supabase EU-Region).",
@@ -253,6 +274,13 @@ const CONTENT: Record<
           "Μπορείτε να καταργήσετε την εγγραφή σας ανά πάσα στιγμή κάνοντας κλικ στο σύνδεσμο κατάργησης εγγραφής σε οποιοδήποτε μήνυμα ηλεκτρονικού ταχυδρομείου.",
           "Το ηλεκτρονικό σας ταχυδρομείο χρησιμοποιείται μόνο για να σας στείλουμε το ενημερωτικό μας δελτίο.",
           "Δεν κοινοποιούμε το ηλεκτρονικό σας ταχυδρομείο σε τρίτα μέρη.",
+        ],
+      },
+      {
+        heading: "Ειδοποιήσεις Push",
+        content: [
+          "Αν συναινέσετε ρητά, αποθηκεύουμε το ψευδώνυμο push endpoint που παρέχει το πρόγραμμα περιήγησής σας (χωρίς email, χωρίς προσωπικά δεδομένα), αποκλειστικά για να σας στέλνουμε ειδοποιήσεις λεωφορείων και έκτακτα της Κρήτης.",
+          "Μπορείτε να το ανακαλέσετε ανά πάσα στιγμή από τις ρυθμίσεις του προγράμματος περιήγησης ή απενεργοποιώντας το καμπανάκι.",
         ],
       },
       {

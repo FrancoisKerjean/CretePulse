@@ -14,6 +14,7 @@ import { DepartureBoard } from "@/components/DepartureBoard";
 import { RouteLine } from "@/components/RouteLine";
 import { originPlaces } from "@/lib/bus-departures";
 import { pairSlug } from "@/lib/bus-pairs";
+import { PushBell } from "@/components/PushBell";
 
 // ---------------------------------------------------------------------------
 // Slugs valides des pages cibles (mirror des generateStaticParams cote serveur).
@@ -428,6 +429,10 @@ export function BusesClient({
               {t("updatedOn", locale)} {new Date(updatedAt).toLocaleDateString(locale)}
             </p>
           )}
+          {/* Opt-in push : alertes bus KTEL + infos urgentes (consentement explicite) */}
+          <div className="mt-3">
+            <PushBell locale={locale} />
+          </div>
         </div>
 
         {/* Alertes service KTEL Est (perturbations/itinéraires modifiés du jour) */}
