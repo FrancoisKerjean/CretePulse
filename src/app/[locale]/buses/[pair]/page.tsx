@@ -8,7 +8,7 @@ import { getBusRoutes, getBusDestinations, latestScrapedAt } from "@/lib/buses";
 import type { BusRoute } from "@/lib/buses";
 import { eligiblePairs, pairRoutes, onwardPlaces, pairSlug, slugifyPlace } from "@/lib/bus-pairs";
 import { getBusAlerts } from "@/lib/bus-alerts";
-import { RouteAlertBanner } from "@/components/RouteAlertBanner";
+import { ServiceAlertBar } from "@/components/ServiceAlertBar";
 import { TaxiCompare } from "@/components/TaxiCompare";
 import { NextDeparture } from "@/components/NextDeparture";
 import { TimeChips } from "@/components/TimeChips";
@@ -327,7 +327,7 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
       </header>
 
       <div className="max-w-3xl mx-auto px-4 pt-6 pb-12">
-        <RouteAlertBanner alerts={routeAlerts} locale={ui} />
+        <ServiceAlertBar alerts={routeAlerts} locale={ui} variant="route" />
         <DirectionSection from={placeA} to={placeB} routes={pr.outbound} ui={ui} />
         <DirectionSection from={placeB} to={placeA} routes={pr.inbound} ui={ui} />
 
