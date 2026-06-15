@@ -7,6 +7,8 @@ import { buildAlternates } from "@/lib/seo";
 import { getBusRoutes, getBusDestinations, latestScrapedAt } from "@/lib/buses";
 import type { BusRoute } from "@/lib/buses";
 import { eligiblePairs, pairRoutes, onwardPlaces, pairSlug, slugifyPlace } from "@/lib/bus-pairs";
+import { getBusAlerts } from "@/lib/bus-alerts";
+import { RouteAlertBanner } from "@/components/RouteAlertBanner";
 import { TaxiCompare } from "@/components/TaxiCompare";
 import { NextDeparture } from "@/components/NextDeparture";
 import { TimeChips } from "@/components/TimeChips";
@@ -211,7 +213,7 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
   const { locale, pair } = await params;
   setRequestLocale(locale);
   const ui = pickUiLoc(locale);
-  const [routes, destinations] = await Promise.all([getBusRoutes(), getBusDestinations()]);
+  const [routes, destinations, allAlerts] = await Promise.all([getBusRoutes(), getBusDestinations(), getBusAlerts()]);
   const pr = pairRoutes(routes, pair);
   if (!pr) notFound();
   const { placeA, placeB } = pr.pair;
@@ -231,6 +233,13 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
   }
   const sa = slugifyPlace(placeA)!;
   const sb = slugifyPlace(placeB)!;
+  // Alertes service concernant ce trajet : une des deux extrémités est dans matched_routes.
+  const routeAlerts = allAlerts.filter((a) =>
+    (a.matched_routes ?? []).some((r) => {
+      const s = slugifyPlace(r);
+      return s != null && (s === sa || s === sb);
+    })
+  );
   const taxiFare = taxiFareRange(sa, sb);
   if (taxiFare) {
     const busP = ref?.price_eur != null ? `${ref.price_eur.toFixed(2)} €` : null;
@@ -318,6 +327,7 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
       </header>
 
       <div className="max-w-3xl mx-auto px-4 pt-6 pb-12">
+        <RouteAlertBanner alerts={routeAlerts} locale={ui} />
         <DirectionSection from={placeA} to={placeB} routes={pr.outbound} ui={ui} />
         <DirectionSection from={placeB} to={placeA} routes={pr.inbound} ui={ui} />
 
