@@ -34,6 +34,7 @@ export interface LiveNetwork {
 
 /** Un bus positionné à l'instant t (contrat consommé par la carte). */
 export interface LiveBus {
+  id: string;                // clé de course stable: `${lineId}|${direction}|${H}`
   lineId: number;
   code: string;
   codeOfficial: string | null;

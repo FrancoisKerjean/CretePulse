@@ -171,6 +171,7 @@ export function busesAt(now: NowAthens, network: LiveNetwork): LiveBus[] {
       const pt = kmToPoint(line.geometry, dGeo);
       const ns = nextStopAndEta(oriented.orientedStops, oriented.profMin, elapsed);
       out.push({
+        id: key,
         lineId: line.id,
         code: line.code,
         codeOfficial: line.codeOfficial,

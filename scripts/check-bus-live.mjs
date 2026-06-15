@@ -115,6 +115,13 @@ assert.equal(b.nextStop, "Schisma");                 // après Ellinika (22 min)
 assert.ok(b.lat > 35.18 && b.lat < 35.26);
 assert.ok(Math.abs(b.progress - 22 / 37) < 1e-6);
 
+// id de course stable (pour la réconciliation d'animation de la carte)
+const idBus = busesAt({ iso: "2026-06-15", minutes: 562 }, netFwd)[0];
+assert.equal(idBus.id, "7|fwd|09:00");
+// stable d'un tick à l'autre (même course, instant différent)
+const idBusLater = busesAt({ iso: "2026-06-15", minutes: 565 }, netFwd)[0];
+assert.equal(idBusLater.id, "7|fwd|09:00");
+
 // hors plage horaire -> 0 bus
 assert.equal(busesAt({ iso: "2026-06-15", minutes: 400 }, netFwd).length, 0);
 
