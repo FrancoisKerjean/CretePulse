@@ -44,4 +44,19 @@ const onward = onwardPlaces(routes, "Heraklion", "Ierapetra");
 assert.ok(!onward.includes("Ierapetra"));         // exclut l'autre bout de la paire
 assert.ok(!onward.includes("Stella Blue-(Analipsis Hotels)")); // indigne exclu
 
+// --- invariant board accueil (DepBoard) : chaque paire du board -> slug valide
+// Doit rester aligne avec boardPairs dans src/app/[locale]/page.tsx. Si une de
+// ces paires perd son slug, les rangees du board redeviendraient muettes.
+const BOARD_PAIRS = [
+  ["Heraklion", "Chania"],
+  ["Heraklion", "Ierapetra"],
+  ["Chania", "Paleochora"],
+  ["Heraklion", "Agios Nikolaos"],
+  ["Heraklion", "Siteia"],
+  ["Ierapetra", "Makry Gyalos"],
+];
+for (const [a, b] of BOARD_PAIRS) {
+  assert.ok(pairSlug(a, b), `board pair sans slug: ${a} -> ${b}`);
+}
+
 console.log("OK check-bus-pairs:", pairs.length, "paires sur fixtures");
