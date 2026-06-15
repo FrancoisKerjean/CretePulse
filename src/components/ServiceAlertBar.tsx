@@ -55,7 +55,7 @@ export function ServiceAlertBar({
                 <a
                   href={a.url}
                   target="_blank"
-                  rel="nofollow noopener"
+                  rel="nofollow noopener noreferrer"
                   className="inline-flex items-start gap-1 font-semibold text-amber-900 hover:underline"
                 >
                   {a.published_date && (
