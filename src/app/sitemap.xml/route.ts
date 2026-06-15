@@ -17,7 +17,7 @@
 // competing on the same query without 0 click).
 
 import { supabase } from "@/lib/supabase";
-import { eligiblePairs } from "@/lib/bus-pairs";
+import { qualityPairSlugs, pairLastmod } from "@/lib/bus-seo";
 import { MONTHS, CITIES } from "@/lib/weather-monthly";
 import { CRETE_NEIGHBOURHOODS } from "@/lib/airbnb-mappings";
 import { CRETE_AIRPORTS } from "@/lib/airports";
@@ -188,8 +188,13 @@ export async function GET() {
   void ROUTE_SLUGS;
   // Pages par paire de villes /buses/[pair] (spec 2026-06-10-bus-pair-pages) :
   // data vivante (horaires MAJ hebdo scraper), indexables, revue GSC J+45.
-  const { data: busPairRoutes } = await supabase.from("bus_routes").select("from_place,to_place");
-  for (const p of eligiblePairs(busPairRoutes ?? [])) push(`/buses/${p.slug}`, "weekly", 0.7);
+  // Élagage : seules les paires AVEC horaires publiés (qualityPairSlugs) sont listées.
+  // lastmod honnête = max(scraped_at) de la paire, pour signaler la fraîcheur réelle.
+  const { data: busPairRoutes } = await supabase.from("bus_routes").select("from_place,to_place,departures,scraped_at");
+  const seoRoutes = (busPairRoutes ?? []) as import("@/lib/bus-seo").SeoRoute[];
+  for (const slug of qualityPairSlugs(seoRoutes)) {
+    push(`/buses/${slug}`, "weekly", 0.7, pairLastmod(seoRoutes, slug) ?? undefined);
+  }
 
   for (const s of COMP_SLUGS) push(`/compare/${s}`, "monthly", 0.6);
   for (const s of AREA_SLUGS) push(`/where-to-stay/${s}`, "monthly", 0.6);
