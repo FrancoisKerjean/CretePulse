@@ -4,6 +4,8 @@ import { buildAlternates } from "@/lib/seo";
 import { getBusRoutes, getBusDestinations, latestScrapedAt } from "@/lib/buses";
 import { getBusAlerts } from "@/lib/bus-alerts";
 import { busesPageSchema } from "@/lib/schema";
+import { qualityPairSlugs } from "@/lib/bus-seo";
+import { eligiblePairs } from "@/lib/bus-pairs";
 
 export const revalidate = 86400;
 
@@ -55,11 +57,16 @@ export default async function BusesPage({ params }: { params: Promise<{ locale: 
   const updatedAt = latestScrapedAt(routes);
   const m = META[locale] || META.en;
 
+  const slugSet = new Set(qualityPairSlugs(routes));
+  const pairsForSchema = eligiblePairs(routes)
+    .filter((p) => slugSet.has(p.slug))
+    .map((p) => ({ from: p.placeA, to: p.placeB, slug: p.slug }));
+
   const schema = busesPageSchema({
     locale,
     pageTitle: m.title,
     description: m.desc,
-    routes: routes.map((r) => ({ from: r.from_place, to: r.to_place })),
+    routes: pairsForSchema,
     dateModified: updatedAt,
     faqItems: FAQ[locale] || FAQ.en,
     breadcrumbLabels: { home: "Home", buses: "Buses" },
