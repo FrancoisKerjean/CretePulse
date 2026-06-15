@@ -12,7 +12,8 @@
     "check:geo": "node --experimental-strip-types scripts/check-geo.mjs",
     "check:car-partners": "node --experimental-strip-types scripts/check-car-partners.mjs",
     "check:car-lead": "node --experimental-strip-types scripts/check-car-lead.mjs",
-    "check": "npm run check:geo && npm run check:car-partners && npm run check:car-lead && tsc --noEmit"
+    "check:service-alert": "node --experimental-strip-types scripts/check-service-alert.mjs",
+    "check": "npm run check:geo && npm run check:car-partners && npm run check:car-lead && npm run check:service-alert && tsc --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",
