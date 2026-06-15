@@ -18,12 +18,19 @@ const T: Record<string, { estimated: string; circulating: string; osm: string; k
   fr: { estimated: "Estimé selon l'horaire", circulating: "bus en circulation", osm: "ligne tracée", ktel: "tracé approximatif" },
 };
 
+// v1 : on ne trace que les lignes à vraie géométrie OSM. Les lignes KTEL-fallback
+// sont des segments droits entre 2 terminus qui coupent la mer (bus "dans l'eau")
+// -> exclues tant qu'elles n'ont pas un vrai tracé routier.
+function isMapped(l: { source: "osm" | "ktel"; partialGeo: boolean }): boolean {
+  return l.source !== "ktel" && !l.partialGeo;
+}
+
 function linesGeoJSON(net: LiveNetwork) {
   return {
     type: "FeatureCollection" as const,
-    features: [...net.lines.values()].map((l) => ({
+    features: [...net.lines.values()].filter(isMapped).map((l) => ({
       type: "Feature" as const,
-      properties: { code: l.code, degraded: l.source === "ktel" || l.partialGeo },
+      properties: { code: l.code },
       geometry: { type: "LineString" as const, coordinates: l.geometry },
     })),
   };
@@ -59,19 +66,13 @@ export function LiveMapClient({ locale }: { locale: string }) {
         map.addSource("bus-lines", { type: "geojson", data: linesGeoJSON(net) });
         map.addLayer({
           id: "bus-lines-osm", type: "line", source: "bus-lines",
-          filter: ["!", ["get", "degraded"]],
           paint: { "line-color": "#0B5E78", "line-width": 3, "line-opacity": 0.55 },
-        });
-        map.addLayer({
-          id: "bus-lines-ktel", type: "line", source: "bus-lines",
-          filter: ["get", "degraded"],
-          paint: { "line-color": "#5C7886", "line-width": 2, "line-dasharray": [2, 2], "line-opacity": 0.5 },
         });
 
         const markers = markersRef.current;
         const tick = () => {
           const n = netRef.current; if (!n) return;
-          const buses = busesAt(athensNow(), n);
+          const buses = busesAt(athensNow(), n).filter((bus) => !bus.degraded);
           setCount(buses.length);
           const poses = new Map([...markers].map(([id, m]) => [id, m.cur]));
           const { entering, leaving } = reconcile(poses, buses);
@@ -131,11 +132,6 @@ export function LiveMapClient({ locale }: { locale: string }) {
         <span className="pointer-events-auto inline-flex items-baseline gap-1.5 rounded-full bg-surface/90 px-3 py-1.5 text-sm text-text shadow backdrop-blur">
           <NumberTicker value={count} className="font-data font-bold text-aegean" /> {t.circulating}
         </span>
-      </div>
-
-      <div className="pointer-events-none absolute bottom-3 left-3 z-10 flex flex-col gap-1 rounded-lg bg-surface/90 px-3 py-2 text-[11px] text-text-muted shadow backdrop-blur">
-        <span className="flex items-center gap-2"><span className="inline-block h-0.5 w-5 bg-aegean" /> {t.osm}</span>
-        <span className="flex items-center gap-2"><span className="inline-block h-0.5 w-5 border-t-2 border-dashed border-text-muted" /> {t.ktel}</span>
       </div>
     </div>
   );
