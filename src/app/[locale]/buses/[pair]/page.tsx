@@ -30,10 +30,16 @@ function pickUiLoc(l: string): Locale {
 
 const T = {
   title: {
-    en: (a: string, b: string) => `Bus ${a} ↔ ${b}: Timetable & Prices`,
-    fr: (a: string, b: string) => `Bus ${a} ↔ ${b} : horaires & prix`,
-    de: (a: string, b: string) => `Bus ${a} ↔ ${b}: Fahrplan & Preise`,
-    el: (a: string, b: string) => `Λεωφορείο ${a} ↔ ${b}: Δρομολόγια & Τιμές`,
+    en: (a: string, b: string) => `Bus ${a} to ${b}: Timetable & Prices`,
+    fr: (a: string, b: string) => `Bus ${a} à ${b} : horaires & prix`,
+    de: (a: string, b: string) => `Bus ${a} nach ${b}: Fahrplan & Preise`,
+    el: (a: string, b: string) => `Λεωφορείο ${a} προς ${b}: Δρομολόγια & Τιμές`,
+  },
+  connector: {
+    en: "to",
+    fr: "à",
+    de: "nach",
+    el: "προς",
   },
   metaDesc: {
     en: (a: string, b: string) => `KTEL bus between ${a} and ${b}: departure times by day, ticket prices and journey duration, updated from the operators.`,
@@ -257,7 +263,7 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Home", item: `${BASE_URL}/${locale}` },
           { "@type": "ListItem", position: 2, name: "Buses", item: `${BASE_URL}/${locale}/buses` },
-          { "@type": "ListItem", position: 3, name: `${placeA} ↔ ${placeB}`, item: `${BASE_URL}/${locale}/buses/${pair}` },
+          { "@type": "ListItem", position: 3, name: `${placeA} ${T.connector[ui]} ${placeB}`, item: `${BASE_URL}/${locale}/buses/${pair}` },
         ],
       },
       ...(faq.length > 0 ? [{
@@ -288,10 +294,8 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
                 className="inline-flex items-center text-[12.5px] text-lagoon-deep font-bold bg-white/70 rounded-full px-3.5 py-1.5 no-underline mb-4 hover:bg-white transition-colors">
             {T.allBuses[ui]}
           </Link>
-          <h1 className="flex items-center gap-4 flex-wrap font-heading font-extrabold text-3xl md:text-[42px] tracking-tight text-text m-0">
-            <span>{placeA}</span>
-            <span className="bg-white rounded-full w-11 h-11 flex items-center justify-center text-lagoon-deep text-[19px] shadow-[0_8px_22px_rgba(11,94,120,.16)]" aria-hidden>⇄</span>
-            <span>{placeB}</span>
+          <h1 className="font-heading font-extrabold text-3xl md:text-[42px] tracking-tight text-text m-0">
+            Bus {placeA} <span className="text-lagoon-deep">{T.connector[ui]}</span> {placeB}
           </h1>
           {ref && (
             <div className="mt-4">
