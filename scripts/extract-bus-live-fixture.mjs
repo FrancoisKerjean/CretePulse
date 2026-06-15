@@ -31,6 +31,6 @@ const { data: routes } = await sb.from("bus_routes")
 mkdirSync("src/lib/bus-live/fixtures", { recursive: true });
 writeFileSync(
   "src/lib/bus-live/fixtures/bus_live_sample.json",
-  JSON.stringify({ lines: allLines, lineStops, stops, routes }, null, 2),
+  JSON.stringify({ lines: allLines, lineStops: lineStops ?? [], stops: stops ?? [], routes: routes ?? [] }, null, 2),
 );
 console.log(`fixture: ${allLines.length} lignes, ${routes?.length ?? 0} routes`);

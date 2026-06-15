@@ -197,7 +197,20 @@ if (existsSync(FIXTURE)) {
     assert.ok(bus.lng > 23.4 && bus.lng < 26.4, `lng hors Crète: ${bus.lng}`);
     assert.ok(bus.progress >= 0 && bus.progress <= 1);
   }
-  console.log(`OK intégration: ${mid.length} bus à midi sur fixture réelle`);
+  // critère LAS-02 (données réelles) : départ Agios Nikolaos->Siteia à 09:00 ;
+  // à 09:30 (elapsed 30 min sur un profil de 196 min) le bus est sens avant,
+  // prochain arrêt VOULISMA (V.Pagalou 29 min < 30 < Voulisma 36 min), en est-Crète.
+  const las02 = busesAt({ iso: "2026-06-15", minutes: 9 * 60 + 30 }, net)
+    .filter((b) => b.code === "LAS-02" && b.direction === "fwd" && b.progress < 0.2);
+  assert.equal(las02.length, 1, `1 bus LAS-02 fwd fraîchement parti attendu à 09:30, eu ${las02.length}`);
+  const las02bus = las02[0];
+  assert.equal(las02bus.degraded, false);                       // ligne OSM
+  assert.equal(las02bus.nextStop, "VOULISMA");                  // 1er arrêt après 30 min
+  assert.ok(Math.abs(las02bus.progress - 30 / 196) < 0.02, `progress=${las02bus.progress}`);
+  assert.ok(/sit/i.test(las02bus.headsign), `headsign=${las02bus.headsign}`); // vers Siteia
+  assert.ok(las02bus.lat > 35.0 && las02bus.lat < 35.3, `lat=${las02bus.lat}`);
+  assert.ok(las02bus.lng > 25.65 && las02bus.lng < 26.0, `lng=${las02bus.lng}`);
+  console.log(`OK intégration: ${mid.length} bus à midi + LAS-02 fwd@09:30 next=${las02bus.nextStop} prog=${(las02bus.progress * 100).toFixed(0)}% @${las02bus.lat.toFixed(3)},${las02bus.lng.toFixed(3)}`);
 } else {
   console.log("intégration sautée (fixture absente)");
 }
