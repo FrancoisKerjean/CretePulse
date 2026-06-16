@@ -11,7 +11,7 @@ def test_build_news_payload_uses_locale():
     p = ps.build_news_payload(row, "fr")
     assert p["title"] == "Grève KTEL"
     assert p["body"] == "Bus à l'arrêt"
-    assert p["url"].endswith("/fr/articles/ktel-strike")
+    assert p["url"].endswith("/fr/news/ktel-strike")
     assert p["tag"] == "news-ktel-strike"
 
 
@@ -19,7 +19,7 @@ def test_build_news_payload_falls_back_to_en():
     row = {"slug": "x", "title_en": "Storm", "title_el": "", "summary_en": "Bad"}
     p = ps.build_news_payload(row, "el")
     assert p["title"] == "Storm"          # el vide -> fallback en
-    assert p["url"].endswith("/el/articles/x")
+    assert p["url"].endswith("/el/news/x")
 
 
 def test_build_alert_payload():

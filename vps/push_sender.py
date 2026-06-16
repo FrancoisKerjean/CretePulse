@@ -24,7 +24,7 @@ def build_news_payload(row: dict, locale: str) -> dict:
     return {
         "title": _loc(row, "title", loc) or "Crete Direct",
         "body": _loc(row, "summary", loc),
-        "url": f"{SITE}/{loc}/articles/{row['slug']}",
+        "url": f"{SITE}/{loc}/news/{row['slug']}",
         "tag": f"news-{row['slug']}",
     }
 
