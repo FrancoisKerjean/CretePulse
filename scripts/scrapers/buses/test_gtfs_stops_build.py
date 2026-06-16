@@ -1,0 +1,57 @@
+from gtfs_stops_build import (
+    haversine_km, in_crete, curate_routes, collect_stops_with_count,
+    _siblings_by_slug, prefecture_for,
+)
+
+
+def test_in_crete_bbox():
+    assert in_crete(35.34, 25.14) is True       # Heraklion
+    assert in_crete(37.98, 23.72) is False      # Athènes
+    assert in_crete(None, None) is False
+
+
+def test_haversine_km_known_distance():
+    d = haversine_km((35.3387, 25.1442), (35.5138, 24.0180))  # Heraklion<->Chania
+    assert 100 < d < 140
+
+
+def test_prefecture_for_nearest():
+    assert prefecture_for(35.5138, 24.0180) == "CHA"   # Chania
+    assert prefecture_for(35.2078, 26.1029) == "LAS"   # Sitia -> Lasithi
+    assert prefecture_for(None, None) is None
+
+
+def test_curate_routes_keeps_hotels_drops_codes():
+    routes = [{"from_place": "Heraklion", "to_place": "Malia Palace",
+               "via_stops": ["A90", "Gouves"]}]
+    curated, dropped = curate_routes(routes)
+    assert len(curated) == 1
+    r = curated[0]
+    assert r["from_place"] == "heraklion"
+    assert r["to_place"] == "malia-palace"     # hôtel gardé
+    assert r["via_stops"] == ["gouves"]        # A90 droppé du via
+    assert "A90" in dropped
+
+
+def test_curate_routes_drops_route_with_artifact_terminus():
+    routes = [{"from_place": "A90", "to_place": "Heraklion", "via_stops": None}]
+    curated, dropped = curate_routes(routes)
+    assert curated == []
+    assert "A90" in dropped
+
+
+def test_collect_stops_with_count():
+    routes = [
+        {"from_place": "heraklion", "to_place": "sitia", "via_stops": ["malia"]},
+        {"from_place": "heraklion", "to_place": "malia", "via_stops": None},
+    ]
+    by = {s["slug"]: s for s in collect_stops_with_count(routes)}
+    assert by["heraklion"]["route_count"] == 2
+    assert by["malia"]["route_count"] == 2
+    assert by["sitia"]["route_count"] == 1
+
+
+def test_siblings_by_slug():
+    routes = [{"from_place": "a", "to_place": "b", "via_stops": ["c"]}]
+    adj = _siblings_by_slug(routes)
+    assert adj["a"] == {"b", "c"}
