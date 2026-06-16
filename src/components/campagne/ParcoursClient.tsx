@@ -1,76 +1,83 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import { useScroll, useReducedMotion } from "motion/react";
-import { pickRoadVariant, type CampagneCopy, type RoadVariant } from "@/lib/campagne";
-import RoadScene, { BEAT_TOP, CTA_TOP } from "./RoadScene";
-import KriKriBus from "./KriKriBus";
-import Beat from "./Beat";
+import { useReducedMotion } from "motion/react";
+import { type CampagneCopy, BEAT_CONFIG } from "@/lib/campagne";
+import RoadDecor from "./RoadDecor";
+import BeatRow, { SCENES } from "./BeatRow";
+import Card from "./Card";
+import Reveal from "./Reveal";
 import HelpButtons from "./HelpButtons";
-import ScrollCue from "./ScrollCue";
 import HelpPill from "./HelpPill";
 
-function useRoadVariant(ref: React.RefObject<HTMLElement | null>): RoadVariant {
-  const [variant, setVariant] = useState<RoadVariant>("mobile");
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => setVariant(pickRoadVariant(el.clientWidth)));
-    ro.observe(el);
-    setVariant(pickRoadVariant(el.clientWidth));
-    return () => ro.disconnect();
-  }, [ref]);
-  return variant;
-}
+// Ciel en gradient CSS (porte du mockup : journey grey -> lagoon -> green -> cream).
+const SKY =
+  "linear-gradient(180deg,#90A7B2 0%,#A7C2CC 11%,#BCDCE6 28%,#A8E4EF 46%,#CDEFF6 58%,#E9FAF0 70%,#E7F7EA 85%,#FDF1D6 100%)";
 
 export default function ParcoursClient({ locale, copy }: { locale: string; copy: CampagneCopy }) {
-  const stageRef = useRef<HTMLDivElement>(null);
-  const pathRef = useRef<SVGPathElement>(null);
   const reduce = useReducedMotion() ?? false;
-  const variant = useRoadVariant(stageRef);
-  const { scrollYProgress } = useScroll({ target: stageRef, offset: ["start start", "end end"] });
+  const SummitScene = SCENES.summit;
+  const HeroScene = SCENES.terminal;
 
   return (
-    <main className="relative w-full overflow-hidden bg-sky">
-      {/* fond ciel CSS plat (couleur instantanee avant paint SVG) deja via bg-sky */}
-      <div ref={stageRef} className="relative mx-auto w-full">
-        <RoadScene variant={variant} progress={scrollYProgress} reduce={reduce} pathRef={pathRef} />
-        <KriKriBus stageRef={stageRef} pathRef={pathRef} progress={scrollYProgress} reduce={reduce} />
+    <main className="relative w-full overflow-hidden" style={{ background: SKY }}>
+      <RoadDecor />
 
+      <div className="relative z-[3] mx-auto w-full max-w-[1200px]">
         {/* watermark crete.direct */}
-        <div className="absolute left-1/2 top-[30px] z-[6] -translate-x-1/2 rounded-full border-[3px] border-[var(--color-text)] bg-white px-[22px] py-2 text-[22px] font-extrabold text-[var(--color-text)] shadow-[0_5px_0_var(--color-text)]">
+        <div className="mx-auto mt-[30px] w-max rounded-full border-[3px] border-[var(--color-text)] bg-white px-[22px] py-2 text-[22px] font-extrabold text-[var(--color-text)] shadow-[0_5px_0_var(--color-text)]">
           crete<span className="text-lagoon">.</span>direct
         </div>
 
-        {/* HERO */}
-        <Beat side="center" topPct={3} reduce={reduce} title={copy.hero.title} sub={copy.hero.sub} hero mobile={variant === "mobile"} />
+        {/* HERO (centre : card puis scene) */}
+        <section className="flex flex-col items-center gap-[clamp(24px,4vw,34px)] px-[clamp(20px,5vw,60px)] py-[clamp(34px,5vw,46px)] text-center">
+          <Reveal reduce={reduce} className="flex w-full justify-center">
+            <Card kicker={copy.hero.kicker} kickerVariant="go" title={copy.hero.title} sub={copy.hero.sub} size="hero" reduce={reduce} />
+          </Reveal>
+          <Reveal reduce={reduce} delay={120} className="flex w-full justify-center">
+            <HeroScene />
+          </Reveal>
+        </section>
 
-        {/* BEATS (topPct par variante : table de waypoints exportee par RoadScene) */}
-        {copy.beats.map((b, i) => (
-          <Beat
-            key={b.id}
-            side={b.side}
-            topPct={BEAT_TOP[variant][i]}
-            reduce={reduce}
-            kicker={b.kicker}
-            title={b.title}
-            sub={b.sub}
-            mobile={variant === "mobile"}
-          />
-        ))}
+        {/* BEATS narratifs : row (scene+card alternees) ou center (sommet) */}
+        {copy.beats.map((beat) => {
+          const config = BEAT_CONFIG[beat.id];
+          if (!config) return null;
+          if (config.layout === "center") {
+            return (
+              <section
+                key={beat.id}
+                className="flex flex-col items-center gap-[clamp(24px,4vw,34px)] px-[clamp(20px,5vw,60px)] py-[clamp(34px,5vw,46px)] text-center"
+              >
+                <Reveal reduce={reduce} className="flex w-full justify-center">
+                  <SummitScene />
+                </Reveal>
+                <Reveal reduce={reduce} delay={120} className="flex w-full justify-center">
+                  <Card
+                    kicker={beat.kicker}
+                    kickerVariant={config.kickerVariant}
+                    tag={config.tag}
+                    title={beat.title}
+                    sub={beat.sub}
+                    size="wide"
+                    reduce={reduce}
+                  />
+                </Reveal>
+              </section>
+            );
+          }
+          return <BeatRow key={beat.id} beat={beat} config={config} reduce={reduce} />;
+        })}
 
-        {/* CTA */}
-        <div
-          className="absolute left-0 right-0 z-[5] mx-auto w-[min(92%,920px)] text-center"
-          style={{ top: `${CTA_TOP[variant]}%` }}
-        >
-          <Beat side="center" topPct={0} reduce={reduce} title={copy.cta.title} inline mobile={variant === "mobile"} />
-          <HelpButtons locale={locale} copy={copy} />
-          <p className="mt-5 text-[clamp(15px,2.6vw,20px)] font-semibold text-[var(--color-text)]">{copy.cta.micro}</p>
-        </div>
+        {/* CTA (centre, ancre #cta pour la pastille Aider) */}
+        <section id="cta" className="flex flex-col items-center px-[clamp(20px,5vw,60px)] pb-[90px] pt-[clamp(34px,5vw,46px)] text-center">
+          <Reveal reduce={reduce} className="flex w-full flex-col items-center">
+            <Card title={copy.cta.title} size="wide" reduce={reduce} />
+            <HelpButtons locale={locale} copy={copy} />
+            <p className="mt-[14px] text-[clamp(15px,2.6vw,20px)] font-semibold text-[var(--color-text)]">{copy.cta.micro}</p>
+          </Reveal>
+        </section>
       </div>
 
-      <ScrollCue reduce={reduce} />
-      <HelpPill ctaTop={CTA_TOP[variant]} copy={copy} />
+      <HelpPill copy={copy} />
     </main>
   );
 }
