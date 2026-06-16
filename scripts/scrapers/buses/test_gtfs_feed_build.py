@@ -17,3 +17,115 @@ def test_add_minutes_basic():
 def test_add_minutes_after_midnight_exceeds_24h():
     # GTFS tolère >24:00:00 pour un trajet qui passe minuit
     assert add_minutes("23:30", 60) == "24:30:00"
+
+
+from gtfs_feed_build import assemble_feed
+from gtfs_calendar import days_to_weekdays, service_id_for
+
+STOPS = {
+    "heraklion":      {"stop_id": "heraklion",      "stop_name": "Heraklion",      "stop_lat": 35.3400, "stop_lon": 25.1400},
+    "hersonissos":    {"stop_id": "hersonissos",    "stop_name": "Hersonissos",    "stop_lat": 35.3100, "stop_lon": 25.3900},
+    "agios-nikolaos": {"stop_id": "agios-nikolaos", "stop_name": "Agios Nikolaos", "stop_lat": 35.1900, "stop_lon": 25.7100},
+}
+WINDOW = ("20260601", "20260831")
+
+def _tbl(feed, name):
+    header, rows = feed[name]
+    return [dict(zip(header, r)) for r in rows]
+
+def test_full_geocoded_route_emits_trip_and_stop_times():
+    routes = [{
+        "id": 1, "operator_id": "herlas", "from_place": "Heraklion", "to_place": "Agios Nikolaos",
+        "via_stops": ["Hersonissos"], "duration": "1h",
+        "departures_by_day": [{"days": "Mon-Fri", "times": ["08:00"]}], "season": None,
+    }]
+    feed = assemble_feed(routes, STOPS, WINDOW, "20260616", osrm=None)
+    trips = _tbl(feed, "trips")
+    st = _tbl(feed, "stop_times")
+    assert len(trips) == 1
+    assert trips[0]["service_id"] == service_id_for(days_to_weekdays("Mon-Fri"))
+    assert len(st) == 3
+    seq = [r for r in st if r["trip_id"] == trips[0]["trip_id"]]
+    assert [r["stop_id"] for r in seq] == ["heraklion", "hersonissos", "agios-nikolaos"]
+    assert [r["timepoint"] for r in seq] == [1, 0, 1]
+    assert seq[0]["departure_time"] == "08:00:00"
+
+def test_calendar_has_one_service_row():
+    routes = [{
+        "id": 1, "operator_id": "herlas", "from_place": "Heraklion", "to_place": "Agios Nikolaos",
+        "via_stops": [], "duration": "1h",
+        "departures_by_day": [{"days": "Mon-Fri", "times": ["08:00"]}], "season": None,
+    }]
+    feed = assemble_feed(routes, STOPS, WINDOW, "20260616", osrm=None)
+    cal = _tbl(feed, "calendar")
+    assert len(cal) == 1
+    assert cal[0]["monday"] == 1 and cal[0]["saturday"] == 0
+    assert cal[0]["start_date"] == "20260601" and cal[0]["end_date"] == "20260831"
+
+def test_ungeocoded_intermediate_is_skipped_trip_kept():
+    routes = [{
+        "id": 1, "operator_id": "herlas", "from_place": "Heraklion", "to_place": "Agios Nikolaos",
+        "via_stops": ["Nowhere Village"], "duration": "1h",
+        "departures_by_day": [{"days": "Mon-Fri", "times": ["08:00"]}], "season": None,
+    }]
+    feed = assemble_feed(routes, STOPS, WINDOW, "20260616", osrm=None)
+    st = _tbl(feed, "stop_times")
+    assert [r["stop_id"] for r in st] == ["heraklion", "agios-nikolaos"]
+    assert feed["stats"]["skipped_intermediates"]
+
+def test_trip_dropped_when_terminus_not_geocoded():
+    routes = [{
+        "id": 1, "operator_id": "herlas", "from_place": "Heraklion", "to_place": "Ghost Town",
+        "via_stops": [], "duration": "1h",
+        "departures_by_day": [{"days": "Mon-Fri", "times": ["08:00"]}], "season": None,
+    }]
+    feed = assemble_feed(routes, STOPS, WINDOW, "20260616", osrm=None)
+    assert _tbl(feed, "trips") == []
+    assert len(feed["stats"]["dropped_trips"]) == 1
+
+def test_estimated_duration_marks_arrival_timepoint_zero():
+    routes = [{
+        "id": 1, "operator_id": "herlas", "from_place": "Heraklion", "to_place": "Agios Nikolaos",
+        "via_stops": [], "duration": None,
+        "departures_by_day": [{"days": "Mon-Fri", "times": ["08:00"]}], "season": None,
+    }]
+    feed = assemble_feed(routes, STOPS, WINDOW, "20260616", osrm=None)
+    st = _tbl(feed, "stop_times")
+    assert [r["timepoint"] for r in st] == [1, 0]
+    assert st[-1]["departure_time"] != "08:00:00"
+
+def test_reverse_direction_id_is_one():
+    routes = [{
+        "id": 1, "operator_id": "herlas", "from_place": "Agios Nikolaos", "to_place": "Heraklion",
+        "via_stops": [], "duration": "1h",
+        "departures_by_day": [{"days": "Mon-Fri", "times": ["08:00"]}], "season": None,
+    }]
+    feed = assemble_feed(routes, STOPS, WINDOW, "20260616", osrm=None)
+    trips = _tbl(feed, "trips")
+    # origine canonique du corridor = 'agios-nikolaos' (alpha 1er). Route part de
+    # agios-nikolaos == origine => direction_id 0.
+    assert trips[0]["direction_id"] == 0
+
+def test_season_filter_excludes_other_seasons():
+    routes = [
+        {"id": 1, "operator_id": "herlas", "from_place": "Heraklion", "to_place": "Agios Nikolaos",
+         "via_stops": [], "duration": "1h",
+         "departures_by_day": [{"days": "Mon-Fri", "times": ["08:00"]}], "season": "low"},
+    ]
+    feed = assemble_feed(routes, STOPS, WINDOW, "20260616", osrm=None, seasons=["high"])
+    assert _tbl(feed, "trips") == []
+
+def test_referential_integrity_and_determinism():
+    routes = [{
+        "id": 1, "operator_id": "herlas", "from_place": "Heraklion", "to_place": "Agios Nikolaos",
+        "via_stops": ["Hersonissos"], "duration": "1h",
+        "departures_by_day": [{"days": "Mon-Fri", "times": ["08:00"]}], "season": None,
+    }]
+    f1 = assemble_feed(routes, STOPS, WINDOW, "20260616", osrm=None)
+    f2 = assemble_feed(routes, STOPS, WINDOW, "20260616", osrm=None)
+    assert f1["trips"][1] == f2["trips"][1]
+    stops_ids = {r[0] for r in f1["stops"][1]}
+    st_ids = {r[3] for r in f1["stop_times"][1]}
+    route_ids = {r[0] for r in f1["routes"][1]}
+    assert st_ids <= stops_ids
+    assert all(r[0] in route_ids for r in f1["trips"][1])
