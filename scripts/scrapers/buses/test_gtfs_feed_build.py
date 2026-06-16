@@ -71,7 +71,7 @@ def test_ungeocoded_intermediate_is_skipped_trip_kept():
     feed = assemble_feed(routes, STOPS, WINDOW, "20260616", osrm=None)
     st = _tbl(feed, "stop_times")
     assert [r["stop_id"] for r in st] == ["heraklion", "agios-nikolaos"]
-    assert feed["stats"]["skipped_intermediates"]
+    assert feed["stats"]["skipped_intermediates"] == ["nowhere-village"]
 
 def test_trip_dropped_when_terminus_not_geocoded():
     routes = [{
@@ -94,7 +94,7 @@ def test_estimated_duration_marks_arrival_timepoint_zero():
     assert [r["timepoint"] for r in st] == [1, 0]
     assert st[-1]["departure_time"] != "08:00:00"
 
-def test_reverse_direction_id_is_one():
+def test_direction_id_zero_when_departing_from_canonical_origin():
     routes = [{
         "id": 1, "operator_id": "herlas", "from_place": "Agios Nikolaos", "to_place": "Heraklion",
         "via_stops": [], "duration": "1h",
@@ -105,6 +105,18 @@ def test_reverse_direction_id_is_one():
     # origine canonique du corridor = 'agios-nikolaos' (alpha 1er). Route part de
     # agios-nikolaos == origine => direction_id 0.
     assert trips[0]["direction_id"] == 0
+
+def test_forward_direction_id_is_one():
+    # 'agios-nikolaos' < 'heraklion' => origine canonique = agios-nikolaos.
+    # Une route Heraklion -> Agios Nikolaos NE part PAS de l'origine => direction_id 1.
+    routes = [{
+        "id": 1, "operator_id": "herlas", "from_place": "Heraklion", "to_place": "Agios Nikolaos",
+        "via_stops": [], "duration": "1h",
+        "departures_by_day": [{"days": "Mon-Fri", "times": ["08:00"]}], "season": None,
+    }]
+    feed = assemble_feed(routes, STOPS, WINDOW, "20260616", osrm=None)
+    trips = _tbl(feed, "trips")
+    assert trips[0]["direction_id"] == 1
 
 def test_season_filter_excludes_other_seasons():
     routes = [

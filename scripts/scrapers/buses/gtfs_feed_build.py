@@ -11,14 +11,13 @@ from net_lines import merge_into_lines
 from net_nomenclature import assign_codes, color_for
 from net_osrm import build_geometry
 from net_timeprofile import cumulative_profile
-from gtfs_calendar import days_to_weekdays, service_id_for
+from gtfs_calendar import days_to_weekdays, service_id_for, DAY_ORDER as _WEEK
 
 AGENCY_ID = "crete-direct"
 AGENCY_NAME = "crete.direct"
 AGENCY_URL = "https://crete.direct"
 AGENCY_TZ = "Europe/Athens"
 FEED_LANG = "en"
-_WEEK = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
 
 
 def parse_duration_min(duration):
@@ -86,9 +85,10 @@ def assemble_feed(routes, stops_by_id, window, feed_version, osrm=None, seasons=
     seasons = set(seasons) if seasons else None
     fetch = osrm if osrm is not None else (lambda url: None)
 
+    active_routes = routes
     if seasons is not None:
-        routes = [r for r in routes if not r.get("season") or r.get("season") in seasons]
-    curated, _dropped = curate_routes(routes)
+        active_routes = [r for r in routes if not r.get("season") or r.get("season") in seasons]
+    curated, _dropped = curate_routes(active_routes)
 
     corridors = merge_into_lines(curated)
     by_key, lines_for_codes = {}, []
