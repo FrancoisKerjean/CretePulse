@@ -89,7 +89,7 @@ union stops.txt (OSM matchés + KTEL non matchés validés on-land)
 ```
 
 **Modules :**
-- `coastline.py` (NOUVEAU) : `load_polygon()` (lit `data/crete-coastline.geojson`), `on_land(lat, lng, tol_m=300)` (point-in-polygon ray-casting + buffer tolérance, pur).
+- `coastline.py` (NOUVEAU) : `load_polygon()` (lit `data/crete-coastline.geojson`), `on_land(lat, lng, tol_m=150)` (point-in-polygon ray-casting + buffer tolérance appliqué hors-contour seulement, pur).
 - `osm_feed.py` (NOUVEAU) : lecture + transformation des données OSM en sous-flux. `load_osm(sb)` → `{lines_by_id, stops_by_id, line_stops_by_line}`. `matched_trip_stops(route, osm)` → séquence orientée `[{stop_id, name, lat, lng, offset_min}]` ou `None` si données incomplètes. `line_shape(line)` → points `[[lat,lng]…]`.
 - `gtfs_writer.py` (MODIF) : `shapes.txt` reste de simples lignes CSV (write_csv générique suffit).
 - `gtfs_feed_build.py` (MODIF) : `assemble_feed` gagne l'aiguillage ; lit `coastline` (fallback) et `osm` (matché). `build_gtfs_feed` charge en plus `load_osm(sb)`.
@@ -106,7 +106,7 @@ union stops.txt (OSM matchés + KTEL non matchés validés on-land)
 
 ## 8. Garde-fou terre/mer (détail)
 
-`on_land(lat, lng, tol_m=300)` : ray-casting point-in-polygon contre le contour Crète. `tol_m` = buffer (un arrêt portuaire collé à l'eau, à < 300 m du trait de côte, compte comme à terre → pas de faux positif). Pur, déterministe, hors-ligne, testable.
+`on_land(lat, lng, tol_m=150)` : ray-casting point-in-polygon contre le contour Crète. **La tolérance ne s'applique QU'AUX points hors du contour** (dans l'eau) : un arrêt côtier réel est à l'intérieur du polygone, donc gardé sans que la tolérance n'intervienne. `tol_m=150` absorbe seulement l'imprécision du tracé de côte (pas une vraie erreur de placement, qui tombe en général bien plus loin au large). **Tolérance calibrée sur données réelles** : après le 1er run, re-render carte avant/après pour vérifier qu'aucun arrêt légitime ne saute ; ajuster `tol_m` si besoin. Pur, déterministe, hors-ligne, testable.
 
 Intégration (chemin KTEL) : un arrêt `gtfs_stops` géocodé low-confidence dont la coord échoue `on_land` → coord rejetée (`needs_review`, exclu de `stops.txt`). Un **terminus** en mer → trip droppé (logué `dropped_trips`). Cohérent avec le garde-fou existant (bbox + dérive 45 km).
 
