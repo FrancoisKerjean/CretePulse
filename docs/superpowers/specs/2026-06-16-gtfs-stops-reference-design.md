@@ -26,9 +26,11 @@ Un flux GTFS se décompose en fichiers (`stops.txt`, `routes.txt`, `trips.txt`, 
 
 ## 2. Décision de fondation (tranchée avec Kami le 16/06)
 
-**Option retenue : pipeline léger sur `master`, dédié GTFS.** On part des `bus_routes` (master/prod, là où vit l'étape A), on **porte les bonnes idées** déjà éprouvées sur la branche non mergée `feat/bus-network` (cascade de géocodage, allowlist, dédup par slug, filtre bruit, garde-fou de cohérence), **sans tirer** la complexité de cette branche (ingestion OSM, carte MapLibre `/live`, web push). Livrable : une table `gtfs_stops` propre + un export `stops.txt`, indépendant et shippable vite.
+**Option retenue : pipeline léger sur `master`, dédié GTFS.** On part des `bus_routes` (master/prod, là où vit l'étape A), on **porte les bonnes idées** déjà éprouvées sur la branche non mergée `feat/bus-network` (cascade de géocodage, allowlist, dédup par slug, garde-fou de cohérence) — **mais la curation est adaptée GTFS** (cf §8 : on ne jette plus les hôtels/POI nommés) — **sans tirer** la complexité de cette branche (ingestion OSM, carte MapLibre `/live`, web push). Livrable : une table `gtfs_stops` propre + un export `stops.txt`, indépendant et shippable vite.
 
 Options écartées (cf section 11) : finaliser/merger `feat/bus-network` (embarque trop de dette/surface) ; basculer sur OSM comme source (dépend de l'appariement OSM↔KTEL non stabilisé).
+
+**Sous-décisions confirmées (Kami, 16/06)** : (1) **curation GTFS** — un arrêt est un arrêt, les hôtels/resorts/POI nommés sont gardés, on ne jette que les vrais artefacts (cf §8) ; (2) **Nominatim ON sous garde-fou** (bbox + drift 45 km) ; (3) table **`gtfs_stops` colonnes GTFS-natives** ; (4) `stops.txt` = **artefact de build interne** (pas de flux public en étape B).
 
 ## 3. Objectif & critères d'acceptation
 
@@ -39,7 +41,7 @@ Construire `gtfs_stops`, le référentiel canonique des arrêts de bus de Crète
 1. `gtfs_stops` peuplée avec **tous les lieux distincts curés** issus de `from_place` + `to_place` + `via_stops` de toutes les lignes de `bus_routes` (île entière, est + ouest). Count-agnostic (le scrape master varie ~80-300 lignes selon saison ; le pipeline traite toutes les lignes présentes).
 2. **Couverture géocodage** : ≥ **85 %** des arrêts curés ont des coordonnées de confiance `high` (référentiel/cb_places) ou `low` validée par garde-fou. (Baseline référence : 39 % référentiel-exact seul ≈ les « 62 % sans coords » ; `feat/bus-network` a atteint 79 % en référentiel seul.)
 3. **Zéro coordonnée hors Crète** : toute coord stockée est dans la bbox Crète `lat ∈ [34.70, 35.75]`, `lng ∈ [23.40, 26.40]`. Les homonymes mal placés (ex « Prof. Ilias » 128 km, « Palaia Roumata » 226 km vus le 14/06) sont rejetés par le garde-fou.
-4. Les arrêts non géocodés ou douteux sont **flaggés `needs_review`** et **triables par `route_count`** (popularité) pour une curation manuelle ciblée à fort impact. **Aucune troncature silencieuse** : le pipeline loggue le nombre d'arrêts admis/rejetés/bruit.
+4. Les arrêts non géocodés ou douteux sont **flaggés `needs_review`** et **triables par `route_count`** (popularité) pour une curation manuelle ciblée à fort impact. **Aucune troncature silencieuse** : le pipeline loggue le nombre d'arrêts gardés / `needs_review` / artefacts droppés (avec la liste des droppés).
 5. `stops.txt` **structurellement valide** (colonnes GTFS, 1 ligne par arrêt géocodé, lat/lon présents et dans la bbox, échappement CSV correct).
 6. **Suite pytest verte** + **sanity check** vert (`check-gtfs-stops.mjs`).
 7. **Idempotence** : relancer le build n'introduit pas de doublons ; le référentiel manuel (`PLACE_COORDS`) prime toujours sur un géocodage Nominatim antérieur.
@@ -66,7 +68,7 @@ Construire `gtfs_stops`, le référentiel canonique des arrêts de bus de Crète
 | `bus_routes` (`from_place`, `to_place`, `via_stops` jsonb) | **Source brute des lieux** | table VPS Postgres, migration `20260521120000_buses.sql` + `20260613100000_bus_routes_via_stops.sql` |
 | `PLACE_COORDS` (~101 noms → lat/lng) | **Référentiel manuel prioritaire** (confiance `high`) | `scripts/scrapers/buses/prices.py:73` |
 | `cb_places` (table, ~800+ lieux/plages) | **Appoint géocodage** par nom (confiance `high`) | table VPS Postgres (best-effort, vide si absente) |
-| `src/data/bus-places.json` (72 lieux) | **Allowlist** : lieux « dignes » + mapping nom DB → slug canonique | à copier depuis `feat/bus-network` |
+| `src/data/bus-places.json` (72 lieux) | **Allowlist** des localités canoniques à confiance haute (mapping nom DB → slug). N'est PAS la liste exhaustive des arrêts : les autres lieux nommés sont aussi des arrêts (cf §8). | à copier depuis `feat/bus-network` |
 | Nominatim (OSM) | **Fallback géocodage** (confiance `low`, sous garde-fou) | API publique, injectée, throttlée, cachée |
 
 `via_stops` = array JSON de noms texte bruts (ex `["Georgioupolis","Kavros","Rethymno","Bali"]`), non géocodés. Les arrêts intermédiaires sont donc inclus dans le référentiel.
@@ -80,14 +82,14 @@ bus_routes (DB)
    │  collect_stops()                      ← gtfs_stops_build.py (porté de net_geocode.collect_stops)
    ▼
 [ {slug, name, route_count} ... ]          dédup par slug, route_count = nb de routes (bus_routes) touchant l'arrêt
-   │  curate()                             ← net_places.py (porté : allowlist / noise / admitted)
+   │  curate()                             ← gtfs_places.py (allowlist / stop / drop — curation GTFS)
    ▼
-arrêts curés (bruit jeté + loggué)         alias typos, denylist POI/hôtels
+arrêts curés (vrais artefacts droppés+logués) alias typos ; hôtels/POI nommés GARDÉS
    │  geocode_stop() en cascade            ← net_geocode.py (porté)
    ▼   référentiel → cb_places → Nominatim → none
 candidats avec (lat,lng,source,confidence)
    │  coherence_guard()                    ← gtfs_stops_build.py (NOUVEAU, concept porté de build_network)
-   ▼   bbox Crète + drift < 45 km d'un arrêt high-confidence de la même ligne
+   ▼   bbox Crète + drift < 45 km d'un arrêt high-confidence de la même route
 arrêts validés (sinon coords rejetées, needs_review=true)
    │  assign_prefecture()  [optionnel, si coords]   ← net_nomenclature.prefecture_for (porté, léger)
    ▼
@@ -100,7 +102,7 @@ lignes gtfs_stops          → store_stops() (delete+insert transactionnel, gard
 
 - `gtfs_stops_build.py` (NOUVEAU, orchestration) : `collect_stops()`, `coherence_guard()`, `assemble_stops()` (pure), `store_stops()` (transactionnel, garde-fou `MIN_STOPS`), `export_stops_txt()`, point d'entrée `build_gtfs_stops(sb, nominatim=None)`.
 - `net_geocode.py` (PORTÉ tel quel) : `stop_slug()`, `collect_stops()`, `geocode_stop()`, `coords_index_by_slug()`. Importe `prices._norm`.
-- `net_places.py` (PORTÉ tel quel) : `status_of()`, `canonical_slug()`, `display_name()`, `ALIAS_FIX`, `DENYLIST_POI`, `_NOISE`. Lit `src/data/bus-places.json`.
+- `gtfs_places.py` (PORTÉ de `net_places` mais **curation adaptée GTFS**) : `status_of()`, `canonical_slug()`, `display_name()`, `ALIAS_FIX`. Lit `src/data/bus-places.json` (allowlist). **Le filtre de bruit est paré** : on ne droppe QUE les vrais artefacts (codes route `^A\d+`, « on the national », libellés de service, chaînes vides/footnotes) ; les hôtels/resorts/POI nommés sont **gardés** comme arrêts (cf §8). La `DENYLIST_POI` SEO d'origine (Malia Palace, University Gallou, Botanical Garden…) est **abandonnée** ici car ce sont de vrais arrêts.
 - `net_nomenclature.py` (PORTÉ, on n'utilise que `prefecture_for()` + `PREFECTURE_CENTERS`). Optionnel.
 - `src/data/bus-places.json` (COPIÉ depuis `feat/bus-network`).
 - `buses.py` (master) : ajout d'un appel `build_gtfs_stops(sb)` **après** le scrape herlas/ektel (comme l'était `build_network`), dégradation gracieuse si échec (log, n'avorte pas le scrape).
@@ -137,15 +139,19 @@ notify pgrst, 'reload schema';
 
 Additive, n'altère pas `bus_routes` ni quoi que ce soit en prod. **N'entre pas en collision** avec la table `bus_stops` de `feat/bus-network` (nom + nommage de colonnes différents).
 
-## 8. Règles de normalisation, dédup & curation (portées)
+## 8. Règles de normalisation, dédup & curation (adaptées GTFS)
 
 - **Slug** (`stop_slug`) : `unidecode` → minuscules → `&`→`and` → espaces→`-`. Clé de dédup et `stop_id`.
 - **Dédup** : par slug ; `name` = premier libellé vu ; `route_count` = nb de routes distinctes (`bus_routes`) touchant le slug.
 - **Alias typos** (`ALIAS_FIX`) : `rerhymno`→Rethymno, `hrakleio`→Heraklion, etc.
-- **Curation 3 statuts** (`status_of`) :
-  - `allowlist` → présent dans `bus-places.json` → slug canonique sûr.
-  - `noise` → hôtels/supermarchés/codes route (`_NOISE`) + `DENYLIST_POI` → **exclu** du référentiel (et **loggué** : pas de troncature silencieuse).
-  - `admitted` → autre lieu (village probable) → admis, `needs_review=true` jusqu'à validation.
+
+**Curation 3 statuts — révisée pour GTFS** (décision Kami 16/06 : « y'a vraiment des arrêts aux hôtels »). En GTFS un arrêt est tout point d'embarquement réel : on ne supprime que les artefacts de parsing, **jamais un lieu nommé**.
+
+- `allowlist` → présent dans `bus-places.json` → slug canonique sûr, confiance haute.
+- `drop` → **uniquement de vrais artefacts** : codes route (`^A\d+`), « on the national road », libellés de service/colonne (ex « Chania Express » si confirmé service, pas lieu), chaînes vides ou notes de bas de page. **Exclu + loggué** (liste auditée à chaque build, jamais de troncature silencieuse).
+- `stop` → **tout lieu nommé, hôtels/resorts/supermarchés/POI inclus** (Malia Palace, Blue Bay, University Gallou, Botanical Garden, Cretaquarium…). **Gardé comme arrêt**, géocodé, `needs_review=true` jusqu'à validation manuelle.
+
+**Principe « garder > jeter »** : au moindre doute on garde (l'arrêt part en `needs_review`, jamais supprimé en silence) — jeter perd de la donnée, garder est réversible. C'est le garde-fou de cohérence (§9) qui place correctement un hôtel homonyme près de sa route. La frontière `drop`/`stop` étant subjective, **la liste des `drop` est imprimée à chaque build pour audit Kami** : un faux positif se rattrape en le retirant des patterns.
 
 ## 9. Géocodage en cascade + garde-fou de cohérence
 
@@ -172,7 +178,7 @@ Additive, n'altère pas `bus_routes` ni quoi que ce soit en prod. **N'entre pas 
 
 ## 11. Alternatives considérées
 
-- **Finaliser/merger `feat/bus-network`** : capitalise les 79 % déjà géocodés mais embarque OSM SP1/SP2, MapLibre `/live`, web push, ~100 fichiers et la dette de la branche. Écarté pour livrer vite et propre. La duplication des modules purs (`net_geocode`/`net_places`/`bus-places.json`) est assumée : ils sont purs et testés ; si `feat/bus-network` est un jour repris, on réconcilie (ou on retire `bus_stops` au profit de `gtfs_stops`).
+- **Finaliser/merger `feat/bus-network`** : capitalise les 79 % déjà géocodés mais embarque OSM SP1/SP2, MapLibre `/live`, web push, ~100 fichiers et la dette de la branche. Écarté pour livrer vite et propre. La duplication des modules purs (`net_geocode`/`gtfs_places`/`bus-places.json`) est assumée : ils sont purs et testés ; si `feat/bus-network` est un jour repris, on réconcilie (ou on retire `bus_stops` au profit de `gtfs_stops`).
 - **Source OSM** (~1791 arrêts déjà géolocalisés) : coords gratuites mais dépend de l'appariement OSM↔KTEL (SP2 non stabilisé) et de la couverture OSM réelle des lignes interurbaines. Écarté pour l'étape B ; reste une **piste d'enrichissement** futur des arrêts `needs_review`.
 
 ## 12. Risques & mitigations
@@ -180,8 +186,9 @@ Additive, n'altère pas `bus_routes` ni quoi que ce soit en prod. **N'entre pas 
 | Risque | Mitigation |
 |--------|------------|
 | Nominatim rate-limit / endpoint instable | throttle 1 req/s + cache local + injection (build dégradé, pas bloquant) ; les arrêts non résolus tombent en `needs_review`, jamais d'aberration. |
-| Homonymes grecs (plusieurs « Agios Nikolaos », « Profitis Ilias ») | garde-fou bbox + drift 45 km vs arrêt de la même ligne. |
-| `via_stops` bruités (POI/hôtels) | `_NOISE` + `DENYLIST_POI` + flag `admitted/needs_review`. |
+| Homonymes grecs (plusieurs « Agios Nikolaos », « Profitis Ilias »), hôtels homonymes | garde-fou bbox + drift 45 km vs arrêt `high` de la même route → place chaque hôtel/POI près de sa ville. |
+| Hôtels/POI = vrais arrêts mais durs à géocoder précisément | gardés en `stop` + `needs_review` ; Nominatim gère bien les POI nommés ; le non-résolu est trié manuellement par `route_count`. Aucun lieu nommé n'est droppé. |
+| Faux positif de la frontière `drop`/`stop` | liste des `drop` imprimée à chaque build (audit) ; patterns ajustables ; principe « garder > jeter ». |
 | Contention VPS↔Vercel pendant build (vu le 10/06) | build hors fenêtre de déploiement ; étape B ne déclenche aucun deploy Vercel. |
 | Dérive vs `feat/bus-network` | nommage `gtfs_*` distinct + section relationship documentée ici. |
 
@@ -192,7 +199,7 @@ Additive, n'altère pas `bus_routes` ni quoi que ce soit en prod. **N'entre pas 
 Cas (portés + nouveaux) :
 - `stop_slug` : translittération grecque, `&`, espaces multiples, typos via `ALIAS_FIX`.
 - `collect_stops` : dédup par slug, `route_count` correct, via_stops inclus, libellé = premier vu.
-- `status_of` / `canonical_slug` : allowlist vs noise (hôtel/supermarché/code) vs admitted, `DENYLIST_POI`.
+- `status_of` / `canonical_slug` : allowlist ; `drop` UNIQUEMENT sur vrais artefacts (`A90`, « on the national », vide) ; un hôtel/POI nommé (Malia Palace, University Gallou, Botanical Garden) est classé **`stop` (gardé)**, surtout PAS droppé.
 - `geocode_stop` : ordre de cascade strict (référentiel > cb_places > nominatim > none) ; confiances correctes.
 - `coherence_guard` : accepte coord dans bbox + à < 45 km d'un sibling high ; **rejette** hors bbox ; **rejette** homonyme à 128/226 km (fixtures réelles 14/06).
 - `assemble_stops` : idempotence (référentiel prime sur géocodage antérieur) ; garde-fou `MIN_STOPS` (refus d'écrire un référentiel quasi vide).
