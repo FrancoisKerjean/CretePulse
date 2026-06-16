@@ -9,6 +9,7 @@ import zipfile
 
 from collections import OrderedDict
 
+import coastline
 from gtfs_stops_build import OUT_DIR, curate_routes
 from gtfs_writer import write_csv
 from net_lines import merge_into_lines
@@ -102,10 +103,14 @@ def _coords_stops(slugs, stops_by_id):
             for s in slugs]
 
 
-def assemble_feed(routes, stops_by_id, window, feed_version, osrm=None, seasons=None):
+def assemble_feed(routes, stops_by_id, window, feed_version, osrm=None, seasons=None, on_land=None):
     """Pur (sauf osrm injecté). Retourne {agency,routes,trips,stop_times,calendar,
     feed_info,stops,stats}. window=(start_yyyymmdd,end_yyyymmdd) ; seasons=iterable|None.
-    osrm=None => fallback haversine déterministe (hors-ligne)."""
+    osrm=None => fallback haversine déterministe (hors-ligne).
+    on_land=callable(lat,lng)->bool : filtre les arrêts en mer avant assemblage (None=pas de filtre)."""
+    if on_land is not None:
+        stops_by_id = {sid: s for sid, s in stops_by_id.items()
+                       if on_land(s["stop_lat"], s["stop_lon"])}
     start_date, end_date = window
     seasons = set(seasons) if seasons else None
     fetch = osrm if osrm is not None else (lambda url: None)
@@ -290,13 +295,14 @@ def make_osrm_fetch(cache_path=None, throttle_s=1.0):
     return fetch
 
 
-def build_gtfs_feed(sb, window, feed_version, osrm=None, seasons=None, out_dir=OUT_DIR):
+def build_gtfs_feed(sb, window, feed_version, osrm=None, seasons=None, out_dir=OUT_DIR, on_land=coastline.on_land):
     """Point d'entrée : lit gtfs_stops + bus_routes, assemble, écrit les fichiers,
     empaquette crete.zip. Retourne stats + chemin du zip. osrm=None au run réel
-    => passer make_osrm_fetch() pour des km routiers (sinon fallback haversine)."""
+    => passer make_osrm_fetch() pour des km routiers (sinon fallback haversine).
+    on_land=coastline.on_land par défaut (filtre les arrêts en mer)."""
     stops_by_id = load_stops(sb)
     routes = load_routes(sb)
-    feed = assemble_feed(routes, stops_by_id, window, feed_version, osrm=osrm, seasons=seasons)
+    feed = assemble_feed(routes, stops_by_id, window, feed_version, osrm=osrm, seasons=seasons, on_land=on_land)
     write_feed(feed, out_dir)
     zip_path = package_zip(out_dir)
     return {**feed["stats"], "zip": zip_path}

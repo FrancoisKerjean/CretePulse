@@ -173,3 +173,37 @@ def test_package_zip_contains_gtfs_files(tmp_path):
         names = set(z.namelist())
     assert {"agency.txt", "routes.txt", "trips.txt", "stop_times.txt",
             "calendar.txt", "feed_info.txt", "stops.txt"} <= names
+
+
+def test_stop_in_water_is_excluded_from_feed():
+    routes = [{
+        "id": 1, "operator_id": "herlas", "from_place": "Heraklion", "to_place": "Agios Nikolaos",
+        "via_stops": ["Hersonissos"], "duration": "1h",
+        "departures_by_day": [{"days": "Mon-Fri", "times": ["08:00"]}], "season": None,
+    }]
+    fake_on_land = lambda lat, lng: not (abs(lat - 35.31) < 1e-6 and abs(lng - 25.39) < 1e-6)
+    feed = assemble_feed(routes, STOPS, WINDOW, "20260616", osrm=None, on_land=fake_on_land)
+    st = _tbl(feed, "stop_times")
+    stop_ids = {r[0] for r in feed["stops"][1]}
+    assert "hersonissos" not in stop_ids
+    assert [r["stop_id"] for r in st] == ["heraklion", "agios-nikolaos"]
+
+def test_terminus_in_water_drops_trip():
+    routes = [{
+        "id": 1, "operator_id": "herlas", "from_place": "Heraklion", "to_place": "Agios Nikolaos",
+        "via_stops": [], "duration": "1h",
+        "departures_by_day": [{"days": "Mon-Fri", "times": ["08:00"]}], "season": None,
+    }]
+    fake_on_land = lambda lat, lng: not (abs(lat - 35.19) < 1e-6 and abs(lng - 25.71) < 1e-6)
+    feed = assemble_feed(routes, STOPS, WINDOW, "20260616", osrm=None, on_land=fake_on_land)
+    assert _tbl(feed, "trips") == []
+    assert len(feed["stats"]["dropped_trips"]) == 1
+
+def test_on_land_none_keeps_all_stops():
+    routes = [{
+        "id": 1, "operator_id": "herlas", "from_place": "Heraklion", "to_place": "Agios Nikolaos",
+        "via_stops": ["Hersonissos"], "duration": "1h",
+        "departures_by_day": [{"days": "Mon-Fri", "times": ["08:00"]}], "season": None,
+    }]
+    feed = assemble_feed(routes, STOPS, WINDOW, "20260616", osrm=None)
+    assert len(feed["stop_times"][1]) == 3
