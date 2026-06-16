@@ -102,7 +102,7 @@ lignes gtfs_stops          → store_stops() (delete+insert transactionnel, gard
 
 - `gtfs_stops_build.py` (NOUVEAU, orchestration) : `collect_stops()`, `coherence_guard()`, `assemble_stops()` (pure), `store_stops()` (transactionnel, garde-fou `MIN_STOPS`), `export_stops_txt()`, point d'entrée `build_gtfs_stops(sb, nominatim=None)`.
 - `net_geocode.py` (PORTÉ tel quel) : `stop_slug()`, `collect_stops()`, `geocode_stop()`, `coords_index_by_slug()`. Importe `prices._norm`.
-- `gtfs_places.py` (PORTÉ de `net_places` mais **curation adaptée GTFS**) : `status_of()`, `canonical_slug()`, `display_name()`, `ALIAS_FIX`. Lit `src/data/bus-places.json` (allowlist). **Le filtre de bruit est paré** : on ne droppe QUE les vrais artefacts (codes route `^A\d+`, « on the national », libellés de service, chaînes vides/footnotes) ; les hôtels/resorts/POI nommés sont **gardés** comme arrêts (cf §8). La `DENYLIST_POI` SEO d'origine (Malia Palace, University Gallou, Botanical Garden…) est **abandonnée** ici car ce sont de vrais arrêts.
+- `gtfs_places.py` (PORTÉ de `net_places` mais **curation adaptée GTFS**) : `status_of()`, `canonical_slug()`, `display_name()`, `ALIAS_FIX`. Lit `src/data/bus-places.json` (allowlist). **Le filtre de bruit est paré et purement structurel** : on ne droppe QUE des artefacts (codes route `^A\d+`, « on the national », chaînes vides/footnotes), **jamais sur la base d'un nom** ; les hôtels/resorts/POI nommés (et un éventuel « Chania Express ») sont **gardés** comme arrêts (cf §8). La `DENYLIST_POI` SEO d'origine (Malia Palace, University Gallou, Botanical Garden…) est **abandonnée** ici car ce sont de vrais arrêts.
 - `net_nomenclature.py` (PORTÉ, on n'utilise que `prefecture_for()` + `PREFECTURE_CENTERS`). Optionnel.
 - `src/data/bus-places.json` (COPIÉ depuis `feat/bus-network`).
 - `buses.py` (master) : ajout d'un appel `build_gtfs_stops(sb)` **après** le scrape herlas/ektel (comme l'était `build_network`), dégradation gracieuse si échec (log, n'avorte pas le scrape).
@@ -148,7 +148,7 @@ Additive, n'altère pas `bus_routes` ni quoi que ce soit en prod. **N'entre pas 
 **Curation 3 statuts — révisée pour GTFS** (décision Kami 16/06 : « y'a vraiment des arrêts aux hôtels »). En GTFS un arrêt est tout point d'embarquement réel : on ne supprime que les artefacts de parsing, **jamais un lieu nommé**.
 
 - `allowlist` → présent dans `bus-places.json` → slug canonique sûr, confiance haute.
-- `drop` → **uniquement de vrais artefacts** : codes route (`^A\d+`), « on the national road », libellés de service/colonne (ex « Chania Express » si confirmé service, pas lieu), chaînes vides ou notes de bas de page. **Exclu + loggué** (liste auditée à chaque build, jamais de troncature silencieuse).
+- `drop` → **uniquement des artefacts structurels, jamais un nom de lieu** : codes route (`^A\d+`), « on the national road »/segments routiers, chaînes vides/espaces, notes de bas de page. **Aucun drop fondé sur un nom** : un « Chania Express » ou un hôtel passe donc en `stop`/`needs_review`, jamais droppé (on ne parie pas sur « est-ce un service ou un lieu », le garde-fou + `needs_review` protègent). **Exclu + loggué** (liste auditée à chaque build, jamais de troncature silencieuse).
 - `stop` → **tout lieu nommé, hôtels/resorts/supermarchés/POI inclus** (Malia Palace, Blue Bay, University Gallou, Botanical Garden, Cretaquarium…). **Gardé comme arrêt**, géocodé, `needs_review=true` jusqu'à validation manuelle.
 
 **Principe « garder > jeter »** : au moindre doute on garde (l'arrêt part en `needs_review`, jamais supprimé en silence) — jeter perd de la donnée, garder est réversible. C'est le garde-fou de cohérence (§9) qui place correctement un hôtel homonyme près de sa route. La frontière `drop`/`stop` étant subjective, **la liste des `drop` est imprimée à chaque build pour audit Kami** : un faux positif se rattrape en le retirant des patterns.
@@ -199,7 +199,7 @@ Additive, n'altère pas `bus_routes` ni quoi que ce soit en prod. **N'entre pas 
 Cas (portés + nouveaux) :
 - `stop_slug` : translittération grecque, `&`, espaces multiples, typos via `ALIAS_FIX`.
 - `collect_stops` : dédup par slug, `route_count` correct, via_stops inclus, libellé = premier vu.
-- `status_of` / `canonical_slug` : allowlist ; `drop` UNIQUEMENT sur vrais artefacts (`A90`, « on the national », vide) ; un hôtel/POI nommé (Malia Palace, University Gallou, Botanical Garden) est classé **`stop` (gardé)**, surtout PAS droppé.
+- `status_of` / `canonical_slug` : allowlist ; `drop` UNIQUEMENT sur artefacts structurels (`A90`, « on the national », vide) ; un hôtel/POI nommé (Malia Palace, University Gallou, Botanical Garden) **ou un libellé ambigu (« Chania Express »)** est classé **`stop` (gardé)**, jamais droppé sur la base du nom.
 - `geocode_stop` : ordre de cascade strict (référentiel > cb_places > nominatim > none) ; confiances correctes.
 - `coherence_guard` : accepte coord dans bbox + à < 45 km d'un sibling high ; **rejette** hors bbox ; **rejette** homonyme à 128/226 km (fixtures réelles 14/06).
 - `assemble_stops` : idempotence (référentiel prime sur géocodage antérieur) ; garde-fou `MIN_STOPS` (refus d'écrire un référentiel quasi vide).
