@@ -31,10 +31,10 @@ const THINGS_TO_DO_SLUGS = new Set([
 
 const T = {
   title: {
-    en: "KTEL Bus Schedules – Crete",
-    fr: "Horaires KTEL – Crète",
-    de: "KTEL Busfahrpläne – Kreta",
-    el: "Δρομολόγια ΚΤΕΛ – Κρήτη",
+    en: "KTEL Bus Timetables in Crete 2026",
+    fr: "Horaires de Bus KTEL en Crète 2026",
+    de: "KTEL Busfahrplan Kreta 2026",
+    el: "Δρομολόγια ΚΤΕΛ Κρήτη 2026",
   },
   subtitle: {
     en: "Every KTEL bus route across Crete – towns, beaches, villages and sites – kept up to date from the operators.",
@@ -135,10 +135,10 @@ const T = {
     de: "Auto, Taxi, Fähre vergleichen", el: "Σύγκριση αυτοκινήτου, ταξί, πλοίου",
   },
   disclaimer: {
-    en: "Times follow the operators' seasonal timetables and may change. Always confirm on the official KTEL sites before travelling – summer (May–Oct) runs more frequently.",
-    fr: "Les horaires suivent les calendriers saisonniers des opérateurs et peuvent changer. Vérifiez toujours sur les sites officiels KTEL avant de partir – l'été (mai–oct) est plus fréquent.",
-    de: "Die Zeiten folgen den saisonalen Fahrplänen der Betreiber und können sich ändern. Bestätigen Sie sie immer auf den offiziellen KTEL-Seiten – im Sommer (Mai–Okt) häufiger.",
-    el: "Οι ώρες ακολουθούν τα εποχικά δρομολόγια των φορέων και μπορεί να αλλάξουν. Επιβεβαιώνετε πάντα στις επίσημες σελίδες ΚΤΕΛ – το καλοκαίρι (Μάι–Οκτ) πιο συχνά.",
+    en: "Times follow the operators' seasonal timetables and may change. Always confirm with the operator before travelling – summer (May–Oct) runs more frequently.",
+    fr: "Les horaires suivent les calendriers saisonniers des opérateurs et peuvent changer. Vérifiez toujours auprès de l'opérateur avant de partir – l'été (mai–oct) est plus fréquent.",
+    de: "Die Zeiten folgen den saisonalen Fahrplänen der Betreiber und können sich ändern. Bestätigen Sie sie immer beim Betreiber – im Sommer (Mai–Okt) häufiger.",
+    el: "Οι ώρες ακολουθούν τα εποχικά δρομολόγια των φορέων και μπορεί να αλλάξουν. Επιβεβαιώνετε πάντα με τον μεταφορέα – το καλοκαίρι (Μάι–Οκτ) πιο συχνά.",
   },
   officialEast: { en: "KTEL East (Heraklion-Lasithi)", fr: "KTEL Est (Héraklion-Lassithi)", de: "KTEL Ost", el: "ΚΤΕΛ Ανατολικής" },
   officialWest: { en: "KTEL West (Chania-Rethymno)", fr: "KTEL Ouest (La Canée-Rethymnon)", de: "KTEL West", el: "ΚΤΕΛ Δυτικής" },
@@ -421,7 +421,7 @@ export function BusesClient({
         {/* Header compact (le titre SEO complet reste dans <title>/meta/JSON-LD) */}
         <div className="mb-6">
           <h1 className="font-heading font-extrabold text-2xl md:text-3xl tracking-tight text-text flex items-center gap-2">
-            <CiBus className="w-6 h-6 text-aegean" /> {locale === "fr" ? "Bus en Crète" : "Bus in Crete"}
+            <CiBus className="w-6 h-6 text-aegean" /> {t("title", locale)}
           </h1>
           <p className="text-text-muted text-sm mt-1">{t("subtitle", locale)}</p>
           {updatedAt && (

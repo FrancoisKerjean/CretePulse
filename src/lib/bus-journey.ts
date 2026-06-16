@@ -64,9 +64,16 @@ function daysMatch(days: string, day: string): boolean {
   if (norm.includes("every") || norm.includes("daily")) return true;
   const d = day.toLowerCase();
   if (norm.includes("weekend")) return d === "sat" || d === "sun";
+  if (norm.includes("weekday")) return d !== "sat" && d !== "sun"; // "Weekdays" = lun..ven
   // noms complets -> tokens 3 lettres ("monday to friday" -> "mon to fri")
   norm = norm.replace(/\b(mon|tue|wed|thu|fri|sat|sun)[a-z]*/g, "$1");
-  const range = norm.match(/(mon|tue|wed|thu|fri|sat|sun)\s*(?:[-–]|to)\s*(mon|tue|wed|thu|fri|sat|sun)/);
+  // Une plage ("Mon-Fri", "Mon to Fri") n'a QUE deux jours-tokens. Au-dela, c'est
+  // une enumeration ("Mon-Wed-Fri", "Mon, Tue, Wed") : ne PAS lire le tiret comme
+  // une plage (sinon "Mon-Wed-Fri" devient Mon..Wed), tester l'appartenance directe.
+  const tokenCount = (norm.match(/(mon|tue|wed|thu|fri|sat|sun)/g) || []).length;
+  const range = tokenCount === 2
+    ? norm.match(/(mon|tue|wed|thu|fri|sat|sun)\s*(?:[-–]|to)\s*(mon|tue|wed|thu|fri|sat|sun)/)
+    : null;
   if (range) {
     const i = DAY_ORDER.indexOf(range[1]);
     const j = DAY_ORDER.indexOf(range[2]);

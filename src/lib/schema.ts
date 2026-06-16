@@ -587,7 +587,7 @@ export function busesPageSchema(params: {
   locale: string;
   pageTitle: string;
   description: string;
-  routes: Array<{ from: string; to: string }>;
+  routes: Array<{ from: string; to: string; slug?: string }>;
   dateModified: string | null;
   faqItems: Array<{ q: string; a: string }>;
   breadcrumbLabels: { home: string; buses: string };
@@ -624,6 +624,7 @@ export function busesPageSchema(params: {
           "@type": "ListItem",
           position: i + 1,
           name: `${r.from} to ${r.to} by bus`,
+          ...(r.slug ? { url: `${BASE_URL}/${params.locale}/buses/${r.slug}` } : {}),
         })),
       },
       {
