@@ -37,6 +37,9 @@ const routes = parseCsv("routes.txt");
 const trips = parseCsv("trips.txt");
 const calendar = parseCsv("calendar.txt");
 const stopTimes = parseCsv("stop_times.txt");
+let shapes = [];
+try { shapes = parseCsv("shapes.txt"); } catch { shapes = []; }
+const shapeIds = new Set(shapes.map((s) => s.shape_id));
 
 const stopIds = new Set(stops.map((s) => s.stop_id));
 const routeIds = new Set(routes.map((r) => r.route_id));
@@ -47,6 +50,10 @@ const tripIds = new Set(trips.map((t) => t.trip_id));
 for (const t of trips) {
   if (!routeIds.has(t.route_id)) errors.push(`trip ${t.trip_id}: route_id inconnu ${t.route_id}`);
   if (!serviceIds.has(t.service_id)) errors.push(`trip ${t.trip_id}: service_id inconnu ${t.service_id}`);
+}
+for (const t of trips) {
+  if (t.shape_id && t.shape_id.length > 0 && !shapeIds.has(t.shape_id))
+    errors.push(`trip ${t.trip_id}: shape_id inconnu ${t.shape_id}`);
 }
 for (const st of stopTimes) {
   if (!stopIds.has(st.stop_id)) errors.push(`stop_times: stop_id inconnu ${st.stop_id}`);
@@ -76,7 +83,7 @@ for (const [tripId, sts] of byTrip) {
 }
 
 console.log(`stops=${stops.length} routes=${routes.length} trips=${trips.length} ` +
-            `services=${calendar.length} stop_times=${stopTimes.length}`);
+            `services=${calendar.length} stop_times=${stopTimes.length} shapes=${shapeIds.size}`);
 if (errors.length) {
   console.error(`FAIL: ${errors.length} erreur(s)`);
   for (const e of errors.slice(0, 50)) console.error("  - " + e);
