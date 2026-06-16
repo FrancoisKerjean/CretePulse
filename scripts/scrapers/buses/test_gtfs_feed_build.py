@@ -207,3 +207,45 @@ def test_on_land_none_keeps_all_stops():
     }]
     feed = assemble_feed(routes, STOPS, WINDOW, "20260616", osrm=None)
     assert len(feed["stop_times"][1]) == 3
+
+
+import osm_feed as _osm_mod
+
+def test_matched_route_gets_shape_id_and_shape():
+    routes = [{
+        "id": 1, "line_id": 7, "operator_id": "herlas", "from_place": "Heraklion",
+        "to_place": "Agios Nikolaos", "via_stops": [], "duration": "1h",
+        "departures_by_day": [{"days": "Mon-Fri", "times": ["08:00"]}], "season": None,
+    }]
+    osm = {7: {"id": 7, "code": "HER-01", "color": "#0B5E78",
+               "geometry": [[25.14, 35.34], [25.39, 35.31], [25.71, 35.19]]}}
+    feed = assemble_feed(routes, STOPS, WINDOW, "20260616", osrm=None, osm=osm)
+    trips = _tbl(feed, "trips")
+    assert trips[0]["shape_id"] == "shp-7"
+    shp = _tbl(feed, "shapes")
+    assert {r["shape_id"] for r in shp} == {"shp-7"}
+    pts = [(float(r["shape_pt_lat"]), float(r["shape_pt_lon"]), int(r["shape_pt_sequence"])) for r in shp]
+    assert pts[0] == (35.34, 25.14, 0)
+    assert pts[-1] == (35.19, 25.71, 2)
+
+def test_unmatched_route_has_empty_shape_id():
+    routes = [{
+        "id": 1, "operator_id": "herlas", "from_place": "Heraklion",
+        "to_place": "Agios Nikolaos", "via_stops": [], "duration": "1h",
+        "departures_by_day": [{"days": "Mon-Fri", "times": ["08:00"]}], "season": None,
+    }]
+    feed = assemble_feed(routes, STOPS, WINDOW, "20260616", osrm=None, osm={})
+    trips = _tbl(feed, "trips")
+    assert trips[0]["shape_id"] == ""
+    assert feed["shapes"][1] == []
+
+def test_osm_none_no_shapes_backcompat():
+    routes = [{
+        "id": 1, "operator_id": "herlas", "from_place": "Heraklion",
+        "to_place": "Agios Nikolaos", "via_stops": [], "duration": "1h",
+        "departures_by_day": [{"days": "Mon-Fri", "times": ["08:00"]}], "season": None,
+    }]
+    feed = assemble_feed(routes, STOPS, WINDOW, "20260616", osrm=None)
+    assert "shapes" in feed and feed["shapes"][1] == []
+    trips = _tbl(feed, "trips")
+    assert trips[0]["shape_id"] == ""

@@ -10,6 +10,7 @@ import zipfile
 from collections import OrderedDict
 
 import coastline
+import osm_feed
 from gtfs_stops_build import OUT_DIR, curate_routes
 from gtfs_writer import write_csv
 from net_lines import merge_into_lines
@@ -103,7 +104,7 @@ def _coords_stops(slugs, stops_by_id):
             for s in slugs]
 
 
-def assemble_feed(routes, stops_by_id, window, feed_version, osrm=None, seasons=None, on_land=None):
+def assemble_feed(routes, stops_by_id, window, feed_version, osrm=None, seasons=None, on_land=None, osm=None):
     """Pur (sauf osrm injecté). Retourne {agency,routes,trips,stop_times,calendar,
     feed_info,stops,stats}. window=(start_yyyymmdd,end_yyyymmdd) ; seasons=iterable|None.
     osrm=None => fallback haversine déterministe (hors-ligne).
@@ -138,6 +139,7 @@ def assemble_feed(routes, stops_by_id, window, feed_version, osrm=None, seasons=
     codes = assign_codes(lines_for_codes)
 
     trips_rows, st_rows = [], []
+    shapes_pts = {}
     cal = OrderedDict()
     routes_meta = OrderedDict()
     referenced, seen_trip = set(), {}
@@ -151,6 +153,14 @@ def assemble_feed(routes, stops_by_id, window, feed_version, osrm=None, seasons=
             continue
         route_id = codes[key]
         direction_id = 0 if a == corridor["origin"] else 1
+
+        shape_id = ""
+        if osm:
+            lid = r.get("line_id")
+            if lid is not None and lid in osm:
+                shape_id = osm_feed.shape_id_for(lid)
+                if shape_id not in shapes_pts:
+                    shapes_pts[shape_id] = osm_feed.line_shape(osm[lid])
 
         seq, dropped_in, terminus_ok = _geocoded_sequence(r, stops_by_id)
         if not terminus_ok or len(seq) < 2:
@@ -176,7 +186,7 @@ def assemble_feed(routes, stops_by_id, window, feed_version, osrm=None, seasons=
             n = seen_trip.get(base, 0)
             seen_trip[base] = n + 1
             trip_id = base if n == 0 else f"{base}-{n}"
-            trips_rows.append([route_id, service_id, trip_id, headsign, direction_id])
+            trips_rows.append([route_id, service_id, trip_id, headsign, direction_id, shape_id])
             for i, s in enumerate(seq):
                 t = add_minutes(t0, offsets[i])
                 timepoint = 1 if (i == 0 or (i == last and duration_real)) else 0
@@ -193,7 +203,7 @@ def assemble_feed(routes, stops_by_id, window, feed_version, osrm=None, seasons=
     routes_tbl = (["route_id", "agency_id", "route_short_name", "route_long_name",
                    "route_type", "route_color"], routes_rows)
 
-    trips_tbl = (["route_id", "service_id", "trip_id", "trip_headsign", "direction_id"], trips_rows)
+    trips_tbl = (["route_id", "service_id", "trip_id", "trip_headsign", "direction_id", "shape_id"], trips_rows)
     st_tbl = (["trip_id", "arrival_time", "departure_time", "stop_id", "stop_sequence", "timepoint"], st_rows)
 
     cal_header = ["service_id", "monday", "tuesday", "wednesday", "thursday",
@@ -212,13 +222,20 @@ def assemble_feed(routes, stops_by_id, window, feed_version, osrm=None, seasons=
         stops_rows.append([sid, s["stop_name"], f"{s['stop_lat']:.6f}", f"{s['stop_lon']:.6f}"])
     stops_tbl = (["stop_id", "stop_name", "stop_lat", "stop_lon"], stops_rows)
 
+    shapes_rows = []
+    for shape_id in sorted(shapes_pts):
+        for seq, (lat, lng) in enumerate(shapes_pts[shape_id]):
+            shapes_rows.append([shape_id, f"{lat:.6f}", f"{lng:.6f}", seq])
+    shapes_tbl = (["shape_id", "shape_pt_lat", "shape_pt_lon", "shape_pt_sequence"], shapes_rows)
+
     stats = {
         "corridors": len(routes_meta), "trips": len(trips_rows), "stop_times": len(st_rows),
         "services": len(cal_rows), "stops_referenced": len(referenced),
         "dropped_trips": dropped_trips, "skipped_intermediates": sorted(set(skipped_inter)),
     }
     return {"agency": agency, "routes": routes_tbl, "trips": trips_tbl, "stop_times": st_tbl,
-            "calendar": cal_tbl, "feed_info": feed_tbl, "stops": stops_tbl, "stats": stats}
+            "calendar": cal_tbl, "feed_info": feed_tbl, "stops": stops_tbl,
+            "shapes": shapes_tbl, "stats": stats}
 
 
 def write_feed(feed, out_dir=OUT_DIR):
