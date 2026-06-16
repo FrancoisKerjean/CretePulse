@@ -9,6 +9,8 @@ import { timesForDate } from "../bus-journey.ts";
 import { toMin } from "../athens-time.ts";
 import type { BusRoute } from "../buses";
 import type { LiveLine, LiveStop, LiveNetwork, LiveBus } from "./types";
+import { pairSlug } from "../bus-pairs.ts";
+import { parseDurationMin } from "./duration.ts";
 
 /** Normalise un nom de lieu : minuscules, sans diacritiques, alphanum + espaces. */
 export function normalizePlace(s: string): string {
@@ -161,6 +163,7 @@ export function busesAt(now: NowAthens, network: LiveNetwork): LiveBus[] {
       continue;
     }
     const oriented = orientRoute(route, line);
+    const durMin = parseDurationMin(route.duration);
     for (const H of activeDepartures(route, line.totalMinutes, now)) {
       const key = `${line.id}|${oriented.reversed ? "rev" : "fwd"}|${H}`;
       if (seen.has(key)) continue;
@@ -184,6 +187,11 @@ export function busesAt(now: NowAthens, network: LiveNetwork): LiveBus[] {
         headsign: route.to_place,
         direction: oriented.reversed ? "rev" : "fwd",
         degraded: line.source === "ktel" || line.partialGeo,
+        origin: route.from_place,
+        operatorId: route.operator_id,
+        pairSlug: pairSlug(route.from_place, route.to_place),
+        etaMinTerminus: durMin == null ? null : (toMin(H) + durMin) - now.minutes,
+        durationEstimated: route.duration_estimated ?? false,
       });
     }
   }

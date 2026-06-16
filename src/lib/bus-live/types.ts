@@ -47,4 +47,10 @@ export interface LiveBus {
   headsign: string;
   direction: "fwd" | "rev";
   degraded: boolean;
+  // --- enrichissement sélection interactive (spec 2026-06-16) ---
+  origin: string;                // route.from_place (origine du trajet)
+  operatorId: string;            // route.operator_id ('herlas'=Est, 'ektel'=Ouest)
+  pairSlug: string | null;       // pairSlug(from,to) ; null = pas de page /buses/[pair]
+  etaMinTerminus: number | null; // minutes restantes jusqu'au terminus à `now` ; null si durée inconnue
+  durationEstimated: boolean;    // durée KTEL estimée → libellé « estimé »
 }
