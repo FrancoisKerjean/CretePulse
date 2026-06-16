@@ -26,7 +26,6 @@ type NewsRow = {
   title_fr: string | null;
   title_de: string | null;
   title_el: string | null;
-  category: string | null;
   published_at: string;
 };
 
@@ -39,8 +38,7 @@ function escapeXml(s: string): string {
     .replace(/'/g, "&apos;");
 }
 
-function urlNode(loc: string, lang: string, title: string, publishedAt: string, genres?: string): string {
-  const genresLine = genres ? `      <news:genres>${escapeXml(genres)}</news:genres>\n` : "";
+function urlNode(loc: string, lang: string, title: string, publishedAt: string): string {
   return `  <url>
     <loc>${escapeXml(loc)}</loc>
     <news:news>
@@ -49,7 +47,7 @@ function urlNode(loc: string, lang: string, title: string, publishedAt: string, 
         <news:language>${escapeXml(lang)}</news:language>
       </news:publication>
       <news:publication_date>${escapeXml(publishedAt)}</news:publication_date>
-${genresLine}      <news:title>${escapeXml(title)}</news:title>
+      <news:title>${escapeXml(title)}</news:title>
     </news:news>
   </url>`;
 }
@@ -60,7 +58,7 @@ export async function GET() {
 
   const { data } = await supabase
     .from("news")
-    .select("slug, title_en, title_fr, title_de, title_el, category, published_at")
+    .select("slug, title_en, title_fr, title_de, title_el, published_at")
     .neq("title_en", "")
     .neq("category", "filtered")
     .gte("published_at", cutoff)
@@ -82,20 +80,20 @@ export async function GET() {
 
       const loc = `${BASE_URL}/${locale}/news/${item.slug}`;
       const lang = LOCALE_LANG_TAG[locale];
-      urls.push(urlNode(loc, lang, title, item.published_at, item.category || undefined));
+      urls.push(urlNode(loc, lang, title, item.published_at));
     }
   }
 
   // Also add fresh L1 putaclick guides (last 48h) · they qualify for Top Stories
   const { data: guideData } = await supabase
     .from("guides")
-    .select("slug, titles, category, published_at")
+    .select("slug, titles, published_at")
     .eq("status", "published")
     .gte("published_at", cutoff)
     .order("published_at", { ascending: false })
     .limit(100);
 
-  type GuideRow = { slug: string; titles: Record<string, string>; category: string | null; published_at: string };
+  type GuideRow = { slug: string; titles: Record<string, string>; published_at: string };
   const guides: GuideRow[] = (guideData as GuideRow[]) || [];
 
   for (const g of guides) {
@@ -103,7 +101,7 @@ export async function GET() {
       const title = g.titles?.[locale];
       if (!title) continue;
       const loc = `${BASE_URL}/${locale}/articles/${g.slug}`;
-      urls.push(urlNode(loc, LOCALE_LANG_TAG[locale], title, g.published_at, g.category || undefined));
+      urls.push(urlNode(loc, LOCALE_LANG_TAG[locale], title, g.published_at));
     }
   }
 

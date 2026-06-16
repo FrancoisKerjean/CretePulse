@@ -31,10 +31,10 @@ const THINGS_TO_DO_SLUGS = new Set([
 
 const T = {
   title: {
-    en: "KTEL Bus Schedules – Crete",
-    fr: "Horaires KTEL – Crète",
-    de: "KTEL Busfahrpläne – Kreta",
-    el: "Δρομολόγια ΚΤΕΛ – Κρήτη",
+    en: "KTEL Bus Timetables in Crete 2026",
+    fr: "Horaires de Bus KTEL en Crète 2026",
+    de: "KTEL Busfahrplan Kreta 2026",
+    el: "Δρομολόγια ΚΤΕΛ Κρήτη 2026",
   },
   subtitle: {
     en: "Every KTEL bus route across Crete – towns, beaches, villages and sites – kept up to date from the operators.",
@@ -421,7 +421,7 @@ export function BusesClient({
         {/* Header compact (le titre SEO complet reste dans <title>/meta/JSON-LD) */}
         <div className="mb-6">
           <h1 className="font-heading font-extrabold text-2xl md:text-3xl tracking-tight text-text flex items-center gap-2">
-            <CiBus className="w-6 h-6 text-aegean" /> {locale === "fr" ? "Bus en Crète" : "Bus in Crete"}
+            <CiBus className="w-6 h-6 text-aegean" /> {t("title", locale)}
           </h1>
           <p className="text-text-muted text-sm mt-1">{t("subtitle", locale)}</p>
           {updatedAt && (

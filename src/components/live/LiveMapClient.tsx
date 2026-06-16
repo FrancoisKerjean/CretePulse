@@ -2,25 +2,27 @@
 import { useEffect, useRef, useState } from "react";
 import "maplibre-gl/dist/maplibre-gl.css";
 import {
-  loadLiveNetwork, busesAt, reconcile, lerp, lerpAngle,
-  type LiveNetwork, type LiveBus,
+  loadLiveNetwork, busesAt, reconcile, lerp, lerpAngle, deriveBusSheet,
+  type LiveNetwork, type LiveBus, type LiveLine, type BusSheetVM,
 } from "@/lib/bus-live";
 import { athensNow } from "@/lib/athens-time";
-import { createBusEl, setBusArrow } from "./busMarker";
+import { createBusEl, setBusArrow, setBusSelected, setBusDimmed } from "./busMarker";
+import { BusSheet } from "./BusSheet";
 import { Link } from "@/i18n/navigation";
 
 type MaplibreMap = import("maplibre-gl").Map;
 type MaplibreMarker = import("maplibre-gl").Marker;
+type GeoJSONSource = import("maplibre-gl").GeoJSONSource;
 type Pose = { lat: number; lng: number; bearing: number };
+
+const SHEET_H = 240; // hauteur approx du bottom sheet, pour l'offset de recentrage
+const EMPTY = { type: "FeatureCollection" as const, features: [] };
 
 const T: Record<string, { estimated: string; circulating: string; planTrip: string; rentCar: string }> = {
   en: { estimated: "Estimated from the timetable", circulating: "buses running", planTrip: "Plan a trip", rentCar: "Rent a car" },
   fr: { estimated: "Estimé selon l'horaire", circulating: "bus en circulation", planTrip: "Planifier un trajet", rentCar: "Louer une voiture" },
 };
 
-// v1 : on ne trace que les lignes à vraie géométrie OSM. Les lignes KTEL-fallback
-// sont des segments droits entre 2 terminus qui coupent la mer (bus "dans l'eau")
-// -> exclues tant qu'elles n'ont pas un vrai tracé routier.
 function isMapped(l: { source: "osm" | "ktel"; partialGeo: boolean }): boolean {
   return l.source !== "ktel" && !l.partialGeo;
 }
@@ -30,8 +32,20 @@ function linesGeoJSON(net: LiveNetwork) {
     type: "FeatureCollection" as const,
     features: [...net.lines.values()].filter(isMapped).map((l) => ({
       type: "Feature" as const,
-      properties: { code: l.code },
+      properties: { code: l.code, lineId: l.id },
       geometry: { type: "LineString" as const, coordinates: l.geometry },
+    })),
+  };
+}
+
+function stopsGeoJSON(line: LiveLine | null, nextStopName: string | null) {
+  if (!line) return EMPTY;
+  return {
+    type: "FeatureCollection" as const,
+    features: line.stops.map((s) => ({
+      type: "Feature" as const,
+      properties: { isNext: s.name === nextStopName },
+      geometry: { type: "Point" as const, coordinates: [s.lng, s.lat] },
     })),
   };
 }
@@ -42,13 +56,20 @@ export function LiveMapClient({ locale }: { locale: string }) {
   const netRef = useRef<LiveNetwork | null>(null);
   const markersRef = useRef(new Map<string, { marker: MaplibreMarker; el: HTMLDivElement; cur: Pose }>());
   const targetsRef = useRef(new Map<string, LiveBus>());
+  const selectedRef = useRef<string | null>(null);
+  const deselectRef = useRef<() => void>(() => {});
   const [count, setCount] = useState(0);
+  const [sheetVM, setSheetVM] = useState<BusSheetVM | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     let iv: ReturnType<typeof setInterval> | undefined;
     let raf = 0;
     let onVis: (() => void) | undefined;
+    let onKey: ((e: KeyboardEvent) => void) | undefined;
+
+    const reduceMotion = () =>
+      typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     Promise.all([import("maplibre-gl"), loadLiveNetwork()]).then(([ml, net]) => {
       if (cancelled || !containerRef.current) return;
@@ -61,13 +82,73 @@ export function LiveMapClient({ locale }: { locale: string }) {
       map.addControl(new ml.NavigationControl({ showCompass: false }), "top-right");
       mapRef.current = map;
 
+      const stopsSource = () => map.getSource("sel-stops") as GeoJSONSource | undefined;
+
+      const applyMarkerStates = () => {
+        const sel = selectedRef.current;
+        for (const [id, m] of markersRef.current) {
+          setBusSelected(m.el, id === sel);
+          setBusDimmed(m.el, sel != null && id !== sel);
+        }
+      };
+      const applyHighlight = (lineId: number) => {
+        map.setFilter("bus-lines-highlight", ["==", ["get", "lineId"], lineId]);
+        map.setPaintProperty("bus-lines-base", "line-opacity", 0.12);
+      };
+      const resetHighlight = () => {
+        map.setFilter("bus-lines-highlight", ["==", ["get", "lineId"], -1]);
+        map.setPaintProperty("bus-lines-base", "line-opacity", 0.55);
+      };
+      const setStops = (line: LiveLine | null, nextStopName: string | null) =>
+        stopsSource()?.setData(stopsGeoJSON(line, nextStopName));
+
+      const deselect = () => {
+        if (selectedRef.current == null) return;
+        selectedRef.current = null;
+        resetHighlight();
+        setStops(null, null);
+        applyMarkerStates();
+        setSheetVM(null);
+      };
+      deselectRef.current = deselect;
+
+      const selectBus = (id: string) => {
+        const bus = targetsRef.current.get(id);
+        if (!bus) return;
+        selectedRef.current = id;
+        const line = netRef.current?.lines.get(bus.lineId) ?? null;
+        applyHighlight(bus.lineId);
+        setStops(line, bus.nextStop);
+        applyMarkerStates();
+        setSheetVM(deriveBusSheet(bus, athensNow().minutes, locale));
+        map.easeTo({ center: [bus.lng, bus.lat], offset: [0, -SHEET_H / 2], duration: reduceMotion() ? 0 : 400 });
+      };
+
       map.on("load", () => {
         if (cancelled) return;
         map.addSource("bus-lines", { type: "geojson", data: linesGeoJSON(net) });
         map.addLayer({
-          id: "bus-lines-osm", type: "line", source: "bus-lines",
+          id: "bus-lines-base", type: "line", source: "bus-lines",
           paint: { "line-color": "#0B5E78", "line-width": 3, "line-opacity": 0.55 },
         });
+        map.addLayer({
+          id: "bus-lines-highlight", type: "line", source: "bus-lines",
+          filter: ["==", ["get", "lineId"], -1],
+          paint: { "line-color": "#ED7A5C", "line-width": 5, "line-opacity": 1 },
+        });
+        map.addSource("sel-stops", { type: "geojson", data: EMPTY });
+        map.addLayer({
+          id: "sel-stops-dot", type: "circle", source: "sel-stops",
+          filter: ["==", ["get", "isNext"], false],
+          paint: { "circle-radius": 4, "circle-color": "#0B5E78", "circle-stroke-width": 1.5, "circle-stroke-color": "#fff" },
+        });
+        map.addLayer({
+          id: "sel-stops-next", type: "circle", source: "sel-stops",
+          filter: ["==", ["get", "isNext"], true],
+          paint: { "circle-radius": 8, "circle-color": "#FFC83D", "circle-stroke-width": 2, "circle-stroke-color": "#0B3954" },
+        });
+
+        map.on("click", () => deselect()); // clic sur le fond = désélection
 
         const markers = markersRef.current;
         const tick = () => {
@@ -78,22 +159,37 @@ export function LiveMapClient({ locale }: { locale: string }) {
           const { entering, leaving } = reconcile(poses, buses);
           for (const bus of entering) {
             const el = createBusEl(bus);
+            el.addEventListener("click", (e) => { e.stopPropagation(); selectBus(bus.id); });
+            el.addEventListener("keydown", (e) => {
+              if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectBus(bus.id); }
+            });
             const marker = new ml.Marker({ element: el, anchor: "center" }).setLngLat([bus.lng, bus.lat]).addTo(map);
             markers.set(bus.id, { marker, el, cur: { lat: bus.lat, lng: bus.lng, bearing: bus.bearing } });
           }
           for (const id of leaving) { markers.get(id)?.marker.remove(); markers.delete(id); }
           targetsRef.current = new Map(buses.map((bus) => [bus.id, bus]));
+          applyMarkerStates();
+          const sel = selectedRef.current;
+          if (sel) {
+            const b = targetsRef.current.get(sel);
+            if (b) {
+              setSheetVM(deriveBusSheet(b, athensNow().minutes, locale));
+              setStops(netRef.current?.lines.get(b.lineId) ?? null, b.nextStop);
+            } else {
+              deselect();
+            }
+          }
         };
         tick();
         iv = setInterval(tick, 2000);
 
         const animate = () => {
           for (const [id, m] of markers) {
-            const t = targetsRef.current.get(id);
-            if (!t) continue;
-            m.cur.lat = lerp(m.cur.lat, t.lat, 0.08);
-            m.cur.lng = lerp(m.cur.lng, t.lng, 0.08);
-            m.cur.bearing = lerpAngle(m.cur.bearing, t.bearing, 0.12);
+            const t2 = targetsRef.current.get(id);
+            if (!t2) continue;
+            m.cur.lat = lerp(m.cur.lat, t2.lat, 0.08);
+            m.cur.lng = lerp(m.cur.lng, t2.lng, 0.08);
+            m.cur.bearing = lerpAngle(m.cur.bearing, t2.bearing, 0.12);
             m.marker.setLngLat([m.cur.lng, m.cur.lat]);
             setBusArrow(m.el, m.cur.bearing);
           }
@@ -103,6 +199,8 @@ export function LiveMapClient({ locale }: { locale: string }) {
 
         onVis = () => { if (document.visibilityState === "visible") tick(); };
         document.addEventListener("visibilitychange", onVis);
+        onKey = (e) => { if (e.key === "Escape") deselect(); };
+        document.addEventListener("keydown", onKey);
       });
     });
 
@@ -111,17 +209,18 @@ export function LiveMapClient({ locale }: { locale: string }) {
       if (iv) clearInterval(iv);
       if (raf) cancelAnimationFrame(raf);
       if (onVis) document.removeEventListener("visibilitychange", onVis);
+      if (onKey) document.removeEventListener("keydown", onKey);
       for (const m of markersRef.current.values()) m.marker.remove();
       markersRef.current.clear();
       mapRef.current?.remove();
       mapRef.current = null;
     };
-  }, []);
+  }, [locale]);
 
   const t = T[locale] ?? T.en;
 
   return (
-    <div className="relative overflow-hidden" style={{ height: "calc(100vh - 56px)" }}>
+    <div className="relative overflow-hidden" style={{ height: "calc(100dvh - 56px)" }}>
       <div className="absolute inset-0"><div ref={containerRef} className="h-full w-full" /></div>
 
       <div className="pointer-events-none absolute left-3 top-3 z-10 flex flex-col gap-2">
@@ -134,22 +233,20 @@ export function LiveMapClient({ locale }: { locale: string }) {
         </span>
       </div>
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-14 z-10 flex justify-center px-3 sm:bottom-6">
-        <div className="flex w-full max-w-sm gap-2 sm:w-auto">
-          <Link
-            href="/buses"
-            className="pointer-events-auto inline-flex flex-1 items-center justify-center rounded-full bg-aegean px-5 py-2.5 text-sm font-heading font-semibold text-white shadow-lg transition hover:bg-aegean/90 sm:flex-none"
-          >
-            {t.planTrip}
-          </Link>
-          <Link
-            href="/car-rental"
-            className="pointer-events-auto inline-flex flex-1 items-center justify-center rounded-full bg-terra px-5 py-2.5 text-sm font-heading font-semibold text-white shadow-lg transition hover:bg-terra/90 sm:flex-none"
-          >
-            {t.rentCar}
-          </Link>
+      {!sheetVM && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-14 z-10 flex justify-center px-3 sm:bottom-6">
+          <div className="flex w-full max-w-sm gap-2 sm:w-auto">
+            <Link href="/buses" className="pointer-events-auto inline-flex flex-1 items-center justify-center rounded-full bg-aegean px-5 py-2.5 text-sm font-heading font-semibold text-white shadow-lg transition hover:bg-aegean/90 sm:flex-none">
+              {t.planTrip}
+            </Link>
+            <Link href="/car-rental" className="pointer-events-auto inline-flex flex-1 items-center justify-center rounded-full bg-terra px-5 py-2.5 text-sm font-heading font-semibold text-white shadow-lg transition hover:bg-terra/90 sm:flex-none">
+              {t.rentCar}
+            </Link>
+          </div>
         </div>
-      </div>
+      )}
+
+      {sheetVM && <BusSheet vm={sheetVM} locale={locale} onClose={() => deselectRef.current()} />}
     </div>
   );
 }

@@ -227,6 +227,16 @@ def main():
             continue
         n = replace_operator_routes(sb, op_id, src, rows)
         log(f"OK {op_id}: {n} routes written")
+    # Référentiel GTFS (étape B) : dérive gtfs_stops + stops.txt depuis bus_routes.
+    # Non bloquant : un échec ici ne doit jamais compromettre le scrape des routes.
+    try:
+        from gtfs_stops_build import build_gtfs_stops, make_nominatim
+        stats = build_gtfs_stops(sb, nominatim=make_nominatim())
+        log(f"gtfs_stops: {stats['written']} arrêts, {stats['coverage_pct']}% géocodés, "
+            f"{stats['needs_review']} needs_review, {stats['dropped_count']} droppés")
+    except Exception as e:
+        log(f"gtfs_stops build failed (non-bloquant): {e}")
+
     if failures:
         send_telegram("Bus scraper warning:\n" + "\n".join(failures))
 

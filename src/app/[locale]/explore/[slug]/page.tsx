@@ -13,6 +13,7 @@ import { CbPlaceActions } from "@/components/explore/CbPlaceActions";
 import { buildAlternates } from "@/lib/seo";
 import { ExploreBento } from "@/components/explore/bento/ExploreBento";
 import { ReadMoreAccordion } from "@/components/explore/bento/shared/ReadMoreAccordion";
+import { ReviewCTA } from "@/components/reviews/ReviewCTA";
 
 export const revalidate = 86400;
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
@@ -73,6 +74,16 @@ export default async function CbPlaceFichePage({
 
   const { paragraphs } = cleanCbDescription(place.description);
 
+  // Agrégat communautaire (avis publiés), revalidé via tag `place-<slug>`.
+  const aggregate = await fetch(
+    `${BASE_URL}/api/reviews/aggregate?slug=${encodeURIComponent(slug)}`,
+    { next: { tags: [`place-${slug}`] } },
+  )
+    .then((r) => r.json())
+    .catch(() => ({ avg: null, count: 0, distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } }));
+  const communityAvg: number | null = aggregate.avg;
+  const communityCount: number = aggregate.count;
+
   return (
     <main className="min-h-screen bg-surface">
       <div className="mx-auto max-w-3xl px-4 py-6">
@@ -83,7 +94,12 @@ export default async function CbPlaceFichePage({
           <ChevronLeft className="h-4 w-4" /> {t.backToMap}
         </Link>
 
-        <ExploreBento place={place} locale={locale} />
+        <ExploreBento
+          place={place}
+          locale={locale}
+          communityAvg={communityAvg}
+          communityCount={communityCount}
+        />
 
         <CbPlaceActions
           slug={place.slug}
@@ -95,6 +111,13 @@ export default async function CbPlaceFichePage({
         />
 
         <ReadMoreAccordion paragraphs={paragraphs} locale={locale} />
+
+        <ReviewCTA
+          slug={place.slug}
+          placeName={place.name}
+          locale={locale}
+          communityCount={communityCount}
+        />
 
         {place.source_url && (
           <p className="mt-8 text-xs text-text-muted">

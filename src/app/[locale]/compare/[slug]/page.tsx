@@ -5,6 +5,8 @@ import { Trophy, ArrowRight, ChevronLeft, Scale } from "lucide-react";
 import type { Metadata } from "next";
 import { compareSchema } from "@/lib/schema";
 import RentalCTA from "@/components/RentalCTA";
+import { getBusRoutes } from "@/lib/buses";
+import { compareToPairSlug, type SeoRoute } from "@/lib/bus-seo";
 
 export const revalidate = 86400;
 
@@ -451,6 +453,12 @@ const LABELS: Record<string, Record<string, string>> = {
   winner: { en: "Winner", fr: "Gagnant", de: "Gewinner", el: "Νικητής" },
   tie: { en: "Tie", fr: "Egalite", de: "Unentschieden", el: "Ισοπαλία" },
   faq: { en: "Frequently asked questions", fr: "Questions frequentes", de: "Haufig gestellte Fragen", el: "Συχνές ερωτήσεις" },
+  gettingBetween: {
+    en: "Getting between {a} and {b}",
+    fr: "Se déplacer entre {a} et {b}",
+    de: "Reisen zwischen {a} und {b}",
+    el: "Μετακίνηση μεταξύ {a} και {b}",
+  },
 };
 
 export default async function ComparePage({ params }: { params: Promise<{ locale: string; slug: string }> }) {
@@ -463,6 +471,10 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
   if (!data) notFound();
 
   const other = COMPARISONS.filter((c) => c.slug !== slug);
+
+  // Bus link box: compute pair slug (null for island/beach comparisons)
+  const busRoutes = (await getBusRoutes()) as SeoRoute[];
+  const busPair = compareToPairSlug(busRoutes, comp.a, comp.b);
 
   // Count wins
   let winsA = 0;
@@ -722,6 +734,22 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
               </Link>
             ))}
           </div>
+
+          {/* Bus link box: shown only for city-vs-city pairs served by inter-city coaches */}
+          {busPair && (
+            <div className="mt-8">
+              <Link
+                href={`/${locale}/buses/${busPair}`}
+                className="block rounded-2xl border border-gray-200 bg-white p-4 hover:bg-gray-50 hover:border-sky-200 transition-all shadow-sm"
+              >
+                <p className="text-sm font-medium text-sky-700">
+                  {t(LABELS.gettingBetween, locale)
+                    .replace("{a}", comp.a)
+                    .replace("{b}", comp.b)}
+                </p>
+              </Link>
+            </div>
+          )}
 
           {/* Cross-link rental funnel (kairosguest.com), UTM-tracked */}
           <div className="mt-8">

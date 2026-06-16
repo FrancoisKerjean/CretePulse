@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-export type TileVariant = "sand" | "terra" | "sun" | "lagoon" | "aegean";
+export type TileVariant = "sand" | "terra" | "sun" | "lagoon" | "aegean" | "community";
 
 const VARIANT: Record<TileVariant, string> = {
   sand: "bg-sand text-aegean border-sand-warm",
@@ -8,6 +8,7 @@ const VARIANT: Record<TileVariant, string> = {
   sun: "bg-sun text-night border-sun",
   lagoon: "bg-lagoon text-white border-lagoon",
   aegean: "bg-aegean text-white border-aegean",
+  community: "bg-lagoon-deep text-white border-lagoon-deep",
 };
 
 export function Tile({

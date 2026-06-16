@@ -7,18 +7,29 @@ import { BeachBento } from "./BeachBento";
 import { NatureBento } from "./NatureBento";
 import { VillageBento } from "./VillageBento";
 
-export function ExploreBento({ place, locale }: { place: CbPlace; locale: string }) {
+export function ExploreBento({
+  place,
+  locale,
+  communityAvg = null,
+  communityCount = 0,
+}: {
+  place: CbPlace;
+  locale: string;
+  communityAvg?: number | null;
+  communityCount?: number;
+}) {
   const { nearby } = cleanCbDescription(place.description);
+  const common = { place, nearby, locale, communityAvg, communityCount };
   switch (familyOf(place.place_type)) {
     case "beach":
-      return <BeachBento place={place} nearby={nearby} locale={locale} />;
+      return <BeachBento {...common} />;
     case "heritage":
-      return <HeritageBento place={place} nearby={nearby} locale={locale} />;
+      return <HeritageBento {...common} />;
     case "nature":
-      return <NatureBento place={place} nearby={nearby} locale={locale} />;
+      return <NatureBento {...common} />;
     case "village":
-      return <VillageBento place={place} nearby={nearby} locale={locale} />;
+      return <VillageBento {...common} />;
     default:
-      return <DefaultBento place={place} nearby={nearby} locale={locale} />;
+      return <DefaultBento {...common} />;
   }
 }

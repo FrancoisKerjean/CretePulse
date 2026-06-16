@@ -7,6 +7,7 @@ import { buildAlternates } from "@/lib/seo";
 import { getBusRoutes, getBusDestinations, latestScrapedAt } from "@/lib/buses";
 import type { BusRoute } from "@/lib/buses";
 import { eligiblePairs, pairRoutes, onwardPlaces, pairSlug, slugifyPlace } from "@/lib/bus-pairs";
+import { pairHasTimetable, type SeoRoute } from "@/lib/bus-seo";
 import { getBusAlerts } from "@/lib/bus-alerts";
 import { RouteAlertBanner } from "@/components/RouteAlertBanner";
 import { TaxiCompare } from "@/components/TaxiCompare";
@@ -29,10 +30,16 @@ function pickUiLoc(l: string): Locale {
 
 const T = {
   title: {
-    en: (a: string, b: string) => `Bus ${a} ↔ ${b}: Timetable & Prices`,
-    fr: (a: string, b: string) => `Bus ${a} ↔ ${b} : horaires & prix`,
-    de: (a: string, b: string) => `Bus ${a} ↔ ${b}: Fahrplan & Preise`,
-    el: (a: string, b: string) => `Λεωφορείο ${a} ↔ ${b}: Δρομολόγια & Τιμές`,
+    en: (a: string, b: string) => `Bus ${a} to ${b}: Timetable & Prices`,
+    fr: (a: string, b: string) => `Bus ${a} à ${b} : horaires & prix`,
+    de: (a: string, b: string) => `Bus ${a} nach ${b}: Fahrplan & Preise`,
+    el: (a: string, b: string) => `Λεωφορείο ${a} προς ${b}: Δρομολόγια & Τιμές`,
+  },
+  connector: {
+    en: "to",
+    fr: "à",
+    de: "nach",
+    el: "προς",
   },
   metaDesc: {
     en: (a: string, b: string) => `KTEL bus between ${a} and ${b}: departure times by day, ticket prices and journey duration, updated from the operators.`,
@@ -112,6 +119,15 @@ const T = {
       `Το ταξί από ${a} προς ${b} κοστίζει περίπου ${lo}–${hi} € με το επίσημο ταξίμετρο${bus ? `· το ΚΤΕΛ κοστίζει ${bus}` : ""}. Συμφωνήστε την τιμή πριν την αναχώρηση.`,
     ],
   },
+  introParts: {
+    runs: { en: "KTEL runs", fr: "KTEL assure", de: "KTEL betreibt", el: "Το ΚΤΕΛ εκτελεί" },
+    departures: { en: "bus departures between", fr: "départs de bus entre", de: "Busabfahrten zwischen", el: "αναχωρήσεις λεωφορείου μεταξύ" },
+    and: { en: "and", fr: "et", de: "und", el: "και" },
+    first: { en: "First at", fr: "Premier départ à", de: "Erste Abfahrt um", el: "Πρώτη αναχώρηση στις" },
+    last: { en: "last at", fr: "dernier à", de: "letzte um", el: "τελευταία στις" },
+    journey: { en: "Journey about", fr: "Durée environ", de: "Fahrtzeit ca.", el: "Διαδρομή περίπου" },
+    ticket: { en: "Ticket", fr: "Billet", de: "Ticket", el: "Εισιτήριο" },
+  },
 } as const;
 
 interface Params { locale: string; pair: string }
@@ -136,10 +152,12 @@ export async function generateMetadata({ params }: { params: Promise<Params> }) 
   const title = `${T.title[ui](pr.pair.placeA, pr.pair.placeB)} | Crete Direct`;
   const description = T.metaDesc[ui](pr.pair.placeA, pr.pair.placeB);
   const url = `${BASE_URL}/${locale}/buses/${pair}`;
+  const indexable = pairHasTimetable(routes as SeoRoute[], pair);
   return {
     title, description,
     alternates: buildAlternates(locale, `/buses/${pair}`),
     openGraph: { title, description, url, type: "website" },
+    robots: indexable ? undefined : { index: false, follow: true },
   };
 }
 
@@ -216,6 +234,20 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
 
   // FAQ data-driven : uniquement les questions dont on a la donnee.
   const ref = pr.outbound[0] ?? pr.inbound[0];
+
+  // Paragraphe intro (Task 9) : construit depuis les données réelles, sans invention.
+  const hasTimetable = pairHasTimetable(routes as SeoRoute[], pair);
+  const introDeps: string[] = pr.outbound.flatMap((r) => r.departures ?? []);
+  const introCount = introDeps.length;
+  const introFirst = introDeps[0] ?? null;
+  const introLast = introDeps.length > 1 ? introDeps[introDeps.length - 1] : null;
+  const introDuration = ref?.duration ?? null;
+  // Prix : omis si null OU si estimé (aucun fait inventé/estimé en prose).
+  const introPrice =
+    ref?.price_eur != null && !ref.price_estimated
+      ? `${ref.price_eur.toFixed(2)} €`
+      : null;
+
   const faq: Array<[string, string]> = [];
   if (ref?.price_eur != null) {
     const p = `${ref.price_eur.toFixed(2)} €${ref.price_estimated ? ` (${T.indicative[ui]})` : ""}`;
@@ -249,7 +281,7 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Home", item: `${BASE_URL}/${locale}` },
           { "@type": "ListItem", position: 2, name: "Buses", item: `${BASE_URL}/${locale}/buses` },
-          { "@type": "ListItem", position: 3, name: `${placeA} ↔ ${placeB}`, item: `${BASE_URL}/${locale}/buses/${pair}` },
+          { "@type": "ListItem", position: 3, name: `${placeA} ${T.connector[ui]} ${placeB}`, item: `${BASE_URL}/${locale}/buses/${pair}` },
         ],
       },
       ...(faq.length > 0 ? [{
@@ -280,11 +312,17 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
                 className="inline-flex items-center text-[12.5px] text-lagoon-deep font-bold bg-white/70 rounded-full px-3.5 py-1.5 no-underline mb-4 hover:bg-white transition-colors">
             {T.allBuses[ui]}
           </Link>
-          <h1 className="flex items-center gap-4 flex-wrap font-heading font-extrabold text-3xl md:text-[42px] tracking-tight text-text m-0">
-            <span>{placeA}</span>
-            <span className="bg-white rounded-full w-11 h-11 flex items-center justify-center text-lagoon-deep text-[19px] shadow-[0_8px_22px_rgba(11,94,120,.16)]" aria-hidden>⇄</span>
-            <span>{placeB}</span>
+          <h1 className="font-heading font-extrabold text-3xl md:text-[42px] tracking-tight text-text m-0">
+            Bus {placeA} <span className="text-lagoon-deep">{T.connector[ui]}</span> {placeB}
           </h1>
+          {hasTimetable && introCount > 0 && (
+            <p className="text-[15px] text-text-muted mt-3 mb-0 leading-relaxed">
+              {T.introParts.runs[ui]} {introCount} {T.introParts.departures[ui]} {placeA} {T.introParts.and[ui]} {placeB}.
+              {introFirst && ` ${T.introParts.first[ui]} ${introFirst}${introLast ? `, ${T.introParts.last[ui]} ${introLast}.` : "."}`}
+              {introDuration && ` ${T.introParts.journey[ui]} ${introDuration}.`}
+              {introPrice && ` ${T.introParts.ticket[ui]} ${introPrice}.`}
+            </p>
+          )}
           {ref && (
             <div className="mt-4">
               <NextDeparture route={ref} locale={ui} />
