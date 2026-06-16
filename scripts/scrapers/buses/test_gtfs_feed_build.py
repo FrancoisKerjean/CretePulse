@@ -249,3 +249,20 @@ def test_osm_none_no_shapes_backcompat():
     assert "shapes" in feed and feed["shapes"][1] == []
     trips = _tbl(feed, "trips")
     assert trips[0]["shape_id"] == ""
+
+
+def test_write_feed_writes_shapes_txt(tmp_path):
+    routes = [{
+        "id": 1, "line_id": 7, "operator_id": "herlas", "from_place": "Heraklion",
+        "to_place": "Agios Nikolaos", "via_stops": [], "duration": "1h",
+        "departures_by_day": [{"days": "Mon-Fri", "times": ["08:00"]}], "season": None,
+    }]
+    osm = {7: {"id": 7, "code": "HER-01", "color": "#0B5E78",
+               "geometry": [[25.14, 35.34], [25.71, 35.19]]}}
+    feed = assemble_feed(routes, STOPS, WINDOW, "20260616", osrm=None, osm=osm)
+    write_feed(feed, str(tmp_path))
+    assert (tmp_path / "shapes.txt").exists()
+    assert "shapes.txt" in GTFS_FILES
+    content = (tmp_path / "shapes.txt").read_text(encoding="utf-8")
+    assert content.startswith("shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence\n")
+    assert "shp-7," in content
