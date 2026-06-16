@@ -1,6 +1,22 @@
 import { supabase } from "./supabase";
 import type { Beach } from "./types";
 
+// Ligne cb_places allégée pour l'enrichissement des listes.
+interface CbLite { slug: string; rating: number | null; photos: string[] | null; }
+
+/** Reporte rating + 1re photo de cb_places sur chaque plage via cb_slug (pur, testable). */
+export function mergeCbIntoBeaches(beaches: Beach[], cbRows: CbLite[]): Beach[] {
+  const bySlug = new Map(cbRows.map((c) => [c.slug, c]));
+  return beaches.map((b) => {
+    const cb = b.cb_slug ? bySlug.get(b.cb_slug) : undefined;
+    return {
+      ...b,
+      cb_rating: cb?.rating ?? null,
+      cb_photo: cb?.photos?.[0] ?? null,
+    };
+  });
+}
+
 // Wikipedia Commons scraper sometimes returns PDF preview thumbnails
 // (rendered as .jpg but with `.pdf` segment in the URL). These look broken
 // and damage perceived page quality. Filter at read time to stay defensive
@@ -39,13 +55,23 @@ export function isSwimmableBeach(slug: string): boolean {
 export async function getAllBeaches(): Promise<Beach[]> {
   const { data, error } = await supabase
     .from("beaches")
-    .select("slug, name_en, name_fr, name_de, name_el, image_url, region, type, parking, snorkeling, kids_friendly, latitude, longitude")
+    .select("slug, name_en, name_fr, name_de, name_el, image_url, region, type, parking, snorkeling, kids_friendly, latitude, longitude, cb_slug")
     .order("name_en");
 
   if (error) throw error;
-  return ((data as Beach[]) || [])
+  const beaches = ((data as Beach[]) || [])
     .filter((b) => isSwimmableBeach(b.slug))
     .map(sanitizeBeach);
+
+  const cbSlugs = beaches.map((b) => b.cb_slug).filter((s): s is string => Boolean(s));
+  if (cbSlugs.length === 0) return beaches;
+
+  const { data: cb } = await supabase
+    .from("cb_places")
+    .select("slug, rating, photos")
+    .in("slug", cbSlugs);
+
+  return mergeCbIntoBeaches(beaches, (cb as CbLite[]) || []);
 }
 
 export async function getBeachBySlug(slug: string): Promise<Beach | null> {

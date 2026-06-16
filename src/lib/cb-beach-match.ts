@@ -86,6 +86,38 @@ export async function getCbBeachNear(lat: number, lng: number): Promise<CbBeachA
   }
 }
 
+/** Attributs cb_places d'une plage par son slug figé (lien cb_slug). */
+export async function getCbBySlug(slug: string): Promise<CbBeachAttrs | null> {
+  try {
+    const { data, error } = await supabase
+      .from("cb_places")
+      .select("slug, rating, sea_surface, sand_type, depth, crowds, facilities, accessibility, water_color, photos")
+      .eq("slug", slug)
+      .single();
+    if (error || !data) return null;
+    return data as unknown as CbBeachAttrs;
+  } catch {
+    return null;
+  }
+}
+
+/** Mappe beach.slug -> attributs cb via le lien figé cb_slug (fallback GPS si absent). */
+export function matchCbBySlug(beaches: Beach[], cbRows: CbRow[]): Map<string, CbBeachAttrs> {
+  const byCbSlug = new Map(cbRows.map((c) => [c.slug, c]));
+  const out = new Map<string, CbBeachAttrs>();
+  const noLink: Beach[] = [];
+  for (const b of beaches) {
+    if (b.cb_slug && byCbSlug.has(b.cb_slug)) out.set(b.slug, byCbSlug.get(b.cb_slug)!);
+    else noLink.push(b);
+  }
+  // plages sans lien figé : on retombe sur l'appariement GPS existant
+  if (noLink.length) {
+    const gps = matchCbBeaches(noLink, cbRows);
+    for (const [k, v] of gps) out.set(k, v);
+  }
+  return out;
+}
+
 /** Map beach slug -> nearest cb_places beach attributes (within 1.5 km). */
 export function matchCbBeaches(beaches: Beach[], cbRows: CbRow[]): Map<string, CbBeachAttrs> {
   const out = new Map<string, CbBeachAttrs>();

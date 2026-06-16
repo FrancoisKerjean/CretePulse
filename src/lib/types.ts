@@ -31,6 +31,12 @@ export interface Beach {
   wind_exposure: "sheltered" | "moderate" | "exposed";
   image_url: string | null;
   image_credit: string | null;
+  // Lien figé vers cb_places (colonnes DB, migration 20260616180000)
+  cb_slug?: string | null;
+  cb_match_m?: number | null;
+  // Champs dérivés (jointure cb_places, peuplés par getAllBeaches)
+  cb_rating?: number | null;
+  cb_photo?: string | null;
 }
 
 export interface Village {
