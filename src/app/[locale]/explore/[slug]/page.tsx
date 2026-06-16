@@ -13,6 +13,7 @@ import { CbPlaceActions } from "@/components/explore/CbPlaceActions";
 import { buildAlternates } from "@/lib/seo";
 import { ExploreBento } from "@/components/explore/bento/ExploreBento";
 import { ReadMoreAccordion } from "@/components/explore/bento/shared/ReadMoreAccordion";
+import { ReviewCTA } from "@/components/reviews/ReviewCTA";
 
 export const revalidate = 86400;
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
@@ -110,6 +111,13 @@ export default async function CbPlaceFichePage({
         />
 
         <ReadMoreAccordion paragraphs={paragraphs} locale={locale} />
+
+        <ReviewCTA
+          slug={place.slug}
+          placeName={place.name}
+          locale={locale}
+          communityCount={communityCount}
+        />
 
         {place.source_url && (
           <p className="mt-8 text-xs text-text-muted">
