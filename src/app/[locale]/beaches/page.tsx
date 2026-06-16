@@ -122,7 +122,7 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
             >
               <div className="h-40 overflow-hidden">
                 <BeachImage
-                  src={beach.image_url}
+                  src={beach.cb_photo ?? beach.image_url}
                   alt={`${getLocalizedField(beach, "name", loc)} beach, ${regionLabels[beach.region] || beach.region}${beach.type ? `, ${typeLabels[beach.type] || beach.type}` : ""}`}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
@@ -131,6 +131,9 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
                 <h2 className="font-semibold text-lg">
                   {getLocalizedField(beach, "name", loc)}
                 </h2>
+                {beach.cb_rating != null && beach.cb_rating > 0 && (
+                  <div className="inline-flex items-center gap-1 text-xs text-amber-700 mt-1">★ {beach.cb_rating.toFixed(1)}</div>
+                )}
                 <div className="flex items-center gap-1 text-xs text-text-muted mt-1">
                   <MapPin className="w-3 h-3" />
                   {beach.region}

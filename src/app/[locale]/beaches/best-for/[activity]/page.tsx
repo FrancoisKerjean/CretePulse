@@ -284,16 +284,17 @@ export default async function BestBeachesForPage({ params }: { params: Promise<{
           {beaches.map(beach => {
             const name = getLocalizedField(beach, "name", loc);
             const desc = getLocalizedField(beach, "description", loc);
+            const img = beach.cb_photo ?? beach.image_url;
             return (
               <Link
                 key={beach.slug}
                 href={`/${locale}/beaches/${beach.slug}`}
                 className="group rounded-xl bg-white border border-border overflow-hidden hover:border-aegean/30 hover:shadow-sm transition-all"
               >
-                {beach.image_url && (
+                {img && (
                   <div className="relative h-40 bg-aegean/5">
                     <Image
-                      src={beach.image_url}
+                      src={img}
                       alt={`${name} beach, Crete`}
                       fill
                       className="object-cover group-hover:scale-[1.02] transition-transform duration-300"
@@ -305,6 +306,9 @@ export default async function BestBeachesForPage({ params }: { params: Promise<{
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <h2 className="font-bold text-text group-hover:text-aegean transition-colors">{name}</h2>
+                      {beach.cb_rating != null && beach.cb_rating > 0 && (
+                        <div className="text-xs text-amber-700 mt-0.5">★ {beach.cb_rating.toFixed(1)}</div>
+                      )}
                       <div className="flex items-center gap-1 text-xs text-text-muted mt-0.5">
                         <MapPin className="w-3 h-3" /> {beach.region}
                       </div>

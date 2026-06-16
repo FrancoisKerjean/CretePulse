@@ -114,21 +114,26 @@ export default async function BeachesNearVillagePage({ params }: { params: Promi
 
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {nearbyBeaches.map(beach => (
+          {nearbyBeaches.map(beach => {
+            const beachImg = beach.cb_photo ?? beach.image_url;
+            return (
             <Link
               key={beach.slug}
               href={`/${locale}/beaches/${beach.slug}`}
               className="group rounded-xl border border-border bg-white overflow-hidden hover:border-aegean/30 hover:shadow-md transition-all"
             >
-              {beach.image_url && (
+              {beachImg && (
                 <div className="h-36 overflow-hidden">
-                  <img src={beach.image_url} alt={getLocalizedField(beach, "name", loc)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                  <img src={beachImg} alt={getLocalizedField(beach, "name", loc)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
                 </div>
               )}
               <div className="p-4">
                 <h2 className="font-semibold text-base text-text group-hover:text-aegean transition-colors">
                   {getLocalizedField(beach, "name", loc)}
                 </h2>
+                {beach.cb_rating != null && beach.cb_rating > 0 && (
+                  <div className="text-xs text-amber-700 mt-0.5">★ {beach.cb_rating.toFixed(1)}</div>
+                )}
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-xs text-text-muted flex items-center gap-1">
                     <MapPin className="w-3 h-3" /> {beach.dist.toFixed(1)} {distLabel[locale] || distLabel.en}
@@ -139,7 +144,8 @@ export default async function BeachesNearVillagePage({ params }: { params: Promi
                 </div>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
 
         {/* Monétisation (audit 13/06/2026, A2) : "within driving distance"
