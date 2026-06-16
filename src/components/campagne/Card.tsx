@@ -35,6 +35,8 @@ export default function Card({
       : size === "wide"
         ? "text-[clamp(30px,4.6vw,46px)]"
         : "text-[clamp(26px,4vw,34px)]";
+  // Le titre du hero est le H1 unique de la page ; les autres beats sont des H2.
+  const Heading = size === "hero" ? "h1" : "h2";
 
   return (
     <div
@@ -60,7 +62,7 @@ export default function Card({
         </span>
       )}
       {title && (
-        <h2
+        <Heading
           className={`font-[family-name:var(--font-heading)] font-extrabold leading-[1.28] text-[var(--color-text)] ${titleSize}`}
           dangerouslySetInnerHTML={{ __html: renderCopy(title) }}
         />
