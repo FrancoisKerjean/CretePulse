@@ -114,3 +114,54 @@ def test_assemble_stops_guard_rejects_far_nominatim():
     bad = {s["stop_id"]: s for s in stops}["bad-match"]
     assert bad["stop_lat"] is None and bad["coords_source"] == "none"
     assert bad["needs_review"] is True
+
+
+import pytest
+from gtfs_stops_build import export_stops_txt, write_stats, store_stops
+
+
+def _stop(stop_id, lat=None, lon=None, name=None, conf="low", source="none"):
+    return {"stop_id": stop_id, "stop_name": name or stop_id.title(),
+            "stop_name_el": None, "stop_lat": lat, "stop_lon": lon,
+            "coords_source": source, "coords_confidence": conf,
+            "needs_review": conf != "high", "prefecture": None, "route_count": 1}
+
+
+def test_export_stops_txt_only_geocoded_and_escapes(tmp_path):
+    stops = [
+        {**_stop("a", 35.1, 25.1, name="A, town", conf="high", source="referentiel")},
+        _stop("b"),   # sans coords -> exclu
+    ]
+    n = export_stops_txt(stops, out_dir=str(tmp_path))
+    assert n == 1
+    lines = (tmp_path / "stops.txt").read_text(encoding="utf-8").strip().split("\n")
+    assert lines[0] == "stop_id,stop_name,stop_lat,stop_lon"
+    assert lines[1] == 'a,"A, town",35.100000,25.100000'   # virgule -> quoting CSV
+    assert len(lines) == 2
+
+
+def test_write_stats(tmp_path):
+    stops = [
+        _stop("a", 35.1, 25.1, conf="high", source="referentiel"),
+        _stop("b"),
+    ]
+    stats = write_stats(stops, dropped=["A90", "A90"], out_dir=str(tmp_path))
+    assert stats["total_stops"] == 2
+    assert stats["geocoded"] == 1
+    assert stats["coverage_pct"] == 50.0
+    assert stats["needs_review"] == 1
+    assert stats["dropped_labels"] == ["A90"]   # dédupliqué
+
+
+def test_store_stops_refuses_below_min():
+    class _T:
+        def delete(self): return self
+        def neq(self, *a): return self
+        def insert(self, p): return self
+        def execute(self): return self
+
+    class _SB:
+        def table(self, n): return _T()
+
+    with pytest.raises(ValueError):
+        store_stops(_SB(), [_stop(f"s{i}") for i in range(5)])   # < MIN_STOPS

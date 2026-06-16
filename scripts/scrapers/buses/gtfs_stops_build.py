@@ -153,3 +153,113 @@ def assemble_stops(routes, place_coords, cb_index, nominatim=None):
             "route_count": s["route_count"],
         })
     return stops, dropped
+
+
+def export_stops_txt(stops, out_dir=OUT_DIR):
+    """Écrit stops.txt (GTFS) : 1 ligne par arrêt géocodé. Retourne le nb de lignes."""
+    os.makedirs(out_dir, exist_ok=True)
+    geocoded = [s for s in stops if s["stop_lat"] is not None and s["stop_lon"] is not None]
+    path = os.path.join(out_dir, "stops.txt")
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        w = csv.writer(f, lineterminator="\n")
+        w.writerow(["stop_id", "stop_name", "stop_lat", "stop_lon"])
+        for s in sorted(geocoded, key=lambda x: x["stop_id"]):
+            w.writerow([s["stop_id"], s["stop_name"],
+                        f"{s['stop_lat']:.6f}", f"{s['stop_lon']:.6f}"])
+    return len(geocoded)
+
+
+def write_stats(stops, dropped, out_dir=OUT_DIR):
+    os.makedirs(out_dir, exist_ok=True)
+    geocoded = sum(1 for s in stops if s["stop_lat"] is not None)
+    stats = {
+        "total_stops": len(stops),
+        "geocoded": geocoded,
+        "coverage_pct": round(100 * geocoded / len(stops), 1) if stops else 0.0,
+        "needs_review": sum(1 for s in stops if s["needs_review"]),
+        "dropped_count": len(dropped),
+        "dropped_labels": sorted(set(dropped)),
+    }
+    with open(os.path.join(out_dir, "build-stats.json"), "w", encoding="utf-8") as f:
+        json.dump(stats, f, ensure_ascii=False, indent=2)
+    return stats
+
+
+def store_stops(sb, stops):
+    """Remplace gtfs_stops (delete+insert). Lève si < MIN_STOPS. Retourne nb écrits."""
+    if len(stops) < MIN_STOPS:
+        raise ValueError(f"refuse build: only {len(stops)} stops (<{MIN_STOPS})")
+    cols = ("stop_id", "stop_name", "stop_name_el", "stop_lat", "stop_lon",
+            "coords_source", "coords_confidence", "needs_review", "prefecture", "route_count")
+    payload = [{k: s[k] for k in cols} for s in stops]
+    sb.table("gtfs_stops").delete().neq("stop_id", "").execute()
+    sb.table("gtfs_stops").insert(payload).execute()
+    return len(payload)
+
+
+def _load_cb_index(sb):
+    """cb_places -> {nom_normalisé: (lat,lng)} (best-effort, vide si absente)."""
+    try:
+        rows = sb.table("cb_places").select("name,latitude,longitude").execute().data
+        return {_norm(r["name"]): (r["latitude"], r["longitude"]) for r in rows
+                if r.get("name") and r.get("latitude") is not None and r.get("longitude") is not None}
+    except Exception:
+        return {}
+
+
+def make_nominatim(cache_path=None, throttle_s=1.0):
+    """Lookup Nominatim caché + throttlé. Retourne f(name)->(lat,lng)|None.
+    Cache JSON persistant pour ne pas re-interroger l'endpoint gratuit."""
+    import time
+    import requests
+    path = cache_path or os.path.join(OUT_DIR, "nominatim-cache.json")
+    cache = {}
+    if os.path.exists(path):
+        try:
+            with open(path, encoding="utf-8") as f:
+                cache = json.load(f)
+        except Exception:
+            cache = {}
+    state = {"last": 0.0}
+
+    def lookup(name):
+        key = _norm(name)
+        if key in cache:
+            v = cache[key]
+            return tuple(v) if v else None
+        wait = throttle_s - (time.time() - state["last"])
+        if wait > 0:
+            time.sleep(wait)
+        state["last"] = time.time()
+        hit = None
+        try:
+            r = requests.get(
+                "https://nominatim.openstreetmap.org/search",
+                params={"q": f"{name}, Crete, Greece", "format": "json", "limit": 1},
+                headers={"User-Agent": "crete.direct-bot/1.0 (+https://crete.direct)"},
+                timeout=20,
+            )
+            if r.status_code == 200 and r.json():
+                d = r.json()[0]
+                hit = (float(d["lat"]), float(d["lon"]))
+        except Exception:
+            hit = None
+        cache[key] = list(hit) if hit else None
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(cache, f, ensure_ascii=False)
+        return hit
+
+    return lookup
+
+
+def build_gtfs_stops(sb, nominatim=None):
+    """Point d'entrée : lit bus_routes, assemble, écrit gtfs_stops, exporte stops.txt.
+    Retourne le dict de stats (+ 'written')."""
+    routes = sb.table("bus_routes").select("from_place,to_place,via_stops").execute().data
+    cb_index = _load_cb_index(sb)
+    stops, dropped = assemble_stops(routes, PLACE_COORDS, cb_index, nominatim=nominatim)
+    n = store_stops(sb, stops)
+    export_stops_txt(stops)
+    stats = write_stats(stops, dropped)
+    return {**stats, "written": n}
