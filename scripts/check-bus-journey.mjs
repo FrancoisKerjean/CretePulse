@@ -76,6 +76,40 @@ assert.deepEqual(
   [],
 ); // mardi != Monday
 
+// --- R1 (16/06/2026) : enumerations a tirets vs plages, weekdays --------------
+// "Mon-Wed-Fri" = ENUMERATION (3 tokens), PAS la plage Mon..Wed.
+const enumMWF = R(30, "A", "B", {
+  departures: ["08:00"],
+  departures_by_day: [{ days: "Mon-Wed-Fri", times: ["08:00"] }],
+});
+assert.deepEqual(timesForDate(enumMWF, "2026-06-10"), ["08:00"]); // mercredi : inclus
+assert.deepEqual(timesForDate(enumMWF, "2026-06-12"), ["08:00"]); // vendredi : inclus
+assert.deepEqual(timesForDate(enumMWF, "2026-06-09"), []);        // mardi : EXCLU (etait inclus a tort)
+
+// "Tue, Thu" = enumeration a virgule (2 tokens) -> mardi + jeudi seulement.
+const enumTT = R(31, "A", "B", {
+  departures: ["09:00"],
+  departures_by_day: [{ days: "Tue, Thu", times: ["09:00"] }],
+});
+assert.deepEqual(timesForDate(enumTT, "2026-06-11"), ["09:00"]); // jeudi : inclus
+assert.deepEqual(timesForDate(enumTT, "2026-06-10"), []);        // mercredi : exclu
+
+// "Tue-Thu" = PLAGE a tiret (2 tokens) -> mar..jeu (convention transport conservee).
+const rangeTT = R(32, "A", "B", {
+  departures: ["09:00"],
+  departures_by_day: [{ days: "Tue-Thu", times: ["09:00"] }],
+});
+assert.deepEqual(timesForDate(rangeTT, "2026-06-10"), ["09:00"]); // mercredi : dans la plage
+
+// "Weekdays" = lun..ven (etait invisible tous les jours).
+const wd = R(33, "A", "B", {
+  departures: ["07:00"],
+  departures_by_day: [{ days: "Weekdays", times: ["07:00"] }],
+});
+assert.deepEqual(timesForDate(wd, "2026-06-10"), ["07:00"]); // mercredi : inclus
+assert.deepEqual(timesForDate(wd, "2026-06-13"), []);        // samedi : exclu
+assert.deepEqual(timesForDate(wd, "2026-06-14"), []);        // dimanche : exclu
+
 // --- graphe / atteignabilite -------------------------------------------------
 const routes = [
   R(10, "Makry Gyalos", "Ierapetra", {
