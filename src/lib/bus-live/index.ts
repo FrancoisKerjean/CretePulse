@@ -5,3 +5,5 @@ export { loadLiveNetwork } from "./network";
 export type { LiveBus, LiveLine, LiveNetwork, LiveStop } from "./types";
 export { lerp, lerpAngle, reconcile } from "./animate";
 export type { MarkerPose, PresentBus } from "./animate";
+export { deriveBusSheet } from "./selection";
+export type { BusSheetVM } from "./selection";

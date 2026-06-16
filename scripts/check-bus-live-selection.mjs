@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import { parseDurationMin } from "../src/lib/bus-live/duration.ts";
 import { clockHHMM } from "../src/lib/athens-time.ts";
 import { busesAt } from "../src/lib/bus-live/position.ts";
+import { deriveBusSheet } from "../src/lib/bus-live/selection.ts";
 
 // --- parseDurationMin -------------------------------------------------------
 assert.equal(parseDurationMin("2h 30min"), 150);
@@ -55,5 +56,34 @@ const [bus2] = busesAt({ iso: "2026-06-15", minutes: 562 }, net2);
 assert.equal(bus2.pairSlug, null);        // "Elounda" absent de BUS_PLACE_SLUGS (clé = "Eloynta")
 assert.equal(bus2.etaMinTerminus, null);
 assert.equal(bus2.durationEstimated, false); // null ?? false
+
+// --- deriveBusSheet ---------------------------------------------------------
+const liveBus = {
+  id: "7|fwd|09:00", lineId: 7, code: "LAS-07", codeOfficial: null,
+  lat: 35, lng: 25, bearing: 0, progress: 0.48,
+  nextStop: "Malia", etaMinNext: 7, headsign: "Agios Nikolaos", direction: "fwd",
+  degraded: false, origin: "Heraklion", operatorId: "herlas",
+  pairSlug: "agios-nikolaos-to-heraklion", etaMinTerminus: 26, durationEstimated: false,
+};
+const vm = deriveBusSheet(liveBus, 540, "fr"); // now = 09:00 = 540
+assert.equal(vm.code, "LAS-07");
+assert.equal(vm.operatorLabel, "KTEL Est");
+assert.equal(vm.origin, "Heraklion");
+assert.equal(vm.destination, "Agios Nikolaos");
+assert.deepEqual(vm.nextStop, { name: "Malia", etaMin: 7, clock: "09:07" });
+assert.deepEqual(vm.terminus, { etaMin: 26, clock: "09:26", estimated: false });
+assert.equal(vm.progressPct, 48);
+assert.equal(vm.lineHref, "/buses/agios-nikolaos-to-heraklion");
+
+const vm2 = deriveBusSheet(
+  { ...liveBus, nextStop: null, etaMinNext: null, etaMinTerminus: null, pairSlug: null, operatorId: "ektel" },
+  540, "it", // locale non gérée → fallback en
+);
+assert.equal(vm2.nextStop, null);
+assert.equal(vm2.terminus, null);
+assert.equal(vm2.lineHref, null);
+assert.equal(vm2.operatorLabel, "KTEL West");
+
+assert.equal(deriveBusSheet({ ...liveBus, etaMinTerminus: 0 }, 540, "fr").terminus, null);
 
 console.log("OK check-bus-live-selection: toutes les assertions passent");
