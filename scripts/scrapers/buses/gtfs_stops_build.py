@@ -100,3 +100,15 @@ def _siblings_by_slug(routes):
         for s in members:
             adj[s].update(m for m in members if m != s)
     return adj
+
+
+def coherence_ok(slug, lat, lng, high_coords, siblings):
+    """Vrai si (lat,lng) est dans la bbox Crète ET à < MAX_GEOCODE_DRIFT_KM d'au
+    moins un arrêt high-confidence partageant une route. Valide un candidat Nominatim."""
+    if not in_crete(lat, lng):
+        return False
+    for sib in siblings.get(slug, ()):
+        ref = high_coords.get(sib)
+        if ref and haversine_km((lat, lng), ref) < MAX_GEOCODE_DRIFT_KM:
+            return True
+    return False

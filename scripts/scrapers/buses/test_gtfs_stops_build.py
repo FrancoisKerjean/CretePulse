@@ -2,6 +2,7 @@ from gtfs_stops_build import (
     haversine_km, in_crete, curate_routes, collect_stops_with_count,
     _siblings_by_slug, prefecture_for,
 )
+from gtfs_stops_build import coherence_ok
 
 
 def test_in_crete_bbox():
@@ -55,3 +56,28 @@ def test_siblings_by_slug():
     routes = [{"from_place": "a", "to_place": "b", "via_stops": ["c"]}]
     adj = _siblings_by_slug(routes)
     assert adj["a"] == {"b", "c"}
+
+
+def test_coherence_accepts_near_sibling():
+    siblings = {"profitis-ilias": {"heraklion"}}
+    high = {"heraklion": (35.3387, 25.1442)}
+    # ~17 km de Heraklion, dans la bbox -> accepté
+    assert coherence_ok("profitis-ilias", 35.20, 25.10, high, siblings) is True
+
+
+def test_coherence_rejects_far_homonym():
+    siblings = {"profitis-ilias": {"heraklion"}}
+    high = {"heraklion": (35.3387, 25.1442)}
+    # homonyme à >200 km (et hors bbox) -> rejet
+    assert coherence_ok("profitis-ilias", 36.9, 22.0, high, siblings) is False
+
+
+def test_coherence_rejects_outside_crete():
+    siblings = {"x": {"heraklion"}}
+    high = {"heraklion": (35.3387, 25.1442)}
+    assert coherence_ok("x", 48.85, 2.35, high, siblings) is False   # Paris
+
+
+def test_coherence_rejects_when_no_high_sibling():
+    siblings = {"x": {"y"}}   # y n'a pas de coords sûres
+    assert coherence_ok("x", 35.30, 25.10, {}, siblings) is False
