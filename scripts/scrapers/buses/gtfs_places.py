@@ -15,7 +15,23 @@ from prices import _norm
 from net_geocode import stop_slug
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
-_JSON = os.path.normpath(os.path.join(_HERE, "..", "..", "..", "src", "data", "bus-places.json"))
+
+
+def _resolve_json():
+    """Trouve bus-places.json quel que soit le layout (repo OU déploiement plat VPS).
+    Priorité : env GTFS_BUS_PLACES > fichier co-localisé > chemin repo."""
+    cands = [
+        os.environ.get("GTFS_BUS_PLACES"),
+        os.path.join(_HERE, "bus-places.json"),
+        os.path.normpath(os.path.join(_HERE, "..", "..", "..", "src", "data", "bus-places.json")),
+    ]
+    for c in cands:
+        if c and os.path.exists(c):
+            return c
+    return cands[-1]
+
+
+_JSON = _resolve_json()
 
 # Typos de scraping constatées -> orthographe DB canonique.
 ALIAS_FIX = {
