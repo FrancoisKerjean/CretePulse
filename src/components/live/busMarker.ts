@@ -14,7 +14,9 @@ export function createBusEl(bus: LiveBus): HTMLDivElement {
   el.setAttribute("aria-label", `${bus.codeOfficial ?? bus.code} → ${bus.headsign}`);
   el.title = `${bus.codeOfficial ?? bus.code} → ${bus.headsign}`;
 
-  const color = bus.degraded ? "#5C7886" : NORMAL;
+  // Affichage uniforme : les bus à tracé estimé (degraded) sont rendus comme les
+  // autres (la page /live indique déjà « estimé d'après l'horaire »).
+  const color = NORMAL;
   const inner = document.createElement("div");
   inner.className = "bus-inner";
   inner.style.cssText = "position:relative;width:26px;height:26px;transition:transform .15s ease";

@@ -23,14 +23,18 @@ const T: Record<string, { estimated: string; circulating: string; planTrip: stri
   fr: { estimated: "Estimé selon l'horaire", circulating: "bus en circulation", planTrip: "Planifier un trajet", rentCar: "Louer une voiture" },
 };
 
-function isMapped(l: { source: "osm" | "ktel"; partialGeo: boolean }): boolean {
-  return l.source !== "ktel" && !l.partialGeo;
+// On affiche toute ligne ayant un tracé (>= 2 points), y compris les tracés OSRM
+// estimés (source ktel / partialGeo). La page /live indique déjà « estimé d'après
+// l'horaire ». Avant, on ne montrait que les tracés OSM vérifiés, ce qui cachait
+// ~150 routes (bus invisibles) alors que leur tracé routier existe déjà.
+function hasTrace(l: { geometry: [number, number][] | null }): boolean {
+  return Array.isArray(l.geometry) && l.geometry.length >= 2;
 }
 
 function linesGeoJSON(net: LiveNetwork) {
   return {
     type: "FeatureCollection" as const,
-    features: [...net.lines.values()].filter(isMapped).map((l) => ({
+    features: [...net.lines.values()].filter(hasTrace).map((l) => ({
       type: "Feature" as const,
       properties: { code: l.code, lineId: l.id },
       geometry: { type: "LineString" as const, coordinates: l.geometry },
@@ -153,7 +157,9 @@ export function LiveMapClient({ locale }: { locale: string }) {
         const markers = markersRef.current;
         const tick = () => {
           const n = netRef.current; if (!n) return;
-          const buses = busesAt(athensNow(), n).filter((bus) => !bus.degraded);
+          // Tous les bus, y compris ceux des lignes à tracé estimé (degraded) :
+          // affichage uniforme, la page indique déjà « estimé » (cf hasTrace ci-dessus).
+          const buses = busesAt(athensNow(), n);
           setCount(buses.length);
           const poses = new Map([...markers].map(([id, m]) => [id, m.cur]));
           const { entering, leaving } = reconcile(poses, buses);
