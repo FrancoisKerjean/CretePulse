@@ -306,13 +306,18 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
   const url = `${BASE_URL}/${locale}/getting-around/${slug}`;
 
+  // Les pages multimodales (aéroport, ferry/vol Athènes↔Crète, Crète↔Santorin) répondent
+  // à la plus forte demande transport mesurée en GSC (~170 impr Athènes↔Crète, ~60 aéroport)
+  // et portent un vrai contenu (compagnies, prix, fréquences) → INDEXABLES (en/fr/de/el).
+  // Les inter-city doublonnent /buses/[pair] (301 en amont, next.config) → restent noindex.
+  const INDEX_LOCALES = new Set(["en", "fr", "de", "el"]);
+  const indexable = route.type !== "inter-city" && INDEX_LOCALES.has(locale);
+
   return {
     title: titles[locale] || titles.en,
     description: descs[locale] || descs.en,
     alternates: buildAlternates(locale, `/getting-around/${slug}`),
-    // /getting-around/[route] is noindex bulk: 41 pages indexed for 2 clicks on 28d,
-    // average position 38 = invisible. Decision 15/05/2026.
-    robots: { index: false, follow: true },
+    robots: indexable ? undefined : { index: false, follow: true },
     openGraph: { title: titles[locale] || titles.en, description: descs[locale] || descs.en, url, type: "website" },
   };
 }

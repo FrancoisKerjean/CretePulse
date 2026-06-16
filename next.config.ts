@@ -32,7 +32,21 @@ const nextConfig: NextConfig = {
       destination: `/en/near-me?from=${slug}&utm_source=qr&utm_medium=print&utm_campaign=${code}`,
       permanent: false, // 307 : garder la main sur la destination tant que la campagne print n'est pas figée
     });
-    return [qr("her", "heraklion"), qr("chq", "chania-airport"), qr("jsh", "sitia")];
+    // Cannibalisation SEO : les 4 getting-around inter-villes doublonnent les pages-trajet
+    // canoniques /buses/[pair]. 301 vers le canonique (slug alphabétique) pour concentrer
+    // l'autorité. getting-around ne garde que le multimodal réel (aéroport, ferry).
+    const gar = (from: string, pair: string) => ({
+      source: `/:locale/getting-around/${from}`,
+      destination: `/:locale/buses/${pair}`,
+      permanent: true, // 301
+    });
+    return [
+      qr("her", "heraklion"), qr("chq", "chania-airport"), qr("jsh", "sitia"),
+      gar("heraklion-to-chania", "chania-to-heraklion"),
+      gar("heraklion-to-rethymno", "heraklion-to-rethymno"),
+      gar("heraklion-to-agios-nikolaos", "agios-nikolaos-to-heraklion"),
+      gar("heraklion-to-sitia", "heraklion-to-sitia"),
+    ];
   },
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];

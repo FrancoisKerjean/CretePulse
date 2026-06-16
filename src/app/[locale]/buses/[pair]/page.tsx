@@ -161,12 +161,6 @@ export async function generateMetadata({ params }: { params: Promise<Params> }) 
   };
 }
 
-// Comparatif getting-around quand il existe (slugs en dur, mirror de la page).
-const GETTING_AROUND = new Set([
-  "heraklion-to-chania", "heraklion-to-rethymno",
-  "heraklion-to-agios-nikolaos", "heraklion-to-sitia",
-]);
-
 // Mirror des generateStaticParams things-to-do / where-to-stay (cf BusesClient) :
 // on ne rend un lien QUE si la cible existe -> jamais de 404.
 const THINGS_TO_DO_SLUGS = new Set([
@@ -403,13 +397,8 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
           </section>
         )}
 
-        {(GETTING_AROUND.has(pair) || ttd || wts) && (
+        {(ttd || wts) && (
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm mb-8">
-            {GETTING_AROUND.has(pair) && (
-              <Link href={`/${locale}/getting-around/${pair}`} className="text-aegean hover:underline">
-                {T.compare[ui]}
-              </Link>
-            )}
             {ttd && (
               <Link href={`/${locale}/things-to-do/${ttd}`} className="text-aegean hover:underline">
                 {T.whatToDo[ui]} {destB!.name}

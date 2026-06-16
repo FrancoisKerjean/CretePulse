@@ -8,6 +8,7 @@ import { ExternalLink, Clock, ArrowLeft, Calendar, Globe } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
 import Link from "next/link";
 import DiscoverCrete from "@/components/DiscoverCrete";
+import { BusInCreteBox } from "@/components/BusInCreteBox";
 import NewsletterCTA from "@/components/NewsletterCTA";
 
 export const revalidate = 86400;
@@ -374,6 +375,9 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
 
           {/* ── DISCOVER CRETE (internal links boost) ── */}
           <DiscoverCrete category={item.category} locale={locale} />
+
+          {/* ── BUS INTERNAL LINKS (crawl-budget vers pages-trajet prioritaires) ── */}
+          <BusInCreteBox locale={locale} />
 
           {/* ── NEWSLETTER CTA ─────────────────────── */}
           <NewsletterCTA locale={locale} />

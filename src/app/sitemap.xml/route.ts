@@ -17,7 +17,7 @@
 // competing on the same query without 0 click).
 
 import { supabase } from "@/lib/supabase";
-import { qualityPairSlugs, pairLastmod } from "@/lib/bus-seo";
+import { qualityPairSlugs, priorityPairSlugs, pairLastmod } from "@/lib/bus-seo";
 import { MONTHS, CITIES } from "@/lib/weather-monthly";
 import { CRETE_NEIGHBOURHOODS } from "@/lib/airbnb-mappings";
 import { CRETE_AIRPORTS } from "@/lib/airports";
@@ -182,10 +182,11 @@ export async function GET() {
   // No /visit index page exists, so the section is fully removed from the sitemap.
   // for (const month of MONTHS) push(`/visit/${month}`, "monthly", 0.7);
   for (const a of BEACH_ACTIVITIES) push(`/beaches/best-for/${a}`, "monthly", 0.6);
-  // /getting-around/[route] pages are noindex (GSC: 41 pages, 704 impressions for
-  // only 2 clicks on 28d, average position 38 = invisible). Removed from sitemap
-  // for coherence with the noindex header.
-  // for (const s of ROUTE_SLUGS) push(`/getting-around/${s}`, "monthly", 0.6);
+  // /getting-around inter-city = noindex (doublons de /buses/[pair], 301 dans next.config).
+  // Les pages MULTIMODALES (aéroport, ferry/vol Athènes↔Crète, Crète↔Santorin) sont
+  // indexables : plus forte demande transport mesurée en GSC, contenu réel → au sitemap.
+  const MULTIMODAL_ROUTES = ["athens-to-crete", "crete-to-santorini", "heraklion-airport-to-city", "chania-airport-to-city"];
+  for (const s of MULTIMODAL_ROUTES) push(`/getting-around/${s}`, "monthly", 0.8);
   void ROUTE_SLUGS;
   // Pages par paire de villes /buses/[pair] (spec 2026-06-10-bus-pair-pages) :
   // data vivante (horaires MAJ hebdo scraper), indexables, revue GSC J+45.
@@ -193,8 +194,12 @@ export async function GET() {
   // lastmod honnête = max(scraped_at) de la paire, pour signaler la fraîcheur réelle.
   const { data: busPairRoutes } = await supabase.from("bus_routes").select("from_place,to_place,departures,scraped_at");
   const seoRoutes = (busPairRoutes ?? []) as import("@/lib/bus-seo").SeoRoute[];
+  // Concentration du budget de crawl : paires entre hubs majeurs en priorité haute
+  // (0.9), longue traîne des villages en 0.5. Sort les pages-trajet du « Discovered -
+  // not indexed » en signalant à Google les ~12 trajets à fort signal de recherche.
+  const prioritySet = new Set(priorityPairSlugs(seoRoutes));
   for (const slug of qualityPairSlugs(seoRoutes)) {
-    push(`/buses/${slug}`, "weekly", 0.7, pairLastmod(seoRoutes, slug) ?? undefined);
+    push(`/buses/${slug}`, "weekly", prioritySet.has(slug) ? 0.9 : 0.5, pairLastmod(seoRoutes, slug) ?? undefined);
   }
 
   for (const s of COMP_SLUGS) push(`/compare/${s}`, "monthly", 0.6);

@@ -1,7 +1,7 @@
 // Helpers SEO pour les pages /buses/[pair]. Pur, zéro I/O.
 // Isolé de bus-pairs.ts (refactoré par feat/bus-network) : importe seulement
 // ses helpers stables. Spec : docs/superpowers/specs/2026-06-15-buses-seo-canonical-design.md
-import { eligiblePairs, pairRoutes, type PairRouteLike } from "./bus-pairs.ts";
+import { eligiblePairs, pairRoutes, type PairRouteLike, type BusPair } from "./bus-pairs.ts";
 
 /** Route minimale + champs SEO (departures pour la qualité, scraped_at pour lastmod). */
 export type SeoRoute = PairRouteLike & {
@@ -26,6 +26,29 @@ export function qualityPairSlugs(routes: SeoRoute[]): string[] {
     .map((p) => p.slug)
     .filter((slug) => pairHasTimetable(routes, slug))
     .sort((a, b) => a.localeCompare(b));
+}
+
+// Hubs majeurs (orthographe DB exacte de BUS_PLACE_SLUGS) = trajets à fort signal
+// de recherche (cf diagnostic GSC). On y concentre le budget de crawl : priorité
+// sitemap haute + tête des liens internes, pour sortir ces pages du « Discovered -
+// not indexed » avant la longue traîne des petits villages.
+const PRIORITY_PLACES = new Set<string>([
+  "Heraklion", "Chania", "Rethymno", "Agios Nikolaos", "Ierapetra",
+  "Siteia", "Malia", "Hersonisos", "Agia Galini", "Kissamos", "Matala", "Paleochora",
+]);
+
+/** Paires prioritaires (entre 2 hubs majeurs ET avec horaires), triées par slug.
+ * Calculé via eligiblePairs → orthographe de slug toujours correcte (siteia, etc.). */
+export function priorityPairs(routes: SeoRoute[]): BusPair[] {
+  return eligiblePairs(routes)
+    .filter((p) => PRIORITY_PLACES.has(p.placeA) && PRIORITY_PLACES.has(p.placeB))
+    .filter((p) => pairHasTimetable(routes, p.slug))
+    .sort((a, b) => a.slug.localeCompare(b.slug));
+}
+
+/** Slugs des paires prioritaires (pour le sitemap). */
+export function priorityPairSlugs(routes: SeoRoute[]): string[] {
+  return priorityPairs(routes).map((p) => p.slug);
 }
 
 /** lastmod honnête = max(scraped_at) des routes de la paire, ou null. */
