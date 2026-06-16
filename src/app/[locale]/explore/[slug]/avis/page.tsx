@@ -1,5 +1,6 @@
 // src/app/[locale]/explore/[slug]/avis/page.tsx
 import type { Metadata } from "next";
+import { setRequestLocale } from "next-intl/server";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { ReviewsPage } from "@/components/reviews/ReviewsPage";
 
@@ -17,6 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function Page({ params }: { params: Promise<{ locale: string; slug: string }> }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const [{ data: place }, { data: rows }, { data: agg }] = await Promise.all([
     supabase.from("cb_places").select("slug, name").eq("slug", slug).maybeSingle(),
     supabase.from("cb_reviews_with_counts")
