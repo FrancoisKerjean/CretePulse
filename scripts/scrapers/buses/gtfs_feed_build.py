@@ -23,8 +23,23 @@ AGENCY_URL = "https://crete.direct"
 AGENCY_TZ = "Europe/Athens"
 FEED_LANG = "en"
 
+NOTICE_TEXT = """crete.direct GTFS feed - Crete, Greece
+
+Honesty notice on stop times
+============================
+KTEL publishes only the DEPARTURE time at each route's origin terminus.
+Times at intermediate stops in this feed are ESTIMATES, computed from a
+road-distance time profile, and are marked timepoint=0 in stop_times.txt.
+The origin departure is the real published time (timepoint=1). The arrival
+at the destination terminus is timepoint=1 only when the total trip duration
+is published, otherwise it is also an estimate (timepoint=0).
+
+Produced by crete.direct from KTEL Heraklion-Lassithi and KTEL
+Chania-Rethymno timetables.
+"""
+
 GTFS_FILES = ("agency.txt", "routes.txt", "trips.txt", "stop_times.txt",
-              "calendar.txt", "feed_info.txt", "stops.txt")
+              "calendar.txt", "feed_info.txt", "stops.txt", "NOTICE.txt")
 _TABLE_FILE = {"agency": "agency.txt", "routes": "routes.txt", "trips": "trips.txt",
                "stop_times": "stop_times.txt", "calendar": "calendar.txt",
                "feed_info": "feed_info.txt", "stops": "stops.txt"}
@@ -207,6 +222,8 @@ def write_feed(feed, out_dir=OUT_DIR):
     for key, fname in _TABLE_FILE.items():
         header, rows = feed[key]
         write_csv(os.path.join(out_dir, fname), header, rows)
+    with open(os.path.join(out_dir, "NOTICE.txt"), "w", encoding="utf-8", newline="\n") as f:
+        f.write(NOTICE_TEXT)
     with open(os.path.join(out_dir, "build-feed-stats.json"), "w", encoding="utf-8") as f:
         json.dump(feed["stats"], f, ensure_ascii=False, indent=2)
 

@@ -162,6 +162,8 @@ def test_write_feed_creates_all_files(tmp_path):
         assert (tmp_path / fname).exists(), fname
     stops = (tmp_path / "stops.txt").read_text(encoding="utf-8")
     assert stops.startswith("stop_id,stop_name,stop_lat,stop_lon\n")
+    notice = (tmp_path / "NOTICE.txt").read_text(encoding="utf-8")
+    assert "timepoint=0" in notice and "ESTIMATES" in notice
 
 def test_package_zip_contains_gtfs_files(tmp_path):
     feed = _mini_feed()
