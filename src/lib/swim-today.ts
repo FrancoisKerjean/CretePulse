@@ -4,7 +4,7 @@ import { supabase } from "./supabase";
 import type { Beach } from "./types";
 import {
   fetchCbBeaches,
-  matchCbBeaches,
+  matchCbBySlug,
   shelterFactor,
   type CbBeachAttrs,
 } from "./cb-beach-match";
@@ -230,7 +230,7 @@ export async function buildSwimToday(): Promise<SwimToday | null> {
   ]);
   if (!beaches?.length || !cities?.length) return null;
 
-  const cbMatch = matchCbBeaches(beaches, cbRows);
+  const cbMatch = matchCbBySlug(beaches, cbRows);
   const scored = beaches
     .map(b => scoreBeach(b, cities, stops, cbMatch.get(b.slug) ?? null))
     .filter((s): s is ScoredBeach => s !== null)
