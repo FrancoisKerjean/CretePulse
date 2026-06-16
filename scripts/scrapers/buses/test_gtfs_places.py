@@ -25,3 +25,9 @@ def test_alias_typo_fixed():
 
 def test_display_name_titlecase():
     assert display_name("some village") == "Some Village"
+
+
+def test_none_input_is_dropped_safely():
+    # données sales (via_stops null) : pas de crash, traité comme drop
+    assert status_of(None) == "drop"
+    assert canonical_slug(None) is None

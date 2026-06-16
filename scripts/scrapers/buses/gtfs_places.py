@@ -55,6 +55,8 @@ def _is_artifact(name):
 
 
 def status_of(name):
+    if not name or not str(name).strip():
+        return "drop"
     fixed = _fixed(name)
     if fixed in load_allowlist():
         return "allowlist"
@@ -65,6 +67,8 @@ def status_of(name):
 
 def canonical_slug(name):
     """slug canonique, ou None si artefact à dropper."""
+    if not name or not str(name).strip():
+        return None
     fixed = _fixed(name)
     al = load_allowlist()
     if fixed in al:
