@@ -4,11 +4,14 @@ import type { RoadVariant } from "@/lib/campagne";
 
 // top en % de la hauteur du stage, pour chaque variante. Index = ordre des 6 beats narratifs.
 export const BEAT_TOP: Record<RoadVariant, number[]> = {
-  desktop: [18.6, 31.4, 44.9, 54.2, 69.9, 80.1], // = top px mockup / 4720
+  // Chaque beat est place sur un LOBE de la route ou elle est a un extreme, du cote oppose au texte
+  // (probleme/direct = gauche, route a droite ; carte/demain/aide = droite, route a gauche ; marque
+  // = sommet centre, route a droite). PAS sur les diagonales ou la route traverse le centre.
+  desktop: [18, 36, 48, 60, 72, 82],
   // colonnes etroites cote oppose a la route ; co-concu avec ROAD_D.mobile
   mobile: [15, 28, 41, 54, 66.5, 78],
 };
-export const CTA_TOP: Record<RoadVariant, number> = { desktop: 93.6, mobile: 91.5 };
+export const CTA_TOP: Record<RoadVariant, number> = { desktop: 95, mobile: 91.5 };
 export const ROAD_D: Record<RoadVariant, string> = {
   desktop:
     "M600 470 C980 700 1080 870 1050 1020 C1020 1320 175 1430 155 1720 C135 2030 1070 2110 1050 2420 C1045 2600 1045 2780 1015 2880 C900 3000 720 3110 600 3120 C480 3130 215 3470 190 3760 C170 4050 560 4290 600 4400",

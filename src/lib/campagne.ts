@@ -14,7 +14,7 @@ export function buildShareUrl(locale: string): string {
 export type Beat = {
   id: string;
   kicker?: string;
-  title: string;        // peut contenir un <hl>…</hl> rendu en surbrillance
+  title?: string;        // optionnel : un beat peut n'avoir qu'un sous-titre (ex. demain)
   sub?: string;
   side: "center" | "left" | "right";
 };
@@ -37,7 +37,7 @@ const FR: CampagneCopy = {
     { id: "carte", side: "right", title: "Alors, on a eu une idée.<br>Tout mettre sur <hl>une seule carte</hl>." },
     { id: "direct", side: "left", title: "Et hop !<br>Les bus, <hl>en vrai, en direct</hl>.", sub: "Tous les horaires au même endroit, dans ta langue. Tu vois où est ton bus, tout de suite. Et c'est gratuit pour tout le monde." },
     { id: "marque", side: "center", title: "Ça, c'est <hl>crete.direct</hl>.", sub: "Une petite équipe, ici en Crète, qui veut juste rendre le bus plus simple. Pour les Crétois comme pour les voyageurs." },
-    { id: "demain", kicker: "et demain ?", side: "right", title: "Encore plus de bus en direct, sur toute l'île. Et bientôt, une appli rien que pour toi, dans ta poche." },
+    { id: "demain", kicker: "et demain ?", side: "right", sub: "Encore plus de bus en direct, sur toute l'île. Et bientôt, une appli rien que pour toi, dans ta poche." },
     { id: "aide", kicker: "entre nous", side: "right", title: "On fait tout ça nous-mêmes.<br>Et on a besoin de <hl>toi</hl>.", sub: "crete.direct est libre, sans pub, et le restera. Pas de grande entreprise derrière nous. Juste des gens qui aiment la Crète. Pour continuer, on a besoin d'un coup de main." },
   ],
   cta: { title: "Tu veux nous aider ?<br>C'est <hl>tout simple</hl>.", micro: "Suis-nous et partage autour de toi. Ça nous aide énormément. Merci !" },
@@ -55,7 +55,7 @@ const EN: CampagneCopy = {
     { id: "carte", side: "right", title: "So we had an idea.<br>Put it all on <hl>one map</hl>." },
     { id: "direct", side: "left", title: "And tada!<br>The buses, <hl>for real, live</hl>.", sub: "Every timetable in one place, in your language. You see where your bus is, right away. And it's free for everyone." },
     { id: "marque", side: "center", title: "This is <hl>crete.direct</hl>.", sub: "A tiny team, here in Crete, that just wants to make the bus simpler. For Cretans and travellers alike." },
-    { id: "demain", kicker: "and tomorrow?", side: "right", title: "Even more buses live, all across the island. And soon, an app just for you, in your pocket." },
+    { id: "demain", kicker: "and tomorrow?", side: "right", sub: "Even more buses live, all across the island. And soon, an app just for you, in your pocket." },
     { id: "aide", kicker: "between us", side: "right", title: "We do all of this ourselves.<br>And we need <hl>you</hl>.", sub: "crete.direct is free, with no ads, and it'll stay that way. No big company behind us. Just people who love Crete. To go further, we need a hand." },
   ],
   cta: { title: "Want to help?<br>It's <hl>super easy</hl>.", micro: "Follow us and share around you. It helps us so much. Thank you!" },

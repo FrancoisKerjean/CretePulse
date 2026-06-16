@@ -7,7 +7,7 @@ export default function Beat({ side, topPct, reduce, kicker, title, sub, hero, i
   topPct: number;
   reduce: boolean;
   kicker?: string;
-  title: string;
+  title?: string;
   sub?: string;
   hero?: boolean;
   inline?: boolean;
@@ -37,15 +37,23 @@ export default function Beat({ side, topPct, reduce, kicker, title, sub, hero, i
         ? "items-start text-left"
         : "items-center text-center";
 
+  // Desktop : largeurs et marges en POURCENTAGE de largeur, pas en px. La route est un SVG
+  // preserveAspectRatio="none" : sa position x scale avec la largeur, donc son x reste un %
+  // constant. Des beats en px (ex. 540px) cassaient l'alignement hors ~1200px et chevauchaient
+  // la route. En %, beats et route suivent la meme echelle a TOUTE largeur.
+  // Le beat centre du sommet ("marque") a la route a ~87% -> 60% centre (x20-80%) la degage ;
+  // hero/cta n'ont pas de route a cote -> larges.
   const pos = mobileColumn
     ? mobileLeftCol
       ? "left-[clamp(14px,4vw,28px)] w-[56%]"
       : "right-[clamp(14px,4vw,28px)] w-[56%]"
     : effectiveCenter
-      ? "left-0 right-0 mx-auto w-[min(92%,820px)]"
+      ? hero
+        ? "left-0 right-0 mx-auto w-[88%]"
+        : "left-0 right-0 mx-auto w-[60%]"
       : side === "left"
-        ? "left-[clamp(16px,5vw,80px)] w-[min(86%,540px)]"
-        : "right-[clamp(16px,5vw,80px)] w-[min(86%,560px)]";
+        ? "left-[4%] w-[47%]"
+        : "right-[4%] w-[47%]";
 
   return (
     <div
@@ -62,10 +70,12 @@ export default function Beat({ side, topPct, reduce, kicker, title, sub, hero, i
             {kicker}
           </span>
         )}
-        <h2
-          className={`font-[family-name:var(--font-heading)] font-extrabold leading-[1.05] text-[var(--color-text)] [text-shadow:0_2px_0_rgba(255,255,255,.65),0_0_28px_rgba(255,255,255,.8)] [&_hl]:rounded-[5px] [&_hl]:bg-sun [&_hl]:box-decoration-clone [&_hl]:shadow-[0_0_0_8px_var(--color-sun)] ${hero ? "text-[clamp(34px,7vw,64px)]" : "text-[clamp(28px,5.4vw,46px)]"}`}
-          dangerouslySetInnerHTML={{ __html: title }}
-        />
+        {title && (
+          <h2
+            className={`font-[family-name:var(--font-heading)] font-extrabold leading-[1.05] text-[var(--color-text)] [text-shadow:0_2px_0_rgba(255,255,255,.65),0_0_28px_rgba(255,255,255,.8)] [&_hl]:rounded-[5px] [&_hl]:bg-sun [&_hl]:box-decoration-clone [&_hl]:shadow-[0_0_0_8px_var(--color-sun)] ${hero ? "text-[clamp(34px,7vw,64px)]" : "text-[clamp(28px,5.4vw,46px)]"}`}
+            dangerouslySetInnerHTML={{ __html: title }}
+          />
+        )}
         {sub && (
           <p
             className="mt-4 text-[clamp(16px,2.8vw,25px)] font-semibold leading-[1.38] text-[var(--color-text)] [text-shadow:0_1px_0_rgba(255,255,255,.75)]"
