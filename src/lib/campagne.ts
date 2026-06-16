@@ -20,10 +20,32 @@ export type Beat = {
 };
 export type CampagneCopy = {
   meta: { title: string; description: string };
-  hero: { title: string; sub: string };
+  hero: { kicker: string; title: string; sub: string };
   beats: Beat[];
   cta: { title: string; micro: string };
   buttons: { instagram: string; facebook: string; share: string; help: string };
+};
+
+/** Config NON localisee par beat : quelle scene illustree, quel badge emoji, et
+ *  la variante de couleur du kicker pill. Le rendu (composant Scene) est cable
+ *  dans ParcoursClient ; ici on ne garde que les donnees serialisables. */
+export type KickerVariant = "terra" | "go" | "calm";
+export type BeatConfig = {
+  scene: "terminal" | "busStop" | "signpost" | "phoneLive" | "summit" | "app" | "community";
+  tag?: string;            // badge emoji optionnel
+  kickerVariant: KickerVariant;
+  layout: "row" | "center"; // row = scene + card cote a cote (alternee) ; center = pleine largeur
+  flip?: boolean;          // row : scene a droite au lieu de gauche (alternance)
+};
+export const HERO_SCENE = "terminal" as const;
+export const HERO_KICKER_VARIANT: KickerVariant = "go";
+export const BEAT_CONFIG: Record<string, BeatConfig> = {
+  probleme: { scene: "busStop", tag: "⏳", kickerVariant: "terra", layout: "row" },
+  carte: { scene: "signpost", tag: "🗺️", kickerVariant: "go", layout: "row", flip: true },
+  direct: { scene: "phoneLive", tag: "⚡", kickerVariant: "terra", layout: "row" },
+  marque: { scene: "summit", kickerVariant: "calm", layout: "center" },
+  demain: { scene: "app", tag: "📱", kickerVariant: "go", layout: "row", flip: true },
+  aide: { scene: "community", tag: "🫶", kickerVariant: "terra", layout: "row" },
 };
 
 const FR: CampagneCopy = {
@@ -31,12 +53,12 @@ const FR: CampagneCopy = {
     title: "Notre projet · crete.direct",
     description: "L'histoire de crete.direct, le bus en Crète enfin clair. Un projet indépendant et gratuit. Aide-nous à continuer.",
   },
-  hero: { title: "Coucou ! Moi, c'est <hl>Kriri</hl>.", sub: "Je prends le bus partout en Crète. Viens, je te montre." },
+  hero: { kicker: "le parcours", title: "Coucou ! Moi, c'est <hl>Kriri</hl>.", sub: "Je prends le bus partout en Crète. Viens, je te montre." },
   beats: [
     { id: "probleme", kicker: "au début", side: "left", title: "Avant, c'était un peu compliqué.", sub: "Les horaires sont sur de vieux papiers, souvent en grec. On ne sait pas toujours quand le bus arrive. Alors on attend, et on espère." },
-    { id: "carte", side: "right", title: "Alors, on a eu une idée.<br>Tout mettre sur <hl>une seule carte</hl>." },
-    { id: "direct", side: "left", title: "Et hop !<br>Les bus, <hl>en vrai, en direct</hl>.", sub: "Tous les horaires au même endroit, dans ta langue. Tu vois où est ton bus, tout de suite. Et c'est gratuit pour tout le monde." },
-    { id: "marque", side: "center", title: "Ça, c'est <hl>crete.direct</hl>.", sub: "Une petite équipe, ici en Crète, qui veut juste rendre le bus plus simple. Pour les Crétois comme pour les voyageurs." },
+    { id: "carte", kicker: "l'idée", side: "right", title: "Alors, on a eu une idée.<br>Tout mettre sur <hl>une seule carte</hl>." },
+    { id: "direct", kicker: "et hop", side: "left", title: "Et hop !<br>Les bus, <hl>en vrai, en direct</hl>.", sub: "Tous les horaires au même endroit, dans ta langue. Tu vois où est ton bus, tout de suite. Et c'est gratuit pour tout le monde." },
+    { id: "marque", kicker: "le sommet", side: "center", title: "Ça, c'est <hl>crete.direct</hl>.", sub: "Une petite équipe, ici en Crète, qui veut juste rendre le bus plus simple. Pour les Crétois comme pour les voyageurs." },
     { id: "demain", kicker: "et demain ?", side: "right", sub: "Encore plus de bus en direct, sur toute l'île. Et bientôt, une appli rien que pour toi, dans ta poche." },
     { id: "aide", kicker: "entre nous", side: "right", title: "On fait tout ça nous-mêmes.<br>Et on a besoin de <hl>toi</hl>.", sub: "crete.direct est libre, sans pub, et le restera. Pas de grande entreprise derrière nous. Juste des gens qui aiment la Crète. Pour continuer, on a besoin d'un coup de main." },
   ],
@@ -49,12 +71,12 @@ const EN: CampagneCopy = {
     title: "Our project · crete.direct",
     description: "The story of crete.direct, Crete's buses made simple. An independent, free project. Help us keep going.",
   },
-  hero: { title: "Hi! I'm <hl>Kriri</hl>.", sub: "I take the bus all over Crete. Come on, I'll show you." },
+  hero: { kicker: "the journey", title: "Hi! I'm <hl>Kriri</hl>.", sub: "I take the bus all over Crete. Come on, I'll show you." },
   beats: [
     { id: "probleme", kicker: "at first", side: "left", title: "At first, it was a bit tricky.", sub: "Timetables live on old papers, often in Greek. You never quite know when the bus will come. So you wait, and you hope." },
-    { id: "carte", side: "right", title: "So we had an idea.<br>Put it all on <hl>one map</hl>." },
-    { id: "direct", side: "left", title: "And tada!<br>The buses, <hl>for real, live</hl>.", sub: "Every timetable in one place, in your language. You see where your bus is, right away. And it's free for everyone." },
-    { id: "marque", side: "center", title: "This is <hl>crete.direct</hl>.", sub: "A tiny team, here in Crete, that just wants to make the bus simpler. For Cretans and travellers alike." },
+    { id: "carte", kicker: "the idea", side: "right", title: "So we had an idea.<br>Put it all on <hl>one map</hl>." },
+    { id: "direct", kicker: "and there!", side: "left", title: "And tada!<br>The buses, <hl>for real, live</hl>.", sub: "Every timetable in one place, in your language. You see where your bus is, right away. And it's free for everyone." },
+    { id: "marque", kicker: "the summit", side: "center", title: "This is <hl>crete.direct</hl>.", sub: "A tiny team, here in Crete, that just wants to make the bus simpler. For Cretans and travellers alike." },
     { id: "demain", kicker: "and tomorrow?", side: "right", sub: "Even more buses live, all across the island. And soon, an app just for you, in your pocket." },
     { id: "aide", kicker: "between us", side: "right", title: "We do all of this ourselves.<br>And we need <hl>you</hl>.", sub: "crete.direct is free, with no ads, and it'll stay that way. No big company behind us. Just people who love Crete. To go further, we need a hand." },
   ],

@@ -377,3 +377,46 @@ a, button {
   0%   { transform: scale(0.6); opacity: 0.7; }
   100% { transform: scale(1.6); opacity: 0; }
 }
+
+/* ── Page-campagne /projet : highlight snug + animations idle ───────────────
+   Surbrillance jaune "snug" (style maquette campagne-enriched.html) : pas de
+   halo box-shadow qui deborde ; padding minime + box-decoration-clone pour que
+   le fond suive chaque ligne sans toucher la ligne du dessus. */
+.cmp-hl {
+  background: var(--color-sun);
+  border-radius: 6px;
+  padding: 0.06em 0.24em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* Keyframes idle (prefixees cmp-) : bob (chevres), sway (panneaux),
+   drift (nuages), floaty (badges/coeur). */
+@keyframes cmp-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+@keyframes cmp-sway {
+  0%, 100% { transform: rotate(-3.5deg); }
+  50% { transform: rotate(3.5deg); }
+}
+@keyframes cmp-drift {
+  from { transform: translateX(-220px); }
+  to { transform: translateX(120vw); }
+}
+@keyframes cmp-floaty {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* Les classes idle ne s'animent QUE si l'utilisateur n'a pas demande moins de
+   mouvement : par defaut tout est statique pour prefers-reduced-motion: reduce. */
+@media (prefers-reduced-motion: no-preference) {
+  .cmp-bob { animation: cmp-bob 2.5s ease-in-out infinite; transform-origin: bottom center; }
+  .cmp-bob2 { animation: cmp-bob 2.9s ease-in-out infinite; animation-delay: -1.2s; transform-origin: bottom center; }
+  .cmp-bob3 { animation: cmp-bob 3.2s ease-in-out infinite; animation-delay: -0.6s; transform-origin: bottom center; }
+  .cmp-sway { animation: cmp-sway 3.6s ease-in-out infinite; }
+  .cmp-floaty { animation: cmp-floaty 3s ease-in-out infinite; }
+  .cmp-cloud { animation: cmp-drift 26s linear infinite; }
+  .cmp-cloud-b { animation: cmp-drift 34s linear infinite; animation-delay: -12s; }
+}
