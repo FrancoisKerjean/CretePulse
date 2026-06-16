@@ -112,3 +112,44 @@ def coherence_ok(slug, lat, lng, high_coords, siblings):
         if ref and haversine_km((lat, lng), ref) < MAX_GEOCODE_DRIFT_KM:
             return True
     return False
+
+
+def assemble_stops(routes, place_coords, cb_index, nominatim=None):
+    """Pur (sauf nominatim injecté). Retourne (stops, dropped).
+    Cascade référentiel -> cb_places -> Nominatim (sous garde-fou) -> none ; + needs_review."""
+    curated, dropped = curate_routes(routes)
+    raw = collect_stops_with_count(curated)
+    allowlist = load_allowlist()
+    names_by_slug = {s["slug"]: s["name"] for s in raw}
+
+    # Index coords sûres par slug (référentiel + cb_places) + pont allowlist
+    # (orthographe DB != slug canonique, ex "Siteia"->"sitia").
+    coords_index = coords_index_by_slug(place_coords, cb_index, names_by_slug)
+    for nom_db, slug in allowlist.items():
+        if slug not in coords_index:
+            k = _norm(nom_db)
+            if k in place_coords:
+                coords_index[slug] = place_coords[k]
+
+    siblings = _siblings_by_slug(curated)
+    high_coords = {s["slug"]: coords_index[s["slug"]] for s in raw if s["slug"] in coords_index}
+
+    stops = []
+    for s in raw:
+        slug, disp = s["slug"], s["name"]
+        lat, lng, source, conf = geocode_slug(slug, disp, coords_index, nominatim=nominatim)
+        if source == "geocoded" and not coherence_ok(slug, lat, lng, high_coords, siblings):
+            lat, lng, source, conf = None, None, "none", "low"
+        stops.append({
+            "stop_id": slug,
+            "stop_name": disp,
+            "stop_name_el": None,
+            "stop_lat": lat,
+            "stop_lon": lng,
+            "coords_source": source,
+            "coords_confidence": conf,
+            "needs_review": conf != "high",
+            "prefecture": prefecture_for(lat, lng),
+            "route_count": s["route_count"],
+        })
+    return stops, dropped
