@@ -8,10 +8,11 @@ import csv
 import json
 import math
 import os
+import re
 from collections import defaultdict
 
 from prices import PLACE_COORDS, _norm
-from net_geocode import coords_index_by_slug, geocode_slug
+from net_geocode import coords_index_by_slug, geocode_slug, stop_slug
 from gtfs_places import canonical_slug, display_name, load_allowlist
 
 MIN_STOPS = 20                 # sous ce seuil = build suspect, on ne touche pas la DB
@@ -114,6 +115,28 @@ def coherence_ok(slug, lat, lng, high_coords, siblings):
     return False
 
 
+# Points hôteliers/POI dont le libellé KTEL porte la localité parente, mais que
+# Nominatim ne trouve pas sous leur nom commercial.
+_PARENT_HOTELS = re.compile(r"\(([a-z]+)-hotels?\)")
+
+
+def parent_coords(slug, coords_index):
+    """Coordonnées de la localité parente d'un point hôtelier/POI, sinon None.
+    Dernier recours zone-level (donc confiance basse + needs_review) pour les
+    arrêts introuvables par Nominatim mais dont le libellé porte la localité :
+      - 'x-(analipsis-hotels)' / 'x-(anissaras-hotels)' -> Analipsis / Anissaras ;
+      - 'a10-ag.pelagia-beach' / 'ag.pelagia(kapsis)'   -> Agia Pelagia.
+    `coords_index` : {slug: (lat,lng)} déjà construit (référentiel + cb_places)."""
+    m = _PARENT_HOTELS.search(slug)
+    if m:
+        parent = m.group(1)
+    elif "ag.pelagia" in slug:
+        parent = "agia-pelagia"
+    else:
+        return None
+    return coords_index.get(parent)
+
+
 def assemble_stops(routes, place_coords, cb_index, nominatim=None):
     """Pur (sauf nominatim injecté). Retourne (stops, dropped).
     Cascade référentiel -> cb_places -> Nominatim (sous garde-fou) -> none ; + needs_review."""
@@ -140,6 +163,10 @@ def assemble_stops(routes, place_coords, cb_index, nominatim=None):
         lat, lng, source, conf = geocode_slug(slug, disp, coords_index, nominatim=nominatim)
         if source == "geocoded" and not coherence_ok(slug, lat, lng, high_coords, siblings):
             lat, lng, source, conf = None, None, "none", "low"
+        if source == "none":
+            pc = parent_coords(slug, coords_index)
+            if pc:
+                lat, lng, source, conf = pc[0], pc[1], "parent", "low"
         stops.append({
             "stop_id": slug,
             "stop_name": disp,
