@@ -141,3 +141,33 @@ def test_referential_integrity_and_determinism():
     route_ids = {r[0] for r in f1["routes"][1]}
     assert st_ids <= stops_ids
     assert all(r[0] in route_ids for r in f1["trips"][1])
+
+
+import os
+import zipfile
+from gtfs_feed_build import write_feed, package_zip, GTFS_FILES
+
+def _mini_feed():
+    routes = [{
+        "id": 1, "operator_id": "herlas", "from_place": "Heraklion", "to_place": "Agios Nikolaos",
+        "via_stops": ["Hersonissos"], "duration": "1h",
+        "departures_by_day": [{"days": "Mon-Fri", "times": ["08:00"]}], "season": None,
+    }]
+    return assemble_feed(routes, STOPS, WINDOW, "20260616", osrm=None)
+
+def test_write_feed_creates_all_files(tmp_path):
+    feed = _mini_feed()
+    write_feed(feed, str(tmp_path))
+    for fname in GTFS_FILES:
+        assert (tmp_path / fname).exists(), fname
+    stops = (tmp_path / "stops.txt").read_text(encoding="utf-8")
+    assert stops.startswith("stop_id,stop_name,stop_lat,stop_lon\n")
+
+def test_package_zip_contains_gtfs_files(tmp_path):
+    feed = _mini_feed()
+    write_feed(feed, str(tmp_path))
+    zip_path = package_zip(str(tmp_path), str(tmp_path / "crete.zip"))
+    with zipfile.ZipFile(zip_path) as z:
+        names = set(z.namelist())
+    assert {"agency.txt", "routes.txt", "trips.txt", "stop_times.txt",
+            "calendar.txt", "feed_info.txt", "stops.txt"} <= names

@@ -2,11 +2,15 @@
 calendar/feed_info + stops projeté) depuis bus_routes + gtfs_stops, et empaquette
 crete.zip. Pur hormis : lecture DB (sb), fetch OSRM injecté, écriture fichiers/zip.
 Décisions : docs/superpowers/specs/2026-06-16-gtfs-feed-assembly-design.md"""
+import json
+import os
 import re
+import zipfile
 
 from collections import OrderedDict
 
-from gtfs_stops_build import curate_routes
+from gtfs_stops_build import OUT_DIR, curate_routes
+from gtfs_writer import write_csv
 from net_lines import merge_into_lines
 from net_nomenclature import assign_codes, color_for
 from net_osrm import build_geometry
@@ -18,6 +22,12 @@ AGENCY_NAME = "crete.direct"
 AGENCY_URL = "https://crete.direct"
 AGENCY_TZ = "Europe/Athens"
 FEED_LANG = "en"
+
+GTFS_FILES = ("agency.txt", "routes.txt", "trips.txt", "stop_times.txt",
+              "calendar.txt", "feed_info.txt", "stops.txt")
+_TABLE_FILE = {"agency": "agency.txt", "routes": "routes.txt", "trips": "trips.txt",
+               "stop_times": "stop_times.txt", "calendar": "calendar.txt",
+               "feed_info": "feed_info.txt", "stops": "stops.txt"}
 
 
 def parse_duration_min(duration):
@@ -189,3 +199,87 @@ def assemble_feed(routes, stops_by_id, window, feed_version, osrm=None, seasons=
     }
     return {"agency": agency, "routes": routes_tbl, "trips": trips_tbl, "stop_times": st_tbl,
             "calendar": cal_tbl, "feed_info": feed_tbl, "stops": stops_tbl, "stats": stats}
+
+
+def write_feed(feed, out_dir=OUT_DIR):
+    """Écrit les 7 fichiers GTFS + build-feed-stats.json dans out_dir."""
+    os.makedirs(out_dir, exist_ok=True)
+    for key, fname in _TABLE_FILE.items():
+        header, rows = feed[key]
+        write_csv(os.path.join(out_dir, fname), header, rows)
+    with open(os.path.join(out_dir, "build-feed-stats.json"), "w", encoding="utf-8") as f:
+        json.dump(feed["stats"], f, ensure_ascii=False, indent=2)
+
+
+def package_zip(out_dir=OUT_DIR, zip_path=None):
+    """Empaquette les fichiers GTFS de out_dir dans un .zip (à la racine du zip)."""
+    zip_path = zip_path or os.path.join(out_dir, "crete.zip")
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
+        for fname in GTFS_FILES:
+            p = os.path.join(out_dir, fname)
+            if os.path.exists(p):
+                z.write(p, fname)
+    return zip_path
+
+
+def load_stops(sb):
+    """gtfs_stops géocodés -> {stop_id: row}."""
+    rows = sb.table("gtfs_stops").select("stop_id,stop_name,stop_lat,stop_lon").execute().data
+    return {r["stop_id"]: r for r in rows
+            if r.get("stop_lat") is not None and r.get("stop_lon") is not None}
+
+
+def load_routes(sb):
+    return sb.table("bus_routes").select(
+        "id,operator_id,from_place,to_place,via_stops,"
+        "departures_by_day,departures,duration,season").execute().data
+
+
+def make_osrm_fetch(cache_path=None, throttle_s=1.0):
+    """Fetch OSRM caché + throttlé pour net_osrm : f(url)->json|None. Cache JSON
+    persistant (clé = url) pour ne pas re-interroger l'endpoint public gratuit."""
+    import time
+    import requests
+    path = cache_path or os.path.join(OUT_DIR, "osrm-cache.json")
+    cache = {}
+    if os.path.exists(path):
+        try:
+            with open(path, encoding="utf-8") as f:
+                cache = json.load(f)
+        except Exception:
+            cache = {}
+    state = {"last": 0.0}
+
+    def fetch(url):
+        if url in cache:
+            return cache[url]
+        wait = throttle_s - (time.time() - state["last"])
+        if wait > 0:
+            time.sleep(wait)
+        state["last"] = time.time()
+        data = None
+        try:
+            r = requests.get(url, timeout=30, headers={"User-Agent": "crete.direct-bot/1.0 (+https://crete.direct)"})
+            if r.status_code == 200:
+                data = r.json()
+        except Exception:
+            data = None
+        cache[url] = data
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(cache, f, ensure_ascii=False)
+        return data
+
+    return fetch
+
+
+def build_gtfs_feed(sb, window, feed_version, osrm=None, seasons=None, out_dir=OUT_DIR):
+    """Point d'entrée : lit gtfs_stops + bus_routes, assemble, écrit les fichiers,
+    empaquette crete.zip. Retourne stats + chemin du zip. osrm=None au run réel
+    => passer make_osrm_fetch() pour des km routiers (sinon fallback haversine)."""
+    stops_by_id = load_stops(sb)
+    routes = load_routes(sb)
+    feed = assemble_feed(routes, stops_by_id, window, feed_version, osrm=osrm, seasons=seasons)
+    write_feed(feed, out_dir)
+    zip_path = package_zip(out_dir)
+    return {**feed["stats"], "zip": zip_path}
