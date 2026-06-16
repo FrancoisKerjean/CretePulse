@@ -53,11 +53,19 @@ export function isSwimmableBeach(slug: string): boolean {
 }
 
 export async function getAllBeaches(): Promise<Beach[]> {
-  const { data, error } = await supabase
+  const BASE_COLS = "slug, name_en, name_fr, name_de, name_el, image_url, region, type, parking, snorkeling, kids_friendly, latitude, longitude";
+  let res = await supabase
     .from("beaches")
-    .select("slug, name_en, name_fr, name_de, name_el, image_url, region, type, parking, snorkeling, kids_friendly, latitude, longitude, cb_slug")
+    .select(`${BASE_COLS}, cb_slug`)
     .order("name_en");
 
+  // La colonne cb_slug peut ne pas encore exister (migration non appliquée) :
+  // on retombe sur le select sans enrichissement plutôt que de casser le build SSG.
+  if (res.error && (res.error as { code?: string }).code === "42703") {
+    res = (await supabase.from("beaches").select(BASE_COLS).order("name_en")) as typeof res;
+  }
+
+  const { data, error } = res;
   if (error) throw error;
   const beaches = ((data as Beach[]) || [])
     .filter((b) => isSwimmableBeach(b.slug))
