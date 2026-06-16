@@ -40,12 +40,46 @@ def normalize_for_db(operator_id: str, source_url: str, rows: list) -> list:
     } for r in rows]
 
 
+def _route_key(r: dict) -> tuple:
+    """Identite stable d'une route, pour comparer le scrape N au scrape N-1."""
+    return (r.get("from_place"), r.get("to_place"), r.get("season") or "all")
+
+
+def _same_timetable(a: dict, b: dict) -> bool:
+    """Horaires inchanges = meme liste `departures` (l'info qui pilote le lastmod SEO)."""
+    return (a.get("departures") or []) == (b.get("departures") or [])
+
+
+def _preserve_scraped_at(sb, operator_id: str, payload: list) -> None:
+    """Fraicheur honnete : si une route a exactement les memes horaires que la
+    derniere fois, on garde son `scraped_at` d'origine. Le `lastmod` du sitemap
+    ne bouge alors que sur un VRAI changement, pas a chaque scrape quotidien
+    (sinon Google apprend a ignorer un site qui "crie au loup"). Fail-open :
+    si la lecture echoue, on garde le now() deja pose (comportement historique)."""
+    try:
+        existing = (
+            sb.table("bus_routes")
+            .select("from_place,to_place,season,departures,scraped_at")
+            .eq("operator_id", operator_id)
+            .execute()
+            .data
+        ) or []
+    except Exception:
+        return
+    prev = {_route_key(e): e for e in existing}
+    for p in payload:
+        old = prev.get(_route_key(p))
+        if old and old.get("scraped_at") and _same_timetable(old, p):
+            p["scraped_at"] = old["scraped_at"]
+
+
 def replace_operator_routes(sb, operator_id: str, source_url: str, rows: list) -> int:
     """Remplace toutes les routes de l'operateur en une passe (delete puis insert).
     Retourne le nombre de lignes ecrites. Leve si should_commit est False."""
     if not should_commit(rows):
         raise ValueError(f"refuse commit: only {len(rows)} routes for {operator_id}")
     payload = normalize_for_db(operator_id, source_url, rows)
+    _preserve_scraped_at(sb, operator_id, payload)
     sb.table("bus_routes").delete().eq("operator_id", operator_id).execute()
     sb.table("bus_routes").insert(payload).execute()
     return len(payload)
