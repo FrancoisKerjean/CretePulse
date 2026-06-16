@@ -93,7 +93,7 @@ export async function getCbBySlug(slug: string): Promise<CbBeachAttrs | null> {
       .from("cb_places")
       .select("slug, rating, sea_surface, sand_type, depth, crowds, facilities, accessibility, water_color, photos")
       .eq("slug", slug)
-      .single();
+      .maybeSingle();
     if (error || !data) return null;
     return data as unknown as CbBeachAttrs;
   } catch {

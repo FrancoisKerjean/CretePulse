@@ -12,7 +12,7 @@ export function mergeCbIntoBeaches(beaches: Beach[], cbRows: CbLite[]): Beach[] 
     return {
       ...b,
       cb_rating: cb?.rating ?? null,
-      cb_photo: cb?.photos?.[0] ?? null,
+      cb_photo: sanitizeImageUrl(cb?.photos?.[0]),
     };
   });
 }

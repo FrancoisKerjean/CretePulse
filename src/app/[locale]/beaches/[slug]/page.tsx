@@ -1,4 +1,4 @@
-import { getBeachBySlug, getNearbyBeaches } from "@/lib/beaches";
+import { getBeachBySlug, getNearbyBeaches, sanitizeImageUrl } from "@/lib/beaches";
 import { getCbBeachNear, getCbBySlug } from "@/lib/cb-beach-match";
 import {
   SAND_LABELS, WATER_LABELS, DEPTH_LABELS, CROWD_LABELS, SEA_LABELS,
@@ -398,7 +398,7 @@ export default async function BeachDetailPage({
     })),
   };
 
-  const cbPhotos: string[] = cb?.photos ?? [];
+  const cbPhotos: string[] = (cb?.photos ?? []).map((p) => sanitizeImageUrl(p)).filter((p): p is string => Boolean(p));
   const heroImage = cbPhotos[0] ?? beach.image_url;
 
   return (
