@@ -116,6 +116,38 @@ def test_assemble_stops_guard_rejects_far_nominatim():
     assert bad["needs_review"] is True
 
 
+from gtfs_stops_build import parent_coords
+
+
+def test_parent_coords_hotel_cluster():
+    idx = {"analipsis": (35.32855, 25.3446), "anissaras": (35.33495, 25.37644)}
+    assert parent_coords("stella-blue-(analipsis-hotels)", idx) == (35.32855, 25.3446)
+    assert parent_coords("knossos-royal-(anissaras-hotels)", idx) == (35.33495, 25.37644)
+
+
+def test_parent_coords_agia_pelagia():
+    idx = {"agia-pelagia": (35.40803, 25.01679)}
+    assert parent_coords("a10-ag.pelagia-beach", idx) == (35.40803, 25.01679)
+    assert parent_coords("ag.pelagia(kapsis)", idx) == (35.40803, 25.01679)
+
+
+def test_parent_coords_none_for_plain_or_unknown():
+    idx = {"analipsis": (35.32855, 25.3446)}
+    assert parent_coords("rodakino", idx) is None                       # village normal
+    assert parent_coords("x-(unknown-hotels)", idx) is None             # parent absent de l'index
+
+
+def test_assemble_stops_parent_fallback_for_hotel():
+    routes = [{"from_place": "Heraklion", "to_place": "Stella Blue (Analipsis Hotels)",
+               "via_stops": None}]
+    place_coords = {"heraklion": (35.3387, 25.1442), "analipsis": (35.32855, 25.3446)}
+    stops, _ = assemble_stops(routes, place_coords, {}, nominatim=lambda n: None)
+    hotel = {s["stop_id"]: s for s in stops}["stella-blue-(analipsis-hotels)"]
+    assert hotel["coords_source"] == "parent"
+    assert (hotel["stop_lat"], hotel["stop_lon"]) == (35.32855, 25.3446)
+    assert hotel["coords_confidence"] == "low" and hotel["needs_review"] is True
+
+
 import pytest
 from gtfs_stops_build import export_stops_txt, write_stats, store_stops
 

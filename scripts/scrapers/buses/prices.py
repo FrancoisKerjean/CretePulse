@@ -71,6 +71,31 @@ CURATED_PRICES: dict[tuple[str, str], float] = {
 # Couvre les liaisons intercity ; les arrets hotels/supermarches restent
 # sans coordonnees donc sans prix (tarif au guichet).
 PLACE_COORDS: dict[str, tuple[float, float]] = {
+    # Arrêts GTFS étape B : villages + zones hôtelières géocodés via Nominatim
+    # (16/06/2026), chacun vérifié dans la bbox Crète, homonymes hors-Crète écartés.
+    "agia pelagia": (35.40803, 25.01679),
+    "analipsis": (35.32855, 25.3446),
+    "anissaras": (35.33495, 25.37644),
+    "drapano": (35.43544, 24.23091),
+    "eksopoli": (35.37339, 24.24249),
+    "fourne": (35.43758, 23.94068),
+    "galyfa": (35.26234, 25.28143),
+    "kalessa": (35.28799, 25.05287),
+    "kalonikti": (35.30794, 24.39333),
+    "kerame": (35.16168, 24.51716),
+    "kiparissos": (35.49477, 23.84506),
+    "loytraki": (35.49092, 23.86863),
+    "nippos": (35.37916, 24.16988),
+    "patso": (35.24666, 24.57321),
+    "rodakino": (35.19949, 24.31747),
+    "rousospiti": (35.33407, 24.49445),
+    "roykani": (35.16846, 25.09539),
+    "sgoyrokefali": (35.24259, 25.23666),
+    "skine": (35.43233, 23.91919),
+    "skoytelonas": (35.53509, 23.79476),
+    "stayrakia": (35.25339, 25.06244),
+    "vatolako": (35.44936, 23.89278),
+    "voliones": (35.2696, 24.58793),
     "heraklion": (35.3387, 25.1442),
     "agios nikolaos": (35.1909, 25.7136),
     "ierapetra": (35.0114, 25.7411),
