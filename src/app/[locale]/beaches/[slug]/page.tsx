@@ -1,5 +1,5 @@
 import { getBeachBySlug, getNearbyBeaches } from "@/lib/beaches";
-import { getCbBeachNear } from "@/lib/cb-beach-match";
+import { getCbBeachNear, getCbBySlug } from "@/lib/cb-beach-match";
 import {
   SAND_LABELS, WATER_LABELS, DEPTH_LABELS, CROWD_LABELS, SEA_LABELS,
   FACILITY_LABELS, ACCESS_LABELS, firstLabel, allLabels,
@@ -10,7 +10,7 @@ import { getLocalizedField, type Locale } from "@/lib/types";
 import DiscoverCrete from "@/components/DiscoverCrete";
 import NewsletterCTA from "@/components/NewsletterCTA";
 import { beachSchema, breadcrumbSchema } from "@/lib/schema";
-import { MapPin, Car, Waves, Fish, Sun, Wind, Baby, UtensilsCrossed, ChevronLeft } from "lucide-react";
+import { MapPin, Car, Waves, Fish, Sun, Wind, Baby, UtensilsCrossed, ChevronLeft, Map } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -19,6 +19,7 @@ import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 import { buildAlternates } from "@/lib/seo";
 import RentalCTA from "@/components/RentalCTA";
 import { CarPromo } from "@/components/car-rental/CarPromo";
+import { BeachGallery } from "@/components/BeachGallery";
 import { allPickups } from "@/lib/car-partners";
 import { SLUG_COORDS } from "@/lib/taxi-fare";
 import { nearestBy } from "@/lib/geo";
@@ -263,7 +264,7 @@ export default async function BeachDetailPage({
 
   const [nearby, cb] = await Promise.all([
     getNearbyBeaches(beach.latitude, beach.longitude, beach.slug),
-    getCbBeachNear(beach.latitude, beach.longitude),
+    beach.cb_slug ? getCbBySlug(beach.cb_slug) : getCbBeachNear(beach.latitude, beach.longitude),
   ]);
   const name = getLocalizedField(beach, "name", loc);
   const description = getLocalizedField(beach, "description", loc);
@@ -397,6 +398,9 @@ export default async function BeachDetailPage({
     })),
   };
 
+  const cbPhotos: string[] = cb?.photos ?? [];
+  const heroImage = cbPhotos[0] ?? beach.image_url;
+
   return (
     <main className="min-h-screen bg-surface">
       <script
@@ -413,10 +417,10 @@ export default async function BeachDetailPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
       {/* Hero image */}
-      {beach.image_url && (
+      {heroImage && (
         <div className="relative h-72 md:h-96 bg-aegean">
           <Image
-            src={beach.image_url}
+            src={heroImage}
             alt={`${name} beach in ${beach.region} Crete${beach.type ? `, ${beach.type}` : ""}`}
             fill
             className="object-cover"
@@ -442,7 +446,11 @@ export default async function BeachDetailPage({
           <ChevronLeft className="w-4 h-4" /> {L.allBeaches}
         </Link>
 
-        {!beach.image_url && (
+        {cbPhotos.length > 1 && (
+          <BeachGallery photos={cbPhotos} alt={`${name}, ${beach.region} Crete`} />
+        )}
+
+        {!heroImage && (
           <h1 className="text-3xl font-bold text-aegean mb-2">{name}</h1>
         )}
 
@@ -521,6 +529,15 @@ export default async function BeachDetailPage({
         >
           <MapPin className="w-4 h-4" /> {L.openInMaps}
         </a>
+        {beach.cb_slug && (
+          <a
+            href={`/${locale}/explore?place=${beach.cb_slug}`}
+            className="inline-flex items-center gap-2 px-4 py-2 ml-2 bg-white border border-aegean text-aegean rounded-lg text-sm font-medium hover:bg-aegean-faint transition-colors mb-12"
+          >
+            <Map className="w-4 h-4" />
+            {loc === "fr" ? "Voir sur la carte" : loc === "de" ? "Auf der Karte ansehen" : loc === "el" ? "Δείτε στον χάρτη" : "View on map"}
+          </a>
+        )}
 
         {/* FAQ */}
         <section className="mb-12">
