@@ -13,6 +13,7 @@
     "check:car-partners": "node --experimental-strip-types scripts/check-car-partners.mjs",
     "check:car-lead": "node --experimental-strip-types scripts/check-car-lead.mjs",
     "check:bus-select": "node --experimental-strip-types scripts/check-bus-live-selection.mjs",
+    "check:gtfs-stops": "node scripts/check-gtfs-stops.mjs",
     "check": "npm run check:geo && npm run check:car-partners && npm run check:car-lead && npm run check:bus-select && tsc --noEmit"
   },
   "dependencies": {
