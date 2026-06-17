@@ -393,7 +393,7 @@ const PROJET_LEAD_CC = "hello@crete.direct";
 
 export async function sendProjetLeadEmail(lead: ProjetLead) {
   const who = lead.kind === "institution" ? (lead.org ?? lead.name) : (lead.company ?? lead.name);
-  const subject = `[/projet] ${lead.kind} — ${who}`;
+  const subject = `[/projet] ${lead.kind} · ${who}`;
   const lines = [
     `Nouveau lead /projet (${lead.kind}).`,
     ``,
