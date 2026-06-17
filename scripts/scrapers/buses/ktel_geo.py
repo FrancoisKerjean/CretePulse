@@ -32,7 +32,7 @@ def _line_endpoints(line, stops_by_slug):
     d = stops_by_slug.get(line.get("dest"))
     if not o or not d:
         return None
-    if o.get("lat") is None or d.get("lat") is None:
+    if None in (o.get("lat"), o.get("lng"), d.get("lat"), d.get("lng")):
         return None
     return ((o["lat"], o["lng"]), (d["lat"], d["lng"]))
 
