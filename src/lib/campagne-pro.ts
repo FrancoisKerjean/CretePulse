@@ -25,7 +25,7 @@ export type ProBeat = {
 };
 export type ProFriseStep = { year: string; title: string; text: string; future?: boolean };
 export type ProDoor = { id: string; emoji: string; title: string; body: string; cta: string; href: string };
-export type ProFormField = { name: string; label: string; type?: "text" | "email"; required?: boolean; placeholder?: string };
+export type ProFormField = { name: string; label: string; type?: "text" | "email" | "textarea"; required?: boolean; placeholder?: string };
 
 export type ProCopy = {
   audience: ProAudience;
