@@ -117,5 +117,32 @@ export function stopDepartures(
   });
 }
 
-// LiveNetwork est utilisé par Task 2 (buildStopGraph) — import type conservé.
-type _LiveNetworkRef = LiveNetwork;
+/** Projette un LiveNetwork (loadLiveNetwork) en graphe statique sérialisable client. */
+export function buildStopGraph(network: LiveNetwork): StopGraph {
+  const stopsBySlug = new Map<string, GraphStop>();
+  const routesByLine = new Map<number, BusRoute[]>();
+  for (const r of network.routes) {
+    if (r.line_id == null) continue;
+    const arr = routesByLine.get(r.line_id) ?? [];
+    arr.push(r);
+    routesByLine.set(r.line_id, arr);
+  }
+  const lines: GraphLine[] = [];
+  for (const line of network.lines.values()) {
+    const routes = routesByLine.get(line.id);
+    if (!routes || routes.length === 0) continue; // ligne sans horaire : ignorée
+    for (const s of line.stops) {
+      if (!stopsBySlug.has(s.slug)) {
+        stopsBySlug.set(s.slug, { slug: s.slug, name: s.name, lat: s.lat, lng: s.lng });
+      }
+    }
+    lines.push({
+      id: line.id,
+      code: line.code,
+      totalMinutes: line.totalMinutes,
+      stops: line.stops.map((s) => ({ slug: s.slug, name: s.name, cumMin: s.cumMin })),
+      routes,
+    });
+  }
+  return { stops: [...stopsBySlug.values()], lines };
+}

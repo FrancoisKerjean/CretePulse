@@ -69,4 +69,26 @@ const lb = late.find((x) => x.destination === "B");
 assert.equal(lb.isTomorrow, true, "repli demain");
 assert.deepEqual(lb.nextTimes, ["10:20"], "1er passage de demain");
 
+import { buildStopGraph } from "../src/lib/stop-departures.ts";
+
+// LiveNetwork synthétique : 1 ligne, 2 arrêts partagés, 1 route à horaire.
+const liveStops = [
+  { seq: 0, slug: "a", name: "A", lat: 1, lng: 1, cumKm: 0, cumMin: 0 },
+  { seq: 1, slug: "b", name: "B", lat: 2, lng: 2, cumKm: 10, cumMin: 60 },
+];
+const net = {
+  lines: new Map([[1, {
+    id: 1, code: "L1", codeOfficial: null, source: "osm",
+    totalMinutes: 60, lengthKm: 10, partialGeo: false,
+    geometry: [[1, 1], [2, 2]], stops: liveStops,
+  }]]),
+  routes: [R("A", "B", { duration: "40min" })], // R défini plus haut, line_id: 1
+};
+const g = buildStopGraph(net);
+assert.equal(g.stops.length, 2, "2 arrêts dédupliqués");
+assert.equal(g.lines.length, 1, "1 ligne");
+assert.equal(g.lines[0].routes.length, 1, "route rattachée à la ligne");
+assert.deepEqual(g.lines[0].stops.map((s) => s.slug), ["a", "b"], "stops projetés slug+cumMin");
+assert.ok(g.stops[0].lat != null, "coords conservées");
+
 console.log("check-stop-departures OK");
