@@ -3,6 +3,7 @@ import { routing } from "@/i18n/routing";
 import { buildAlternates } from "@/lib/seo";
 import { getCampagneCopy } from "@/lib/campagne";
 import ParcoursClient from "@/components/campagne/ParcoursClient";
+import AudienceSwitch from "@/components/campagne/pro/AudienceSwitch";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -34,5 +35,10 @@ export default async function ProjetPage({ params }: { params: Promise<{ locale:
   const { locale } = await params;
   setRequestLocale(locale);
   const copy = getCampagneCopy(locale);
-  return <ParcoursClient locale={locale} copy={copy} />;
+  return (
+    <>
+      <AudienceSwitch locale={locale} active="visiteur" />
+      <ParcoursClient locale={locale} copy={copy} />
+    </>
+  );
 }
