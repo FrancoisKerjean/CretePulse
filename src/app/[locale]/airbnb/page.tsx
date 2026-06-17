@@ -9,6 +9,7 @@ import {
   type NeighbourhoodMap,
 } from "@/lib/airbnb-mappings";
 import { buildAlternates } from "@/lib/seo";
+import InvestmentCTA from "@/components/InvestmentCTA";
 
 export const revalidate = 86400;
 
@@ -207,6 +208,8 @@ export default async function AirbnbIndexPage(
         <div className="mt-12 rounded-xl bg-stone p-4 text-xs text-text-muted">
           {l.source}
         </div>
+
+        <InvestmentCTA locale={locale} contentType="airbnb" />
       </div>
     </main>
   );

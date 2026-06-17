@@ -10,6 +10,7 @@ import {
 } from "@/lib/airports";
 import { buildAlternates } from "@/lib/seo";
 import { routing } from "@/i18n/routing";
+import InvestmentCTA from "@/components/InvestmentCTA";
 
 export const revalidate = 86400;
 
@@ -239,6 +240,8 @@ export default async function AirportsIndexPage(
           <h2 className="text-lg font-semibold text-stone-900 mb-1.5">{t.kastelliTitle}</h2>
           <p className="text-stone-700">{t.kastelliText}</p>
         </section>
+
+        <InvestmentCTA locale={locale} contentType="airport" />
       </div>
     </main>
   );
