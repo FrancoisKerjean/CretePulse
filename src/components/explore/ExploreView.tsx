@@ -3,10 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Star, X, MapPin, Search, ChevronLeft, ChevronRight, ChevronUp,
-  SlidersHorizontal, Waves, Mountain, Home, Landmark, TreePine, Sparkles, Droplet,
+  SlidersHorizontal, Waves, Mountain, Home, Landmark, TreePine, Sparkles,
 } from "lucide-react";
 import type { CbPlaceListItem, CbPlace } from "@/lib/cb-places";
-import type { WaterQuality } from "@/lib/bathing-water";
+import { WaterQualityBadge } from "@/components/WaterQualityBadge";
 import { getCbPlaceBySlug } from "@/lib/cb-places";
 import { typeLabel } from "@/lib/cb-type-labels";
 import { nearestBy, circlePolygon, isOnCrete } from "@/lib/geo";
@@ -125,49 +125,6 @@ const T: Record<string, Record<string, string>> = {
 };
 
 const PREFECTURES = ["Chania", "Rethymnon", "Heraklion", "Lassithi"];
-
-// Badge qualité de l'eau de baignade (Directive UE 2006/7/CE).
-// Libellé public = « UE 2026 » (année du rapport AEE), cohérent avec la campagne
-// FB validée par Kami le 17/06 ; le classement mesure la saison 2025 (nuance assumée).
-const WQ_LABELS: Record<string, { title: string; source: string; status: Record<string, string> }> = {
-  en: { title: "Bathing water · EU 2026", source: "Source: EEA (2026 report)", status: { excellent: "Excellent", good: "Good", sufficient: "Sufficient", poor: "Poor" } },
-  fr: { title: "Eau de baignade · UE 2026", source: "Source : AEE (rapport 2026)", status: { excellent: "Excellente", good: "Bonne", sufficient: "Suffisante", poor: "Médiocre" } },
-  de: { title: "Badewasser · EU 2026", source: "Quelle: EUA (Bericht 2026)", status: { excellent: "Ausgezeichnet", good: "Gut", sufficient: "Ausreichend", poor: "Mangelhaft" } },
-  el: { title: "Νερά κολύμβησης · ΕΕ 2026", source: "Πηγή: ΕΟΠ (έκθεση 2026)", status: { excellent: "Εξαιρετικά", good: "Καλά", sufficient: "Επαρκή", poor: "Κακά" } },
-};
-const WQ_STYLE: Record<string, string> = {
-  excellent: "bg-emerald-50 text-emerald-800 border-emerald-200",
-  good: "bg-sky-50 text-sky-800 border-sky-200",
-  sufficient: "bg-amber-50 text-amber-800 border-amber-200",
-  poor: "bg-red-50 text-red-800 border-red-200",
-};
-
-function wqLabel(status: string, locale: string): string {
-  return (WQ_LABELS[locale] || WQ_LABELS.en).status[status] || status;
-}
-
-/** Badge complet (fiche lieu) : titre + classement + source officielle. */
-function WaterBadge({ wq, locale }: { wq: WaterQuality; locale: string }) {
-  const L = WQ_LABELS[locale] || WQ_LABELS.en;
-  return (
-    <div className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${WQ_STYLE[wq.status] || WQ_STYLE.excellent}`}>
-      <Droplet size={18} fill="currentColor" className="shrink-0 opacity-80" />
-      <div className="min-w-0">
-        <div className="text-xs font-bold leading-tight">{L.title} : {L.status[wq.status] || wq.status}</div>
-        <div className="text-[10px] opacity-70 leading-tight">{L.source}</div>
-      </div>
-    </div>
-  );
-}
-
-/** Pastille compacte (cartes de liste). */
-function WaterPill({ wq, locale }: { wq: WaterQuality; locale: string }) {
-  return (
-    <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full border ${WQ_STYLE[wq.status] || WQ_STYLE.excellent}`}>
-      <Droplet size={9} fill="currentColor" /> {wqLabel(wq.status, locale)}
-    </span>
-  );
-}
 
 // Au-dela de ce zoom les clusters laissent place aux points + photo-pins.
 const PHOTO_PIN_ZOOM = 11.5;
@@ -666,7 +623,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
           </div>
           {(p.water_quality || p.sand_type || p.water_color) && (
             <div className="flex items-center gap-1 mt-1.5 overflow-hidden">
-              {p.water_quality && <WaterPill wq={p.water_quality} locale={locale} />}
+              {p.water_quality && <WaterQualityBadge wq={p.water_quality} locale={locale} variant="pill" />}
               {[p.sand_type, p.water_color].filter(Boolean).slice(0, 2).map((v) => (
                 <span key={v} className="text-[10px] font-medium bg-surface border border-aegean/10 text-text-muted px-1.5 py-0.5 rounded-full whitespace-nowrap">
                   {v}
@@ -906,7 +863,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
               </p>
             </div>
 
-            {selected.water_quality && <WaterBadge wq={selected.water_quality} locale={locale} />}
+            {selected.water_quality && <WaterQualityBadge wq={selected.water_quality} locale={locale} />}
 
             {/* Attributs en grille de tuiles : plus scannable qu'une dl seche */}
             <div className="grid grid-cols-2 gap-2">

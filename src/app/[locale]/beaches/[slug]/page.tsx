@@ -22,6 +22,8 @@ import { CarPromo } from "@/components/car-rental/CarPromo";
 import { allPickups } from "@/lib/car-partners";
 import { SLUG_COORDS } from "@/lib/taxi-fare";
 import { nearestBy } from "@/lib/geo";
+import { getBathingWaterQuality } from "@/lib/bathing-water";
+import { WaterQualityBadge } from "@/components/WaterQualityBadge";
 
 export const revalidate = 86400;
 
@@ -268,6 +270,10 @@ export default async function BeachDetailPage({
   const name = getLocalizedField(beach, "name", loc);
   const description = getLocalizedField(beach, "description", loc);
 
+  // Classement EU de l'eau de baignade (saison 2025) si la plage a une zone de
+  // baignade EEA proche. name_en = meilleur recoupement avec les noms EEA (latin).
+  const waterQuality = getBathingWaterQuality(beach.latitude, beach.longitude, beach.name_en);
+
   const jsonLd = beachSchema(beach, loc);
   const breadcrumb = breadcrumbSchema([
     { name: "Crete Direct", url: `${BASE_URL}/${locale}` },
@@ -469,6 +475,13 @@ export default async function BeachDetailPage({
             <p className="font-semibold text-sm">{beach.kids_friendly ? L.kidsFriendly : L.kidsNotIdeal}</p>
           </div>
         </div>
+
+        {/* Qualité de l'eau de baignade (UE, source AEE) */}
+        {waterQuality && (
+          <div className="mb-8 max-w-sm">
+            <WaterQualityBadge wq={waterQuality} locale={locale} />
+          </div>
+        )}
 
         {/* Facilities */}
         <div className="flex flex-wrap gap-2 mb-8">
