@@ -43,7 +43,6 @@ export type ProCopy = {
     fields: ProFormField[];
     submit: string; sending: string; sent: string; error: string;
   };
-  crossLabel: string; // bas de page : liens vers les autres publics
 };
 
 // Libelles du selecteur de public (FR/EN), partages par les 3 routes.

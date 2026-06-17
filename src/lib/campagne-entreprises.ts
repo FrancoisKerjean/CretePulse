@@ -57,7 +57,6 @@ export function getEntreprisesCopyFR(): ProCopy {
       ],
       submit: "Envoyer ma proposition", sending: "Envoi...", sent: "Proposition envoyee. Merci !", error: "Echec de l'envoi. Reessayez ou ecrivez a contact@kairosguest.com.",
     },
-    crossLabel: "Vous etes une institution ?",
   };
 }
 
@@ -118,6 +117,5 @@ export function getEntreprisesCopyEN(): ProCopy {
       ],
       submit: "Send my proposal", sending: "Sending...", sent: "Proposal sent. Thank you!", error: "Sending failed. Try again or email contact@kairosguest.com.",
     },
-    crossLabel: "Are you an institution?",
   };
 }
