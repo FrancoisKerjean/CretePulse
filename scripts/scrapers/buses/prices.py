@@ -246,6 +246,12 @@ PLACE_COORDS: dict[str, tuple[float, float]] = {
     "varipetro": (35.4654, 23.9626),
     "vederi": (35.3425, 24.4143),
     "vrisses": (35.3770, 24.2007),
+    # Micro-fix data 18/06/2026 (post-audit appariement GPS) : lieux réels manquants,
+    # coords sûres. Sert surtout l'estimation de prix + le géocodage des arrêts
+    # (gtfs_stops_build), pas forcément l'appariement (pas de ligne OSM vers Vai).
+    "vai": (35.2543, 26.2640),            # plage/palmeraie NE (route Siteia<->Vai)
+    "maleme beach": (35.5220, 23.8280),   # = maleme + suffixe "beach"
+    "rodakino": (35.1936, 24.3447),       # village côte sud (préfecture Rethymno)
 }
 
 BASE_FARE = 1.20    # plancher (ticket zone urbaine herlas, greeka 10/06/2026)
