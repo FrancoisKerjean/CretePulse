@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
+import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 
 export const revalidate = 86400;
 
@@ -334,6 +335,12 @@ export default async function BestBeachesForPage({ params }: { params: Promise<{
             </p>
           </div>
         )}
+
+        {/* Monétisation (audit 13/06/2026, trou résiduel comblé 17/06) :
+            l'intention « activité de plage » (snorkeling, baignade, sorties)
+            convertit vers les excursions et sorties bateau. GetYourGuide
+            tours (8%), bandeau générique Crète. */}
+        <AffiliateBanner type="tours" locale={locale} />
 
         {/* FAQ */}
         <section>
