@@ -35,7 +35,7 @@ export default function ProParcours({ locale, copy }: { locale: string; copy: Pr
           {copy.stats.length > 0 && (
             <Reveal reduce={reduce} delay={100} className="grid w-full max-w-[760px] grid-cols-2 gap-[12px] md:grid-cols-4">
               {copy.stats.map((s) => (
-                <div key={s.l} className="rounded-[16px] border-[3px] border-[var(--color-text)] bg-white p-[14px] text-center shadow-[0_5px_0_var(--color-text)]">
+                <div key={s.n + s.l} className="rounded-[16px] border-[3px] border-[var(--color-text)] bg-white p-[14px] text-center shadow-[0_5px_0_var(--color-text)]">
                   <div className="font-[family-name:var(--font-heading)] text-[22px] font-extrabold text-aegean">{s.n}</div>
                   <div className="mt-1 text-[11px] text-[var(--color-muted,#56707d)]">{s.l}</div>
                 </div>

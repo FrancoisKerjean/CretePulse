@@ -40,13 +40,13 @@ export default function LeadForm({ locale, form, id }: { locale: string; form: P
       <h2 className="text-center font-[family-name:var(--font-heading)] text-[24px] font-extrabold text-[var(--color-text)]">{form.title}</h2>
       <p className="mb-4 mt-1 text-center text-[14px] text-[var(--color-muted,#56707d)]">{form.lead}</p>
       {/* honeypot cache */}
-      <input type="text" name="hp" value={hp} onChange={(e) => setHp(e.target.value)} tabIndex={-1} autoComplete="off" aria-hidden className="hidden" />
+      <input type="text" name="hp" value={hp} onChange={(e) => setHp(e.target.value)} tabIndex={-1} autoComplete="off" aria-hidden={true} className="hidden" />
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {form.fields.filter((f) => f.type !== "textarea").map((f) => (
           <div key={f.name}>
-            <label className="mb-[5px] block font-[family-name:var(--font-heading)] text-[12.5px] font-bold text-[var(--color-text)]">{f.label}</label>
+            <label htmlFor={`lf-${f.name}`} className="mb-[5px] block font-[family-name:var(--font-heading)] text-[12.5px] font-bold text-[var(--color-text)]">{f.label}</label>
             <input
-              type={f.type ?? "text"} required={f.required} placeholder={f.placeholder}
+              id={`lf-${f.name}`} type={f.type ?? "text"} required={f.required} placeholder={f.placeholder}
               value={values[f.name] ?? ""} onChange={(e) => set(f.name, e.target.value)}
               className="w-full rounded-[13px] border-[2.5px] border-[var(--color-text)] bg-[#F6FBFC] px-[13px] py-[11px] text-[14.5px] text-[var(--color-text)] outline-none focus:border-lagoon"
             />
@@ -55,9 +55,9 @@ export default function LeadForm({ locale, form, id }: { locale: string; form: P
       </div>
       {form.fields.filter((f) => f.type === "textarea").map((f) => (
         <div key={f.name} className="mt-3">
-          <label className="mb-[5px] block font-[family-name:var(--font-heading)] text-[12.5px] font-bold text-[var(--color-text)]">{f.label}</label>
+          <label htmlFor={`lf-${f.name}`} className="mb-[5px] block font-[family-name:var(--font-heading)] text-[12.5px] font-bold text-[var(--color-text)]">{f.label}</label>
           <textarea
-            placeholder={f.placeholder} value={values[f.name] ?? ""} onChange={(e) => set(f.name, e.target.value)}
+            id={`lf-${f.name}`} placeholder={f.placeholder} value={values[f.name] ?? ""} onChange={(e) => set(f.name, e.target.value)}
             className="min-h-[84px] w-full resize-y rounded-[13px] border-[2.5px] border-[var(--color-text)] bg-[#F6FBFC] px-[13px] py-[11px] text-[14.5px] text-[var(--color-text)] outline-none focus:border-lagoon"
           />
         </div>
