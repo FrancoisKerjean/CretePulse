@@ -118,3 +118,11 @@ def test_assemble_apparier_passe2_gps_rattrape_gap():
     assert result["matched_to_osm"] == {10: 99}, (
         f"Passe 2 GPS a échoué : matched_to_osm={result['matched_to_osm']}"
     )
+    # ...et la route NE DOIT PAS aussi générer une ligne fallback (sinon le fallback
+    # écraserait le match OSM au persist). GPS passe AVANT le fallback, gaps réduits.
+    assert 10 not in result["matched_to_fallback"], (
+        f"Route GPS ne doit pas être en fallback : {result['matched_to_fallback']}"
+    )
+    assert result["new_lines"] == [], (
+        f"Aucune ligne fallback ne doit être créée pour un trajet rattrapé par GPS : {result['new_lines']}"
+    )

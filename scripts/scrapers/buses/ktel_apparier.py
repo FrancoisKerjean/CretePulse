@@ -22,15 +22,24 @@ def assemble_apparier(routes, osm_lines, stops_by_slug, aliases, place_coords,
     """Retourne un dict { matched_to_osm, matched_to_fallback,
                           new_stops, new_lines, new_line_stops }."""
     matched, gaps = match_routes_to_lines(routes, osm_lines, stops_by_slug, aliases, place_coords)
-    new_stops, new_lines, new_line_stops, fb_matched = build_fallback_lines(
-        gaps, stops_by_slug, aliases, place_coords, existing_codes, fetch=fetch)
-    # Passe 2 GPS : rattrape les trajets non résolus par le match strict (additif).
+    # Passe 2 GPS AVANT le fallback : rattrape par coordonnées les trajets non résolus
+    # par le match strict, pour qu'ils aillent sur la VRAIE ligne OSM et NON sur une
+    # ligne fallback synthétique. Additif : gps ⊂ gaps, jamais en collision avec matched.
     gap_routes = [r for routes_list in gaps.values() for r in routes_list]
     gps_matched = match_gaps_by_gps(
         gap_routes, osm_lines, stops_by_slug, place_coords,
         cb_coords=None, geocode=None, max_km=3.0,
     )
     matched.update(gps_matched)
+    # Retire les trajets récupérés par GPS des gaps : pas de ligne fallback pour eux
+    # (sinon double UPDATE bus_routes.line_id, le fallback écraserait le match OSM).
+    remaining_gaps = {
+        key: [r for r in rs if r["id"] not in gps_matched]
+        for key, rs in gaps.items()
+    }
+    remaining_gaps = {key: rs for key, rs in remaining_gaps.items() if rs}
+    new_stops, new_lines, new_line_stops, fb_matched = build_fallback_lines(
+        remaining_gaps, stops_by_slug, aliases, place_coords, existing_codes, fetch=fetch)
     print(f"[apparier] passe2_gps={len(gps_matched)} (sur {len(gap_routes)} non resolus)")
     return {
         "matched_to_osm": matched,
