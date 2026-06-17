@@ -9,7 +9,6 @@ import { MapPin, Mountain, Users, Clock, ChevronLeft, Star } from "lucide-react"
 import { buildAlternates, buildVillageTitle, buildVillageDescription } from "@/lib/seo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AffiliateCTA } from "@/components/ui/affiliate-cta";
 import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 
 export const revalidate = 86400;
@@ -210,11 +209,6 @@ export default async function VillageDetailPage({
             village, GetYourGuide contextualisé. */}
         <div className="mb-12">
           <AffiliateBanner type="tours" locale={locale} placeName={name} />
-        </div>
-
-        {/* Property management CTA */}
-        <div className="mb-12">
-          <AffiliateCTA type="propertyManagement" locale={locale} />
         </div>
 
         {/* Nearby villages */}

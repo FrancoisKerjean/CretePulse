@@ -31,10 +31,6 @@ export const AFFILIATE_LINKS = {
     url: "https://www.skyscanner.com/transport/flights-to/her/?associateid=cretedirect",
     label: { en: "Find flights", fr: "Trouver des vols", de: "Flüge finden", el: "Εύρεση πτήσεων" },
   },
-  propertyManagement: {
-    url: "https://kairosguest.com",
-    label: { en: "Property management", fr: "Gestion locative", de: "Immobilienverwaltung", el: "Διαχείριση ακινήτων" },
-  },
 } as const;
 
 export type AffiliateKey = keyof typeof AFFILIATE_LINKS;
