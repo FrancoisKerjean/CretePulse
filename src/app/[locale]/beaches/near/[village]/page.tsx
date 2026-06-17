@@ -7,6 +7,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
 import { CarPromo } from "@/components/car-rental/CarPromo";
+import { getBathingWaterQuality } from "@/lib/bathing-water";
+import { WaterQualityBadge } from "@/components/WaterQualityBadge";
 
 export const revalidate = 86400;
 
@@ -114,7 +116,9 @@ export default async function BeachesNearVillagePage({ params }: { params: Promi
 
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {nearbyBeaches.map(beach => (
+          {nearbyBeaches.map(beach => {
+            const wq = getBathingWaterQuality(beach.latitude, beach.longitude, beach.name_en);
+            return (
             <Link
               key={beach.slug}
               href={`/${locale}/beaches/${beach.slug}`}
@@ -136,10 +140,12 @@ export default async function BeachesNearVillagePage({ params }: { params: Promi
                   <span className="text-xs bg-aegean-faint text-aegean px-1.5 py-0.5 rounded capitalize flex items-center gap-1">
                     <Waves className="w-3 h-3" /> {beach.type || "mixed"}
                   </span>
+                  {wq && <WaterQualityBadge wq={wq} locale={locale} variant="pill" />}
                 </div>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
 
         {/* Monétisation (audit 13/06/2026, A2) : "within driving distance"

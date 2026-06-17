@@ -21,6 +21,7 @@ import {
 } from "@/lib/airbnb";
 import { buildAlternates } from "@/lib/seo";
 import { routing } from "@/i18n/routing";
+import InvestmentCTA from "@/components/InvestmentCTA";
 
 export const revalidate = 86400;
 
@@ -817,6 +818,9 @@ export default async function AirbnbNeighbourhoodPage(
           ctaLabel={t.ctaButton}
           ctaHref={t.ctaLink}
         />
+
+        {/* Cross-link investissement vers kairosguest (audience investisseur) */}
+        <InvestmentCTA locale={locale} contentType="airbnb-zone" contentSlug={neighbourhood} />
 
         {/* Sibling neighbourhoods */}
         {siblings.length > 0 && (

@@ -4,7 +4,6 @@ import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { breadcrumbSchema } from "@/lib/schema";
-import { AffiliateCTA } from "@/components/ui/affiliate-cta";
 import RentalCTA from "@/components/RentalCTA";
 import { BusAccessBox } from "@/components/BusAccessBox";
 import { buildAlternates } from "@/lib/seo";
@@ -503,11 +502,6 @@ export default async function WhereToStayAreaPage({
             ))}
           </div>
         </section>
-
-        {/* Property management CTA */}
-        <div className="mb-10">
-          <AffiliateCTA type="propertyManagement" locale={locale} />
-        </div>
 
         {/* Cross-link rental funnel (kairosguest.com), UTM-tracked */}
         <RentalCTA locale={locale} contentSlug={areaSlug} contentType="where-to-stay" />

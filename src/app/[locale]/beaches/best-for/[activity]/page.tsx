@@ -8,6 +8,8 @@ import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
 import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 import { beachFacing } from "@/lib/swim-today";
+import { getBathingWaterQuality } from "@/lib/bathing-water";
+import { WaterQualityBadge } from "@/components/WaterQualityBadge";
 
 export const revalidate = 86400;
 
@@ -296,6 +298,7 @@ export default async function BestBeachesForPage({ params }: { params: Promise<{
           {beaches.map(beach => {
             const name = getLocalizedField(beach, "name", loc);
             const desc = getLocalizedField(beach, "description", loc);
+            const wq = getBathingWaterQuality(beach.latitude, beach.longitude, beach.name_en);
             return (
               <Link
                 key={beach.slug}
@@ -326,7 +329,8 @@ export default async function BestBeachesForPage({ params }: { params: Promise<{
                   {desc && (
                     <p className="text-sm text-text-muted mt-2 line-clamp-2">{desc}</p>
                   )}
-                  <div className="flex flex-wrap gap-1.5 mt-3">
+                  <div className="flex flex-wrap items-center gap-1.5 mt-3">
+                    {wq && <WaterQualityBadge wq={wq} locale={locale} variant="pill" />}
                     <span className="text-xs px-2 py-0.5 bg-surface rounded-full text-text-muted capitalize">{beach.type}</span>
                     <span className="text-xs px-2 py-0.5 bg-surface rounded-full text-text-muted capitalize">{beach.wind_exposure}</span>
                     {beach.parking && <span className="text-xs px-2 py-0.5 bg-surface rounded-full text-text-muted">{L.parking}</span>}

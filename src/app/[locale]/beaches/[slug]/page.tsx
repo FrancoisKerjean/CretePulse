@@ -14,7 +14,6 @@ import { MapPin, Car, Waves, Fish, Sun, Wind, Baby, UtensilsCrossed, ChevronLeft
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AffiliateCTA } from "@/components/ui/affiliate-cta";
 import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 import { buildAlternates } from "@/lib/seo";
 import RentalCTA from "@/components/RentalCTA";
@@ -22,6 +21,8 @@ import { CarPromo } from "@/components/car-rental/CarPromo";
 import { allPickups } from "@/lib/car-partners";
 import { SLUG_COORDS } from "@/lib/taxi-fare";
 import { nearestBy } from "@/lib/geo";
+import { getBathingWaterQuality } from "@/lib/bathing-water";
+import { WaterQualityBadge } from "@/components/WaterQualityBadge";
 
 export const revalidate = 86400;
 
@@ -268,6 +269,10 @@ export default async function BeachDetailPage({
   const name = getLocalizedField(beach, "name", loc);
   const description = getLocalizedField(beach, "description", loc);
 
+  // Classement EU de l'eau de baignade (saison 2025) si la plage a une zone de
+  // baignade EEA proche. name_en = meilleur recoupement avec les noms EEA (latin).
+  const waterQuality = getBathingWaterQuality(beach.latitude, beach.longitude, beach.name_en);
+
   const jsonLd = beachSchema(beach, loc);
   const breadcrumb = breadcrumbSchema([
     { name: "Crete Direct", url: `${BASE_URL}/${locale}` },
@@ -470,6 +475,13 @@ export default async function BeachDetailPage({
           </div>
         </div>
 
+        {/* Qualité de l'eau de baignade (UE, source AEE) */}
+        {waterQuality && (
+          <div className="mb-8 max-w-sm">
+            <WaterQualityBadge wq={waterQuality} locale={locale} />
+          </div>
+        )}
+
         {/* Facilities */}
         <div className="flex flex-wrap gap-2 mb-8">
           {beach.sunbeds && (
@@ -554,11 +566,6 @@ export default async function BeachDetailPage({
             <AffiliateBanner type="carRental" locale={locale} placeName={name} className="mb-4" />
           );
         })()}
-
-        {/* Property management CTA */}
-        <div className="mb-12">
-          <AffiliateCTA type="propertyManagement" locale={locale} />
-        </div>
 
         {/* Nearby beaches */}
         {nearby.length > 0 && (

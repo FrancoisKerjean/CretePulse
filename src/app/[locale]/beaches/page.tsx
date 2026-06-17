@@ -6,6 +6,8 @@ import Link from "next/link";
 import { buildAlternates } from "@/lib/seo";
 import { itemListSchema } from "@/lib/schema";
 import { BeachImage } from "@/components/BeachImage";
+import { getBathingWaterQuality } from "@/lib/bathing-water";
+import { WaterQualityBadge } from "@/components/WaterQualityBadge";
 
 const REGION_LABELS: Record<Locale, Record<string, string>> = {
   en: { east: "east Crete", west: "west Crete", central: "central Crete", south: "south Crete" },
@@ -114,7 +116,9 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
         </Link>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
-          {beaches.map((beach) => (
+          {beaches.map((beach) => {
+            const wq = getBathingWaterQuality(beach.latitude, beach.longitude, beach.name_en);
+            return (
             <Link
               key={beach.slug}
               href={`/${locale}/beaches/${beach.slug}`}
@@ -135,7 +139,8 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
                   <MapPin className="w-3 h-3" />
                   {beach.region}
                 </div>
-                <div className="flex flex-wrap gap-2 mt-3">
+                <div className="flex flex-wrap items-center gap-2 mt-3">
+                  {wq && <WaterQualityBadge wq={wq} locale={locale} variant="pill" />}
                   {beach.type && (
                     <span className="inline-flex items-center gap-1 text-xs bg-aegean-faint text-aegean px-2 py-0.5 rounded-full">
                       <Waves className="w-3 h-3" /> {beach.type}
@@ -159,7 +164,8 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
                 </div>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
       </div>
     </main>
