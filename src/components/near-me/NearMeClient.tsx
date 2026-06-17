@@ -10,7 +10,7 @@ import { isOnCrete, nearestBy } from "@/lib/geo";
 import { allPickups } from "@/lib/car-partners";
 import { SLUG_COORDS } from "@/lib/taxi-fare";
 import { stopDepartures, type StopGraph, type StopDeparture } from "@/lib/stop-departures";
-import { athensNow } from "@/lib/athens-time";
+import { athensNow, nextDayIso } from "@/lib/athens-time";
 import { CarPromo } from "@/components/car-rental/CarPromo";
 import { useGeoPosition } from "@/components/geo/useGeoPosition";
 import { PlacePicker } from "@/components/geo/PlacePicker";
@@ -338,8 +338,7 @@ export function NearMeClient({
       (p) => [p.lat, p.lon], pos, 6,
     );
     const now = athensNow();
-    const tomorrowIso = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Athens" })
-      .format(new Date(Date.now() + 86_400_000));
+    const tomorrowIso = nextDayIso(now.iso);
     const ranked = nearestBy(stopGraph.stops, (s) => [s.lat, s.lng], pos, 12);
     const served = ranked
       .map((s) => ({ stop: s, deps: stopDepartures(stopGraph, s.slug, now, tomorrowIso) }))

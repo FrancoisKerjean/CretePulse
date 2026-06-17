@@ -25,3 +25,11 @@ export const clockHHMM = (minutes: number): string => {
   const m = (((Math.round(minutes) % 1440) + 1440) % 1440);
   return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 };
+
+/** Jour suivant (YYYY-MM-DD) d'une date ISO. Déterministe (entrée datée),
+ * donc utilisable en render React sans violer la règle de pureté (≠ Date.now()). */
+export const nextDayIso = (iso: string): string => {
+  const d = new Date(`${iso}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
+};
