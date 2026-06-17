@@ -82,7 +82,14 @@ Critères de succès :
 
 Deux ateliers indépendants.
 
-### WS1 — Normalisation ciblée (Python / VPS)
+### WS1 — Appariement GPS (Python / VPS)
+
+> **MAJ 18/06/2026 — approche révisée (décision Kami).** La normalisation des noms
+> (décrite ci-dessous, conservée pour contexte) est ABANDONNÉE au profit d'un
+> **appariement par coordonnées GPS** : les noms KTEL/OSM sont trop incohérents pour un
+> matching fiable ; la géographie ne ment pas. Plan dédié :
+> `docs/superpowers/plans/2026-06-18-ws1-appariement-gps.md`. Cible = branche
+> `feat/bus-network` (où vit le pipeline d'appariement), pas master.
 
 Le pipeline d'appariement (`ktel_resolve.py`, `ktel_apparier.py`, `net_places.py`,
 tracés dans le repo et déployés `/opt/cretepulse`) lie chaque `bus_route` scrapé à une
