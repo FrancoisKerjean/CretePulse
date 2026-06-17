@@ -52,8 +52,6 @@ const STATIC_PAGES = [
   "/airport",
   "/partners",
   "/projet",
-  "/projet/institutions",
-  "/projet/entreprises",
 ];
 
 const BEACH_ACTIVITIES = ["snorkeling", "kids", "swimming", "secluded", "sandy", "pebble"];
