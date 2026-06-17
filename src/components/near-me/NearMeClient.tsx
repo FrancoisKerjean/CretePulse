@@ -102,6 +102,7 @@ type Strings = {
   toward: string;
   estimatedNote: string;
   counterFare: string;
+  noMore: string;
   tomorrow: string;
   otherStops: string;
   rating: Record<"calm" | "fair" | "exposed", string>;
@@ -136,6 +137,7 @@ const T: Record<string, Strings> = {
     toward: "toward",
     estimatedNote: "Estimated from the timetable — no GPS.",
     counterFare: "at the counter",
+    noMore: "no more today",
     tomorrow: "tomorrow",
     otherStops: "Other stops nearby",
     rating: { calm: "calm", fair: "fair", exposed: "exposed" },
@@ -168,6 +170,7 @@ const T: Record<string, Strings> = {
     toward: "vers",
     estimatedNote: "Estimé d'après l'horaire — pas de GPS.",
     counterFare: "au guichet",
+    noMore: "plus de bus aujourd'hui",
     tomorrow: "demain",
     otherStops: "Autres arrêts à proximité",
     rating: { calm: "calme", fair: "correct", exposed: "exposée" },
@@ -200,6 +203,7 @@ const T: Record<string, Strings> = {
     toward: "nach",
     estimatedNote: "Geschätzt nach Fahrplan — kein GPS.",
     counterFare: "am Schalter",
+    noMore: "heute keine Abfahrten mehr",
     tomorrow: "morgen",
     otherStops: "Weitere Haltestellen in der Nähe",
     rating: { calm: "ruhig", fair: "machbar", exposed: "exponiert" },
@@ -232,6 +236,7 @@ const T: Record<string, Strings> = {
     toward: "προς",
     estimatedNote: "Εκτίμηση βάσει δρομολογίου — χωρίς GPS.",
     counterFare: "στο ταμείο",
+    noMore: "δεν υπάρχουν άλλα σήμερα",
     tomorrow: "αύριο",
     otherStops: "Άλλες κοντινές στάσεις",
     rating: { calm: "ήρεμη", fair: "βατή", exposed: "εκτεθειμένη" },
@@ -576,22 +581,26 @@ export function NearMeClient({
               <p className="font-heading font-bold text-lg text-text m-0">{sections.busStop.stop.name}</p>
               <span className="text-sm text-text-muted font-data">{fmtKm(sections.busStop.stop.km)} km</span>
             </div>
-            <ul className="mt-3 flex flex-col gap-1.5 list-none p-0 m-0">
+            <ul aria-label={t.busStop} className="mt-3 flex flex-col gap-1.5 list-none p-0 m-0">
               {sections.busStop.deps.map((d: StopDeparture) => (
                 <li key={`${d.destination}-${d.lineCode}`} className="flex flex-wrap items-baseline gap-x-2 text-sm">
                   <span className="text-text-muted">{t.toward}</span>
                   <span className="font-heading font-bold text-text">{d.destination}</span>
-                  {d.durationKnown && d.nextTimes.length > 0 ? (
+                  {d.nextTimes.length > 0 ? (
                     <span className="font-data text-text">
                       {d.isTomorrow ? `${t.tomorrow} ` : ""}~{d.nextTimes.join(" · ~")}
                     </span>
+                  ) : d.durationKnown ? (
+                    <span className="text-text-muted italic">{t.noMore}</span>
                   ) : (
                     <span className="text-text-muted italic">{t.counterFare}</span>
                   )}
                 </li>
               ))}
             </ul>
-            <p className="mt-2 text-[11px] text-text-muted">{t.estimatedNote}</p>
+            {sections.busStop.deps.some((d) => d.durationKnown) && (
+              <p className="mt-2 text-[11px] text-text-muted">{t.estimatedNote}</p>
+            )}
             <Link
               href={`/${locale}/buses?from=${encodeURIComponent(sections.busStop.stop.name)}`}
               onClick={() => track("bus")}
