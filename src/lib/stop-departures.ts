@@ -7,6 +7,8 @@ import type { LiveNetwork } from "./bus-live/types";
 import type { BusRoute } from "./buses";
 import { placeSimilarity } from "./bus-live/position.ts";
 import { timesForDate } from "./bus-journey.ts";
+// parseDurationMin vient de bus-live/duration (gère les formats compacts "1h45"=105)
+// et NON de bus-journey (qui rendrait "1h45"=60). Même parser que le moteur /live.
 import { parseDurationMin } from "./bus-live/duration.ts";
 import { toMin, clockHHMM } from "./athens-time.ts";
 

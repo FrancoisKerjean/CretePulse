@@ -22,7 +22,7 @@
 - **Modify** `src/app/[locale]/near-me/page.tsx` — charger le réseau, construire le graphe, le passer à `NearMeClient` ; retirer l'ancien calcul `busStops`.
 - **Modify** `src/components/near-me/NearMeClient.tsx` — recevoir `stopGraph`, choisir l'arrêt desservi le plus proche + alternatives, rendre par destination ; retirer l'ancienne section basée sur `busStops`/`NearBusStop`.
 
-Les modules réutilisés (NE PAS les modifier) : `src/lib/bus-live/network.ts` (`loadLiveNetwork`), `src/lib/bus-live/position.ts` (`placeSimilarity`), `src/lib/bus-journey.ts` (`timesForDate`, `parseDurationMin`), `src/lib/athens-time.ts` (`toMin`, `clockHHMM`), `src/lib/geo.ts` (`nearestBy`).
+Les modules réutilisés (NE PAS les modifier) : `src/lib/bus-live/network.ts` (`loadLiveNetwork`), `src/lib/bus-live/position.ts` (`placeSimilarity`), `src/lib/bus-journey.ts` (`timesForDate`), `src/lib/bus-live/duration.ts` (`parseDurationMin` — gère les formats compacts "1h45", à préférer à la version de bus-journey), `src/lib/athens-time.ts` (`toMin`, `clockHHMM`), `src/lib/geo.ts` (`nearestBy`).
 
 ---
 
