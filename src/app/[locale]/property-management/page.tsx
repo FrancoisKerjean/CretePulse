@@ -163,6 +163,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     description: m.desc,
     alternates: buildAlternates(locale, "/property-management"),
     openGraph: { title: m.title, description: m.desc, url, type: "article" },
+    // Page conservee mais deliee du repositionnement crete.direct : desindexee.
+    robots: { index: false, follow: true },
   };
 }
 
