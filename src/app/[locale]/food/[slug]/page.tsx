@@ -10,6 +10,7 @@ import { buildAlternates, buildFoodTitle } from "@/lib/seo";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 
 export const revalidate = 86400;
 
@@ -258,6 +259,10 @@ export default async function FoodDetailPage({
             </div>
           </section>
         )}
+
+        {/* Monetisation (trou residuel 17/06) : fiche food = visiteur sur place,
+            intention excursions/sorties bateau a proximite. GYG (8%). */}
+        <AffiliateBanner type="tours" locale={locale} className="mt-8" />
 
         {/* Internal linking + retention: editorial discovery grid + newsletter capture */}
         <DiscoverCrete category={null} locale={locale} />

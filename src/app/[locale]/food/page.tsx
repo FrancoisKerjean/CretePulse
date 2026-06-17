@@ -5,6 +5,7 @@ import { UtensilsCrossed, MapPin } from "lucide-react";
 import Link from "next/link";
 import { buildAlternates } from "@/lib/seo";
 import { itemListSchema } from "@/lib/schema";
+import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 
 export const revalidate = 86400;
 
@@ -249,6 +250,10 @@ export default async function FoodPage({
             })}
           </div>
         )}
+
+        {/* Monetisation (trou residuel 17/06) : guide food = visiteurs en
+            planification locale, intention excursions/sorties. GYG (8%). */}
+        <AffiliateBanner type="tours" locale={locale} className="mt-12" />
       </div>
     </main>
   );

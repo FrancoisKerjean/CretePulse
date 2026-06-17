@@ -5,6 +5,7 @@ import { MapPin, Mountain, Users, Clock } from "lucide-react";
 import Link from "next/link";
 import { buildAlternates } from "@/lib/seo";
 import { itemListSchema } from "@/lib/schema";
+import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 
 export const revalidate = 86400;
 
@@ -125,6 +126,10 @@ export default async function VillagesPage({ params }: { params: Promise<{ local
             </Link>
           ))}
         </div>
+
+        {/* Monetisation (trou residuel 17/06) : visiteurs en decouverte des
+            villages = intention excursions/tours au depart. GYG (8%). */}
+        <AffiliateBanner type="tours" locale={locale} className="mt-10" />
       </div>
     </main>
   );
