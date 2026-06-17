@@ -7,6 +7,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
 import { AffiliateBanner } from "@/components/ui/affiliate-banner";
+import { beachFacing } from "@/lib/swim-today";
 
 export const revalidate = 86400;
 
@@ -49,7 +50,15 @@ const ACTIVITIES: Activity[] = [
     descDe: "Vor Wind und Wellen geschützt, bieten diese ruhigen kretischen Strände die besten Bedingungen zum Schwimmen.",
     descEl: "Προφυλαγμένες από τον αέρα και τα κύματα, αυτές οι ήρεμες παραλίες προσφέρουν τις καλύτερες συνθήκες για κολύμβηση.",
     icon: <Waves className="w-6 h-6 text-aegean" />,
-    filter: (b: Beach) => b.wind_exposure === "sheltered",
+    // Abritees du meltemi (vent dominant de secteur nord l'ete) : on garde les
+    // plages orientees vers le sud via l'orientation geometrique beachFacing
+    // (cf swim-today). La colonne wind_exposure est NULL sur toutes les plages
+    // en base, d'ou ce calcul evergreen plutot qu'un filtre sur la colonne.
+    filter: (b: Beach) => {
+      if (b.latitude == null || b.longitude == null) return false;
+      const facing = beachFacing(b.latitude, b.longitude);
+      return Math.min(facing, 360 - facing) > 90;
+    },
   },
   {
     slug: "secluded",
@@ -79,7 +88,9 @@ const ACTIVITIES: Activity[] = [
     descDe: "Türkisfarbenes Wasser trifft auf glatte Kieselsteine. Diese kretischen Kiesstrände haben oft das klarste Wasser.",
     descEl: "Τιρκουάζ νερά και λεία βότσαλα. Αυτές οι βοτσαλωτές παραλίες έχουν συχνά τα πιο καθαρά νερά.",
     icon: <Waves className="w-6 h-6 text-text-muted" />,
-    filter: (b: Beach) => b.type === "pebble",
+    // type en base non normalise ("pebble", "pebblestone", "pebblestone and
+    // sand") : match souple sinon 12 plages de galets sont perdues.
+    filter: (b: Beach) => (b.type ?? "").toLowerCase().includes("pebble"),
   },
 ];
 
