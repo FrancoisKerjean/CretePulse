@@ -14,3 +14,4 @@ next-env.d.ts
 __pycache__/
 /fraport_*.pdf
 /hcaa_kinisi_*.xlsx
+.spike/
