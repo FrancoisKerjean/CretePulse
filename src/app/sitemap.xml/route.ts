@@ -48,7 +48,6 @@ const STATIC_PAGES = [
   "/near-me",
   "/car-rental",
   "/fire-alerts",
-  "/property-management",
   "/airbnb",
   "/airport",
   "/partners",

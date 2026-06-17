@@ -15,7 +15,9 @@
     "check:bus-select": "node --experimental-strip-types scripts/check-bus-live-selection.mjs",
     "check:gtfs-stops": "node scripts/check-gtfs-stops.mjs",
     "check:stop-departures": "node --experimental-strip-types scripts/check-stop-departures.mjs",
-    "check": "npm run check:geo && npm run check:car-partners && npm run check:car-lead && npm run check:bus-select && npm run check:stop-departures && tsc --noEmit"
+    "check:projet-copy": "node --experimental-strip-types scripts/check-projet-copy.mjs",
+    "check:projet-lead": "node --experimental-strip-types scripts/check-projet-lead.mjs",
+    "check": "npm run check:geo && npm run check:car-partners && npm run check:car-lead && npm run check:bus-select && npm run check:stop-departures && npm run check:projet-copy && npm run check:projet-lead && tsc --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",

@@ -382,3 +382,42 @@ export async function sendReviewConfirmationEmail(opts: {
     text: REVIEW_BODY[l](opts.placeName, confirmUrl, deleteUrl),
   });
 }
+
+// =============================================================================
+// Lead /projet (institutions / sponsors) -> Kami
+// =============================================================================
+import type { ProjetLead } from "./projet-lead";
+
+const PROJET_LEAD_TO = "contact@kairosguest.com";
+const PROJET_LEAD_CC = "hello@crete.direct";
+
+export async function sendProjetLeadEmail(lead: ProjetLead) {
+  const who = lead.kind === "institution" ? (lead.org ?? lead.name) : (lead.company ?? lead.name);
+  const subject = `[/projet] ${lead.kind} · ${who}`;
+  const lines = [
+    `Nouveau lead /projet (${lead.kind}).`,
+    ``,
+    `Nom: ${lead.name}`,
+    lead.org ? `Organisme: ${lead.org}` : ``,
+    lead.role ? `Fonction: ${lead.role}` : ``,
+    lead.company ? `Entreprise: ${lead.company}` : ``,
+    lead.website ? `Site: ${lead.website}` : ``,
+    `Email: ${lead.email}`,
+    `Langue: ${lead.locale}`,
+    ``,
+    lead.message ? `Message:\n${lead.message}` : `(pas de message)`,
+    ``,
+    `Repondre au contact : reply direct (reply-to = ${lead.email}).`,
+  ].filter((l) => l !== ``);
+
+  const { data, error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: PROJET_LEAD_TO,
+    cc: PROJET_LEAD_CC,
+    replyTo: lead.email,
+    subject,
+    text: lines.join("\n"),
+  });
+  if (error) throw new Error(`Resend: ${error.message}`);
+  return data;
+}

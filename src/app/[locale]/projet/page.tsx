@@ -34,5 +34,9 @@ export default async function ProjetPage({ params }: { params: Promise<{ locale:
   const { locale } = await params;
   setRequestLocale(locale);
   const copy = getCampagneCopy(locale);
+  // V1 = appel communautaire (follow/partage) uniquement. Le selecteur de public
+  // (volet financement institutions/entreprises) reste retire du public tant que
+  // l'audience n'est pas prouvee (Gate A) ; les pages pro restent accessibles par
+  // URL directe pour le demarchage, et noindex tant qu'elles sont en veille.
   return <ParcoursClient locale={locale} copy={copy} />;
 }

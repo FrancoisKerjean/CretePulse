@@ -6,6 +6,7 @@ import {
   SlidersHorizontal, Waves, Mountain, Home, Landmark, TreePine, Sparkles,
 } from "lucide-react";
 import type { CbPlaceListItem, CbPlace } from "@/lib/cb-places";
+import { WaterQualityBadge } from "@/components/WaterQualityBadge";
 import { getCbPlaceBySlug } from "@/lib/cb-places";
 import { typeLabel } from "@/lib/cb-type-labels";
 import { nearestBy, circlePolygon, isOnCrete } from "@/lib/geo";
@@ -620,8 +621,9 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
             {typeLabel(p.place_type, locale)}
             {detectPrefecture(p) ? ` · ${detectPrefecture(p)}` : ""}
           </div>
-          {(p.sand_type || p.water_color) && (
-            <div className="flex gap-1 mt-1.5 overflow-hidden">
+          {(p.water_quality || p.sand_type || p.water_color) && (
+            <div className="flex items-center gap-1 mt-1.5 overflow-hidden">
+              {p.water_quality && <WaterQualityBadge wq={p.water_quality} locale={locale} variant="pill" />}
               {[p.sand_type, p.water_color].filter(Boolean).slice(0, 2).map((v) => (
                 <span key={v} className="text-[10px] font-medium bg-surface border border-aegean/10 text-text-muted px-1.5 py-0.5 rounded-full whitespace-nowrap">
                   {v}
@@ -860,6 +862,8 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
                 {selected.prefecture ? ` · ${selected.prefecture}` : ""}
               </p>
             </div>
+
+            {selected.water_quality && <WaterQualityBadge wq={selected.water_quality} locale={locale} />}
 
             {/* Attributs en grille de tuiles : plus scannable qu'une dl seche */}
             <div className="grid grid-cols-2 gap-2">

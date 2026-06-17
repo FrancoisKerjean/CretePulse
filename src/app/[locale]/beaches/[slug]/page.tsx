@@ -14,7 +14,6 @@ import { MapPin, Car, Waves, Fish, Sun, Wind, Baby, UtensilsCrossed, ChevronLeft
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AffiliateCTA } from "@/components/ui/affiliate-cta";
 import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 import { buildAlternates } from "@/lib/seo";
 import RentalCTA from "@/components/RentalCTA";
@@ -22,6 +21,8 @@ import { CarPromo } from "@/components/car-rental/CarPromo";
 import { allPickups } from "@/lib/car-partners";
 import { SLUG_COORDS } from "@/lib/taxi-fare";
 import { nearestBy } from "@/lib/geo";
+import { getBathingWaterQuality } from "@/lib/bathing-water";
+import { WaterQualityBadge, wqStatusLabel } from "@/components/WaterQualityBadge";
 
 export const revalidate = 86400;
 
@@ -268,6 +269,10 @@ export default async function BeachDetailPage({
   const name = getLocalizedField(beach, "name", loc);
   const description = getLocalizedField(beach, "description", loc);
 
+  // Classement EU de l'eau de baignade (saison 2025) si la plage a une zone de
+  // baignade EEA proche. name_en = meilleur recoupement avec les noms EEA (latin).
+  const waterQuality = getBathingWaterQuality(beach.latitude, beach.longitude, beach.name_en);
+
   const jsonLd = beachSchema(beach, loc);
   const breadcrumb = breadcrumbSchema([
     { name: "Crete Direct", url: `${BASE_URL}/${locale}` },
@@ -287,12 +292,20 @@ export default async function BeachDetailPage({
   const access = allLabels(cb?.accessibility ?? null, ACCESS_LABELS[uiLoc]);
   const hasLifeguard = (cb?.facilities ?? "").includes("Lifeguard");
 
+  // Qualite de l'eau de baignade (classement UE/EEA saison 2025) pour la FAQ.
+  const wqWord = waterQuality ? wqStatusLabel(waterQuality.status, uiLoc) : null;
+  const wqTop = waterQuality?.status === "excellent";
+
   const F = {
     en: {
       sandyQ: `Is ${name} a sandy beach?`,
       sandyA: sand
         ? `${name} is a ${sand} beach${water ? ` with ${water} water` : ""}, in the ${beach.region} region of Crete.`
         : `${name} is a ${beach.type || "mixed"} beach located in the ${beach.region} region of Crete.`,
+      waterQ: `Is the water clean at ${name}?`,
+      waterA: waterQuality
+        ? `${name} holds the EU bathing-water rating "${wqWord}"${wqTop ? ", the highest of the four EU categories," : ""} for the 2025 season, under the European Bathing Water Directive (source: European Environment Agency).`
+        : null,
       seaQ: `Is the sea calm at ${name}?`,
       seaA: seaL ? `The sea at ${name} is ${seaL}. For today's live wind and wave conditions, see our "where to swim today" page.` : null,
       kidsQ: `Is ${name} suitable for children?`,
@@ -315,6 +328,10 @@ export default async function BeachDetailPage({
       sandyA: sand
         ? `${name} est une plage de ${sand}${water ? `, à l'eau ${water}` : ""}, dans la région ${beach.region} de la Crète.`
         : `${name} est une plage de type ${beach.type || "mixte"} située dans la région ${beach.region} de la Crète.`,
+      waterQ: `L'eau de baignade est-elle de bonne qualité à ${name} ?`,
+      waterA: waterQuality
+        ? `${name} est classée « ${wqWord} »${wqTop ? ", la meilleure des quatre catégories de l'UE," : ""} pour la qualité de l'eau de baignade (saison 2025), au titre de la directive européenne sur les eaux de baignade (source : Agence européenne pour l'environnement).`
+        : null,
       seaQ: `La mer est-elle calme à ${name} ?`,
       seaA: seaL ? `La mer à ${name} est ${seaL}. Pour les conditions de vent et de houle du jour, voir notre page « où se baigner aujourd'hui ».` : null,
       kidsQ: `${name} est-elle adaptée aux enfants ?`,
@@ -337,6 +354,10 @@ export default async function BeachDetailPage({
       sandyA: sand
         ? `${name} ist ein Strand mit ${sand}${water ? ` und ${water}em Wasser` : ""}, in der Region ${beach.region} auf Kreta.`
         : `${name} ist ein ${beach.type || "gemischter"} Strand in der Region ${beach.region} auf Kreta.`,
+      waterQ: `Ist das Wasser bei ${name} sauber?`,
+      waterA: waterQuality
+        ? `Für die Saison 2025 ist die Badegewässerqualität bei ${name} als "${wqWord}"${wqTop ? " eingestuft (die beste der vier EU-Kategorien)" : " eingestuft"}, gemäß der EU-Badegewässerrichtlinie (Quelle: Europäische Umweltagentur).`
+        : null,
       seaQ: `Ist das Meer bei ${name} ruhig?`,
       seaA: seaL ? `Das Meer bei ${name} ist ${seaL}. Live-Wind und Wellen für heute: siehe unsere Seite "Wo heute baden".` : null,
       kidsQ: `Ist ${name} kinderfreundlich?`,
@@ -359,6 +380,10 @@ export default async function BeachDetailPage({
       sandyA: sand
         ? `Η ${name} είναι παραλία με ${sand}${water ? ` και ${water} νερά` : ""}, στην περιοχή ${beach.region} της Κρήτης.`
         : `Η ${name} είναι παραλία τύπου ${beach.type || "μικτή"} στην περιοχή ${beach.region} της Κρήτης.`,
+      waterQ: `Είναι καθαρά τα νερά κολύμβησης στην ${name};`,
+      waterA: waterQuality
+        ? `Η ${name} έχει ταξινομηθεί ως «${wqWord}»${wqTop ? ", η υψηλότερη από τις τέσσερις κατηγορίες της ΕΕ," : ""} για την ποιότητα των νερών κολύμβησης (σεζόν 2025), βάσει της ευρωπαϊκής οδηγίας για τα νερά κολύμβησης (πηγή: Ευρωπαϊκός Οργανισμός Περιβάλλοντος).`
+        : null,
       seaQ: `Είναι ήρεμη η θάλασσα στην ${name};`,
       seaA: seaL ? `Η θάλασσα στην ${name} είναι ${seaL}. Για τις σημερινές συνθήκες ανέμου και κύματος, δείτε τη σελίδα «πού για μπάνιο σήμερα».` : null,
       kidsQ: `Είναι η ${name} κατάλληλη για παιδιά;`,
@@ -380,6 +405,7 @@ export default async function BeachDetailPage({
 
   const faqItems = [
     { q: F.sandyQ, a: F.sandyA },
+    ...(F.waterA ? [{ q: F.waterQ, a: F.waterA }] : []),
     ...(F.seaA ? [{ q: F.seaQ, a: F.seaA }] : []),
     { q: F.kidsQ, a: F.kidsA },
     ...(F.crowdA ? [{ q: F.crowdQ, a: F.crowdA }] : []),
@@ -470,6 +496,13 @@ export default async function BeachDetailPage({
           </div>
         </div>
 
+        {/* Qualité de l'eau de baignade (UE, source AEE) */}
+        {waterQuality && (
+          <div className="mb-8 max-w-sm">
+            <WaterQualityBadge wq={waterQuality} locale={locale} />
+          </div>
+        )}
+
         {/* Facilities */}
         <div className="flex flex-wrap gap-2 mb-8">
           {beach.sunbeds && (
@@ -554,11 +587,6 @@ export default async function BeachDetailPage({
             <AffiliateBanner type="carRental" locale={locale} placeName={name} className="mb-4" />
           );
         })()}
-
-        {/* Property management CTA */}
-        <div className="mb-12">
-          <AffiliateCTA type="propertyManagement" locale={locale} />
-        </div>
 
         {/* Nearby beaches */}
         {nearby.length > 0 && (

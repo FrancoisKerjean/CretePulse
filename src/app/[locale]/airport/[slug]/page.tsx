@@ -13,6 +13,7 @@ import {
 import { buildAlternates } from "@/lib/seo";
 import { routing } from "@/i18n/routing";
 import { CarPromo } from "@/components/car-rental/CarPromo";
+import InvestmentCTA from "@/components/InvestmentCTA";
 
 // Pickup contextuel du wizard /car-rental : CHQ -> chania-airport, HER ->
 // heraklion. Sitia (JSH) hors zone couverte -> encart sans pickup (étape 1).
@@ -694,6 +695,8 @@ export default async function AirportPage(
             </p>
           )}
         </section>
+
+        <InvestmentCTA locale={locale} contentType="airport-slug" contentSlug={airport.iata} />
       </div>
     </main>
   );
