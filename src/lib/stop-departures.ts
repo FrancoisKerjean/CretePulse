@@ -6,7 +6,8 @@
 import type { LiveNetwork } from "./bus-live/types";
 import type { BusRoute } from "./buses";
 import { placeSimilarity } from "./bus-live/position.ts";
-import { timesForDate, parseDurationMin } from "./bus-journey.ts";
+import { timesForDate } from "./bus-journey.ts";
+import { parseDurationMin } from "./bus-live/duration.ts";
 import { toMin, clockHHMM } from "./athens-time.ts";
 
 export interface GraphStop { slug: string; name: string; lat: number; lng: number; }
@@ -30,6 +31,7 @@ export interface StopDeparture {
 }
 
 const SIM = 0.5;
+const NO_TIME = "99:99";
 
 /** Index du stop de `stops` le mieux apparié à `name` (similarité >= SIM), sinon -1. */
 function matchIdx(name: string, stops: GraphLineStop[]): number {
@@ -69,12 +71,12 @@ export function stopDepartures(
       const durationKnown = dur != null;
       let mins: number[] = [];
       let tmw: number[] = [];
-      if (durationKnown) {
+      if (dur !== null) {
         const cumFrom = line.stops[iFrom].cumMin;
         const cumTo = line.stops[iTo].cumMin;
         const span = Math.abs(cumTo - cumFrom);
         const frac = span > 0 ? Math.abs(cumS - cumFrom) / span : 0;
-        const offset = frac * (dur as number);
+        const offset = frac * dur;
         mins = timesForDate(r, now.iso).map((H) => toMin(H) + offset);
         tmw = timesForDate(r, tomorrowIso).map((H) => toMin(H) + offset);
       }
@@ -102,15 +104,15 @@ export function stopDepartures(
       destination,
       lineCode: e.lineCode,
       nextTimes: times.slice(0, 2).map(clockHHMM),
-      estimated: true,
+      estimated: e.durationKnown,
       durationKnown: e.durationKnown,
       isTomorrow,
     });
   }
   // Tri : destinations avec horaire d'abord (prochain passage croissant), puis les autres.
   return out.sort((x, y) => {
-    const tx = x.nextTimes[0] ?? "99:99";
-    const ty = y.nextTimes[0] ?? "99:99";
+    const tx = x.nextTimes[0] ?? NO_TIME;
+    const ty = y.nextTimes[0] ?? NO_TIME;
     return tx.localeCompare(ty);
   });
 }
