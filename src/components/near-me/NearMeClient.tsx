@@ -85,6 +85,7 @@ type Strings = {
   unavailable: string;
   notInCrete: string;
   aroundYou: string;
+  youAreNear: string;
   changePlace: string;
   useMyLocation: string;
   beachOfDay: string;
@@ -120,6 +121,7 @@ const T: Record<string, Strings> = {
     unavailable: "Location is not available on this device. Pick a place instead:",
     notInCrete: "You're not in Crete yet. Pick where you'll be staying:",
     aroundYou: "Around you",
+    youAreNear: "You're near",
     changePlace: "Change place",
     useMyLocation: "Use my location",
     beachOfDay: "Your beach for today",
@@ -153,6 +155,7 @@ const T: Record<string, Strings> = {
     unavailable: "Localisation indisponible sur cet appareil. Choisissez plutôt un lieu :",
     notInCrete: "Vous n'êtes pas encore en Crète. Choisissez où vous séjournerez :",
     aroundYou: "Autour de vous",
+    youAreNear: "Vous êtes près de",
     changePlace: "Changer de lieu",
     useMyLocation: "Utiliser ma position",
     beachOfDay: "Votre plage du jour",
@@ -186,6 +189,7 @@ const T: Record<string, Strings> = {
     unavailable: "Standort auf diesem Gerät nicht verfügbar. Wählen Sie einen Ort:",
     notInCrete: "Noch nicht auf Kreta? Wählen Sie, wo Sie wohnen werden:",
     aroundYou: "Um Sie herum",
+    youAreNear: "Sie sind in der Nähe von",
     changePlace: "Ort wechseln",
     useMyLocation: "Meinen Standort verwenden",
     beachOfDay: "Ihr Strand für heute",
@@ -219,6 +223,7 @@ const T: Record<string, Strings> = {
     unavailable: "Ο εντοπισμός δεν είναι διαθέσιμος σε αυτήν τη συσκευή. Επιλέξτε ένα μέρος:",
     notInCrete: "Δεν είστε ακόμα στην Κρήτη; Επιλέξτε πού θα μείνετε:",
     aroundYou: "Γύρω σας",
+    youAreNear: "Είστε κοντά σε",
     changePlace: "Αλλαγή τοποθεσίας",
     useMyLocation: "Χρήση της θέσης μου",
     beachOfDay: "Η παραλία σας για σήμερα",
@@ -363,7 +368,14 @@ export function NearMeClient({
       }
       station = nearestBy(swim.cities, (c) => [c.lat, c.lon], pos, 1)[0] ?? null;
     }
-    return { beaches, eat, sights, busStop, busAlts, best, station };
+    // « Tu es ici » : lieu nommé le plus proche (ville/village d'abord), calculé
+    // côté client comme tout le reste — la position ne quitte pas le navigateur.
+    const settlements = places.filter((p) => p.place_type === "town" || p.place_type === "village");
+    const here =
+      nearestBy(settlements, (p) => [p.lat, p.lon], pos, 1)[0] ??
+      nearestBy(places, (p) => [p.lat, p.lon], pos, 1)[0] ??
+      null;
+    return { beaches, eat, sights, busStop, busAlts, best, station, here };
   }, [pos, places, food, swim, stopGraph]);
 
   // Encart partenaire location : pickup servi le plus proche si géolocalisé
@@ -443,6 +455,12 @@ export function NearMeClient({
         <span className="inline-flex items-center gap-2 font-heading font-bold text-sm text-text">
           <CiCompass className="w-4.5 h-4.5 text-aegean" /> {t.aroundYou}
         </span>
+        {sections?.here && (
+          <span className="text-xs text-text-muted">
+            {t.youAreNear} <b className="font-semibold text-text">{sections.here.name}</b>
+            <span className="font-data"> · {fmtKm(sections.here.km)} km</span>
+          </span>
+        )}
         <div className="flex items-center gap-2 ml-auto">
           {status !== "granted" && (
             <button
