@@ -1,3 +1,8 @@
+> **⚠️ PLAN SUSPENDU (18/06/2026)** — Le spike a finalement montré que l'API KTEL Herlas
+> **n'expose AUCUNE position GPS de bus** (cf `2026-06-18-bus-gps-spike-report.md`, verdict corrigé).
+> Option A est sans objet : il n'y a rien à scraper. Ce plan est conservé pour traçabilité mais
+> n'est PAS à exécuter. Voir les options B/C dans le rapport de spike.
+
 # Bus Live — GPS réel (KTEL Herlas) + autonomie — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

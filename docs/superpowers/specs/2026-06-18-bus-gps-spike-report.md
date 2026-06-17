@@ -8,11 +8,34 @@
   Expo, bundle Hermes désassemblé via `hermes-dec`) + sondage non destructif des endpoints
   découverts. Aucune donnée personnelle touchée, aucun compte créé, aucun secret reproduit ici.
 
-## Verdict : GO **technique**, mais accès **authentifié** (pas de flux anonyme) → décision Kami
+## ⚠️ VERDICT FINAL (corrigé après accès réel à l'API) : NO-GO pour l'option A
 
-La donnée existe et elle est **idéale**. L'obstacle n'est pas la donnée, c'est l'**authentification** :
-elle exige un token utilisateur Keycloak, donc l'autonomie passe par un **compte de service dédié**
-(zone grise CGU + fragilité). Ce n'est plus une question technique mais une décision de risque/relation.
+**La donnée GPS des bus N'EXISTE PAS dans l'API de l'app KTEL Herlas.** L'autonomie d'accès est
+au contraire excellente (token `client_credentials` embarqué, valable 24 h, sans compte ni
+émulateur), MAIS l'API ne sert que des données statiques (stations, arrêts, horaires, billetterie).
+**Aucun endpoint de positions véhicules / live / GPS.** Même les stations n'ont pas de coordonnées.
+
+### Correction d'une sur-interprétation (honnêteté)
+La version initiale de ce rapport affirmait « la donnée est idéale (GPS + routeId) ». C'était une
+**déduction erronée à partir de noms de champs présents dans le bundle** (`lat`, `lng`, `heading`,
+`speed`, `routeId`, `vehicleCode`), AVANT d'avoir un accès réel. Vérification faite avec un vrai
+token :
+- `lat/lng/heading/speed` = champs de **géolocalisation de l'appareil** (`expo-location`, position
+  de l'utilisateur sur la carte), PAS la télémétrie des bus.
+- `routeId/vehicleCode` = champs d'un enregistrement de **passage/billet** (quel bus dessert un
+  départ), pas un flux de positions temps réel.
+- Enumération exhaustive des endpoints (code décompilé + sondage live) : `/departures/stations`,
+  `/departures/timetables/`, `/points`, `/booking/*`, `/posts/{el,en}`, `/users`. **Rien d'autre.**
+  Pas de websocket, pas de second host de données.
+
+→ Le live GPS des bus n'est tout simplement **pas exposé** par l'app officielle. Option A (scraper
+les positions) est sans objet : il n'y a rien à scraper.
+
+---
+
+## (Obsolète — conservé pour traçabilité) Hypothèse initiale : GO technique sous auth
+
+> Ce qui suit était l'analyse intermédiaire AVANT l'accès réel. Lire le verdict corrigé ci-dessus.
 
 ## 1. La donnée (excellente nouvelle)
 
@@ -84,6 +107,26 @@ risque en porte d'entrée partenariale.
   l'audience crete.direct comme contrepartie.
 - **C — Statu quo estimatif** : on ne branche pas le GPS maintenant ; la carte `/live` reste en
   estimatif honnête (badge « Estimé »). On garde B en ligne de mire.
+
+## Ce qui EST réellement disponible (corrigé)
+
+- **Accès API autonome, propre et trivial** : `POST https://backoffice.ktelherlas.gr/oauth2/token`
+  en `client_credentials` (client de service `ktelhlmw` + secret embarqués dans l'app, Basic auth),
+  token Bearer valable ~24 h. Aucun compte utilisateur, aucun émulateur. Backend = Jmix/Vaadin + Spring.
+- **Données servies** (toutes statiques) : stations (id + nom EL/EN, **sans coords**), points/arrêts
+  (id, code, nom, flag destination), horaires (`/departures/timetables/`), recherche + prix +
+  réservation de billets, posts/actualités, users.
+- **Pas de** : positions véhicules, coordonnées d'arrêts, géométrie de lignes, temps réel.
+
+## Options réelles pour Kami (révisées)
+
+- **B — Accès officiel au flux télématique** : demander à KTEL Heraklion-Lasithi (ou à l'institut
+  FORTH qui a réalisé la « Destination Map » live de la gare, `ami.ics.forth.gr`) un accès au flux
+  de positions. C'est la SEULE voie vers du vrai live, et elle est propre/durable.
+- **C — Statu quo estimatif** : la carte `/live` reste en estimatif honnête. **Consolation utile** :
+  l'API officielle (accès autonome confirmé) peut alimenter un dataset **horaires/arrêts faisant
+  autorité** pour améliorer le moteur estimatif (départs réels au lieu du scrape HTML KTEL actuel).
+- **A — abandonnée** : rien à scraper côté positions.
 
 ## Annexe — reproductibilité
 
