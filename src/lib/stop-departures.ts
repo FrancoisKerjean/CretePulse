@@ -122,6 +122,7 @@ export function buildStopGraph(network: LiveNetwork): StopGraph {
   const stopsBySlug = new Map<string, GraphStop>();
   const routesByLine = new Map<number, BusRoute[]>();
   for (const r of network.routes) {
+    // défensif : loadLiveNetwork ne renvoie déjà que des routes line_id non-null
     if (r.line_id == null) continue;
     const arr = routesByLine.get(r.line_id) ?? [];
     arr.push(r);
@@ -140,6 +141,7 @@ export function buildStopGraph(network: LiveNetwork): StopGraph {
       id: line.id,
       code: line.code,
       totalMinutes: line.totalMinutes,
+      // line.stops est trié seq 0..N (loadLiveNetwork ORDER BY seq) ; stopDepartures dépend de cet ordre
       stops: line.stops.map((s) => ({ slug: s.slug, name: s.name, cumMin: s.cumMin })),
       routes,
     });

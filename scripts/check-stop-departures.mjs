@@ -11,6 +11,7 @@ const R = (from, to, extra = {}) => ({
   frequency: null, departures: null,
   departures_by_day: [{ days: "Every Day", times: extra.times ?? ["10:00", "12:00"] }],
   source_url: "x", scraped_at: "2026-06-17",
+  ...extra,
 });
 const graph = {
   stops: [
@@ -90,5 +91,34 @@ assert.equal(g.lines.length, 1, "1 ligne");
 assert.equal(g.lines[0].routes.length, 1, "route rattachée à la ligne");
 assert.deepEqual(g.lines[0].stops.map((s) => s.slug), ["a", "b"], "stops projetés slug+cumMin");
 assert.ok(g.stops[0].lat != null, "coords conservées");
+assert.deepEqual(g.lines[0].stops.map((s) => s.cumMin), [0, 60], "cumMin projetés");
+
+// Test 2 : exclusion ligne sans route + déduplication stop partagé
+const net2 = {
+  lines: new Map([
+    [1, { id: 1, code: "L1", codeOfficial: null, source: "osm", totalMinutes: 60, lengthKm: 10, partialGeo: false, geometry: [[1,1],[2,2]],
+      stops: [
+        { seq: 0, slug: "a", name: "A", lat: 1, lng: 1, cumKm: 0, cumMin: 0 },
+        { seq: 1, slug: "shared", name: "Shared", lat: 2, lng: 2, cumKm: 10, cumMin: 60 },
+      ] }],
+    [2, { id: 2, code: "L2", codeOfficial: null, source: "osm", totalMinutes: 40, lengthKm: 8, partialGeo: false, geometry: [[3,3],[4,4]],
+      stops: [
+        { seq: 0, slug: "shared", name: "Shared", lat: 2, lng: 2, cumKm: 0, cumMin: 0 },
+        { seq: 1, slug: "c", name: "C", lat: 5, lng: 5, cumKm: 8, cumMin: 40 },
+      ] }],
+    [3, { id: 3, code: "L3", codeOfficial: null, source: "osm", totalMinutes: 20, lengthKm: 5, partialGeo: false, geometry: [[6,6],[7,7]],
+      stops: [
+        { seq: 0, slug: "x", name: "X", lat: 6, lng: 6, cumKm: 0, cumMin: 0 },
+        { seq: 1, slug: "y", name: "Y", lat: 7, lng: 7, cumKm: 5, cumMin: 20 },
+      ] }],
+  ]),
+  // routes pour L1 et L2 seulement ; L3 = aucune route -> exclue
+  routes: [R("A", "Shared", { duration: "40min", line_id: 1 }), R("Shared", "C", { duration: "30min", line_id: 2 })],
+};
+const g2 = buildStopGraph(net2);
+assert.equal(g2.lines.length, 2, "L3 sans route exclue");
+assert.ok(!g2.lines.some((l) => l.code === "L3"), "L3 absente");
+assert.equal(g2.stops.filter((s) => s.slug === "shared").length, 1, "stop partagé dédupliqué");
+assert.ok(!g2.stops.some((s) => s.slug === "x"), "arrêts de L3 non inclus");
 
 console.log("check-stop-departures OK");
