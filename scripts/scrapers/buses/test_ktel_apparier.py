@@ -56,3 +56,65 @@ def test_assemble_apparier_ignores_routes_with_unresolved_terminus():
     assert result["matched_to_osm"] == {}
     assert result["matched_to_fallback"] == {}
     assert result["new_lines"] == []
+
+
+def test_assemble_apparier_passe2_gps_rattrape_gap():
+    """Passe 2 GPS : une route non résolue par le match strict est rattrapée via coordonnées.
+
+    Scénario : la route (id=10, herlas, Agios Nikolaos -> Sitia) atterrit dans les gaps
+    parce que la résolution stricte mappe les noms KTEL vers des slugs de bus-stops
+    qui ne correspondent PAS aux extrémités de la ligne OSM 99 (ag-nikolaos-osm /
+    sitia-osm) — il y a un arrêt « ag-nikolaos-bus » plus proche dans stops_by_slug.
+    Mais les place_coords de ces terminus sont à < 3 km des stops OSM de la ligne 99,
+    donc la passe 2 GPS doit rattacher la route 10 → line_id 99.
+    """
+    routes = [
+        {"id": 10, "operator_id": "herlas", "from_place": "Agios Nikolaos", "to_place": "Sitia",
+         "duration": "1h"},
+    ]
+    # Ligne OSM 99 utilise des slugs spécifiques ag-nikolaos-osm / sitia-osm
+    osm_lines = [
+        {"id": 99, "operator_id": "herlas", "origin": "ag-nikolaos-osm", "dest": "sitia-osm",
+         "code": "LAS-99"},
+    ]
+    # stops_by_slug contient :
+    #   - ag-nikolaos-bus : PLUS PROCHE de place_coords["agios nikolaos"] que ag-nikolaos-osm
+    #     → la résolution stricte (ktel_resolve step 3) le choisit → clé ne matche pas OSM 99
+    #   - ag-nikolaos-osm : extrémité réelle de la ligne OSM 99 (un peu plus loin)
+    #   - sitia-bus : PLUS PROCHE de place_coords["sitia"] que sitia-osm
+    #   - sitia-osm : extrémité réelle de la ligne OSM 99
+    stops_by_slug = {
+        "ag-nikolaos-bus": {"slug": "ag-nikolaos-bus", "name": "Agios Nikolaos Bus",
+                             "lat": 35.1920, "lng": 25.7220,
+                             "prefecture": "LAS", "osm_id": 20, "coords_source": "osm"},
+        "ag-nikolaos-osm": {"slug": "ag-nikolaos-osm", "name": "Agios Nikolaos",
+                             "lat": 35.1950, "lng": 25.7250,
+                             "prefecture": "LAS", "osm_id": 21, "coords_source": "osm"},
+        "sitia-bus":       {"slug": "sitia-bus",        "name": "Sitia Bus",
+                             "lat": 35.2055, "lng": 26.1005,
+                             "prefecture": "LAS", "osm_id": 22, "coords_source": "osm"},
+        "sitia-osm":       {"slug": "sitia-osm",        "name": "Sitia",
+                             "lat": 35.2065, "lng": 26.1015,
+                             "prefecture": "LAS", "osm_id": 23, "coords_source": "osm"},
+    }
+    # aliases vide → pas de raccourci direct
+    aliases = {}
+    # place_coords pour les noms KTEL :
+    #   "agios nikolaos" : (35.1900, 25.7200) → dist à ag-nikolaos-bus ~0.28 km (la plus proche)
+    #                                          → dist à ag-nikolaos-osm ~0.62 km
+    #   "sitia"          : (35.2040, 26.0990) → dist à sitia-bus ~0.22 km (la plus proche)
+    #                                          → dist à sitia-osm ~0.38 km
+    # Résolution stricte → ag-nikolaos-bus et sitia-bus → clé != OSM 99 → gaps
+    # GPS pass 2 → haversine(place_coords, stop_osm) < 3.0 km pour les deux → match OSM 99
+    place_coords = {
+        "agios nikolaos": (35.1900, 25.7200),
+        "sitia":          (35.2040, 26.0990),
+    }
+    existing_codes = {}
+    result = assemble_apparier(
+        routes, osm_lines, stops_by_slug, aliases, place_coords, existing_codes,
+        fetch=_fake_osrm)
+    # La passe 2 GPS doit avoir rattrapé la route 10 → ligne OSM 99
+    assert result["matched_to_osm"] == {10: 99}, (
+        f"Passe 2 GPS a échoué : matched_to_osm={result['matched_to_osm']}"
+    )

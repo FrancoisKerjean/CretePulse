@@ -6,6 +6,7 @@ là où c'est déjà fait, pour les lignes OSM). Ici on n'écrit QUE des nouveau
 (stops/lines/line_stops source='ktel') + des UPDATEs sur bus_routes.line_id, en séquence (pas de transaction Postgres — un crash mid-write laisse des nouvelles bus_lines orphelines, ré-injectables au prochain run via les ids preservés)."""
 from ktel_match import match_routes_to_lines
 from ktel_fallback import build_fallback_lines
+from ktel_geo import match_gaps_by_gps
 from prices import PLACE_COORDS
 from ktel_alias import load_aliases
 
@@ -23,6 +24,14 @@ def assemble_apparier(routes, osm_lines, stops_by_slug, aliases, place_coords,
     matched, gaps = match_routes_to_lines(routes, osm_lines, stops_by_slug, aliases, place_coords)
     new_stops, new_lines, new_line_stops, fb_matched = build_fallback_lines(
         gaps, stops_by_slug, aliases, place_coords, existing_codes, fetch=fetch)
+    # Passe 2 GPS : rattrape les trajets non résolus par le match strict (additif).
+    gap_routes = [r for routes_list in gaps.values() for r in routes_list]
+    gps_matched = match_gaps_by_gps(
+        gap_routes, osm_lines, stops_by_slug, place_coords,
+        cb_coords=None, geocode=None, max_km=3.0,
+    )
+    matched.update(gps_matched)
+    print(f"[apparier] passe2_gps={len(gps_matched)} (sur {len(gap_routes)} non resolus)")
     return {
         "matched_to_osm": matched,
         "matched_to_fallback": fb_matched,
