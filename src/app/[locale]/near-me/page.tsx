@@ -12,15 +12,13 @@ import { buildAlternates } from "@/lib/seo";
 import { getAllCbPlaces } from "@/lib/cb-places";
 import { getAllFoodPlaces } from "@/lib/food";
 import { buildSwimToday } from "@/lib/swim-today";
-import { getBusRoutes } from "@/lib/buses";
-import { timesForDate } from "@/lib/bus-journey";
-import { BUS_PLACE_SLUGS } from "@/lib/bus-pairs";
-import { SLUG_COORDS } from "@/lib/taxi-fare";
+import { loadLiveNetwork } from "@/lib/bus-live";
+import type { LiveNetwork } from "@/lib/bus-live";
+import { buildStopGraph, type StopGraph } from "@/lib/stop-departures";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { nearMePageSchema } from "@/lib/schema";
 import {
   NearMeClient,
-  type NearBusStop,
   type NearFood,
   type NearPlace,
   type NearSwim,
@@ -186,18 +184,6 @@ export async function generateMetadata(
   };
 }
 
-/** Date du jour à Athènes, YYYY-MM-DD. */
-function athensTodayISO(): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Athens" }).format(new Date());
-}
-
-/** Heure locale Athènes "HH:MM". */
-function athensNowHM(): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Europe/Athens", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
-  }).format(new Date());
-}
-
 export default async function NearMePage(
   { params }: { params: Promise<{ locale: string }> },
 ) {
@@ -212,9 +198,6 @@ export default async function NearMePage(
     getAllFoodPlaces().catch(() => []),
     buildSwimToday().catch(() => null),
   ]);
-  // Même source de routes que /buses (getBusRoutes, table bus_routes).
-  const routes = await getBusRoutes().catch(() => []);
-
   // ---- Sérialisation : payload minimal vers l'île client -------------------
 
   const places: NearPlace[] = placesRaw
@@ -268,32 +251,10 @@ export default async function NearMePage(
       }
     : null;
 
-  // Arrêts bus : lieux DB dignes (BUS_PLACE_SLUGS) ayant des départs, coords
-  // SLUG_COORDS, avec les prochains départs du jour (Europe/Athens) agrégés
-  // sur toutes les routes au départ du lieu.
-  const todayISO = athensTodayISO();
-  const nowHM = athensNowHM();
-  const bySlug = new Map<string, { stop: NearBusStop; times: Set<string> }>();
-  for (const r of routes) {
-    const slug = BUS_PLACE_SLUGS[r.from_place];
-    if (!slug) continue;
-    const coords = SLUG_COORDS[slug];
-    if (!coords) continue;
-    let entry = bySlug.get(slug);
-    if (!entry) {
-      entry = {
-        stop: { slug, name: r.from_place, lat: coords[0], lon: coords[1], nextTimes: [] },
-        times: new Set<string>(),
-      };
-      bySlug.set(slug, entry);
-    }
-    for (const time of timesForDate(r, todayISO)) entry.times.add(time);
-  }
-  const busStops: NearBusStop[] = [...bySlug.values()].map(({ stop, times }) => ({
-    ...stop,
-    // Jusqu'à 6 départs restants : marge pour le re-filtrage client (ISR 30 min).
-    nextTimes: [...times].sort().filter((time) => time >= nowHM).slice(0, 6),
-  }));
+  // Réseau arrêt-centré (loadLiveNetwork = lignes + arrêts + routes à horaire).
+  const emptyNetwork: LiveNetwork = { lines: new Map(), routes: [] };
+  const network = await loadLiveNetwork().catch(() => emptyNetwork);
+  const stopGraph: StopGraph = buildStopGraph(network);
 
   const schema = nearMePageSchema({
     locale,
@@ -348,7 +309,7 @@ export default async function NearMePage(
             places={places}
             food={food}
             swim={swim}
-            busStops={busStops}
+            stopGraph={stopGraph}
           />
         </Suspense>
 

@@ -9,6 +9,8 @@ import { useSearchParams } from "next/navigation";
 import { isOnCrete, nearestBy } from "@/lib/geo";
 import { allPickups } from "@/lib/car-partners";
 import { SLUG_COORDS } from "@/lib/taxi-fare";
+import { stopDepartures, type StopGraph, type StopDeparture } from "@/lib/stop-departures";
+import { athensNow } from "@/lib/athens-time";
 import { CarPromo } from "@/components/car-rental/CarPromo";
 import { useGeoPosition } from "@/components/geo/useGeoPosition";
 import { PlacePicker } from "@/components/geo/PlacePicker";
@@ -66,16 +68,6 @@ export interface NearStation {
   waveHeight: number | null;
 }
 
-export interface NearBusStop {
-  slug: string;
-  /** Nom DB bus_routes (attendu par /buses?from=). */
-  name: string;
-  lat: number;
-  lon: number;
-  /** Départs du jour restants, précalculés serveur (Europe/Athens). */
-  nextTimes: string[];
-}
-
 export interface NearSwim {
   scored: NearSwimBeach[];
   cities: NearStation[];
@@ -101,14 +93,17 @@ type Strings = {
   eatDrink: string;
   sights: string;
   busStop: string;
-  nextToday: string;
-  noMoreToday: string;
   allSchedules: string;
   weatherNear: string;
   wind: string;
   sea: string;
   waves: string;
   openExplore: string;
+  toward: string;
+  estimatedNote: string;
+  counterFare: string;
+  tomorrow: string;
+  otherStops: string;
   rating: Record<"calm" | "fair" | "exposed", string>;
   foodType: Record<string, string>;
 };
@@ -132,14 +127,17 @@ const T: Record<string, Strings> = {
     eatDrink: "Eat & drink nearby",
     sights: "Worth the detour",
     busStop: "Your bus stop",
-    nextToday: "Next departures today",
-    noMoreToday: "No more departures today",
     allSchedules: "All schedules from here",
     weatherNear: "Weather near you",
     wind: "Wind",
     sea: "Sea",
     waves: "Waves",
     openExplore: "Open the interactive map",
+    toward: "toward",
+    estimatedNote: "Estimated from the timetable — no GPS.",
+    counterFare: "at the counter",
+    tomorrow: "tomorrow",
+    otherStops: "Other stops nearby",
     rating: { calm: "calm", fair: "fair", exposed: "exposed" },
     foodType: { restaurant: "Restaurant", taverna: "Taverna", cafe: "Café", bar: "Bar", bakery: "Bakery", other: "Food" },
   },
@@ -161,14 +159,17 @@ const T: Record<string, Strings> = {
     eatDrink: "Manger et boire à proximité",
     sights: "Ça vaut le détour",
     busStop: "Votre arrêt de bus",
-    nextToday: "Prochains départs aujourd'hui",
-    noMoreToday: "Plus de départ aujourd'hui",
     allSchedules: "Tous les horaires d'ici",
     weatherNear: "Météo près de vous",
     wind: "Vent",
     sea: "Mer",
     waves: "Houle",
     openExplore: "Ouvrir la carte interactive",
+    toward: "vers",
+    estimatedNote: "Estimé d'après l'horaire — pas de GPS.",
+    counterFare: "au guichet",
+    tomorrow: "demain",
+    otherStops: "Autres arrêts à proximité",
     rating: { calm: "calme", fair: "correct", exposed: "exposée" },
     foodType: { restaurant: "Restaurant", taverna: "Taverne", cafe: "Café", bar: "Bar", bakery: "Boulangerie", other: "Restauration" },
   },
@@ -190,14 +191,17 @@ const T: Record<string, Strings> = {
     eatDrink: "Essen & Trinken in der Nähe",
     sights: "Einen Abstecher wert",
     busStop: "Ihre Bushaltestelle",
-    nextToday: "Nächste Abfahrten heute",
-    noMoreToday: "Heute keine Abfahrten mehr",
     allSchedules: "Alle Fahrpläne ab hier",
     weatherNear: "Wetter in Ihrer Nähe",
     wind: "Wind",
     sea: "Meer",
     waves: "Wellen",
     openExplore: "Interaktive Karte öffnen",
+    toward: "nach",
+    estimatedNote: "Geschätzt nach Fahrplan — kein GPS.",
+    counterFare: "am Schalter",
+    tomorrow: "morgen",
+    otherStops: "Weitere Haltestellen in der Nähe",
     rating: { calm: "ruhig", fair: "machbar", exposed: "exponiert" },
     foodType: { restaurant: "Restaurant", taverna: "Taverne", cafe: "Café", bar: "Bar", bakery: "Bäckerei", other: "Gastronomie" },
   },
@@ -219,14 +223,17 @@ const T: Record<string, Strings> = {
     eatDrink: "Φαγητό & ποτό κοντά",
     sights: "Αξίζουν την παράκαμψη",
     busStop: "Η στάση λεωφορείου σας",
-    nextToday: "Επόμενες αναχωρήσεις σήμερα",
-    noMoreToday: "Καμία άλλη αναχώρηση σήμερα",
     allSchedules: "Όλα τα δρομολόγια από εδώ",
     weatherNear: "Καιρός κοντά σας",
     wind: "Άνεμος",
     sea: "Θάλασσα",
     waves: "Κύμα",
     openExplore: "Άνοιγμα του διαδραστικού χάρτη",
+    toward: "προς",
+    estimatedNote: "Εκτίμηση βάσει δρομολογίου — χωρίς GPS.",
+    counterFare: "στο ταμείο",
+    tomorrow: "αύριο",
+    otherStops: "Άλλες κοντινές στάσεις",
     rating: { calm: "ήρεμη", fair: "βατή", exposed: "εκτεθειμένη" },
     foodType: { restaurant: "Εστιατόριο", taverna: "Ταβέρνα", cafe: "Καφέ", bar: "Μπαρ", bakery: "Φούρνος", other: "Φαγητό" },
   },
@@ -271,13 +278,6 @@ function fmtKm(km: number): string {
   return km < 10 ? km.toFixed(1) : String(Math.round(km));
 }
 
-/** Heure locale Athènes "HH:MM" (comparaison lexicale avec les horaires KTEL). */
-function athensNowHM(): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Europe/Athens", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
-  }).format(new Date());
-}
-
 function SectionTitle({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
   return (
     <h2 className="flex items-center gap-2.5 font-heading font-extrabold text-[22px] text-text mb-4">
@@ -292,13 +292,13 @@ export function NearMeClient({
   places,
   food,
   swim,
-  busStops,
+  stopGraph,
 }: {
   locale: string;
   places: NearPlace[];
   food: NearFood[];
   swim: NearSwim | null;
-  busStops: NearBusStop[];
+  stopGraph: StopGraph;
 }) {
   const t = T[locale] || T.en;
   const sp = useSearchParams();
@@ -337,7 +337,15 @@ export function NearMeClient({
       places.filter((p) => p.place_type !== "beach" && (p.rating ?? 0) >= 4),
       (p) => [p.lat, p.lon], pos, 6,
     );
-    const stop = nearestBy(busStops, (s) => [s.lat, s.lon], pos, 1)[0] ?? null;
+    const now = athensNow();
+    const tomorrowIso = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Athens" })
+      .format(new Date(Date.now() + 86_400_000));
+    const ranked = nearestBy(stopGraph.stops, (s) => [s.lat, s.lng], pos, 12);
+    const served = ranked
+      .map((s) => ({ stop: s, deps: stopDepartures(stopGraph, s.slug, now, tomorrowIso) }))
+      .filter((x) => x.deps.length > 0);
+    const busStop = served[0] ?? null;
+    const busAlts = served.slice(1, 3);
 
     let best: (NearSwimBeach & { km: number }) | null = null;
     let station: (NearStation & { km: number }) | null = null;
@@ -351,11 +359,8 @@ export function NearMeClient({
       }
       station = nearestBy(swim.cities, (c) => [c.lat, c.lon], pos, 1)[0] ?? null;
     }
-    return { beaches, eat, sights, stop, best, station };
-  }, [pos, places, food, swim, busStops]);
-
-  const nowHM = athensNowHM();
-  const upcoming = sections?.stop ? sections.stop.nextTimes.filter((x) => x >= nowHM).slice(0, 3) : [];
+    return { beaches, eat, sights, busStop, busAlts, best, station };
+  }, [pos, places, food, swim, stopGraph]);
 
   // Encart partenaire location : pickup servi le plus proche si géolocalisé
   // sur l'île, sinon sans pickup (le wizard ouvre à l'étape 1).
@@ -563,37 +568,56 @@ export function NearMeClient({
         </section>
       )}
 
-      {/* 5. Ton arrêt de bus */}
-      {sections?.stop && (
+      {/* 5. Ton arrêt de bus (arrêt-centré) */}
+      {sections?.busStop && (
         <section>
           <SectionTitle icon={<CiBus className="w-6 h-6 text-aegean" />}>{t.busStop}</SectionTitle>
           <div className="card-base p-5 sm:p-6">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <p className="font-heading font-bold text-lg text-text m-0">{sections.stop.name}</p>
-              <span className="text-sm text-text-muted font-data">{fmtKm(sections.stop.km)} km</span>
+              <p className="font-heading font-bold text-lg text-text m-0">{sections.busStop.stop.name}</p>
+              <span className="text-sm text-text-muted font-data">{fmtKm(sections.busStop.stop.km)} km</span>
             </div>
-            <p className="text-[11px] uppercase tracking-wide text-text-muted mt-3 mb-1.5">
-              {upcoming.length > 0 ? t.nextToday : t.noMoreToday}
-            </p>
-            {upcoming.length > 0 && (
-              <ul className="flex flex-wrap gap-1.5 list-none p-0 m-0 font-data">
-                {upcoming.map((time) => (
-                  <li
-                    key={time}
-                    className="px-2.5 py-1 rounded-[10px] bg-surface border-[1.5px] border-lagoon/35 text-xs font-semibold text-text"
-                  >
-                    {time}
-                  </li>
-                ))}
-              </ul>
-            )}
+            <ul className="mt-3 flex flex-col gap-1.5 list-none p-0 m-0">
+              {sections.busStop.deps.map((d: StopDeparture) => (
+                <li key={`${d.destination}-${d.lineCode}`} className="flex flex-wrap items-baseline gap-x-2 text-sm">
+                  <span className="text-text-muted">{t.toward}</span>
+                  <span className="font-heading font-bold text-text">{d.destination}</span>
+                  {d.durationKnown && d.nextTimes.length > 0 ? (
+                    <span className="font-data text-text">
+                      {d.isTomorrow ? `${t.tomorrow} ` : ""}~{d.nextTimes.join(" · ~")}
+                    </span>
+                  ) : (
+                    <span className="text-text-muted italic">{t.counterFare}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-[11px] text-text-muted">{t.estimatedNote}</p>
             <Link
-              href={`/${locale}/buses?from=${encodeURIComponent(sections.stop.name)}`}
+              href={`/${locale}/buses?from=${encodeURIComponent(sections.busStop.stop.name)}`}
               onClick={() => track("bus")}
               className="inline-flex mt-4 bg-sun text-text rounded-full px-4 py-2 text-[13px] font-heading font-bold no-underline hover:brightness-105 transition-all"
             >
               {t.allSchedules}
             </Link>
+            {sections.busAlts.length > 0 && (
+              <div className="mt-4 pt-3 border-t border-border">
+                <p className="text-[11px] uppercase tracking-wide text-text-muted mb-1.5">{t.otherStops}</p>
+                <ul className="flex flex-wrap gap-1.5 list-none p-0 m-0 font-data">
+                  {sections.busAlts.map((alt) => (
+                    <li key={alt.stop.slug}>
+                      <Link
+                        href={`/${locale}/buses?from=${encodeURIComponent(alt.stop.name)}`}
+                        onClick={() => track("bus")}
+                        className="px-2.5 py-1 rounded-[10px] bg-surface border-[1.5px] border-lagoon/35 text-xs font-semibold text-text no-underline"
+                      >
+                        {alt.stop.name} · {fmtKm(alt.stop.km)} km
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </section>
       )}
