@@ -19,6 +19,7 @@ from dotenv import load_dotenv
 import feedparser
 from supabase import create_client
 import news_urgency
+from crete_relevance import is_crete_relevant
 
 load_dotenv()
 
@@ -60,27 +61,9 @@ RSS_FEEDS = [
     # Scrape fails (403), Haiku can't rewrite them, they block the writer queue.
 ]
 
-# Keywords to filter Crete-relevant articles from general Greek/English feeds
-CRETE_KEYWORDS = [
-    "crete", "creta", "kriti", "kreta", "cretan",
-    "herakl", "chania", "rethymn", "lasithi", "agios nikolaos", "ierapetra", "sitia",
-    "samaria", "elafonisi", "balos", "spinalonga", "knossos", "matala",
-    "κρητ", "ηρακλ", "χανι", "ρεθυμν", "λασιθ", "αγιο νικολ", "ιεραπετρ", "σητει",
-]
-
-# Sources that are Crete-specific (no keyword filtering needed)
-CRETE_ONLY_SOURCES = {"haniotika", "flashnews", "cretanmagazine", "cretaone",
-                       "google_crete_el", "google_crete_en",
-                       "google_crete_tourism", "google_crete_fr", "google_crete_de",
-                       "reddit_crete"}
-
-
-def is_crete_relevant(title: str, summary: str, source: str) -> bool:
-    """Check if article is about Crete (for general feeds)."""
-    if source in CRETE_ONLY_SOURCES:
-        return True
-    text = (title + " " + summary).lower()
-    return any(kw in text for kw in CRETE_KEYWORDS)
+# Filtre Crète (mots-clés, sources crete-only, insensibilité accents) : module
+# dédié crete_relevance.py (testable, cf test_crete_relevance.py). cretaone n'y
+# est plus crete-only -> filtré par mots-clés car son flux mêle du national grec.
 
 
 def slugify(text: str) -> str:
