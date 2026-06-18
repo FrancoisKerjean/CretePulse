@@ -47,6 +47,40 @@ def subscription_to_info(row: dict) -> dict:
     return {"endpoint": row["endpoint"], "keys": {"p256dh": row["p256dh"], "auth": row["auth"]}}
 
 
+def push_ready_urgent(supabase, since_iso: str | None = None) -> int:
+    """Pousse les news urgentes PRETES (decouple de l'insertion). Renvoie le nombre poussees.
+
+    Pourquoi decouple : news.py insere les sources non-EN (CretaOne, Haniotika...)
+    avec title_en="" et le writer ne les traduit/garde que plus tard. Or la page
+    /news/<slug> (getNewsBySlug) masque toute ligne avec title_en vide OU
+    category='filtered'. Pousser a l'insertion produisait donc une notif au lien
+    mort (404) et au body vide. On ne pousse ici QUE les lignes que la page
+    rendrait : title_en non vide ET category != 'filtered'. Idempotent via pushed.
+    since_iso borne la fenetre (published_at >=) pour eviter de pousser un backlog.
+    """
+    try:
+        q = (supabase.table("news").select("*")
+             .eq("is_urgent", True).eq("pushed", False)
+             .neq("title_en", "").neq("category", "filtered"))
+        if since_iso:
+            q = q.gte("published_at", since_iso)
+        rows = (q.order("published_at", desc=True).limit(20).execute().data) or []
+    except Exception as e:
+        print(f"[push] cannot load ready urgent news: {e}")
+        return 0
+
+    sent = 0
+    for row in rows:
+        try:
+            send_topic(supabase, "urgent_news", row, build_news_payload)
+            supabase.table("news").update({"pushed": True}).eq("slug", row["slug"]).execute()
+            sent += 1
+        except Exception as e:
+            print(f"[push] ready-urgent push failed for {row.get('slug')}: {e}")
+    print(f"[push] ready-urgent pushed {sent}/{len(rows)}")
+    return sent
+
+
 def send_topic(supabase, topic: str, source_row: dict, build_payload) -> int:
     """Envoie source_row à tous les abonnés du topic, dans leur langue.
     Renvoie le nombre d'envois réussis. Purge les endpoints morts."""

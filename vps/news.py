@@ -13,12 +13,13 @@ import sys
 import unicodedata
 import urllib.parse
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from dotenv import load_dotenv
 import feedparser
 from supabase import create_client
 import news_urgency
+from crete_relevance import is_crete_relevant
 
 load_dotenv()
 
@@ -60,27 +61,9 @@ RSS_FEEDS = [
     # Scrape fails (403), Haiku can't rewrite them, they block the writer queue.
 ]
 
-# Keywords to filter Crete-relevant articles from general Greek/English feeds
-CRETE_KEYWORDS = [
-    "crete", "creta", "kriti", "kreta", "cretan",
-    "herakl", "chania", "rethymn", "lasithi", "agios nikolaos", "ierapetra", "sitia",
-    "samaria", "elafonisi", "balos", "spinalonga", "knossos", "matala",
-    "κρητ", "ηρακλ", "χανι", "ρεθυμν", "λασιθ", "αγιο νικολ", "ιεραπετρ", "σητει",
-]
-
-# Sources that are Crete-specific (no keyword filtering needed)
-CRETE_ONLY_SOURCES = {"haniotika", "flashnews", "cretanmagazine", "cretaone",
-                       "google_crete_el", "google_crete_en",
-                       "google_crete_tourism", "google_crete_fr", "google_crete_de",
-                       "reddit_crete"}
-
-
-def is_crete_relevant(title: str, summary: str, source: str) -> bool:
-    """Check if article is about Crete (for general feeds)."""
-    if source in CRETE_ONLY_SOURCES:
-        return True
-    text = (title + " " + summary).lower()
-    return any(kw in text for kw in CRETE_KEYWORDS)
+# Filtre Crète (mots-clés, sources crete-only, insensibilité accents) : module
+# dédié crete_relevance.py (testable, cf test_crete_relevance.py). cretaone n'y
+# est plus crete-only -> filtré par mots-clés car son flux mêle du national grec.
 
 
 def slugify(text: str) -> str:
@@ -97,8 +80,8 @@ def slugify(text: str) -> str:
         text = text.replace(gr, lat)
         text = text.replace(gr.upper(), lat)
     text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
-    text = re.sub(r"[^ws-]", "", text)
-    text = re.sub(r"[s_-]+", "-", text)
+    text = re.sub(r"[^\w\s-]", "", text)
+    text = re.sub(r"[\s_-]+", "-", text)
     text = re.sub(r"^-+|-+$", "", text)
     return text[:100]
 
@@ -234,9 +217,6 @@ def get_existing_urls(supabase, source_name: str) -> set:
 # Slugs inserted during this run, collected for a single IndexNow ping at the end.
 _INSERTED_SLUGS: list[str] = []
 
-# Slugs of urgent news inserted this run, collected for a single push at the end.
-_URGENT_SLUGS: list[str] = []
-
 
 def process_feed(supabase, feed_config: dict) -> tuple[int, int]:
     source = feed_config["source"]
@@ -353,8 +333,6 @@ def process_feed(supabase, feed_config: dict) -> tuple[int, int]:
             supabase.table("news").insert(row).execute()
             inserted += 1
             _INSERTED_SLUGS.append(slug)
-            if row.get("is_urgent"):
-                _URGENT_SLUGS.append(slug)
             print(f"[news] + {title_raw[:60]}...")
         except Exception as e:
             err_str = str(e)
@@ -399,21 +377,18 @@ def main():
         except Exception as e:
             print(f"[news] indexnow skipped: {e}")
 
-    # Push web des news urgentes fraichement inserees (best-effort, jamais bloquant).
-    if _URGENT_SLUGS:
-        try:
-            import push_sender
-            for slug in _URGENT_SLUGS:
-                r = supabase.table("news").select("*").eq("slug", slug).eq("pushed", False).execute()
-                if r.data:
-                    row = r.data[0]
-                    push_sender.send_topic(supabase, "urgent_news", row, push_sender.build_news_payload)
-                    try:
-                        supabase.table("news").update({"pushed": True}).eq("slug", slug).execute()
-                    except Exception as e:
-                        print(f"[news] mark pushed failed for {slug}: {e}")
-        except Exception as e:
-            print(f"[news] push skipped: {e}")
+    # Push web des news urgentes PRETES (best-effort, jamais bloquant).
+    # On NE pousse PAS a l'insertion : les sources non-EN ont title_en="" tant que
+    # le writer ne les a pas traduites/gardees, et la page /news/<slug> masque ces
+    # lignes -> la notif pointait vers un 404 au body vide. push_ready_urgent ne
+    # pousse que les urgentes deja traduites (title_en non vide) et non filtrees,
+    # poussees ici a chaque run */30 une fois pretes. Fenetre 24h = anti-backlog.
+    try:
+        import push_sender
+        since = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+        push_sender.push_ready_urgent(supabase, since_iso=since)
+    except Exception as e:
+        print(f"[news] push skipped: {e}")
 
     if feed_errors == len(RSS_FEEDS):
         print("[news] FATAL: all feeds failed")
