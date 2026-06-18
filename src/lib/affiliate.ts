@@ -67,3 +67,52 @@ export function genCodePromo(slug: string, suffix: string): string {
 export function hashIp(ip: string, salt: string): string {
   return createHash("sha256").update(`${salt}:${ip}`).digest("hex");
 }
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export interface RegisterData {
+  name: string;
+  category: CategoryId;
+  category_other: string | null;
+  area: Area;
+  email: string;
+  redirect_url: string;
+}
+
+export type ValidationResult =
+  | { ok: true; data: RegisterData }
+  | { ok: false; error: string };
+
+function isHttpUrl(s: string): boolean {
+  try {
+    const u = new URL(s);
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+export function validateRegisterPayload(body: Record<string, unknown>): ValidationResult {
+  const name = typeof body.name === "string" ? body.name.trim().slice(0, 120) : "";
+  const category = String(body.category ?? "");
+  const area = String(body.area ?? "");
+  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+  const redirect_url = typeof body.redirect_url === "string" ? body.redirect_url.trim() : "";
+  const category_other =
+    typeof body.category_other === "string" && body.category_other.trim()
+      ? body.category_other.trim().slice(0, 120)
+      : null;
+
+  if (body.accept !== true) return { ok: false, error: "Terms not accepted" };
+  if (!name) return { ok: false, error: "Missing name" };
+  if (!(CATEGORIES as readonly { id: string }[]).some((c) => c.id === category))
+    return { ok: false, error: "Invalid category" };
+  if (!(AREAS as readonly string[]).includes(area)) return { ok: false, error: "Invalid area" };
+  if (!EMAIL_REGEX.test(email)) return { ok: false, error: "Invalid email" };
+  if (!isHttpUrl(redirect_url)) return { ok: false, error: "Invalid booking URL" };
+
+  return {
+    ok: true,
+    data: { name, category: category as CategoryId, category_other, area: area as Area, email, redirect_url },
+  };
+}

@@ -54,3 +54,46 @@ test("genCodePromo never returns an empty base (single long word)", () => {
   assert.equal(code, "SUPERCALIF-AB12");
   assert.doesNotMatch(code, /^-/);
 });
+
+import { validateRegisterPayload } from "./affiliate.ts";
+
+const good = {
+  name: "Sunset Villas",
+  category: "hotel",
+  area: "chania",
+  email: "info@sunset.gr",
+  redirect_url: "https://sunset.gr/book",
+  accept: true,
+};
+
+test("validateRegisterPayload accepts a clean payload (normalized)", () => {
+  const r = validateRegisterPayload(good);
+  assert.equal(r.ok, true);
+  if (r.ok) {
+    assert.equal(r.data.email, "info@sunset.gr");
+    assert.equal(r.data.category, "hotel");
+    assert.equal(r.data.category_other, null);
+  }
+});
+
+test("validateRegisterPayload requires accept=true", () => {
+  const r = validateRegisterPayload({ ...good, accept: false });
+  assert.equal(r.ok, false);
+});
+
+test("validateRegisterPayload rejects bad email and non-http url", () => {
+  assert.equal(validateRegisterPayload({ ...good, email: "nope" }).ok, false);
+  assert.equal(validateRegisterPayload({ ...good, redirect_url: "ftp://x" }).ok, false);
+  assert.equal(validateRegisterPayload({ ...good, redirect_url: "not a url" }).ok, false);
+});
+
+test("validateRegisterPayload rejects unknown category/area", () => {
+  assert.equal(validateRegisterPayload({ ...good, category: "spaceship" }).ok, false);
+  assert.equal(validateRegisterPayload({ ...good, area: "atlantis" }).ok, false);
+});
+
+test("validateRegisterPayload keeps category_other when category=other", () => {
+  const r = validateRegisterPayload({ ...good, category: "other", category_other: "Diving school" });
+  assert.equal(r.ok, true);
+  if (r.ok) assert.equal(r.data.category_other, "Diving school");
+});
