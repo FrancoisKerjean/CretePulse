@@ -11,6 +11,7 @@ import { PhotoCell } from "./shared/PhotoCell";
 import { NearbyCell } from "./shared/NearbyCell";
 import { DetailCell } from "./shared/DetailCell";
 import { RatingTile } from "./shared/RatingTile";
+import { LightboxModal } from "@/components/explore/PhotoLightbox";
 
 export function HeritageBento({
   place, nearby, locale, communityAvg, communityCount,
@@ -28,7 +29,7 @@ export function HeritageBento({
 
   return (
     <section className="grid grid-cols-4 gap-2 md:grid-cols-6">
-      <HeroCell name={place.name} tag={tag} photo={photos[0]} className="col-span-4 row-span-2 min-h-[220px] md:col-span-4" />
+      <HeroCell name={place.name} tag={tag} photo={photos[0]} lightboxIndex={photos[0] ? 0 : undefined} className="col-span-4 row-span-2 min-h-[220px] md:col-span-4" />
 
       <RatingTile
         slug={place.slug}
@@ -52,14 +53,15 @@ export function HeritageBento({
 
       <MapCell lat={place.latitude} lng={place.longitude} label={town ? `${town.name}` : null} className="col-span-4 h-40 md:col-span-6" />
 
-      {photos[1] && <PhotoCell src={photos[1]} alt={`${place.name} 2`} className="col-span-2 h-36" />}
+      {photos[1] && <PhotoCell src={photos[1]} alt={`${place.name} 2`} lightboxIndex={1} className="col-span-2 h-36" />}
       {t.unique_feature ? (
         <DetailCell eyebrow={bentoLabel("rare", locale)} text={t.unique_feature} className="col-span-2 h-36" />
       ) : (
-        photos[2] && <PhotoCell src={photos[2]} alt={`${place.name} 3`} className="col-span-2 h-36" />
+        photos[2] && <PhotoCell src={photos[2]} alt={`${place.name} 3`} lightboxIndex={2} className="col-span-2 h-36" />
       )}
 
       <NearbyCell nearby={nearby} locale={locale} className="col-span-4 md:col-span-6" />
+      {photos.length > 0 && <LightboxModal photos={photos} name={place.name} />}
     </section>
   );
 }
