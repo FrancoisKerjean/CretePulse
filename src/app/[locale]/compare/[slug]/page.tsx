@@ -7,6 +7,7 @@ import { compareSchema } from "@/lib/schema";
 import RentalCTA from "@/components/RentalCTA";
 import { getBusRoutes } from "@/lib/buses";
 import { compareToPairSlug, type SeoRoute } from "@/lib/bus-seo";
+import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 86400;
 
@@ -510,11 +511,8 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
   return (
     <main className="min-h-screen bg-white">
       {/* @graph schema: WebPage + BreadcrumbList + ItemList comparison + FAQPage */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
-            compareSchema({
+      <JsonLd
+        data={compareSchema({
               locale,
               slug,
               a: comp.a,
@@ -557,9 +555,7 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
                     ro: "Comparați", ar: "مقارنة",
                   } as Record<string, string>)[locale] || "Compare",
               },
-            }),
-          ),
-        }}
+            })}
       />
 
       {/* Hero */}

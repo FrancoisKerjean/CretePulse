@@ -6,6 +6,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
 import { weatherPageSchema } from "@/lib/schema";
+import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 86400;
 
@@ -154,7 +155,7 @@ export default async function WeatherCityMonthPage({ params }: { params: Promise
 
   return (
     <main className="min-h-screen bg-surface">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(pageSchema) }} />
+      <JsonLd data={pageSchema} />
 
       {/* Hero */}
       <section className="bg-aegean text-white py-12 md:py-16 px-4">

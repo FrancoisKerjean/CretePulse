@@ -22,6 +22,7 @@ import ReadingProgressBar from "@/components/ReadingProgressBar";
 import StickyNewsletterBar from "@/components/StickyNewsletterBar";
 import RentalCTA from "@/components/RentalCTA";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
+import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 86400;
 
@@ -199,21 +200,12 @@ function JsonLdSchemas({
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
-      />
+      <JsonLd data={articleSchema} />
       {faqSchema && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-        />
+        <JsonLd data={faqSchema} />
       )}
       {videoSchema && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(videoSchema) }}
-        />
+        <JsonLd data={videoSchema} />
       )}
     </>
   );
@@ -356,10 +348,7 @@ export default async function ArticleDetailPage({
       <StickyNewsletterBar locale={locale} />
 
       {/* Breadcrumb schema */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
-      />
+      <JsonLd data={breadcrumb} />
       <Breadcrumbs schema={breadcrumb} />
 
       {/* Article + FAQ JSON-LD */}

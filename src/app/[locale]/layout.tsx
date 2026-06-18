@@ -11,6 +11,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Script from "next/script";
 import { buildAlternates } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 import "@/app/globals.css";
 
 export const viewport: Viewport = {
@@ -92,10 +93,7 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} className={baloo.variable}>
       <body className="bg-surface text-text font-sans antialiased">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
-        />
+        <JsonLd data={organizationSchema} />
         <NextIntlClientProvider messages={messages}>
           <Header />
           {children}

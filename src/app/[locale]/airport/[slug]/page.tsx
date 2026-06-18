@@ -14,6 +14,7 @@ import { buildAlternates } from "@/lib/seo";
 import { routing } from "@/i18n/routing";
 import { CarPromo } from "@/components/car-rental/CarPromo";
 import InvestmentCTA from "@/components/InvestmentCTA";
+import { JsonLd } from "@/components/JsonLd";
 
 // Pickup contextuel du wizard /car-rental : CHQ -> chania-airport, HER ->
 // heraklion. Sitia (JSH) hors zone couverte -> encart sans pickup (étape 1).
@@ -498,10 +499,7 @@ export default async function AirportPage(
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-stone-50 to-white">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <JsonLd data={jsonLd} />
 
       <div className="mx-auto max-w-5xl px-4 py-8 md:py-12">
         <Link

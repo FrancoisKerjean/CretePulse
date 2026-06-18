@@ -10,6 +10,7 @@ import Link from "next/link";
 import DiscoverCrete from "@/components/DiscoverCrete";
 import { BusInCreteBox } from "@/components/BusInCreteBox";
 import NewsletterCTA from "@/components/NewsletterCTA";
+import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 86400;
 
@@ -195,8 +196,8 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <JsonLd data={schema} />
+      <JsonLd data={breadcrumb} />
       <Breadcrumbs schema={breadcrumb} />
 
       <main className="min-h-screen bg-surface">

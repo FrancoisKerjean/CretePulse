@@ -5,6 +5,7 @@ import {
   FACILITY_LABELS, ACCESS_LABELS, firstLabel, allLabels,
 } from "@/lib/cb-beach-labels";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import { JsonLd } from "@/components/JsonLd";
 import { setRequestLocale } from "next-intl/server";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import DiscoverCrete from "@/components/DiscoverCrete";
@@ -425,19 +426,10 @@ export default async function BeachDetailPage({
 
   return (
     <main className="min-h-screen bg-surface">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
-      />
+      <JsonLd data={jsonLd} />
+      <JsonLd data={breadcrumb} />
       <Breadcrumbs schema={breadcrumb} />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+      <JsonLd data={faqSchema} />
       {/* Hero image */}
       {beach.image_url && (
         <div className="relative h-72 md:h-96 bg-aegean">

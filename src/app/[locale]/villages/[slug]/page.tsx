@@ -10,6 +10,7 @@ import { buildAlternates, buildVillageTitle, buildVillageDescription } from "@/l
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AffiliateBanner } from "@/components/ui/affiliate-banner";
+import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 86400;
 
@@ -97,14 +98,8 @@ export default async function VillageDetailPage({
 
   return (
     <main className="min-h-screen bg-surface">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(placeJsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
-      />
+      <JsonLd data={placeJsonLd} />
+      <JsonLd data={breadcrumb} />
       <Breadcrumbs schema={breadcrumb} />
       {/* Hero image */}
       {village.image_url && (

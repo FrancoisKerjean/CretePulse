@@ -12,6 +12,7 @@ import { carRentalPageSchema } from "@/lib/schema";
 import { CarRentalWizard } from "@/components/car-rental/CarRentalWizard";
 import { AffiliateCTA } from "@/components/ui/affiliate-cta";
 import { META, L, ONLINE_FALLBACK } from "./content";
+import { JsonLd } from "@/components/JsonLd";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
@@ -66,10 +67,7 @@ export default async function CarRentalPage(
 
   return (
     <main className="min-h-screen bg-surface">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-      />
+      <JsonLd data={schema} />
 
       <div className="mx-auto max-w-3xl px-4 pt-10 pb-14">
         {/* Contenu statique SSR : la page n'est jamais vide pour Google */}

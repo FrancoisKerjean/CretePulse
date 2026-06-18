@@ -12,6 +12,7 @@ import { buildAlternates } from "@/lib/seo";
 import { getLocalizedField } from "@/lib/types";
 import type { Locale } from "@/lib/types";
 import { routing } from "@/i18n/routing";
+import { JsonLd } from "@/components/JsonLd";
 
 // Weather cache refreshes hourly on the VPS; re-render at most every 30 min.
 export const revalidate = 1800;
@@ -457,10 +458,7 @@ export default async function SwimTodayPage(
 
   return (
     <main className="min-h-screen bg-surface">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <JsonLd data={jsonLd} />
 
       {/* Hero lagon : greet + h1 + intro + pick-card (docs/design/kalimera/beach.html) */}
       <section className="relative -mt-[74px] pt-28 pb-24 bg-gradient-to-b from-sky via-[#8FE0EC] to-lagoon overflow-hidden">

@@ -7,6 +7,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
 import { AffiliateBanner } from "@/components/ui/affiliate-banner";
+import { JsonLd } from "@/components/JsonLd";
 import { beachFacing } from "@/lib/swim-today";
 import { getBathingWaterQuality } from "@/lib/bathing-water";
 import { WaterQualityBadge } from "@/components/WaterQualityBadge";
@@ -271,7 +272,7 @@ export default async function BestBeachesForPage({ params }: { params: Promise<{
 
   return (
     <main className="min-h-screen bg-surface">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <JsonLd data={faqSchema} />
 
       {/* Hero */}
       <section className="bg-aegean text-white py-12 md:py-20 px-4">

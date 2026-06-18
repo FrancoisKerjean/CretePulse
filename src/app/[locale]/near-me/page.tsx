@@ -16,6 +16,7 @@ import { loadLiveNetwork, type LiveNetwork } from "@/lib/bus-live";
 import { buildStopGraph, type StopGraph } from "@/lib/stop-departures";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { nearMePageSchema } from "@/lib/schema";
+import { JsonLd } from "@/components/JsonLd";
 import {
   NearMeClient,
   type NearFood,
@@ -265,10 +266,7 @@ export default async function NearMePage(
 
   return (
     <main className="min-h-screen bg-surface">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-      />
+      <JsonLd data={schema} />
 
       <div className="mx-auto max-w-5xl px-4 pt-10 pb-14">
         {/* Contenu statique SSR : la page n'est jamais vide pour Google */}

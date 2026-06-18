@@ -10,6 +10,7 @@ import {
 } from "@/lib/airbnb-mappings";
 import { buildAlternates } from "@/lib/seo";
 import InvestmentCTA from "@/components/InvestmentCTA";
+import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 86400;
 
@@ -154,10 +155,7 @@ export default async function AirbnbIndexPage(
 
   return (
     <main className="min-h-screen bg-surface">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList) }}
-      />
+      <JsonLd data={itemList} />
 
       <div className="bg-aegean text-white">
         <div className="max-w-5xl mx-auto px-4 py-12">

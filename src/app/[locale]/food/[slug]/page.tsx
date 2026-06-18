@@ -11,6 +11,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AffiliateBanner } from "@/components/ui/affiliate-banner";
+import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 86400;
 
@@ -97,8 +98,8 @@ export default async function FoodDetailPage({
 
   return (
     <main className="min-h-screen bg-surface">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantJsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <JsonLd data={restaurantJsonLd} />
+      <JsonLd data={breadcrumbJsonLd} />
       <Breadcrumbs schema={breadcrumbJsonLd} />
       {/* Hero image */}
       {place.image_url && (

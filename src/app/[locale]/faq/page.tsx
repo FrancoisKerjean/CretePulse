@@ -3,6 +3,7 @@ import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { Plane, Car, Waves, Sun, UtensilsCrossed, Globe, Banknote, Hotel } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 86400;
 
@@ -473,10 +474,7 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+      <JsonLd data={faqSchema} />
       <main className="min-h-screen bg-surface">
         <div className="max-w-4xl mx-auto px-4 py-12">
           <h1 className="text-3xl md:text-4xl font-bold text-aegean mb-3">

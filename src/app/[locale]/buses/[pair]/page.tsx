@@ -18,6 +18,7 @@ import { zoneForPickup } from "@/lib/car-partners";
 import { CarPromo } from "@/components/car-rental/CarPromo";
 import partnersData from "@/data/taxi-partners.json";
 import type { Locale } from "@/lib/types";
+import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 86400;
 
@@ -297,7 +298,7 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
 
   return (
     <main className="min-h-screen bg-surface">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+      <JsonLd data={schema} />
 
       {/* En-tete trajet : gradient doux (docs/design/kalimera/bus.html .route-hero) */}
       <header className="-mt-[74px] pt-28 pb-7 bg-gradient-to-b from-sky via-[#D8F4F9] to-surface">

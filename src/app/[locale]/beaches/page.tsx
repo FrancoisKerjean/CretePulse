@@ -6,6 +6,7 @@ import Link from "next/link";
 import { buildAlternates } from "@/lib/seo";
 import { itemListSchema } from "@/lib/schema";
 import { BeachImage } from "@/components/BeachImage";
+import { JsonLd } from "@/components/JsonLd";
 import { getBathingWaterQuality } from "@/lib/bathing-water";
 import { WaterQualityBadge } from "@/components/WaterQualityBadge";
 
@@ -86,7 +87,7 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
 
   return (
     <main className="min-h-screen bg-surface">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(listSchema) }} />
+      <JsonLd data={listSchema} />
       <div className="max-w-6xl mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold text-aegean">
           {getLocalizedField({ title_en: "Beaches in Crete", title_fr: "Plages en Crète", title_de: "Strände auf Kreta", title_el: "Παραλίες στην Κρήτη" }, "title", loc)}

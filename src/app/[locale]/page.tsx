@@ -10,6 +10,7 @@ import { HomeClient, type SwimPickLite, type SwimSideLite } from "@/components/h
 import type { NewsItem, Event, Locale } from "@/lib/types";
 import { getLocalizedField } from "@/lib/types";
 import { buildAlternates } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 7200; // 2h - reduce Supabase egress
 
@@ -142,10 +143,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
-      />
+      <JsonLd data={websiteSchema} />
       <HomeClient
         cities={cities}
         latestNews={latestNews}

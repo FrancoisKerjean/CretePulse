@@ -10,6 +10,7 @@ import { Footprints, Mountain, Droplets, MapPin, ChevronLeft, Download } from "l
 import { buildAlternates } from "@/lib/seo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 86400;
 
@@ -100,8 +101,8 @@ export default async function HikeDetailPage({
 
   return (
     <main className="min-h-screen bg-surface">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(hikeJsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <JsonLd data={hikeJsonLd} />
+      <JsonLd data={breadcrumbJsonLd} />
       <Breadcrumbs schema={breadcrumbJsonLd} />
       {/* Hero image */}
       {hike.image_url && (

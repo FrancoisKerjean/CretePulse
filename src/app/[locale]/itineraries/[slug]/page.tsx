@@ -8,6 +8,7 @@ import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
 import { CarPromo } from "@/components/car-rental/CarPromo";
 import { AffiliateBanner } from "@/components/ui/affiliate-banner";
+import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 86400;
 
@@ -282,19 +283,10 @@ export default async function ItineraryPage({
 
   return (
     <main className="min-h-screen bg-surface">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
-      />
+      <JsonLd data={breadcrumb} />
       <Breadcrumbs schema={breadcrumb} />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(travelSchema) }}
-      />
+      <JsonLd data={faqSchema} />
+      <JsonLd data={travelSchema} />
 
       {/* Hero */}
       <div className="relative bg-aegean py-16 md:py-24">

@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
 import { CarPromo } from "@/components/car-rental/CarPromo";
 import { AffiliateBanner } from "@/components/ui/affiliate-banner";
+import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 86400;
 
@@ -372,7 +373,7 @@ export default async function VisitMonthPage({ params }: { params: Promise<{ loc
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <JsonLd data={faqSchema} />
 
       <main className="mx-auto max-w-4xl px-4 py-8">
         {/* Hero */}

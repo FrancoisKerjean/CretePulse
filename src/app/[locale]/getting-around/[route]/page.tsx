@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft, Bus, Car, Ship, Plane, Clock, Euro, RefreshCw, Lightbulb, ArrowRight } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
 import { AffiliateBanner } from "@/components/ui/affiliate-banner";
+import { JsonLd } from "@/components/JsonLd";
 import { CarPromo } from "@/components/car-rental/CarPromo";
 
 // Routes en zone couverte par le partenaire location (chania-west) : encart
@@ -396,7 +397,7 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
 
   return (
     <main className="min-h-screen bg-surface">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <JsonLd data={faqSchema} />
 
       {/* Hero */}
       <section className="bg-aegean text-white py-12 md:py-20 px-4">

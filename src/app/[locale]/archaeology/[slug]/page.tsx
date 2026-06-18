@@ -1,5 +1,6 @@
 import { breadcrumbSchema } from "@/lib/schema";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import { JsonLd } from "@/components/JsonLd";
 import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/types";
 import { MapPin, Clock, Ticket, ChevronLeft, ChevronRight, Landmark } from "lucide-react";
@@ -268,19 +269,10 @@ export default async function ArchaeologyDetailPage({
 
   return (
     <main className="min-h-screen bg-surface">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
-      />
+      <JsonLd data={breadcrumb} />
       <Breadcrumbs schema={breadcrumb} />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(attractionSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+      <JsonLd data={attractionSchema} />
+      <JsonLd data={faqSchema} />
 
       {/* Hero */}
       <div className="relative bg-aegean py-16 md:py-24">

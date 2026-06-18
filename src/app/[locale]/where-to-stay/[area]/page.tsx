@@ -7,6 +7,7 @@ import { breadcrumbSchema } from "@/lib/schema";
 import RentalCTA from "@/components/RentalCTA";
 import { BusAccessBox } from "@/components/BusAccessBox";
 import { buildAlternates } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 86400;
 
@@ -369,19 +370,10 @@ export default async function WhereToStayAreaPage({
 
   return (
     <main className="min-h-screen bg-surface">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
-      />
+      <JsonLd data={breadcrumb} />
       <Breadcrumbs schema={breadcrumb} />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(destinationSchema) }}
-      />
+      <JsonLd data={faqSchema} />
+      <JsonLd data={destinationSchema} />
 
       {/* Hero */}
       <div className="bg-aegean text-white py-16 md:py-24">

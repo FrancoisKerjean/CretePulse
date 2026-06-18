@@ -6,6 +6,7 @@ import { getBusAlerts } from "@/lib/bus-alerts";
 import { busesPageSchema } from "@/lib/schema";
 import { qualityPairSlugs } from "@/lib/bus-seo";
 import { eligiblePairs } from "@/lib/bus-pairs";
+import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 86400;
 
@@ -74,7 +75,7 @@ export default async function BusesPage({ params }: { params: Promise<{ locale: 
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+      <JsonLd data={schema} />
       <BusesClient
         routes={routes}
         destinations={destinations}
