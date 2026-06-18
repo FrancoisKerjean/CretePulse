@@ -20,3 +20,35 @@ def test_banal_examples_false():
 
 def test_uses_summary_too():
     assert nu.classify_urgency("Travel update", "Airport closed due to storm") is True
+
+
+# ── Faux positifs de sous-chaine grecque (precision > rappel) ───────────────
+# Les stems grecs trop courts matchaient des mots sans rapport :
+#  - πλημμ (inondation) matchait Πλημμελειοδικειο (tribunal correctionnel)
+#  - φωτι (incendie) matche φωτισμος (eclairage)
+# Cas reel observe en prod (slug cretaone-129858) : fait divers Thessalonique.
+
+THESSALONIKI_TITLE = "Θεσσαλονίκη: Στα «μαλακά» 63χρονος που παρενόχλησε σεξουαλικά 8χρονη στις Συκιές"
+THESSALONIKI_SUMMARY = "Το Μονομελές Πλημμελειοδικείο Θεσσαλονίκης τον έκρινε ένοχο για προσβολή γενετήσιας αξιοπρέπειας ανηλίκου"
+
+
+def test_thessaloniki_court_not_urgent():
+    # Πλημμελειοδικείο (tribunal) ne doit PAS declencher l'urgence inondation.
+    assert nu.classify_urgency(THESSALONIKI_TITLE, THESSALONIKI_SUMMARY) is False
+
+
+def test_greek_flood_still_urgent():
+    assert nu.classify_urgency("Πλημμύρες στο Ηράκλειο μετά την καταιγίδα") is True
+
+
+def test_greek_court_not_urgent():
+    assert nu.classify_urgency("Στο Πλημμελειοδικείο ο 40χρονος για κλοπή") is False
+
+
+def test_greek_fire_still_urgent():
+    assert nu.classify_urgency("Μεγάλη φωτιά στα Χανιά") is True
+    assert nu.classify_urgency("Πυρκαγιά κοντά στο Ρέθυμνο") is True
+
+
+def test_greek_lighting_not_urgent():
+    assert nu.classify_urgency("Νέος φωτισμός στην παλιά πόλη του Ηρακλείου") is False

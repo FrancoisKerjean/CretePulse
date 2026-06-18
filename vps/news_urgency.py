@@ -16,12 +16,14 @@ _KEYWORDS = [
     r"airport closed", r"a[eé]roport ferm", r"port closed",
     r"ferries? (?:cancel|suspend)", r"ferry (?:cancel|suspend)",
     r"flights? (?:cancel|grounded)", r"vols? annul",
-    # incendie
-    r"wildfire", r"\bblaze\b", r"forest fire", r"incendie", r"φωτι",
+    # incendie — φωτι[άέ] (φωτιά/φωτιές) + πυρκαγι (πυρκαγιά) ; PAS r"φωτι" seul
+    # qui sur-matchait φωτισμός (éclairage).
+    r"wildfire", r"\bblaze\b", r"forest fire", r"incendie", r"φωτι[άέ]", r"πυρκαγι",
     # séisme
     r"earthquake", r"s[eé]isme", r"σεισμ",
-    # météo extrême / inondation
-    r"\bflood", r"inondation", r"πλημμ",
+    # météo extrême / inondation — πλημμ[υύ]ρ (πλημμύρα) et NON r"πλημμ" seul qui
+    # sur-matchait πλημμελειοδικείο (tribunal correctionnel) → faux positif prod.
+    r"\bflood", r"inondation", r"πλημμ[υύ]ρ",
     r"storm warning", r"severe storm", r"tempête",
     r"heat ?wave warning", r"canicule",
     r"red (?:flag|alert) warning", r"alerte rouge",
