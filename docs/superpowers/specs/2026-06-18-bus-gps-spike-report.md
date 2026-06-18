@@ -118,6 +118,14 @@ risque en porte d'entrée partenariale.
   réservation de billets, posts/actualités, users.
 - **Pas de** : positions véhicules, coordonnées d'arrêts, géométrie de lignes, temps réel.
 
+### Format d'accès vérifié (référence pour C, backlog 18/06)
+- **Token** : `POST https://backoffice.ktelherlas.gr/oauth2/token`, header `Authorization: Basic base64(client_id:secret)`, body `grant_type=client_credentials`. Client de service = `ktelhlmw` (+ secret **embarqué dans l'app**, récupérable depuis `.spike/decomp.js` zone `oauth2/token` — NON versionné ici). Token Bearer ~24 h.
+- **Stations** : `GET /api/v1/departures/stations` → `[{id,nameEL,nameEN}]`.
+- **Arrêts** : `GET /api/v1/points` → `[{id,code,nameEL,nameEN,destination}]`.
+- **Annonces horaires** : `GET /api/v1/departures/timetables/{YYYY-MM-DD}/links` → docs + paires d'arrêts valides (`"pairs":["10097,10020",...]`).
+- **Horaires/recherche** : `GET /api/v1/booking/search/{fromId}/0/{toId}/0?d=YYYY-MM-DD` (date ISO obligatoire ; ordre des segments selon le flag `destination` du point). Par paire O-D + date.
+- **C = backlog (décision Kami 18/06)** : faisable, non construit pour l'instant.
+
 ## Options réelles pour Kami (révisées)
 
 - **B — Accès officiel au flux télématique** : demander à KTEL Heraklion-Lasithi (ou à l'institut
