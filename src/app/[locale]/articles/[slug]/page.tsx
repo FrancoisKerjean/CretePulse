@@ -16,6 +16,7 @@ import {
 } from "@/lib/guides";
 import { getAutolinkIndex, autolinkHtml } from "@/lib/autolink";
 import type { Locale } from "@/lib/types";
+import { CATEGORY_LABELS, CATEGORY_COLORS } from "../articles-shared";
 import { breadcrumbSchema } from "@/lib/schema";
 import DiscoverCrete from "@/components/DiscoverCrete";
 import ReadingProgressBar from "@/components/ReadingProgressBar";
@@ -212,26 +213,6 @@ function JsonLdSchemas({
 }
 
 // ─── Labels ───────────────────────────────────────────────────────────────────
-
-const CATEGORY_LABELS: Record<string, Record<string, string>> = {
-  beaches: { en: "Beaches", fr: "Plages", de: "Strände", el: "Παραλίες" },
-  hikes: { en: "Hiking", fr: "Randonnées", de: "Wandern", el: "Πεζοπορία" },
-  travel: { en: "Travel", fr: "Voyage", de: "Reise", el: "Ταξίδι" },
-  food: { en: "Food", fr: "Cuisine", de: "Essen", el: "Φαγητό" },
-  expat: { en: "Expat life", fr: "Vie d'expatrié", de: "Expat-Leben", el: "Ζωή εκπατρισμένου" },
-  news: { en: "News", fr: "Actualités", de: "Nachrichten", el: "Νέα" },
-  family: { en: "Family", fr: "Famille", de: "Familie", el: "Οικογένεια" },
-};
-
-const CATEGORY_COLORS: Record<string, string> = {
-  beaches: "bg-aegean-faint text-aegean",
-  hikes: "bg-olive/10 text-olive",
-  travel: "bg-sand text-text",
-  food: "bg-terra-faint text-terra",
-  expat: "bg-stone text-text-muted",
-  news: "bg-aegean-faint text-aegean",
-  family: "bg-sand text-text",
-};
 
 const READ_TIME_LABEL: Record<Locale, string> = {
   en: "min read",
