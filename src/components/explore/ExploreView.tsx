@@ -12,6 +12,7 @@ import { typeLabel } from "@/lib/cb-type-labels";
 import { nearestBy, circlePolygon, isOnCrete } from "@/lib/geo";
 import { cleanCbDescription } from "@/lib/cb-place-helpers";
 import { useGeoPosition } from "@/components/geo/useGeoPosition";
+import Image from "next/image";
 import { CiCompass } from "@/components/icons";
 import { CbPlaceActions } from "@/components/explore/CbPlaceActions";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -597,10 +598,9 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
         onClick={() => selectPlace(p.slug)}
         className="flex gap-3 p-2 rounded-xl border border-aegean/10 bg-white shadow-sm hover:shadow-md hover:border-aegean/30 text-left transition-all w-full"
       >
-        <div className="w-[72px] h-[64px] rounded-lg overflow-hidden bg-sand shrink-0">
+        <div className="relative w-[72px] h-[64px] rounded-lg overflow-hidden bg-sand shrink-0">
           {p.photos?.[0] ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={p.photos[0]} alt={p.name} loading="lazy" className="w-full h-full object-cover" />
+            <Image src={p.photos[0]} alt={p.name} fill sizes="72px" className="object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-aegean/30">
               <MapPin size={20} />
@@ -775,8 +775,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
                 >
                   <div className="h-[84px] bg-sand relative">
                     {p.photos?.[0] ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={p.photos[0]} alt={p.name} loading="lazy" className="w-full h-full object-cover" />
+                      <Image src={p.photos[0]} alt={p.name} fill sizes="196px" className="object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-aegean/30"><MapPin size={22} /></div>
                     )}
@@ -824,8 +823,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
           <div className="relative">
             {selectedPhotos.length > 0 ? (
               <div className="relative h-52 bg-sand">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={selectedPhotos[photoIdx]} alt={selected.name} className="w-full h-full object-cover" />
+                <Image src={selectedPhotos[photoIdx]} alt={selected.name} fill sizes="(max-width: 768px) 100vw, 360px" className="object-cover" />
                 {selectedPhotos.length > 1 && (
                   <>
                     <button onClick={() => setPhotoIdx((photoIdx - 1 + selectedPhotos.length) % selectedPhotos.length)}

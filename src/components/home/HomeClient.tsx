@@ -6,6 +6,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { BlurFade } from "@/components/ui/blur-fade";
+import Image from "next/image";
 import { CardThumb } from "@/components/CardThumb";
 import { AbstractFallback } from "@/components/AbstractFallback";
 import { CreteMap } from "@/components/CreteMap";
@@ -467,9 +468,8 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
               <Link href="/beaches/today" className="relative rounded-[28px] overflow-hidden shadow-[0_18px_44px_rgba(11,94,120,.18)] min-h-[320px] block no-underline group">
                 {swimPick.imageUrl ? (
                   <>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={swimPick.imageUrl} alt={swimPick.name}
-                         className="absolute inset-0 w-full h-full object-cover saturate-[1.08] group-hover:scale-[1.03] transition-transform duration-500" />
+                    <Image src={swimPick.imageUrl} alt={swimPick.name} fill sizes="(max-width: 1024px) 100vw, 60vw"
+                         className="object-cover saturate-[1.08] group-hover:scale-[1.03] transition-transform duration-500" />
                     <div className="absolute inset-0 bg-gradient-to-b from-lagoon/5 via-transparent to-night/55 pointer-events-none" />
                     <svg className="absolute inset-0 w-full h-full opacity-30 mix-blend-overlay pointer-events-none" aria-hidden>
                       <filter id="kpick"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" /></filter>
@@ -500,9 +500,8 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                         className="relative rounded-3xl overflow-hidden flex-1 shadow-[0_12px_30px_rgba(11,94,120,.12)] min-h-[150px] block no-underline group">
                     {s.imageUrl ? (
                       <>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={s.imageUrl} alt={s.name}
-                             className="absolute inset-0 w-full h-full object-cover saturate-[1.08] group-hover:scale-[1.03] transition-transform duration-500" />
+                        <Image src={s.imageUrl} alt={s.name} fill sizes="(max-width: 1024px) 100vw, 25vw"
+                             className="object-cover saturate-[1.08] group-hover:scale-[1.03] transition-transform duration-500" />
                         <div className="absolute inset-0 bg-gradient-to-b from-lagoon/5 to-night/50 pointer-events-none" />
                       </>
                     ) : (
@@ -622,9 +621,8 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                         <div className="relative">
                           {guide.image_url ? (
                             <>
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={guide.image_url} alt={gTitle}
-                                   className="absolute inset-0 w-full h-full object-cover saturate-[1.08]" />
+                              <Image src={guide.image_url} alt={gTitle} fill sizes="112px"
+                                   className="object-cover saturate-[1.08]" />
                               <div className="absolute inset-0 bg-gradient-to-b from-lagoon/5 to-night/35 pointer-events-none" />
                             </>
                           ) : (

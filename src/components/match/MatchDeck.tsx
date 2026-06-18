@@ -8,6 +8,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useTransform, AnimatePresence } from "motion/react";
 import { Heart, X, MapPin, Star, RotateCcw } from "lucide-react";
+import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { typeLabel } from "@/lib/cb-type-labels";
 import { useGeoPosition } from "@/components/geo/useGeoPosition";
@@ -1008,7 +1009,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
               className="w-full max-w-sm overflow-hidden rounded-[32px] bg-white text-center shadow-2xl"
             >
               <div className="relative h-60">
-                <img src={match.photos[0]} alt={match.name} className="absolute inset-0 h-full w-full object-cover" />
+                {match.photos[0] && <Image src={match.photos[0]} alt={match.name} fill sizes="(max-width: 640px) 100vw, 384px" className="object-cover" />}
                 {/* Éclat sobre : deux anneaux qui s'évanouissent */}
                 {[0, 0.15].map((delay) => (
                   <motion.span

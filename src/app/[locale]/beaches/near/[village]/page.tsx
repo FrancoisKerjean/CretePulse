@@ -4,6 +4,7 @@ import { getAllVillages } from "@/lib/villages";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { Waves, MapPin, ChevronLeft } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
 import { CarPromo } from "@/components/car-rental/CarPromo";
@@ -125,8 +126,8 @@ export default async function BeachesNearVillagePage({ params }: { params: Promi
               className="group rounded-xl border border-border bg-white overflow-hidden hover:border-aegean/30 hover:shadow-md transition-all"
             >
               {beach.image_url && (
-                <div className="h-36 overflow-hidden">
-                  <img src={beach.image_url} alt={getLocalizedField(beach, "name", loc)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                <div className="relative h-36 overflow-hidden">
+                  <Image src={beach.image_url} alt={getLocalizedField(beach, "name", loc)} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
                 </div>
               )}
               <div className="p-4">
