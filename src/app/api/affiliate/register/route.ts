@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
   // Honeypot: bots fill hidden "website" field.
   if (body.website && String(body.website).trim() !== "") {
-    return NextResponse.json({ ok: true, link: SITE_URL });
+    return NextResponse.json({ ok: true });
   }
 
   const v = validateRegisterPayload(body);

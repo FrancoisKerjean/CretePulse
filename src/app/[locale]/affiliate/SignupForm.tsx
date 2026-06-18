@@ -49,9 +49,10 @@ export default function SignupForm({ commissionPct }: { commissionPct: number })
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "Something went wrong");
-      } else {
+      } else if (data.link && data.code) {
         setSuccess({ link: data.link, code: data.code, commission_pct: data.commission_pct });
       }
+      // (honeypot/neutral success returns no link/code → no success screen)
     } catch {
       setError("Network error, please try again");
     } finally {
