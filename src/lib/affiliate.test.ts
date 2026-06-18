@@ -48,3 +48,9 @@ test("hashIp is deterministic and salted", () => {
   assert.notEqual(hashIp("1.2.3.4", "salt"), hashIp("1.2.3.4", "other"));
   assert.match(hashIp("1.2.3.4", "salt"), /^[0-9a-f]{64}$/);
 });
+
+test("genCodePromo never returns an empty base (single long word)", () => {
+  const code = genCodePromo("supercalifragilistic", "AB12");
+  assert.equal(code, "SUPERCALIF-AB12");
+  assert.doesNotMatch(code, /^-/);
+});
