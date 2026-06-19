@@ -33,6 +33,7 @@ from parsers import (
 from durations import enrich_durations
 from prices import enrich_prices
 from store import replace_operator_routes, should_commit
+from ktel_apparier import run_apparier
 
 try:
     from dotenv import load_dotenv
@@ -209,12 +210,35 @@ def scrape_ektel() -> list:
     return enrich_durations(enrich_prices(_attach_to_slug(all_routes)))
 
 
+def reapparier(sb, failures: list) -> bool:
+    """Ré-apparie les routes juste après un scrape réussi.
+
+    replace_operator_routes fait delete+insert : il remet `line_id` à NULL pour
+    l'opérateur re-scrapé. Sans ce ré-appariement immédiat, ses bus disparaissent
+    de la carte /live jusqu'au prochain cron run_apparier (4:45) — un côté de
+    l'île reste "noir" jusqu'à ~1 jour. On relie dans la foulée. L'appariement est
+    idempotent et porte sur toute la table (pas par opérateur). Une erreur
+    d'appariement n'invalide PAS le scrape : on alerte seulement (la donnée
+    horaire est déjà écrite, le prochain cron 4:45 rattrapera le lien)."""
+    try:
+        c = run_apparier(sb)
+        log(f"apparier OK: matched_osm={c['matched_to_osm']} "
+            f"fallback_lines={c['fallback_lines']} "
+            f"route_updates={c['route_line_id_updates']}")
+        return True
+    except Exception as e:
+        log(f"apparier FAIL: {e}")
+        failures.append(f"apparier: {e}")
+        return False
+
+
 def main():
     if not SB_URL or not SB_KEY:
         log("ERROR missing supabase env (SUPABASE_URL / SUPABASE_SERVICE_KEY)")
         sys.exit(1)
     sb = create_client(SB_URL, SB_KEY)
     failures = []
+    committed = 0
     plan = [
         ("herlas", HERLAS_INDEX, scrape_herlas),
         ("ektel", EKTEL_INDEX, scrape_ektel),
@@ -226,10 +250,16 @@ def main():
             log(f"SKIP {op_id}: only {len(rows)} routes, previous data preserved")
             continue
         n = replace_operator_routes(sb, op_id, src, rows)
+        committed += 1
         log(f"OK {op_id}: {n} routes written")
     # Réseau (arrêts/lignes/séquences) : désormais construit depuis OSM par
     # osm_network.py (cron dédié), plus depuis les titres KTEL. bus_routes reste
     # la source des horaires (apparié aux lignes OSM en SP2).
+    # Ré-appariement immédiat : le delete+insert ci-dessus a effacé les line_id
+    # des opérateurs re-scrapés -> on les relie tout de suite pour ne pas laisser
+    # /live "noir" d'un côté jusqu'au cron run_apparier de 4:45.
+    if committed:
+        reapparier(sb, failures)
     if failures:
         send_telegram("Bus scraper warning:\n" + "\n".join(failures))
 
