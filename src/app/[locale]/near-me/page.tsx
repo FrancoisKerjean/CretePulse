@@ -34,19 +34,19 @@ const pickUiLoc = (l: string): Locale =>
 
 const META: Record<string, { title: string; desc: string }> = {
   en: {
-    title: "Near me in Crete — beaches, food, sights & buses around you",
+    title: "Near me in Crete · beaches, food, sights & buses around you",
     desc: "See what's around you right now in Crete: the calmest beach today, nearby tavernas, sights worth the detour and your next bus. Your location never leaves your browser.",
   },
   fr: {
-    title: "Autour de moi en Crète — plages, restaurants, sites et bus à proximité",
+    title: "Autour de moi en Crète · plages, restaurants, sites et bus à proximité",
     desc: "Voyez ce qui vous entoure en ce moment en Crète : la plage la plus calme aujourd'hui, les tavernes proches, les sites qui valent le détour et votre prochain bus. Votre position ne quitte jamais votre navigateur.",
   },
   de: {
-    title: "In meiner Nähe auf Kreta — Strände, Essen, Sehenswürdigkeiten & Busse",
+    title: "In meiner Nähe auf Kreta · Strände, Essen, Sehenswürdigkeiten & Busse",
     desc: "Sehen Sie, was gerade um Sie herum auf Kreta ist: der ruhigste Strand heute, Tavernen in der Nähe, lohnende Sehenswürdigkeiten und Ihr nächster Bus. Ihr Standort verlässt nie Ihren Browser.",
   },
   el: {
-    title: "Κοντά μου στην Κρήτη — παραλίες, φαγητό, αξιοθέατα & λεωφορεία γύρω σας",
+    title: "Κοντά μου στην Κρήτη · παραλίες, φαγητό, αξιοθέατα & λεωφορεία γύρω σας",
     desc: "Δείτε τι υπάρχει γύρω σας αυτή τη στιγμή στην Κρήτη: η πιο ήρεμη παραλία σήμερα, κοντινές ταβέρνες, αξιοθέατα που αξίζουν και το επόμενο λεωφορείο σας. Η τοποθεσία σας δεν φεύγει ποτέ από το πρόγραμμα περιήγησής σας.",
   },
 };
@@ -64,7 +64,7 @@ const L: Record<Locale, {
   en: {
     h1: "What's around me in Crete",
     intro:
-      "Turn on location and this page sorts the whole island by distance to you: the calmest beach right now from live wind data, tavernas and restaurants nearby, sights worth the detour, your nearest KTEL bus stop with today's departures and the closest weather station. Everything is computed in your browser — your position is never sent to any server. Not in Crete yet? Pick a town and explore from there.",
+      "Turn on location and this page sorts the whole island by distance to you: the calmest beach right now from live wind data, tavernas and restaurants nearby, sights worth the detour, your nearest KTEL bus stop with today's departures and the closest weather station. Everything is computed in your browser · your position is never sent to any server. Not in Crete yet? Pick a town and explore from there.",
     linkSwim: "Where to swim today",
     linkBuses: "Bus timetables",
     linkExplore: "Interactive map",
@@ -112,7 +112,7 @@ const L: Record<Locale, {
   de: {
     h1: "Was ist in meiner Nähe auf Kreta",
     intro:
-      "Aktivieren Sie den Standort und diese Seite sortiert die ganze Insel nach Entfernung zu Ihnen: der ruhigste Strand gerade jetzt anhand von Live-Winddaten, Tavernen und Restaurants in der Nähe, lohnende Sehenswürdigkeiten, Ihre nächste KTEL-Bushaltestelle mit den heutigen Abfahrten und die nächste Wetterstation. Alles wird in Ihrem Browser berechnet — Ihr Standort wird nie an einen Server gesendet. Noch nicht auf Kreta? Wählen Sie eine Stadt und erkunden Sie von dort aus.",
+      "Aktivieren Sie den Standort und diese Seite sortiert die ganze Insel nach Entfernung zu Ihnen: der ruhigste Strand gerade jetzt anhand von Live-Winddaten, Tavernen und Restaurants in der Nähe, lohnende Sehenswürdigkeiten, Ihre nächste KTEL-Bushaltestelle mit den heutigen Abfahrten und die nächste Wetterstation. Alles wird in Ihrem Browser berechnet · Ihr Standort wird nie an einen Server gesendet. Noch nicht auf Kreta? Wählen Sie eine Stadt und erkunden Sie von dort aus.",
     linkSwim: "Wo heute baden",
     linkBuses: "Busfahrpläne",
     linkExplore: "Interaktive Karte",
@@ -136,7 +136,7 @@ const L: Record<Locale, {
   el: {
     h1: "Τι υπάρχει κοντά μου στην Κρήτη",
     intro:
-      "Ενεργοποιήστε την τοποθεσία και αυτή η σελίδα ταξινομεί όλο το νησί κατά απόσταση από εσάς: η πιο ήρεμη παραλία αυτή τη στιγμή με βάση τον άνεμο σε πραγματικό χρόνο, ταβέρνες και εστιατόρια κοντά, αξιοθέατα που αξίζουν, η πλησιέστερη στάση ΚΤΕΛ με τις σημερινές αναχωρήσεις και ο κοντινότερος μετεωρολογικός σταθμός. Όλα υπολογίζονται στο πρόγραμμα περιήγησής σας — η θέση σας δεν αποστέλλεται ποτέ σε διακομιστή. Δεν είστε ακόμα στην Κρήτη; Επιλέξτε μια πόλη και εξερευνήστε από εκεί.",
+      "Ενεργοποιήστε την τοποθεσία και αυτή η σελίδα ταξινομεί όλο το νησί κατά απόσταση από εσάς: η πιο ήρεμη παραλία αυτή τη στιγμή με βάση τον άνεμο σε πραγματικό χρόνο, ταβέρνες και εστιατόρια κοντά, αξιοθέατα που αξίζουν, η πλησιέστερη στάση ΚΤΕΛ με τις σημερινές αναχωρήσεις και ο κοντινότερος μετεωρολογικός σταθμός. Όλα υπολογίζονται στο πρόγραμμα περιήγησής σας · η θέση σας δεν αποστέλλεται ποτέ σε διακομιστή. Δεν είστε ακόμα στην Κρήτη; Επιλέξτε μια πόλη και εξερευνήστε από εκεί.",
     linkSwim: "Πού για μπάνιο σήμερα",
     linkBuses: "Δρομολόγια λεωφορείων",
     linkExplore: "Διαδραστικός χάρτης",

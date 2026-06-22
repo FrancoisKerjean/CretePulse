@@ -1,5 +1,5 @@
 // Validation + construction de la demande de location de voiture, PURE (zéro
-// I/O) — extraite de api/car-rental/submit/route.ts pour être testable
+// I/O) · extraite de api/car-rental/submit/route.ts pour être testable
 // (scripts/check-car-lead.mjs). La route ne garde que l'orchestration I/O
 // (dédup / insert / email Supabase). Importe uniquement des modules node-safe
 // (pas de next/react/@components) pour rester exécutable par les check-*.mjs.

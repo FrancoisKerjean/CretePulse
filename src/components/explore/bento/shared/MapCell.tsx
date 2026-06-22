@@ -29,7 +29,7 @@ export function MapCell({
   const hasCoords = lat != null && lng != null;
 
   // Lazy : on ne monte la vraie carte (et on ne charge maplibre-gl) que quand la
-  // cellule entre dans le viewport — évite de charger la lib sur les fiches dont
+  // cellule entre dans le viewport · évite de charger la lib sur les fiches dont
   // la carte reste sous la ligne de flottaison (24K pages).
   useEffect(() => {
     if (!hasCoords || visible || !containerRef.current) return;

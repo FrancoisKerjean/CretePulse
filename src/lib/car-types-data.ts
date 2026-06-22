@@ -1,4 +1,4 @@
-// Données pures des types de véhicule (id, pax, labels) — SANS icône, donc
+// Données pures des types de véhicule (id, pax, labels) · SANS icône, donc
 // importable côté node (validation API + scripts check-*.mjs). car-types.ts
 // recompose ces données avec les icônes React pour l'UI.
 export interface CarTypeData {

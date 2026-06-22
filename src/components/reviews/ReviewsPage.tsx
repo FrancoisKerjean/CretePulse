@@ -24,7 +24,7 @@ export function ReviewsPage({ slug, placeName, locale, reviews, aggregate }: {
       <h1 className="font-heading text-3xl">{t.title} · {placeName}</h1>
       <section className="mt-4 rounded-2xl border border-sand-warm bg-white p-4">
         <div className="flex items-baseline gap-3">
-          <span className="font-heading text-4xl">{aggregate.avg?.toFixed(1) ?? "—"}</span>
+          <span className="font-heading text-4xl">{aggregate.avg?.toFixed(1) ?? "·"}</span>
           <span className="opacity-70">({aggregate.count})</span>
         </div>
         <ul className="mt-3 space-y-1">

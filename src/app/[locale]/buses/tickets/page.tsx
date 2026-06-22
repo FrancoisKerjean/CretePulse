@@ -12,30 +12,30 @@ export async function generateMetadata() {
 
 const T: Record<string, { title: string; body: string; noted: string; ticket: string; back: string }> = {
   en: {
-    title: "Online tickets — coming soon",
+    title: "Online tickets · coming soon",
     body: "Buying bus tickets online isn't available yet on crete.direct.",
-    noted: "We've noted your interest in this route — it helps us decide whether to build it.",
+    noted: "We've noted your interest in this route · it helps us decide whether to build it.",
     ticket: "Ticket",
     back: "Back to your route",
   },
   fr: {
-    title: "Billets en ligne — bientôt",
+    title: "Billets en ligne · bientôt",
     body: "L'achat de billets de bus en ligne n'est pas encore disponible sur crete.direct.",
-    noted: "On a noté votre intérêt pour ce trajet — ça nous aide à décider de la construire.",
+    noted: "On a noté votre intérêt pour ce trajet · ça nous aide à décider de la construire.",
     ticket: "Billet",
     back: "Revenir à votre itinéraire",
   },
   de: {
-    title: "Online-Tickets — bald",
+    title: "Online-Tickets · bald",
     body: "Der Online-Kauf von Bustickets ist auf crete.direct noch nicht verfügbar.",
-    noted: "Wir haben Ihr Interesse an dieser Strecke notiert — das hilft uns bei der Entscheidung.",
+    noted: "Wir haben Ihr Interesse an dieser Strecke notiert · das hilft uns bei der Entscheidung.",
     ticket: "Ticket",
     back: "Zurück zu Ihrer Route",
   },
   el: {
-    title: "Εισιτήρια online — σύντομα",
+    title: "Εισιτήρια online · σύντομα",
     body: "Η αγορά εισιτηρίων online δεν είναι ακόμη διαθέσιμη στο crete.direct.",
-    noted: "Σημειώσαμε το ενδιαφέρον σας για αυτή τη διαδρομή — μας βοηθά να αποφασίσουμε.",
+    noted: "Σημειώσαμε το ενδιαφέρον σας για αυτή τη διαδρομή · μας βοηθά να αποφασίσουμε.",
     ticket: "Εισιτήριο",
     back: "Επιστροφή στη διαδρομή σας",
   },

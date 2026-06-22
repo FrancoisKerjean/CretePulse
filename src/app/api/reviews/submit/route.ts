@@ -151,7 +151,7 @@ export async function POST(req: NextRequest) {
     await sendReviewConfirmationEmail({ email, confirmToken: confirm_token, deleteToken: delete_token, locale, placeName });
   } catch (e) {
     console.error("[reviews/submit] mail failed:", e);
-    // Don't fail the submission — user can request resend later.
+    // Don't fail the submission · user can request resend later.
   }
 
   void consent_text; // tracked for audit, not returned

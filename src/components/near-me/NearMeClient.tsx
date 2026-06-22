@@ -137,7 +137,7 @@ const T: Record<string, Strings> = {
     waves: "Waves",
     openExplore: "Open the interactive map",
     toward: "toward",
-    estimatedNote: "Estimated from the timetable — no GPS.",
+    estimatedNote: "Estimated from the timetable · no GPS.",
     counterFare: "at the counter",
     noMore: "no more today",
     tomorrow: "tomorrow",
@@ -171,7 +171,7 @@ const T: Record<string, Strings> = {
     waves: "Houle",
     openExplore: "Ouvrir la carte interactive",
     toward: "vers",
-    estimatedNote: "Estimé d'après l'horaire — pas de GPS.",
+    estimatedNote: "Estimé d'après l'horaire · pas de GPS.",
     counterFare: "au guichet",
     noMore: "plus de bus aujourd'hui",
     tomorrow: "demain",
@@ -205,7 +205,7 @@ const T: Record<string, Strings> = {
     waves: "Wellen",
     openExplore: "Interaktive Karte öffnen",
     toward: "nach",
-    estimatedNote: "Geschätzt nach Fahrplan — kein GPS.",
+    estimatedNote: "Geschätzt nach Fahrplan · kein GPS.",
     counterFare: "am Schalter",
     noMore: "heute keine Abfahrten mehr",
     tomorrow: "morgen",
@@ -239,7 +239,7 @@ const T: Record<string, Strings> = {
     waves: "Κύμα",
     openExplore: "Άνοιγμα του διαδραστικού χάρτη",
     toward: "προς",
-    estimatedNote: "Εκτίμηση βάσει δρομολογίου — χωρίς GPS.",
+    estimatedNote: "Εκτίμηση βάσει δρομολογίου · χωρίς GPS.",
     counterFare: "στο ταμείο",
     noMore: "δεν υπάρχουν άλλα σήμερα",
     tomorrow: "αύριο",
@@ -369,7 +369,7 @@ export function NearMeClient({
       station = nearestBy(swim.cities, (c) => [c.lat, c.lon], pos, 1)[0] ?? null;
     }
     // « Tu es ici » : lieu nommé le plus proche (ville/village d'abord), calculé
-    // côté client comme tout le reste — la position ne quitte pas le navigateur.
+    // côté client comme tout le reste · la position ne quitte pas le navigateur.
     const settlements = places.filter((p) => p.place_type === "town" || p.place_type === "village");
     const here =
       nearestBy(settlements, (p) => [p.lat, p.lon], pos, 1)[0] ??

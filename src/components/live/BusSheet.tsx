@@ -79,7 +79,7 @@ export function BusSheet({ vm, locale, onClose }: { vm: BusSheetVM; locale: stri
           href={vm.lineHref}
           className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-sea px-5 py-2.5 font-heading text-sm font-semibold text-white transition hover:bg-sea/90"
         >
-          {t.viewLine} →
+          {t.viewLine}
         </Link>
       )}
     </div>

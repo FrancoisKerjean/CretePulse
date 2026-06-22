@@ -82,7 +82,7 @@ const T: Record<string, Record<string, string>> = {
     nature: "Nature", activities: "Activities", all: "All",
     sortRating: "Best rated", sortNear: "Nearest", fullList: "Full list",
     youAreHere: "You are here", dragToAdjust: "Drag the dot to your spot",
-    notOnCrete: "You're not in Crete — drop the dot where you'll be.",
+    notOnCrete: "You're not in Crete · drop the dot where you'll be.",
   },
   fr: {
     search: "Chercher un lieu...", results: "lieux", rating: "Note min.",
@@ -108,7 +108,7 @@ const T: Record<string, Record<string, string>> = {
     nature: "Natur", activities: "Aktivitäten", all: "Alle",
     sortRating: "Bestbewertet", sortNear: "Am nächsten", fullList: "Ganze Liste",
     youAreHere: "Sie sind hier", dragToAdjust: "Punkt auf Ihren Standort ziehen",
-    notOnCrete: "Sie sind nicht auf Kreta — setzen Sie den Punkt an Ihr Ziel.",
+    notOnCrete: "Sie sind nicht auf Kreta · setzen Sie den Punkt an Ihr Ziel.",
   },
   el: {
     search: "Αναζήτηση τοποθεσίας...", results: "μέρη", rating: "Ελάχ. βαθμολογία",
@@ -121,7 +121,7 @@ const T: Record<string, Record<string, string>> = {
     nature: "Φύση", activities: "Δραστηριότητες", all: "Όλα",
     sortRating: "Κορυφαία", sortNear: "Πιο κοντά", fullList: "Πλήρης λίστα",
     youAreHere: "Είστε εδώ", dragToAdjust: "Σύρε το σημείο στη θέση σου",
-    notOnCrete: "Δεν είσαι στην Κρήτη — βάλε το σημείο εκεί που θα είσαι.",
+    notOnCrete: "Δεν είσαι στην Κρήτη · βάλε το σημείο εκεί που θα είσαι.",
   },
 };
 

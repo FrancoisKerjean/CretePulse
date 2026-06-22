@@ -2,7 +2,7 @@
  * Cross-link CTA from crete.direct investor-intent pages to kairosguest.com
  * (bureau d'étude et investissement). Placed ONLY where investment intent
  * exists: /airbnb (price/yield/occupancy data) and /airport (traffic data).
- * Dofollow (rel="noopener" only) — both sites are owned by Kairos.
+ * Dofollow (rel="noopener" only) · both sites are owned by Kairos.
  * UTM-tracked. kairosguest only has fr/en → others route to /en.
  */
 const TITLES: Record<string, string> = {

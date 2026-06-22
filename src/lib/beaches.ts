@@ -21,7 +21,7 @@ function sanitizeBeach<T extends { image_url?: string | null }>(b: T): T {
 /**
  * Lieux présents dans la table `beaches` qui ne sont PAS des plages de baignade
  * (mauvaise catégorisation à la source). La table n'a pas de colonne "catégorie"
- * — `type` décrit seulement le revêtement (sand/gravel/pebble…) — donc on les
+ * · `type` décrit seulement le revêtement (sand/gravel/pebble…) · donc on les
  * exclut explicitement ici, au point de lecture, pour qu'ils ne polluent ni les
  * listes de plages ni le moteur "où se baigner aujourd'hui".
  *

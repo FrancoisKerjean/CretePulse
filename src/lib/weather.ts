@@ -166,7 +166,7 @@ export async function fetchAllCitiesWeather(): Promise<CityWeather[]> {
 
   // Open-Meteo (free tier) can rate-limit (429) or time out. A throw here would
   // reject the caller's Promise.all and 500 the whole route, so we degrade to an
-  // empty list instead — every caller already handles a missing weather strip.
+  // empty list instead · every caller already handles a missing weather strip.
   try {
     return await fetchFromOpenMeteo();
   } catch {

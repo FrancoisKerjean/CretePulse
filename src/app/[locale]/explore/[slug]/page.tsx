@@ -35,7 +35,7 @@ export async function generateMetadata({
   const place = await getCbPlaceBySlug(slug);
   if (!place) return { title: "Place not found" };
   const type = typeLabel(place.place_type, locale);
-  const title = `${place.name} — ${type} · Crete Direct`;
+  const title = `${place.name} · ${type} · Crete Direct`;
   const description =
     place.meta_description ||
     (place.description ? place.description.slice(0, 160) : `${place.name}, ${type}, Crete.`);
@@ -122,7 +122,7 @@ export default async function CbPlaceFichePage({
         {place.source_url && (
           <p className="mt-8 text-xs text-text-muted">
             <a href={place.source_url} target="_blank" rel="noopener noreferrer" className="hover:underline">
-              {t.moreSource} →
+              {t.moreSource}
             </a>
           </p>
         )}

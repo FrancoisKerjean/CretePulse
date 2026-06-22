@@ -108,9 +108,9 @@ const T: Record<string, Strings> = {
     submit: "Send request",
     sending: "Sending…",
     sentTitle: "Request sent",
-    sentBody: "Request sent to {partner}. They reply directly with a quote — you pay the agency on the spot, cash accepted, no prepayment.",
+    sentBody: "Request sent to {partner}. They reply directly with a quote · you pay the agency on the spot, cash accepted, no prepayment.",
     fallbackTitle: "The email didn't go through",
-    fallbackBody: "Our email to the agency failed. Reach them directly on WhatsApp — your request is ready to send.",
+    fallbackBody: "Our email to the agency failed. Reach them directly on WhatsApp · your request is ready to send.",
     whatsappCta: "Open WhatsApp",
     error: "Something went wrong. Please try again in a moment.",
     npTitle: "No partner in this area yet",
@@ -178,9 +178,9 @@ const T: Record<string, Strings> = {
     submit: "Anfrage senden",
     sending: "Wird gesendet…",
     sentTitle: "Anfrage gesendet",
-    sentBody: "Anfrage an {partner} übermittelt. Die Agentur antwortet Ihnen direkt mit einem Angebot — Sie zahlen vor Ort an die Agentur, Barzahlung möglich, keine Vorauszahlung.",
+    sentBody: "Anfrage an {partner} übermittelt. Die Agentur antwortet Ihnen direkt mit einem Angebot · Sie zahlen vor Ort an die Agentur, Barzahlung möglich, keine Vorauszahlung.",
     fallbackTitle: "E-Mail nicht zugestellt",
-    fallbackBody: "Unsere E-Mail an die Agentur ist fehlgeschlagen. Kontaktieren Sie sie direkt per WhatsApp — Ihre Anfrage ist vorbereitet.",
+    fallbackBody: "Unsere E-Mail an die Agentur ist fehlgeschlagen. Kontaktieren Sie sie direkt per WhatsApp · Ihre Anfrage ist vorbereitet.",
     whatsappCta: "WhatsApp öffnen",
     error: "Etwas ist schiefgelaufen. Bitte versuchen Sie es gleich noch einmal.",
     npTitle: "Noch kein Partner in dieser Gegend",
@@ -213,9 +213,9 @@ const T: Record<string, Strings> = {
     submit: "Αποστολή αιτήματος",
     sending: "Αποστολή…",
     sentTitle: "Το αίτημα στάλθηκε",
-    sentBody: "Το αίτημα στάλθηκε στο {partner}. Το γραφείο θα σας απαντήσει απευθείας με προσφορά — πληρώνετε το γραφείο επί τόπου, δεκτά μετρητά, καμία προπληρωμή.",
+    sentBody: "Το αίτημα στάλθηκε στο {partner}. Το γραφείο θα σας απαντήσει απευθείας με προσφορά · πληρώνετε το γραφείο επί τόπου, δεκτά μετρητά, καμία προπληρωμή.",
     fallbackTitle: "Το email δεν στάλθηκε",
-    fallbackBody: "Το email προς το γραφείο απέτυχε. Επικοινωνήστε απευθείας μέσω WhatsApp — το αίτημά σας είναι έτοιμο για αποστολή.",
+    fallbackBody: "Το email προς το γραφείο απέτυχε. Επικοινωνήστε απευθείας μέσω WhatsApp · το αίτημά σας είναι έτοιμο για αποστολή.",
     whatsappCta: "Άνοιγμα WhatsApp",
     error: "Κάτι πήγε στραβά. Δοκιμάστε ξανά σε λίγο.",
     npTitle: "Δεν υπάρχει ακόμη συνεργάτης σε αυτήν την περιοχή",
@@ -395,7 +395,7 @@ export function CarRentalWizard({ locale }: { locale: string }) {
   if (view === "fallback") {
     const waNumber = (fallbackWhatsapp ?? "").replace(/[^\d]/g, "");
     const waText = encodeURIComponent(
-      `Hi! Car rental request via crete.direct — ${pickup ? pickupLabel(pickup) : ""}, ` +
+      `Hi! Car rental request via crete.direct · ${pickup ? pickupLabel(pickup) : ""}, ` +
       `${dateFrom}${timeFrom ? ` ${timeFrom}` : ""} to ${dateTo}${timeTo ? ` ${timeTo}` : ""}, ` +
       `${carTypeDef ? carTypeDef.labels.en : ""}, ${pax} pax. ${name.trim()}`,
     );

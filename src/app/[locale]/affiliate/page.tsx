@@ -99,7 +99,7 @@ export default async function AffiliatePage({ params }: { params: Promise<{ loca
       </section>
 
       <div className="max-w-3xl mx-auto px-4 pb-20">
-        {/* HOW IT WORKS — cartes */}
+        {/* HOW IT WORKS · cartes */}
         <h2 className="font-heading text-[28px] font-extrabold text-text mt-12 mb-5">{T.stepsTitle}</h2>
         <ol className="grid gap-4 sm:grid-cols-3 list-none p-0 m-0">
           {T.steps.map((s, i) => {
@@ -117,7 +117,7 @@ export default async function AffiliatePage({ params }: { params: Promise<{ loca
           })}
         </ol>
 
-        {/* THE DEAL — bloc sable */}
+        {/* THE DEAL · bloc sable */}
         <section
           className="rounded-[30px] px-7 py-7 mt-10"
           style={{ background: "linear-gradient(165deg, #FFF3D6, #FFE9AE)" }}

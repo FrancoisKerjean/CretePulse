@@ -1,7 +1,7 @@
 // Zones de pickup location voiture + lookup partenaire. Pur, zéro I/O :
 // importable client, serveur et node (check-car-partners.mjs).
 // Data en const TS (pas de JSON séparé) : le node type-stripping ne résout pas
-// l'alias @/ et n'accepte pas les imports JSON sans attribute — même raison
+// l'alias @/ et n'accepte pas les imports JSON sans attribute · même raison
 // que taxi-partners. Décision à l'exécution prévue par le plan (Task 1 Step 4).
 // Spec : docs/superpowers/specs/2026-06-12-car-rental-wizard-design.md
 //
@@ -61,7 +61,7 @@ export function partnerForPickup(pickupSlug: string): (CarPartner & { zone: CarZ
   return p ? { ...p, zone } : null;
 }
 
-/** Tous les pickups, flagués servis ou non — alimente l'étape 1 du wizard. */
+/** Tous les pickups, flagués servis ou non · alimente l'étape 1 du wizard. */
 export function allPickups(): Array<{ slug: string; zoneId: string; served: boolean }> {
   return CAR_ZONES.flatMap((z) => {
     const served = CAR_PARTNERS.some((p) => p.zoneIds.includes(z.id));

@@ -212,7 +212,7 @@ export interface CarLeadPartner {
 }
 
 export async function sendCarLeadEmail(partner: CarLeadPartner, lead: CarLead) {
-  const subject = `New rental request — ${lead.pickupLabel} ${lead.dateFrom} → ${lead.dateTo} (${lead.carTypeLabel}${lead.pax ? `, ${lead.pax} pax` : ""})`;
+  const subject = `New rental request · ${lead.pickupLabel} ${lead.dateFrom} → ${lead.dateTo} (${lead.carTypeLabel}${lead.pax ? `, ${lead.pax} pax` : ""})`;
   const relay = partner.leadRouting !== "direct";
 
   let to: string;
@@ -261,7 +261,7 @@ export async function sendCarLeadEmail(partner: CarLeadPartner, lead: CarLead) {
     to,
     ...(cc ? { cc } : {}),
     replyTo: lead.customerEmail,
-    subject: relay ? `[Lead voiture — à transmettre] ${subject}` : subject,
+    subject: relay ? `[Lead voiture · à transmettre] ${subject}` : subject,
     text: lines.join("\n"),
   });
   if (error) throw new Error(`Resend: ${error.message}`);
@@ -345,7 +345,7 @@ export async function sendSelectionEmail(email: string, locale: string, places: 
 }
 
 // =============================================================================
-// Community reviews — magic-link confirmation + e-mail-based deletion
+// Community reviews · magic-link confirmation + e-mail-based deletion
 // =============================================================================
 
 type ReviewMailLocale = "en" | "fr" | "de" | "el";
@@ -358,10 +358,10 @@ const REVIEW_SUBJECT: Record<ReviewMailLocale, string> = {
 };
 
 const REVIEW_BODY: Record<ReviewMailLocale, (placeName: string, confirmUrl: string, deleteUrl: string) => string> = {
-  en: (p, c, d) => `Hi,\n\nThanks for reviewing ${p} on crete.direct.\n\nConfirm your review (one click):\n${c}\n\nChanged your mind? Delete it:\n${d}\n\n— crete.direct`,
-  fr: (p, c, d) => `Bonjour,\n\nMerci pour ton avis sur ${p} sur crete.direct.\n\nConfirme ton avis (un clic) :\n${c}\n\nTu as changé d'avis ? Supprime-le :\n${d}\n\n— crete.direct`,
-  de: (p, c, d) => `Hallo,\n\nDanke für deine Bewertung von ${p} auf crete.direct.\n\nBewertung bestätigen (ein Klick):\n${c}\n\nMeinung geändert? Löschen:\n${d}\n\n— crete.direct`,
-  el: (p, c, d) => `Γεια,\n\nΕυχαριστούμε για την κριτική σου για το ${p} στο crete.direct.\n\nΕπιβεβαίωσε (ένα κλικ):\n${c}\n\nΆλλαξες γνώμη; Διαγραφή:\n${d}\n\n— crete.direct`,
+  en: (p, c, d) => `Hi,\n\nThanks for reviewing ${p} on crete.direct.\n\nConfirm your review (one click):\n${c}\n\nChanged your mind? Delete it:\n${d}\n\n· crete.direct`,
+  fr: (p, c, d) => `Bonjour,\n\nMerci pour ton avis sur ${p} sur crete.direct.\n\nConfirme ton avis (un clic) :\n${c}\n\nTu as changé d'avis ? Supprime-le :\n${d}\n\n· crete.direct`,
+  de: (p, c, d) => `Hallo,\n\nDanke für deine Bewertung von ${p} auf crete.direct.\n\nBewertung bestätigen (ein Klick):\n${c}\n\nMeinung geändert? Löschen:\n${d}\n\n· crete.direct`,
+  el: (p, c, d) => `Γεια,\n\nΕυχαριστούμε για την κριτική σου για το ${p} στο crete.direct.\n\nΕπιβεβαίωσε (ένα κλικ):\n${c}\n\nΆλλαξες γνώμη; Διαγραφή:\n${d}\n\n· crete.direct`,
 };
 
 export async function sendReviewConfirmationEmail(opts: {

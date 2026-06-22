@@ -312,7 +312,7 @@ function TripsTable({ journeys, locale, nowMin }: { journeys: Journey[]; locale:
               className={`${cols} w-full px-4 py-3 items-center text-left hover:bg-surface ${isOpen ? "bg-surface" : ""}`}
             >
               <span className="font-data font-bold text-text">{trip.dep}</span>
-              <span className="font-data text-text">{trip.arr ?? "—"}</span>
+              <span className="font-data text-text">{trip.arr ?? "·"}</span>
               <span className="text-xs min-w-0">
                 {trip.changes === 0 ? (
                   <span className="font-semibold text-[#0E7C3A]">{tp("direct", locale)}</span>
@@ -324,7 +324,7 @@ function TripsTable({ journeys, locale, nowMin }: { journeys: Journey[]; locale:
                 )}
               </span>
               <span className="text-right font-bold text-text">
-                {trip.price != null ? `${trip.price.toFixed(2)} €` : "—"}
+                {trip.price != null ? `${trip.price.toFixed(2)} €` : "·"}
                 {trip.priceEstimated && (
                   <span className="block text-[10px] font-normal text-text-muted">{tp("indicative", locale)}</span>
                 )}
