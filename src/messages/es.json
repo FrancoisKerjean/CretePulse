@@ -78,7 +78,11 @@
     "rights": "Todos los derechos reservados.",
     "madeIn": "Hecho en Creta",
     "airports": "Aeropuertos",
-    "ourProject": "Nuestro proyecto"
+    "ourProject": "Nuestro proyecto",
+    "taglineLong": "El compañero práctico de Creta. Datos en vivo, gratis, independiente. Hecho en la isla.",
+    "plan": "Planificar",
+    "discover": "Descubrir",
+    "info": "Info"
   },
   "common": {
     "readMore": "Leer más",

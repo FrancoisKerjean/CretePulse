@@ -78,7 +78,11 @@
     "rights": "Tous droits réservés.",
     "madeIn": "Fait en Crète",
     "airports": "Aéroports",
-    "ourProject": "Notre projet"
+    "ourProject": "Notre projet",
+    "taglineLong": "Le compagnon pratique de la Crète. Données live, gratuit, indépendant. Fait sur l'île.",
+    "plan": "Planifier",
+    "discover": "Découvrir",
+    "info": "Infos"
   },
   "common": {
     "readMore": "Lire la suite",

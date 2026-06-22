@@ -8,27 +8,6 @@ import { Wordmark } from "@/components/Wordmark";
 import { AFFILIATE_LINKS } from "@/lib/affiliates";
 import { CiInstagram, CiFacebook, CiYouTube } from "@/components/icons";
 
-type Ui = "en" | "fr" | "de" | "el";
-const pickUi = (l: string): Ui => (["en", "fr", "de", "el"].includes(l) ? (l as Ui) : "en");
-
-const F = {
-  tagline: {
-    en: "The practical companion to Crete. Live data, free, independent. Made on the island.",
-    fr: "Le compagnon pratique de la Crète. Données live, gratuit, indépendant. Fait sur l'île.",
-    de: "Der praktische Begleiter für Kreta. Live-Daten, kostenlos, unabhängig. Auf der Insel gemacht.",
-    el: "Ο πρακτικός σύντροφος της Κρήτης. Live δεδομένα, δωρεάν, ανεξάρτητο. Φτιαγμένο στο νησί.",
-  },
-  plan: { en: "Plan", fr: "Planifier", de: "Planen", el: "Σχεδιασμός" },
-  discover: { en: "Discover", fr: "Découvrir", de: "Entdecken", el: "Ανακαλύψτε" },
-  today: { en: "Today", fr: "Aujourd'hui", de: "Heute", el: "Σήμερα" },
-  info: { en: "Info", fr: "Infos", de: "Info", el: "Πληροφορίες" },
-  news: { en: "News", fr: "Actus", de: "Nachrichten", el: "Νέα" },
-  events: { en: "Events", fr: "Événements", de: "Events", el: "Εκδηλώσεις" },
-  guides: { en: "Guides", fr: "Guides", de: "Guides", el: "Οδηγοί" },
-  explore: { en: "Explore", fr: "Explorer", de: "Entdecken", el: "Εξερεύνηση" },
-  madeInCrete: { en: "Made in Crete ☀", fr: "Fait en Crète ☀", de: "Gemacht auf Kreta ☀", el: "Φτιαγμένο στην Κρήτη ☀" },
-} as const;
-
 function Col({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
@@ -42,8 +21,8 @@ const linkCls = "block text-[#EAF7FA]/75 hover:text-white transition-colors no-u
 
 export function Footer() {
   const t = useTranslations("footer");
+  const tn = useTranslations("nav");
   const locale = useLocale();
-  const ui = pickUi(locale);
   const carRental = AFFILIATE_LINKS.carRental;
   const carRentalLabel =
     carRental.label[locale as keyof typeof carRental.label] || carRental.label.en;
@@ -68,7 +47,7 @@ export function Footer() {
               <Wordmark variant="dark" width={138} />
             </Link>
             <p className="text-[13px] leading-relaxed mt-3.5 max-w-[280px]">
-              {F.tagline[ui]}
+              {t("taglineLong")}
             </p>
             {/* Socials Kalimera : lagoon hover sun */}
             <div className="mt-4 flex items-center gap-3">
@@ -102,7 +81,7 @@ export function Footer() {
             </div>
           </div>
 
-          <Col title={F.plan[ui]}>
+          <Col title={t("plan")}>
             <Link href="/buses" className={linkCls}>{t("buses")}</Link>
             <Link href="/airport" className={linkCls}>{t("airports")}</Link>
             <Link href="/weather" className={linkCls}>{t("weather")}</Link>
@@ -118,22 +97,22 @@ export function Footer() {
             </a>
           </Col>
 
-          <Col title={F.discover[ui]}>
+          <Col title={t("discover")}>
             <Link href="/beaches" className={linkCls}>{t("beaches")}</Link>
-            <Link href="/explore" className={linkCls}>{F.explore[ui]}</Link>
+            <Link href="/explore" className={linkCls}>{tn("explore")}</Link>
             <Link href="/villages" className={linkCls}>{t("villages")}</Link>
             <Link href="/food" className={linkCls}>{t("food")}</Link>
             <Link href="/hikes" className={linkCls}>{t("hikes")}</Link>
           </Col>
 
-          <Col title={F.today[ui]}>
-            <Link href="/news" className={linkCls}>{F.news[ui]}</Link>
-            <Link href="/events" className={linkCls}>{F.events[ui]}</Link>
-            <Link href="/articles" className={linkCls}>{F.guides[ui]}</Link>
+          <Col title={tn("today")}>
+            <Link href="/news" className={linkCls}>{tn("news")}</Link>
+            <Link href="/events" className={linkCls}>{tn("events")}</Link>
+            <Link href="/articles" className={linkCls}>{tn("articles")}</Link>
             <Link href="/submit-event" className={linkCls}>{t("submitEvent")}</Link>
           </Col>
 
-          <Col title={F.info[ui]}>
+          <Col title={t("info")}>
             <Link href="/about" className={linkCls}>{t("about_link")}</Link>
             <Link href="/projet" className={linkCls}>{t("ourProject")}</Link>
             <Link href="/privacy" className={linkCls}>{t("privacy")}</Link>
@@ -145,7 +124,7 @@ export function Footer() {
         <div className="mt-9 pt-4 border-t border-[#EAF7FA]/12 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#EAF7FA]/45">
           <span>&copy; {new Date().getFullYear()} Crete Direct · {t("rights")}</span>
           <span className="flex items-center gap-4">
-            <span>{F.madeInCrete[ui]}</span>
+            <span>{t("madeIn")}</span>
             <a href="https://nov-ai.xyz" rel="external" className="hover:text-[#EAF7FA] transition-colors no-underline text-[#EAF7FA]/45">
               Built by NovAI
             </a>
