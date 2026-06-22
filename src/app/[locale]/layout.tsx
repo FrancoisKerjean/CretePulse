@@ -6,7 +6,7 @@ import { routing } from "@/i18n/routing";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ActivityNudge } from "@/components/nudge/ActivityNudge";
-import { baloo } from "@/app/layout";
+import { baloo, geist, comfortaa } from "@/app/layout";
 import Script from "next/script";
 import { buildAlternates } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
@@ -89,8 +89,8 @@ export default async function LocaleLayout({
   };
 
   return (
-    <html lang={locale} className={baloo.variable}>
-      <body className="bg-surface text-text font-sans antialiased">
+    <html lang={locale} className={`${geist.variable} ${baloo.variable} ${comfortaa.variable}`}>
+      <body className="bg-surface text-ink font-sans antialiased">
         <JsonLd data={organizationSchema} />
         <NextIntlClientProvider messages={messages}>
           <Header />
