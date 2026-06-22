@@ -93,5 +93,36 @@
     "next": "Volgende bus",
     "inMin": "over {m} min",
     "tomorrow": "Eerste bus morgen"
+  },
+  "depBoard": {
+    "title": "Volgende bussen",
+    "plan": "Plan een reis",
+    "inMin": "over {m} min",
+    "last": "laatste vandaag",
+    "tomorrow": "morgen",
+    "routeAria": "Dienstregeling {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "Vertrektijden",
+    "nearMe": "Dichtbij",
+    "tomorrow": "morgen",
+    "later": "Latere vertrektijden tonen",
+    "none": "Hier geen vertrektijden gevonden.",
+    "in": "over",
+    "min": "min",
+    "hr": "u"
+  },
+  "pushBell": {
+    "cta": "Bus- en spoedmeldingen voor Kreta ontvangen",
+    "on": "Meldingen aan",
+    "blocked": "Meldingen geblokkeerd in je browser.",
+    "iosInstall": "Busmeldingen: zet deze site op je beginscherm (Deel, dan Zet op beginscherm) om ze in te schakelen."
+  },
+  "timeChips": {
+    "legend": "volgende vertrek · verstreken tijden zijn gedimd"
+  },
+  "busInCreteBox": {
+    "heading": "Met de bus door Kreta reizen",
+    "connector": "naar"
   }
 }

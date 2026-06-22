@@ -93,5 +93,36 @@
     "next": "次の便",
     "inMin": "あと{m}分",
     "tomorrow": "始発は明日"
+  },
+  "depBoard": {
+    "title": "次のバス",
+    "plan": "ルートを検索",
+    "inMin": "{m}分後",
+    "last": "本日最終",
+    "tomorrow": "明日",
+    "routeAria": "時刻表 {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "出発",
+    "nearMe": "現在地周辺",
+    "tomorrow": "明日",
+    "later": "後の便を表示",
+    "none": "この付近に出発便はありません。",
+    "in": "あと",
+    "min": "分",
+    "hr": "時間"
+  },
+  "pushBell": {
+    "cta": "バス運行・クレタ島の緊急情報を受け取る",
+    "on": "通知オン",
+    "blocked": "ブラウザで通知がブロックされています。",
+    "iosInstall": "バス通知：有効にするには、このサイトをホーム画面に追加してください（共有 → ホーム画面に追加）。"
+  },
+  "timeChips": {
+    "legend": "次の出発便 · 過ぎた時刻は薄く表示"
+  },
+  "busInCreteBox": {
+    "heading": "バスで巡るクレタ島",
+    "connector": "→"
   }
 }

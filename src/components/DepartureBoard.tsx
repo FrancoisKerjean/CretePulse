@@ -12,22 +12,12 @@ import { nearestBy } from "@/lib/geo";
 import { slugifyPlace } from "@/lib/bus-pairs";
 import { SLUG_COORDS } from "@/lib/taxi-fare";
 import { useGeoPosition } from "@/components/geo/useGeoPosition";
+import { useTranslations } from "next-intl";
 import type { BusRoute } from "@/lib/buses";
 
 const HUBS = ["Heraklion", "Chania", "Rethymno", "Agios Nikolaos", "Ierapetra", "Siteia"];
 const SOON_MIN = 15;
 const PAGE = 8;
-
-const T = {
-  departures: { en: "Departures", fr: "Départs", de: "Abfahrten", el: "Αναχωρήσεις" },
-  nearMe: { en: "Near me", fr: "Près de moi", de: "In der Nähe", el: "Κοντά μου" },
-  inMin: { en: (m: number) => fmtIn(m, "in", "min", "h"), fr: (m: number) => fmtIn(m, "dans", "min", "h"),
-    de: (m: number) => fmtIn(m, "in", "Min", "Std"), el: (m: number) => fmtIn(m, "σε", "λ", "ω") },
-  tomorrow: { en: "tomorrow", fr: "demain", de: "morgen", el: "αύριο" },
-  later: { en: "Show later departures", fr: "Voir les départs suivants", de: "Spätere Abfahrten", el: "Επόμενες αναχωρήσεις" },
-  none: { en: "No departures found here.", fr: "Aucun départ trouvé ici.", de: "Keine Abfahrten gefunden.", el: "Δεν βρέθηκαν αναχωρήσεις." },
-} as const;
-type Ui = keyof typeof T.departures;
 
 function fmtIn(m: number, prefix: string, min: string, hr: string): string {
   if (m < 60) return `${prefix} ${m} ${min}`;
@@ -36,7 +26,7 @@ function fmtIn(m: number, prefix: string, min: string, hr: string): string {
 }
 
 export function DepartureBoard({
-  routes, locale, activePlace, onPlaceChange, dateISO, isToday,
+  routes, activePlace, onPlaceChange, dateISO, isToday,
 }: {
   routes: BusRoute[];
   locale: string;
@@ -45,7 +35,7 @@ export function DepartureBoard({
   dateISO: string;       // jour affiche (today par defaut)
   isToday: boolean;      // false => pas de countdown
 }) {
-  const ui = (["en", "fr", "de", "el"].includes(locale) ? locale : "en") as Ui;
+  const t = useTranslations("departureBoard");
   const [rows, setRows] = useState<DepartureRow[]>([]);
   const [limit, setLimit] = useState(PAGE);
   const geo = useGeoPosition();
@@ -91,14 +81,14 @@ export function DepartureBoard({
   return (
     <section className="mb-8">
       <div className="flex items-center gap-2 mb-2">
-        <h2 className="font-heading font-bold text-lg text-text">{T.departures[ui]} · {activePlace}</h2>
+        <h2 className="font-heading font-bold text-lg text-text">{t("departures")} · {activePlace}</h2>
         {isToday && <span className="text-[10px] font-bold bg-ok/15 text-[#0E7C3A] rounded px-1.5 py-0.5">LIVE</span>}
       </div>
 
       <div className="flex flex-wrap gap-1.5 mb-3">
         <button type="button" onClick={handleNearMe}
           className="rounded-full px-3 py-1.5 text-xs font-semibold border-[1.5px] border-lagoon text-lagoon-deep bg-white">
-          📍 {T.nearMe[ui]}
+          📍 {t("nearMe")}
         </button>
         {pills.map((p) => (
           <button key={p} type="button" onClick={() => onPlaceChange(p)}
@@ -110,7 +100,7 @@ export function DepartureBoard({
       </div>
 
       {visible.length === 0 ? (
-        <div className="rounded-3xl bg-night/5 p-5 text-sm text-text-muted">{T.none[ui]}</div>
+        <div className="rounded-3xl bg-night/5 p-5 text-sm text-text-muted">{t("none")}</div>
       ) : (
         <div className="rounded-[22px] bg-night text-white overflow-hidden">
           {visible.map((d) => {
@@ -123,10 +113,10 @@ export function DepartureBoard({
                   {d.durationLabel && <span className="block text-[10px] text-sky/80">{d.durationLabel}</span>}
                 </span>
                 {d.isTomorrow ? (
-                  <span className="text-[10px] font-extrabold rounded px-2 py-1 bg-sun text-night">{T.tomorrow[ui]}</span>
+                  <span className="text-[10px] font-extrabold rounded px-2 py-1 bg-sun text-night">{t("tomorrow")}</span>
                 ) : d.minutesUntil != null ? (
                   <span className={`text-[10px] font-extrabold rounded px-2 py-1 ${soon ? "bg-terracotta text-white" : "bg-sun text-night"}`}>
-                    {T.inMin[ui](d.minutesUntil)}
+                    {fmtIn(d.minutesUntil, t("in"), t("min"), t("hr"))}
                   </span>
                 ) : null}
                 <span className="text-[11px] text-sky/80 w-[52px] text-right tabular-nums">
@@ -144,7 +134,7 @@ export function DepartureBoard({
       {rows.length > limit && (
         <button type="button" onClick={() => setLimit((l) => l + PAGE)}
           className="mt-2 text-xs text-sea font-semibold hover:underline">
-          {T.later[ui]}
+          {t("later")}
         </button>
       )}
     </section>

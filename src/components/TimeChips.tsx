@@ -4,19 +4,13 @@
 // heures passees estompees, prochain depart en chip lagon pleine.
 // Reference visuelle : docs/design/kalimera/bus.html bloc .tchip
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { timesForDate } from "@/lib/bus-journey";
 import { athensNow, toMin } from "@/lib/athens-time";
 import type { BusRoute } from "@/lib/buses";
 
-const LEGEND = {
-  en: "next departure · past times are dimmed",
-  fr: "prochain départ · les heures passées sont estompées",
-  de: "nächste Abfahrt · vergangene Zeiten sind gedimmt",
-  el: "επόμενη αναχώρηση · οι περασμένες ώρες είναι αχνές",
-} as const;
-
-export function TimeChips({ route, locale }: { route: BusRoute; locale: string }) {
-  const ui = (["en", "fr", "de", "el"].includes(locale) ? locale : "en") as keyof typeof LEGEND;
+export function TimeChips({ route }: { route: BusRoute; locale: string }) {
+  const t = useTranslations("timeChips");
   const [live, setLive] = useState<{ today: Set<string>; next: string | null; minutes: number | null }>({
     today: new Set(), next: null, minutes: null,
   });
@@ -68,7 +62,7 @@ export function TimeChips({ route, locale }: { route: BusRoute; locale: string }
       ))}
       <p className="text-xs text-text-muted mt-3.5 mb-0">
         <span className="inline-block w-2.5 h-2.5 rounded bg-lagoon mr-1.5 align-[-1px]" />
-        {LEGEND[ui]}
+        {t("legend")}
       </p>
     </div>
   );

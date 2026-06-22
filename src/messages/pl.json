@@ -93,5 +93,36 @@
     "next": "Następny odjazd",
     "inMin": "za {m} min",
     "tomorrow": "Pierwszy autobus jutro"
+  },
+  "depBoard": {
+    "title": "Najbliższe autobusy",
+    "plan": "Zaplanuj podróż",
+    "inMin": "za {m} min",
+    "last": "ostatni dzisiaj",
+    "tomorrow": "jutro",
+    "routeAria": "Rozkład {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "Odjazdy",
+    "nearMe": "W pobliżu",
+    "tomorrow": "jutro",
+    "later": "Pokaż późniejsze odjazdy",
+    "none": "Brak odjazdów w tym miejscu.",
+    "in": "za",
+    "min": "min",
+    "hr": "godz."
+  },
+  "pushBell": {
+    "cta": "Odbieraj alerty o autobusach i pilne info z Krety",
+    "on": "Alerty włączone",
+    "blocked": "Powiadomienia zablokowane w przeglądarce.",
+    "iosInstall": "Alerty o autobusach: dodaj stronę do ekranu głównego (Udostępnij, a następnie Do ekranu głównego), aby je włączyć."
+  },
+  "timeChips": {
+    "legend": "najbliższy odjazd · minione godziny są wyszarzone"
+  },
+  "busInCreteBox": {
+    "heading": "Jak poruszać się po Krecie autobusem",
+    "connector": "do"
   }
 }

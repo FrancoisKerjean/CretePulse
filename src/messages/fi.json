@@ -93,5 +93,36 @@
     "next": "Seuraava lähtö",
     "inMin": "{m} min kuluttua",
     "tomorrow": "Ensimmäinen bussi huomenna"
+  },
+  "depBoard": {
+    "title": "Seuraavat bussit",
+    "plan": "Suunnittele matka",
+    "inMin": "{m} min kuluttua",
+    "last": "viimeinen tänään",
+    "tomorrow": "huomenna",
+    "routeAria": "Aikataulu {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "Lähdöt",
+    "nearMe": "Lähelläni",
+    "tomorrow": "huomenna",
+    "later": "Näytä myöhemmät lähdöt",
+    "none": "Ei lähtöjä täältä.",
+    "in": "kuluttua",
+    "min": "min",
+    "hr": "h"
+  },
+  "pushBell": {
+    "cta": "Tilaa bussi- ja kiireelliset Kreeta-hälytykset",
+    "on": "Hälytykset päällä",
+    "blocked": "Ilmoitukset estetty selaimessasi.",
+    "iosInstall": "Bussihälytykset: lisää tämä sivusto aloitusnäyttöön (Jaa, sitten Lisää aloitusnäyttöön) ottaaksesi ne käyttöön."
+  },
+  "timeChips": {
+    "legend": "seuraava lähtö · menneet ajat näkyvät himmennettyinä"
+  },
+  "busInCreteBox": {
+    "heading": "Kreetalla liikkuminen bussilla",
+    "connector": "–"
   }
 }

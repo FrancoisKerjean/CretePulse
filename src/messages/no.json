@@ -93,5 +93,36 @@
     "next": "Neste avgang",
     "inMin": "om {m} min",
     "tomorrow": "Første buss i morgen"
+  },
+  "depBoard": {
+    "title": "Neste busser",
+    "plan": "Planlegg en reise",
+    "inMin": "om {m} min",
+    "last": "siste i dag",
+    "tomorrow": "i morgen",
+    "routeAria": "Rutetider {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "Avganger",
+    "nearMe": "I nærheten",
+    "tomorrow": "i morgen",
+    "later": "Vis senere avganger",
+    "none": "Ingen avganger her.",
+    "in": "om",
+    "min": "min",
+    "hr": "t"
+  },
+  "pushBell": {
+    "cta": "Få buss- og hastevarsler for Kreta",
+    "on": "Varsler på",
+    "blocked": "Varsler er blokkert i nettleseren.",
+    "iosInstall": "Bussvarsler: legg nettstedet til på Hjem-skjermen (Del, deretter Legg til på Hjem-skjerm) for å aktivere dem."
+  },
+  "timeChips": {
+    "legend": "neste avgang · tidligere tider er nedtonet"
+  },
+  "busInCreteBox": {
+    "heading": "Slik kommer du deg rundt på Kreta med buss",
+    "connector": "til"
   }
 }

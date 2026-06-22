@@ -93,5 +93,36 @@
     "next": "Próxima partida",
     "inMin": "daqui a {m} min",
     "tomorrow": "Primeiro autocarro amanhã"
+  },
+  "depBoard": {
+    "title": "Próximos autocarros",
+    "plan": "Planear uma viagem",
+    "inMin": "daqui a {m} min",
+    "last": "último de hoje",
+    "tomorrow": "amanhã",
+    "routeAria": "Horários {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "Partidas",
+    "nearMe": "Perto de mim",
+    "tomorrow": "amanhã",
+    "later": "Ver partidas seguintes",
+    "none": "Não foram encontradas partidas aqui.",
+    "in": "daqui a",
+    "min": "min",
+    "hr": "h"
+  },
+  "pushBell": {
+    "cta": "Receber alertas de autocarros e avisos urgentes de Creta",
+    "on": "Alertas ativados",
+    "blocked": "Notificações bloqueadas no navegador.",
+    "iosInstall": "Alertas de autocarros: adiciona este site ao ecrã principal (Partilhar e depois Adicionar ao ecrã principal) para os ativar."
+  },
+  "timeChips": {
+    "legend": "próxima partida · as horas passadas aparecem esbatidas"
+  },
+  "busInCreteBox": {
+    "heading": "Deslocar-se em Creta de autocarro",
+    "connector": "a"
   }
 }

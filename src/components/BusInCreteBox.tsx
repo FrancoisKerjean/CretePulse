@@ -6,28 +6,13 @@
 
 import { Bus } from "lucide-react";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { supabase } from "@/lib/supabase";
 import { priorityPairs, type SeoRoute } from "@/lib/bus-seo";
 
-type Loc = "en" | "fr" | "de" | "el";
-
-const L: Record<Loc, { heading: string; connector: string }> = {
-  en: { heading: "Getting around Crete by bus", connector: "to" },
-  fr: { heading: "Se déplacer en Crète en bus", connector: "à" },
-  de: { heading: "Mit dem Bus durch Kreta", connector: "nach" },
-  el: { heading: "Μετακινήσεις στην Κρήτη με λεωφορείο", connector: "προς" },
-};
-
-function pickLoc(locale: string): Loc {
-  return (["en", "fr", "de", "el"] as const).includes(locale as Loc)
-    ? (locale as Loc)
-    : "en";
-}
-
 /** Affiche les liens-trajet prioritaires. `locale` = locale serveur. */
 export async function BusInCreteBox({ locale }: { locale: string }) {
-  const loc = pickLoc(locale);
-  const t = L[loc];
+  const t = await getTranslations({ locale, namespace: "busInCreteBox" });
 
   const { data } = await supabase
     .from("bus_routes")
@@ -43,17 +28,17 @@ export async function BusInCreteBox({ locale }: { locale: string }) {
       <div className="flex items-center gap-3 mb-4">
         <Bus className="w-5 h-5 text-sea" aria-hidden="true" />
         <h2 id="bus-in-crete-heading" className="text-xl font-bold text-sea m-0">
-          {t.heading}
+          {t("heading")}
         </h2>
       </div>
       <ul className="flex flex-wrap gap-x-4 gap-y-2 list-none p-0 m-0 text-sm">
         {pairs.map((p) => (
           <li key={p.slug}>
             <Link
-              href={`/${loc}/buses/${p.slug}`}
+              href={`/${locale}/buses/${p.slug}`}
               className="text-sea hover:underline"
             >
-              Bus {p.placeA} {t.connector} {p.placeB}
+              Bus {p.placeA} {t("connector")} {p.placeB}
             </Link>
           </li>
         ))}

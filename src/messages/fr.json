@@ -93,5 +93,36 @@
     "next": "Prochain départ",
     "inMin": "dans {m} min",
     "tomorrow": "Premier bus demain"
+  },
+  "depBoard": {
+    "title": "Prochains bus",
+    "plan": "Planifier un trajet",
+    "inMin": "dans {m} min",
+    "last": "dernier du jour",
+    "tomorrow": "demain",
+    "routeAria": "Horaires {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "Départs",
+    "nearMe": "Près de moi",
+    "tomorrow": "demain",
+    "later": "Voir les départs suivants",
+    "none": "Aucun départ trouvé ici.",
+    "in": "dans",
+    "min": "min",
+    "hr": "h"
+  },
+  "pushBell": {
+    "cta": "Recevoir les alertes bus & infos urgentes",
+    "on": "Alertes activées",
+    "blocked": "Notifications bloquées dans le navigateur.",
+    "iosInstall": "Alertes bus : ajoute le site à ton écran d'accueil (Partager, puis Sur l'écran d'accueil) pour les activer."
+  },
+  "timeChips": {
+    "legend": "prochain départ · les heures passées sont estompées"
+  },
+  "busInCreteBox": {
+    "heading": "Se déplacer en Crète en bus",
+    "connector": "à"
   }
 }

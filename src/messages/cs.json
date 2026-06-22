@@ -93,5 +93,36 @@
     "next": "Příští odjezd",
     "inMin": "za {m} min",
     "tomorrow": "První bus zítra"
+  },
+  "depBoard": {
+    "title": "Nejbližší spoje",
+    "plan": "Naplánovat cestu",
+    "inMin": "za {m} min",
+    "last": "poslední dnes",
+    "tomorrow": "zítra",
+    "routeAria": "Jízdní řád {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "Odjezdy",
+    "nearMe": "V okolí",
+    "tomorrow": "zítra",
+    "later": "Zobrazit pozdější odjezdy",
+    "none": "Tady nejsou žádné odjezdy.",
+    "in": "za",
+    "min": "min",
+    "hr": "h"
+  },
+  "pushBell": {
+    "cta": "Dostávat upozornění na spoje a důležité info o Krétě",
+    "on": "Upozornění zapnuta",
+    "blocked": "Oznámení jsou v prohlížeči zablokovaná.",
+    "iosInstall": "Upozornění na spoje: přidej si stránku na plochu (Sdílet, pak Přidat na plochu) a aktivuj je."
+  },
+  "timeChips": {
+    "legend": "nejbližší odjezd · uplynulé časy jsou ztlumené"
+  },
+  "busInCreteBox": {
+    "heading": "Cestování po Krétě autobusem",
+    "connector": "do"
   }
 }

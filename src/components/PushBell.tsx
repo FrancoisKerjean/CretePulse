@@ -1,6 +1,7 @@
 // src/components/PushBell.tsx
 "use client";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 // Convertit la clé VAPID base64url en Uint8Array pour applicationServerKey.
 function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
@@ -16,33 +17,8 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
 
 type State = "unsupported" | "ios-install" | "idle" | "subscribed" | "denied" | "working";
 
-const T = {
-  cta: {
-    en: "Get bus & urgent Crete alerts",
-    fr: "Recevoir les alertes bus & infos urgentes",
-    de: "Bus- & Eilmeldungen für Kreta erhalten",
-    el: "Ειδοποιήσεις λεωφορείων & έκτακτα Κρήτης",
-  },
-  on: {
-    en: "Alerts on", fr: "Alertes activées", de: "Meldungen aktiv", el: "Ειδοποιήσεις ενεργές",
-  },
-  blocked: {
-    en: "Notifications blocked in your browser.",
-    fr: "Notifications bloquées dans le navigateur.",
-    de: "Benachrichtigungen im Browser blockiert.",
-    el: "Οι ειδοποιήσεις είναι αποκλεισμένες στο πρόγραμμα περιήγησης.",
-  },
-  iosInstall: {
-    en: "Bus alerts: add this site to your Home Screen (Share, then Add to Home Screen) to enable them.",
-    fr: "Alertes bus : ajoute le site à ton écran d'accueil (Partager, puis Sur l'écran d'accueil) pour les activer.",
-    de: "Bus-Meldungen: Seite zum Home-Bildschirm hinzufügen (Teilen, dann Zum Home-Bildschirm), um sie zu aktivieren.",
-    el: "Ειδοποιήσεις λεωφορείων: πρόσθεσε τον ιστότοπο στην αρχική οθόνη (Κοινή χρήση, μετά Προσθήκη) για ενεργοποίηση.",
-  },
-} as const;
-type Ui = keyof (typeof T)["cta"];
-
 export function PushBell({ locale, label }: { locale: string; label?: string }) {
-  const ui = (["en", "fr", "de", "el"].includes(locale) ? locale : "en") as Ui;
+  const t = useTranslations("pushBell");
   const [state, setState] = useState<State>("idle");
 
   useEffect(() => {
@@ -96,15 +72,15 @@ export function PushBell({ locale, label }: { locale: string; label?: string }) 
     return (
       <p className="text-xs text-text-muted m-0 inline-flex items-start gap-1.5 max-w-sm">
         <span aria-hidden>🔔</span>
-        <span>{T.iosInstall[ui]}</span>
+        <span>{t("iosInstall")}</span>
       </p>
     );
   }
   if (state === "denied") {
-    return <p className="text-xs text-text-muted m-0">{T.blocked[ui]}</p>;
+    return <p className="text-xs text-text-muted m-0">{t("blocked")}</p>;
   }
   if (state === "subscribed") {
-    return <span className="inline-flex items-center gap-1.5 text-sm text-sea font-semibold">🔔 {T.on[ui]}</span>;
+    return <span className="inline-flex items-center gap-1.5 text-sm text-sea font-semibold">🔔 {t("on")}</span>;
   }
   return (
     <button
@@ -113,7 +89,7 @@ export function PushBell({ locale, label }: { locale: string; label?: string }) 
       disabled={state === "working"}
       className="inline-flex items-center gap-2 rounded-full bg-night px-4 py-2 text-sm font-semibold text-white hover:bg-sea transition-colors disabled:opacity-60"
     >
-      🔔 {state === "working" ? "..." : (label ?? T.cta[ui])}
+      🔔 {state === "working" ? "..." : (label ?? t("cta"))}
     </button>
   );
 }

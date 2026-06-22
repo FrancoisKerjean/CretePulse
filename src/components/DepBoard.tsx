@@ -10,20 +10,7 @@ import { timesForDate } from "@/lib/bus-journey";
 import { pairSlug } from "@/lib/bus-pairs";
 import type { BusRoute } from "@/lib/buses";
 import { CiBus } from "@/components/icons";
-
-const T = {
-  title: { en: "Next buses", fr: "Prochains bus", de: "Nächste Busse", el: "Επόμενα λεωφορεία" },
-  plan: { en: "Plan a journey", fr: "Planifier un trajet", de: "Fahrt planen", el: "Σχεδιασμός" },
-  inMin: { en: (m: number) => `in ${m} min`, fr: (m: number) => `dans ${m} min`, de: (m: number) => `in ${m} Min`, el: (m: number) => `σε ${m}’` },
-  last: { en: "last today", fr: "dernier du jour", de: "letzter heute", el: "τελευταίο" },
-  tomorrow: { en: "tomorrow", fr: "demain", de: "morgen", el: "αύριο" },
-  routeAria: {
-    en: (a: string, b: string) => `Timetable ${a} – ${b}`,
-    fr: (a: string, b: string) => `Horaires ${a} – ${b}`,
-    de: (a: string, b: string) => `Fahrplan ${a} – ${b}`,
-    el: (a: string, b: string) => `Δρομολόγια ${a} – ${b}`,
-  },
-};
+import { useTranslations } from "next-intl";
 
 interface NextDep { from: string; to: string; time: string; inMin: number; isLast: boolean; isTomorrow: boolean; price: number | null; pair: string | null }
 
@@ -43,8 +30,8 @@ function trackRouteClick(pair: string) {
   plausible?.("board_route_click", { props: { pair } });
 }
 
-export function DepBoard({ routes, locale, count = 3 }: { routes: BusRoute[]; locale: string; count?: number }) {
-  const ui = (["en", "fr", "de", "el"].includes(locale) ? locale : "en") as keyof typeof T.title;
+export function DepBoard({ routes, count = 3 }: { routes: BusRoute[]; locale: string; count?: number }) {
+  const t = useTranslations("depBoard");
   const [deps, setDeps] = useState<NextDep[]>([]);
 
   useEffect(() => {
@@ -88,10 +75,10 @@ export function DepBoard({ routes, locale, count = 3 }: { routes: BusRoute[]; lo
       <div className="flex items-center justify-between mb-2.5">
         <span className="font-heading font-bold text-lg inline-flex items-center gap-2.5">
           <span className="bg-lagoon text-night rounded-xl p-2 inline-flex"><CiBus className="w-[19px] h-[19px]" /></span>
-          {T.title[ui]}
+          {t("title")}
         </span>
         <Link href="/buses" className="bg-lagoon text-night rounded-full px-4 py-2 text-[13.5px] font-heading font-bold">
-          {T.plan[ui]}
+          {t("plan")}
         </Link>
       </div>
       <div className="font-data">
@@ -102,7 +89,7 @@ export function DepBoard({ routes, locale, count = 3 }: { routes: BusRoute[]; lo
               <span className="font-semibold">{d.from} <span className="text-lagoon mx-1">·</span> {d.to}</span>
               <span className="text-[25px] font-bold">{d.time}</span>
               <span className={`text-[13px] font-bold rounded-full px-3 py-1.5 ${d.isLast || d.isTomorrow ? "bg-sun/16 text-sun" : "bg-ok/18 text-[#43E89D]"}`}>
-                {d.isTomorrow ? T.tomorrow[ui] : d.isLast ? T.last[ui] : T.inMin[ui](d.inMin)}
+                {d.isTomorrow ? t("tomorrow") : d.isLast ? t("last") : t("inMin", { m: d.inMin })}
               </span>
               <span className="text-right text-[#EAF7FA]/55 text-sm w-16">{d.price != null ? `${d.price.toFixed(2)} €` : ""}</span>
               <ChevronRight className="w-4 h-4 text-[#EAF7FA]/40" aria-hidden />
@@ -112,7 +99,7 @@ export function DepBoard({ routes, locale, count = 3 }: { routes: BusRoute[]; lo
             <Link
               key={`${d.from}-${d.to}`}
               href={`/buses/${d.pair}`}
-              aria-label={T.routeAria[ui](d.from, d.to)}
+              aria-label={t("routeAria", { a: d.from, b: d.to })}
               onClick={() => trackRouteClick(d.pair!)}
               className={`${rowClass} -mx-2 px-2 rounded-lg transition-colors hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lagoon/60`}
             >

@@ -93,5 +93,36 @@
     "next": "Következő járat",
     "inMin": "{m} perc múlva",
     "tomorrow": "Első busz holnap"
+  },
+  "depBoard": {
+    "title": "Következő buszok",
+    "plan": "Útvonal tervezése",
+    "inMin": "{m} perc múlva",
+    "last": "ma az utolsó",
+    "tomorrow": "holnap",
+    "routeAria": "Menetrend: {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "Indulások",
+    "nearMe": "A közelemben",
+    "tomorrow": "holnap",
+    "later": "Későbbi indulások mutatása",
+    "none": "Itt nincs találat indulásra.",
+    "in": "múlva:",
+    "min": "perc",
+    "hr": "ó"
+  },
+  "pushBell": {
+    "cta": "Busz- és sürgős Kréta-értesítések kérése",
+    "on": "Értesítések bekapcsolva",
+    "blocked": "Az értesítések le vannak tiltva a böngésződben.",
+    "iosInstall": "Buszértesítések: add hozzá az oldalt a kezdőképernyődhöz (Megosztás, majd Hozzáadás a kezdőképernyőhöz) az engedélyezéshez."
+  },
+  "timeChips": {
+    "legend": "következő indulás · a múltbeli időpontok halványítva"
+  },
+  "busInCreteBox": {
+    "heading": "Közlekedés Krétán busszal",
+    "connector": "ide:"
   }
 }

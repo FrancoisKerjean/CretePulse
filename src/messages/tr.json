@@ -93,5 +93,36 @@
     "next": "Sonraki sefer",
     "inMin": "{m} dk içinde",
     "tomorrow": "İlk otobüs yarın"
+  },
+  "depBoard": {
+    "title": "Sonraki otobüsler",
+    "plan": "Yolculuk planla",
+    "inMin": "{m} dk sonra",
+    "last": "bugün son",
+    "tomorrow": "yarın",
+    "routeAria": "Saatler {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "Kalkışlar",
+    "nearMe": "Yakınımda",
+    "tomorrow": "yarın",
+    "later": "Sonraki kalkışları göster",
+    "none": "Burada kalkış bulunamadı.",
+    "in": "",
+    "min": "dk",
+    "hr": "sa"
+  },
+  "pushBell": {
+    "cta": "Otobüs ve acil Girit uyarılarını al",
+    "on": "Uyarılar açık",
+    "blocked": "Tarayıcında bildirimler engellenmiş.",
+    "iosInstall": "Otobüs uyarıları: etkinleştirmek için bu siteyi Ana Ekranına ekle (Paylaş, ardından Ana Ekrana Ekle)."
+  },
+  "timeChips": {
+    "legend": "sonraki kalkış · geçmiş saatler soluk gösterilir"
+  },
+  "busInCreteBox": {
+    "heading": "Girit'te otobüsle ulaşım",
+    "connector": "→"
   }
 }

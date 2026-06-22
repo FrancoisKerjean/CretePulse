@@ -93,5 +93,36 @@
     "next": "다음 버스",
     "inMin": "{m}분 후",
     "tomorrow": "내일 첫차"
+  },
+  "depBoard": {
+    "title": "다음 버스",
+    "plan": "경로 검색",
+    "inMin": "{m}분 후",
+    "last": "오늘 막차",
+    "tomorrow": "내일",
+    "routeAria": "시간표 {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "출발",
+    "nearMe": "내 주변",
+    "tomorrow": "내일",
+    "later": "이후 출발 더 보기",
+    "none": "여기에서 출발 정보가 없습니다.",
+    "in": "",
+    "min": "분 후",
+    "hr": "시간 후"
+  },
+  "pushBell": {
+    "cta": "버스 및 크레타 긴급 알림 받기",
+    "on": "알림 켜짐",
+    "blocked": "브라우저에서 알림이 차단되었습니다.",
+    "iosInstall": "버스 알림: 이 사이트를 홈 화면에 추가하면(공유 후 홈 화면에 추가) 알림을 켤 수 있습니다."
+  },
+  "timeChips": {
+    "legend": "다음 출발 · 지난 시간은 흐리게 표시됩니다"
+  },
+  "busInCreteBox": {
+    "heading": "크레타 버스로 이동하기",
+    "connector": "→"
   }
 }

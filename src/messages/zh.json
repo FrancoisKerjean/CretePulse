@@ -93,5 +93,36 @@
     "next": "下一班",
     "inMin": "{m} 分钟后",
     "tomorrow": "明天首班车"
+  },
+  "depBoard": {
+    "title": "即将到站",
+    "plan": "规划行程",
+    "inMin": "{m} 分钟后",
+    "last": "今日末班",
+    "tomorrow": "明天",
+    "routeAria": "时刻表 {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "发车",
+    "nearMe": "附近",
+    "tomorrow": "明天",
+    "later": "查看后续班次",
+    "none": "这里暂无班次。",
+    "in": "",
+    "min": "分",
+    "hr": "小时"
+  },
+  "pushBell": {
+    "cta": "接收巴士及克里特紧急提醒",
+    "on": "提醒已开启",
+    "blocked": "浏览器已屏蔽通知。",
+    "iosInstall": "巴士提醒：请将本站添加到主屏幕（点击分享，然后选择添加到主屏幕）以启用提醒。"
+  },
+  "timeChips": {
+    "legend": "下一班 · 已过时刻显示为灰色"
+  },
+  "busInCreteBox": {
+    "heading": "在克里特乘巴士出行",
+    "connector": "至"
   }
 }

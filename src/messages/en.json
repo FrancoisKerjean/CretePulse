@@ -93,5 +93,36 @@
     "next": "Next departure",
     "inMin": "in {m} min",
     "tomorrow": "First bus tomorrow"
+  },
+  "depBoard": {
+    "title": "Next buses",
+    "plan": "Plan a journey",
+    "inMin": "in {m} min",
+    "last": "last today",
+    "tomorrow": "tomorrow",
+    "routeAria": "Timetable {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "Departures",
+    "nearMe": "Near me",
+    "tomorrow": "tomorrow",
+    "later": "Show later departures",
+    "none": "No departures found here.",
+    "in": "in",
+    "min": "min",
+    "hr": "h"
+  },
+  "pushBell": {
+    "cta": "Get bus & urgent Crete alerts",
+    "on": "Alerts on",
+    "blocked": "Notifications blocked in your browser.",
+    "iosInstall": "Bus alerts: add this site to your Home Screen (Share, then Add to Home Screen) to enable them."
+  },
+  "timeChips": {
+    "legend": "next departure · past times are dimmed"
+  },
+  "busInCreteBox": {
+    "heading": "Getting around Crete by bus",
+    "connector": "to"
   }
 }

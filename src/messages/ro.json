@@ -93,5 +93,36 @@
     "next": "Următoarea plecare",
     "inMin": "peste {m} min",
     "tomorrow": "Primul autobuz mâine"
+  },
+  "depBoard": {
+    "title": "Următoarele autobuze",
+    "plan": "Planifică un traseu",
+    "inMin": "peste {m} min",
+    "last": "ultimul azi",
+    "tomorrow": "mâine",
+    "routeAria": "Orar {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "Plecări",
+    "nearMe": "Lângă mine",
+    "tomorrow": "mâine",
+    "later": "Arată plecările următoare",
+    "none": "Nicio plecare găsită aici.",
+    "in": "peste",
+    "min": "min",
+    "hr": "h"
+  },
+  "pushBell": {
+    "cta": "Primește alerte autobuz și info urgente Creta",
+    "on": "Alerte activate",
+    "blocked": "Notificările sunt blocate în browser.",
+    "iosInstall": "Alerte autobuz: adaugă site-ul pe ecranul principal (Distribuie, apoi Adaugă pe ecranul principal) ca să le activezi."
+  },
+  "timeChips": {
+    "legend": "următoarea plecare · orele trecute sunt estompate"
+  },
+  "busInCreteBox": {
+    "heading": "Cum te deplasezi în Creta cu autobuzul",
+    "connector": "spre"
   }
 }

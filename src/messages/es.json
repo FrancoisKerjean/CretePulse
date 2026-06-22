@@ -93,5 +93,36 @@
     "next": "Próxima salida",
     "inMin": "en {m} min",
     "tomorrow": "Primer bus mañana"
+  },
+  "depBoard": {
+    "title": "Próximos buses",
+    "plan": "Planificar un trayecto",
+    "inMin": "en {m} min",
+    "last": "último de hoy",
+    "tomorrow": "mañana",
+    "routeAria": "Horarios {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "Salidas",
+    "nearMe": "Cerca de mí",
+    "tomorrow": "mañana",
+    "later": "Ver las salidas siguientes",
+    "none": "No se encontraron salidas aquí.",
+    "in": "en",
+    "min": "min",
+    "hr": "h"
+  },
+  "pushBell": {
+    "cta": "Recibir alertas de buses e info urgente de Creta",
+    "on": "Alertas activadas",
+    "blocked": "Notificaciones bloqueadas en tu navegador.",
+    "iosInstall": "Alertas de buses: añade el sitio a tu pantalla de inicio (Compartir, luego Añadir a pantalla de inicio) para activarlas."
+  },
+  "timeChips": {
+    "legend": "próxima salida · las horas pasadas aparecen atenuadas"
+  },
+  "busInCreteBox": {
+    "heading": "Moverse por Creta en bus",
+    "connector": "a"
   }
 }
