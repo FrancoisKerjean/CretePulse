@@ -1,10 +1,10 @@
 {
   "activityNudge": {
-    "close": "Close",
-    "title": "Still undecided?",
-    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
-    "dismiss": "Later",
-    "cta": "Start swiping"
+    "close": "Kapat",
+    "title": "Hâlâ kararsız mısın?",
+    "subtitle": "Girit'in en güzel noktalarını kaydır, sana uyanı bul.",
+    "dismiss": "Sonra",
+    "cta": "Kaydırmaya başla"
   },
   "meta": {
     "title": "Crete Direct - Girit'te neler oluyor",
@@ -57,7 +57,8 @@
     "newsFeedLoading": "Haber akışı yükleniyor. 3 saatte bir güncellenir.",
     "guidesSectionTitle": "Seyahat rehberleri",
     "guidesSectionSubtitle": "Plajlar, yürüyüşler, yemek, Girit'te yaşam. Yerinde doğrulandı.",
-    "allGuides": "Tüm rehberler"
+    "allGuides": "Tüm rehberler",
+    "editorialGuides": "Editör rehberleri"
   },
   "footer": {
     "about": "Girit için ücretsiz, bağımsız rehber. Canlı veri. Reklam yok (henüz). Takip yok.",
@@ -77,7 +78,7 @@
     "rights": "Tüm hakları saklıdır.",
     "madeIn": "Girit'te yapıldı",
     "airports": "Havalimanları",
-    "ourProject": "Our project"
+    "ourProject": "Projemiz"
   },
   "common": {
     "readMore": "Devamını oku",

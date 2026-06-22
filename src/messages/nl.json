@@ -1,10 +1,10 @@
 {
   "activityNudge": {
-    "close": "Close",
-    "title": "Still undecided?",
-    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
+    "close": "Sluiten",
+    "title": "Nog niet beslist?",
+    "subtitle": "Swipe de mooiste plekjes van Kreta en vind die ene die bij je past.",
     "dismiss": "Later",
-    "cta": "Start swiping"
+    "cta": "Swipen maar"
   },
   "meta": {
     "title": "Crete Direct - Wat er op Kreta gebeurt",
@@ -57,7 +57,8 @@
     "newsFeedLoading": "Nieuwsfeed wordt geladen. Elke 3 uur bijgewerkt.",
     "guidesSectionTitle": "Reisgidsen",
     "guidesSectionSubtitle": "Stranden, wandelen, eten, leven op Kreta. Ter plaatse gecheckt.",
-    "allGuides": "Alle reisgidsen"
+    "allGuides": "Alle reisgidsen",
+    "editorialGuides": "Redactionele gidsen"
   },
   "footer": {
     "about": "Gratis, onafhankelijke gids voor Kreta. Live data. Geen advertenties (nog). Geen tracking.",

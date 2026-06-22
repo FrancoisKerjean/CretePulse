@@ -1,10 +1,10 @@
 {
   "activityNudge": {
-    "close": "Close",
-    "title": "Still undecided?",
-    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
-    "dismiss": "Later",
-    "cta": "Start swiping"
+    "close": "إغلاق",
+    "title": "ما زلت متردّداً؟",
+    "subtitle": "اسحب أجمل أماكن كريت واعثر على ما يناسبك.",
+    "dismiss": "لاحقاً",
+    "cta": "ابدأ السحب"
   },
   "meta": {
     "title": "Crete Direct - ماذا يحدث في كريت",
@@ -57,7 +57,8 @@
     "newsFeedLoading": "جاري تحميل الأخبار. يُحدَّث كل 3 ساعات.",
     "guidesSectionTitle": "أدلة السفر",
     "guidesSectionSubtitle": "شواطئ، مشي، طعام، حياة في كريت. تم التحقق منها في الجزيرة.",
-    "allGuides": "جميع الأدلة"
+    "allGuides": "جميع الأدلة",
+    "editorialGuides": "أدلّة مختارة"
   },
   "footer": {
     "about": "دليل مجاني ومستقل لكريت. بيانات مباشرة. بدون إعلانات (حالياً). بدون تتبع.",
@@ -77,7 +78,7 @@
     "rights": "جميع الحقوق محفوظة.",
     "madeIn": "صُنع في كريت",
     "airports": "المطارات",
-    "ourProject": "Our project"
+    "ourProject": "مشروعنا"
   },
   "common": {
     "readMore": "اقرأ المزيد",

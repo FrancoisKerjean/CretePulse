@@ -1,10 +1,10 @@
 {
   "activityNudge": {
-    "close": "Close",
-    "title": "Still undecided?",
-    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
-    "dismiss": "Later",
-    "cta": "Start swiping"
+    "close": "Închide",
+    "title": "Tot indecis?",
+    "subtitle": "Dă swipe celor mai tari locuri din Creta și găsește-l pe cel care ți se potrivește.",
+    "dismiss": "Mai târziu",
+    "cta": "Începe să dai swipe"
   },
   "meta": {
     "title": "Crete Direct - Ce se întâmplă în Creta",
@@ -57,7 +57,8 @@
     "newsFeedLoading": "Fluxul de știri se încarcă. Se actualizează la fiecare 3 ore.",
     "guidesSectionTitle": "Ghiduri de călătorie",
     "guidesSectionSubtitle": "Plaje, drumeții, mâncare, viață în Creta. Verificate pe insulă.",
-    "allGuides": "Toate ghidurile"
+    "allGuides": "Toate ghidurile",
+    "editorialGuides": "Ghiduri editoriale"
   },
   "footer": {
     "about": "Ghid gratuit și independent pentru Creta. Date în timp real. Fără reclame (deocamdată). Fără urmărire.",
@@ -77,7 +78,7 @@
     "rights": "Toate drepturile rezervate.",
     "madeIn": "Făcut în Creta",
     "airports": "Aeroporturi",
-    "ourProject": "Our project"
+    "ourProject": "Proiectul nostru"
   },
   "common": {
     "readMore": "Citește mai mult",

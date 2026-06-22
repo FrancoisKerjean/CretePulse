@@ -89,7 +89,7 @@ export default async function LocaleLayout({
   };
 
   return (
-    <html lang={locale} className={`${geist.variable} ${baloo.variable} ${comfortaa.variable}`}>
+    <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"} className={`${geist.variable} ${baloo.variable} ${comfortaa.variable}`}>
       <body className="bg-surface text-ink font-sans antialiased">
         <JsonLd data={organizationSchema} />
         <NextIntlClientProvider messages={messages}>

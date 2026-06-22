@@ -1,10 +1,10 @@
 {
   "activityNudge": {
-    "close": "Close",
-    "title": "Still undecided?",
-    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
-    "dismiss": "Later",
-    "cta": "Start swiping"
+    "close": "关闭",
+    "title": "还没拿定主意？",
+    "subtitle": "刷一刷克里特最棒的景点，找到最对你胃口的那个。",
+    "dismiss": "以后再说",
+    "cta": "开始刷"
   },
   "meta": {
     "title": "Crete Direct - 克里特岛正在发生什么",
@@ -57,7 +57,8 @@
     "newsFeedLoading": "新闻源加载中。每3小时更新。",
     "guidesSectionTitle": "旅行指南",
     "guidesSectionSubtitle": "克里特岛的海滩、徒步、美食、生活。实地核实。",
-    "allGuides": "所有指南"
+    "allGuides": "所有指南",
+    "editorialGuides": "编辑精选"
   },
   "footer": {
     "about": "免费、独立的克里特岛指南。实时数据。无广告（暂时）。无追踪。",
@@ -77,7 +78,7 @@
     "rights": "版权所有。",
     "madeIn": "产自克里特岛",
     "airports": "机场",
-    "ourProject": "Our project"
+    "ourProject": "关于我们"
   },
   "common": {
     "readMore": "阅读更多",

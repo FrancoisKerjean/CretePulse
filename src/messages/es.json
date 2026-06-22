@@ -1,10 +1,10 @@
 {
   "activityNudge": {
-    "close": "Close",
-    "title": "Still undecided?",
-    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
-    "dismiss": "Later",
-    "cta": "Start swiping"
+    "close": "Cerrar",
+    "title": "¿Aún no te decides?",
+    "subtitle": "Desliza los mejores rincones de Creta y encuentra el que va contigo.",
+    "dismiss": "Más tarde",
+    "cta": "Empezar a deslizar"
   },
   "meta": {
     "title": "Crete Direct - Qué está pasando en Creta",
@@ -57,7 +57,8 @@
     "newsFeedLoading": "Cargando noticias. Se actualizan cada 3 horas.",
     "guidesSectionTitle": "Guías de viaje",
     "guidesSectionSubtitle": "Playas, senderismo, comida, vida en Creta. Verificado en la isla.",
-    "allGuides": "Todas las guías"
+    "allGuides": "Todas las guías",
+    "editorialGuides": "Guías editoriales"
   },
   "footer": {
     "about": "Guía gratuita e independiente de Creta. Datos en vivo. Sin anuncios (por ahora). Sin rastreo.",

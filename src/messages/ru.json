@@ -1,10 +1,10 @@
 {
   "activityNudge": {
-    "close": "Close",
-    "title": "Still undecided?",
-    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
-    "dismiss": "Later",
-    "cta": "Start swiping"
+    "close": "Закрыть",
+    "title": "Ещё не решил?",
+    "subtitle": "Свайпай лучшие места Крита и найди то, что по душе.",
+    "dismiss": "Позже",
+    "cta": "Свайпать"
   },
   "meta": {
     "title": "Crete Direct - Что происходит на Крите",
@@ -57,7 +57,8 @@
     "newsFeedLoading": "Лента новостей загружается. Обновляется каждые 3 часа.",
     "guidesSectionTitle": "Путеводители",
     "guidesSectionSubtitle": "Пляжи, походы, еда, жизнь на Крите. Проверено на месте.",
-    "allGuides": "Все путеводители"
+    "allGuides": "Все путеводители",
+    "editorialGuides": "Гиды от редакции"
   },
   "footer": {
     "about": "Бесплатный независимый гид по Криту. Актуальные данные. Без рекламы (пока). Без слежки.",
@@ -77,7 +78,7 @@
     "rights": "Все права защищены.",
     "madeIn": "Сделано на Крите",
     "airports": "Аэропорты",
-    "ourProject": "Our project"
+    "ourProject": "Наш проект"
   },
   "common": {
     "readMore": "Читать далее",

@@ -1,10 +1,10 @@
 {
   "activityNudge": {
-    "close": "Close",
-    "title": "Still undecided?",
-    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
-    "dismiss": "Later",
-    "cta": "Start swiping"
+    "close": "Zavřít",
+    "title": "Pořád nerozhodnutí?",
+    "subtitle": "Swajpuj nejlepší místa na Krétě a najdi to pravé pro tebe.",
+    "dismiss": "Později",
+    "cta": "Začít swajpovat"
   },
   "meta": {
     "title": "Crete Direct - Co se děje na Krétě",
@@ -57,7 +57,8 @@
     "newsFeedLoading": "Zpravodajský kanál se načítá. Aktualizace každé 3 hodiny.",
     "guidesSectionTitle": "Průvodci",
     "guidesSectionSubtitle": "Pláže, túry, jídlo, život na Krétě. Ověřeno na místě.",
-    "allGuides": "Všichni průvodci"
+    "allGuides": "Všichni průvodci",
+    "editorialGuides": "Redakční průvodci"
   },
   "footer": {
     "about": "Bezplatný, nezávislý průvodce Krétou. Živá data. Bez reklam (zatím). Bez sledování.",
@@ -77,7 +78,7 @@
     "rights": "Všechna práva vyhrazena.",
     "madeIn": "Vyrobeno na Krétě",
     "airports": "Letiště",
-    "ourProject": "Our project"
+    "ourProject": "Náš projekt"
   },
   "common": {
     "readMore": "Číst dále",

@@ -1,10 +1,10 @@
 {
   "activityNudge": {
-    "close": "Close",
-    "title": "Still undecided?",
-    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
-    "dismiss": "Later",
-    "cta": "Start swiping"
+    "close": "닫기",
+    "title": "아직 못 정했어요?",
+    "subtitle": "크레타 최고의 스폿을 스와이프하며 딱 맞는 곳을 찾아보세요.",
+    "dismiss": "나중에",
+    "cta": "스와이프 시작"
   },
   "meta": {
     "title": "Crete Direct - 크레타에서 무슨 일이 일어나고 있나요",
@@ -57,7 +57,8 @@
     "newsFeedLoading": "뉴스 피드 로딩 중. 3시간마다 업데이트됩니다.",
     "guidesSectionTitle": "여행 가이드",
     "guidesSectionSubtitle": "크레타의 해변, 하이킹, 음식, 생활. 현지에서 검증.",
-    "allGuides": "모든 가이드"
+    "allGuides": "모든 가이드",
+    "editorialGuides": "에디토리얼 가이드"
   },
   "footer": {
     "about": "크레타의 무료 독립 가이드. 실시간 데이터. 광고 없음(아직은). 추적 없음.",
@@ -77,7 +78,7 @@
     "rights": "모든 권리 보유.",
     "madeIn": "크레타에서 제작",
     "airports": "공항",
-    "ourProject": "Our project"
+    "ourProject": "프로젝트 소개"
   },
   "common": {
     "readMore": "더 읽기",

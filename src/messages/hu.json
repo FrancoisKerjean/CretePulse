@@ -1,10 +1,10 @@
 {
   "activityNudge": {
-    "close": "Close",
-    "title": "Still undecided?",
-    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
-    "dismiss": "Later",
-    "cta": "Start swiping"
+    "close": "Bezárás",
+    "title": "Még bizonytalan vagy?",
+    "subtitle": "Lapozd át Kréta legjobb helyeit, és találd meg a hozzád illőt.",
+    "dismiss": "Később",
+    "cta": "Kezdődhet a lapozás"
   },
   "meta": {
     "title": "Crete Direct - Mi történik Krétán",
@@ -57,7 +57,8 @@
     "newsFeedLoading": "Hírek betöltése. 3 óránként frissül.",
     "guidesSectionTitle": "Útikalauzok",
     "guidesSectionSubtitle": "Strandok, túrák, étel, élet Krétán. Helyszínen ellenőrizve.",
-    "allGuides": "Összes útikalauz"
+    "allGuides": "Összes útikalauz",
+    "editorialGuides": "Szerkesztői útmutatók"
   },
   "footer": {
     "about": "Ingyenes, független Kréta-útmutató. Élő adatok. Nincs reklám (egyelőre). Nincs nyomon követés.",
@@ -77,7 +78,7 @@
     "rights": "Minden jog fenntartva.",
     "madeIn": "Krétán készült",
     "airports": "Repülőterek",
-    "ourProject": "Our project"
+    "ourProject": "A projektünk"
   },
   "common": {
     "readMore": "Tovább olvasom",

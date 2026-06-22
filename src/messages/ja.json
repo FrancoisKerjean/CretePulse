@@ -1,10 +1,10 @@
 {
   "activityNudge": {
-    "close": "Close",
-    "title": "Still undecided?",
-    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
-    "dismiss": "Later",
-    "cta": "Start swiping"
+    "close": "閉じる",
+    "title": "まだ迷ってる？",
+    "subtitle": "クレタ島のベストスポットをスワイプして、あなたにぴったりの一つを見つけよう。",
+    "dismiss": "あとで",
+    "cta": "スワイプを始める"
   },
   "meta": {
     "title": "Crete Direct - クレタ島の最新情報",
@@ -57,7 +57,8 @@
     "newsFeedLoading": "ニュースフィードを読み込み中。3時間ごとに更新されます。",
     "guidesSectionTitle": "旅行ガイド",
     "guidesSectionSubtitle": "クレタ島のビーチ、ハイキング、料理、暮らし。現地で検証済み。",
-    "allGuides": "すべてのガイド"
+    "allGuides": "すべてのガイド",
+    "editorialGuides": "特集ガイド"
   },
   "footer": {
     "about": "クレタ島の無料・独立ガイド。ライブデータ。広告なし（今のところ）。トラッキングなし。",
@@ -77,7 +78,7 @@
     "rights": "全著作権所有。",
     "madeIn": "クレタ島製",
     "airports": "空港",
-    "ourProject": "Our project"
+    "ourProject": "私たちのプロジェクト"
   },
   "common": {
     "readMore": "続きを読む",

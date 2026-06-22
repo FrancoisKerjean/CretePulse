@@ -1,10 +1,10 @@
 {
   "activityNudge": {
-    "close": "Close",
-    "title": "Still undecided?",
-    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
-    "dismiss": "Later",
-    "cta": "Start swiping"
+    "close": "Sulje",
+    "title": "Etkö ole vielä päättänyt?",
+    "subtitle": "Swaippaa Kreetan parhaat paikat ja löydä juuri sinulle sopiva.",
+    "dismiss": "Myöhemmin",
+    "cta": "Aloita swaippaus"
   },
   "meta": {
     "title": "Crete Direct - Mitä Kreetalla tapahtuu",
@@ -57,7 +57,8 @@
     "newsFeedLoading": "Uutissyöte latautuu. Päivitetään 3 tunnin välein.",
     "guidesSectionTitle": "Matkaoppaat",
     "guidesSectionSubtitle": "Rannat, vaellukset, ruoka, elämä Kreetalla. Tarkistettu paikan päällä.",
-    "allGuides": "Kaikki oppaat"
+    "allGuides": "Kaikki oppaat",
+    "editorialGuides": "Toimitukselliset oppaat"
   },
   "footer": {
     "about": "Ilmainen, riippumaton Kreeta-opas. Reaaliaikaista dataa. Ei mainoksia (vielä). Ei seurantaa.",
@@ -77,7 +78,7 @@
     "rights": "Kaikki oikeudet pidätetään.",
     "madeIn": "Tehty Kreetalla",
     "airports": "Lentoasemat",
-    "ourProject": "Our project"
+    "ourProject": "Projektimme"
   },
   "common": {
     "readMore": "Lue lisää",

@@ -1,10 +1,10 @@
 {
   "activityNudge": {
-    "close": "Close",
-    "title": "Still undecided?",
-    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
-    "dismiss": "Later",
-    "cta": "Start swiping"
+    "close": "Zamknij",
+    "title": "Wciąż się wahasz?",
+    "subtitle": "Przesuwaj najlepsze miejsca na Krecie i znajdź to, które pasuje do Ciebie.",
+    "dismiss": "Później",
+    "cta": "Zaczynam przesuwać"
   },
   "meta": {
     "title": "Crete Direct - Co się dzieje na Krecie",
@@ -57,7 +57,8 @@
     "newsFeedLoading": "Ładowanie wiadomości. Aktualizowane co 3 godziny.",
     "guidesSectionTitle": "Przewodniki",
     "guidesSectionSubtitle": "Plaże, wędrówki, jedzenie, życie na Krecie. Sprawdzone na miejscu.",
-    "allGuides": "Wszystkie przewodniki"
+    "allGuides": "Wszystkie przewodniki",
+    "editorialGuides": "Przewodniki redakcyjne"
   },
   "footer": {
     "about": "Darmowy, niezależny przewodnik po Krecie. Dane na żywo. Bez reklam (na razie). Bez śledzenia.",
@@ -77,7 +78,7 @@
     "rights": "Wszelkie prawa zastrzeżone.",
     "madeIn": "Stworzone na Krecie",
     "airports": "Lotniska",
-    "ourProject": "Our project"
+    "ourProject": "Nasz projekt"
   },
   "common": {
     "readMore": "Czytaj więcej",

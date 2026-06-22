@@ -1,10 +1,10 @@
 {
   "activityNudge": {
-    "close": "Close",
-    "title": "Still undecided?",
-    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
-    "dismiss": "Later",
-    "cta": "Start swiping"
+    "close": "Luk",
+    "title": "Stadig i tvivl?",
+    "subtitle": "Swipe de bedste steder på Kreta, og find det, der passer til dig.",
+    "dismiss": "Senere",
+    "cta": "Start med at swipe"
   },
   "meta": {
     "title": "Crete Direct - Hvad sker der på Kreta",
@@ -57,7 +57,8 @@
     "newsFeedLoading": "Nyhedsfeed indlæses. Opdateres hver 3. time.",
     "guidesSectionTitle": "Rejseguides",
     "guidesSectionSubtitle": "Strande, vandreture, mad, liv på Kreta. Tjekket på stedet.",
-    "allGuides": "Alle guides"
+    "allGuides": "Alle guides",
+    "editorialGuides": "Redaktionelle guider"
   },
   "footer": {
     "about": "Gratis, uafhængig guide til Kreta. Live data. Ingen reklamer (endnu). Ingen sporing.",
