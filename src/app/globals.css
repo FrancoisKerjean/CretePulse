@@ -31,6 +31,17 @@
   --color-night: #07374A;
   --color-sun: #FFC83D;
   --color-ok: #14B86B;
+  /* Tokens canoniques Kalimera (DA 11/06) : noms officiels = source de verite de la migration.
+     Valeurs identiques aux anciens noms (sea=aegean, terracotta=terra, foam=surface, ink=text)
+     pour pouvoir ecrire les nouvelles classes (bg-sea, text-ink, bg-foam, border-terracotta...)
+     des maintenant SANS rien changer au rendu existant. Les anciens noms seront migres puis
+     retires au Chantier 1, quand "git grep aegean" retourne 0. */
+  --color-sea: #0B5E78;
+  --color-terracotta: #ED7A5C;
+  --color-foam: #F6FBFC;
+  --color-ink: #0B3954;
+  --color-warn: #FFC83D;
+  --color-alert: #E5484D;
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
