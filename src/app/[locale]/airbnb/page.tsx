@@ -203,7 +203,7 @@ export default async function AirbnbIndexPage(
           ),
         )}
 
-        <div className="mt-12 rounded-xl bg-stone p-4 text-xs text-text-muted">
+        <div className="mt-12 rounded-xl bg-surface p-4 text-xs text-text-muted">
           {l.source}
         </div>
 

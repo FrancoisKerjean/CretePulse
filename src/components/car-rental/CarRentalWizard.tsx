@@ -362,7 +362,7 @@ export function CarRentalWizard({ locale }: { locale: string }) {
   }
 
   const recap = pickup && (
-    <div className="mt-5 rounded-2xl bg-stone px-4 py-3.5 text-left">
+    <div className="mt-5 rounded-2xl bg-surface px-4 py-3.5 text-left">
       <p className="m-0 font-heading font-bold text-[15px] text-text">{pickupLabel(pickup)}</p>
       <p className="m-0 mt-1 text-sm text-text-muted font-data">
         {dateFrom}{timeFrom ? ` ${timeFrom}` : ""} → {dateTo}{timeTo ? ` ${timeTo}` : ""}
@@ -624,7 +624,7 @@ export function CarRentalWizard({ locale }: { locale: string }) {
               );
             })}
           </div>
-          <div className="mt-6 flex items-center justify-between gap-4 rounded-2xl bg-stone px-4 py-3.5">
+          <div className="mt-6 flex items-center justify-between gap-4 rounded-2xl bg-surface px-4 py-3.5">
             <span className="font-heading font-bold text-[15px] text-text">{t.paxLabel}</span>
             <div className="flex items-center gap-3.5">
               <button

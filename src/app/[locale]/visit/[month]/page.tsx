@@ -255,7 +255,7 @@ function getCrowdColor(level: string): string {
     case "moderate": return "bg-yellow-100 text-yellow-800";
     case "high": return "bg-orange-100 text-orange-800";
     case "peak": return "bg-red-100 text-red-800";
-    default: return "bg-gray-100 text-gray-800";
+    default: return "bg-surface text-ink";
   }
 }
 
@@ -265,7 +265,7 @@ function getPriceColor(level: string): string {
     case "mid": return "bg-yellow-100 text-yellow-800";
     case "high": return "bg-orange-100 text-orange-800";
     case "peak": return "bg-red-100 text-red-800";
-    default: return "bg-gray-100 text-gray-800";
+    default: return "bg-surface text-ink";
   }
 }
 
@@ -378,10 +378,10 @@ export default async function VisitMonthPage({ params }: { params: Promise<{ loc
       <main className="mx-auto max-w-4xl px-4 py-8">
         {/* Hero */}
         <section className="mb-10 text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+          <h1 className="text-4xl font-bold tracking-tight text-ink sm:text-5xl">
             {locale === "fr" ? `La Crète en ${monthName}` : locale === "de" ? `Kreta im ${monthName}` : locale === "el" ? `Κρήτη τον ${monthName}` : `Crete in ${monthName}`}
           </h1>
-          <p className="mt-3 text-lg text-gray-500">{L.heroSub}</p>
+          <p className="mt-3 text-lg text-text-muted">{L.heroSub}</p>
           {/* Crowd & price badges */}
           <div className="mt-4 flex items-center justify-center gap-4">
             <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium ${getCrowdColor(guide.crowdLevel)}`}>
@@ -397,51 +397,51 @@ export default async function VisitMonthPage({ params }: { params: Promise<{ loc
 
         {/* Climate stats */}
         <section className="mb-10">
-          <h2 className="mb-4 text-2xl font-semibold text-gray-900">{L.climate}</h2>
+          <h2 className="mb-4 text-2xl font-semibold text-ink">{L.climate}</h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-            <div className="rounded-xl border border-gray-200 bg-white p-4 text-center shadow-sm">
+            <div className="rounded-xl border border-border bg-white p-4 text-center shadow-sm">
               <Thermometer className="mx-auto mb-2 h-6 w-6 text-red-500" />
-              <p className="text-2xl font-bold text-gray-900">{climate.avgHigh}°C</p>
-              <p className="text-xs text-gray-500">{L.airTemp}</p>
+              <p className="text-2xl font-bold text-ink">{climate.avgHigh}°C</p>
+              <p className="text-xs text-text-muted">{L.airTemp}</p>
             </div>
-            <div className="rounded-xl border border-gray-200 bg-white p-4 text-center shadow-sm">
+            <div className="rounded-xl border border-border bg-white p-4 text-center shadow-sm">
               <Waves className="mx-auto mb-2 h-6 w-6 text-blue-500" />
-              <p className="text-2xl font-bold text-gray-900">{climate.seaTemp}°C</p>
-              <p className="text-xs text-gray-500">{L.seaTemp}</p>
+              <p className="text-2xl font-bold text-ink">{climate.seaTemp}°C</p>
+              <p className="text-xs text-text-muted">{L.seaTemp}</p>
             </div>
-            <div className="rounded-xl border border-gray-200 bg-white p-4 text-center shadow-sm">
+            <div className="rounded-xl border border-border bg-white p-4 text-center shadow-sm">
               <Sun className="mx-auto mb-2 h-6 w-6 text-yellow-500" />
-              <p className="text-2xl font-bold text-gray-900">{climate.sunHours}h</p>
-              <p className="text-xs text-gray-500">{L.sunHours}</p>
+              <p className="text-2xl font-bold text-ink">{climate.sunHours}h</p>
+              <p className="text-xs text-text-muted">{L.sunHours}</p>
             </div>
-            <div className="rounded-xl border border-gray-200 bg-white p-4 text-center shadow-sm">
-              <svg className="mx-auto mb-2 h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 17h1m16 0h1M5.6 10.6l.7.7m12.1-.7-.7.7M8 17a4 4 0 018 0M12 3v2" /></svg>
-              <p className="text-2xl font-bold text-gray-900">{climate.rainyDays}</p>
-              <p className="text-xs text-gray-500">{L.rainyDays}</p>
+            <div className="rounded-xl border border-border bg-white p-4 text-center shadow-sm">
+              <svg className="mx-auto mb-2 h-6 w-6 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 17h1m16 0h1M5.6 10.6l.7.7m12.1-.7-.7.7M8 17a4 4 0 018 0M12 3v2" /></svg>
+              <p className="text-2xl font-bold text-ink">{climate.rainyDays}</p>
+              <p className="text-xs text-text-muted">{L.rainyDays}</p>
             </div>
-            <div className="rounded-xl border border-gray-200 bg-white p-4 text-center shadow-sm">
+            <div className="rounded-xl border border-border bg-white p-4 text-center shadow-sm">
               <Sun className="mx-auto mb-2 h-6 w-6 text-orange-500" />
-              <p className="text-2xl font-bold text-gray-900">{climate.uvIndex}</p>
-              <p className="text-xs text-gray-500">{L.uvIndex}</p>
+              <p className="text-2xl font-bold text-ink">{climate.uvIndex}</p>
+              <p className="text-xs text-text-muted">{L.uvIndex}</p>
             </div>
-            <div className="rounded-xl border border-gray-200 bg-white p-4 text-center shadow-sm">
+            <div className="rounded-xl border border-border bg-white p-4 text-center shadow-sm">
               <Waves className="mx-auto mb-2 h-6 w-6 text-cyan-500" />
-              <p className="text-sm font-semibold text-gray-900">{swimVerdict}</p>
-              <p className="text-xs text-gray-500">{L.swim}</p>
+              <p className="text-sm font-semibold text-ink">{swimVerdict}</p>
+              <p className="text-xs text-text-muted">{L.swim}</p>
             </div>
           </div>
         </section>
 
         {/* Best for */}
         <section className="mb-10">
-          <h2 className="mb-4 flex items-center gap-2 text-2xl font-semibold text-gray-900">
+          <h2 className="mb-4 flex items-center gap-2 text-2xl font-semibold text-ink">
             <Sun className="h-6 w-6 text-yellow-500" /> {L.bestFor}
           </h2>
           <ul className="grid gap-3 sm:grid-cols-2">
             {bestFor.map((item) => (
-              <li key={item} className="flex items-start gap-2 rounded-lg border border-gray-100 bg-white px-4 py-3 shadow-sm">
+              <li key={item} className="flex items-start gap-2 rounded-lg border border-border bg-white px-4 py-3 shadow-sm">
                 <ChevronRight className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500" />
-                <span className="text-gray-700">{item}</span>
+                <span className="text-ink">{item}</span>
               </li>
             ))}
           </ul>
@@ -449,14 +449,14 @@ export default async function VisitMonthPage({ params }: { params: Promise<{ loc
 
         {/* Packing tips */}
         <section className="mb-10">
-          <h2 className="mb-4 flex items-center gap-2 text-2xl font-semibold text-gray-900">
+          <h2 className="mb-4 flex items-center gap-2 text-2xl font-semibold text-ink">
             <Shirt className="h-6 w-6 text-purple-500" /> {L.packing}
           </h2>
           <ul className="grid gap-3 sm:grid-cols-2">
             {packingTips.map((item) => (
-              <li key={item} className="flex items-start gap-2 rounded-lg border border-gray-100 bg-white px-4 py-3 shadow-sm">
+              <li key={item} className="flex items-start gap-2 rounded-lg border border-border bg-white px-4 py-3 shadow-sm">
                 <ChevronRight className="mt-0.5 h-4 w-4 flex-shrink-0 text-purple-500" />
-                <span className="text-gray-700">{item}</span>
+                <span className="text-ink">{item}</span>
               </li>
             ))}
           </ul>
@@ -464,14 +464,14 @@ export default async function VisitMonthPage({ params }: { params: Promise<{ loc
 
         {/* Events */}
         <section className="mb-10">
-          <h2 className="mb-4 flex items-center gap-2 text-2xl font-semibold text-gray-900">
+          <h2 className="mb-4 flex items-center gap-2 text-2xl font-semibold text-ink">
             <Calendar className="h-6 w-6 text-pink-500" /> {L.events}
           </h2>
           <ul className="grid gap-3 sm:grid-cols-2">
             {events.map((item) => (
-              <li key={item} className="flex items-start gap-2 rounded-lg border border-gray-100 bg-white px-4 py-3 shadow-sm">
+              <li key={item} className="flex items-start gap-2 rounded-lg border border-border bg-white px-4 py-3 shadow-sm">
                 <Calendar className="mt-0.5 h-4 w-4 flex-shrink-0 text-pink-500" />
-                <span className="text-gray-700">{item}</span>
+                <span className="text-ink">{item}</span>
               </li>
             ))}
           </ul>
@@ -479,8 +479,8 @@ export default async function VisitMonthPage({ params }: { params: Promise<{ loc
 
         {/* Verdict */}
         <section className="mb-10 rounded-2xl border border-blue-100 bg-blue-50 p-6">
-          <h2 className="mb-3 text-2xl font-semibold text-gray-900">{L.verdict}</h2>
-          <p className="text-lg leading-relaxed text-gray-700">{verdict}</p>
+          <h2 className="mb-3 text-2xl font-semibold text-ink">{L.verdict}</h2>
+          <p className="text-lg leading-relaxed text-ink">{verdict}</p>
         </section>
 
         {/* Monétisation (audit 13/06/2026, A3) : le voyageur planifie son mois
@@ -492,7 +492,7 @@ export default async function VisitMonthPage({ params }: { params: Promise<{ loc
 
         {/* Weather links per city */}
         <section className="mb-10">
-          <h2 className="mb-4 text-2xl font-semibold text-gray-900">
+          <h2 className="mb-4 text-2xl font-semibold text-ink">
             {L.weatherIn} {monthName}
           </h2>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -502,10 +502,10 @@ export default async function VisitMonthPage({ params }: { params: Promise<{ loc
                 <Link
                   key={city.slug}
                   href={`/${locale}/weather/${city.slug}/${month}`}
-                  className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 transition-colors hover:bg-gray-50"
+                  className="flex items-center justify-between rounded-lg border border-border bg-white px-4 py-3 transition-colors hover:bg-surface"
                 >
-                  <span className="font-medium text-gray-800">{city.name}</span>
-                  <span className="text-sm text-gray-500">{c.avgHigh}°C / {c.seaTemp}°C</span>
+                  <span className="font-medium text-ink">{city.name}</span>
+                  <span className="text-sm text-text-muted">{c.avgHigh}°C / {c.seaTemp}°C</span>
                 </Link>
               );
             })}
@@ -516,14 +516,14 @@ export default async function VisitMonthPage({ params }: { params: Promise<{ loc
         <nav className="mb-10 flex items-center justify-between">
           <Link
             href={`/${locale}/visit/${prevMonth}`}
-            className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            className="flex items-center gap-1 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-surface"
           >
             <ChevronLeft className="h-4 w-4" />
             {prevName}
           </Link>
           <Link
             href={`/${locale}/visit/${nextMonth}`}
-            className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            className="flex items-center gap-1 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-surface"
           >
             {nextName}
             <ChevronRight className="h-4 w-4" />
@@ -532,7 +532,7 @@ export default async function VisitMonthPage({ params }: { params: Promise<{ loc
 
         {/* All months grid */}
         <section className="mb-10">
-          <h2 className="mb-4 text-2xl font-semibold text-gray-900">{L.otherMonths}</h2>
+          <h2 className="mb-4 text-2xl font-semibold text-ink">{L.otherMonths}</h2>
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
             {MONTHS.map((m) => {
               const mName = MONTH_NAMES[locale]?.[m] || MONTH_NAMES.en[m];
@@ -544,7 +544,7 @@ export default async function VisitMonthPage({ params }: { params: Promise<{ loc
                   className={`rounded-lg border px-3 py-2 text-center text-sm font-medium transition-colors ${
                     isCurrent
                       ? "border-blue-300 bg-blue-100 text-blue-800"
-                      : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                      : "border-border bg-white text-ink hover:bg-surface"
                   }`}
                 >
                   {mName}
@@ -556,12 +556,12 @@ export default async function VisitMonthPage({ params }: { params: Promise<{ loc
 
         {/* FAQ section (visible) */}
         <section className="mb-10">
-          <h2 className="mb-4 text-2xl font-semibold text-gray-900">FAQ</h2>
+          <h2 className="mb-4 text-2xl font-semibold text-ink">FAQ</h2>
           <div className="space-y-4">
             {faqItems.map((faq) => (
-              <details key={faq.q} className="rounded-xl border border-gray-200 bg-white">
-                <summary className="cursor-pointer px-5 py-4 font-medium text-gray-900">{faq.q}</summary>
-                <p className="px-5 pb-4 text-gray-600">{faq.a}</p>
+              <details key={faq.q} className="rounded-xl border border-border bg-white">
+                <summary className="cursor-pointer px-5 py-4 font-medium text-ink">{faq.q}</summary>
+                <p className="px-5 pb-4 text-ink">{faq.a}</p>
               </details>
             ))}
           </div>

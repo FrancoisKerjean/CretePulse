@@ -36,8 +36,8 @@ const PERIOD_COLORS: Record<string, string> = {
   minoan: "bg-terracotta-faint text-terracotta",
   venetian: "bg-sea-faint text-sea",
   ottoman: "bg-sand text-text-muted",
-  modern: "bg-stone text-text-muted",
-  abandoned: "bg-stone-warm text-text-light",
+  modern: "bg-surface text-text-muted",
+  abandoned: "bg-surface text-text-light",
 };
 
 export default async function VillagesPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -85,7 +85,7 @@ export default async function VillagesPage({ params }: { params: Promise<{ local
               className="group rounded-xl border border-border bg-white overflow-hidden hover:border-sea/30 hover:shadow-md transition-all"
             >
               {village.image_url && (
-                <div className="h-40 bg-stone overflow-hidden">
+                <div className="h-40 bg-surface overflow-hidden">
                   <img
                     src={village.image_url}
                     alt={getLocalizedField(village, "name", loc)}
@@ -100,7 +100,7 @@ export default async function VillagesPage({ params }: { params: Promise<{ local
                     {getLocalizedField(village, "name", loc)}
                   </h2>
                   {village.period && (
-                    <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full capitalize ${PERIOD_COLORS[village.period] || "bg-stone text-text-muted"}`}>
+                    <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full capitalize ${PERIOD_COLORS[village.period] || "bg-surface text-text-muted"}`}>
                       {village.period}
                     </span>
                   )}
@@ -152,9 +152,9 @@ function VillagesPlaceholder({ locale }: { locale: Locale }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-border bg-white p-4 animate-pulse">
-              <div className="h-32 bg-stone rounded-lg mb-3" />
-              <div className="h-5 bg-stone rounded w-2/3 mb-2" />
-              <div className="h-3 bg-stone rounded w-1/3" />
+              <div className="h-32 bg-surface rounded-lg mb-3" />
+              <div className="h-5 bg-surface rounded w-2/3 mb-2" />
+              <div className="h-3 bg-surface rounded w-1/3" />
             </div>
           ))}
         </div>

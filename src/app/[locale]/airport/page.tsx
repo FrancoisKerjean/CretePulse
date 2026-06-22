@@ -177,21 +177,21 @@ export default async function AirportsIndexPage(
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-stone-50 to-white">
+    <main className="min-h-screen bg-gradient-to-b from-foam to-white">
       <JsonLd data={jsonLd} />
 
       <div className="mx-auto max-w-5xl px-4 py-8 md:py-12">
         <Link
           href={`/${locale}`}
-          className="inline-flex items-center gap-1 text-sm text-stone-600 hover:text-stone-900 mb-6"
+          className="inline-flex items-center gap-1 text-sm text-ink hover:text-ink mb-6"
         >
           <ChevronLeft className="h-4 w-4" />
           {t.back}
         </Link>
 
         <header className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-stone-900">{t.h1}</h1>
-          <p className="mt-3 text-stone-600 max-w-3xl">{t.intro}</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-ink">{t.h1}</h1>
+          <p className="mt-3 text-ink max-w-3xl">{t.intro}</p>
         </header>
 
         <section className="grid md:grid-cols-3 gap-4 mb-10">
@@ -201,21 +201,21 @@ export default async function AirportsIndexPage(
               <Link
                 key={a.slug}
                 href={`/${locale}/airport/${a.slug}`}
-                className="group rounded-xl border border-stone-200 bg-white p-5 hover:border-stone-400 transition-colors"
+                className="group rounded-xl border border-border bg-white p-5 hover:border-sea/30 transition-colors"
               >
-                <div className="flex items-center gap-2 text-sm text-stone-500 mb-2">
+                <div className="flex items-center gap-2 text-sm text-text-muted mb-2">
                   <Plane className="h-4 w-4" />
                   <span>{a.iata}</span>
                 </div>
-                <h2 className="text-lg font-semibold text-stone-900 group-hover:underline">
+                <h2 className="text-lg font-semibold text-ink group-hover:underline">
                   {a.city[uiLoc]}
                 </h2>
                 {stats && (
                   <>
-                    <div className="mt-3 flex items-center gap-1.5 text-xs text-stone-500">
+                    <div className="mt-3 flex items-center gap-1.5 text-xs text-text-muted">
                       <TrendingUp className="h-3.5 w-3.5" /> {t.last12}
                     </div>
-                    <div className="text-2xl font-bold text-stone-900">
+                    <div className="text-2xl font-bold text-ink">
                       {fmtNum(stats.rolling12, locale)}
                     </div>
                     {stats.rolling12YoYPct !== null && (
@@ -223,7 +223,7 @@ export default async function AirportsIndexPage(
                         {fmtPct(stats.rolling12YoYPct)} {t.vsPrevYear}
                       </div>
                     )}
-                    <div className="mt-2 text-xs text-stone-500 capitalize">
+                    <div className="mt-2 text-xs text-text-muted capitalize">
                       {t.dataThrough} {monthName(uiLoc, stats.latest.month)} {stats.latest.year}
                     </div>
                   </>
@@ -235,8 +235,8 @@ export default async function AirportsIndexPage(
         </section>
 
         <section className="rounded-xl border border-amber-200 bg-amber-50 p-5">
-          <h2 className="text-lg font-semibold text-stone-900 mb-1.5">{t.kastelliTitle}</h2>
-          <p className="text-stone-700">{t.kastelliText}</p>
+          <h2 className="text-lg font-semibold text-ink mb-1.5">{t.kastelliTitle}</h2>
+          <p className="text-ink">{t.kastelliText}</p>
         </section>
 
         <InvestmentCTA locale={locale} contentType="airport" />

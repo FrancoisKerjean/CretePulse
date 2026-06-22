@@ -265,7 +265,7 @@ function getModeBg(mode: string): string {
     case "ferry": return "bg-cyan-50 text-cyan-700 border-cyan-200";
     case "flight": return "bg-violet-50 text-violet-700 border-violet-200";
     case "taxi": return "bg-amber-50 text-amber-700 border-amber-200";
-    default: return "bg-gray-50 text-gray-700 border-gray-200";
+    default: return "bg-surface text-ink border-border";
   }
 }
 
@@ -502,7 +502,7 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
           <div className="space-y-4">
             {faqItems.map((faq, i) => (
               <details key={i} className="group bg-white border border-border rounded-xl overflow-hidden">
-                <summary className="px-5 py-4 cursor-pointer font-semibold text-text hover:bg-gray-50 transition-colors">
+                <summary className="px-5 py-4 cursor-pointer font-semibold text-text hover:bg-surface transition-colors">
                   {faq.q}
                 </summary>
                 <div className="px-5 pb-4 text-sm text-text-muted leading-relaxed">

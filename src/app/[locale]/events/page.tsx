@@ -47,7 +47,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   festival: "bg-terracotta-faint text-terracotta",
   market: "bg-sand text-text",
   concert: "bg-sea-faint text-sea",
-  religious: "bg-stone text-text-muted",
+  religious: "bg-surface text-text-muted",
   sport: "bg-olive/10 text-olive",
   cultural: "bg-sea-faint text-sea",
   food: "bg-terracotta-faint text-terracotta",
@@ -147,7 +147,7 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
                           {getLocalizedField(event, "title", loc)}
                         </h2>
                         {event.category && (
-                          <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full capitalize ${CATEGORY_COLORS[event.category] || "bg-stone text-text-muted"}`}>
+                          <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full capitalize ${CATEGORY_COLORS[event.category] || "bg-surface text-text-muted"}`}>
                             {event.category}
                           </span>
                         )}
@@ -202,12 +202,12 @@ function EventsPlaceholder({ locale }: { locale: Locale }) {
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-border bg-white p-4 animate-pulse flex gap-4">
               <div className="w-14 shrink-0">
-                <div className="h-8 bg-stone rounded mb-1" />
-                <div className="h-3 bg-stone rounded" />
+                <div className="h-8 bg-surface rounded mb-1" />
+                <div className="h-3 bg-surface rounded" />
               </div>
               <div className="flex-1">
-                <div className="h-5 bg-stone rounded w-3/4 mb-2" />
-                <div className="h-3 bg-stone rounded w-1/2" />
+                <div className="h-5 bg-surface rounded w-3/4 mb-2" />
+                <div className="h-3 bg-surface rounded w-1/2" />
               </div>
             </div>
           ))}

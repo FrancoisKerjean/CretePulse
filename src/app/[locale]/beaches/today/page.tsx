@@ -539,17 +539,17 @@ export default async function SwimTodayPage(
               </span>
             )}
             {attrLabel(pick.cb?.sand_type, SAND_LABELS[uiLoc]) && (
-              <span className="inline-flex items-center rounded-full bg-stone px-3.5 py-1.5 text-xs text-text-muted font-semibold">
+              <span className="inline-flex items-center rounded-full bg-surface px-3.5 py-1.5 text-xs text-text-muted font-semibold">
                 {attrLabel(pick.cb?.sand_type, SAND_LABELS[uiLoc])}
               </span>
             )}
             {attrLabel(pick.cb?.depth, DEPTH_LABELS[uiLoc]) && (
-              <span className="inline-flex items-center rounded-full bg-stone px-3.5 py-1.5 text-xs text-text-muted font-semibold">
+              <span className="inline-flex items-center rounded-full bg-surface px-3.5 py-1.5 text-xs text-text-muted font-semibold">
                 {attrLabel(pick.cb?.depth, DEPTH_LABELS[uiLoc])}
               </span>
             )}
             {attrLabel(pick.cb?.crowds, CROWD_LABELS[uiLoc]) && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-stone px-3.5 py-1.5 text-xs text-text-muted font-semibold">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-surface px-3.5 py-1.5 text-xs text-text-muted font-semibold">
                 <Users className="h-3.5 w-3.5" /> {attrLabel(pick.cb?.crowds, CROWD_LABELS[uiLoc])}
               </span>
             )}
@@ -650,7 +650,7 @@ export default async function SwimTodayPage(
         </section>
 
         {/* Methodology */}
-        <section className="rounded-[28px] bg-stone px-7 py-6 text-sm text-text-muted">
+        <section className="rounded-[28px] bg-surface px-7 py-6 text-sm text-text-muted">
           <h2 className="font-heading font-bold text-text mb-2">{t.methodology}</h2>
           <p>{t.methodologyText}</p>
           <p className="mt-2 text-xs text-text-light">

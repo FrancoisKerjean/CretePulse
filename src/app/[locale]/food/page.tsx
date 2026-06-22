@@ -73,7 +73,7 @@ const TYPE_ACCENT: Record<string, string> = {
   cafe:       "border-l-olive",
   bar:        "border-l-sea-light",
   bakery:     "border-l-terracotta-light",
-  other:      "border-l-stone-400",
+  other:      "border-l-sea/30",
 };
 
 // Badge color per type
@@ -83,7 +83,7 @@ const TYPE_BADGE: Record<string, string> = {
   cafe:       "bg-olive/10 text-olive",
   bar:        "bg-sea-faint text-sea-light",
   bakery:     "bg-terracotta-faint text-terracotta-light",
-  other:      "bg-stone text-text-muted",
+  other:      "bg-surface text-text-muted",
 };
 
 const PRICE_SYMBOL: Record<string, string> = {
@@ -333,7 +333,7 @@ function FoodCard({
     TYPE_LABELS[place.type]?.[locale] ||
     TYPE_LABELS[place.type]?.en ||
     place.type;
-  const accent = TYPE_ACCENT[place.type] || "border-l-stone-400";
+  const accent = TYPE_ACCENT[place.type] || "border-l-sea/30";
   const badge = TYPE_BADGE[place.type] || TYPE_BADGE.other;
 
   return (
@@ -377,7 +377,7 @@ function FoodCard({
           {place.cuisine && (
             <span className="flex flex-wrap gap-1">
               {place.cuisine.split(";").filter(Boolean).slice(0, 3).map((c: string) => (
-                <span key={c} className="px-1.5 py-0.5 bg-stone rounded text-[10px] capitalize">
+                <span key={c} className="px-1.5 py-0.5 bg-surface rounded text-[10px] capitalize">
                   {c.trim().replace(/_/g, " ")}
                 </span>
               ))}
@@ -451,7 +451,7 @@ function EmptyState({ locale }: { locale: Locale }) {
   };
   return (
     <div className="py-20 text-center text-text-muted">
-      <UtensilsCrossed className="w-10 h-10 mx-auto mb-3 text-stone-300" />
+      <UtensilsCrossed className="w-10 h-10 mx-auto mb-3 text-text-light" />
       <p>{msgs[locale] || msgs.en}</p>
     </div>
   );

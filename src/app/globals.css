@@ -11,8 +11,6 @@
   --color-olive-light: #9BB573;
   --color-sand: #FFF3D6;
   --color-sand-warm: #F2E7CE;
-  --color-stone: #EDF6F8;
-  --color-stone-warm: #E2EEF1;
   --color-surface: #F6FBFC;
   --color-text: #0B3954;
   --color-text-muted: #5C7886;
@@ -123,7 +121,9 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
+  /* Kalimera : fond de page foam (#F6FBFC), jamais blanc pur (DA). Les cartes blanches
+     ressortent en douceur sur le foam chaud. Chantier 1b. */
+  --background: #F6FBFC;
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);

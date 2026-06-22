@@ -70,7 +70,7 @@ const TYPE_COLORS: Record<string, string> = {
   cafe: "bg-amber-50 text-amber-700",
   bar: "bg-sea-faint text-sea",
   bakery: "bg-orange-50 text-orange-700",
-  other: "bg-stone text-text-muted",
+  other: "bg-surface text-text-muted",
 };
 
 export default async function FoodDetailPage({

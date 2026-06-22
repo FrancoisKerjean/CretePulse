@@ -67,7 +67,7 @@ export default function SignupForm() {
         </h3>
         <p className="text-sm text-text mb-2">Share-ready link (already live):</p>
         <div className="flex items-center gap-2 mb-4">
-          <code className="flex-1 rounded-lg bg-stone px-3 py-2 text-sm text-text break-all">{success.link}</code>
+          <code className="flex-1 rounded-lg bg-surface px-3 py-2 text-sm text-text break-all">{success.link}</code>
           <button
             type="button"
             onClick={() => {

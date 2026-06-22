@@ -61,7 +61,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   festival: "bg-terracotta-faint text-terracotta border-terracotta/20",
   market: "bg-sand text-text border-sand-warm",
   concert: "bg-sea-faint text-sea border-sea/20",
-  religious: "bg-stone text-text-muted border-border",
+  religious: "bg-surface text-text-muted border-border",
   sport: "bg-olive/10 text-olive border-olive/20",
   cultural: "bg-sea-faint text-sea border-sea/20",
   food: "bg-terracotta-faint text-terracotta border-terracotta/20",
@@ -115,7 +115,7 @@ export default async function EventDetailPage({
       <div className="bg-sea text-white">
         <div className="max-w-4xl mx-auto px-4 py-10">
           {event.category && (
-            <span className={`inline-block text-xs px-3 py-1 rounded-full border capitalize mb-4 ${CATEGORY_COLORS[event.category] || "bg-stone text-text-muted border-border"}`}>
+            <span className={`inline-block text-xs px-3 py-1 rounded-full border capitalize mb-4 ${CATEGORY_COLORS[event.category] || "bg-surface text-text-muted border-border"}`}>
               <Tag className="w-3 h-3 inline-block mr-1 -mt-0.5" />
               {event.category}
             </span>
@@ -224,7 +224,7 @@ export default async function EventDetailPage({
         </div>
 
         {/* Add to calendar hint */}
-        <div className="rounded-xl bg-stone p-4 text-sm text-text-muted">
+        <div className="rounded-xl bg-surface p-4 text-sm text-text-muted">
           <Calendar className="w-4 h-4 inline-block mr-2 -mt-0.5 text-sea" />
           {l.save}
         </div>

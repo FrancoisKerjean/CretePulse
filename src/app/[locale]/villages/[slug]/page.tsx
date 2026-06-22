@@ -70,8 +70,8 @@ const PERIOD_COLORS: Record<string, string> = {
   minoan: "bg-terracotta-faint text-terracotta border-terracotta/20",
   venetian: "bg-sea-faint text-sea border-sea/20",
   ottoman: "bg-sand text-text border-sand-warm",
-  modern: "bg-stone text-text-muted border-border",
-  abandoned: "bg-stone-warm text-text-light border-border",
+  modern: "bg-surface text-text-muted border-border",
+  abandoned: "bg-surface text-text-light border-border",
 };
 
 export default async function VillageDetailPage({
@@ -134,7 +134,7 @@ export default async function VillageDetailPage({
 
         {/* Period badge */}
         {village.period && (
-          <span className={`inline-block text-sm px-3 py-1 rounded-full border capitalize mb-6 ${PERIOD_COLORS[village.period] || "bg-stone text-text-muted border-border"}`}>
+          <span className={`inline-block text-sm px-3 py-1 rounded-full border capitalize mb-6 ${PERIOD_COLORS[village.period] || "bg-surface text-text-muted border-border"}`}>
             <Clock className="w-3.5 h-3.5 inline-block mr-1 -mt-0.5" />
             {PERIOD_LABEL[village.period] || village.period}
           </span>

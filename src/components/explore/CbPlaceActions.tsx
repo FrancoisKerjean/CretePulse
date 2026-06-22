@@ -76,7 +76,7 @@ export function CbPlaceActions({
       {showSheetLink && (
         <Link
           href={`/${locale}/explore/${slug}`}
-          className={`${btnBase} bg-sand text-text border border-border hover:bg-stone`}
+          className={`${btnBase} bg-sand text-text border border-border hover:bg-surface`}
         >
           <ArrowUpRight className="w-4 h-4" /> {t.sheet}
         </Link>

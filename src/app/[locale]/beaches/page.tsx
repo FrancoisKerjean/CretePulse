@@ -148,7 +148,7 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
                     </span>
                   )}
                   {beach.parking && (
-                    <span className="inline-flex items-center gap-1 text-xs bg-stone text-text-muted px-2 py-0.5 rounded-full">
+                    <span className="inline-flex items-center gap-1 text-xs bg-surface text-text-muted px-2 py-0.5 rounded-full">
                       <Car className="w-3 h-3" /> {beachesLabels.parking}
                     </span>
                   )}
@@ -191,9 +191,9 @@ function BeachesPlaceholder({ locale }: { locale: Locale }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-border bg-white p-4 animate-pulse">
-              <div className="h-32 bg-stone rounded-lg mb-3" />
-              <div className="h-5 bg-stone rounded w-2/3 mb-2" />
-              <div className="h-3 bg-stone rounded w-1/3" />
+              <div className="h-32 bg-surface rounded-lg mb-3" />
+              <div className="h-5 bg-surface rounded w-2/3 mb-2" />
+              <div className="h-3 bg-surface rounded w-1/3" />
             </div>
           ))}
         </div>

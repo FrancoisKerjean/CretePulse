@@ -434,8 +434,8 @@ function PriceDistribution({
   const eur = (v: number) => fmtEur(v, locale);
 
   return (
-    <figure className="mt-4 rounded-lg border border-stone-200 bg-white p-4">
-      <figcaption className="text-sm font-medium text-stone-700 mb-1">{t.distTitle}</figcaption>
+    <figure className="mt-4 rounded-lg border border-border bg-white p-4">
+      <figcaption className="text-sm font-medium text-ink mb-1">{t.distTitle}</figcaption>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label={t.distTitle}>
         {/* axis */}
         <line x1={PAD} x2={W - PAD} y1={BAND_Y + BAND_H / 2} y2={BAND_Y + BAND_H / 2} stroke="#d6d3d1" strokeWidth="1.5" />
@@ -482,7 +482,7 @@ function PriceDistribution({
           </>
         )}
       </svg>
-      <p className="text-xs text-stone-500 mt-1">{t.distCaption(eur(p25), eur(p75), eur(med))}</p>
+      <p className="text-xs text-text-muted mt-1">{t.distCaption(eur(p25), eur(p75), eur(med))}</p>
     </figure>
   );
 }
@@ -501,19 +501,19 @@ function OccupancyCompare({
   const max = Math.max(areaDays, creteDays) * 1.15;
   const w = (v: number) => `${Math.max(2, (v / max) * 100)}%`;
   return (
-    <div className="mt-4 rounded-lg border border-stone-200 bg-white p-4">
-      <p className="text-sm font-medium text-stone-700 mb-3">{t.occCompareTitle}</p>
+    <div className="mt-4 rounded-lg border border-border bg-white p-4">
+      <p className="text-sm font-medium text-ink mb-3">{t.occCompareTitle}</p>
       <div className="space-y-2.5">
         {[
           { label: areaName, days: areaDays, cls: "bg-cyan-700" },
-          { label: t.creteLabel, days: creteDays, cls: "bg-stone-300" },
+          { label: t.creteLabel, days: creteDays, cls: "bg-surface" },
         ].map(row => (
           <div key={row.label} className="flex items-center gap-3">
-            <span className="w-28 shrink-0 truncate text-xs text-stone-600">{row.label}</span>
-            <div className="flex-1 h-5 rounded bg-stone-100 overflow-hidden">
+            <span className="w-28 shrink-0 truncate text-xs text-ink">{row.label}</span>
+            <div className="flex-1 h-5 rounded bg-surface overflow-hidden">
               <div className={`h-full rounded ${row.cls}`} style={{ width: w(row.days) }} />
             </div>
-            <span className="w-24 shrink-0 text-right text-xs tabular-nums text-stone-700">
+            <span className="w-24 shrink-0 text-right text-xs tabular-nums text-ink">
               {fmtNum(row.days, locale)} {t.daysPerYear}
             </span>
           </div>
@@ -630,14 +630,14 @@ export default async function AirbnbNeighbourhoodPage(
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-stone-50 to-white">
+    <main className="min-h-screen bg-gradient-to-b from-foam to-white">
       <JsonLd data={jsonLd} />
 
       <div className="mx-auto max-w-5xl px-4 py-8 md:py-12">
         {/* Back link */}
         <Link
           href={`/${locale}`}
-          className="inline-flex items-center gap-1 text-sm text-stone-600 hover:text-stone-900 mb-6"
+          className="inline-flex items-center gap-1 text-sm text-ink hover:text-ink mb-6"
         >
           <ChevronLeft className="h-4 w-4" />
           {t.back}
@@ -645,17 +645,17 @@ export default async function AirbnbNeighbourhoodPage(
 
         {/* Header */}
         <header className="mb-8">
-          <div className="flex items-center gap-2 text-sm text-stone-500 mb-2">
+          <div className="flex items-center gap-2 text-sm text-text-muted mb-2">
             <MapPin className="h-4 w-4" />
             <span>{regionLabel}</span>
             <span className="mx-1">·</span>
             <span>Crete, Greece</span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-serif text-stone-900 leading-tight">
+          <h1 className="text-3xl md:text-4xl font-serif text-ink leading-tight">
             {t.pageTitlePrefix} {name}
           </h1>
           {stats.snapshot_date && (
-            <p className="mt-2 text-sm text-stone-500">
+            <p className="mt-2 text-sm text-text-muted">
               {t.snapshot}: {stats.snapshot_date}
             </p>
           )}
@@ -663,7 +663,7 @@ export default async function AirbnbNeighbourhoodPage(
 
         {/* Overview cards */}
         <section className="mb-10">
-          <h2 className="text-lg font-semibold text-stone-800 mb-4">{t.overview}</h2>
+          <h2 className="text-lg font-semibold text-ink mb-4">{t.overview}</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <Card icon={<Home />} label={t.listings} value={fmtNum(stats.listings, locale)} />
             <Card icon={<MapPin />} label={t.uniqueHosts} value={fmtNum(stats.unique_hosts, locale)} />
@@ -674,7 +674,7 @@ export default async function AirbnbNeighbourhoodPage(
 
         {/* Pricing */}
         <section className="mb-10">
-          <h2 className="text-lg font-semibold text-stone-800 mb-4">{t.pricing}</h2>
+          <h2 className="text-lg font-semibold text-ink mb-4">{t.pricing}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <Card icon={<Euro />} label={t.avgPrice} value={`${fmtEur(stats.avg_price, locale)}`} sub={t.perNight} />
             <Card icon={<Euro />} label={t.medianPrice} value={`${fmtEur(stats.median_price, locale)}`} sub={t.perNight} />
@@ -691,7 +691,7 @@ export default async function AirbnbNeighbourhoodPage(
 
         {/* Performance */}
         <section className="mb-10">
-          <h2 className="text-lg font-semibold text-stone-800 mb-4">{t.performance}</h2>
+          <h2 className="text-lg font-semibold text-ink mb-4">{t.performance}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <Card icon={<Calendar />} label={t.occupancy}
                   value={fmtNum(stats.avg_occupancy_days, locale)} sub={t.daysPerYear} />
@@ -708,12 +708,12 @@ export default async function AirbnbNeighbourhoodPage(
             t={t}
           />
           {insightText && (
-            <div className="mt-4 rounded-lg border-l-4 border-cyan-700 bg-white border border-stone-200 p-4">
-              <p className="text-sm text-stone-800">{insightText}</p>
+            <div className="mt-4 rounded-lg border-l-4 border-cyan-700 bg-white border border-border p-4">
+              <p className="text-sm text-ink">{insightText}</p>
             </div>
           )}
           {overall && (
-            <p className="mt-3 text-xs text-stone-500">
+            <p className="mt-3 text-xs text-text-muted">
               {t.cretedAvg}: {fmtEur(overall.avg_price, locale)} / {t.perNight} ·
               {" "}{fmtNum(overall.avg_occupancy_days, locale)} {t.daysPerYear} ·
               {" "}{fmtEur(overall.avg_revenue_eur, locale)} {t.perYear}
@@ -724,10 +724,10 @@ export default async function AirbnbNeighbourhoodPage(
         {/* Property types */}
         {types.length > 0 && (
           <section className="mb-10">
-            <h2 className="text-lg font-semibold text-stone-800 mb-4">{t.propertyTypes}</h2>
-            <div className="overflow-x-auto rounded-lg border border-stone-200 bg-white">
+            <h2 className="text-lg font-semibold text-ink mb-4">{t.propertyTypes}</h2>
+            <div className="overflow-x-auto rounded-lg border border-border bg-white">
               <table className="w-full text-sm">
-                <thead className="bg-stone-50 text-stone-600">
+                <thead className="bg-surface text-ink">
                   <tr>
                     <th className="text-left px-4 py-2 font-medium">{t.typeName}</th>
                     <th className="text-right px-4 py-2 font-medium">{t.typeCount}</th>
@@ -737,8 +737,8 @@ export default async function AirbnbNeighbourhoodPage(
                 </thead>
                 <tbody>
                   {types.map(pt => (
-                    <tr key={pt.property_type} className="border-t border-stone-100">
-                      <td className="px-4 py-2 text-stone-800">{pt.property_type}</td>
+                    <tr key={pt.property_type} className="border-t border-border">
+                      <td className="px-4 py-2 text-ink">{pt.property_type}</td>
                       <td className="px-4 py-2 text-right">{fmtNum(pt.count, locale)}</td>
                       <td className="px-4 py-2 text-right">{fmtEur(pt.avg_price, locale)}</td>
                       <td className="px-4 py-2 text-right">
@@ -753,8 +753,8 @@ export default async function AirbnbNeighbourhoodPage(
         )}
 
         {/* Multi-host insight */}
-        <section className="mb-10 rounded-lg border border-stone-200 bg-stone-50 p-4">
-          <p className="text-sm text-stone-700">
+        <section className="mb-10 rounded-lg border border-border bg-surface p-4">
+          <p className="text-sm text-ink">
             <strong>{fmtPct(stats.multi_host_pct)}</strong> {t.multiHost.toLowerCase()}.
           </p>
         </section>
@@ -763,7 +763,7 @@ export default async function AirbnbNeighbourhoodPage(
             yet" line on most of the 528 pages just advertised thin coverage. */}
         {related.length > 0 && (
           <section className="mb-10">
-            <h2 className="text-lg font-semibold text-stone-800 mb-4">{t.newsHeader}</h2>
+            <h2 className="text-lg font-semibold text-ink mb-4">{t.newsHeader}</h2>
             <ul className="space-y-2">
               {related.map(g => (
                 <li key={g.slug}>
@@ -773,7 +773,7 @@ export default async function AirbnbNeighbourhoodPage(
                   >
                     {g.title}
                   </Link>
-                  <span className="ml-2 text-xs text-stone-500">[{g.category}]</span>
+                  <span className="ml-2 text-xs text-text-muted">[{g.category}]</span>
                 </li>
               ))}
             </ul>
@@ -781,13 +781,13 @@ export default async function AirbnbNeighbourhoodPage(
         )}
 
         {/* Methodology */}
-        <section className="mb-10 text-sm text-stone-600 space-y-3">
-          <h2 className="text-lg font-semibold text-stone-800">{t.methodology}</h2>
+        <section className="mb-10 text-sm text-ink space-y-3">
+          <h2 className="text-lg font-semibold text-ink">{t.methodology}</h2>
           <p>{t.methodologyText(stats.snapshot_date || "")}</p>
           <p>
             <strong>{t.caveat}.</strong> {t.caveatText}
           </p>
-          <p className="text-xs text-stone-500 pt-2 border-t border-stone-200">
+          <p className="text-xs text-text-muted pt-2 border-t border-border">
             {t.dataPartner}{" "}
             <a
               href="https://kairosguest.com/rental-analyzer"
@@ -823,15 +823,15 @@ export default async function AirbnbNeighbourhoodPage(
         {/* Sibling neighbourhoods */}
         {siblings.length > 0 && (
           <section>
-            <h2 className="text-lg font-semibold text-stone-800 mb-4">
-              {t.otherAreas} <span className="text-stone-500 font-normal">- {t.inSameRegion}</span>
+            <h2 className="text-lg font-semibold text-ink mb-4">
+              {t.otherAreas} <span className="text-text-muted font-normal">- {t.inSameRegion}</span>
             </h2>
             <ul className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
               {siblings.map(s => (
                 <li key={s.slug}>
                   <Link
                     href={`/${locale}/airbnb/${s.slug}`}
-                    className="block rounded-md border border-stone-200 px-3 py-2 hover:border-stone-400 hover:bg-stone-50"
+                    className="block rounded-md border border-border px-3 py-2 hover:border-sea/30 hover:bg-surface"
                   >
                     {s.label[uiLoc]}
                   </Link>
@@ -854,13 +854,13 @@ interface CardProps {
 
 function Card({ icon, label, value, sub }: CardProps) {
   return (
-    <div className="rounded-lg border border-stone-200 bg-white p-4">
-      <div className="flex items-center gap-2 text-stone-500 text-xs mb-2">
+    <div className="rounded-lg border border-border bg-white p-4">
+      <div className="flex items-center gap-2 text-text-muted text-xs mb-2">
         <span className="[&>svg]:h-4 [&>svg]:w-4">{icon}</span>
         <span>{label}</span>
       </div>
-      <div className="text-xl font-semibold text-stone-900">{value}</div>
-      {sub && <div className="text-xs text-stone-500 mt-1">{sub}</div>}
+      <div className="text-xl font-semibold text-ink">{value}</div>
+      {sub && <div className="text-xs text-text-muted mt-1">{sub}</div>}
     </div>
   );
 }

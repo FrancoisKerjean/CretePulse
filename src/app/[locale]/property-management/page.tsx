@@ -247,7 +247,7 @@ export default async function PropertyManagementPage({ params }: { params: Promi
           <p className="text-sm text-text-muted mb-4">{c.revenueIntro}</p>
           <div className="overflow-hidden rounded-xl border border-border">
             <table className="w-full text-sm">
-              <thead className="bg-stone text-text-muted text-xs uppercase tracking-wider">
+              <thead className="bg-surface text-text-muted text-xs uppercase tracking-wider">
                 <tr>
                   <th className="text-left px-4 py-3 font-bold">
                     {locale === "fr" ? "Saison" : locale === "de" ? "Saison" : locale === "el" ? "Σεζόν" : "Season"}

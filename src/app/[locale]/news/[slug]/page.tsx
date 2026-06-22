@@ -101,7 +101,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   tourism:     "bg-terracotta-faint text-terracotta border border-terracotta/20",
   culture:     "bg-sand text-text border border-border",
   environment: "bg-olive/10 text-olive border border-olive/20",
-  economy:     "bg-stone-warm text-text-muted border border-border",
+  economy:     "bg-surface text-text-muted border border-border",
   sports:      "bg-sea-faint text-sea border border-sea/20",
   weather:     "bg-sea-faint text-sea border border-sea/20",
 };
@@ -191,7 +191,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
     })
     .slice(0, 3);
 
-  const catColor = CATEGORY_COLORS[item.category || ""] || "bg-stone text-text-muted border border-border";
+  const catColor = CATEGORY_COLORS[item.category || ""] || "bg-surface text-text-muted border border-border";
   const catDot   = CATEGORY_DOT[item.category || ""]   || "bg-text-muted";
 
   return (
@@ -267,7 +267,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
 
           {/* ── HERO IMAGE ─────────────────────────── */}
           {item.image_url && (
-            <div className="mb-8 rounded-xl overflow-hidden bg-stone shadow-sm">
+            <div className="mb-8 rounded-xl overflow-hidden bg-surface shadow-sm">
               <img
                 src={item.image_url}
                 alt={title}
@@ -328,7 +328,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
               <div className="divide-y divide-border">
                 {related.map((n) => {
                   const relTitle  = getLocalizedField(n, "title", loc);
-                  const relColor  = CATEGORY_COLORS[n.category || ""] || "bg-stone text-text-muted border border-border";
+                  const relColor  = CATEGORY_COLORS[n.category || ""] || "bg-surface text-text-muted border border-border";
                   const relDot    = CATEGORY_DOT[n.category || ""]    || "bg-text-muted";
 
                   return (
@@ -338,7 +338,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
                       className="flex items-start gap-4 py-4 group"
                     >
                       {/* Thumbnail */}
-                      <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-stone-warm">
+                      <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-surface">
                         {n.image_url ? (
                           <img
                             src={n.image_url}

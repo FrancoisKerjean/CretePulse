@@ -11,7 +11,7 @@ export function NearbyCell({
   if (nearby.length === 0) return null;
   const names = nearby.slice(0, 3).map((n) => n.name).join(", ");
   return (
-    <div className={`flex items-center gap-3 rounded-2xl border border-border bg-gradient-to-br from-stone to-sea-faint p-3 ${className}`}>
+    <div className={`flex items-center gap-3 rounded-2xl border border-border bg-gradient-to-br from-foam to-sea-faint p-3 ${className}`}>
       <div
         className="h-16 w-16 flex-shrink-0 rounded-xl bg-sea-faint"
         aria-hidden

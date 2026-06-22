@@ -611,10 +611,10 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
           {data.categories.map((cat, i) => (
             <div
               key={i}
-              className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto_2fr] gap-3 md:gap-4 items-start rounded-xl border border-gray-100 bg-gray-50/50 p-4 md:p-5 hover:shadow-md transition-shadow"
+              className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto_2fr] gap-3 md:gap-4 items-start rounded-xl border border-border bg-surface/50 p-4 md:p-5 hover:shadow-md transition-shadow"
             >
               {/* Category label */}
-              <div className="font-semibold text-gray-900 text-sm md:text-base">
+              <div className="font-semibold text-ink text-sm md:text-base">
                 {t(cat.label, locale)}
               </div>
 
@@ -623,10 +623,10 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
                 className={`text-sm md:text-base rounded-lg p-3 ${
                   cat.winner === "a"
                     ? "bg-green-50 border border-green-200 text-green-900"
-                    : "bg-white border border-gray-100 text-gray-700"
+                    : "bg-white border border-border text-ink"
                 }`}
               >
-                <span className="md:hidden font-medium text-gray-500 mr-1">{comp.a}:</span>
+                <span className="md:hidden font-medium text-text-muted mr-1">{comp.a}:</span>
                 {t(cat.a, locale)}
                 {cat.winner === "a" && (
                   <Trophy className="inline-block w-4 h-4 ml-2 text-green-600" />
@@ -636,7 +636,7 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
               {/* Winner badge - desktop only */}
               <div className="hidden md:flex items-center justify-center">
                 {cat.winner === "tie" ? (
-                  <span className="text-xs text-gray-400 bg-gray-100 rounded-full px-2 py-1">
+                  <span className="text-xs text-text-muted bg-surface rounded-full px-2 py-1">
                     {t(LABELS.tie, locale)}
                   </span>
                 ) : cat.winner ? (
@@ -653,10 +653,10 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
                 className={`text-sm md:text-base rounded-lg p-3 ${
                   cat.winner === "b"
                     ? "bg-green-50 border border-green-200 text-green-900"
-                    : "bg-white border border-gray-100 text-gray-700"
+                    : "bg-white border border-border text-ink"
                 }`}
               >
-                <span className="md:hidden font-medium text-gray-500 mr-1">{comp.b}:</span>
+                <span className="md:hidden font-medium text-text-muted mr-1">{comp.b}:</span>
                 {t(cat.b, locale)}
                 {cat.winner === "b" && (
                   <Trophy className="inline-block w-4 h-4 ml-2 text-green-600" />
@@ -668,20 +668,20 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
       </section>
 
       {/* Verdict */}
-      <section className="bg-gray-50 py-12 md:py-16">
+      <section className="bg-surface py-12 md:py-16">
         <div className="mx-auto max-w-5xl px-4">
-          <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900 mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-center text-ink mb-8">
             {t(LABELS.verdict, locale)}
           </h2>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-border">
               <h3 className="text-xl font-bold text-sky-700 mb-3">{comp.a}</h3>
-              <p className="text-gray-700 leading-relaxed">{t(data.verdictA, locale)}</p>
+              <p className="text-ink leading-relaxed">{t(data.verdictA, locale)}</p>
             </div>
-            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-border">
               <h3 className="text-xl font-bold text-sky-700 mb-3">{comp.b}</h3>
-              <p className="text-gray-700 leading-relaxed">{t(data.verdictB, locale)}</p>
+              <p className="text-ink leading-relaxed">{t(data.verdictB, locale)}</p>
             </div>
           </div>
         </div>
@@ -690,17 +690,17 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
       {/* FAQ */}
       {faqItems.length > 0 && (
         <section className="mx-auto max-w-3xl px-4 py-12 md:py-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">{t(LABELS.faq, locale)}</h2>
+          <h2 className="text-2xl font-bold text-ink mb-6">{t(LABELS.faq, locale)}</h2>
           <div className="space-y-4">
             {faqItems.map((item, i) => (
               <details
                 key={i}
-                className="group rounded-xl border border-gray-200 bg-white overflow-hidden"
+                className="group rounded-xl border border-border bg-white overflow-hidden"
               >
-                <summary className="cursor-pointer px-5 py-4 font-medium text-gray-900 hover:bg-gray-50 transition-colors">
+                <summary className="cursor-pointer px-5 py-4 font-medium text-ink hover:bg-surface transition-colors">
                   {t(item.q, locale)}
                 </summary>
-                <div className="px-5 pb-4 text-gray-600 text-sm leading-relaxed">
+                <div className="px-5 pb-4 text-ink text-sm leading-relaxed">
                   {t(item.a, locale)}
                 </div>
               </details>
@@ -710,9 +710,9 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
       )}
 
       {/* Related links */}
-      <section className="bg-gray-50 py-12 md:py-16">
+      <section className="bg-surface py-12 md:py-16">
         <div className="mx-auto max-w-5xl px-4">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">
+          <h2 className="text-xl font-bold text-ink mb-6">
             {t(LABELS.otherComparisons, locale)}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -720,13 +720,13 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
               <Link
                 key={c.slug}
                 href={`/${locale}/compare/${c.slug}`}
-                className="flex items-center gap-3 rounded-xl bg-white border border-gray-100 px-4 py-3 hover:shadow-md hover:border-sky-200 transition-all text-sm"
+                className="flex items-center gap-3 rounded-xl bg-white border border-border px-4 py-3 hover:shadow-md hover:border-sky-200 transition-all text-sm"
               >
                 <Scale className="w-4 h-4 text-sky-500 flex-shrink-0" />
-                <span className="text-gray-800 font-medium">
+                <span className="text-ink font-medium">
                   {c.a} vs {c.b}
                 </span>
-                <ArrowRight className="w-4 h-4 text-gray-400 ml-auto" />
+                <ArrowRight className="w-4 h-4 text-text-muted ml-auto" />
               </Link>
             ))}
           </div>
@@ -736,7 +736,7 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
             <div className="mt-8">
               <Link
                 href={`/${locale}/buses/${busPair}`}
-                className="block rounded-2xl border border-gray-200 bg-white p-4 hover:bg-gray-50 hover:border-sky-200 transition-all shadow-sm"
+                className="block rounded-2xl border border-border bg-white p-4 hover:bg-surface hover:border-sky-200 transition-all shadow-sm"
               >
                 <p className="text-sm font-medium text-sky-700">
                   {t(LABELS.gettingBetween, locale)

@@ -22,7 +22,7 @@ export const CATEGORY_COLORS: Record<string, string> = {
   hikes: "bg-olive/10 text-olive",
   travel: "bg-sand text-text",
   food: "bg-terracotta-faint text-terracotta",
-  expat: "bg-stone text-text-muted",
+  expat: "bg-surface text-text-muted",
   news: "bg-sea-faint text-sea",
   family: "bg-sand text-text",
 };
@@ -66,7 +66,7 @@ export const READ_TIME_LABEL: Record<Locale, string> = {
 export function GuideCard({ guide, locale }: { guide: Guide; locale: Locale }) {
   const title = getLocalizedGuideField(guide, "titles", locale);
   const categoryLabel = CATEGORY_LABELS[guide.category]?.[locale] || guide.category;
-  const categoryColor = CATEGORY_COLORS[guide.category] || "bg-stone text-text-muted";
+  const categoryColor = CATEGORY_COLORS[guide.category] || "bg-surface text-text-muted";
 
   return (
     <Link

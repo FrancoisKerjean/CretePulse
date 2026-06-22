@@ -295,7 +295,7 @@ export default async function ArticleDetailPage({
   const linkedContent = autolinkHtml(content, await getAutolinkIndex(loc), { maxLinks: 6 });
 
   const categoryLabel = CATEGORY_LABELS[guide.category]?.[loc] || guide.category;
-  const categoryColor = CATEGORY_COLORS[guide.category] || "bg-stone text-text-muted";
+  const categoryColor = CATEGORY_COLORS[guide.category] || "bg-surface text-text-muted";
 
   const url = `${BASE_URL}/${locale}/articles/${slug}`;
 
@@ -343,7 +343,7 @@ export default async function ArticleDetailPage({
 
       {/* Hero (PR2: editorial 60vh, category + Baloo H1 + dek) */}
       {guide.image_url ? (
-        <header className="relative h-[60vh] min-h-[440px] max-h-[640px] bg-stone overflow-hidden">
+        <header className="relative h-[60vh] min-h-[440px] max-h-[640px] bg-surface overflow-hidden">
           <img
             src={guide.image_url}
             alt={title}

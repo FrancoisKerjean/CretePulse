@@ -729,7 +729,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
             <span className="text-[12.5px] font-medium text-text-muted">{t.synthTaste}</span>
             {topTastes.map(([type, count]) => (
-              <span key={type} className="rounded-full bg-stone px-3 py-1 font-heading text-[12.5px] font-bold text-sea">
+              <span key={type} className="rounded-full bg-surface px-3 py-1 font-heading text-[12.5px] font-bold text-sea">
                 {typeLabel(type, locale)} <span className="font-data text-lagoon-deep">{count}</span>
               </span>
             ))}
@@ -759,7 +759,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
                     <Link
                       href={`/explore?place=${p.slug}`}
                       onClick={() => track("synthesis_place_clicked", { slug: p.slug })}
-                      className="rounded-full bg-stone px-3 py-1.5 font-heading text-[12px] font-bold text-sea no-underline"
+                      className="rounded-full bg-surface px-3 py-1.5 font-heading text-[12px] font-bold text-sea no-underline"
                     >
                       {t.sheet}
                     </Link>
@@ -808,7 +808,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
 
         <button
           onClick={() => setScreen("deck")}
-          className="mx-auto mt-7 flex items-center gap-2 rounded-full bg-stone px-6 py-3 font-heading text-[14px] font-bold text-sea"
+          className="mx-auto mt-7 flex items-center gap-2 rounded-full bg-surface px-6 py-3 font-heading text-[14px] font-bold text-sea"
         >
           <RotateCcw size={15} /> {t.backToDeck}
         </button>
@@ -1045,7 +1045,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
                 </Link>
                 <button
                   onClick={() => closeMatch(true)}
-                  className="mt-2.5 w-full rounded-full bg-stone px-6 py-3 font-heading text-[14px] font-bold text-sea"
+                  className="mt-2.5 w-full rounded-full bg-surface px-6 py-3 font-heading text-[14px] font-bold text-sea"
                 >
                   {t.keepSwiping}
                 </button>

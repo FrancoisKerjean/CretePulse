@@ -26,10 +26,10 @@ export default async function DiscoverCrete({
           <Link
             key={`${e.type}-${e.href}-${i}`}
             href={e.href}
-            className="group rounded-xl overflow-hidden bg-stone-warm/50 hover:bg-stone-warm transition-colors"
+            className="group rounded-xl overflow-hidden bg-surface/50 hover:bg-surface transition-colors"
           >
             {e.imageUrl ? (
-              <div className="aspect-[4/3] w-full overflow-hidden bg-stone">
+              <div className="aspect-[4/3] w-full overflow-hidden bg-surface">
                 <img
                   src={e.imageUrl}
                   alt={e.title}

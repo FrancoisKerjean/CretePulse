@@ -93,7 +93,7 @@ function LocaleSwitcher({ locale, pathname, router }: { locale: string; pathname
     <div className="relative" ref={ref}>
       <button
         onClick={() => setLangOpen(!langOpen)}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-text-muted hover:bg-stone-warm hover:text-text transition-all"
+        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-text-muted hover:bg-surface hover:text-text transition-all"
         aria-label="Change language"
       >
         <Globe className="w-3.5 h-3.5" />
@@ -114,7 +114,7 @@ function LocaleSwitcher({ locale, pathname, router }: { locale: string; pathname
                 className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between transition-colors ${
                   locale === l.code
                     ? "bg-sea/8 text-sea font-semibold"
-                    : "text-text-muted hover:bg-stone hover:text-text"
+                    : "text-text-muted hover:bg-surface hover:text-text"
                 }`}
               >
                 <span>{l.name}</span>
@@ -161,7 +161,7 @@ export function Header() {
                 <button
                   type="button"
                   className={`flex items-center gap-1 px-4 py-2 rounded-full transition-colors ${
-                    groupActive ? "bg-text text-white" : "hover:text-sea hover:bg-stone/60"
+                    groupActive ? "bg-text text-white" : "hover:text-sea hover:bg-surface/60"
                   }`}
                 >
                   {navLabel(group.label, locale)}
@@ -176,7 +176,7 @@ export function Header() {
                         className={`block px-3.5 py-2 text-sm transition-colors ${
                           pathname?.startsWith(link.href)
                             ? "text-sea bg-sea/8 font-semibold"
-                            : "text-text-muted hover:bg-stone hover:text-text"
+                            : "text-text-muted hover:bg-surface hover:text-text"
                         }`}
                       >
                         {navLabel(link.label, locale)}
@@ -231,7 +231,7 @@ export function Header() {
                       className={`block px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
                         pathname?.startsWith(link.href)
                           ? "bg-sea/8 text-sea"
-                          : "text-text-muted hover:bg-stone hover:text-text"
+                          : "text-text-muted hover:bg-surface hover:text-text"
                       }`}
                     >
                       {navLabel(link.label, locale)}
@@ -245,7 +245,7 @@ export function Header() {
             <div className="pt-3 mt-2 border-t border-border">
               <button
                 onClick={() => setMobileLangOpen(!mobileLangOpen)}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold text-text-muted hover:bg-stone transition-colors"
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold text-text-muted hover:bg-surface transition-colors"
               >
                 <span className="flex items-center gap-2">
                   <Globe className="w-4 h-4" />
@@ -266,7 +266,7 @@ export function Header() {
                       className={`py-2 rounded-lg text-xs font-bold transition-all text-center ${
                         locale === l.code
                           ? "bg-sea text-white shadow-sm"
-                          : "text-text-muted bg-stone hover:bg-stone-warm"
+                          : "text-text-muted bg-surface hover:bg-surface"
                       }`}
                     >
                       {l.label}

@@ -498,17 +498,17 @@ export default async function BeachDetailPage({
         {/* Facilities */}
         <div className="flex flex-wrap gap-2 mb-8">
           {beach.sunbeds && (
-            <span className="inline-flex items-center gap-1 text-sm bg-stone px-3 py-1 rounded-full">
+            <span className="inline-flex items-center gap-1 text-sm bg-surface px-3 py-1 rounded-full">
               <Sun className="w-4 h-4 text-amber-500" /> {L.sunbeds}
             </span>
           )}
           {beach.taverna && (
-            <span className="inline-flex items-center gap-1 text-sm bg-stone px-3 py-1 rounded-full">
+            <span className="inline-flex items-center gap-1 text-sm bg-surface px-3 py-1 rounded-full">
               <UtensilsCrossed className="w-4 h-4 text-terracotta" /> {L.taverna}
             </span>
           )}
           {beach.snorkeling && (
-            <span className="inline-flex items-center gap-1 text-sm bg-stone px-3 py-1 rounded-full">
+            <span className="inline-flex items-center gap-1 text-sm bg-surface px-3 py-1 rounded-full">
               <Fish className="w-4 h-4 text-sea" /> {L.snorkeling}
             </span>
           )}
@@ -518,7 +518,7 @@ export default async function BeachDetailPage({
             </span>
           )}
           {crowdsL && (
-            <span className="inline-flex items-center gap-1 text-sm bg-stone px-3 py-1 rounded-full">
+            <span className="inline-flex items-center gap-1 text-sm bg-surface px-3 py-1 rounded-full">
               {crowdsL}
             </span>
           )}

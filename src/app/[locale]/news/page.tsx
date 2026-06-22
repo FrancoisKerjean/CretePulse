@@ -35,7 +35,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   tourism: "bg-terracotta-faint text-terracotta",
   culture: "bg-sand text-text",
   environment: "bg-olive/10 text-olive",
-  economy: "bg-stone text-text-muted",
+  economy: "bg-surface text-text-muted",
   sports: "bg-sea-faint text-sea",
   weather: "bg-sea-faint text-sea",
 };
@@ -148,7 +148,7 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
                       </div>
 
                       {g.image_url && (
-                        <div className="shrink-0 w-20 h-16 rounded-lg overflow-hidden bg-stone">
+                        <div className="shrink-0 w-20 h-16 rounded-lg overflow-hidden bg-surface">
                           <img
                             src={g.image_url}
                             alt={title || ""}
@@ -173,7 +173,7 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
                     {item.category && (
-                      <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${CATEGORY_COLORS[item.category] || "bg-stone text-text-muted"}`}>
+                      <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${CATEGORY_COLORS[item.category] || "bg-surface text-text-muted"}`}>
                         {item.category}
                       </span>
                     )}
@@ -197,7 +197,7 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
                 </div>
 
                 {item.image_url && (
-                  <div className="shrink-0 w-20 h-16 rounded-lg overflow-hidden bg-stone">
+                  <div className="shrink-0 w-20 h-16 rounded-lg overflow-hidden bg-surface">
                     <img
                       src={item.image_url}
                       alt={getLocalizedField(item, "title", loc) || ""}
@@ -242,13 +242,13 @@ function NewsPlaceholder({ locale }: { locale: Locale }) {
             <div key={i} className="py-4 animate-pulse flex gap-4">
               <div className="flex-1">
                 <div className="flex gap-2 mb-2">
-                  <div className="h-4 w-16 bg-stone rounded-full" />
-                  <div className="h-4 w-12 bg-stone rounded" />
+                  <div className="h-4 w-16 bg-surface rounded-full" />
+                  <div className="h-4 w-12 bg-surface rounded" />
                 </div>
-                <div className="h-5 bg-stone rounded w-4/5 mb-2" />
-                <div className="h-3 bg-stone rounded w-2/3" />
+                <div className="h-5 bg-surface rounded w-4/5 mb-2" />
+                <div className="h-3 bg-surface rounded w-2/3" />
               </div>
-              <div className="w-20 h-16 bg-stone rounded-lg shrink-0" />
+              <div className="w-20 h-16 bg-surface rounded-lg shrink-0" />
             </div>
           ))}
         </div>

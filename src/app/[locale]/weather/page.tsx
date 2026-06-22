@@ -226,7 +226,7 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
                               { weekday: "short" }
                             )}
                           </p>
-                          <div className="h-6 bg-stone rounded mt-1 animate-pulse" />
+                          <div className="h-6 bg-surface rounded mt-1 animate-pulse" />
                         </div>
                       );
                     })}
@@ -266,9 +266,9 @@ function WeatherPlaceholder({ locale }: { locale: Locale }) {
             <div key={i} className="rounded-xl border border-border bg-white overflow-hidden animate-pulse">
               <div className="h-28 bg-sea/20" />
               <div className="p-4 space-y-3">
-                <div className="h-4 bg-stone rounded w-3/4" />
-                <div className="h-4 bg-stone rounded w-1/2" />
-                <div className="h-4 bg-stone rounded w-2/3" />
+                <div className="h-4 bg-surface rounded w-3/4" />
+                <div className="h-4 bg-surface rounded w-1/2" />
+                <div className="h-4 bg-surface rounded w-2/3" />
               </div>
             </div>
           ))}

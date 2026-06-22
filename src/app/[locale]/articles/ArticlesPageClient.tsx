@@ -34,7 +34,7 @@ const PAGE = 24;
 function FeaturedCard({ guide, locale }: { guide: Guide; locale: Locale }) {
   const title = getLocalizedGuideField(guide, "titles", locale);
   const categoryLabel = CATEGORY_LABELS[guide.category]?.[locale] || guide.category;
-  const categoryColor = CATEGORY_COLORS[guide.category] || "bg-stone text-text-muted";
+  const categoryColor = CATEGORY_COLORS[guide.category] || "bg-surface text-text-muted";
 
   return (
     <Link
@@ -101,7 +101,7 @@ export default function ArticlesPageClient({ guides, locale, categories }: Props
           {categories.map((cat) => {
             const label = CATEGORY_LABELS[cat]?.[locale] || cat;
             const isActive = activeCategory === cat;
-            const colorClass = CATEGORY_COLORS[cat] || "bg-stone text-text-muted";
+            const colorClass = CATEGORY_COLORS[cat] || "bg-surface text-text-muted";
 
             return (
               <button

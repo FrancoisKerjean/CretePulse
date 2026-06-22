@@ -349,7 +349,7 @@ function SeasonalityChart({ stats, uiLoc }: { stats: AirportStats; uiLoc: string
           />
         ))}
       </svg>
-      <figcaption className="flex flex-wrap gap-4 mt-2 text-sm text-stone-600">
+      <figcaption className="flex flex-wrap gap-4 mt-2 text-sm text-ink">
         {series.map(s => (
           <span key={s.yr} className="inline-flex items-center gap-1.5">
             <span className="inline-block w-3 h-0.5" style={{ backgroundColor: s.color }} />
@@ -498,50 +498,50 @@ export default async function AirportPage(
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-stone-50 to-white">
+    <main className="min-h-screen bg-gradient-to-b from-foam to-white">
       <JsonLd data={jsonLd} />
 
       <div className="mx-auto max-w-5xl px-4 py-8 md:py-12">
         <Link
           href={`/${locale}/airport`}
-          className="inline-flex items-center gap-1 text-sm text-stone-600 hover:text-stone-900 mb-6"
+          className="inline-flex items-center gap-1 text-sm text-ink hover:text-ink mb-6"
         >
           <ChevronLeft className="h-4 w-4" />
           {t.back}
         </Link>
 
         <header className="mb-8">
-          <div className="flex items-center gap-2 text-sm text-stone-500 mb-2">
+          <div className="flex items-center gap-2 text-sm text-text-muted mb-2">
             <Plane className="h-4 w-4" />
             <span>{airport.iata}</span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-stone-900">
+          <h1 className="text-3xl md:text-4xl font-bold text-ink">
             {t.metaTitle(city, airport.iata).split(":")[0]}
           </h1>
-          <p className="mt-2 text-stone-600">
+          <p className="mt-2 text-ink">
             {t.subtitle(periodLabel(uiLoc, first), periodLabel(uiLoc, latest))}
           </p>
         </header>
 
         {/* Key stats */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-          <div className="rounded-xl border border-stone-200 bg-white p-4">
-            <div className="flex items-center gap-1.5 text-xs text-stone-500 mb-1">
+          <div className="rounded-xl border border-border bg-white p-4">
+            <div className="flex items-center gap-1.5 text-xs text-text-muted mb-1">
               <TrendingUp className="h-3.5 w-3.5" /> {t.last12}
             </div>
-            <div className="text-2xl font-bold text-stone-900">{fmtNum(stats.rolling12, locale)}</div>
+            <div className="text-2xl font-bold text-ink">{fmtNum(stats.rolling12, locale)}</div>
             {stats.rolling12YoYPct !== null && (
               <div className={`text-sm ${stats.rolling12YoYPct >= 0 ? "text-emerald-700" : "text-red-700"}`}>
                 {fmtPct(stats.rolling12YoYPct)} {t.vsPrevYear}
               </div>
             )}
           </div>
-          <div className="rounded-xl border border-stone-200 bg-white p-4">
-            <div className="flex items-center gap-1.5 text-xs text-stone-500 mb-1">
+          <div className="rounded-xl border border-border bg-white p-4">
+            <div className="flex items-center gap-1.5 text-xs text-text-muted mb-1">
               <CalendarDays className="h-3.5 w-3.5" /> {t.latestMonth}
             </div>
-            <div className="text-2xl font-bold text-stone-900">{fmtNum(latest.pax_total, locale)}</div>
-            <div className="text-sm text-stone-500">
+            <div className="text-2xl font-bold text-ink">{fmtNum(latest.pax_total, locale)}</div>
+            <div className="text-sm text-text-muted">
               {periodLabel(uiLoc, latest)}
               {stats.latestYoYPct !== null && (
                 <span className={stats.latestYoYPct >= 0 ? " text-emerald-700" : " text-red-700"}>
@@ -550,47 +550,47 @@ export default async function AirportPage(
               )}
             </div>
           </div>
-          <div className="rounded-xl border border-stone-200 bg-white p-4">
-            <div className="flex items-center gap-1.5 text-xs text-stone-500 mb-1">
+          <div className="rounded-xl border border-border bg-white p-4">
+            <div className="flex items-center gap-1.5 text-xs text-text-muted mb-1">
               <CalendarDays className="h-3.5 w-3.5" /> {t.busiest}
             </div>
-            <div className="text-2xl font-bold text-stone-900 capitalize">{busyName}</div>
-            <div className="text-sm text-stone-500">{fmtNum(busyAvg, locale)} {t.avgPassengers}</div>
+            <div className="text-2xl font-bold text-ink capitalize">{busyName}</div>
+            <div className="text-sm text-text-muted">{fmtNum(busyAvg, locale)} {t.avgPassengers}</div>
           </div>
           {/* aircraft_intl is populated on only 2 of 26 months in the HCAA
               data, which rendered as a misleading "0% international" · show
               the last full calendar year instead, which is solid. */}
           {stats.lastFullYear && (
-            <div className="rounded-xl border border-stone-200 bg-white p-4">
-              <div className="flex items-center gap-1.5 text-xs text-stone-500 mb-1">
+            <div className="rounded-xl border border-border bg-white p-4">
+              <div className="flex items-center gap-1.5 text-xs text-text-muted mb-1">
                 <Plane className="h-3.5 w-3.5" /> {t.yearTotal(stats.lastFullYear.year)}
               </div>
-              <div className="text-2xl font-bold text-stone-900">
+              <div className="text-2xl font-bold text-ink">
                 {fmtNum(stats.lastFullYear.pax, locale)}
               </div>
-              <div className="text-sm text-stone-500">{t.passengers}</div>
+              <div className="text-sm text-text-muted">{t.passengers}</div>
             </div>
           )}
         </section>
 
         {/* Seasonality */}
         <section className="mb-10">
-          <h2 className="text-xl font-semibold text-stone-900 mb-2">{t.seasonality}</h2>
-          <p className="text-stone-600 mb-4">
+          <h2 className="text-xl font-semibold text-ink mb-2">{t.seasonality}</h2>
+          <p className="text-ink mb-4">
             {t.seasonalityIntro(city, busyName, quietName)}
           </p>
-          <div className="rounded-xl border border-stone-200 bg-white p-4">
+          <div className="rounded-xl border border-border bg-white p-4">
             <SeasonalityChart stats={stats} uiLoc={uiLoc} />
           </div>
         </section>
 
         {/* Monthly table */}
         <section className="mb-10">
-          <h2 className="text-xl font-semibold text-stone-900 mb-4">{t.monthlyTable}</h2>
-          <div className="overflow-x-auto rounded-xl border border-stone-200 bg-white">
+          <h2 className="text-xl font-semibold text-ink mb-4">{t.monthlyTable}</h2>
+          <div className="overflow-x-auto rounded-xl border border-border bg-white">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-200 text-left text-stone-500">
+                <tr className="border-b border-border text-left text-text-muted">
                   <th className="px-4 py-3 font-medium">{t.colMonth}</th>
                   <th className="px-4 py-3 font-medium text-right">{t.colPax}</th>
                   <th className="px-4 py-3 font-medium text-right">{t.colYoY}</th>
@@ -600,11 +600,11 @@ export default async function AirportPage(
                 {last13.map(r => {
                   const yoy = yoyFor(r);
                   return (
-                    <tr key={`${r.year}-${r.month}`} className="border-b border-stone-100 last:border-0">
+                    <tr key={`${r.year}-${r.month}`} className="border-b border-border last:border-0">
                       <td className="px-4 py-2.5 capitalize">{periodLabel(uiLoc, r)}</td>
                       <td className="px-4 py-2.5 text-right tabular-nums">{fmtNum(r.pax_total, locale)}</td>
                       <td className={`px-4 py-2.5 text-right tabular-nums ${
-                        yoy === null ? "text-stone-400" : yoy >= 0 ? "text-emerald-700" : "text-red-700"
+                        yoy === null ? "text-text-muted" : yoy >= 0 ? "text-emerald-700" : "text-red-700"
                       }`}>
                         {fmtPct(yoy)}
                       </td>
@@ -619,8 +619,8 @@ export default async function AirportPage(
         {/* Kastelli note (Heraklion only) */}
         {airport.iata === "HER" && (
           <section className="mb-10 rounded-xl border border-amber-200 bg-amber-50 p-5">
-            <h2 className="text-lg font-semibold text-stone-900 mb-1.5">{t.kastelliTitle}</h2>
-            <p className="text-stone-700">{t.kastelliText}</p>
+            <h2 className="text-lg font-semibold text-ink mb-1.5">{t.kastelliTitle}</h2>
+            <p className="text-ink">{t.kastelliText}</p>
           </section>
         )}
 
@@ -629,9 +629,9 @@ export default async function AirportPage(
             docs/marketing/2026-06-13-audit-placement-affiliation.md, P1). À
             réintégrer une fois le programme affilié vols réellement inscrit. */}
         <section className="mb-10">
-          <div className="rounded-xl border border-stone-200 bg-white p-5">
-            <h2 className="text-lg font-semibold text-stone-900 mb-3">{t.gettingThere}</h2>
-            <ul className="space-y-2 text-stone-700">
+          <div className="rounded-xl border border-border bg-white p-5">
+            <h2 className="text-lg font-semibold text-ink mb-3">{t.gettingThere}</h2>
+            <ul className="space-y-2 text-ink">
               {airport.transferRoute && (
                 <li>
                   <Link href={`/${locale}/getting-around/${airport.transferRoute}`} className="text-cyan-800 hover:underline">
@@ -653,13 +653,13 @@ export default async function AirportPage(
 
         {/* Staying nearby: airbnb data cross-links */}
         <section className="mb-10">
-          <h2 className="text-lg font-semibold text-stone-900 mb-3">{t.stayingNearby}</h2>
+          <h2 className="text-lg font-semibold text-ink mb-3">{t.stayingNearby}</h2>
           <ul className="flex flex-wrap gap-2">
             {airport.airbnbSlugs.map(s => (
               <li key={s}>
                 <Link
                   href={`/${locale}/airbnb/${s}`}
-                  className="inline-block rounded-full border border-stone-300 bg-white px-3.5 py-1.5 text-sm text-stone-700 hover:border-stone-500"
+                  className="inline-block rounded-full border border-border bg-white px-3.5 py-1.5 text-sm text-ink hover:border-sea/30"
                 >
                   {t.airbnbLink(s.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()))}
                 </Link>
@@ -670,20 +670,20 @@ export default async function AirportPage(
 
         {/* FAQ */}
         <section className="mb-10">
-          <h2 className="text-xl font-semibold text-stone-900 mb-4">{t.faqTitle}</h2>
+          <h2 className="text-xl font-semibold text-ink mb-4">{t.faqTitle}</h2>
           <div className="space-y-3">
             {faq.map(f => (
-              <details key={f.q} className="rounded-xl border border-stone-200 bg-white p-4">
-                <summary className="font-medium text-stone-900 cursor-pointer">{f.q}</summary>
-                <p className="mt-2 text-stone-700">{f.a}</p>
+              <details key={f.q} className="rounded-xl border border-border bg-white p-4">
+                <summary className="font-medium text-ink cursor-pointer">{f.q}</summary>
+                <p className="mt-2 text-ink">{f.a}</p>
               </details>
             ))}
           </div>
         </section>
 
         {/* Methodology */}
-        <section className="rounded-xl bg-stone-100 p-5 text-sm text-stone-600">
-          <h2 className="font-semibold text-stone-800 mb-2">{t.methodology}</h2>
+        <section className="rounded-xl bg-surface p-5 text-sm text-ink">
+          <h2 className="font-semibold text-ink mb-2">{t.methodology}</h2>
           <p>{t.methodologyText(periodLabel(uiLoc, first), periodLabel(uiLoc, latest))}</p>
           {stats.sourceUrl && (
             <p className="mt-2">

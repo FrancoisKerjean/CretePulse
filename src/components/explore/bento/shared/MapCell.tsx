@@ -87,7 +87,7 @@ export function MapCell({
 
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-sea-faint to-stone ${className}`}
+      className={`relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-sea-faint to-foam ${className}`}
     >
       {/* Wrapper absolu séparé : maplibre-gl.css force position:relative sur le
           conteneur monté, ce qui écraserait un `absolute` direct (=> hauteur 0,

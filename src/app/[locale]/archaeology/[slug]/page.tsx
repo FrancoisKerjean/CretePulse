@@ -345,7 +345,7 @@ export default async function ArchaeologyDetailPage({
             {site.highlights.map((h) => (
               <span
                 key={h}
-                className="inline-flex items-center text-sm bg-stone px-3 py-1.5 rounded-full text-text"
+                className="inline-flex items-center text-sm bg-surface px-3 py-1.5 rounded-full text-text"
               >
                 {h}
               </span>
