@@ -58,7 +58,59 @@
     "guidesSectionTitle": "여행 가이드",
     "guidesSectionSubtitle": "크레타의 해변, 하이킹, 음식, 생활. 현지에서 검증.",
     "allGuides": "모든 가이드",
-    "editorialGuides": "에디토리얼 가이드"
+    "editorialGuides": "에디토리얼 가이드",
+    "heroTitle": "오늘의 크레타",
+    "matchKicker": "스와이프 & 매치",
+    "matchTitle": "크레타의 틴더",
+    "matchSub": "해변, 협곡, 마을을 스와이프하세요. 좋아요 또는 패스, 그리고 당신의 매치를 찾으세요.",
+    "matchCta": "스와이프 시작",
+    "heroMain": {
+      "pre": "해변, 버스, 날씨.",
+      "hl": "크레타, 실시간."
+    },
+    "heroToday": "오늘 {name}의 바다는 {rating}. 바람, 바다, 버스를 하루 종일 대신 지켜봐 드려요.",
+    "liveFromIsland": "섬에서 실시간",
+    "heroSub": "실시간 계산 · 기상 관측소 10곳 × 해변 500곳의 방향.",
+    "ctaBeach": "오늘의 해변 보기",
+    "air": "기온",
+    "sea": "바다",
+    "islandNow": "지금 이 순간의 섬",
+    "allStations": "관측소 전체",
+    "swimToday": "오늘 어디서 수영할까",
+    "allBeaches": "해변 500곳",
+    "todaysPick": "오늘의 추천",
+    "toolsTitle": "도구",
+    "ratings": {
+      "calm": "잔잔함",
+      "fair": "양호함",
+      "exposed": "노출됨"
+    },
+    "seaStates": {
+      "calm": "잔잔함",
+      "ok": "수영 가능",
+      "rough": "거침"
+    },
+    "regions": {
+      "south": "남부 해안",
+      "west": "서부 해안",
+      "east": "동부 해안",
+      "central": "중부 해안"
+    },
+    "tools": {
+      "buses": "버스",
+      "busesLine": "시간표 & 요금",
+      "swim": "수영",
+      "swimLine": "해변 500곳 실시간",
+      "explore": "둘러보기",
+      "exploreLine": "2,296곳",
+      "airports": "공항",
+      "airportsLine": "운항량 & 시즌",
+      "airbnb": "에어비앤비 데이터",
+      "airbnbLine": "지역별 요금",
+      "weather": "날씨",
+      "weatherLine": "관측소 10곳 + 바다"
+    },
+    "nextEvents": "다가오는 이벤트"
   },
   "footer": {
     "about": "크레타의 무료 독립 가이드. 실시간 데이터. 광고 없음(아직은). 추적 없음.",

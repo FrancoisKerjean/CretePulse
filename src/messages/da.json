@@ -58,7 +58,59 @@
     "guidesSectionTitle": "Rejseguides",
     "guidesSectionSubtitle": "Strande, vandreture, mad, liv på Kreta. Tjekket på stedet.",
     "allGuides": "Alle guides",
-    "editorialGuides": "Redaktionelle guider"
+    "editorialGuides": "Redaktionelle guider",
+    "heroTitle": "Kreta, i dag",
+    "matchKicker": "Swipe & match",
+    "matchTitle": "Kretas Tinder",
+    "matchSub": "Swipe gennem strande, kløfter og landsbyer. Like eller drop, og find dit match.",
+    "matchCta": "Begynd at swipe",
+    "heroMain": {
+      "pre": "Strande, busser, vejr.",
+      "hl": "Kreta, live."
+    },
+    "heroToday": "I dag er havet {rating} ved {name}. Vi holder øje med vinden, havet og busserne for dig hele dagen.",
+    "liveFromIsland": "live fra øen",
+    "heroSub": "Beregnet live · 10 vejrstationer × orienteringen af 500 strande.",
+    "ctaBeach": "Se dagens strand",
+    "air": "luft",
+    "sea": "hav",
+    "islandNow": "Øen, lige nu",
+    "allStations": "Alle stationer",
+    "swimToday": "Hvor man kan bade i dag",
+    "allBeaches": "Alle 500 strande",
+    "todaysPick": "dagens valg",
+    "toolsTitle": "Værktøjerne",
+    "ratings": {
+      "calm": "roligt",
+      "fair": "okay",
+      "exposed": "udsat"
+    },
+    "seaStates": {
+      "calm": "roligt",
+      "ok": "bade ok",
+      "rough": "uroligt"
+    },
+    "regions": {
+      "south": "Sydkysten",
+      "west": "Vestkysten",
+      "east": "Østkysten",
+      "central": "Midtkysten"
+    },
+    "tools": {
+      "buses": "Busser",
+      "busesLine": "Køreplaner & priser",
+      "swim": "Badning",
+      "swimLine": "500 strande live",
+      "explore": "Udforsk",
+      "exploreLine": "2.296 steder",
+      "airports": "Lufthavne",
+      "airportsLine": "Trafik & sæsoner",
+      "airbnb": "Airbnb-data",
+      "airbnbLine": "Priser pr. område",
+      "weather": "Vejr",
+      "weatherLine": "10 stationer + hav"
+    },
+    "nextEvents": "Kommende begivenheder"
   },
   "footer": {
     "about": "Gratis, uafhængig guide til Kreta. Live data. Ingen reklamer (endnu). Ingen sporing.",

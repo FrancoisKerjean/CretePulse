@@ -58,7 +58,59 @@
     "guidesSectionTitle": "Guides de voyage",
     "guidesSectionSubtitle": "Plages, randonnées, cuisine, vie en Crète. Vérifiés sur l'île.",
     "allGuides": "Tous les guides",
-    "editorialGuides": "Guides éditoriaux"
+    "editorialGuides": "Guides éditoriaux",
+    "heroTitle": "La Crète, aujourd'hui",
+    "matchKicker": "Swipe & match",
+    "matchTitle": "Le Tinder de la Crète",
+    "matchSub": "Fais défiler plages, gorges et villages. Like ou passe, et trouve ton match.",
+    "matchCta": "Commencer",
+    "heroMain": {
+      "pre": "Plages, bus, météo.",
+      "hl": "La Crète, en direct."
+    },
+    "heroToday": "Aujourd'hui la mer est {rating} à {name}. On surveille le vent, la mer et les bus pour toi, toute la journée.",
+    "liveFromIsland": "en direct de l'île",
+    "heroSub": "Calculé en direct · 10 stations météo × l'orientation de 500 plages.",
+    "ctaBeach": "Voir la plage du jour",
+    "air": "air",
+    "sea": "mer",
+    "islandNow": "L'île, maintenant",
+    "allStations": "Toutes les stations",
+    "swimToday": "Où se baigner aujourd’hui",
+    "allBeaches": "Les 500 plages",
+    "todaysPick": "la préco du jour",
+    "toolsTitle": "Les outils",
+    "ratings": {
+      "calm": "calme",
+      "fair": "correct",
+      "exposed": "exposée"
+    },
+    "seaStates": {
+      "calm": "calme",
+      "ok": "baignade ok",
+      "rough": "agitée"
+    },
+    "regions": {
+      "south": "Côte sud",
+      "west": "Côte ouest",
+      "east": "Côte est",
+      "central": "Côte centrale"
+    },
+    "tools": {
+      "buses": "Bus",
+      "busesLine": "Horaires & prix",
+      "swim": "Baignade",
+      "swimLine": "500 plages live",
+      "explore": "Explorer",
+      "exploreLine": "2 296 lieux",
+      "airports": "Aéroports",
+      "airportsLine": "Trafic & saisons",
+      "airbnb": "Data Airbnb",
+      "airbnbLine": "Prix par zone",
+      "weather": "Météo",
+      "weatherLine": "10 stations + mer"
+    },
+    "nextEvents": "Prochains événements"
   },
   "footer": {
     "about": "Guide gratuit et indépendant sur la Crète. Données live. Pas de pub (pour l'instant). Pas de tracking.",

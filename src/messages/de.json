@@ -58,7 +58,59 @@
     "guidesSectionTitle": "Reiseführer",
     "guidesSectionSubtitle": "Strände, Wandern, Essen, Leben auf Kreta. Vor Ort geprüft.",
     "allGuides": "Alle Reiseführer",
-    "editorialGuides": "Redaktionelle Guides"
+    "editorialGuides": "Redaktionelle Guides",
+    "heroTitle": "Kreta, heute",
+    "matchKicker": "Swipe & match",
+    "matchTitle": "Das Tinder Kretas",
+    "matchSub": "Wische durch Strände, Schluchten und Dörfer. Like oder weiter, und finde dein Match.",
+    "matchCta": "Los geht's",
+    "heroMain": {
+      "pre": "Strände, Busse, Wetter.",
+      "hl": "Kreta, live."
+    },
+    "heroToday": "Heute ist das Meer {rating} bei {name}. Wir behalten Wind, Meer und Busse für dich im Blick, den ganzen Tag.",
+    "liveFromIsland": "live von der Insel",
+    "heroSub": "Live berechnet · 10 Wetterstationen × die Ausrichtung von 500 Stränden.",
+    "ctaBeach": "Strand des Tages",
+    "air": "Luft",
+    "sea": "Meer",
+    "islandNow": "Die Insel, jetzt",
+    "allStations": "Alle Stationen",
+    "swimToday": "Wo heute baden",
+    "allBeaches": "Alle 500 Strände",
+    "todaysPick": "Tipp des Tages",
+    "toolsTitle": "Die Tools",
+    "ratings": {
+      "calm": "ruhig",
+      "fair": "passabel",
+      "exposed": "exponiert"
+    },
+    "seaStates": {
+      "calm": "ruhig",
+      "ok": "Baden ok",
+      "rough": "kabbelig"
+    },
+    "regions": {
+      "south": "Südküste",
+      "west": "Westküste",
+      "east": "Ostküste",
+      "central": "Zentralküste"
+    },
+    "tools": {
+      "buses": "Busse",
+      "busesLine": "Fahrpläne & Preise",
+      "swim": "Baden",
+      "swimLine": "500 Strände live",
+      "explore": "Erkunden",
+      "exploreLine": "2.296 Orte",
+      "airports": "Flughäfen",
+      "airportsLine": "Verkehr & Saison",
+      "airbnb": "Airbnb-Daten",
+      "airbnbLine": "Preise je Gebiet",
+      "weather": "Wetter",
+      "weatherLine": "10 Stationen + Meer"
+    },
+    "nextEvents": "Nächste Events"
   },
   "footer": {
     "about": "Kostenloser, unabhängiger Kreta-Reiseführer. Live-Daten. Keine Werbung (noch). Kein Tracking.",

@@ -58,7 +58,59 @@
     "guidesSectionTitle": "Przewodniki",
     "guidesSectionSubtitle": "Plaże, wędrówki, jedzenie, życie na Krecie. Sprawdzone na miejscu.",
     "allGuides": "Wszystkie przewodniki",
-    "editorialGuides": "Przewodniki redakcyjne"
+    "editorialGuides": "Przewodniki redakcyjne",
+    "heroTitle": "Kreta, dzisiaj",
+    "matchKicker": "Swipe & match",
+    "matchTitle": "Tinder Krety",
+    "matchSub": "Przesuwaj plaże, wąwozy i wioski. Polub albo pomiń i znajdź swój match.",
+    "matchCta": "Zacznij przesuwać",
+    "heroMain": {
+      "pre": "Plaże, autobusy, pogoda.",
+      "hl": "Kreta, na żywo."
+    },
+    "heroToday": "Dzisiaj morze jest {rating} na {name}. Przez cały dzień pilnujemy za Ciebie wiatru, morza i autobusów.",
+    "liveFromIsland": "na żywo z wyspy",
+    "heroSub": "Liczone na żywo · 10 stacji pogodowych × orientacja 500 plaż.",
+    "ctaBeach": "Zobacz dzisiejszą plażę",
+    "air": "powietrze",
+    "sea": "morze",
+    "islandNow": "Wyspa, właśnie teraz",
+    "allStations": "Wszystkie stacje",
+    "swimToday": "Gdzie popływać dzisiaj",
+    "allBeaches": "Wszystkie 500 plaż",
+    "todaysPick": "propozycja dnia",
+    "toolsTitle": "Narzędzia",
+    "ratings": {
+      "calm": "spokojne",
+      "fair": "umiarkowane",
+      "exposed": "odsłonięta"
+    },
+    "seaStates": {
+      "calm": "spokojne",
+      "ok": "kąpiel ok",
+      "rough": "wzburzone"
+    },
+    "regions": {
+      "south": "Wybrzeże południowe",
+      "west": "Wybrzeże zachodnie",
+      "east": "Wybrzeże wschodnie",
+      "central": "Wybrzeże centralne"
+    },
+    "tools": {
+      "buses": "Autobusy",
+      "busesLine": "Rozkłady i ceny",
+      "swim": "Kąpiele",
+      "swimLine": "500 plaż na żywo",
+      "explore": "Odkrywaj",
+      "exploreLine": "2296 miejsc",
+      "airports": "Lotniska",
+      "airportsLine": "Ruch i sezony",
+      "airbnb": "Dane Airbnb",
+      "airbnbLine": "Ceny według obszaru",
+      "weather": "Pogoda",
+      "weatherLine": "10 stacji + morze"
+    },
+    "nextEvents": "Nadchodzące wydarzenia"
   },
   "footer": {
     "about": "Darmowy, niezależny przewodnik po Krecie. Dane na żywo. Bez reklam (na razie). Bez śledzenia.",

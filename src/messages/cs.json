@@ -58,7 +58,59 @@
     "guidesSectionTitle": "Průvodci",
     "guidesSectionSubtitle": "Pláže, túry, jídlo, život na Krétě. Ověřeno na místě.",
     "allGuides": "Všichni průvodci",
-    "editorialGuides": "Redakční průvodci"
+    "editorialGuides": "Redakční průvodci",
+    "heroTitle": "Kréta, dnes",
+    "matchKicker": "Swajpuj a matchni",
+    "matchTitle": "Tinder Kréty",
+    "matchSub": "Swajpuj pláže, soutěsky a vesničky. Lajkni nebo přejdi dál a najdi svůj match.",
+    "matchCta": "Začít swajpovat",
+    "heroMain": {
+      "pre": "Pláže, autobusy, počasí.",
+      "hl": "Kréta, naživo."
+    },
+    "heroToday": "Dnes je moře {rating} v lokalitě {name}. Hlídáme za tebe vítr, moře i autobusy, celý den.",
+    "liveFromIsland": "naživo z ostrova",
+    "heroSub": "Počítáno naživo · 10 meteostanic × orientace 500 pláží.",
+    "ctaBeach": "Zobrazit pláž dne",
+    "air": "vzduch",
+    "sea": "moře",
+    "islandNow": "Ostrov, právě teď",
+    "allStations": "Všechny stanice",
+    "swimToday": "Kam se dnes vykoupat",
+    "allBeaches": "Všech 500 pláží",
+    "todaysPick": "tip dne",
+    "toolsTitle": "Nástroje",
+    "ratings": {
+      "calm": "klidné",
+      "fair": "ucházející",
+      "exposed": "otevřené"
+    },
+    "seaStates": {
+      "calm": "klidné",
+      "ok": "koupání ok",
+      "rough": "rozbouřené"
+    },
+    "regions": {
+      "south": "Jižní pobřeží",
+      "west": "Západní pobřeží",
+      "east": "Východní pobřeží",
+      "central": "Střední pobřeží"
+    },
+    "tools": {
+      "buses": "Autobusy",
+      "busesLine": "Jízdní řády a ceny",
+      "swim": "Koupání",
+      "swimLine": "500 pláží naživo",
+      "explore": "Objevuj",
+      "exploreLine": "2 296 míst",
+      "airports": "Letiště",
+      "airportsLine": "Provoz a sezóny",
+      "airbnb": "Data Airbnb",
+      "airbnbLine": "Ceny podle oblasti",
+      "weather": "Počasí",
+      "weatherLine": "10 stanic + moře"
+    },
+    "nextEvents": "Nadcházející akce"
   },
   "footer": {
     "about": "Bezplatný, nezávislý průvodce Krétou. Živá data. Bez reklam (zatím). Bez sledování.",

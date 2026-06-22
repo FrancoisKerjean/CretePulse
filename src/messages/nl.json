@@ -58,7 +58,59 @@
     "guidesSectionTitle": "Reisgidsen",
     "guidesSectionSubtitle": "Stranden, wandelen, eten, leven op Kreta. Ter plaatse gecheckt.",
     "allGuides": "Alle reisgidsen",
-    "editorialGuides": "Redactionele gidsen"
+    "editorialGuides": "Redactionele gidsen",
+    "heroTitle": "Kreta, vandaag",
+    "matchKicker": "Swipe & match",
+    "matchTitle": "De Tinder van Kreta",
+    "matchSub": "Swipe door stranden, kloven en dorpjes. Like of pas, en vind je match.",
+    "matchCta": "Begin met swipen",
+    "heroMain": {
+      "pre": "Stranden, bussen, weer.",
+      "hl": "Kreta, live."
+    },
+    "heroToday": "Vandaag is de zee {rating} bij {name}. Wij houden de wind, de zee en de bussen voor je in de gaten, de hele dag door.",
+    "liveFromIsland": "live vanaf het eiland",
+    "heroSub": "Live berekend · 10 weerstations × de ligging van 500 stranden.",
+    "ctaBeach": "Bekijk het strand van vandaag",
+    "air": "lucht",
+    "sea": "zee",
+    "islandNow": "Het eiland, nu meteen",
+    "allStations": "Alle stations",
+    "swimToday": "Waar zwem je vandaag",
+    "allBeaches": "Alle 500 stranden",
+    "todaysPick": "de tip van vandaag",
+    "toolsTitle": "De tools",
+    "ratings": {
+      "calm": "kalm",
+      "fair": "redelijk",
+      "exposed": "open"
+    },
+    "seaStates": {
+      "calm": "kalm",
+      "ok": "zwemmen ok",
+      "rough": "ruw"
+    },
+    "regions": {
+      "south": "Zuidkust",
+      "west": "Westkust",
+      "east": "Oostkust",
+      "central": "Middenkust"
+    },
+    "tools": {
+      "buses": "Bussen",
+      "busesLine": "Tijden & prijzen",
+      "swim": "Zwemmen",
+      "swimLine": "500 stranden live",
+      "explore": "Ontdekken",
+      "exploreLine": "2.296 plekken",
+      "airports": "Luchthavens",
+      "airportsLine": "Verkeer & seizoenen",
+      "airbnb": "Airbnb-data",
+      "airbnbLine": "Prijzen per zone",
+      "weather": "Weer",
+      "weatherLine": "10 stations + zee"
+    },
+    "nextEvents": "Komende evenementen"
   },
   "footer": {
     "about": "Gratis, onafhankelijke gids voor Kreta. Live data. Geen advertenties (nog). Geen tracking.",

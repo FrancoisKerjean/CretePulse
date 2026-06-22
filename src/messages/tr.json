@@ -58,7 +58,59 @@
     "guidesSectionTitle": "Seyahat rehberleri",
     "guidesSectionSubtitle": "Plajlar, yürüyüşler, yemek, Girit'te yaşam. Yerinde doğrulandı.",
     "allGuides": "Tüm rehberler",
-    "editorialGuides": "Editör rehberleri"
+    "editorialGuides": "Editör rehberleri",
+    "heroTitle": "Girit, bugün",
+    "matchKicker": "Kaydır & eşleş",
+    "matchTitle": "Girit'in Tinder'ı",
+    "matchSub": "Plajları, vadileri ve köyleri kaydır. Beğen ya da geç, eşleşmeni bul.",
+    "matchCta": "Kaydırmaya başla",
+    "heroMain": {
+      "pre": "Plajlar, otobüsler, hava durumu.",
+      "hl": "Girit, canlı."
+    },
+    "heroToday": "Bugün {name} açıklarında deniz {rating}. Rüzgârı, denizi ve otobüsleri gün boyu senin için takip ediyoruz.",
+    "liveFromIsland": "adadan canlı",
+    "heroSub": "Canlı hesaplandı · 10 meteoroloji istasyonu × 500 plajın yönü.",
+    "ctaBeach": "Bugünün plajını gör",
+    "air": "hava",
+    "sea": "deniz",
+    "islandNow": "Ada, şu anda",
+    "allStations": "Tüm istasyonlar",
+    "swimToday": "Bugün nerede yüzülür",
+    "allBeaches": "500 plajın tümü",
+    "todaysPick": "bugünün seçimi",
+    "toolsTitle": "Araçlar",
+    "ratings": {
+      "calm": "sakin",
+      "fair": "orta",
+      "exposed": "açık"
+    },
+    "seaStates": {
+      "calm": "sakin",
+      "ok": "yüzülür",
+      "rough": "dalgalı"
+    },
+    "regions": {
+      "south": "Güney kıyısı",
+      "west": "Batı kıyısı",
+      "east": "Doğu kıyısı",
+      "central": "Orta kıyı"
+    },
+    "tools": {
+      "buses": "Otobüsler",
+      "busesLine": "Saatler & fiyatlar",
+      "swim": "Yüzme",
+      "swimLine": "500 plaj canlı",
+      "explore": "Keşfet",
+      "exploreLine": "2.296 yer",
+      "airports": "Havalimanları",
+      "airportsLine": "Trafik & sezonlar",
+      "airbnb": "Airbnb verisi",
+      "airbnbLine": "Bölgeye göre fiyatlar",
+      "weather": "Hava durumu",
+      "weatherLine": "10 istasyon + deniz"
+    },
+    "nextEvents": "Yaklaşan etkinlikler"
   },
   "footer": {
     "about": "Girit için ücretsiz, bağımsız rehber. Canlı veri. Reklam yok (henüz). Takip yok.",

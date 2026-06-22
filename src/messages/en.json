@@ -58,7 +58,59 @@
     "guidesSectionTitle": "Travel guides",
     "guidesSectionSubtitle": "Beaches, hikes, food, life in Crete. Fact-checked on the island.",
     "allGuides": "All guides",
-    "editorialGuides": "Editorial guides"
+    "editorialGuides": "Editorial guides",
+    "heroTitle": "Crete, today",
+    "matchKicker": "Swipe & match",
+    "matchTitle": "The Tinder of Crete",
+    "matchSub": "Swipe beaches, gorges and villages. Like or pass, and get your match.",
+    "matchCta": "Start swiping",
+    "heroMain": {
+      "pre": "Beaches, buses, weather.",
+      "hl": "Crete, live."
+    },
+    "heroToday": "Today the sea is {rating} at {name}. We watch the wind, the sea and the buses for you, all day long.",
+    "liveFromIsland": "live from the island",
+    "heroSub": "Computed live · 10 weather stations × the orientation of 500 beaches.",
+    "ctaBeach": "See today's beach",
+    "air": "air",
+    "sea": "sea",
+    "islandNow": "The island, right now",
+    "allStations": "All stations",
+    "swimToday": "Where to swim today",
+    "allBeaches": "All 500 beaches",
+    "todaysPick": "today's pick",
+    "toolsTitle": "The tools",
+    "ratings": {
+      "calm": "calm",
+      "fair": "fair",
+      "exposed": "exposed"
+    },
+    "seaStates": {
+      "calm": "calm",
+      "ok": "swim ok",
+      "rough": "choppy"
+    },
+    "regions": {
+      "south": "South coast",
+      "west": "West coast",
+      "east": "East coast",
+      "central": "Central coast"
+    },
+    "tools": {
+      "buses": "Buses",
+      "busesLine": "Timetables & prices",
+      "swim": "Swimming",
+      "swimLine": "500 beaches live",
+      "explore": "Explore",
+      "exploreLine": "2,296 places",
+      "airports": "Airports",
+      "airportsLine": "Traffic & seasons",
+      "airbnb": "Airbnb data",
+      "airbnbLine": "Prices by area",
+      "weather": "Weather",
+      "weatherLine": "10 stations + sea"
+    },
+    "nextEvents": "Upcoming events"
   },
   "footer": {
     "about": "Free, independent guide to Crete. Live data. No ads (yet). No tracking.",

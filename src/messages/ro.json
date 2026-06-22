@@ -58,7 +58,59 @@
     "guidesSectionTitle": "Ghiduri de călătorie",
     "guidesSectionSubtitle": "Plaje, drumeții, mâncare, viață în Creta. Verificate pe insulă.",
     "allGuides": "Toate ghidurile",
-    "editorialGuides": "Ghiduri editoriale"
+    "editorialGuides": "Ghiduri editoriale",
+    "heroTitle": "Creta, azi",
+    "matchKicker": "Dă swipe & match",
+    "matchTitle": "Tinderul Cretei",
+    "matchSub": "Dă swipe la plaje, chei și sate. Like sau pas, și găsește-ți matchul.",
+    "matchCta": "Începe",
+    "heroMain": {
+      "pre": "Plaje, autobuze, vreme.",
+      "hl": "Creta, în direct."
+    },
+    "heroToday": "Azi marea e {rating} la {name}. Urmărim vântul, marea și autobuzele pentru tine, toată ziua.",
+    "liveFromIsland": "în direct de pe insulă",
+    "heroSub": "Calculat în direct · 10 stații meteo × orientarea a 500 de plaje.",
+    "ctaBeach": "Vezi plaja zilei",
+    "air": "aer",
+    "sea": "mare",
+    "islandNow": "Insula, chiar acum",
+    "allStations": "Toate stațiile",
+    "swimToday": "Unde te scalzi azi",
+    "allBeaches": "Toate cele 500 de plaje",
+    "todaysPick": "alegerea zilei",
+    "toolsTitle": "Instrumentele",
+    "ratings": {
+      "calm": "calmă",
+      "fair": "ok",
+      "exposed": "expusă"
+    },
+    "seaStates": {
+      "calm": "calmă",
+      "ok": "bună de scăldat",
+      "rough": "agitată"
+    },
+    "regions": {
+      "south": "Coasta de sud",
+      "west": "Coasta de vest",
+      "east": "Coasta de est",
+      "central": "Coasta centrală"
+    },
+    "tools": {
+      "buses": "Autobuze",
+      "busesLine": "Orare & prețuri",
+      "swim": "Scăldat",
+      "swimLine": "500 de plaje live",
+      "explore": "Explorează",
+      "exploreLine": "2.296 de locuri",
+      "airports": "Aeroporturi",
+      "airportsLine": "Trafic & sezoane",
+      "airbnb": "Date Airbnb",
+      "airbnbLine": "Prețuri pe zone",
+      "weather": "Vreme",
+      "weatherLine": "10 stații + mare"
+    },
+    "nextEvents": "Evenimente viitoare"
   },
   "footer": {
     "about": "Ghid gratuit și independent pentru Creta. Date în timp real. Fără reclame (deocamdată). Fără urmărire.",

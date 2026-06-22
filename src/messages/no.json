@@ -58,7 +58,59 @@
     "guidesSectionTitle": "Reiseguider",
     "guidesSectionSubtitle": "Strender, fotturer, mat, liv på Kreta. Sjekket på stedet.",
     "allGuides": "Alle guider",
-    "editorialGuides": "Redaksjonelle guider"
+    "editorialGuides": "Redaksjonelle guider",
+    "heroTitle": "Kreta, i dag",
+    "matchKicker": "Sveip og match",
+    "matchTitle": "Kretas Tinder",
+    "matchSub": "Sveip deg gjennom strender, juv og landsbyer. Lik eller dropp, og finn din match.",
+    "matchCta": "Begynn å sveipe",
+    "heroMain": {
+      "pre": "Strender, busser, vær.",
+      "hl": "Kreta, direkte."
+    },
+    "heroToday": "I dag er sjøen {rating} ved {name}. Vi holder øye med vinden, sjøen og bussene for deg, hele dagen.",
+    "liveFromIsland": "direkte fra øya",
+    "heroSub": "Beregnet direkte · 10 værstasjoner × orienteringen til 500 strender.",
+    "ctaBeach": "Se dagens strand",
+    "air": "luft",
+    "sea": "sjø",
+    "islandNow": "Øya, akkurat nå",
+    "allStations": "Alle stasjoner",
+    "swimToday": "Hvor du kan bade i dag",
+    "allBeaches": "Alle 500 strendene",
+    "todaysPick": "dagens tips",
+    "toolsTitle": "Verktøyene",
+    "ratings": {
+      "calm": "rolig",
+      "fair": "grei",
+      "exposed": "værhard"
+    },
+    "seaStates": {
+      "calm": "rolig",
+      "ok": "bading ok",
+      "rough": "urolig"
+    },
+    "regions": {
+      "south": "Sørkysten",
+      "west": "Vestkysten",
+      "east": "Østkysten",
+      "central": "Midtkysten"
+    },
+    "tools": {
+      "buses": "Busser",
+      "busesLine": "Rutetider og priser",
+      "swim": "Bading",
+      "swimLine": "500 strender live",
+      "explore": "Utforsk",
+      "exploreLine": "2 296 steder",
+      "airports": "Flyplasser",
+      "airportsLine": "Trafikk og sesonger",
+      "airbnb": "Airbnb-data",
+      "airbnbLine": "Priser etter område",
+      "weather": "Vær",
+      "weatherLine": "10 stasjoner + sjø"
+    },
+    "nextEvents": "Kommende arrangementer"
   },
   "footer": {
     "about": "Gratis, uavhengig guide til Kreta. Sanntidsdata. Ingen annonser (ennå). Ingen sporing.",

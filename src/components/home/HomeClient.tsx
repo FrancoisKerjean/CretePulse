@@ -45,83 +45,6 @@ function formatEventDate(dateStr: string, locale: string): string {
   return `${month} ${day}`;
 }
 
-// Libelles inline 4 langues (pattern du site), fallback EN pour les 18 autres.
-type Ui = "en" | "fr" | "de" | "el";
-const pickUi = (l: string): Ui => (["en", "fr", "de", "el"].includes(l) ? (l as Ui) : "en");
-
-const T = {
-  heroTitle: { en: "Crete, today", fr: "La Crète, aujourd'hui", de: "Kreta, heute", el: "Η Κρήτη σήμερα" },
-  matchKicker: { en: "Swipe & match", fr: "Swipe & match", de: "Swipe & match", el: "Swipe & match" },
-  matchTitle: { en: "The Tinder of Crete", fr: "Le Tinder de la Crète", de: "Das Tinder Kretas", el: "Το Tinder της Κρήτης" },
-  matchSub: {
-    en: "Swipe beaches, gorges and villages. Like or pass, and get your match.",
-    fr: "Fais défiler plages, gorges et villages. Like ou passe, et trouve ton match.",
-    de: "Wische durch Strände, Schluchten und Dörfer. Like oder weiter, und finde dein Match.",
-    el: "Κάνε swipe σε παραλίες, φαράγγια και χωριά. Like ή πέρνα, και βρες το match σου.",
-  },
-  matchCta: { en: "Start swiping", fr: "Commencer", de: "Los geht's", el: "Ξεκίνα" },
-  // H1 "enfant de 5 ans" : dire ce que fait le site, en 2 phrases courtes.
-  heroMain: {
-    en: { pre: "Beaches, buses, weather.", hl: "Crete, live." },
-    fr: { pre: "Plages, bus, météo.", hl: "La Crète, en direct." },
-    de: { pre: "Strände, Busse, Wetter.", hl: "Kreta, live." },
-    el: { pre: "Παραλίες, λεωφορεία, καιρός.", hl: "Η Κρήτη, ζωντανά." },
-  },
-  // Sous-titre : la donnee du jour + ce qu'on fait pour le lecteur.
-  heroToday: {
-    en: (rating: string, name: string) => `Today the sea is ${rating} at ${name}. We watch the wind, the sea and the buses for you, all day long.`,
-    fr: (rating: string, name: string) => `Aujourd'hui la mer est ${rating} à ${name}. On surveille le vent, la mer et les bus pour toi, toute la journée.`,
-    de: (rating: string, name: string) => `Heute ist das Meer ${rating} bei ${name}. Wir behalten Wind, Meer und Busse für dich im Blick, den ganzen Tag.`,
-    el: (rating: string, name: string) => `Σήμερα η θάλασσα είναι ${rating} στο ${name}. Παρακολουθούμε τον άνεμο, τη θάλασσα και τα λεωφορεία για σένα, όλη μέρα.`,
-  },
-  liveFromIsland: { en: "live from the island", fr: "en direct de l'île", de: "live von der Insel", el: "ζωντανά από το νησί" },
-  heroSub: {
-    en: "Computed live · 10 weather stations × the orientation of 500 beaches.",
-    fr: "Calculé en direct · 10 stations météo × l'orientation de 500 plages.",
-    de: "Live berechnet · 10 Wetterstationen × die Ausrichtung von 500 Stränden.",
-    el: "Υπολογίζεται ζωντανά · 10 μετεωρολογικοί σταθμοί × 500 παραλίες.",
-  },
-  ctaBeach: { en: "See today's beach", fr: "Voir la plage du jour", de: "Strand des Tages", el: "Η παραλία της ημέρας" },
-  air: { en: "air", fr: "air", de: "Luft", el: "αέρας" },
-  sea: { en: "sea", fr: "mer", de: "Meer", el: "θάλασσα" },
-  islandNow: { en: "The island, right now", fr: "L'île, maintenant", de: "Die Insel, jetzt", el: "Το νησί, τώρα" },
-  allStations: { en: "All stations", fr: "Toutes les stations", de: "Alle Stationen", el: "Όλοι οι σταθμοί" },
-  swimToday: { en: "Where to swim today", fr: "Où se baigner aujourd'hui", de: "Wo heute baden", el: "Πού για μπάνιο σήμερα" },
-  allBeaches: { en: "All 500 beaches", fr: "Les 500 plages", de: "Alle 500 Strände", el: "Οι 500 παραλίες" },
-  todaysPick: { en: "today's pick", fr: "la préco du jour", de: "Tipp des Tages", el: "η επιλογή της ημέρας" },
-  toolsTitle: { en: "The tools", fr: "Les outils", de: "Die Tools", el: "Τα εργαλεία" },
-  ratings: {
-    calm: { en: "calm", fr: "calme", de: "ruhig", el: "ήρεμη" },
-    fair: { en: "fair", fr: "correct", de: "passabel", el: "καλή" },
-    exposed: { en: "exposed", fr: "exposée", de: "exponiert", el: "εκτεθειμένη" },
-  },
-  seaStates: {
-    calm: { en: "calm", fr: "calme", de: "ruhig", el: "ήρεμη" },
-    ok: { en: "swim ok", fr: "baignade ok", de: "Baden ok", el: "για μπάνιο" },
-    rough: { en: "choppy", fr: "agitée", de: "kabbelig", el: "κυματώδης" },
-  },
-  regions: {
-    south: { en: "South coast", fr: "Côte sud", de: "Südküste", el: "Νότια ακτή" },
-    west: { en: "West coast", fr: "Côte ouest", de: "Westküste", el: "Δυτική ακτή" },
-    east: { en: "East coast", fr: "Côte est", de: "Ostküste", el: "Ανατολική ακτή" },
-    central: { en: "Central coast", fr: "Côte centrale", de: "Zentralküste", el: "Κεντρική ακτή" },
-  },
-  tools: {
-    buses: { en: "Buses", fr: "Bus", de: "Busse", el: "Λεωφορεία" },
-    busesLine: { en: "Timetables & prices", fr: "Horaires & prix", de: "Fahrpläne & Preise", el: "Ώρες & τιμές" },
-    swim: { en: "Swimming", fr: "Baignade", de: "Baden", el: "Μπάνιο" },
-    swimLine: { en: "500 beaches live", fr: "500 plages live", de: "500 Strände live", el: "500 παραλίες live" },
-    explore: { en: "Explore", fr: "Explorer", de: "Erkunden", el: "Εξερεύνηση" },
-    exploreLine: { en: "2,296 places", fr: "2 296 lieux", de: "2.296 Orte", el: "2.296 μέρη" },
-    airports: { en: "Airports", fr: "Aéroports", de: "Flughäfen", el: "Αεροδρόμια" },
-    airportsLine: { en: "Traffic & seasons", fr: "Trafic & saisons", de: "Verkehr & Saison", el: "Κίνηση & εποχές" },
-    airbnb: { en: "Airbnb data", fr: "Data Airbnb", de: "Airbnb-Daten", el: "Δεδομένα Airbnb" },
-    airbnbLine: { en: "Prices by area", fr: "Prix par zone", de: "Preise je Gebiet", el: "Τιμές ανά περιοχή" },
-    weather: { en: "Weather", fr: "Météo", de: "Wetter", el: "Καιρός" },
-    weatherLine: { en: "10 stations + sea", fr: "10 stations + mer", de: "10 Stationen + Meer", el: "10 σταθμοί + θάλασσα" },
-  },
-  nextEvents: { en: "Upcoming events", fr: "Prochains événements", de: "Nächste Events", el: "Επόμενες εκδηλώσεις" },
-} as const;
 
 function NewsletterFormCompact({ locale }: { locale: string }) {
   const t = useTranslations("home");
@@ -236,8 +159,7 @@ const WTILE_CITIES = ["Heraklion", "Chania", "Ierapetra", "Sitia"];
 const TOOL_TINTS = ["bg-[#CFF3F7]", "bg-[#FFE9CF]", "bg-[#E4F0D5]", "bg-[#DCEBFF]", "bg-[#FFE0D6]", "bg-[#FFF1BF]"];
 
 export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, swimPick, swimSides, boardRoutes, locale }: HomeClientProps) {
-  const loc = locale as Locale;
-  const ui = pickUi(locale);
+  const loc = locale as Locale;
   const t = useTranslations("home");
 
   const dateLabel = new Intl.DateTimeFormat(locale, {
@@ -258,12 +180,12 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
     : null;
 
   const TOOLS = [
-    { href: "/buses", icon: CiBus, title: T.tools.buses[ui], line: T.tools.busesLine[ui] },
-    { href: "/beaches/today", icon: CiWave, title: T.tools.swim[ui], line: T.tools.swimLine[ui] },
-    { href: "/explore", icon: CiCompass, title: T.tools.explore[ui], line: T.tools.exploreLine[ui] },
-    { href: "/airport", icon: CiPlane, title: T.tools.airports[ui], line: T.tools.airportsLine[ui] },
-    { href: "/airbnb", icon: CiChart, title: T.tools.airbnb[ui], line: T.tools.airbnbLine[ui] },
-    { href: "/weather", icon: CiSun, title: T.tools.weather[ui], line: T.tools.weatherLine[ui] },
+    { href: "/buses", icon: CiBus, title: t("tools.buses"), line: t("tools.busesLine") },
+    { href: "/beaches/today", icon: CiWave, title: t("tools.swim"), line: t("tools.swimLine") },
+    { href: "/explore", icon: CiCompass, title: t("tools.explore"), line: t("tools.exploreLine") },
+    { href: "/airport", icon: CiPlane, title: t("tools.airports"), line: t("tools.airportsLine") },
+    { href: "/airbnb", icon: CiChart, title: t("tools.airbnb"), line: t("tools.airbnbLine") },
+    { href: "/weather", icon: CiSun, title: t("tools.weather"), line: t("tools.weatherLine") },
   ] as const;
 
   return (
@@ -282,30 +204,30 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
             <BlurFade delay={0.05}>
               <span className="inline-flex items-center gap-2 bg-white/72 rounded-full px-4 py-2 text-[13px] font-heading font-semibold text-sea">
                 <span className="w-2 h-2 rounded-full bg-ok shadow-[0_0_0_4px_rgba(20,184,107,.25)]" />
-                {greekGreeting()} {dateLabel} · {T.liveFromIsland[ui]}
+                {greekGreeting()} {dateLabel} · {t("liveFromIsland")}
               </span>
               <h1 className="font-heading font-extrabold text-4xl md:text-[54px] leading-[1.06] tracking-tight text-text mt-4 mb-3">
-                {T.heroMain[ui].pre}
+                {t("heroMain.pre")}
                 <br />
-                <span className="text-white [text-shadow:0_2px_18px_rgba(11,94,120,.35)]">{T.heroMain[ui].hl}</span>
+                <span className="text-white [text-shadow:0_2px_18px_rgba(11,94,120,.35)]">{t("heroMain.hl")}</span>
               </h1>
               <p className="text-base text-[rgba(11,57,84,.78)] max-w-md leading-relaxed mb-6">
                 {swimPick
-                  ? T.heroToday[ui](T.ratings[swimPick.rating][ui], swimPick.name)
-                  : T.heroSub[ui]}
+                  ? t("heroToday", { rating: t(`ratings.${swimPick.rating}`), name: swimPick.name })
+                  : t("heroSub")}
               </p>
               <div className="flex flex-wrap gap-3 font-data">
                 <Link href="/beaches/today" className="bg-sun text-text rounded-[17px] px-4 py-2.5 text-sm font-heading font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)] no-underline hover:brightness-105 transition-all">
-                  {T.ctaBeach[ui]}
+                  {t("ctaBeach")}
                 </Link>
                 {heroCity && (
                   <span className="bg-white rounded-[17px] px-4 py-2.5 text-sm font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)]">
-                    ☼ {heroCity.temp}° {T.air[ui]}
+                    ☼ {heroCity.temp}° {t("air")}
                   </span>
                 )}
                 {swimPick?.seaTemp != null && (
                   <span className="bg-white rounded-[17px] px-4 py-2.5 text-sm font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)]">
-                    ≈ {swimPick.seaTemp}° {T.sea[ui]}
+                    ≈ {swimPick.seaTemp}° {t("sea")}
                   </span>
                 )}
                 {swimPick && (
@@ -400,20 +322,20 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
               <div className="relative flex min-w-0 flex-wrap items-center justify-between gap-x-8 gap-y-6 p-6 md:min-h-[210px] md:p-8">
                 <div className="min-w-0 max-w-xl">
                   <p className="m-0 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 font-heading text-[10.5px] font-bold uppercase tracking-widest text-white/90 backdrop-blur-sm">
-                    <Heart size={11} fill="currentColor" aria-hidden /> {T.matchKicker[ui]}
+                    <Heart size={11} fill="currentColor" aria-hidden /> {t("matchKicker")}
                   </p>
                   <h2 className="m-0 mt-3 font-heading text-[28px] font-extrabold leading-tight text-white [text-wrap:balance] drop-shadow-[0_1px_3px_rgba(8,38,58,0.6)] md:text-[32px]">
-                    {T.matchTitle[ui]}
+                    {t("matchTitle")}
                   </h2>
                   <p className="m-0 mt-1.5 text-[14px] text-white/90 drop-shadow-[0_1px_2px_rgba(8,38,58,0.6)]">
-                    {T.matchSub[ui]}
+                    {t("matchSub")}
                   </p>
                   <span className="relative mt-5 inline-flex items-center gap-2 overflow-hidden rounded-full bg-white px-7 py-3 font-heading text-[14.5px] font-bold text-terracotta shadow-soft transition-transform group-hover:scale-[1.03]">
                     <span
                       className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-terracotta/20 to-transparent bg-[length:300%_100%] animate-gradient"
                       aria-hidden
                     />
-                    <span className="relative">{T.matchCta[ui]}</span>
+                    <span className="relative">{t("matchCta")}</span>
                   </span>
                 </div>
               </div>
@@ -424,9 +346,9 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
         {wtileCities.length > 0 && (
           <>
             <div className="flex items-center justify-between mt-10 mb-4">
-              <h2 className="font-heading text-[28px] font-extrabold text-text m-0">{T.islandNow[ui]}</h2>
+              <h2 className="font-heading text-[28px] font-extrabold text-text m-0">{t("islandNow")}</h2>
               <Link href="/weather" className="text-[13.5px] font-heading font-bold text-sea bg-white rounded-full px-4 py-2 shadow-[0_8px_20px_rgba(11,94,120,.12)] no-underline">
-                {T.allStations[ui]}
+                {t("allStations")}
               </Link>
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -443,10 +365,10 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                     </p>
                     <p className="font-data text-[12.5px] opacity-70 m-0 inline-flex items-center gap-1">
                       <WindArrow deg={c.windDir} className="w-3 h-3" /> {c.windSpeed} km/h
-                      {c.seaTemp != null && <> · {T.sea[ui]} {c.seaTemp}°</>}
+                      {c.seaTemp != null && <> · {t("sea")} {c.seaTemp}°</>}
                     </p>
                     <p className={`mt-2 mb-0 inline-flex text-[12.5px] font-bold rounded-full px-3 py-1.5 font-data ${st.warn ? "bg-white/90 text-[#C2543A]" : "bg-white/85 text-sea"}`}>
-                      ≈ {T.seaStates[st.key][ui]}
+                      ≈ {t(`seaStates.${st.key}`)}
                     </p>
                   </Link>
                 );
@@ -459,9 +381,9 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
         {swimPick && (
           <>
             <div className="flex items-center justify-between mt-10 mb-4">
-              <h2 className="font-heading text-[28px] font-extrabold text-text m-0">{T.swimToday[ui]}</h2>
+              <h2 className="font-heading text-[28px] font-extrabold text-text m-0">{t("swimToday")}</h2>
               <Link href="/beaches" className="text-[13.5px] font-heading font-bold text-sea bg-white rounded-full px-4 py-2 shadow-[0_8px_20px_rgba(11,94,120,.12)] no-underline">
-                {T.allBeaches[ui]}
+                {t("allBeaches")}
               </Link>
             </div>
             <div className="grid lg:grid-cols-[1.25fr_.75fr] gap-4">
@@ -483,14 +405,14 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                   <div>
                     <p className="font-heading text-[27px] font-extrabold m-0 leading-tight">{swimPick.name}</p>
                     <p className="text-[13px] text-white/80 m-0">
-                      {swimPick.region && T.regions[swimPick.region as keyof typeof T.regions]
-                        ? <>{T.regions[swimPick.region as keyof typeof T.regions][ui]} · </>
+                      {swimPick.region && ["south", "west", "east", "central"].includes(swimPick.region)
+                        ? <>{t(`regions.${swimPick.region}`)} · </>
                         : null}
-                      {swimPick.cityName} · {T.todaysPick[ui]}
+                      {swimPick.cityName} · {t("todaysPick")}
                     </p>
                   </div>
                   <span className={`bg-white/92 font-heading font-extrabold rounded-full px-4 py-2 text-sm font-data whitespace-nowrap ${VERDICT_COLORS[swimPick.rating]}`}>
-                    ≈ {T.ratings[swimPick.rating][ui]}{swimPick.seaTemp != null ? ` · ${swimPick.seaTemp}°` : ""}
+                    ≈ {t(`ratings.${swimPick.rating}`)}{swimPick.seaTemp != null ? ` · ${swimPick.seaTemp}°` : ""}
                   </span>
                 </div>
               </Link>
@@ -510,7 +432,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                     <div className="absolute bottom-3 left-4 right-4 text-white flex justify-between items-center">
                       <span className="font-heading font-bold text-base">{s.name}</span>
                       <span className={`bg-white/90 rounded-full text-[11.5px] font-extrabold px-3 py-1 font-data ${VERDICT_COLORS[s.rating]}`}>
-                        ≈ {T.ratings[s.rating][ui]}
+                        ≈ {t(`ratings.${s.rating}`)}
                       </span>
                     </div>
                   </Link>
@@ -522,7 +444,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
 
         {/* ═══════ LES OUTILS : tuiles pastel ═══════ */}
         <div className="flex items-center justify-between mt-10 mb-4">
-          <h2 className="font-heading text-[28px] font-extrabold text-text m-0">{T.toolsTitle[ui]}</h2>
+          <h2 className="font-heading text-[28px] font-extrabold text-text m-0">{t("toolsTitle")}</h2>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
           {TOOLS.map(({ href, icon: Icon, title, line }, idx) => (
@@ -650,7 +572,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
             {events.length > 0 && (
               <div className="mt-7">
                 <h3 className="font-heading text-base font-extrabold text-terracotta flex items-center gap-2 mb-3">
-                  <CiCalendar className="w-4 h-4" /> {T.nextEvents[ui]}
+                  <CiCalendar className="w-4 h-4" /> {t("nextEvents")}
                 </h3>
                 <div className="bg-white rounded-3xl px-5 py-1 shadow-[0_12px_32px_rgba(11,94,120,.08)]">
                   {events.map((event, i) => (

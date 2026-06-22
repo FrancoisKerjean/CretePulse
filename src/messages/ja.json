@@ -58,7 +58,59 @@
     "guidesSectionTitle": "旅行ガイド",
     "guidesSectionSubtitle": "クレタ島のビーチ、ハイキング、料理、暮らし。現地で検証済み。",
     "allGuides": "すべてのガイド",
-    "editorialGuides": "特集ガイド"
+    "editorialGuides": "特集ガイド",
+    "heroTitle": "今日のクレタ島",
+    "matchKicker": "スワイプしてマッチ",
+    "matchTitle": "クレタ島版Tinder",
+    "matchSub": "ビーチ、渓谷、村をスワイプ。いいね or パスで、運命の場所とマッチ。",
+    "matchCta": "スワイプを始める",
+    "heroMain": {
+      "pre": "ビーチも、バスも、天気も。",
+      "hl": "クレタ島、ライブ。"
+    },
+    "heroToday": "今日の{name}の海は{rating}。風も、海も、バスも、一日中ぜんぶ見張ってるよ。",
+    "liveFromIsland": "島から生中継",
+    "heroSub": "リアルタイム計算 · 気象観測10地点 × ビーチ500ヶ所の向き。",
+    "ctaBeach": "今日のビーチを見る",
+    "air": "気温",
+    "sea": "海",
+    "islandNow": "島の、今この瞬間",
+    "allStations": "すべての観測地点",
+    "swimToday": "今日はどこで泳ぐ?",
+    "allBeaches": "500のビーチ",
+    "todaysPick": "今日のおすすめ",
+    "toolsTitle": "ツール",
+    "ratings": {
+      "calm": "おだやか",
+      "fair": "まずまず",
+      "exposed": "荒れ気味"
+    },
+    "seaStates": {
+      "calm": "おだやか",
+      "ok": "泳げる",
+      "rough": "波あり"
+    },
+    "regions": {
+      "south": "南海岸",
+      "west": "西海岸",
+      "east": "東海岸",
+      "central": "中央海岸"
+    },
+    "tools": {
+      "buses": "バス",
+      "busesLine": "時刻表と料金",
+      "swim": "海水浴",
+      "swimLine": "500ビーチをライブ",
+      "explore": "探索",
+      "exploreLine": "2,296スポット",
+      "airports": "空港",
+      "airportsLine": "便数とシーズン",
+      "airbnb": "Airbnbデータ",
+      "airbnbLine": "エリア別の価格",
+      "weather": "天気",
+      "weatherLine": "10地点+海況"
+    },
+    "nextEvents": "これからのイベント"
   },
   "footer": {
     "about": "クレタ島の無料・独立ガイド。ライブデータ。広告なし（今のところ）。トラッキングなし。",

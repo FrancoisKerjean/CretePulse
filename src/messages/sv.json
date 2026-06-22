@@ -58,7 +58,59 @@
     "guidesSectionTitle": "Resguider",
     "guidesSectionSubtitle": "Stränder, vandringar, mat, liv på Kreta. Kontrollerat på platsen.",
     "allGuides": "Alla guider",
-    "editorialGuides": "Redaktionella guider"
+    "editorialGuides": "Redaktionella guider",
+    "heroTitle": "Kreta, idag",
+    "matchKicker": "Svajpa & matcha",
+    "matchTitle": "Kretas Tinder",
+    "matchSub": "Svajpa stränder, raviner och byar. Gilla eller hoppa över, och hitta din match.",
+    "matchCta": "Börja svajpa",
+    "heroMain": {
+      "pre": "Stränder, bussar, väder.",
+      "hl": "Kreta, live."
+    },
+    "heroToday": "Idag är havet {rating} vid {name}. Vi håller koll på vinden, havet och bussarna åt dig, hela dagen.",
+    "liveFromIsland": "live från ön",
+    "heroSub": "Beräknat live · 10 väderstationer × orienteringen av 500 stränder.",
+    "ctaBeach": "Se dagens strand",
+    "air": "luft",
+    "sea": "hav",
+    "islandNow": "Ön, just nu",
+    "allStations": "Alla stationer",
+    "swimToday": "Var man badar idag",
+    "allBeaches": "Alla 500 stränder",
+    "todaysPick": "dagens val",
+    "toolsTitle": "Verktygen",
+    "ratings": {
+      "calm": "lugnt",
+      "fair": "okej",
+      "exposed": "utsatt"
+    },
+    "seaStates": {
+      "calm": "lugnt",
+      "ok": "badbart",
+      "rough": "krabbsjö"
+    },
+    "regions": {
+      "south": "Sydkusten",
+      "west": "Västkusten",
+      "east": "Östkusten",
+      "central": "Centralkusten"
+    },
+    "tools": {
+      "buses": "Bussar",
+      "busesLine": "Tidtabeller & priser",
+      "swim": "Bad",
+      "swimLine": "500 stränder live",
+      "explore": "Utforska",
+      "exploreLine": "2 296 platser",
+      "airports": "Flygplatser",
+      "airportsLine": "Trafik & säsonger",
+      "airbnb": "Airbnb-data",
+      "airbnbLine": "Priser per område",
+      "weather": "Väder",
+      "weatherLine": "10 stationer + hav"
+    },
+    "nextEvents": "Kommande evenemang"
   },
   "footer": {
     "about": "Gratis, oberoende guide till Kreta. Realtidsdata. Inga annonser (ännu). Ingen spårning.",

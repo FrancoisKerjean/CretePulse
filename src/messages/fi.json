@@ -58,7 +58,59 @@
     "guidesSectionTitle": "Matkaoppaat",
     "guidesSectionSubtitle": "Rannat, vaellukset, ruoka, elämä Kreetalla. Tarkistettu paikan päällä.",
     "allGuides": "Kaikki oppaat",
-    "editorialGuides": "Toimitukselliset oppaat"
+    "editorialGuides": "Toimitukselliset oppaat",
+    "heroTitle": "Kreeta, tänään",
+    "matchKicker": "Pyyhkäise & matchaa",
+    "matchTitle": "Kreetan Tinder",
+    "matchSub": "Pyyhkäise rantoja, rotkoja ja kyliä. Tykkää tai ohita, ja löydä matchisi.",
+    "matchCta": "Aloita pyyhkäisy",
+    "heroMain": {
+      "pre": "Rannat, bussit, sää.",
+      "hl": "Kreeta, livenä."
+    },
+    "heroToday": "Tänään meri on {rating} kohteessa {name}. Pidämme tuulen, meren ja bussit silmällä puolestasi, koko päivän.",
+    "liveFromIsland": "livenä saarelta",
+    "heroSub": "Laskettu livenä · 10 sääasemaa × 500 rannan suunta.",
+    "ctaBeach": "Katso päivän ranta",
+    "air": "ilma",
+    "sea": "meri",
+    "islandNow": "Saari, juuri nyt",
+    "allStations": "Kaikki asemat",
+    "swimToday": "Missä uida tänään",
+    "allBeaches": "Kaikki 500 rantaa",
+    "todaysPick": "päivän valinta",
+    "toolsTitle": "Työkalut",
+    "ratings": {
+      "calm": "tyyni",
+      "fair": "kohtalainen",
+      "exposed": "tuulinen"
+    },
+    "seaStates": {
+      "calm": "tyyni",
+      "ok": "uintikelpoinen",
+      "rough": "aallokkoinen"
+    },
+    "regions": {
+      "south": "Etelärannikko",
+      "west": "Länsirannikko",
+      "east": "Itärannikko",
+      "central": "Keskirannikko"
+    },
+    "tools": {
+      "buses": "Bussit",
+      "busesLine": "Aikataulut & hinnat",
+      "swim": "Uinti",
+      "swimLine": "500 rantaa livenä",
+      "explore": "Tutustu",
+      "exploreLine": "2 296 paikkaa",
+      "airports": "Lentokentät",
+      "airportsLine": "Liikenne & kaudet",
+      "airbnb": "Airbnb-data",
+      "airbnbLine": "Hinnat alueittain",
+      "weather": "Sää",
+      "weatherLine": "10 asemaa + meri"
+    },
+    "nextEvents": "Tulevat tapahtumat"
   },
   "footer": {
     "about": "Ilmainen, riippumaton Kreeta-opas. Reaaliaikaista dataa. Ei mainoksia (vielä). Ei seurantaa.",

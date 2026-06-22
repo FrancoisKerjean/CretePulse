@@ -58,7 +58,59 @@
     "guidesSectionTitle": "Útikalauzok",
     "guidesSectionSubtitle": "Strandok, túrák, étel, élet Krétán. Helyszínen ellenőrizve.",
     "allGuides": "Összes útikalauz",
-    "editorialGuides": "Szerkesztői útmutatók"
+    "editorialGuides": "Szerkesztői útmutatók",
+    "heroTitle": "Kréta, ma",
+    "matchKicker": "Lapozz & matchelj",
+    "matchTitle": "Kréta Tindere",
+    "matchSub": "Lapozz strandok, szurdokok és falvak között. Tetszik vagy passz, és meglesz a matched.",
+    "matchCta": "Kezdjük a lapozást",
+    "heroMain": {
+      "pre": "Strandok, buszok, időjárás.",
+      "hl": "Kréta, élőben."
+    },
+    "heroToday": "Ma a tenger {rating} itt: {name}. Figyeljük a szelet, a tengert és a buszokat helyetted, egész nap.",
+    "liveFromIsland": "élőben a szigetről",
+    "heroSub": "Élőben számolva · 10 időjárás-állomás × 500 strand tájolása.",
+    "ctaBeach": "Mutasd a mai strandot",
+    "air": "levegő",
+    "sea": "tenger",
+    "islandNow": "A sziget, most",
+    "allStations": "Összes állomás",
+    "swimToday": "Hol fürödj ma",
+    "allBeaches": "Mind az 500 strand",
+    "todaysPick": "a mai tipp",
+    "toolsTitle": "Az eszközök",
+    "ratings": {
+      "calm": "nyugodt",
+      "fair": "elfogadható",
+      "exposed": "kitett"
+    },
+    "seaStates": {
+      "calm": "nyugodt",
+      "ok": "fürdés oké",
+      "rough": "hullámos"
+    },
+    "regions": {
+      "south": "Déli part",
+      "west": "Nyugati part",
+      "east": "Keleti part",
+      "central": "Középső part"
+    },
+    "tools": {
+      "buses": "Buszok",
+      "busesLine": "Menetrend & árak",
+      "swim": "Fürdés",
+      "swimLine": "500 strand élőben",
+      "explore": "Felfedezés",
+      "exploreLine": "2 296 hely",
+      "airports": "Repterek",
+      "airportsLine": "Forgalom & szezonok",
+      "airbnb": "Airbnb adatok",
+      "airbnbLine": "Árak régiónként",
+      "weather": "Időjárás",
+      "weatherLine": "10 állomás + tenger"
+    },
+    "nextEvents": "Közelgő események"
   },
   "footer": {
     "about": "Ingyenes, független Kréta-útmutató. Élő adatok. Nincs reklám (egyelőre). Nincs nyomon követés.",

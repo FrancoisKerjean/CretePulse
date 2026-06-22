@@ -58,7 +58,59 @@
     "guidesSectionTitle": "Guias de viagem",
     "guidesSectionSubtitle": "Praias, caminhadas, gastronomia, vida em Creta. Verificado na ilha.",
     "allGuides": "Todos os guias",
-    "editorialGuides": "Guias editoriais"
+    "editorialGuides": "Guias editoriais",
+    "heroTitle": "Creta, hoje",
+    "matchKicker": "Swipe & match",
+    "matchTitle": "O Tinder de Creta",
+    "matchSub": "Faz swipe a praias, gargantas e aldeias. Like ou passa, e encontra o teu match.",
+    "matchCta": "Começar a fazer swipe",
+    "heroMain": {
+      "pre": "Praias, autocarros, meteorologia.",
+      "hl": "Creta, em direto."
+    },
+    "heroToday": "Hoje o mar está {rating} em {name}. Vigiamos o vento, o mar e os autocarros por ti, durante todo o dia.",
+    "liveFromIsland": "em direto da ilha",
+    "heroSub": "Calculado em direto · 10 estações meteorológicas × a orientação de 500 praias.",
+    "ctaBeach": "Ver a praia de hoje",
+    "air": "ar",
+    "sea": "mar",
+    "islandNow": "A ilha, agora mesmo",
+    "allStations": "Todas as estações",
+    "swimToday": "Onde nadar hoje",
+    "allBeaches": "As 500 praias",
+    "todaysPick": "a escolha de hoje",
+    "toolsTitle": "As ferramentas",
+    "ratings": {
+      "calm": "calmo",
+      "fair": "razoável",
+      "exposed": "exposta"
+    },
+    "seaStates": {
+      "calm": "calmo",
+      "ok": "bom para nadar",
+      "rough": "agitado"
+    },
+    "regions": {
+      "south": "Costa sul",
+      "west": "Costa oeste",
+      "east": "Costa este",
+      "central": "Costa central"
+    },
+    "tools": {
+      "buses": "Autocarros",
+      "busesLine": "Horários & preços",
+      "swim": "Banhos",
+      "swimLine": "500 praias ao vivo",
+      "explore": "Explorar",
+      "exploreLine": "2296 lugares",
+      "airports": "Aeroportos",
+      "airportsLine": "Tráfego & estações",
+      "airbnb": "Dados Airbnb",
+      "airbnbLine": "Preços por zona",
+      "weather": "Meteorologia",
+      "weatherLine": "10 estações + mar"
+    },
+    "nextEvents": "Próximos eventos"
   },
   "footer": {
     "about": "Guia gratuito e independente de Creta. Dados em tempo real. Sem anúncios (por enquanto). Sem rastreamento.",
