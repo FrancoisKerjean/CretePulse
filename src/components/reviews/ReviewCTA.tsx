@@ -26,7 +26,7 @@ export function ReviewCTA({
       {communityCount === 0 && <p className="text-sm text-text-muted">{t.first}</p>}
       <Link
         href={`/explore/${slug}/avis`}
-        className="inline-flex items-center justify-center gap-2 rounded-xl bg-aegean px-6 py-3 font-heading text-white transition hover:bg-aegean/90"
+        className="inline-flex items-center justify-center gap-2 rounded-xl bg-sea px-6 py-3 font-heading text-white transition hover:bg-sea/90"
       >
         <span aria-hidden>★</span>
         <span>
@@ -34,7 +34,7 @@ export function ReviewCTA({
         </span>
       </Link>
       {communityCount > 0 && (
-        <Link href={`/explore/${slug}/avis`} className="text-sm text-aegean hover:underline">
+        <Link href={`/explore/${slug}/avis`} className="text-sm text-sea hover:underline">
           {t.read} ({communityCount})
         </Link>
       )}

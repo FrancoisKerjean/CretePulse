@@ -22,8 +22,8 @@ export default async function NewsletterConfirmedPage({
     <main className="min-h-screen bg-surface flex items-center justify-center px-4">
       <div className="bg-white border border-border rounded-2xl p-10 max-w-md w-full text-center shadow-sm">
         <div className="flex justify-center mb-5">
-          <div className="bg-aegean-faint rounded-full p-4">
-            <CheckCircle className="size-8 text-aegean" />
+          <div className="bg-sea-faint rounded-full p-4">
+            <CheckCircle className="size-8 text-sea" />
           </div>
         </div>
         <h1 className="text-2xl font-semibold text-text mb-3">
@@ -35,7 +35,7 @@ export default async function NewsletterConfirmedPage({
         </p>
         <Link
           href={`/${locale}`}
-          className="inline-flex items-center justify-center px-6 py-2.5 bg-aegean text-white font-medium rounded-lg hover:bg-aegean-light transition-colors"
+          className="inline-flex items-center justify-center px-6 py-2.5 bg-sea text-white font-medium rounded-lg hover:bg-sea-light transition-colors"
         >
           Back to Crete Direct
         </Link>

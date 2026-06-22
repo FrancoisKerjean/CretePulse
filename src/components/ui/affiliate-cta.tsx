@@ -16,7 +16,7 @@ export function AffiliateCTA({ type, locale, className = "" }: AffiliateCTAProps
       href={link.url}
       target="_blank"
       rel="noopener noreferrer nofollow sponsored"
-      className={`inline-flex items-center gap-1.5 px-4 py-2 bg-terra/10 text-terra text-sm font-semibold rounded-lg hover:bg-terra/20 transition-colors ${className}`}
+      className={`inline-flex items-center gap-1.5 px-4 py-2 bg-terracotta/10 text-terracotta text-sm font-semibold rounded-lg hover:bg-terracotta/20 transition-colors ${className}`}
     >
       {label}
       <ExternalLink className="w-3.5 h-3.5" />

@@ -103,7 +103,7 @@ export default async function BeachesNearVillagePage({ params }: { params: Promi
 
   return (
     <main className="min-h-screen bg-surface">
-      <section className="bg-aegean text-white py-10 px-4">
+      <section className="bg-sea text-white py-10 px-4">
         <div className="max-w-4xl mx-auto">
           <Link href={`/${locale}/beaches`} className="inline-flex items-center gap-1 text-white/50 text-sm hover:text-white/80 mb-3">
             <ChevronLeft className="w-4 h-4" /> {loc === "fr" ? "Toutes les plages" : loc === "de" ? "Alle Strände" : loc === "el" ? "Όλες οι παραλίες" : "All beaches"}
@@ -123,7 +123,7 @@ export default async function BeachesNearVillagePage({ params }: { params: Promi
             <Link
               key={beach.slug}
               href={`/${locale}/beaches/${beach.slug}`}
-              className="group rounded-xl border border-border bg-white overflow-hidden hover:border-aegean/30 hover:shadow-md transition-all"
+              className="group rounded-xl border border-border bg-white overflow-hidden hover:border-sea/30 hover:shadow-md transition-all"
             >
               {beach.image_url && (
                 <div className="relative h-36 overflow-hidden">
@@ -131,14 +131,14 @@ export default async function BeachesNearVillagePage({ params }: { params: Promi
                 </div>
               )}
               <div className="p-4">
-                <h2 className="font-semibold text-base text-text group-hover:text-aegean transition-colors">
+                <h2 className="font-semibold text-base text-text group-hover:text-sea transition-colors">
                   {getLocalizedField(beach, "name", loc)}
                 </h2>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-xs text-text-muted flex items-center gap-1">
                     <MapPin className="w-3 h-3" /> {beach.dist.toFixed(1)} {distLabel[locale] || distLabel.en}
                   </span>
-                  <span className="text-xs bg-aegean-faint text-aegean px-1.5 py-0.5 rounded capitalize flex items-center gap-1">
+                  <span className="text-xs bg-sea-faint text-sea px-1.5 py-0.5 rounded capitalize flex items-center gap-1">
                     <Waves className="w-3 h-3" /> {beach.type || "mixed"}
                   </span>
                   {wq && <WaterQualityBadge wq={wq} locale={locale} variant="pill" />}
@@ -165,7 +165,7 @@ export default async function BeachesNearVillagePage({ params }: { params: Promi
               <Link
                 key={v.slug}
                 href={`/${locale}/beaches/near/${v.slug}`}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-border text-text-muted hover:bg-aegean-faint hover:text-aegean transition-colors"
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-border text-text-muted hover:bg-sea-faint hover:text-sea transition-colors"
               >
                 {getLocalizedField(v, "name", loc)}
               </Link>

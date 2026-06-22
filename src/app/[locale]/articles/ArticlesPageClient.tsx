@@ -49,7 +49,7 @@ function FeaturedCard({ guide, locale }: { guide: Guide; locale: Locale }) {
               alt={title}
               className="absolute inset-0 w-full h-full object-cover saturate-[.88] group-hover:scale-[1.03] transition-transform duration-500"
             />
-            <div className="absolute inset-0 bg-aegean/10 mix-blend-multiply pointer-events-none" />
+            <div className="absolute inset-0 bg-sea/10 mix-blend-multiply pointer-events-none" />
           </>
         ) : (
           <GuideCardFallback category={guide.category} slug={guide.slug} />
@@ -59,7 +59,7 @@ function FeaturedCard({ guide, locale }: { guide: Guide; locale: Locale }) {
         <span className={`self-start text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-full mb-3 ${categoryColor}`}>
           {categoryLabel}
         </span>
-        <h2 className="font-heading text-2xl font-bold text-text group-hover:text-aegean transition-colors leading-snug m-0">
+        <h2 className="font-heading text-2xl font-bold text-text group-hover:text-sea transition-colors leading-snug m-0">
           {title}
         </h2>
         <p className="font-data text-xs text-text-light mt-4 mb-0 flex items-center gap-1.5">
@@ -91,8 +91,8 @@ export default function ArticlesPageClient({ guides, locale, categories }: Props
             onClick={() => { setActiveCategory(null); setLimit(PAGE); }}
             className={`text-xs font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full border transition-colors ${
               activeCategory === null
-                ? "bg-aegean text-white border-aegean"
-                : "bg-white text-text-muted border-border hover:border-aegean hover:text-aegean"
+                ? "bg-sea text-white border-sea"
+                : "bg-white text-text-muted border-border hover:border-sea hover:text-sea"
             }`}
           >
             {ALL_LABEL[locale] || ALL_LABEL.en}
@@ -110,7 +110,7 @@ export default function ArticlesPageClient({ guides, locale, categories }: Props
                 className={`text-xs font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full border transition-colors ${
                   isActive
                     ? `${colorClass} border-transparent`
-                    : "bg-white text-text-muted border-border hover:border-aegean hover:text-aegean"
+                    : "bg-white text-text-muted border-border hover:border-sea hover:text-sea"
                 }`}
               >
                 {label}
@@ -130,7 +130,7 @@ export default function ArticlesPageClient({ guides, locale, categories }: Props
         <div className="text-center mt-10">
           <button
             onClick={() => setLimit(limit + PAGE)}
-            className="px-5 py-2.5 rounded-lg border border-aegean text-aegean text-sm font-semibold hover:bg-aegean-faint transition-colors"
+            className="px-5 py-2.5 rounded-lg border border-sea text-sea text-sm font-semibold hover:bg-sea-faint transition-colors"
           >
             {MORE_LABEL[locale] || MORE_LABEL.en} ({pool.length - limit})
           </button>

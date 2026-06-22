@@ -162,7 +162,7 @@ function LegRow({ leg, locale }: { leg: JourneyLeg; locale: Locale }) {
   return (
     <div className="px-4 py-3">
       <div className="flex items-center gap-2 flex-wrap text-sm font-semibold text-text">
-        <CiBus className="w-4 h-4 text-aegean shrink-0" />
+        <CiBus className="w-4 h-4 text-sea shrink-0" />
         <span>{leg.route.from_place}</span>
         <ArrowRight className="w-3.5 h-3.5 text-text-muted shrink-0" />
         <span>{leg.alightAt ?? leg.route.to_place}</span>
@@ -355,7 +355,7 @@ function TripsTable({ journeys, locale, nowMin }: { journeys: Journey[]; locale:
         <button
           type="button"
           onClick={() => setLimit((l) => l + 6)}
-          className="w-full border-t border-border py-2.5 text-xs font-semibold text-aegean hover:bg-surface"
+          className="w-full border-t border-border py-2.5 text-xs font-semibold text-sea hover:bg-surface"
         >
           {tp("seeMore", locale)}
         </button>
@@ -539,11 +539,11 @@ export function JourneyPlanner({
             className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-2.5 text-xs font-semibold transition-colors ${
               geoBlocked
                 ? "text-text-light cursor-help"
-                : "text-aegean hover:bg-surface"
+                : "text-sea hover:bg-surface"
             }`}
           >
             {wantFromHere && geo.status === "prompting" ? (
-              <span className="block w-[16px] h-[16px] rounded-full border-2 border-aegean border-t-transparent animate-spin" aria-hidden />
+              <span className="block w-[16px] h-[16px] rounded-full border-2 border-sea border-t-transparent animate-spin" aria-hidden />
             ) : (
               <CiCompass className="w-[16px] h-[16px]" />
             )}

@@ -44,13 +44,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  festival: "bg-terra-faint text-terra",
+  festival: "bg-terracotta-faint text-terracotta",
   market: "bg-sand text-text",
-  concert: "bg-aegean-faint text-aegean",
+  concert: "bg-sea-faint text-sea",
   religious: "bg-stone text-text-muted",
   sport: "bg-olive/10 text-olive",
-  cultural: "bg-aegean-faint text-aegean",
-  food: "bg-terra-faint text-terra",
+  cultural: "bg-sea-faint text-sea",
+  food: "bg-terracotta-faint text-terracotta",
 };
 
 function formatWeekLabel(mondayStr: string, locale: string): string {
@@ -94,7 +94,7 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
   return (
     <main className="min-h-screen bg-surface">
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-aegean">
+        <h1 className="text-3xl font-bold text-sea">
           {loc === "fr" ? "Événements en Crète" :
            loc === "de" ? "Veranstaltungen auf Kreta" :
            loc === "el" ? "Εκδηλώσεις στην Κρήτη" :
@@ -109,7 +109,7 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
             <section key={mondayStr}>
               {/* Week header */}
               <div className="flex items-center gap-3 mb-4">
-                <div className="flex items-center gap-2 bg-aegean text-white px-3 py-1.5 rounded-lg text-sm font-medium">
+                <div className="flex items-center gap-2 bg-sea text-white px-3 py-1.5 rounded-lg text-sm font-medium">
                   <Calendar className="w-4 h-4" />
                   {formatWeekLabel(mondayStr, locale)}
                 </div>
@@ -122,11 +122,11 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
                   <Link
                     key={event.slug}
                     href={`/${locale}/events/${event.slug}`}
-                    className="group flex gap-4 rounded-xl border border-border bg-white p-4 hover:border-aegean/30 hover:shadow-sm transition-all"
+                    className="group flex gap-4 rounded-xl border border-border bg-white p-4 hover:border-sea/30 hover:shadow-sm transition-all"
                   >
                     {/* Date column */}
                     <div className="shrink-0 w-14 text-center">
-                      <div className="text-2xl font-bold text-aegean leading-none">
+                      <div className="text-2xl font-bold text-sea leading-none">
                         {new Date(event.date_start).getDate()}
                       </div>
                       <div className="text-xs text-text-muted uppercase mt-0.5">
@@ -143,7 +143,7 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start gap-2 flex-wrap">
-                        <h2 className="font-semibold text-base group-hover:text-aegean transition-colors leading-tight">
+                        <h2 className="font-semibold text-base group-hover:text-sea transition-colors leading-tight">
                           {getLocalizedField(event, "title", loc)}
                         </h2>
                         {event.category && (
@@ -196,7 +196,7 @@ function EventsPlaceholder({ locale }: { locale: Locale }) {
   return (
     <main className="min-h-screen bg-surface">
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-aegean">{titles[locale] ?? titles.en}</h1>
+        <h1 className="text-3xl font-bold text-sea">{titles[locale] ?? titles.en}</h1>
         <p className="text-text-muted mt-2">{eventsLabels.coming}</p>
         <div className="mt-8 space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (

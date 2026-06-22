@@ -68,21 +68,21 @@ const SUBTITLE: Record<string, string> = {
 
 // Accent bar color per type (left border)
 const TYPE_ACCENT: Record<string, string> = {
-  restaurant: "border-l-aegean",
-  taverna:    "border-l-terra",
+  restaurant: "border-l-sea",
+  taverna:    "border-l-terracotta",
   cafe:       "border-l-olive",
-  bar:        "border-l-aegean-light",
-  bakery:     "border-l-terra-light",
+  bar:        "border-l-sea-light",
+  bakery:     "border-l-terracotta-light",
   other:      "border-l-stone-400",
 };
 
 // Badge color per type
 const TYPE_BADGE: Record<string, string> = {
-  restaurant: "bg-aegean-faint text-aegean",
-  taverna:    "bg-terra-faint text-terra",
+  restaurant: "bg-sea-faint text-sea",
+  taverna:    "bg-terracotta-faint text-terracotta",
   cafe:       "bg-olive/10 text-olive",
-  bar:        "bg-aegean-faint text-aegean-light",
-  bakery:     "bg-terra-faint text-terra-light",
+  bar:        "bg-sea-faint text-sea-light",
+  bakery:     "bg-terracotta-faint text-terracotta-light",
   other:      "bg-stone text-text-muted",
 };
 
@@ -176,8 +176,8 @@ export default async function FoodPage({
       <div className="max-w-6xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="flex items-center gap-3 mb-1">
-          <UtensilsCrossed className="w-7 h-7 text-terra shrink-0" />
-          <h1 className="text-3xl font-bold text-aegean">{title}</h1>
+          <UtensilsCrossed className="w-7 h-7 text-terracotta shrink-0" />
+          <h1 className="text-3xl font-bold text-sea">{title}</h1>
         </div>
         <p className="text-text-muted mt-1 mb-8 ml-10">{subtitle}</p>
 
@@ -223,13 +223,13 @@ export default async function FoodPage({
               return (
                 <div key={r}>
                   <div className="flex items-baseline justify-between mb-4">
-                    <h2 className="text-xl font-semibold text-aegean">
+                    <h2 className="text-xl font-semibold text-sea">
                       {REGION_LABELS[r]?.[loc] || REGION_LABELS[r]?.en || r}
                     </h2>
                     {regionPlaces.length >= 8 && (
                       <Link
                         href={`/${locale}/food?region=${r}`}
-                        className="text-sm text-terra hover:underline"
+                        className="text-sm text-terracotta hover:underline"
                       >
                         {loc === "fr"
                           ? "Voir tout"
@@ -342,7 +342,7 @@ function FoodCard({
       className={`group flex flex-col rounded-xl border border-border border-l-4 ${accent} bg-white overflow-hidden hover:shadow-md hover:border-opacity-60 transition-all duration-200`}
     >
       {place.image_url && (
-        <div className="h-40 bg-terra-faint overflow-hidden shrink-0">
+        <div className="h-40 bg-terracotta-faint overflow-hidden shrink-0">
           <img
             src={place.image_url}
             alt={place.name}
@@ -354,7 +354,7 @@ function FoodCard({
       <div className="p-4 flex flex-col gap-2 flex-1">
         {/* Name + type badge */}
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-base leading-snug text-text group-hover:text-aegean transition-colors">
+          <h3 className="font-semibold text-base leading-snug text-text group-hover:text-sea transition-colors">
             {place.name}
           </h3>
           <span
@@ -386,7 +386,7 @@ function FoodCard({
           {place.price_range && (
             <>
               <span aria-hidden>·</span>
-              <span className="font-medium text-terra">
+              <span className="font-medium text-terracotta">
                 {PRICE_SYMBOL[place.price_range] || place.price_range}
               </span>
             </>
@@ -424,8 +424,8 @@ function RegionTab({
       href={href}
       className={`text-sm px-4 py-1.5 rounded-full border transition-colors ${
         active
-          ? "bg-aegean text-white border-aegean"
-          : "bg-white text-text-muted border-border hover:border-aegean hover:text-aegean"
+          ? "bg-sea text-white border-sea"
+          : "bg-white text-text-muted border-border hover:border-sea hover:text-sea"
       }`}
     >
       {label}

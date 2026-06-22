@@ -362,7 +362,7 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
 
   const sections = [
     {
-      icon: <Waves className="w-6 h-6 text-aegean" />,
+      icon: <Waves className="w-6 h-6 text-sea" />,
       title: `${L.bestBeaches} ${city.name}`,
       description: locale === "fr"
         ? `Découvrez les plus belles plages à proximité de ${city.name}.`
@@ -388,7 +388,7 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
       cta: L.checkWeather,
     },
     {
-      icon: <UtensilsCrossed className="w-6 h-6 text-terra" />,
+      icon: <UtensilsCrossed className="w-6 h-6 text-terracotta" />,
       title: `${L.whereToEat} ${city.name}`,
       description: locale === "fr"
         ? `Tavernes traditionnelles, restaurants et cafés : découvrez la gastronomie crétoise.`
@@ -414,7 +414,7 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
       cta: L.exploreHikes,
     },
     {
-      icon: <Calendar className="w-6 h-6 text-aegean" />,
+      icon: <Calendar className="w-6 h-6 text-sea" />,
       title: `${L.events} ${city.name}`,
       description: locale === "fr"
         ? `Festivals, fêtes locales et événements culturels tout au long de l'année.`
@@ -433,7 +433,7 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
       <JsonLd data={pageSchema} />
 
       {/* Hero */}
-      <section className="bg-aegean text-white py-12 md:py-20 px-4">
+      <section className="bg-sea text-white py-12 md:py-20 px-4">
         <div className="max-w-4xl mx-auto">
           <Link href={`/${locale}/weather`} className="inline-flex items-center gap-1 text-white/50 text-sm hover:text-white/80 mb-4">
             <ChevronLeft className="w-4 h-4" /> {L.backToAll}
@@ -453,7 +453,7 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
           <div className="flex flex-wrap gap-2">
             {info.highlights.map(h => (
               <span key={h} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-border rounded-full text-sm font-medium text-text">
-                <MapPin className="w-3.5 h-3.5 text-terra" /> {h}
+                <MapPin className="w-3.5 h-3.5 text-terracotta" /> {h}
               </span>
             ))}
           </div>
@@ -478,7 +478,7 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
         {/* Activity sections */}
         <div className="space-y-6">
           {sections.map((section, i) => (
-            <section key={i} className="rounded-xl bg-white border border-border p-6 hover:border-aegean/30 transition-colors">
+            <section key={i} className="rounded-xl bg-white border border-border p-6 hover:border-sea/30 transition-colors">
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-surface flex items-center justify-center">
                   {section.icon}
@@ -494,7 +494,7 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
                         <Link
                           key={m}
                           href={`/${locale}/weather/${citySlug}/${m}`}
-                          className="flex items-center justify-between p-2.5 bg-surface rounded-lg text-xs font-semibold text-text hover:bg-aegean-faint hover:text-aegean transition-colors"
+                          className="flex items-center justify-between p-2.5 bg-surface rounded-lg text-xs font-semibold text-text hover:bg-sea-faint hover:text-sea transition-colors"
                         >
                           <span>{(MONTH_NAMES[locale]?.[m] || MONTH_NAMES.en[m])}</span>
                           <ChevronRight className="w-3.5 h-3.5 text-text-muted" />
@@ -504,7 +504,7 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
                   ) : (
                     <Link
                       href={section.link}
-                      className="inline-flex items-center gap-1 text-sm font-semibold text-aegean hover:text-aegean/80 transition-colors"
+                      className="inline-flex items-center gap-1 text-sm font-semibold text-sea hover:text-sea/80 transition-colors"
                     >
                       {section.cta} <ChevronRight className="w-4 h-4" />
                     </Link>
@@ -520,7 +520,7 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
 
         {/* FAQ */}
         <section>
-          <h2 className="text-xl font-bold text-aegean mb-4">{L.faq}</h2>
+          <h2 className="text-xl font-bold text-sea mb-4">{L.faq}</h2>
           <div className="space-y-4">
             {faqItems.map((faq, i) => (
               <div key={i} className="p-5 bg-white rounded-xl border border-border">
@@ -541,10 +541,10 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
 
         {/* Bus pair links · internal authority flow to quality bus pair pages */}
         {busPairLinks.length > 0 && (
-          <section className="rounded-xl bg-white border border-border p-6 hover:border-aegean/30 transition-colors">
+          <section className="rounded-xl bg-white border border-border p-6 hover:border-sea/30 transition-colors">
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-surface flex items-center justify-center">
-                <Bus className="w-6 h-6 text-aegean" />
+                <Bus className="w-6 h-6 text-sea" />
               </div>
               <div className="flex-1">
                 <h2 className="text-lg font-bold text-text mb-3">{L.gettingThereBus}</h2>
@@ -559,7 +559,7 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
                       <li key={pSlug}>
                         <Link
                           href={`/${locale}/buses/${pSlug}`}
-                          className="inline-flex items-center gap-1 text-sm font-semibold text-aegean hover:text-aegean/80 transition-colors"
+                          className="inline-flex items-center gap-1 text-sm font-semibold text-sea hover:text-sea/80 transition-colors"
                         >
                           <ChevronRight className="w-4 h-4 flex-shrink-0" />
                           {placeA} {connector} {placeB}
@@ -584,7 +584,7 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
               <Link
                 key={c.slug}
                 href={`/${locale}/things-to-do/${c.slug}`}
-                className="flex items-center justify-between p-3 bg-white rounded-xl border border-border hover:border-aegean/30 transition-colors"
+                className="flex items-center justify-between p-3 bg-white rounded-xl border border-border hover:border-sea/30 transition-colors"
               >
                 <span className="text-sm font-medium text-text">{c.name}</span>
                 <ChevronRight className="w-4 h-4 text-text-muted" />

@@ -1,7 +1,7 @@
 import type { LiveBus } from "@/lib/bus-live";
 
-const NORMAL = "#0B5E78";   // aegean
-const SELECTED = "#ED7A5C"; // terra
+const NORMAL = "#0B5E78";   // sea
+const SELECTED = "#ED7A5C"; // terracotta
 
 /** Élément DOM d'un marqueur bus : hit-area 44px + inner 26px (flèche + halo). */
 export function createBusEl(bus: LiveBus): HTMLDivElement {
@@ -35,7 +35,7 @@ export function setBusArrow(el: HTMLElement, bearingDeg: number): void {
   if (arrow) arrow.style.transform = `rotate(${bearingDeg}deg)`;
 }
 
-/** Marque (ou démarque) le bus sélectionné : agrandi + couleur terra + au-dessus. */
+/** Marque (ou démarque) le bus sélectionné : agrandi + couleur terracotta + au-dessus. */
 export function setBusSelected(el: HTMLElement, on: boolean): void {
   const inner = el.querySelector(".bus-inner") as HTMLElement | null;
   const arrow = el.querySelector(".bus-arrow") as HTMLElement | null;

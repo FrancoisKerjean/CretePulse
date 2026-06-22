@@ -186,7 +186,7 @@ function DirectionSection({ from, to, routes, ui }: {
       {routes.length === 0 ? (
         <div className="bg-white rounded-[28px] px-7 py-6 shadow-[0_12px_32px_rgba(11,94,120,.10)]">
           <h2 className="font-heading font-bold text-[21px] text-text m-0 mb-2 flex items-center gap-2.5 flex-wrap">
-            <span className="bg-sky rounded-xl p-1.5 inline-flex text-aegean"><CiBus className="w-[18px] h-[18px]" /></span>
+            <span className="bg-sky rounded-xl p-1.5 inline-flex text-sea"><CiBus className="w-[18px] h-[18px]" /></span>
             {from} <span className="text-lagoon">·</span> {to}
           </h2>
           <p className="text-sm text-text-muted m-0">{T.noTimetable[ui]}</p>
@@ -194,7 +194,7 @@ function DirectionSection({ from, to, routes, ui }: {
       ) : routes.map((r) => (
         <div key={r.id} className="bg-white rounded-[28px] px-7 py-6 shadow-[0_12px_32px_rgba(11,94,120,.10)] mb-5">
           <h2 className="font-heading font-bold text-[21px] text-text m-0 mb-3 flex items-center gap-2.5 flex-wrap">
-            <span className="bg-sky rounded-xl p-1.5 inline-flex text-aegean"><CiBus className="w-[18px] h-[18px]" /></span>
+            <span className="bg-sky rounded-xl p-1.5 inline-flex text-sea"><CiBus className="w-[18px] h-[18px]" /></span>
             {from} <span className="text-lagoon">·</span> {to}
           </h2>
           <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm mb-2 font-data">
@@ -389,7 +389,7 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
                 const s = pairSlug(placeB, p);
                 return s ? (
                   <Link key={p} href={`/${locale}/buses/${s}`}
-                        className="px-4.5 py-2.5 rounded-full bg-white text-[13.5px] font-semibold text-aegean shadow-[0_8px_20px_rgba(11,94,120,.10)] no-underline hover:shadow-[0_10px_26px_rgba(11,94,120,.16)] transition-shadow">
+                        className="px-4.5 py-2.5 rounded-full bg-white text-[13.5px] font-semibold text-sea shadow-[0_8px_20px_rgba(11,94,120,.10)] no-underline hover:shadow-[0_10px_26px_rgba(11,94,120,.16)] transition-shadow">
                     {placeB} <span className="text-lagoon font-extrabold">·</span> {p}
                   </Link>
                 ) : null;
@@ -401,12 +401,12 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
         {(ttd || wts) && (
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm mb-8">
             {ttd && (
-              <Link href={`/${locale}/things-to-do/${ttd}`} className="text-aegean hover:underline">
+              <Link href={`/${locale}/things-to-do/${ttd}`} className="text-sea hover:underline">
                 {T.whatToDo[ui]} {destB!.name}
               </Link>
             )}
             {wts && (
-              <Link href={`/${locale}/where-to-stay/${wts}`} className="text-aegean hover:underline">
+              <Link href={`/${locale}/where-to-stay/${wts}`} className="text-sea hover:underline">
                 {T.whereToStay[ui]}
               </Link>
             )}

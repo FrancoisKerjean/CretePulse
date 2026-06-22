@@ -110,7 +110,7 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
       <div className="max-w-6xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-aegean">{title}</h1>
+          <h1 className="text-3xl font-bold text-sea">{title}</h1>
           <p className="text-text-muted mt-2">{subtitle}</p>
         </div>
 
@@ -122,7 +122,7 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
               className="rounded-xl border border-border bg-white overflow-hidden hover:shadow-md transition-shadow"
             >
               {/* Card header */}
-              <div className="bg-aegean px-4 pt-4 pb-3 text-white">
+              <div className="bg-sea px-4 pt-4 pb-3 text-white">
                 <div className="flex items-start justify-between">
                   <div>
                     <h2 className="font-bold text-lg leading-tight">{city.name}</h2>
@@ -140,7 +140,7 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
               {/* Stats */}
               <div className="p-4 grid grid-cols-2 gap-3">
                 <div className="flex items-center gap-2">
-                  <Wind className="w-4 h-4 text-aegean shrink-0" />
+                  <Wind className="w-4 h-4 text-sea shrink-0" />
                   <div>
                     <p className="text-xs text-text-muted">{cardLabels.wind}</p>
                     <p className="text-sm font-semibold">
@@ -151,7 +151,7 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Waves className="w-4 h-4 text-aegean shrink-0" />
+                  <Waves className="w-4 h-4 text-sea shrink-0" />
                   <div>
                     <p className="text-xs text-text-muted">{cardLabels.seaTemp}</p>
                     <p className="text-sm font-semibold">
@@ -171,7 +171,7 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Droplets className="w-4 h-4 text-aegean shrink-0" />
+                  <Droplets className="w-4 h-4 text-sea shrink-0" />
                   <div>
                     <p className="text-xs text-text-muted">{cardLabels.rain}</p>
                     <p className="text-sm font-semibold">{city.precipitation} mm</p>
@@ -183,7 +183,7 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
               {city.waveHeight != null && (
                 <div className="px-4 pb-3 border-t border-border pt-3">
                   <div className="flex items-center gap-2 text-sm text-text-muted">
-                    <Waves className="w-4 h-4 text-aegean" />
+                    <Waves className="w-4 h-4 text-sea" />
                     {cardLabels.waves}: <span className="font-semibold text-text">{city.waveHeight.toFixed(1)} m</span>
                   </div>
                 </div>
@@ -259,12 +259,12 @@ function WeatherPlaceholder({ locale }: { locale: Locale }) {
   return (
     <main className="min-h-screen bg-surface">
       <div className="max-w-6xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-aegean">{TITLES[locale] ?? TITLES.en}</h1>
+        <h1 className="text-3xl font-bold text-sea">{TITLES[locale] ?? TITLES.en}</h1>
         <p className="text-text-muted mt-2">{SUBTITLES[locale] ?? SUBTITLES.en}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-8">
           {Array.from({ length: 10 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-border bg-white overflow-hidden animate-pulse">
-              <div className="h-28 bg-aegean/20" />
+              <div className="h-28 bg-sea/20" />
               <div className="p-4 space-y-3">
                 <div className="h-4 bg-stone rounded w-3/4" />
                 <div className="h-4 bg-stone rounded w-1/2" />

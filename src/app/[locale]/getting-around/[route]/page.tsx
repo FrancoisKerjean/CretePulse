@@ -400,7 +400,7 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
       <JsonLd data={faqSchema} />
 
       {/* Hero */}
-      <section className="bg-aegean text-white py-12 md:py-20 px-4">
+      <section className="bg-sea text-white py-12 md:py-20 px-4">
         <div className="max-w-4xl mx-auto">
           <Link href={`/${locale}/buses`} className="inline-flex items-center gap-1 text-white/50 text-sm hover:text-white/80 mb-4">
             <ChevronLeft className="w-4 h-4" /> {L.back}
@@ -461,13 +461,13 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
         {AIRPORT_DATA_LINK[slug] && (
           <Link
             href={`/${locale}/airport/${AIRPORT_DATA_LINK[slug].airportSlug}`}
-            className="flex items-center gap-3 px-5 py-4 bg-white border border-border rounded-xl hover:border-aegean hover:shadow-sm transition-all"
+            className="flex items-center gap-3 px-5 py-4 bg-white border border-border rounded-xl hover:border-sea hover:shadow-sm transition-all"
           >
-            <Plane className="w-5 h-5 text-aegean flex-shrink-0" />
+            <Plane className="w-5 h-5 text-sea flex-shrink-0" />
             <span className="text-sm font-medium text-text">
               {AIRPORT_DATA_LINK[slug].labels[locale] || AIRPORT_DATA_LINK[slug].labels.en}
             </span>
-            <ArrowRight className="w-4 h-4 text-aegean ml-auto flex-shrink-0" />
+            <ArrowRight className="w-4 h-4 text-sea ml-auto flex-shrink-0" />
           </Link>
         )}
 
@@ -522,9 +522,9 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
                 <Link
                   key={r.slug}
                   href={`/${locale}/getting-around/${r.slug}`}
-                  className="flex items-center gap-2 px-4 py-3 bg-white border border-border rounded-xl hover:border-aegean hover:shadow-sm transition-all text-sm font-medium text-text"
+                  className="flex items-center gap-2 px-4 py-3 bg-white border border-border rounded-xl hover:border-sea hover:shadow-sm transition-all text-sm font-medium text-text"
                 >
-                  <ArrowRight className="w-4 h-4 text-aegean flex-shrink-0" />
+                  <ArrowRight className="w-4 h-4 text-sea flex-shrink-0" />
                   {r.from} · {r.to}
                 </Link>
               ))}
@@ -536,7 +536,7 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
         <div className="text-center pt-4">
           <Link
             href={`/${locale}/buses`}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-aegean text-white rounded-xl font-semibold hover:bg-aegean/90 transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-sea text-white rounded-xl font-semibold hover:bg-sea/90 transition-colors"
           >
             <Bus className="w-5 h-5" />
             {L.busSchedules}

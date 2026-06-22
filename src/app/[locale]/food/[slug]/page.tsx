@@ -65,10 +65,10 @@ export async function generateMetadata({
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  restaurant: "bg-terra-faint text-terra",
+  restaurant: "bg-terracotta-faint text-terracotta",
   taverna: "bg-olive-faint text-olive",
   cafe: "bg-amber-50 text-amber-700",
-  bar: "bg-aegean-faint text-aegean",
+  bar: "bg-sea-faint text-sea",
   bakery: "bg-orange-50 text-orange-700",
   other: "bg-stone text-text-muted",
 };
@@ -103,7 +103,7 @@ export default async function FoodDetailPage({
       <Breadcrumbs schema={breadcrumbJsonLd} />
       {/* Hero image */}
       {place.image_url && (
-        <div className="relative h-64 md:h-80 bg-terra-faint">
+        <div className="relative h-64 md:h-80 bg-terracotta-faint">
           <Image
             src={place.image_url}
             alt={place.name}
@@ -127,7 +127,7 @@ export default async function FoodDetailPage({
       <div className="max-w-4xl mx-auto px-4 py-8">
         <Link
           href={`/${locale}/food`}
-          className="inline-flex items-center gap-1 text-sm text-aegean hover:underline mb-6"
+          className="inline-flex items-center gap-1 text-sm text-sea hover:underline mb-6"
         >
           <ChevronLeft className="w-4 h-4" /> {fl.back}
         </Link>
@@ -135,8 +135,8 @@ export default async function FoodDetailPage({
         {!place.image_url && (
           <>
             <div className="flex items-center gap-3 mb-1">
-              <UtensilsCrossed className="w-6 h-6 text-terra" />
-              <h1 className="text-3xl font-bold text-aegean">{place.name}</h1>
+              <UtensilsCrossed className="w-6 h-6 text-terracotta" />
+              <h1 className="text-3xl font-bold text-sea">{place.name}</h1>
             </div>
             <div className="flex items-center gap-2 text-text-muted text-sm mb-6">
               <MapPin className="w-4 h-4" />
@@ -149,7 +149,7 @@ export default async function FoodDetailPage({
         {/* Info grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
           <div className="rounded-lg bg-white border border-border p-3 text-center">
-            <UtensilsCrossed className="w-5 h-5 text-terra mx-auto" />
+            <UtensilsCrossed className="w-5 h-5 text-terracotta mx-auto" />
             <p className="text-xs text-text-muted mt-1">Type</p>
             <p className={`font-semibold text-sm capitalize mt-1 inline-block px-2 py-0.5 rounded-full ${TYPE_COLORS[place.type] || TYPE_COLORS.other}`}>
               {place.type}
@@ -192,9 +192,9 @@ export default async function FoodDetailPage({
           {place.phone && (
             <a
               href={`tel:${place.phone}`}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-border text-text rounded-lg text-sm font-medium hover:border-terra/40 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-border text-text rounded-lg text-sm font-medium hover:border-terracotta/40 transition-colors"
             >
-              <Phone className="w-4 h-4 text-terra" /> {place.phone}
+              <Phone className="w-4 h-4 text-terracotta" /> {place.phone}
             </a>
           )}
           {place.website && (
@@ -202,9 +202,9 @@ export default async function FoodDetailPage({
               href={place.website}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-border text-text rounded-lg text-sm font-medium hover:border-terra/40 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-border text-text rounded-lg text-sm font-medium hover:border-terracotta/40 transition-colors"
             >
-              <Globe className="w-4 h-4 text-aegean" /> {fl.website}
+              <Globe className="w-4 h-4 text-sea" /> {fl.website}
             </a>
           )}
           {place.latitude && place.longitude && (
@@ -212,7 +212,7 @@ export default async function FoodDetailPage({
               href={`https://www.google.com/maps?q=${place.latitude},${place.longitude}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-terra text-white rounded-lg text-sm font-medium hover:bg-terra/90 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-terracotta text-white rounded-lg text-sm font-medium hover:bg-terracotta/90 transition-colors"
             >
               <MapPin className="w-4 h-4" /> {fl.maps}
             </a>
@@ -222,7 +222,7 @@ export default async function FoodDetailPage({
               href={`https://www.google.com/maps/search/${encodeURIComponent(place.address + " Crete Greece")}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-terra text-white rounded-lg text-sm font-medium hover:bg-terra/90 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-terracotta text-white rounded-lg text-sm font-medium hover:bg-terracotta/90 transition-colors"
             >
               <MapPin className="w-4 h-4" /> {fl.findMaps}
             </a>
@@ -232,7 +232,7 @@ export default async function FoodDetailPage({
         {/* Address */}
         {place.address && (
           <p className="text-sm text-text-muted mb-8 flex items-start gap-2">
-            <MapPin className="w-4 h-4 shrink-0 mt-0.5 text-terra" />
+            <MapPin className="w-4 h-4 shrink-0 mt-0.5 text-terracotta" />
             {place.address}
           </p>
         )}
@@ -240,7 +240,7 @@ export default async function FoodDetailPage({
         {/* Nearby places */}
         {nearby.length > 0 && (
           <section>
-            <h2 className="text-xl font-bold text-aegean mb-4">
+            <h2 className="text-xl font-bold text-sea mb-4">
               {fl.more} {place.region} Crete
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -248,7 +248,7 @@ export default async function FoodDetailPage({
                 <Link
                   key={p.slug}
                   href={`/${locale}/food/${p.slug}`}
-                  className="rounded-xl border border-border bg-white p-3 hover:border-terra/30 transition-all"
+                  className="rounded-xl border border-border bg-white p-3 hover:border-terracotta/30 transition-all"
                 >
                   <p className="font-semibold text-sm">{p.name}</p>
                   <p className="text-xs text-text-muted capitalize mt-0.5">

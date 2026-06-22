@@ -31,13 +31,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  politics: "bg-aegean-faint text-aegean",
-  tourism: "bg-terra-faint text-terra",
+  politics: "bg-sea-faint text-sea",
+  tourism: "bg-terracotta-faint text-terracotta",
   culture: "bg-sand text-text",
   environment: "bg-olive/10 text-olive",
   economy: "bg-stone text-text-muted",
-  sports: "bg-aegean-faint text-aegean",
-  weather: "bg-aegean-faint text-aegean",
+  sports: "bg-sea-faint text-sea",
+  weather: "bg-sea-faint text-sea",
 };
 
 const TIME_LABELS: Record<Locale, { justNow: string; yesterday: string; mAgo: string; hAgo: string; dAgo: string }> = {
@@ -106,8 +106,8 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-2">
-            <Newspaper className="w-5 h-5 text-aegean" />
-            <h1 className="text-2xl font-bold text-aegean">{PAGE_TITLES[loc] ?? PAGE_TITLES.en}</h1>
+            <Newspaper className="w-5 h-5 text-sea" />
+            <h1 className="text-2xl font-bold text-sea">{PAGE_TITLES[loc] ?? PAGE_TITLES.en}</h1>
           </div>
           <p className="text-sm text-text-muted">{PAGE_SUBTITLES[loc] ?? PAGE_SUBTITLES.en}</p>
         </div>
@@ -115,7 +115,7 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
         {/* crete.direct original reporting */}
         {editorial.length > 0 && (
           <div className="mb-10">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-terra mb-3">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-terracotta mb-3">
               {ORIGINAL_LABELS[loc] ?? ORIGINAL_LABELS.en}
             </h2>
             <div className="divide-y divide-border">
@@ -127,7 +127,7 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
                     <Link href={`/${locale}/articles/${g.slug}`} className="flex gap-4 items-start hover:opacity-80 transition-opacity">
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-terra-faint text-terra">
+                          <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-terracotta-faint text-terracotta">
                             crete.direct
                           </span>
                           <span className="text-xs text-text-light flex items-center gap-1">
@@ -136,7 +136,7 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
                           </span>
                         </div>
 
-                        <h3 className="text-base font-semibold text-text group-hover:text-aegean transition-colors leading-snug">
+                        <h3 className="text-base font-semibold text-text group-hover:text-sea transition-colors leading-snug">
                           {title}
                         </h3>
 
@@ -185,7 +185,7 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
                     <span className="text-xs text-text-light">{item.source_name}</span>
                   </div>
 
-                  <h2 className="text-base font-semibold text-text group-hover:text-aegean transition-colors leading-snug">
+                  <h2 className="text-base font-semibold text-text group-hover:text-sea transition-colors leading-snug">
                     {getLocalizedField(item, "title", loc)}
                   </h2>
 
@@ -213,7 +213,7 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
                   href={item.source_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[11px] text-text-light hover:text-aegean transition-colors"
+                  className="inline-flex items-center gap-1 text-[11px] text-text-light hover:text-sea transition-colors"
                 >
                   <ExternalLink className="w-3 h-3" />
                   {item.source_name}
@@ -232,8 +232,8 @@ function NewsPlaceholder({ locale }: { locale: Locale }) {
     <main className="min-h-screen bg-surface">
       <div className="max-w-3xl mx-auto px-4 py-12">
         <div className="flex items-center gap-2 mb-2">
-          <Newspaper className="w-5 h-5 text-aegean" />
-          <h1 className="text-2xl font-bold text-aegean">{PAGE_TITLES[locale] ?? PAGE_TITLES.en}</h1>
+          <Newspaper className="w-5 h-5 text-sea" />
+          <h1 className="text-2xl font-bold text-sea">{PAGE_TITLES[locale] ?? PAGE_TITLES.en}</h1>
         </div>
         <p className="text-sm text-text-muted mb-8">{PAGE_SUBTITLES[locale] ?? PAGE_SUBTITLES.en}</p>
 

@@ -136,13 +136,13 @@ export async function BusAccessBox({
   return (
     <section
       aria-labelledby="bus-access-heading"
-      className="mt-10 mb-8 p-6 rounded-2xl border border-aegean/15 bg-aegean/5"
+      className="mt-10 mb-8 p-6 rounded-2xl border border-sea/15 bg-sea/5"
     >
       <div className="flex items-center gap-3 mb-4">
-        <Bus className="w-5 h-5 text-aegean" aria-hidden="true" />
+        <Bus className="w-5 h-5 text-sea" aria-hidden="true" />
         <h2
           id="bus-access-heading"
-          className="text-xl font-bold text-aegean m-0"
+          className="text-xl font-bold text-sea m-0"
         >
           {t.heading}
         </h2>
@@ -154,7 +154,7 @@ export async function BusAccessBox({
             <li key={r.id} className="text-sm">
               <div className="font-semibold mb-1">
                 {t.directBus} {t.fromCity}{" "}
-                <span className="text-aegean">{r.from_place}</span>
+                <span className="text-sea">{r.from_place}</span>
               </div>
               <div className="text-text/80 flex flex-wrap gap-x-5 gap-y-1">
                 {r.duration && (
@@ -187,7 +187,7 @@ export async function BusAccessBox({
 
       <Link
         href={`/${loc}/buses`}
-        className="inline-flex items-center gap-2 text-aegean font-semibold hover:underline"
+        className="inline-flex items-center gap-2 text-sea font-semibold hover:underline"
       >
         {t.seeAllBuses}
         <ArrowRight className="w-4 h-4" aria-hidden="true" />

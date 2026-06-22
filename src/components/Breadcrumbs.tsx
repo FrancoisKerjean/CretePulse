@@ -29,7 +29,7 @@ export default function Breadcrumbs({ schema }: { schema: BreadcrumbSchema | Rec
                   {item.name}
                 </span>
               ) : (
-                <Link href={item.url} className="hover:text-aegean transition-colors line-clamp-1">
+                <Link href={item.url} className="hover:text-sea transition-colors line-clamp-1">
                   {item.name}
                 </Link>
               )}

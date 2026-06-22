@@ -39,10 +39,10 @@ export function HeritageBento({
         locale={locale}
       />
       {t.century != null && (
-        <Tile variant="aegean" icon="⛪" big={toRoman(t.century)} label={bentoLabel("century", locale)} className="col-span-2 md:col-span-1" />
+        <Tile variant="sea" icon="⛪" big={toRoman(t.century)} label={bentoLabel("century", locale)} className="col-span-2 md:col-span-1" />
       )}
       {t.frescoes_date && (
-        <Tile variant="terra" icon="🎨" big={t.frescoes_date} label={bentoLabel("frescoes", locale)} className="col-span-2 md:col-span-1" />
+        <Tile variant="terracotta" icon="🎨" big={t.frescoes_date} label={bentoLabel("frescoes", locale)} className="col-span-2 md:col-span-1" />
       )}
       {town && (
         <Tile big={town.km < 10 ? town.km.toFixed(1) : Math.round(town.km)} label={`km · ${town.name}`} className="col-span-2 md:col-span-1" />

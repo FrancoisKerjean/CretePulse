@@ -280,19 +280,19 @@ export default async function NearMePage(
           <div className="mt-5 flex flex-wrap gap-2.5">
             <Link
               href={`/${locale}/beaches/today`}
-              className="bg-white border border-border rounded-full px-4 py-2 text-[13px] font-heading font-bold text-aegean no-underline hover:bg-stone transition-colors"
+              className="bg-white border border-border rounded-full px-4 py-2 text-[13px] font-heading font-bold text-sea no-underline hover:bg-stone transition-colors"
             >
               {t.linkSwim}
             </Link>
             <Link
               href={`/${locale}/buses`}
-              className="bg-white border border-border rounded-full px-4 py-2 text-[13px] font-heading font-bold text-aegean no-underline hover:bg-stone transition-colors"
+              className="bg-white border border-border rounded-full px-4 py-2 text-[13px] font-heading font-bold text-sea no-underline hover:bg-stone transition-colors"
             >
               {t.linkBuses}
             </Link>
             <Link
               href={`/${locale}/explore`}
-              className="bg-white border border-border rounded-full px-4 py-2 text-[13px] font-heading font-bold text-aegean no-underline hover:bg-stone transition-colors"
+              className="bg-white border border-border rounded-full px-4 py-2 text-[13px] font-heading font-bold text-sea no-underline hover:bg-stone transition-colors"
             >
               {t.linkExplore}
             </Link>

@@ -36,7 +36,7 @@ export default function ProParcours({ locale, copy }: { locale: string; copy: Pr
             <Reveal reduce={reduce} delay={100} className="grid w-full max-w-[760px] grid-cols-2 gap-[12px] md:grid-cols-4">
               {copy.stats.map((s) => (
                 <div key={s.n + s.l} className="rounded-[16px] border-[3px] border-[var(--color-text)] bg-white p-[14px] text-center shadow-[0_5px_0_var(--color-text)]">
-                  <div className="font-[family-name:var(--font-heading)] text-[22px] font-extrabold text-aegean">{s.n}</div>
+                  <div className="font-[family-name:var(--font-heading)] text-[22px] font-extrabold text-sea">{s.n}</div>
                   <div className="mt-1 text-[11px] text-[var(--color-muted,#56707d)]">{s.l}</div>
                 </div>
               ))}
@@ -75,7 +75,7 @@ export default function ProParcours({ locale, copy }: { locale: string; copy: Pr
         {copy.ask && (
           <section className="flex flex-col items-center gap-[18px] px-[clamp(20px,5vw,60px)] py-[clamp(28px,5vw,42px)] text-center">
             <Reveal reduce={reduce} className="flex w-full flex-col items-center gap-3">
-              <Card kicker={copy.ask.kicker} kickerVariant="terra" title={copy.ask.title} sub={copy.ask.body} size="wide" reduce={reduce} />
+              <Card kicker={copy.ask.kicker} kickerVariant="terracotta" title={copy.ask.title} sub={copy.ask.body} size="wide" reduce={reduce} />
               <a href={copy.ask.dossierHref} className="inline-flex items-center gap-2 rounded-full border-[3px] border-[var(--color-text)] bg-sun px-5 py-[11px] font-[family-name:var(--font-heading)] text-[14.5px] font-extrabold text-[var(--color-text)] shadow-[0_4px_0_var(--color-text)]">
                 {copy.ask.dossierLabel}
               </a>

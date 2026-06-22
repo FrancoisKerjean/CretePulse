@@ -104,14 +104,14 @@ export function PushBell({ locale, label }: { locale: string; label?: string }) 
     return <p className="text-xs text-text-muted m-0">{T.blocked[ui]}</p>;
   }
   if (state === "subscribed") {
-    return <span className="inline-flex items-center gap-1.5 text-sm text-aegean font-semibold">🔔 {T.on[ui]}</span>;
+    return <span className="inline-flex items-center gap-1.5 text-sm text-sea font-semibold">🔔 {T.on[ui]}</span>;
   }
   return (
     <button
       type="button"
       onClick={subscribe}
       disabled={state === "working"}
-      className="inline-flex items-center gap-2 rounded-full bg-night px-4 py-2 text-sm font-semibold text-white hover:bg-aegean transition-colors disabled:opacity-60"
+      className="inline-flex items-center gap-2 rounded-full bg-night px-4 py-2 text-sm font-semibold text-white hover:bg-sea transition-colors disabled:opacity-60"
     >
       🔔 {state === "working" ? "..." : (label ?? T.cta[ui])}
     </button>

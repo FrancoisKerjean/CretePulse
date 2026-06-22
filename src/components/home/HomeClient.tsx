@@ -212,7 +212,7 @@ interface HomeClientProps {
 const VERDICT_COLORS: Record<SwimPickLite["rating"], string> = {
   calm: "text-[#0B8A52]",
   fair: "text-[#8A6A14]",
-  exposed: "text-terra",
+  exposed: "text-terracotta",
 };
 
 // Καλημέρα avant 12h Athens, Καλησπέρα après 17h, Γεια σου entre les deux.
@@ -280,7 +280,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
         <div className="relative max-w-6xl mx-auto px-4 grid lg:grid-cols-2 gap-11 items-center">
           <div>
             <BlurFade delay={0.05}>
-              <span className="inline-flex items-center gap-2 bg-white/72 rounded-full px-4 py-2 text-[13px] font-heading font-semibold text-aegean">
+              <span className="inline-flex items-center gap-2 bg-white/72 rounded-full px-4 py-2 text-[13px] font-heading font-semibold text-sea">
                 <span className="w-2 h-2 rounded-full bg-ok shadow-[0_0_0_4px_rgba(20,184,107,.25)]" />
                 {greekGreeting()} {dateLabel} · {T.liveFromIsland[ui]}
               </span>
@@ -310,7 +310,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                 )}
                 {swimPick && (
                   <span className="bg-white rounded-[17px] px-4 py-2.5 text-sm font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)] inline-flex items-center gap-1.5">
-                    <WindArrow deg={swimPick.windDir} className="w-3.5 h-3.5 text-aegean" /> {swimPick.windSpeed} km/h
+                    <WindArrow deg={swimPick.windDir} className="w-3.5 h-3.5 text-sea" /> {swimPick.windSpeed} km/h
                   </span>
                 )}
               </div>
@@ -323,7 +323,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                   aria-label="Crete Direct on Instagram"
                   className="bg-white/90 hover:bg-sun rounded-full p-2.5 shadow-[0_8px_22px_rgba(11,94,120,.12)] transition-all"
                 >
-                  <CiInstagram className="w-4 h-4 text-aegean" />
+                  <CiInstagram className="w-4 h-4 text-sea" />
                 </a>
                 <a
                   href="https://www.facebook.com/1098023870060924"
@@ -332,7 +332,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                   aria-label="Crete Direct on Facebook"
                   className="bg-white/90 hover:bg-sun rounded-full p-2.5 shadow-[0_8px_22px_rgba(11,94,120,.12)] transition-all"
                 >
-                  <CiFacebook className="w-4 h-4 text-aegean" />
+                  <CiFacebook className="w-4 h-4 text-sea" />
                 </a>
                 <a
                   href="https://www.youtube.com/@CreteDirect"
@@ -341,7 +341,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                   aria-label="Crete Direct on YouTube"
                   className="bg-white/90 hover:bg-sun rounded-full p-2.5 shadow-[0_8px_22px_rgba(11,94,120,.12)] transition-all"
                 >
-                  <CiYouTube className="w-4 h-4 text-aegean" />
+                  <CiYouTube className="w-4 h-4 text-sea" />
                 </a>
               </div>
             </BlurFade>
@@ -355,7 +355,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
             >
               <CreteMap cities={wtileCities} swimPin={swimPin} locale={locale} />
               <span
-                className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-aegean text-white text-xs font-bold shadow-[0_8px_22px_rgba(11,94,120,.22)] opacity-95 group-hover:opacity-100 group-hover:-translate-y-0.5 transition-all"
+                className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-sea text-white text-xs font-bold shadow-[0_8px_22px_rgba(11,94,120,.22)] opacity-95 group-hover:opacity-100 group-hover:-translate-y-0.5 transition-all"
                 aria-hidden
               >
                 <CiCompass className="w-3.5 h-3.5" />
@@ -408,9 +408,9 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                   <p className="m-0 mt-1.5 text-[14px] text-white/90 drop-shadow-[0_1px_2px_rgba(8,38,58,0.6)]">
                     {T.matchSub[ui]}
                   </p>
-                  <span className="relative mt-5 inline-flex items-center gap-2 overflow-hidden rounded-full bg-white px-7 py-3 font-heading text-[14.5px] font-bold text-terra shadow-md transition-transform group-hover:scale-[1.03]">
+                  <span className="relative mt-5 inline-flex items-center gap-2 overflow-hidden rounded-full bg-white px-7 py-3 font-heading text-[14.5px] font-bold text-terracotta shadow-md transition-transform group-hover:scale-[1.03]">
                     <span
-                      className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-terra/20 to-transparent bg-[length:300%_100%] animate-gradient"
+                      className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-terracotta/20 to-transparent bg-[length:300%_100%] animate-gradient"
                       aria-hidden
                     />
                     <span className="relative">{T.matchCta[ui]}</span>
@@ -425,7 +425,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
           <>
             <div className="flex items-center justify-between mt-10 mb-4">
               <h2 className="font-heading text-[28px] font-extrabold text-text m-0">{T.islandNow[ui]}</h2>
-              <Link href="/weather" className="text-[13.5px] font-heading font-bold text-aegean bg-white rounded-full px-4 py-2 shadow-[0_8px_20px_rgba(11,94,120,.12)] no-underline">
+              <Link href="/weather" className="text-[13.5px] font-heading font-bold text-sea bg-white rounded-full px-4 py-2 shadow-[0_8px_20px_rgba(11,94,120,.12)] no-underline">
                 {T.allStations[ui]}
               </Link>
             </div>
@@ -435,7 +435,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                 const sunny = i % 2 === 0;
                 return (
                   <Link key={c.name} href="/weather"
-                        className={`relative overflow-hidden rounded-[28px] px-5 py-4 no-underline ${sunny ? "bg-lagoon text-night" : "bg-aegean text-white"}`}>
+                        className={`relative overflow-hidden rounded-[28px] px-5 py-4 no-underline ${sunny ? "bg-lagoon text-night" : "bg-sea text-white"}`}>
                     {sunny && <div className="absolute -top-5 -right-5 w-[66px] h-[66px] rounded-full bg-sun opacity-90" aria-hidden />}
                     <p className="text-[13px] font-heading font-bold uppercase tracking-[0.08em] opacity-70 m-0">{c.name}</p>
                     <p className="font-data text-5xl font-extrabold tracking-tight leading-[1.08] m-0">
@@ -445,7 +445,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                       <WindArrow deg={c.windDir} className="w-3 h-3" /> {c.windSpeed} km/h
                       {c.seaTemp != null && <> · {T.sea[ui]} {c.seaTemp}°</>}
                     </p>
-                    <p className={`mt-2 mb-0 inline-flex text-[12.5px] font-bold rounded-full px-3 py-1.5 font-data ${st.warn ? "bg-white/90 text-[#C2543A]" : "bg-white/85 text-aegean"}`}>
+                    <p className={`mt-2 mb-0 inline-flex text-[12.5px] font-bold rounded-full px-3 py-1.5 font-data ${st.warn ? "bg-white/90 text-[#C2543A]" : "bg-white/85 text-sea"}`}>
                       ≈ {T.seaStates[st.key][ui]}
                     </p>
                   </Link>
@@ -460,7 +460,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
           <>
             <div className="flex items-center justify-between mt-10 mb-4">
               <h2 className="font-heading text-[28px] font-extrabold text-text m-0">{T.swimToday[ui]}</h2>
-              <Link href="/beaches" className="text-[13.5px] font-heading font-bold text-aegean bg-white rounded-full px-4 py-2 shadow-[0_8px_20px_rgba(11,94,120,.12)] no-underline">
+              <Link href="/beaches" className="text-[13.5px] font-heading font-bold text-sea bg-white rounded-full px-4 py-2 shadow-[0_8px_20px_rgba(11,94,120,.12)] no-underline">
                 {T.allBeaches[ui]}
               </Link>
             </div>
@@ -563,9 +563,9 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-heading text-[28px] font-extrabold text-text m-0 flex items-center gap-2.5">
-                <CiNews className="w-6 h-6 text-aegean" /> {t("latestNews")}
+                <CiNews className="w-6 h-6 text-sea" /> {t("latestNews")}
               </h2>
-              <Link href="/news" className="text-[13.5px] font-heading font-bold text-aegean bg-white rounded-full px-4 py-2 shadow-[0_8px_20px_rgba(11,94,120,.12)] no-underline">
+              <Link href="/news" className="text-[13.5px] font-heading font-bold text-sea bg-white rounded-full px-4 py-2 shadow-[0_8px_20px_rgba(11,94,120,.12)] no-underline">
                 {t("allNews")}
               </Link>
             </div>
@@ -580,7 +580,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                         {timeAgo(item.published_at)}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="text-[15px] font-semibold text-text group-hover:text-aegean transition-colors leading-snug line-clamp-2 m-0">
+                        <p className="text-[15px] font-semibold text-text group-hover:text-sea transition-colors leading-snug line-clamp-2 m-0">
                           {getLocalizedField(item, "title", loc)}
                         </p>
                         <p className="text-[11.5px] text-text-muted m-0 mt-0.5">
@@ -603,9 +603,9 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-heading text-[28px] font-extrabold text-text m-0 flex items-center gap-2.5">
-                <CiBook className="w-6 h-6 text-aegean" /> {t("editorialGuides")}
+                <CiBook className="w-6 h-6 text-sea" /> {t("editorialGuides")}
               </h2>
-              <Link href="/articles" className="text-[13.5px] font-heading font-bold text-aegean bg-white rounded-full px-4 py-2 shadow-[0_8px_20px_rgba(11,94,120,.12)] no-underline">
+              <Link href="/articles" className="text-[13.5px] font-heading font-bold text-sea bg-white rounded-full px-4 py-2 shadow-[0_8px_20px_rgba(11,94,120,.12)] no-underline">
                 {t("allGuides")}
               </Link>
             </div>
@@ -629,7 +629,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                             <AbstractFallback kind="land" />
                           )}
                         </div>
-                        <div className="px-4 py-4 font-heading font-bold text-[15px] leading-snug text-text group-hover:text-aegean transition-colors">
+                        <div className="px-4 py-4 font-heading font-bold text-[15px] leading-snug text-text group-hover:text-sea transition-colors">
                           {gTitle}
                           {guide.read_time && (
                             <span className="block font-sans font-medium text-[11.5px] text-text-muted mt-1.5 font-data">{guide.read_time} min</span>
@@ -649,17 +649,17 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
 
             {events.length > 0 && (
               <div className="mt-7">
-                <h3 className="font-heading text-base font-extrabold text-terra flex items-center gap-2 mb-3">
+                <h3 className="font-heading text-base font-extrabold text-terracotta flex items-center gap-2 mb-3">
                   <CiCalendar className="w-4 h-4" /> {T.nextEvents[ui]}
                 </h3>
                 <div className="bg-white rounded-3xl px-5 py-1 shadow-[0_12px_32px_rgba(11,94,120,.08)]">
                   {events.map((event, i) => (
                     <Link key={event.slug} href={`/events/${event.slug}`}
                           className={`flex items-center gap-3 py-3 group no-underline ${i > 0 ? "border-t border-text/7" : ""}`}>
-                      <span className="font-data text-[11px] text-terra font-bold shrink-0 w-14">
+                      <span className="font-data text-[11px] text-terracotta font-bold shrink-0 w-14">
                         {formatEventDate(event.date_start, locale)}
                       </span>
-                      <span className="text-sm text-text group-hover:text-aegean transition-colors line-clamp-1 min-w-0">
+                      <span className="text-sm text-text group-hover:text-sea transition-colors line-clamp-1 min-w-0">
                         {getLocalizedField(event, "title", loc)}
                       </span>
                       <span className="ml-auto inline-flex items-center gap-1 text-[11px] text-text-light shrink-0">

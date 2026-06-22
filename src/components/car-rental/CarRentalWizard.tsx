@@ -228,7 +228,7 @@ const T: Record<string, Strings> = {
 type View = "steps" | "noPartner" | "sent" | "fallback";
 
 const INPUT_CLS =
-  "w-full rounded-xl border-[1.5px] border-border bg-white px-3.5 py-2.5 text-[15px] text-text focus:outline-none focus:border-aegean transition-colors";
+  "w-full rounded-xl border-[1.5px] border-border bg-white px-3.5 py-2.5 text-[15px] text-text focus:outline-none focus:border-sea transition-colors";
 const LABEL_CLS = "block text-[12px] font-semibold text-text-muted mb-1";
 
 export function CarRentalWizard({ locale }: { locale: string }) {
@@ -419,7 +419,7 @@ export function CarRentalWizard({ locale }: { locale: string }) {
   if (view === "noPartner") {
     return (
       <div ref={rootRef} data-testid="car-wizard-no-partner" className="card-base p-7 sm:p-10 text-center scroll-mt-24">
-        <CiCompass className="w-12 h-12 text-aegean mx-auto" />
+        <CiCompass className="w-12 h-12 text-sea mx-auto" />
         <h2 className="mt-4 font-heading font-extrabold text-2xl text-text">{t.npTitle}</h2>
         <p className="mt-2 text-[15px] text-text-muted max-w-xl mx-auto">
           {t.npBody.replace("{place}", pickup ? pickupLabel(pickup) : "")}
@@ -475,14 +475,14 @@ export function CarRentalWizard({ locale }: { locale: string }) {
                 setNearRequested(true);
                 if (!pos) requestGeo();
               }}
-              className="inline-flex items-center gap-2 rounded-full border-[1.5px] border-aegean/40 bg-white px-4 py-2 text-[13px] font-heading font-bold text-aegean hover:bg-aegean-faint transition-colors"
+              className="inline-flex items-center gap-2 rounded-full border-[1.5px] border-sea/40 bg-white px-4 py-2 text-[13px] font-heading font-bold text-sea hover:bg-sea-faint transition-colors"
             >
               <CiCompass className="w-4.5 h-4.5" />
               {geoStatus === "prompting" ? t.locating : t.nearMe}
             </button>
           </div>
           {(geoStatus === "denied" || geoStatus === "unavailable") && (
-            <p className="text-sm text-terra -mt-2 mb-4">
+            <p className="text-sm text-terracotta -mt-2 mb-4">
               {geoStatus === "denied" ? t.denied : t.unavailable}
             </p>
           )}
@@ -505,10 +505,10 @@ export function CarRentalWizard({ locale }: { locale: string }) {
                           advance(2);
                         }}
                         className={`flex items-center gap-2.5 rounded-2xl border-[1.5px] bg-white p-3.5 text-left transition-colors ${
-                          pickup === slug ? "border-aegean bg-aegean-faint" : "border-border hover:border-aegean/50"
+                          pickup === slug ? "border-sea bg-sea-faint" : "border-border hover:border-sea/50"
                         }`}
                       >
-                        <Icon className="w-5 h-5 text-aegean shrink-0" />
+                        <Icon className="w-5 h-5 text-sea shrink-0" />
                         <span className="font-heading font-bold text-[14px] leading-tight text-text">
                           {pickupLabel(slug)}
                         </span>
@@ -612,10 +612,10 @@ export function CarRentalWizard({ locale }: { locale: string }) {
                   data-testid={`car-type-${c.id}`}
                   onClick={() => setCarType(c.id)}
                   className={`flex flex-col items-center gap-1.5 rounded-2xl border-[1.5px] bg-white p-4 transition-colors ${
-                    carType === c.id ? "border-aegean bg-aegean-faint" : "border-border hover:border-aegean/50"
+                    carType === c.id ? "border-sea bg-sea-faint" : "border-border hover:border-sea/50"
                   }`}
                 >
-                  <Icon className="w-10 h-10 text-aegean" />
+                  <Icon className="w-10 h-10 text-sea" />
                   <span className="font-heading font-bold text-[14px] leading-tight text-text text-center">
                     {c.labels[locale] ?? c.labels.en}
                   </span>
@@ -632,7 +632,7 @@ export function CarRentalWizard({ locale }: { locale: string }) {
                 aria-label="−"
                 onClick={() => setPax((p) => Math.max(1, p - 1))}
                 disabled={pax <= 1}
-                className="w-10 h-10 rounded-full border-[1.5px] border-border bg-white text-xl font-bold text-text hover:border-aegean disabled:opacity-40 transition-colors"
+                className="w-10 h-10 rounded-full border-[1.5px] border-border bg-white text-xl font-bold text-text hover:border-sea disabled:opacity-40 transition-colors"
               >
                 −
               </button>
@@ -642,7 +642,7 @@ export function CarRentalWizard({ locale }: { locale: string }) {
                 aria-label="+"
                 onClick={() => setPax((p) => Math.min(8, p + 1))}
                 disabled={pax >= 8}
-                className="w-10 h-10 rounded-full border-[1.5px] border-border bg-white text-xl font-bold text-text hover:border-aegean disabled:opacity-40 transition-colors"
+                className="w-10 h-10 rounded-full border-[1.5px] border-border bg-white text-xl font-bold text-text hover:border-sea disabled:opacity-40 transition-colors"
               >
                 +
               </button>
@@ -688,7 +688,7 @@ export function CarRentalWizard({ locale }: { locale: string }) {
               aria-hidden="true"
             />
             <p className="text-xs text-text-muted leading-relaxed m-0 pt-1">{t.rgpd}</p>
-            {submitError && <p className="text-sm font-semibold text-terra m-0">{t.error}</p>}
+            {submitError && <p className="text-sm font-semibold text-terracotta m-0">{t.error}</p>}
           </div>
         </div>
       )}

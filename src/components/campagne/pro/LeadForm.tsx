@@ -65,7 +65,7 @@ export default function LeadForm({ locale, form, id }: { locale: string; form: P
       <button type="submit" disabled={status === "sending"} className="mt-4 w-full rounded-full border-[3px] border-[var(--color-text)] bg-lagoon py-[14px] font-[family-name:var(--font-heading)] text-[16px] font-extrabold text-white shadow-[0_5px_0_var(--color-text)] disabled:opacity-60">
         {status === "sending" ? form.sending : form.submit}
       </button>
-      {status === "error" && <p className="mt-3 text-center text-[13px] font-semibold text-terra">{form.error}</p>}
+      {status === "error" && <p className="mt-3 text-center text-[13px] font-semibold text-terracotta">{form.error}</p>}
     </form>
   );
 }

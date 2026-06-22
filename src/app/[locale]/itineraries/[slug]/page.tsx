@@ -289,8 +289,8 @@ export default async function ItineraryPage({
       <JsonLd data={travelSchema} />
 
       {/* Hero */}
-      <div className="relative bg-aegean py-16 md:py-24">
-        <div className="absolute inset-0 bg-gradient-to-br from-aegean via-aegean/90 to-aegean-dark" />
+      <div className="relative bg-sea py-16 md:py-24">
+        <div className="absolute inset-0 bg-gradient-to-br from-sea via-sea/90 to-night" />
         <div className="relative max-w-4xl mx-auto px-4 text-center">
           <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-full px-4 py-1.5 text-white/90 text-sm mb-6">
             <Calendar className="w-4 h-4" />
@@ -311,7 +311,7 @@ export default async function ItineraryPage({
       <div className="max-w-4xl mx-auto px-4 py-8">
         <Link
           href={`/${locale}/itineraries`}
-          className="inline-flex items-center gap-1 text-sm text-aegean hover:underline mb-8"
+          className="inline-flex items-center gap-1 text-sm text-sea hover:underline mb-8"
         >
           <ChevronLeft className="w-4 h-4" /> {L.allItineraries}
         </Link>
@@ -325,13 +325,13 @@ export default async function ItineraryPage({
             {itinerary.dayPlans.map((dp) => (
               <div key={dp.day} className="relative flex gap-4 md:gap-6">
                 {/* Day number circle */}
-                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-aegean text-white flex items-center justify-center font-bold text-sm z-10">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-sea text-white flex items-center justify-center font-bold text-sm z-10">
                   {L.day} {dp.day}
                 </div>
 
                 {/* Card */}
                 <div className="flex-1 rounded-xl bg-white border border-border p-5 shadow-sm">
-                  <h2 className="text-lg font-semibold text-aegean mb-2" style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}>
+                  <h2 className="text-lg font-semibold text-sea mb-2" style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}>
                     {getLocalized(dp.title, loc)}
                   </h2>
                   <p className="text-text leading-relaxed text-sm">
@@ -356,7 +356,7 @@ export default async function ItineraryPage({
         {/* FAQ section */}
         <section className="mt-12 mb-8">
           <h2
-            className="text-2xl font-bold text-aegean mb-6"
+            className="text-2xl font-bold text-sea mb-6"
             style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}
           >
             {L.faqTitle}
@@ -377,7 +377,7 @@ export default async function ItineraryPage({
         {/* Related itineraries */}
         <section className="mt-8 mb-8">
           <h2
-            className="text-2xl font-bold text-aegean mb-4"
+            className="text-2xl font-bold text-sea mb-4"
             style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}
           >
             {L.relatedItineraries}
@@ -389,7 +389,7 @@ export default async function ItineraryPage({
                 href={`/${locale}/itineraries/${it.slug}`}
                 className="rounded-xl bg-white border border-border p-4 hover:shadow-md transition-shadow"
               >
-                <div className="flex items-center gap-2 text-aegean mb-2">
+                <div className="flex items-center gap-2 text-sea mb-2">
                   <Calendar className="w-4 h-4" />
                   <span className="font-semibold text-sm">{it.days} {L.days}</span>
                 </div>
@@ -403,7 +403,7 @@ export default async function ItineraryPage({
         {/* Explore more links */}
         <section className="mt-8 pb-8">
           <h2
-            className="text-2xl font-bold text-aegean mb-4"
+            className="text-2xl font-bold text-sea mb-4"
             style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}
           >
             {L.exploreMore}
@@ -413,14 +413,14 @@ export default async function ItineraryPage({
               href={`/${locale}/beaches`}
               className="rounded-xl bg-white border border-border p-4 hover:shadow-md transition-shadow flex items-center gap-3"
             >
-              <MapPin className="w-5 h-5 text-aegean" />
+              <MapPin className="w-5 h-5 text-sea" />
               <span className="font-medium text-sm text-text">{L.beaches}</span>
             </Link>
             <Link
               href={`/${locale}/archaeology`}
               className="rounded-xl bg-white border border-border p-4 hover:shadow-md transition-shadow flex items-center gap-3"
             >
-              <Clock className="w-5 h-5 text-terra" />
+              <Clock className="w-5 h-5 text-terracotta" />
               <span className="font-medium text-sm text-text">{L.archaeology}</span>
             </Link>
             <Link

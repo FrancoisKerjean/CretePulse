@@ -8,7 +8,7 @@ export function getEntreprisesCopyFR(): ProCopy {
       description: "Associez votre marque au compagnon pratique de la Crete. Soutenez le projet, ou rendez-vous visible aupres d'une audience qualifiee.",
     },
     hero: {
-      kicker: "partenariat", kickerVariant: "terra",
+      kicker: "partenariat", kickerVariant: "terracotta",
       title: "Associez votre marque au <hl>compagnon de la Crete</hl>.",
       sub: "Des centaines de milliers de visiteurs preparent leur sejour avec crete.direct, dans leur langue.",
     },
@@ -68,7 +68,7 @@ export function getEntreprisesCopyEN(): ProCopy {
       description: "Put your brand alongside Crete's practical companion. Support the project, or get visible to a qualified audience.",
     },
     hero: {
-      kicker: "partnership", kickerVariant: "terra",
+      kicker: "partnership", kickerVariant: "terracotta",
       title: "Put your brand alongside <hl>Crete's companion</hl>.",
       sub: "Hundreds of thousands of visitors plan their trip with crete.direct, in their own language.",
     },

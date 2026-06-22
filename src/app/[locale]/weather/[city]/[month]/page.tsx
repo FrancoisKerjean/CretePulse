@@ -158,7 +158,7 @@ export default async function WeatherCityMonthPage({ params }: { params: Promise
       <JsonLd data={pageSchema} />
 
       {/* Hero */}
-      <section className="bg-aegean text-white py-12 md:py-16 px-4">
+      <section className="bg-sea text-white py-12 md:py-16 px-4">
         <div className="max-w-3xl mx-auto">
           <Link href={`/${locale}/weather`} className="inline-flex items-center gap-1 text-white/50 text-sm hover:text-white/80 mb-4">
             <ChevronLeft className="w-4 h-4" /> {L.allWeather}
@@ -174,23 +174,23 @@ export default async function WeatherCityMonthPage({ params }: { params: Promise
         {/* Climate stats grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div className="rounded-xl bg-white border border-border p-5 text-center">
-            <Thermometer className="w-6 h-6 text-terra mx-auto mb-2" />
+            <Thermometer className="w-6 h-6 text-terracotta mx-auto mb-2" />
             <p className="text-xs text-text-muted">{L.avgHigh}</p>
             <p className="text-3xl font-bold text-text">{climate.avgHigh}°C</p>
           </div>
           <div className="rounded-xl bg-white border border-border p-5 text-center">
-            <Thermometer className="w-6 h-6 text-aegean mx-auto mb-2" />
+            <Thermometer className="w-6 h-6 text-sea mx-auto mb-2" />
             <p className="text-xs text-text-muted">{L.avgLow}</p>
             <p className="text-3xl font-bold text-text">{climate.avgLow}°C</p>
           </div>
           <div className="rounded-xl bg-white border border-border p-5 text-center">
-            <Waves className="w-6 h-6 text-aegean mx-auto mb-2" />
+            <Waves className="w-6 h-6 text-sea mx-auto mb-2" />
             <p className="text-xs text-text-muted">{L.seaTemp}</p>
             <p className="text-3xl font-bold text-text">{climate.seaTemp}°C</p>
             <p className="text-xs text-olive mt-1">{swimVerdict}</p>
           </div>
           <div className="rounded-xl bg-white border border-border p-5 text-center">
-            <CloudRain className="w-6 h-6 text-aegean mx-auto mb-2" />
+            <CloudRain className="w-6 h-6 text-sea mx-auto mb-2" />
             <p className="text-xs text-text-muted">{L.rain}</p>
             <p className="text-3xl font-bold text-text">{climate.rainyDays}</p>
           </div>
@@ -208,7 +208,7 @@ export default async function WeatherCityMonthPage({ params }: { params: Promise
 
         {/* FAQ section */}
         <section>
-          <h2 className="text-xl font-bold text-aegean mb-4">FAQ</h2>
+          <h2 className="text-xl font-bold text-sea mb-4">FAQ</h2>
           <div className="space-y-4">
             {faqItems.map((faq, i) => (
               <div key={i} className="p-5 bg-white rounded-xl border border-border">
@@ -227,7 +227,7 @@ export default async function WeatherCityMonthPage({ params }: { params: Promise
               <Link
                 key={m}
                 href={`/${locale}/weather/${citySlug}/${m}`}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${m === month ? "bg-aegean text-white" : "bg-white border border-border text-text-muted hover:bg-aegean-faint hover:text-aegean"}`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${m === month ? "bg-sea text-white" : "bg-white border border-border text-text-muted hover:bg-sea-faint hover:text-sea"}`}
               >
                 {(MONTH_NAMES[locale]?.[m] || MONTH_NAMES.en[m]).substring(0, 3)}
               </Link>
@@ -245,10 +245,10 @@ export default async function WeatherCityMonthPage({ params }: { params: Promise
                 <Link
                   key={c.slug}
                   href={`/${locale}/weather/${c.slug}/${month}`}
-                  className="flex items-center justify-between p-3 bg-white rounded-xl border border-border hover:border-aegean/30 transition-colors"
+                  className="flex items-center justify-between p-3 bg-white rounded-xl border border-border hover:border-sea/30 transition-colors"
                 >
                   <span className="text-sm font-medium text-text">{c.name}</span>
-                  <span className="text-sm font-bold text-terra">{cl.avgHigh}°</span>
+                  <span className="text-sm font-bold text-terracotta">{cl.avgHigh}°</span>
                 </Link>
               );
             })}

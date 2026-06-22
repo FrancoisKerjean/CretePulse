@@ -107,7 +107,7 @@ export function ActivityNudge() {
 
         <h2
           id="activity-nudge-title"
-          className="font-heading text-2xl font-bold text-aegean"
+          className="font-heading text-2xl font-bold text-sea"
         >
           {t("title")}
         </h2>
@@ -117,7 +117,7 @@ export function ActivityNudge() {
           <Link
             href="/match"
             onClick={handleConvert}
-            className="rounded-full bg-terra px-5 py-3 font-heading font-bold text-white shadow-md transition hover:bg-terra-light"
+            className="rounded-full bg-terracotta px-5 py-3 font-heading font-bold text-white shadow-md transition hover:bg-terracotta-light"
           >
             {t("cta")}
           </Link>

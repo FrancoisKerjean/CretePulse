@@ -15,7 +15,7 @@ export function TaxiCallButton({ phone, zone, pair, partner }: {
     <a
       href={`tel:${phone.replace(/\s+/g, "")}`}
       onClick={() => window.plausible?.("Taxi Call", { props: { zone, pair, partner } })}
-      className="inline-flex items-center gap-2 rounded-lg bg-aegean text-white text-sm font-semibold px-4 py-2 hover:opacity-90"
+      className="inline-flex items-center gap-2 rounded-lg bg-sea text-white text-sm font-semibold px-4 py-2 hover:opacity-90"
     >
       <Phone className="w-4 h-4" /> {phone}
     </a>

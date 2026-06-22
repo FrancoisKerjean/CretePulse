@@ -36,12 +36,12 @@ export function BusSheet({ vm, locale, onClose }: { vm: BusSheetVM; locale: stri
       </button>
 
       <div className="flex items-center gap-2 text-sm text-text/60">
-        <span className="rounded-md bg-aegean px-2 py-0.5 font-data text-xs font-bold text-white">{vm.code}</span>
+        <span className="rounded-md bg-sea px-2 py-0.5 font-data text-xs font-bold text-white">{vm.code}</span>
         <span>{vm.operatorLabel}</span>
       </div>
 
       <p className="mt-1 font-heading text-lg font-bold text-text">
-        {vm.origin} <span className="text-terra">→</span> {vm.destination}
+        {vm.origin} <span className="text-terracotta">→</span> {vm.destination}
       </p>
 
       <div className="mt-3 space-y-1.5 border-t border-black/10 pt-3 text-sm">
@@ -77,7 +77,7 @@ export function BusSheet({ vm, locale, onClose }: { vm: BusSheetVM; locale: stri
       {vm.lineHref && (
         <Link
           href={vm.lineHref}
-          className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-aegean px-5 py-2.5 font-heading text-sm font-semibold text-white transition hover:bg-aegean/90"
+          className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-sea px-5 py-2.5 font-heading text-sm font-semibold text-white transition hover:bg-sea/90"
         >
           {t.viewLine} →
         </Link>

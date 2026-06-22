@@ -63,11 +63,11 @@ export default function RentalCTA({ locale, contentSlug, contentType = "page" }:
 
   return (
     <aside
-      className="mt-14 rounded-2xl border border-aegean/20 bg-aegean-faint px-6 py-8"
+      className="mt-14 rounded-2xl border border-sea/20 bg-sea-faint px-6 py-8"
       data-cta="rental-cross-link"
     >
-      <div className="w-8 h-1 bg-terra rounded-full mb-4" />
-      <h3 className="font-heading text-lg font-bold text-aegean mb-2">
+      <div className="w-8 h-1 bg-terracotta rounded-full mb-4" />
+      <h3 className="font-heading text-lg font-bold text-sea mb-2">
         {t(TITLES)}
       </h3>
       <p className="text-sm text-text-muted mb-5 max-w-2xl leading-relaxed">
@@ -76,7 +76,7 @@ export default function RentalCTA({ locale, contentSlug, contentType = "page" }:
       <a
         href={href}
         rel="noopener"
-        className="inline-flex items-center px-5 py-2.5 text-sm font-semibold bg-aegean text-white rounded-lg hover:bg-aegean-light transition-colors"
+        className="inline-flex items-center px-5 py-2.5 text-sm font-semibold bg-sea text-white rounded-lg hover:bg-sea-light transition-colors"
       >
         {t(CTAS)}
       </a>

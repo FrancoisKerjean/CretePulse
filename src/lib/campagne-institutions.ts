@@ -20,7 +20,7 @@ export function getInstitutionsCopyFR(): ProCopy {
     ],
     hook: "Le transport public d'une des plus grandes destinations d'Europe n'a aucune couche numerique unifiee. Nous l'avons batie, gratuite pour le public, et nous voulons la mettre au service de la gestion des flux.",
     beats: [
-      { id: "constat", kicker: "le constat", kickerVariant: "terra", emoji: "\u{1F410}", emojiCap: "on attend... le bus arrive quand ?", flip: true,
+      { id: "constat", kicker: "le constat", kickerVariant: "terracotta", emoji: "\u{1F410}", emojiCap: "on attend... le bus arrive quand ?", flip: true,
         title: "Deux reseaux qui ne se parlent pas.",
         body: "Le bus interurbain cretois repose sur deux societes KTEL en silos : pas d'API, pas de donnee ouverte. Google Maps lui-meme ne sait pas y router un trajet. Et <hl>Kastelli 2028</hl> arrive sans plan de desserte collective." },
       { id: "bati", kicker: "ce qu'on a fait", kickerVariant: "go", scene: "signpost",
@@ -77,7 +77,7 @@ export function getInstitutionsCopyEN(): ProCopy {
     ],
     hook: "The public transport of one of Europe's largest destinations has no unified digital layer. We built it, free for the public, and we want to put it at the service of flow management.",
     beats: [
-      { id: "constat", kicker: "the problem", kickerVariant: "terra", emoji: "\u{1F410}", emojiCap: "waiting... when is the bus coming?", flip: true,
+      { id: "constat", kicker: "the problem", kickerVariant: "terracotta", emoji: "\u{1F410}", emojiCap: "waiting... when is the bus coming?", flip: true,
         title: "Two networks that don't talk to each other.",
         body: "Cretan intercity buses run on two siloed KTEL companies: no API, no open data. Google Maps itself cannot route a trip. And <hl>Kastelli 2028</hl> is coming with no collective transport plan." },
       { id: "bati", kicker: "what we built", kickerVariant: "go", scene: "signpost",

@@ -38,11 +38,11 @@ export async function BusInCreteBox({ locale }: { locale: string }) {
   return (
     <section
       aria-labelledby="bus-in-crete-heading"
-      className="mt-10 mb-8 p-6 rounded-2xl border border-aegean/15 bg-aegean/5"
+      className="mt-10 mb-8 p-6 rounded-2xl border border-sea/15 bg-sea/5"
     >
       <div className="flex items-center gap-3 mb-4">
-        <Bus className="w-5 h-5 text-aegean" aria-hidden="true" />
-        <h2 id="bus-in-crete-heading" className="text-xl font-bold text-aegean m-0">
+        <Bus className="w-5 h-5 text-sea" aria-hidden="true" />
+        <h2 id="bus-in-crete-heading" className="text-xl font-bold text-sea m-0">
           {t.heading}
         </h2>
       </div>
@@ -51,7 +51,7 @@ export async function BusInCreteBox({ locale }: { locale: string }) {
           <li key={p.slug}>
             <Link
               href={`/${loc}/buses/${p.slug}`}
-              className="text-aegean hover:underline"
+              className="text-sea hover:underline"
             >
               Bus {p.placeA} {t.connector} {p.placeB}
             </Link>

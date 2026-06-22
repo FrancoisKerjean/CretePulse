@@ -58,7 +58,7 @@ export default function HelpButtons({ locale, copy }: { locale: string; copy: Ca
 
   return (
     <div className="mt-7 flex flex-wrap justify-center gap-4">
-      <a className={`${BTN} bg-terra text-white`} href={LINKS.instagram} target="_blank" rel="noopener noreferrer">
+      <a className={`${BTN} bg-terracotta text-white`} href={LINKS.instagram} target="_blank" rel="noopener noreferrer">
         <IgIcon />
         {copy.buttons.instagram}
       </a>

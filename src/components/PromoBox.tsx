@@ -54,10 +54,10 @@ export function PromoBox({ icon: Icon, title, line, ctaLabel, ctaHref, disclosur
           <a
             href={ctaHref}
             {...(external ? { target: "_blank", rel: "nofollow noopener sponsored" } : {})}
-            className="group relative inline-flex shrink-0 items-center gap-2 overflow-hidden rounded-xl bg-white px-6 py-3 text-sm font-bold text-terra shadow-md transition-transform hover:scale-[1.03] active:scale-[0.98]"
+            className="group relative inline-flex shrink-0 items-center gap-2 overflow-hidden rounded-xl bg-white px-6 py-3 text-sm font-bold text-terracotta shadow-md transition-transform hover:scale-[1.03] active:scale-[0.98]"
           >
             <span
-              className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-terra/20 to-transparent bg-[length:300%_100%] animate-gradient"
+              className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-terracotta/20 to-transparent bg-[length:300%_100%] animate-gradient"
               aria-hidden
             />
             <span className="relative">{ctaLabel}</span>
@@ -69,10 +69,10 @@ export function PromoBox({ icon: Icon, title, line, ctaLabel, ctaHref, disclosur
   }
 
   return (
-    <aside className="rounded-[26px] border border-lagoon/20 bg-aegean-faint p-5 my-8">
+    <aside className="rounded-[26px] border border-lagoon/20 bg-sea-faint p-5 my-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
-          <Icon className="w-5 h-5 text-aegean shrink-0 mt-0.5" />
+          <Icon className="w-5 h-5 text-sea shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-heading font-bold text-text m-0">{title}</p>
             {line && <p className="text-sm text-text-muted m-0">{line}</p>}

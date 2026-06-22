@@ -97,23 +97,23 @@ const RELATED_LABELS: Record<Locale, string> = {
 // ── Category styles ────────────────────────────────────────────────────────
 
 const CATEGORY_COLORS: Record<string, string> = {
-  politics:    "bg-aegean-faint text-aegean border border-aegean/20",
-  tourism:     "bg-terra-faint text-terra border border-terra/20",
+  politics:    "bg-sea-faint text-sea border border-sea/20",
+  tourism:     "bg-terracotta-faint text-terracotta border border-terracotta/20",
   culture:     "bg-sand text-text border border-border",
   environment: "bg-olive/10 text-olive border border-olive/20",
   economy:     "bg-stone-warm text-text-muted border border-border",
-  sports:      "bg-aegean-faint text-aegean border border-aegean/20",
-  weather:     "bg-aegean-faint text-aegean border border-aegean/20",
+  sports:      "bg-sea-faint text-sea border border-sea/20",
+  weather:     "bg-sea-faint text-sea border border-sea/20",
 };
 
 const CATEGORY_DOT: Record<string, string> = {
-  politics:    "bg-aegean",
-  tourism:     "bg-terra",
+  politics:    "bg-sea",
+  tourism:     "bg-terracotta",
   culture:     "bg-text-muted",
   environment: "bg-olive",
   economy:     "bg-text-muted",
-  sports:      "bg-aegean",
-  weather:     "bg-aegean",
+  sports:      "bg-sea",
+  weather:     "bg-sea",
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -203,14 +203,14 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
       <main className="min-h-screen bg-surface">
 
         {/* Top accent bar */}
-        <div className="h-0.5 bg-gradient-to-r from-aegean via-terra to-olive" />
+        <div className="h-0.5 bg-gradient-to-r from-sea via-terracotta to-olive" />
 
         <div className="max-w-[720px] mx-auto px-4 sm:px-6 py-10">
 
           {/* Back link */}
           <Link
             href={`/${locale}/news`}
-            className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-aegean transition-colors mb-10 group"
+            className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-sea transition-colors mb-10 group"
           >
             <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
             {backLabel}
@@ -250,7 +250,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
                 href={item.source_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-aegean hover:underline font-medium"
+                className="text-sea hover:underline font-medium"
               >
                 {item.source_name}
               </a>
@@ -292,10 +292,10 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
                 "[&>ul]:list-disc [&>ul]:pl-6 [&>ul]:space-y-1.5 [&>ul]:mb-5",
                 "[&>ol]:list-decimal [&>ol]:pl-6 [&>ol]:space-y-1.5 [&>ol]:mb-5",
                 /* blockquote */
-                "[&>blockquote]:border-l-4 [&>blockquote]:border-terra [&>blockquote]:pl-5 [&>blockquote]:italic [&>blockquote]:text-text-muted [&>blockquote]:my-6",
+                "[&>blockquote]:border-l-4 [&>blockquote]:border-terracotta [&>blockquote]:pl-5 [&>blockquote]:italic [&>blockquote]:text-text-muted [&>blockquote]:my-6",
                 /* inline */
                 "[&_strong]:font-semibold [&_strong]:text-text",
-                "[&_a]:text-aegean [&_a]:underline [&_a:hover]:text-aegean-light",
+                "[&_a]:text-sea [&_a]:underline [&_a:hover]:text-sea-light",
               ].join(" ")}
               style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
               dangerouslySetInnerHTML={{ __html: summary }}
@@ -308,7 +308,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
               href={item.source_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-aegean transition-colors underline underline-offset-2"
+              className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-sea transition-colors underline underline-offset-2"
             >
               <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
               {readOriginalLabel} &rarr; {item.source_name}
@@ -360,7 +360,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
                             {n.category}
                           </span>
                         )}
-                        <p className="text-sm font-semibold text-text leading-snug group-hover:text-aegean transition-colors line-clamp-2">
+                        <p className="text-sm font-semibold text-text leading-snug group-hover:text-sea transition-colors line-clamp-2">
                           {relTitle}
                         </p>
                         <p className="text-xs text-text-light mt-1">

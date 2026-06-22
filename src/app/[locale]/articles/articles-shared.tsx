@@ -18,12 +18,12 @@ export const CATEGORY_LABELS: Record<string, Record<string, string>> = {
 };
 
 export const CATEGORY_COLORS: Record<string, string> = {
-  beaches: "bg-aegean-faint text-aegean",
+  beaches: "bg-sea-faint text-sea",
   hikes: "bg-olive/10 text-olive",
   travel: "bg-sand text-text",
-  food: "bg-terra-faint text-terra",
+  food: "bg-terracotta-faint text-terracotta",
   expat: "bg-stone text-text-muted",
-  news: "bg-aegean-faint text-aegean",
+  news: "bg-sea-faint text-sea",
   family: "bg-sand text-text",
 };
 
@@ -96,7 +96,7 @@ export function GuideCard({ guide, locale }: { guide: Guide; locale: Locale }) {
       </div>
 
       <div className="p-4">
-        <h2 className="text-base font-semibold text-text group-hover:text-aegean transition-colors leading-snug line-clamp-2">
+        <h2 className="text-base font-semibold text-text group-hover:text-sea transition-colors leading-snug line-clamp-2">
           {title}
         </h2>
 
@@ -105,7 +105,7 @@ export function GuideCard({ guide, locale }: { guide: Guide; locale: Locale }) {
             <Clock className="w-3 h-3" />
             {guide.read_time ?? "·"} {READ_TIME_LABEL[locale] ?? READ_TIME_LABEL.en}
           </div>
-          <span className="flex items-center gap-1 text-xs text-aegean font-medium">
+          <span className="flex items-center gap-1 text-xs text-sea font-medium">
             {locale === "fr" ? "Lire" : locale === "de" ? "Lesen" : locale === "el" ? "Διαβάστε" : "Read"}
             <ChevronRight className="w-3 h-3" />
           </span>

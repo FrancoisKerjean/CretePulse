@@ -157,7 +157,7 @@ export default async function AirbnbIndexPage(
     <main className="min-h-screen bg-surface">
       <JsonLd data={itemList} />
 
-      <div className="bg-aegean text-white">
+      <div className="bg-sea text-white">
         <div className="max-w-5xl mx-auto px-4 py-12">
           <Link
             href={`/${locale}`}
@@ -186,12 +186,12 @@ export default async function AirbnbIndexPage(
                   <li key={n.slug}>
                     <Link
                       href={`/${locale}/airbnb/${n.slug}`}
-                      className="flex items-center justify-between rounded-lg bg-white border border-border px-4 py-3 hover:border-aegean/40 hover:shadow-sm transition-all group"
+                      className="flex items-center justify-between rounded-lg bg-white border border-border px-4 py-3 hover:border-sea/40 hover:shadow-sm transition-all group"
                     >
                       <span className="font-medium text-text">
                         {n.label[uiLoc] ?? n.label.en}
                       </span>
-                      <span className="inline-flex items-center gap-1 text-xs text-text-muted group-hover:text-aegean">
+                      <span className="inline-flex items-center gap-1 text-xs text-text-muted group-hover:text-sea">
                         {l.viewData}
                         <ExternalLink className="w-3 h-3" />
                       </span>

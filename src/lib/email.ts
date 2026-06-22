@@ -7,7 +7,7 @@ const FROM_EMAIL = "Crete Direct <hello@crete.direct>";
 // ── Habillage commun Kalimera (même DA que le site, spec 2026-06-11) ───────
 const C = {
   night: "#07374A", lagoon: "#00C2D4", lagoonDeep: "#008C9E", sun: "#FFC83D",
-  terra: "#ED7A5C", aegean: "#0B5E78", text: "#0B3954", muted: "#5C7886",
+  terracotta: "#ED7A5C", sea: "#0B5E78", text: "#0B3954", muted: "#5C7886",
   faint: "#94A3B8", border: "#DCE9EE", surface: "#F6FBFC",
 };
 
@@ -79,7 +79,7 @@ function confirmBody(url: string, lang: string): string {
   return kalimeraShell(`
       <h2 style="margin:0 0 12px; color:${C.text}; font-size:20px;">${c.title}</h2>
       <p style="margin:0 0 24px; color:${C.muted}; line-height:1.6;">${c.body}</p>
-      <div style="text-align:center; margin-bottom:24px;">${pillButton(url, c.cta, C.terra)}</div>
+      <div style="text-align:center; margin-bottom:24px;">${pillButton(url, c.cta, C.terracotta)}</div>
       <p style="margin:0; color:${C.faint}; font-size:12px; text-align:center;">${c.ignore}</p>
   `);
 }
@@ -153,8 +153,8 @@ function welcomeBody(lang: string): string {
       </ul>
       <p style="margin:0 0 12px; color:${C.muted}; line-height:1.6;">${c.meanwhile}</p>
       <div style="margin:0 0 24px;">
-        ${pillButton(`https://crete.direct/${lang}/beaches`, c.beaches, C.aegean)}
-        &nbsp;${pillButton(`https://crete.direct/${lang}/weather`, c.weather, C.terra)}
+        ${pillButton(`https://crete.direct/${lang}/beaches`, c.beaches, C.sea)}
+        &nbsp;${pillButton(`https://crete.direct/${lang}/weather`, c.weather, C.terracotta)}
       </div>
       <p style="margin:0; color:${C.faint}; font-size:12px; text-align:center;">${c.tagline}</p>
   `);
@@ -323,8 +323,8 @@ export async function sendSelectionEmail(email: string, locale: string, places: 
         <td style="padding:14px 0 14px 14px; border-bottom:1px solid ${C.border}; vertical-align:top;">
           <p style="margin:0; font-weight:700; color:${C.text}; font-size:15px;">${p.name}</p>
           <p style="margin:2px 0 8px; color:${C.muted}; font-size:12.5px;">${p.typeLabel}</p>
-          <a href="${p.exploreUrl}" style="display:inline-block; margin-right:6px; background:${C.surface}; color:${C.aegean}; padding:6px 14px; border-radius:999px; text-decoration:none; font-weight:700; font-size:12px;">${c.sheet}</a>
-          ${p.mapsUrl ? `<a href="${p.mapsUrl}" style="display:inline-block; background:${C.terra}; color:#ffffff; padding:6px 14px; border-radius:999px; text-decoration:none; font-weight:700; font-size:12px;">${c.route}</a>` : ""}
+          <a href="${p.exploreUrl}" style="display:inline-block; margin-right:6px; background:${C.surface}; color:${C.sea}; padding:6px 14px; border-radius:999px; text-decoration:none; font-weight:700; font-size:12px;">${c.sheet}</a>
+          ${p.mapsUrl ? `<a href="${p.mapsUrl}" style="display:inline-block; background:${C.terracotta}; color:#ffffff; padding:6px 14px; border-radius:999px; text-decoration:none; font-weight:700; font-size:12px;">${c.route}</a>` : ""}
         </td>
       </tr>`,
     )

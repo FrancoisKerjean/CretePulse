@@ -86,7 +86,7 @@ function TableOfContents({ items }: { items: { id: string; label: string }[] }) 
           <li key={item.id}>
             <a
               href={`#${item.id}`}
-              className="text-text-muted hover:text-aegean transition-colors"
+              className="text-text-muted hover:text-sea transition-colors"
             >
               {item.label}
             </a>
@@ -390,7 +390,7 @@ export default async function ArticleDetailPage({
         {/* Back link */}
         <Link
           href={`/${locale}/articles`}
-          className="inline-flex items-center gap-1 text-sm text-aegean hover:underline mb-6"
+          className="inline-flex items-center gap-1 text-sm text-sea hover:underline mb-6"
         >
           <ChevronLeft className="w-4 h-4" />
           {backLabel}
@@ -398,7 +398,7 @@ export default async function ArticleDetailPage({
 
         {/* Author bar (PR2) */}
         <div className="flex items-center gap-3 mb-8 pb-6 border-b border-border">
-          <div className="w-10 h-10 rounded-full bg-aegean text-white flex items-center justify-center font-heading font-bold text-sm shrink-0">
+          <div className="w-10 h-10 rounded-full bg-sea text-white flex items-center justify-center font-heading font-bold text-sm shrink-0">
             CD
           </div>
           <div>
@@ -445,12 +445,12 @@ export default async function ArticleDetailPage({
 
             {/* Kairos cross-link (multilingue, discret, vers l'article cible SEO) */}
             <div className="mt-12 p-8 bg-sand rounded-lg border border-sand-warm">
-              <p className="font-heading italic text-aegean text-xl mb-3">{kairosCta.intro}</p>
+              <p className="font-heading italic text-sea text-xl mb-3">{kairosCta.intro}</p>
               <a
                 href={kairosCta.href}
                 target="_blank"
                 rel="noopener"
-                className="inline-block mt-1 px-5 py-2.5 bg-terra text-white text-[13px] font-semibold uppercase tracking-wider rounded-md hover:bg-terra-light transition-colors"
+                className="inline-block mt-1 px-5 py-2.5 bg-terracotta text-white text-[13px] font-semibold uppercase tracking-wider rounded-md hover:bg-terracotta-light transition-colors"
               >
                 {kairosCta.link}
               </a>
@@ -460,8 +460,8 @@ export default async function ArticleDetailPage({
             {relatedGuides.length > 0 && (
               <section className="mt-16 pt-8 border-t border-border">
                 <div className="flex items-center gap-2 mb-6">
-                  <BookOpen className="w-4 h-4 text-aegean" />
-                  <h2 className="text-lg font-semibold text-aegean">
+                  <BookOpen className="w-4 h-4 text-sea" />
+                  <h2 className="text-lg font-semibold text-sea">
                     {moreArticlesLabel}
                   </h2>
                 </div>
@@ -486,7 +486,7 @@ export default async function ArticleDetailPage({
                           </div>
                         )}
                         <div className="p-3 flex flex-col gap-1.5 flex-1">
-                          <p className="text-sm font-semibold text-text group-hover:text-aegean transition-colors line-clamp-2 leading-snug">
+                          <p className="text-sm font-semibold text-text group-hover:text-sea transition-colors line-clamp-2 leading-snug">
                             {relTitle}
                           </p>
                           {relDesc && (

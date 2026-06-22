@@ -372,7 +372,7 @@ function SwipeCard({
             </motion.span>
             <motion.span
               style={{ opacity: passOpacity }}
-              className="absolute right-5 top-6 rotate-12 rounded-xl border-4 border-terra px-3 py-1 font-heading text-xl font-extrabold uppercase text-terra"
+              className="absolute right-5 top-6 rotate-12 rounded-xl border-4 border-terracotta px-3 py-1 font-heading text-xl font-extrabold uppercase text-terracotta"
             >
               {t.pass}
             </motion.span>
@@ -646,8 +646,8 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
                 }
                 className={`rounded-full border px-4.5 py-2.5 font-heading text-[14px] font-bold transition-colors ${
                   active
-                    ? "border-aegean bg-aegean text-white"
-                    : "border-border bg-white text-text hover:border-aegean"
+                    ? "border-sea bg-sea text-white"
+                    : "border-border bg-white text-text hover:border-sea"
                 }`}
               >
                 {t[GROUP_LABEL_KEYS[g.key]]}
@@ -659,13 +659,13 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
           <button
             onClick={() => applyInterests(pendingGroups)}
             disabled={pendingGroups.length === 0}
-            className="w-full max-w-[280px] rounded-full bg-terra px-6 py-3.5 font-heading text-[15px] font-bold text-white shadow-[0_12px_28px_rgba(237,122,92,.4)] disabled:opacity-40 disabled:shadow-none"
+            className="w-full max-w-[280px] rounded-full bg-terracotta px-6 py-3.5 font-heading text-[15px] font-bold text-white shadow-[0_12px_28px_rgba(237,122,92,.4)] disabled:opacity-40 disabled:shadow-none"
           >
             {t.interestsGo}
           </button>
           <button
             onClick={() => applyInterests([])}
-            className="rounded-full px-6 py-2.5 font-heading text-[13.5px] font-bold text-text-muted hover:text-aegean"
+            className="rounded-full px-6 py-2.5 font-heading text-[13.5px] font-bold text-text-muted hover:text-sea"
           >
             {t.interestsAll}
           </button>
@@ -692,12 +692,12 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
                 value={synthEmail}
                 onChange={(e) => setSynthEmail(e.target.value)}
                 placeholder={t.emailPlaceholder}
-                className="min-w-0 flex-1 rounded-full border border-border bg-white px-4 py-2.5 text-[14px] text-text outline-none focus:border-aegean"
+                className="min-w-0 flex-1 rounded-full border border-border bg-white px-4 py-2.5 text-[14px] text-text outline-none focus:border-sea"
               />
               <button
                 type="submit"
                 disabled={synthEmailStatus === "loading"}
-                className="shrink-0 rounded-full bg-aegean px-5 py-2.5 font-heading text-[13px] font-bold text-white disabled:opacity-50"
+                className="shrink-0 rounded-full bg-sea px-5 py-2.5 font-heading text-[13px] font-bold text-white disabled:opacity-50"
               >
                 {synthEmailStatus === "loading" ? "..." : t.emailSend}
               </button>
@@ -707,12 +707,12 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
                 type="checkbox"
                 checked={newsletterOptin}
                 onChange={(e) => setNewsletterOptin(e.target.checked)}
-                className="h-4 w-4 accent-aegean"
+                className="h-4 w-4 accent-sea"
               />
               {t.emailOptin}
             </label>
             {synthEmailStatus === "error" && (
-              <p className="m-0 mt-2 text-[12.5px] font-medium text-terra">{t.emailError}</p>
+              <p className="m-0 mt-2 text-[12.5px] font-medium text-terracotta">{t.emailError}</p>
             )}
           </form>
         )}
@@ -729,7 +729,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
             <span className="text-[12.5px] font-medium text-text-muted">{t.synthTaste}</span>
             {topTastes.map(([type, count]) => (
-              <span key={type} className="rounded-full bg-stone px-3 py-1 font-heading text-[12.5px] font-bold text-aegean">
+              <span key={type} className="rounded-full bg-stone px-3 py-1 font-heading text-[12.5px] font-bold text-sea">
                 {typeLabel(type, locale)} <span className="font-data text-lagoon-deep">{count}</span>
               </span>
             ))}
@@ -759,7 +759,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
                     <Link
                       href={`/explore?place=${p.slug}`}
                       onClick={() => track("synthesis_place_clicked", { slug: p.slug })}
-                      className="rounded-full bg-stone px-3 py-1.5 font-heading text-[12px] font-bold text-aegean no-underline"
+                      className="rounded-full bg-stone px-3 py-1.5 font-heading text-[12px] font-bold text-sea no-underline"
                     >
                       {t.sheet}
                     </Link>
@@ -770,7 +770,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={() => track("synthesis_route_clicked", { slug: p.slug, app: "gmaps" })}
-                          className="inline-flex items-center gap-1 rounded-full bg-aegean px-3 py-1.5 font-heading text-[12px] font-bold text-white no-underline"
+                          className="inline-flex items-center gap-1 rounded-full bg-sea px-3 py-1.5 font-heading text-[12px] font-bold text-white no-underline"
                         >
                           <MapPin size={11} /> {t.route}
                         </a>
@@ -808,7 +808,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
 
         <button
           onClick={() => setScreen("deck")}
-          className="mx-auto mt-7 flex items-center gap-2 rounded-full bg-stone px-6 py-3 font-heading text-[14px] font-bold text-aegean"
+          className="mx-auto mt-7 flex items-center gap-2 rounded-full bg-stone px-6 py-3 font-heading text-[14px] font-bold text-sea"
         >
           <RotateCcw size={15} /> {t.backToDeck}
         </button>
@@ -832,7 +832,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
                 else requestGeo();
               }}
               disabled={geoStatus === "prompting"}
-              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-4 py-2 font-heading text-[13px] font-bold text-aegean transition-colors hover:border-aegean disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-4 py-2 font-heading text-[13px] font-bold text-sea transition-colors hover:border-sea disabled:opacity-50"
             >
               <MapPin size={13} /> {geoStatus === "prompting" ? "..." : t.geoNearMe}
             </button>
@@ -842,12 +842,12 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
           )}
           {geoMode !== "off" && (
             <>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-aegean px-4 py-2 font-heading text-[13px] font-bold text-white">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-sea px-4 py-2 font-heading text-[13px] font-bold text-white">
                 <MapPin size={13} /> {geoMode === "prep" ? t.prepTitle : t.geoActive}
               </span>
               <button
                 onClick={() => setGeoOff(true)}
-                className="rounded-full px-3 py-2 text-[12px] font-medium text-text-muted underline-offset-2 hover:text-aegean hover:underline"
+                className="rounded-full px-3 py-2 text-[12px] font-medium text-text-muted underline-offset-2 hover:text-sea hover:underline"
               >
                 {t.geoOff}
               </button>
@@ -912,7 +912,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
             <p className="m-0 text-[15px] text-text-muted">{t.empty}</p>
             <button
               onClick={redeal}
-              className="inline-flex items-center gap-2 rounded-full bg-aegean px-6 py-3 font-heading text-[14px] font-bold text-white"
+              className="inline-flex items-center gap-2 rounded-full bg-sea px-6 py-3 font-heading text-[14px] font-bold text-white"
             >
               <RotateCcw size={15} /> {t.replay}
             </button>
@@ -926,14 +926,14 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
           <button
             onClick={() => handleSwipe(false)}
             aria-label={t.pass}
-            className="flex h-16 w-16 items-center justify-center rounded-full border border-border bg-white text-terra shadow-[0_10px_26px_rgba(237,122,92,.25)] transition-transform hover:scale-105 active:scale-95"
+            className="flex h-16 w-16 items-center justify-center rounded-full border border-border bg-white text-terracotta shadow-[0_10px_26px_rgba(237,122,92,.25)] transition-transform hover:scale-105 active:scale-95"
           >
             <X size={28} strokeWidth={2.5} />
           </button>
           <button
             onClick={() => handleSwipe(true)}
             aria-label={t.like}
-            className="flex h-16 w-16 items-center justify-center rounded-full bg-terra text-white shadow-[0_12px_30px_rgba(237,122,92,.45)] transition-transform hover:scale-105 active:scale-95"
+            className="flex h-16 w-16 items-center justify-center rounded-full bg-terracotta text-white shadow-[0_12px_30px_rgba(237,122,92,.45)] transition-transform hover:scale-105 active:scale-95"
           >
             <Heart size={28} strokeWidth={2.5} fill="currentColor" />
           </button>
@@ -960,7 +960,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
             setPendingGroups(interests || []);
             setScreen("interests");
           }}
-          className="mx-auto mt-3 block text-[12.5px] font-medium text-text-muted underline-offset-2 hover:text-aegean hover:underline"
+          className="mx-auto mt-3 block text-[12.5px] font-medium text-text-muted underline-offset-2 hover:text-sea hover:underline"
         >
           {t.editInterests}
         </button>
@@ -1022,7 +1022,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
                 ))}
               </div>
               <div className="px-7 py-6">
-                <p className="m-0 font-heading text-[30px] font-extrabold text-terra">{t.matchTitle}</p>
+                <p className="m-0 font-heading text-[30px] font-extrabold text-terracotta">{t.matchTitle}</p>
                 <p className="mb-1 mt-1.5 text-[14px] text-text-muted">{t.matchSub}</p>
                 <p className="m-0 font-heading text-[20px] font-bold text-text">{match.name}</p>
                 <p className="m-0 mt-0.5 text-[13px] text-text-muted">
@@ -1039,13 +1039,13 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
                     const nextSeen = seenSlugs.includes(match.slug) ? seenSlugs : [...seenSlugs, match.slug];
                     saveStored({ profile, liked: likedSlugs, seen: nextSeen, interests });
                   }}
-                  className="mt-5 block rounded-full bg-terra px-6 py-3.5 font-heading text-[15px] font-bold text-white no-underline shadow-[0_12px_28px_rgba(237,122,92,.4)]"
+                  className="mt-5 block rounded-full bg-terracotta px-6 py-3.5 font-heading text-[15px] font-bold text-white no-underline shadow-[0_12px_28px_rgba(237,122,92,.4)]"
                 >
                   {t.seeSpot}
                 </Link>
                 <button
                   onClick={() => closeMatch(true)}
-                  className="mt-2.5 w-full rounded-full bg-stone px-6 py-3 font-heading text-[14px] font-bold text-aegean"
+                  className="mt-2.5 w-full rounded-full bg-stone px-6 py-3 font-heading text-[14px] font-bold text-sea"
                 >
                   {t.keepSwiping}
                 </button>

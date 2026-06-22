@@ -65,7 +65,7 @@ function PostList({ posts, locale, type }: { posts: Guide[]; locale: Locale; typ
           <li key={p.slug}>
             <Link
               href={`/${locale}/articles/${p.slug}`}
-              className="block bg-white border border-border rounded-xl p-4 hover:border-aegean hover:shadow-sm transition-all"
+              className="block bg-white border border-border rounded-xl p-4 hover:border-sea hover:shadow-sm transition-all"
             >
               <div className="flex items-center gap-2 mb-1.5">
                 <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-semibold ${badge.classes}`}>
@@ -105,21 +105,21 @@ export default async function DailyPage({ params }: { params: Promise<{ locale: 
   return (
     <main className="min-h-screen bg-surface">
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-aegean mb-2">Crete Daily</h1>
+        <h1 className="text-3xl font-bold text-sea mb-2">Crete Daily</h1>
         <p className="text-sm text-text-muted mb-10 max-w-2xl">{META.desc}</p>
 
         <section className="mb-12">
           <div className="flex items-center gap-2 mb-4">
-            <CloudSun className="w-5 h-5 text-aegean" />
-            <h2 className="text-lg font-semibold text-aegean">Morning weather bulletins</h2>
+            <CloudSun className="w-5 h-5 text-sea" />
+            <h2 className="text-lg font-semibold text-sea">Morning weather bulletins</h2>
           </div>
           <PostList posts={weather} locale={loc} type="weather" />
         </section>
 
         <section>
           <div className="flex items-center gap-2 mb-4">
-            <Newspaper className="w-5 h-5 text-aegean" />
-            <h2 className="text-lg font-semibold text-aegean">Daily news recaps</h2>
+            <Newspaper className="w-5 h-5 text-sea" />
+            <h2 className="text-lg font-semibold text-sea">Daily news recaps</h2>
           </div>
           <PostList posts={news} locale={loc} type="news" />
         </section>

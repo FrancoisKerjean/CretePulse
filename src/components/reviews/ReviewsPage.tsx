@@ -32,7 +32,7 @@ export function ReviewsPage({ slug, placeName, locale, reviews, aggregate }: {
             <li key={n} className="flex items-center gap-2 text-sm">
               <span className="w-4">{n}</span>
               <div className="h-2 flex-1 rounded bg-sand">
-                <div className="h-2 rounded bg-aegean" style={{ width: `${(aggregate.distribution[n as 1|2|3|4|5] / max) * 100}%` }} />
+                <div className="h-2 rounded bg-sea" style={{ width: `${(aggregate.distribution[n as 1|2|3|4|5] / max) * 100}%` }} />
               </div>
               <span className="w-8 text-right opacity-70">{aggregate.distribution[n as 1|2|3|4|5]}</span>
             </li>

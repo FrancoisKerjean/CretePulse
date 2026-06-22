@@ -43,12 +43,12 @@ export function ReviewCard({ review, locale }: { review: ReviewPublic; locale: s
         <span className="font-heading text-base">{review.author_name}</span>
         <span className="opacity-60">{date}</span>
       </header>
-      <div className="mt-1 text-aegean">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</div>
+      <div className="mt-1 text-sea">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</div>
       {review.comment && <p className="mt-2 whitespace-pre-line">{review.comment}</p>}
       <footer className="mt-3 flex items-center gap-3 text-sm">
-        <button onClick={() => castVote(vote === 1 ? 0 : 1)} className={vote === 1 ? "text-aegean font-bold" : "opacity-70"}>▲</button>
+        <button onClick={() => castVote(vote === 1 ? 0 : 1)} className={vote === 1 ? "text-sea font-bold" : "opacity-70"}>▲</button>
         <span>{score}</span>
-        <button onClick={() => castVote(vote === -1 ? 0 : -1)} className={vote === -1 ? "text-terra font-bold" : "opacity-70"}>▼</button>
+        <button onClick={() => castVote(vote === -1 ? 0 : -1)} className={vote === -1 ? "text-terracotta font-bold" : "opacity-70"}>▼</button>
         <span className="ml-auto">
           {reported ? <em className="opacity-60">signalé</em> : (
             <details>

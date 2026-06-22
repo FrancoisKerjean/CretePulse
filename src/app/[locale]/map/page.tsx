@@ -79,7 +79,7 @@ export default async function MapPage({ params }: { params: Promise<{ locale: st
     <main className="min-h-screen bg-surface">
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-aegean">{titles[locale] || titles.en}</h1>
+          <h1 className="text-2xl font-bold text-sea">{titles[locale] || titles.en}</h1>
           <p className="text-sm text-text-muted mt-1">{subtitles[locale] || subtitles.en}</p>
         </div>
         <MapView

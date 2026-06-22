@@ -376,7 +376,7 @@ export default async function WhereToStayAreaPage({
       <JsonLd data={destinationSchema} />
 
       {/* Hero */}
-      <div className="bg-aegean text-white py-16 md:py-24">
+      <div className="bg-sea text-white py-16 md:py-24">
         <div className="max-w-4xl mx-auto px-4">
           <span className="inline-block bg-white/15 text-white/90 text-xs font-medium px-3 py-1 rounded-full mb-4">
             {typeLabel}
@@ -395,7 +395,7 @@ export default async function WhereToStayAreaPage({
         {/* Back link */}
         <Link
           href={`/${locale}/where-to-stay`}
-          className="inline-flex items-center gap-1 text-sm text-aegean hover:underline mb-8"
+          className="inline-flex items-center gap-1 text-sm text-sea hover:underline mb-8"
         >
           <ChevronLeft className="w-4 h-4" /> {labels.backAll}
         </Link>
@@ -405,8 +405,8 @@ export default async function WhereToStayAreaPage({
           {/* Best area card */}
           <div className="rounded-xl border border-border bg-white p-5">
             <div className="flex items-center gap-2 mb-2">
-              <MapPin className="w-5 h-5 text-aegean" />
-              <h2 className="font-semibold text-aegean">{labels.bestArea}</h2>
+              <MapPin className="w-5 h-5 text-sea" />
+              <h2 className="font-semibold text-sea">{labels.bestArea}</h2>
             </div>
             <p className="text-sm text-text leading-relaxed">{area.bestArea[loc]}</p>
           </div>
@@ -414,8 +414,8 @@ export default async function WhereToStayAreaPage({
           {/* Best for card */}
           <div className="rounded-xl border border-border bg-white p-5">
             <div className="flex items-center gap-2 mb-2">
-              <Bed className="w-5 h-5 text-terra" />
-              <h2 className="font-semibold text-aegean">{labels.bestFor}</h2>
+              <Bed className="w-5 h-5 text-terracotta" />
+              <h2 className="font-semibold text-sea">{labels.bestFor}</h2>
             </div>
             <p className="text-sm text-text leading-relaxed">{area.bestFor[loc]}</p>
           </div>
@@ -425,7 +425,7 @@ export default async function WhereToStayAreaPage({
         <div className="rounded-xl border border-border bg-white p-5 mb-10 max-w-sm">
           <div className="flex items-center gap-2 mb-2">
             <Euro className="w-5 h-5 text-amber-600" />
-            <h2 className="font-semibold text-aegean">{labels.priceRange}</h2>
+            <h2 className="font-semibold text-sea">{labels.priceRange}</h2>
           </div>
           <p className="text-2xl font-bold text-text">
             {area.priceRange}
@@ -438,12 +438,12 @@ export default async function WhereToStayAreaPage({
           <section className="mb-10">
             <div className="flex items-center gap-2 mb-4">
               <Lightbulb className="w-5 h-5 text-amber-500" />
-              <h2 className="text-xl font-bold text-aegean">{labels.tips}</h2>
+              <h2 className="text-xl font-bold text-sea">{labels.tips}</h2>
             </div>
             <ul className="space-y-2">
               {area.tips[loc].map((tip, i) => (
                 <li key={i} className="flex items-start gap-3 text-sm text-text leading-relaxed">
-                  <ChevronRight className="w-4 h-4 text-aegean mt-0.5 shrink-0" />
+                  <ChevronRight className="w-4 h-4 text-sea mt-0.5 shrink-0" />
                   {tip}
                 </li>
               ))}
@@ -454,8 +454,8 @@ export default async function WhereToStayAreaPage({
         {/* Nearby beaches */}
         <section className="mb-10">
           <div className="flex items-center gap-2 mb-4">
-            <Umbrella className="w-5 h-5 text-aegean" />
-            <h2 className="text-xl font-bold text-aegean">{labels.nearbyBeaches}</h2>
+            <Umbrella className="w-5 h-5 text-sea" />
+            <h2 className="text-xl font-bold text-sea">{labels.nearbyBeaches}</h2>
           </div>
           <div className="flex flex-wrap gap-2">
             {area.nearbyBeaches.map((beach) => {
@@ -464,9 +464,9 @@ export default async function WhereToStayAreaPage({
                 <Link
                   key={beach}
                   href={`/${locale}/beaches/${beachSlug}`}
-                  className="inline-flex items-center gap-1.5 text-sm bg-white border border-border rounded-full px-4 py-2 hover:border-aegean/40 transition-colors"
+                  className="inline-flex items-center gap-1.5 text-sm bg-white border border-border rounded-full px-4 py-2 hover:border-sea/40 transition-colors"
                 >
-                  <Umbrella className="w-3.5 h-3.5 text-aegean" />
+                  <Umbrella className="w-3.5 h-3.5 text-sea" />
                   {beach}
                 </Link>
               );
@@ -484,7 +484,7 @@ export default async function WhereToStayAreaPage({
 
         {/* FAQ */}
         <section className="mb-12">
-          <h2 className="text-xl font-bold text-aegean mb-4">{labels.faq}</h2>
+          <h2 className="text-xl font-bold text-sea mb-4">{labels.faq}</h2>
           <div className="space-y-3">
             {faqItems.map((faq, i) => (
               <div key={i} className="p-4 bg-white rounded-xl border border-border">
@@ -500,17 +500,17 @@ export default async function WhereToStayAreaPage({
 
         {/* Other areas */}
         <section className="mb-8">
-          <h2 className="text-xl font-bold text-aegean mb-4">{labels.otherAreas}</h2>
+          <h2 className="text-xl font-bold text-sea mb-4">{labels.otherAreas}</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {otherAreas.map((a) => (
               <Link
                 key={a.slug}
                 href={`/${locale}/where-to-stay/${a.slug}`}
-                className="rounded-xl border border-border bg-white p-3 hover:border-aegean/30 transition-all"
+                className="rounded-xl border border-border bg-white p-3 hover:border-sea/30 transition-all"
               >
                 <p className="font-semibold text-sm">{a.name}</p>
                 <p className="text-xs text-text-muted">{a.vibe[loc]}</p>
-                <p className="text-xs text-aegean mt-1">{a.priceRange}</p>
+                <p className="text-xs text-sea mt-1">{a.priceRange}</p>
               </Link>
             ))}
           </div>

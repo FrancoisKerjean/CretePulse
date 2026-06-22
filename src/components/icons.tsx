@@ -2,7 +2,7 @@
 // points à forte visibilité (outils home, LiveBar, Explore, logo, taxi).
 // Langage : grille 24, trait 1.75, terminaisons rondes, ADN spirale/vague
 // minoenne (fresques de Knossos). Validé sur planche d'essai 11/06/2026.
-// Même usage que lucide : <CiBus className="w-5 h-5 text-aegean" />.
+// Même usage que lucide : <CiBus className="w-5 h-5 text-sea" />.
 import type { SVGProps } from "react";
 
 type P = Omit<SVGProps<SVGSVGElement>, "strokeWidth">;

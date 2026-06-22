@@ -40,7 +40,7 @@ export function RouteLine({ route, locale }: { route: BusRoute; locale: string }
         {deps.length > 0 && (
           <button type="button" onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
-            className="text-[11px] text-aegean font-semibold shrink-0">
+            className="text-[11px] text-sea font-semibold shrink-0">
             {open ? (fr ? "Réduire" : "Hide") : (fr ? "Horaires" : "Times")}
           </button>
         )}

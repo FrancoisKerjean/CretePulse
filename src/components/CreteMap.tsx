@@ -48,8 +48,8 @@ export function CreteMap({ cities, swimPin, locale, updatedLabel }: {
         ))}
         {swimPin && (
           <div className="absolute -translate-x-1/2 -translate-y-full flex flex-col items-center gap-0.5" style={creteProject(swimPin.lat, swimPin.lng)}>
-            <span className="bg-terra text-white rounded-[11px] px-2.5 py-1 text-xs font-heading font-bold whitespace-nowrap">≈ {swimPin.name}</span>
-            <span className="w-2.5 h-2.5 rounded-full bg-terra border-[2.5px] border-white" />
+            <span className="bg-terracotta text-white rounded-[11px] px-2.5 py-1 text-xs font-heading font-bold whitespace-nowrap">≈ {swimPin.name}</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-terracotta border-[2.5px] border-white" />
           </div>
         )}
       </div>

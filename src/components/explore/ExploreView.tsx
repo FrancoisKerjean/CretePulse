@@ -557,36 +557,36 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
   const filtersPanel = (
     <div className="space-y-2.5">
       <select value={prefecture} onChange={(e) => setPrefecture(e.target.value)}
-        className="w-full text-sm py-2 px-2.5 rounded-lg border border-aegean/20 bg-surface">
+        className="w-full text-sm py-2 px-2.5 rounded-lg border border-sea/20 bg-surface">
         <option value="">{t.prefecture}: {t.anyPref}</option>
         {PREFECTURES.map((p) => <option key={p} value={p}>{p}</option>)}
       </select>
       <select value={minRating} onChange={(e) => setMinRating(Number(e.target.value))}
-        className="w-full text-sm py-2 px-2.5 rounded-lg border border-aegean/20 bg-surface">
+        className="w-full text-sm py-2 px-2.5 rounded-lg border border-sea/20 bg-surface">
         <option value={0}>{t.rating}: {t.any}</option>
         {[3, 3.5, 4, 4.5].map((r) => <option key={r} value={r}>≥ {r} ★</option>)}
       </select>
       {beachFiltersRelevant && (
         <>
           <select value={sand} onChange={(e) => setSand(e.target.value)}
-            className="w-full text-sm py-2 px-2.5 rounded-lg border border-aegean/20 bg-surface">
+            className="w-full text-sm py-2 px-2.5 rounded-lg border border-sea/20 bg-surface">
             <option value="">{t.sand}: {t.any}</option>
             {sandOptions.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
           <select value={water} onChange={(e) => setWater(e.target.value)}
-            className="w-full text-sm py-2 px-2.5 rounded-lg border border-aegean/20 bg-surface">
+            className="w-full text-sm py-2 px-2.5 rounded-lg border border-sea/20 bg-surface">
             <option value="">{t.water}: {t.any}</option>
             {waterOptions.map((w) => <option key={w} value={w}>{w}</option>)}
           </select>
           <select value={crowdLevel} onChange={(e) => setCrowdLevel(e.target.value)}
-            className="w-full text-sm py-2 px-2.5 rounded-lg border border-aegean/20 bg-surface">
+            className="w-full text-sm py-2 px-2.5 rounded-lg border border-sea/20 bg-surface">
             <option value="">{t.crowds}: {t.any}</option>
             {crowdOptions.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </>
       )}
       {hasFilters && (
-        <button onClick={clearFilters} className="text-xs text-terra font-semibold hover:underline">{t.clear}</button>
+        <button onClick={clearFilters} className="text-xs text-terracotta font-semibold hover:underline">{t.clear}</button>
       )}
     </div>
   );
@@ -596,13 +596,13 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
     return (
       <button
         onClick={() => selectPlace(p.slug)}
-        className="flex gap-3 p-2 rounded-xl border border-aegean/10 bg-white shadow-sm hover:shadow-md hover:border-aegean/30 text-left transition-all w-full"
+        className="flex gap-3 p-2 rounded-xl border border-sea/10 bg-white shadow-sm hover:shadow-md hover:border-sea/30 text-left transition-all w-full"
       >
         <div className="relative w-[72px] h-[64px] rounded-lg overflow-hidden bg-sand shrink-0">
           {p.photos?.[0] ? (
             <Image src={p.photos[0]} alt={p.name} fill sizes="72px" className="object-cover" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-aegean/30">
+            <div className="w-full h-full flex items-center justify-center text-sea/30">
               <MapPin size={20} />
             </div>
           )}
@@ -625,7 +625,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
             <div className="flex items-center gap-1 mt-1.5 overflow-hidden">
               {p.water_quality && <WaterQualityBadge wq={p.water_quality} locale={locale} variant="pill" />}
               {[p.sand_type, p.water_color].filter(Boolean).slice(0, 2).map((v) => (
-                <span key={v} className="text-[10px] font-medium bg-surface border border-aegean/10 text-text-muted px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                <span key={v} className="text-[10px] font-medium bg-surface border border-sea/10 text-text-muted px-1.5 py-0.5 rounded-full whitespace-nowrap">
                   {v}
                 </span>
               ))}
@@ -651,7 +651,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
             role="status"
             aria-live="polite"
             aria-atomic="true"
-            className="bg-aegean text-white text-xs font-semibold px-3.5 py-2 rounded-full shadow-[0_8px_22px_rgba(11,94,120,0.35)] text-center"
+            className="bg-sea text-white text-xs font-semibold px-3.5 py-2 rounded-full shadow-[0_8px_22px_rgba(11,94,120,0.35)] text-center"
           >
             {hint}
           </div>
@@ -667,7 +667,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t.search}
-              className="w-full pl-9 pr-3 py-2.5 text-sm rounded-full border border-white/60 bg-white shadow-[0_6px_24px_rgba(11,94,120,0.18)] focus:outline-none focus:border-aegean"
+              className="w-full pl-9 pr-3 py-2.5 text-sm rounded-full border border-white/60 bg-white shadow-[0_6px_24px_rgba(11,94,120,0.18)] focus:outline-none focus:border-sea"
             />
           </div>
           <div className="relative">
@@ -680,13 +680,13 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
               <SlidersHorizontal className="w-4 h-4" />
               <span className="hidden sm:inline">{t.filters}</span>
               {advancedActiveCount > 0 && (
-                <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] text-[10px] font-bold bg-terra text-white rounded-full px-1">
+                <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] text-[10px] font-bold bg-terracotta text-white rounded-full px-1">
                   {advancedActiveCount}
                 </span>
               )}
             </button>
             {filtersOpen && (
-              <div className="absolute right-0 top-12 w-64 bg-white rounded-2xl shadow-2xl border border-aegean/10 p-3 z-30">
+              <div className="absolute right-0 top-12 w-64 bg-white rounded-2xl shadow-2xl border border-sea/10 p-3 z-30">
                 {filtersPanel}
               </div>
             )}
@@ -696,7 +696,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
             title={geoBlocked ? t.geoUnavailable : undefined}
             aria-pressed={nearActive && Boolean(geo.pos)}
             className={`hidden md:flex items-center gap-1.5 text-sm font-semibold py-2.5 px-4 rounded-full shadow-[0_6px_24px_rgba(11,94,120,0.18)] transition-colors shrink-0 ${
-              nearActive && geo.pos ? "bg-aegean text-white" : "bg-white text-text hover:text-aegean"
+              nearActive && geo.pos ? "bg-sea text-white" : "bg-white text-text hover:text-sea"
             }`}
           >
             <CiCompass className="w-4 h-4" />
@@ -715,7 +715,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
                 key={key}
                 onClick={() => setFamily(active ? null : key)}
                 className={`flex items-center gap-1.5 shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold shadow-[0_4px_16px_rgba(11,94,120,0.15)] transition-colors whitespace-nowrap ${
-                  active ? "bg-aegean text-white" : "bg-white/95 text-text hover:text-aegean"
+                  active ? "bg-sea text-white" : "bg-white/95 text-text hover:text-sea"
                 }`}
               >
                 <Icon size={14} />
@@ -733,7 +733,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
           <span className="text-sm text-text-muted">
             <b className="text-text text-base font-bold">{filtered.length}</b> {t.results}
           </span>
-          <span className="text-xs font-semibold text-aegean bg-aegean-faint px-2.5 py-1 rounded-full">
+          <span className="text-xs font-semibold text-sea bg-sea-faint px-2.5 py-1 rounded-full">
             {nearActive && geo.pos ? t.sortNear : t.sortRating}
           </span>
         </div>
@@ -752,7 +752,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
             onClick={toggleNearMe}
             aria-pressed={nearActive && Boolean(geo.pos)}
             className={`md:hidden absolute right-3 bottom-[178px] z-20 flex items-center gap-1.5 text-xs font-bold py-2 px-3.5 rounded-full shadow-[0_8px_22px_rgba(11,94,120,0.3)] ${
-              nearActive && geo.pos ? "bg-aegean text-white" : "bg-white text-aegean"
+              nearActive && geo.pos ? "bg-sea text-white" : "bg-white text-sea"
             }`}
           >
             <CiCompass className="w-4 h-4" />
@@ -762,7 +762,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
           <div className="md:hidden absolute bottom-0 left-0 right-0 z-20">
             <button
               onClick={() => setListExpanded(true)}
-              className="mx-auto mb-1.5 flex items-center gap-1.5 bg-white/95 text-aegean text-xs font-bold px-4 py-1.5 rounded-full shadow-[0_4px_14px_rgba(11,94,120,0.25)]"
+              className="mx-auto mb-1.5 flex items-center gap-1.5 bg-white/95 text-sea text-xs font-bold px-4 py-1.5 rounded-full shadow-[0_4px_14px_rgba(11,94,120,0.25)]"
             >
               <ChevronUp size={14} /> {filtered.length} {t.results}
             </button>
@@ -777,7 +777,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
                     {p.photos?.[0] ? (
                       <Image src={p.photos[0]} alt={p.name} fill sizes="196px" className="object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-aegean/30"><MapPin size={22} /></div>
+                      <div className="w-full h-full flex items-center justify-center text-sea/30"><MapPin size={22} /></div>
                     )}
                     <span className="absolute top-1.5 left-1.5 text-[9px] font-bold text-white px-2 py-0.5 rounded-full"
                       style={{ backgroundColor: TYPE_COLORS[p.place_type] || FALLBACK_COLOR }}>
@@ -805,10 +805,10 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
       {/* Mobile : liste complete (sheet plein ecran) */}
       {listExpanded && (
         <div className="md:hidden absolute inset-0 z-30 bg-surface flex flex-col">
-          <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-aegean/10">
+          <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-sea/10">
             <span className="text-sm font-bold text-text">{filtered.length} {t.results}</span>
             <button onClick={() => setListExpanded(false)}
-              className="bg-aegean-faint text-aegean rounded-full p-2"><X size={16} /></button>
+              className="bg-sea-faint text-sea rounded-full p-2"><X size={16} /></button>
           </div>
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
             {displayed.length === 0 && <p className="p-4 text-sm text-text-muted">{t.noResults}</p>}
@@ -841,7 +841,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
                 )}
               </div>
             ) : (
-              <div className="h-20 bg-aegean-faint" />
+              <div className="h-20 bg-sea-faint" />
             )}
             <button onClick={() => setSelected(null)}
               className="absolute top-2 right-2 md:right-auto md:left-2 bg-black/40 text-white rounded-full p-1.5 hover:bg-black/60">
@@ -852,7 +852,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
           <div className="p-4 space-y-3">
             <div>
               <div className="flex items-start justify-between gap-2">
-                <h2 className="text-lg font-bold text-aegean leading-tight">{selected.name}</h2>
+                <h2 className="text-lg font-bold text-sea leading-tight">{selected.name}</h2>
                 <RatingStars rating={selected.rating} />
               </div>
               <p className="text-xs text-text-muted mt-1">
@@ -873,20 +873,20 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
                 [t.crowds, selected.crowds],
                 [t.accessibility, selected.accessibility],
               ] as const).filter(([, v]) => v).map(([label, v]) => (
-                <div key={label} className="bg-surface border border-aegean/10 rounded-xl px-2.5 py-2">
+                <div key={label} className="bg-surface border border-sea/10 rounded-xl px-2.5 py-2">
                   <div className="text-[10px] uppercase tracking-wide font-semibold text-text-muted">{label}</div>
                   <div className="text-xs font-semibold text-text mt-0.5">{v}</div>
                 </div>
               ))}
               {selected.facilities && (
-                <div className="col-span-2 bg-surface border border-aegean/10 rounded-xl px-2.5 py-2">
+                <div className="col-span-2 bg-surface border border-sea/10 rounded-xl px-2.5 py-2">
                   <div className="text-[10px] uppercase tracking-wide font-semibold text-text-muted">{t.facilities}</div>
                   <div className="text-xs font-semibold text-text mt-0.5">{selected.facilities}</div>
                 </div>
               )}
             </div>
 
-            <div className="border-t border-aegean/10 pt-3">
+            <div className="border-t border-sea/10 pt-3">
               <CbPlaceActions
                 slug={selected.slug}
                 name={selected.name}
@@ -902,7 +902,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
               const { paragraphs, nearby } = cleanCbDescription(selected.description);
               if (paragraphs.length === 0 && nearby.length === 0) return null;
               return (
-                <div className="space-y-3 border-t border-aegean/10 pt-3">
+                <div className="space-y-3 border-t border-sea/10 pt-3">
                   {paragraphs.length > 0 && (
                     <div className="text-sm text-text/90 leading-relaxed space-y-2.5">
                       {paragraphs.slice(0, 8).map((para, i) => (
@@ -911,8 +911,8 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
                     </div>
                   )}
                   {nearby.length > 0 && (
-                    <details className="rounded-lg bg-aegean-faint/30 p-2">
-                      <summary className="text-xs font-semibold text-aegean cursor-pointer">
+                    <details className="rounded-lg bg-sea-faint/30 p-2">
+                      <summary className="text-xs font-semibold text-sea cursor-pointer">
                         {nearby.length} {locale === "fr" ? "lieux à proximité" : locale === "de" ? "Orte in der Nähe" : locale === "el" ? "κοντινά μέρη" : "places nearby"}
                       </summary>
                       <ul className="mt-2 space-y-1 text-xs">

@@ -277,7 +277,7 @@ const PICKER_HINT: Record<Locale, string> = {
 const RATING_CLASS: Record<"calm" | "fair" | "exposed", string> = {
   calm: "bg-[rgba(20,184,107,.13)] text-[#0B8A52]",
   fair: "bg-sun/20 text-[#8A6A14]",
-  exposed: "bg-terra/15 text-[#B84B30]",
+  exposed: "bg-terracotta/15 text-[#B84B30]",
 };
 
 function fmtWave(v: number | null): string {
@@ -469,7 +469,7 @@ export default async function SwimTodayPage(
         />
         <div className="relative mx-auto max-w-5xl px-4 grid lg:grid-cols-2 gap-11 items-center">
           <div>
-            <span className="inline-flex items-center gap-2 bg-white/72 rounded-full px-4 py-2 text-[12.5px] font-heading font-bold text-aegean capitalize">
+            <span className="inline-flex items-center gap-2 bg-white/72 rounded-full px-4 py-2 text-[12.5px] font-heading font-bold text-sea capitalize">
               <span className="w-2 h-2 rounded-full bg-ok shadow-[0_0_0_4px_rgba(20,184,107,.25)]" />
               {dateLabel} · {timeLabel}
             </span>
@@ -481,7 +481,7 @@ export default async function SwimTodayPage(
             </p>
             <Link
               href={`/${locale}/beaches`}
-              className="inline-flex mt-5 bg-white/80 rounded-full px-4 py-2 text-[13px] font-heading font-bold text-aegean no-underline hover:bg-white transition-colors"
+              className="inline-flex mt-5 bg-white/80 rounded-full px-4 py-2 text-[13px] font-heading font-bold text-sea no-underline hover:bg-white transition-colors"
             >
               {t.back}
             </Link>

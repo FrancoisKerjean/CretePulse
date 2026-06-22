@@ -40,7 +40,7 @@ type Line = {
   id: string;
   /** Suite d'ids de stations (ordre = tracé). */
   stops: string[];
-  color: "terra" | "aegean" | "olive";
+  color: "terracotta" | "lagoon" | "olive";
   /** Label opérateur. */
   operatorLabel: Partial<Record<Loc, string>>;
   /** Tracé en pointillé (route saisonnière, etc.). */
@@ -103,10 +103,10 @@ const STATIONS: Station[] = [
 ];
 
 const LINES: Line[] = [
-  // ============ OUEST ektel (aegean) ============
+  // ============ OUEST ektel (lagoon) ============
   {
     id: "west_main",
-    color: "aegean",
+    color: "lagoon",
     operatorLabel: {
       en: "KTEL Chania-Rethymno (West)",
       fr: "KTEL La Canée-Rethymnon (Ouest)",
@@ -117,97 +117,97 @@ const LINES: Line[] = [
   },
   {
     id: "west_coastal",
-    color: "aegean",
+    color: "lagoon",
     operatorLabel: { en: "Coastal line Chania - Kolymbari" },
     stops: ["chania", "platanias", "maleme", "kolymbari", "kissamos"],
   },
   {
     id: "west_apokoronas",
-    color: "aegean",
+    color: "lagoon",
     operatorLabel: { en: "Apokoronas (Kalyves / Almyrida / Vamos)" },
     stops: ["chania", "kalyves", "almyrida", "vamos"],
   },
   {
     id: "west_chania_apt",
-    color: "aegean",
+    color: "lagoon",
     operatorLabel: { en: "Chania Airport branch" },
     stops: ["chania", "chania_apt"],
   },
   {
     id: "west_souda",
-    color: "aegean",
+    color: "lagoon",
     operatorLabel: { en: "Souda ferry port (Athens)" },
     stops: ["chania", "souda"],
   },
   {
     id: "west_falassarna",
-    color: "aegean",
+    color: "lagoon",
     operatorLabel: { en: "Falassarna beach (summer only)" },
     stops: ["kissamos", "falassarna"],
     dashed: true,
   },
   {
     id: "west_balos",
-    color: "aegean",
+    color: "lagoon",
     operatorLabel: { en: "Balos / Gramvousa (summer only)" },
     stops: ["kissamos", "balos"],
     dashed: true,
   },
   {
     id: "west_paleochora",
-    color: "aegean",
+    color: "lagoon",
     operatorLabel: { en: "Paleochora (south-west)" },
     stops: ["chania", "paleochora"],
   },
   {
     id: "west_sougia",
-    color: "aegean",
+    color: "lagoon",
     operatorLabel: { en: "Sougia (south)" },
     stops: ["chania", "sougia"],
   },
   {
     id: "west_omalos",
-    color: "aegean",
+    color: "lagoon",
     operatorLabel: { en: "Omalos / Samaria Gorge (summer only)" },
     stops: ["chania", "omalos"],
     dashed: true,
   },
   {
     id: "west_sfakion",
-    color: "aegean",
+    color: "lagoon",
     operatorLabel: { en: "Hora Sfakion / Loutro" },
     stops: ["chania", "sfakion"],
   },
   {
     id: "west_anopoli",
-    color: "aegean",
+    color: "lagoon",
     operatorLabel: { en: "Anopoli (Mon-Sat)" },
     stops: ["sfakion", "anopoli"],
     dashed: true,
   },
   {
     id: "west_fragokastelo",
-    color: "aegean",
+    color: "lagoon",
     operatorLabel: { en: "Fragokastelo branch" },
     stops: ["sfakion", "fragokastelo"],
     dashed: true,
   },
   {
     id: "west_elafonissi",
-    color: "aegean",
+    color: "lagoon",
     operatorLabel: { en: "Elafonissi (summer only)" },
     stops: ["chania", "elafonissi"],
     dashed: true,
   },
   {
     id: "west_plakias",
-    color: "aegean",
+    color: "lagoon",
     operatorLabel: { en: "Plakias / Preveli (south)" },
     stops: ["rethymno", "plakias", "preveli"],
   },
   {
     id: "west_agia_galini",
-    color: "aegean",
+    color: "lagoon",
     operatorLabel: { en: "Spili / Agia Galini (south)" },
     stops: ["rethymno", "spili", "agia_galini"],
   },
@@ -226,10 +226,10 @@ const LINES: Line[] = [
     dashed: true,
   },
 
-  // ============ EST herlas (terra) ============
+  // ============ EST herlas (terracotta) ============
   {
     id: "east_main",
-    color: "terra",
+    color: "terracotta",
     operatorLabel: {
       en: "KTEL Heraklion-Lasithi (East)",
       fr: "KTEL Héraklion-Lassithi (Est)",
@@ -240,45 +240,45 @@ const LINES: Line[] = [
   },
   {
     id: "east_elounda",
-    color: "terra",
+    color: "terracotta",
     operatorLabel: { en: "Elounda branch" },
     stops: ["agios", "elounda"],
   },
   {
     id: "east_her_apt",
-    color: "terra",
+    color: "terracotta",
     operatorLabel: { en: "Heraklion Airport bus #1" },
     stops: ["heraklion", "her_apt"],
   },
   {
     id: "east_knossos",
-    color: "terra",
+    color: "terracotta",
     operatorLabel: { en: "Knossos archaeological site" },
     stops: ["heraklion", "knossos"],
   },
   {
     id: "east_ierapetra",
-    color: "terra",
+    color: "terracotta",
     operatorLabel: { en: "Ierapetra / Makrigialos / Sitia (south coast)" },
     stops: ["agios", "ierapetra", "makrigialos", "sitia"],
   },
   {
     id: "east_myrtos",
-    color: "terra",
+    color: "terracotta",
     operatorLabel: { en: "Myrtos branch" },
     stops: ["ierapetra", "myrtos"],
     dashed: true,
   },
   {
     id: "east_vai",
-    color: "terra",
+    color: "terracotta",
     operatorLabel: { en: "Vai palm beach (summer only)" },
     stops: ["sitia", "vai"],
     dashed: true,
   },
   {
     id: "east_zakros",
-    color: "terra",
+    color: "terracotta",
     operatorLabel: { en: "Palekastro / Zakros" },
     stops: ["sitia", "palekastro", "zakros"],
     dashed: true,
@@ -300,8 +300,8 @@ const WHITE = "#FFFFFF";
 const SKY = "#E7F6FA";
 
 const COLOR_HEX = {
-  aegean: "#00C2D4", // lagoon (ouest)
-  terra: "#ED7A5C",  // terracotta (est)
+  lagoon: "#00C2D4", // lagoon (ouest)
+  terracotta: "#ED7A5C",  // terracotta (est)
   olive: "#7C9A53",  // olive (branches sud)
 } as const;
 

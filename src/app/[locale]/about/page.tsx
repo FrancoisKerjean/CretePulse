@@ -114,13 +114,13 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
       <div className="max-w-2xl mx-auto px-4 py-12 md:py-20">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-4xl font-bold text-aegean mb-4">{content.title}</h1>
+          <h1 className="text-4xl font-bold text-sea mb-4">{content.title}</h1>
           <p className="text-lg text-text leading-relaxed">{content.intro}</p>
         </div>
 
         {/* Data sources section */}
         <section className="mb-12 p-6 bg-white rounded-xl border border-border">
-          <h2 className="text-xl font-bold text-aegean mb-3">{content.dataSection.heading}</h2>
+          <h2 className="text-xl font-bold text-sea mb-3">{content.dataSection.heading}</h2>
           <p className="text-text leading-relaxed">{content.dataSection.text}</p>
         </section>
 
@@ -135,11 +135,11 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
         </section>
 
         {/* Contact */}
-        <section className="p-6 bg-aegean/5 rounded-xl border border-aegean/10">
+        <section className="p-6 bg-sea/5 rounded-xl border border-sea/10">
           <p className="text-text mb-2">{content.contact.label}</p>
           <a
             href={`mailto:${content.contact.email}`}
-            className="text-aegean font-semibold hover:underline text-lg"
+            className="text-sea font-semibold hover:underline text-lg"
           >
             {content.contact.email}
           </a>
@@ -147,7 +147,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
 
         {/* Footer links */}
         <div className="mt-12 pt-8 border-t border-border flex justify-center gap-6 text-sm">
-          <Link href={`/${locale}/privacy`} className="text-aegean hover:underline">
+          <Link href={`/${locale}/privacy`} className="text-sea hover:underline">
             {loc === "en" ? "Privacy" : loc === "fr" ? "Confidentialité" : loc === "de" ? "Datenschutz" : "Ιδιωτικότητα"}
           </Link>
         </div>

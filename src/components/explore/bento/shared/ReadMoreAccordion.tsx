@@ -10,7 +10,7 @@ export function ReadMoreAccordion({
   if (paragraphs.length === 0) return null;
   return (
     <details className="group mt-4 rounded-2xl border border-border bg-white">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 font-heading text-sm font-bold text-aegean">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 font-heading text-sm font-bold text-sea">
         {readMoreLabel(locale)}
         <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
       </summary>

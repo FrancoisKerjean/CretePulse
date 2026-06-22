@@ -74,7 +74,7 @@ export function TaxiCompare({ locale, slugA, slugB, pairSlug, busPriceEur, partn
           <TaxiCallButton phone={partner.phone} zone={partner.zone.id} pair={pairSlug} partner={partner.name} />
           {partner.website && (
             <a href={partner.website} target="_blank" rel="nofollow noopener sponsored"
-               className="text-sm text-aegean hover:underline inline-flex items-center gap-1">
+               className="text-sm text-sea hover:underline inline-flex items-center gap-1">
               <ExternalLink className="w-3.5 h-3.5" /> {new URL(partner.website).hostname}
             </a>
           )}

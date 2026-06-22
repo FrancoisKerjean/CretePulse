@@ -106,7 +106,7 @@ export default function StickyNewsletterBar({ locale }: { locale: string }) {
     <div
       role="region"
       aria-label="Newsletter"
-      className="fixed bottom-0 left-0 right-0 z-40 bg-aegean text-white shadow-[0_-4px_20px_rgba(0,0,0,0.15)]"
+      className="fixed bottom-0 left-0 right-0 z-40 bg-sea text-white shadow-[0_-4px_20px_rgba(0,0,0,0.15)]"
       style={{ animation: "cdNlSlideUp 0.3s ease-out both" }}
     >
       <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3 flex-wrap sm:flex-nowrap">
@@ -131,12 +131,12 @@ export default function StickyNewsletterBar({ locale }: { locale: string }) {
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t.placeholder}
               aria-label="Email"
-              className="flex-1 sm:w-56 px-3 py-2 text-sm rounded-md text-text bg-white placeholder:text-text-light focus:outline-none focus:ring-2 focus:ring-terra"
+              className="flex-1 sm:w-56 px-3 py-2 text-sm rounded-md text-text bg-white placeholder:text-text-light focus:outline-none focus:ring-2 focus:ring-terracotta"
             />
             <button
               type="submit"
               disabled={status === "loading"}
-              className="px-4 py-2 text-sm font-semibold bg-terra text-white rounded-md hover:bg-terra/90 transition-colors whitespace-nowrap disabled:opacity-60"
+              className="px-4 py-2 text-sm font-semibold bg-terracotta text-white rounded-md hover:bg-terracotta/90 transition-colors whitespace-nowrap disabled:opacity-60"
             >
               {status === "loading" ? "…" : t.cta}
             </button>

@@ -39,7 +39,7 @@ export function NatureBento({
         <Tile variant="lagoon" icon="📏" big={`${t.length_km}`} label={`km · ${bentoLabel("length", locale)}`} className="col-span-2 md:col-span-1" />
       )}
       {t.difficulty && (
-        <Tile variant="terra" icon="⛰️" big={difficultyLabel(t.difficulty, locale)} label={bentoLabel("difficulty", locale)} className="col-span-2 md:col-span-1" />
+        <Tile variant="terracotta" icon="⛰️" big={difficultyLabel(t.difficulty, locale)} label={bentoLabel("difficulty", locale)} className="col-span-2 md:col-span-1" />
       )}
       {t.duration_minutes != null && (
         <Tile icon="⏱️" big={t.duration_minutes < 60 ? `${t.duration_minutes}'` : `${Math.floor(t.duration_minutes / 60)}h${t.duration_minutes % 60 ? `${t.duration_minutes % 60}'` : ""}`} label={bentoLabel("duration", locale)} className="col-span-2 md:col-span-1" />

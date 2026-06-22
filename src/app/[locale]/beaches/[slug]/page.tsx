@@ -432,7 +432,7 @@ export default async function BeachDetailPage({
       <JsonLd data={faqSchema} />
       {/* Hero image */}
       {beach.image_url && (
-        <div className="relative h-72 md:h-96 bg-aegean">
+        <div className="relative h-72 md:h-96 bg-sea">
           <Image
             src={beach.image_url}
             alt={`${name} beach in ${beach.region} Crete${beach.type ? `, ${beach.type}` : ""}`}
@@ -455,34 +455,34 @@ export default async function BeachDetailPage({
       <div className="max-w-4xl mx-auto px-4 py-8">
         <Link
           href={`/${locale}/beaches`}
-          className="inline-flex items-center gap-1 text-sm text-aegean hover:underline mb-6"
+          className="inline-flex items-center gap-1 text-sm text-sea hover:underline mb-6"
         >
           <ChevronLeft className="w-4 h-4" /> {L.allBeaches}
         </Link>
 
         {!beach.image_url && (
-          <h1 className="text-3xl font-bold text-aegean mb-2">{name}</h1>
+          <h1 className="text-3xl font-bold text-sea mb-2">{name}</h1>
         )}
 
         {/* Attributes grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
           <div className="rounded-lg bg-white border border-border p-3 text-center">
-            <Waves className="w-5 h-5 text-aegean mx-auto" />
+            <Waves className="w-5 h-5 text-sea mx-auto" />
             <p className="text-xs text-text-muted mt-1">{L.type}</p>
             <p className="font-semibold text-sm capitalize">{beach.type || L.mixed}</p>
           </div>
           <div className="rounded-lg bg-white border border-border p-3 text-center">
-            <Wind className="w-5 h-5 text-aegean mx-auto" />
+            <Wind className="w-5 h-5 text-sea mx-auto" />
             <p className="text-xs text-text-muted mt-1">{L.windExposure}</p>
             <p className="font-semibold text-sm capitalize">{beach.wind_exposure || L.moderate}</p>
           </div>
           <div className="rounded-lg bg-white border border-border p-3 text-center">
-            <Car className="w-5 h-5 text-aegean mx-auto" />
+            <Car className="w-5 h-5 text-sea mx-auto" />
             <p className="text-xs text-text-muted mt-1">{L.parking}</p>
             <p className="font-semibold text-sm">{beach.parking ? L.yes : L.no}</p>
           </div>
           <div className="rounded-lg bg-white border border-border p-3 text-center">
-            <Baby className="w-5 h-5 text-terra mx-auto" />
+            <Baby className="w-5 h-5 text-terracotta mx-auto" />
             <p className="text-xs text-text-muted mt-1">{L.kids}</p>
             <p className="font-semibold text-sm">{beach.kids_friendly ? L.kidsFriendly : L.kidsNotIdeal}</p>
           </div>
@@ -504,16 +504,16 @@ export default async function BeachDetailPage({
           )}
           {beach.taverna && (
             <span className="inline-flex items-center gap-1 text-sm bg-stone px-3 py-1 rounded-full">
-              <UtensilsCrossed className="w-4 h-4 text-terra" /> {L.taverna}
+              <UtensilsCrossed className="w-4 h-4 text-terracotta" /> {L.taverna}
             </span>
           )}
           {beach.snorkeling && (
             <span className="inline-flex items-center gap-1 text-sm bg-stone px-3 py-1 rounded-full">
-              <Fish className="w-4 h-4 text-aegean" /> {L.snorkeling}
+              <Fish className="w-4 h-4 text-sea" /> {L.snorkeling}
             </span>
           )}
           {seaL && (
-            <span className="inline-flex items-center gap-1 text-sm bg-aegean-faint text-aegean px-3 py-1 rounded-full">
+            <span className="inline-flex items-center gap-1 text-sm bg-sea-faint text-sea px-3 py-1 rounded-full">
               <Waves className="w-4 h-4" /> {seaL}
             </span>
           )}
@@ -542,14 +542,14 @@ export default async function BeachDetailPage({
           href={`https://www.google.com/maps?q=${beach.latitude},${beach.longitude}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-aegean text-white rounded-lg text-sm font-medium hover:bg-aegean-light transition-colors mb-12"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-sea text-white rounded-lg text-sm font-medium hover:bg-sea-light transition-colors mb-12"
         >
           <MapPin className="w-4 h-4" /> {L.openInMaps}
         </a>
 
         {/* FAQ */}
         <section className="mb-12">
-          <h2 className="text-xl font-bold text-aegean mb-4">FAQ</h2>
+          <h2 className="text-xl font-bold text-sea mb-4">FAQ</h2>
           <div className="space-y-3">
             {faqItems.map((faq, i) => (
               <div key={i} className="p-4 bg-white rounded-xl border border-border">
@@ -583,13 +583,13 @@ export default async function BeachDetailPage({
         {/* Nearby beaches */}
         {nearby.length > 0 && (
           <section>
-            <h2 className="text-xl font-bold text-aegean mb-4">{L.nearbyBeaches}</h2>
+            <h2 className="text-xl font-bold text-sea mb-4">{L.nearbyBeaches}</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {nearby.map((b) => (
                 <Link
                   key={b.slug}
                   href={`/${locale}/beaches/${b.slug}`}
-                  className="rounded-xl border border-border bg-white p-3 hover:border-aegean/30 transition-all"
+                  className="rounded-xl border border-border bg-white p-3 hover:border-sea/30 transition-all"
                 >
                   <p className="font-semibold text-sm">{getLocalizedField(b, "name", loc)}</p>
                   <p className="text-xs text-text-muted capitalize">{b.type} - {b.region}</p>

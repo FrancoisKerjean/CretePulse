@@ -29,7 +29,7 @@ export type CampagneCopy = {
 /** Config NON localisee par beat : quelle scene illustree, quel badge emoji, et
  *  la variante de couleur du kicker pill. Le rendu (composant Scene) est cable
  *  dans ParcoursClient ; ici on ne garde que les donnees serialisables. */
-export type KickerVariant = "terra" | "go" | "calm";
+export type KickerVariant = "terracotta" | "go" | "calm";
 export type BeatConfig = {
   scene: "terminal" | "busStop" | "signpost" | "phoneLive" | "summit" | "app" | "community";
   tag?: string;            // badge emoji optionnel
@@ -40,12 +40,12 @@ export type BeatConfig = {
 export const HERO_SCENE = "terminal" as const;
 export const HERO_KICKER_VARIANT: KickerVariant = "go";
 export const BEAT_CONFIG: Record<string, BeatConfig> = {
-  probleme: { scene: "busStop", tag: "⏳", kickerVariant: "terra", layout: "row" },
+  probleme: { scene: "busStop", tag: "⏳", kickerVariant: "terracotta", layout: "row" },
   carte: { scene: "signpost", tag: "🗺️", kickerVariant: "go", layout: "row", flip: true },
-  direct: { scene: "phoneLive", tag: "⚡", kickerVariant: "terra", layout: "row" },
+  direct: { scene: "phoneLive", tag: "⚡", kickerVariant: "terracotta", layout: "row" },
   marque: { scene: "summit", kickerVariant: "calm", layout: "center" },
   demain: { scene: "app", tag: "📱", kickerVariant: "go", layout: "row", flip: true },
-  aide: { scene: "community", tag: "🫶", kickerVariant: "terra", layout: "row" },
+  aide: { scene: "community", tag: "🫶", kickerVariant: "terracotta", layout: "row" },
 };
 
 const FR: CampagneCopy = {

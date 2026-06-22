@@ -89,7 +89,7 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
     <main className="min-h-screen bg-surface">
       <JsonLd data={listSchema} />
       <div className="max-w-6xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-aegean">
+        <h1 className="text-3xl font-bold text-sea">
           {getLocalizedField({ title_en: "Beaches in Crete", title_fr: "Plages en Crète", title_de: "Strände auf Kreta", title_el: "Παραλίες στην Κρήτη" }, "title", loc)}
         </h1>
         <p className="text-text-muted mt-2">
@@ -99,9 +99,9 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
         {/* Live utility entry point: today's wind-aware pick */}
         <Link
           href={`/${locale}/beaches/today`}
-          className="mt-5 flex items-center justify-between gap-3 rounded-xl border border-aegean/30 bg-aegean-faint px-4 py-3 hover:border-aegean transition-colors"
+          className="mt-5 flex items-center justify-between gap-3 rounded-xl border border-sea/30 bg-sea-faint px-4 py-3 hover:border-sea transition-colors"
         >
-          <span className="font-medium text-aegean">
+          <span className="font-medium text-sea">
             {getLocalizedField(
               {
                 title_en: "Where to swim today: live pick from wind and sea conditions",
@@ -123,7 +123,7 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
             <Link
               key={beach.slug}
               href={`/${locale}/beaches/${beach.slug}`}
-              className="group rounded-xl border border-border bg-white overflow-hidden hover:border-aegean/30 hover:shadow-md transition-all"
+              className="group rounded-xl border border-border bg-white overflow-hidden hover:border-sea/30 hover:shadow-md transition-all"
             >
               <div className="h-40 overflow-hidden">
                 <BeachImage
@@ -143,7 +143,7 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
                 <div className="flex flex-wrap items-center gap-2 mt-3">
                   {wq && <WaterQualityBadge wq={wq} locale={locale} variant="pill" />}
                   {beach.type && (
-                    <span className="inline-flex items-center gap-1 text-xs bg-aegean-faint text-aegean px-2 py-0.5 rounded-full">
+                    <span className="inline-flex items-center gap-1 text-xs bg-sea-faint text-sea px-2 py-0.5 rounded-full">
                       <Waves className="w-3 h-3" /> {beach.type}
                     </span>
                   )}
@@ -153,12 +153,12 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
                     </span>
                   )}
                   {beach.snorkeling && (
-                    <span className="inline-flex items-center gap-1 text-xs bg-aegean-faint text-aegean px-2 py-0.5 rounded-full">
+                    <span className="inline-flex items-center gap-1 text-xs bg-sea-faint text-sea px-2 py-0.5 rounded-full">
                       <Fish className="w-3 h-3" /> Snorkeling
                     </span>
                   )}
                   {beach.kids_friendly && (
-                    <span className="inline-flex items-center gap-1 text-xs bg-terra-faint text-terra px-2 py-0.5 rounded-full">
+                    <span className="inline-flex items-center gap-1 text-xs bg-terracotta-faint text-terracotta px-2 py-0.5 rounded-full">
                       {beachesLabels.kidsOk}
                     </span>
                   )}
@@ -186,7 +186,7 @@ function BeachesPlaceholder({ locale }: { locale: Locale }) {
   return (
     <main className="min-h-screen bg-surface">
       <div className="max-w-6xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-aegean">{titles[locale] ?? titles.en}</h1>
+        <h1 className="text-3xl font-bold text-sea">{titles[locale] ?? titles.en}</h1>
         <p className="text-text-muted mt-2">{beachesLabels.coming}</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
           {Array.from({ length: 6 }).map((_, i) => (

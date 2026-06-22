@@ -182,7 +182,7 @@ export default async function PropertyManagementPage({ params }: { params: Promi
   return (
     <main className="min-h-screen bg-surface">
       {/* Hero */}
-      <section className="bg-aegean text-white py-16 md:py-24 px-4">
+      <section className="bg-sea text-white py-16 md:py-24 px-4">
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center gap-2 mb-4">
             <Key className="w-5 h-5 text-sand" />
@@ -203,7 +203,7 @@ export default async function PropertyManagementPage({ params }: { params: Promi
       <div className="max-w-3xl mx-auto px-4 py-12 space-y-12">
         {/* Why Crete */}
         <section>
-          <h2 className="text-2xl font-bold text-aegean mb-6" style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}>
+          <h2 className="text-2xl font-bold text-sea mb-6" style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}>
             {c.whyTitle}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -220,8 +220,8 @@ export default async function PropertyManagementPage({ params }: { params: Promi
         </section>
 
         {/* Regulations */}
-        <section className="p-6 bg-aegean-faint rounded-2xl border border-aegean/10">
-          <h2 className="text-xl font-bold text-aegean mb-3 flex items-center gap-2">
+        <section className="p-6 bg-sea-faint rounded-2xl border border-sea/10">
+          <h2 className="text-xl font-bold text-sea mb-3 flex items-center gap-2">
             <Shield className="w-5 h-5" />
             {c.regulationTitle}
           </h2>
@@ -229,7 +229,7 @@ export default async function PropertyManagementPage({ params }: { params: Promi
           <ol className="space-y-2">
             {c.regulationSteps.map((step, i) => (
               <li key={i} className="flex items-start gap-3 text-sm text-text">
-                <span className="shrink-0 w-6 h-6 rounded-full bg-aegean text-white text-xs font-bold flex items-center justify-center mt-0.5">
+                <span className="shrink-0 w-6 h-6 rounded-full bg-sea text-white text-xs font-bold flex items-center justify-center mt-0.5">
                   {i + 1}
                 </span>
                 {step}
@@ -240,7 +240,7 @@ export default async function PropertyManagementPage({ params }: { params: Promi
 
         {/* Revenue potential */}
         <section>
-          <h2 className="text-xl font-bold text-aegean mb-3 flex items-center gap-2">
+          <h2 className="text-xl font-bold text-sea mb-3 flex items-center gap-2">
             <BarChart3 className="w-5 h-5" />
             {c.revenueTitle}
           </h2>
@@ -262,7 +262,7 @@ export default async function PropertyManagementPage({ params }: { params: Promi
                 {seasonData.map((row, i) => (
                   <tr key={i}>
                     <td className="px-4 py-3 font-medium text-text">{row.season}</td>
-                    <td className="px-4 py-3 text-terra font-bold">{row.rate}</td>
+                    <td className="px-4 py-3 text-terracotta font-bold">{row.rate}</td>
                     <td className="px-4 py-3 text-text-muted">{row.occ}</td>
                   </tr>
                 ))}
@@ -273,7 +273,7 @@ export default async function PropertyManagementPage({ params }: { params: Promi
         </section>
 
         {/* CTA to Kairos */}
-        <section className="p-8 bg-gradient-to-br from-aegean to-aegean-light rounded-2xl text-white text-center">
+        <section className="p-8 bg-gradient-to-br from-sea to-sea-light rounded-2xl text-white text-center">
           <h2 className="text-2xl font-bold mb-3" style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}>
             {c.ctaTitle}
           </h2>
@@ -282,7 +282,7 @@ export default async function PropertyManagementPage({ params }: { params: Promi
             href="https://kairosguest.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-terra text-white rounded-xl font-bold text-sm hover:bg-terra-light transition-colors shadow-lg hover:shadow-xl"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-terracotta text-white rounded-xl font-bold text-sm hover:bg-terracotta-light transition-colors shadow-lg hover:shadow-xl"
           >
             {c.ctaButton}
             <ChevronRight className="w-4 h-4" />

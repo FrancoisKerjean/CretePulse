@@ -106,7 +106,7 @@ export default async function HikeDetailPage({
       <Breadcrumbs schema={breadcrumbJsonLd} />
       {/* Hero image */}
       {hike.image_url && (
-        <div className="relative h-64 md:h-80 bg-aegean">
+        <div className="relative h-64 md:h-80 bg-sea">
           <img
             src={hike.image_url}
             alt={name}
@@ -128,7 +128,7 @@ export default async function HikeDetailPage({
       <div className="max-w-4xl mx-auto px-4 py-8">
         <Link
           href={`/${locale}/hikes`}
-          className="inline-flex items-center gap-1 text-sm text-aegean hover:underline mb-6"
+          className="inline-flex items-center gap-1 text-sm text-sea hover:underline mb-6"
         >
           <ChevronLeft className="w-4 h-4" /> All trails
         </Link>
@@ -141,7 +141,7 @@ export default async function HikeDetailPage({
               </span>
               <span className="text-text-muted text-sm capitalize">{hike.type}</span>
             </div>
-            <h1 className="text-3xl font-bold text-aegean">{name}</h1>
+            <h1 className="text-3xl font-bold text-sea">{name}</h1>
           </div>
         )}
 
@@ -149,21 +149,21 @@ export default async function HikeDetailPage({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
           {hike.distance_km != null && (
             <div className="rounded-lg bg-white border border-border p-3 text-center">
-              <Footprints className="w-5 h-5 text-aegean mx-auto" />
+              <Footprints className="w-5 h-5 text-sea mx-auto" />
               <p className="text-xs text-text-muted mt-1">Distance</p>
               <p className="font-semibold text-sm">{hike.distance_km} km</p>
             </div>
           )}
           {hike.elevation_gain_m != null && (
             <div className="rounded-lg bg-white border border-border p-3 text-center">
-              <Mountain className="w-5 h-5 text-aegean mx-auto" />
+              <Mountain className="w-5 h-5 text-sea mx-auto" />
               <p className="text-xs text-text-muted mt-1">Elevation gain</p>
               <p className="font-semibold text-sm">+{hike.elevation_gain_m} m</p>
             </div>
           )}
           {hike.duration_hours != null && (
             <div className="rounded-lg bg-white border border-border p-3 text-center">
-              <svg className="w-5 h-5 text-aegean mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-5 h-5 text-sea mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <circle cx="12" cy="12" r="10" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
               </svg>
@@ -176,7 +176,7 @@ export default async function HikeDetailPage({
             </div>
           )}
           <div className="rounded-lg bg-white border border-border p-3 text-center">
-            <Droplets className="w-5 h-5 text-aegean mx-auto" />
+            <Droplets className="w-5 h-5 text-sea mx-auto" />
             <p className="text-xs text-text-muted mt-1">Water</p>
             <p className="font-semibold text-sm">{hike.water_available ? "Available" : "Bring own"}</p>
           </div>
@@ -196,7 +196,7 @@ export default async function HikeDetailPage({
               href={`https://www.google.com/maps?q=${hike.start_latitude},${hike.start_longitude}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-aegean text-white rounded-lg text-sm font-medium hover:bg-aegean-light transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-sea text-white rounded-lg text-sm font-medium hover:bg-sea-light transition-colors"
             >
               <MapPin className="w-4 h-4" /> Start point on Google Maps
             </a>
@@ -205,7 +205,7 @@ export default async function HikeDetailPage({
             <a
               href={hike.gpx_storage_path}
               download
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-border text-text rounded-lg text-sm font-medium hover:border-aegean/50 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-border text-text rounded-lg text-sm font-medium hover:border-sea/50 transition-colors"
             >
               <Download className="w-4 h-4" /> Download GPX
             </a>

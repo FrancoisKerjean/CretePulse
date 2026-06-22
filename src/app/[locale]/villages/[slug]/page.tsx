@@ -67,8 +67,8 @@ const PERIOD_LABEL: Record<string, string> = {
 };
 
 const PERIOD_COLORS: Record<string, string> = {
-  minoan: "bg-terra-faint text-terra border-terra/20",
-  venetian: "bg-aegean-faint text-aegean border-aegean/20",
+  minoan: "bg-terracotta-faint text-terracotta border-terracotta/20",
+  venetian: "bg-sea-faint text-sea border-sea/20",
   ottoman: "bg-sand text-text border-sand-warm",
   modern: "bg-stone text-text-muted border-border",
   abandoned: "bg-stone-warm text-text-light border-border",
@@ -103,7 +103,7 @@ export default async function VillageDetailPage({
       <Breadcrumbs schema={breadcrumb} />
       {/* Hero image */}
       {village.image_url && (
-        <div className="relative h-64 md:h-80 bg-aegean">
+        <div className="relative h-64 md:h-80 bg-sea">
           <img
             src={village.image_url}
             alt={name}
@@ -123,13 +123,13 @@ export default async function VillageDetailPage({
       <div className="max-w-4xl mx-auto px-4 py-8">
         <Link
           href={`/${locale}/villages`}
-          className="inline-flex items-center gap-1 text-sm text-aegean hover:underline mb-6"
+          className="inline-flex items-center gap-1 text-sm text-sea hover:underline mb-6"
         >
           <ChevronLeft className="w-4 h-4" /> All villages
         </Link>
 
         {!village.image_url && (
-          <h1 className="text-3xl font-bold text-aegean mb-2">{name}</h1>
+          <h1 className="text-3xl font-bold text-sea mb-2">{name}</h1>
         )}
 
         {/* Period badge */}
@@ -150,19 +150,19 @@ export default async function VillageDetailPage({
             </p>
           </div>
           <div className="rounded-lg bg-white border border-border p-3 text-center">
-            <Users className="w-5 h-5 text-aegean mx-auto" />
+            <Users className="w-5 h-5 text-sea mx-auto" />
             <p className="text-xs text-text-muted mt-1">Population</p>
             <p className="font-semibold text-sm">
               {village.population != null ? village.population.toLocaleString() : "·"}
             </p>
           </div>
           <div className="rounded-lg bg-white border border-border p-3 text-center">
-            <MapPin className="w-5 h-5 text-terra mx-auto" />
+            <MapPin className="w-5 h-5 text-terracotta mx-auto" />
             <p className="text-xs text-text-muted mt-1">Region</p>
             <p className="font-semibold text-sm capitalize">{village.region || "·"}</p>
           </div>
           <div className="rounded-lg bg-white border border-border p-3 text-center">
-            <Clock className="w-5 h-5 text-aegean mx-auto" />
+            <Clock className="w-5 h-5 text-sea mx-auto" />
             <p className="text-xs text-text-muted mt-1">Era</p>
             <p className="font-semibold text-sm capitalize">{village.period || "·"}</p>
           </div>
@@ -171,11 +171,11 @@ export default async function VillageDetailPage({
         {/* Highlights */}
         {village.highlights && village.highlights.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-lg font-semibold text-aegean mb-3">Highlights</h2>
+            <h2 className="text-lg font-semibold text-sea mb-3">Highlights</h2>
             <ul className="space-y-2">
               {village.highlights.map((highlight, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-text">
-                  <Star className="w-4 h-4 text-terra shrink-0 mt-0.5" />
+                  <Star className="w-4 h-4 text-terracotta shrink-0 mt-0.5" />
                   {highlight}
                 </li>
               ))}
@@ -195,7 +195,7 @@ export default async function VillageDetailPage({
           href={`https://www.google.com/maps?q=${village.latitude},${village.longitude}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-aegean text-white rounded-lg text-sm font-medium hover:bg-aegean-light transition-colors mb-12"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-sea text-white rounded-lg text-sm font-medium hover:bg-sea-light transition-colors mb-12"
         >
           <MapPin className="w-4 h-4" /> Open in Google Maps
         </a>
@@ -209,13 +209,13 @@ export default async function VillageDetailPage({
         {/* Nearby villages */}
         {nearby.length > 0 && (
           <section>
-            <h2 className="text-xl font-bold text-aegean mb-4">Nearby villages</h2>
+            <h2 className="text-xl font-bold text-sea mb-4">Nearby villages</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {nearby.map((v) => (
                 <Link
                   key={v.slug}
                   href={`/${locale}/villages/${v.slug}`}
-                  className="rounded-xl border border-border bg-white p-3 hover:border-aegean/30 transition-all"
+                  className="rounded-xl border border-border bg-white p-3 hover:border-sea/30 transition-all"
                 >
                   <p className="font-semibold text-sm">{getLocalizedField(v, "name", loc)}</p>
                   <p className="text-xs text-text-muted capitalize">{v.period} - {v.region}</p>

@@ -37,7 +37,7 @@ export function VillageBento({
         locale={locale}
       />
       {t.population != null && (
-        <Tile variant="aegean" icon="🏘️" big={t.population.toLocaleString(locale)} label={bentoLabel("population", locale)} className="col-span-2 md:col-span-1" />
+        <Tile variant="sea" icon="🏘️" big={t.population.toLocaleString(locale)} label={bentoLabel("population", locale)} className="col-span-2 md:col-span-1" />
       )}
       {t.altitude_m != null && (
         <Tile variant="lagoon" icon="⛰️" big={`${t.altitude_m}m`} label={bentoLabel("altitude", locale)} className="col-span-2 md:col-span-1" />

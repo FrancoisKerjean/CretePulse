@@ -46,10 +46,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 const ICONS = { megaphone: Megaphone, link: LinkIcon, coins: Coins } as const;
 
-// Teintes signature crete.direct, une par étape (lagoon / terra / soleil).
+// Teintes signature crete.direct, une par étape (lagoon / terracotta / soleil).
 const STEP_TINTS = [
   "bg-lagoon/12 text-lagoon-deep",
-  "bg-terra/12 text-terra",
+  "bg-terracotta/12 text-terracotta",
   "bg-sun/30 text-[#A8762B]",
 ] as const;
 
@@ -67,7 +67,7 @@ export default async function AffiliatePage({ params }: { params: Promise<{ loca
           aria-hidden
         />
         <div className="relative max-w-3xl mx-auto px-4">
-          <span className="inline-flex items-center gap-2 bg-white/72 rounded-full px-4 py-2 text-[13px] font-heading font-semibold text-aegean">
+          <span className="inline-flex items-center gap-2 bg-white/72 rounded-full px-4 py-2 text-[13px] font-heading font-semibold text-sea">
             <span className="w-2 h-2 rounded-full bg-ok shadow-[0_0_0_4px_rgba(20,184,107,.25)]" />
             {T.badge}
           </span>
@@ -83,7 +83,7 @@ export default async function AffiliatePage({ params }: { params: Promise<{ loca
             <span className="bg-sun text-text rounded-[17px] px-4 py-2.5 text-sm font-heading font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)]">
               {T.pillCommission}
             </span>
-            <span className="bg-white text-aegean rounded-[17px] px-4 py-2.5 text-sm font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)]">
+            <span className="bg-white text-sea rounded-[17px] px-4 py-2.5 text-sm font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)]">
               {T.pillFree}
             </span>
           </div>
@@ -126,7 +126,7 @@ export default async function AffiliatePage({ params }: { params: Promise<{ loca
           <ul className="space-y-3 list-none p-0 m-0">
             {T.deal.map((d, i) => (
               <li key={i} className="flex items-start gap-3 text-[14.5px] text-text">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-terra/15 text-terra mt-0.5">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-terracotta/15 text-terracotta mt-0.5">
                   <Check className="w-3.5 h-3.5" />
                 </span>
                 <span>{d}</span>

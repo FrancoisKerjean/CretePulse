@@ -242,7 +242,7 @@ export default function SearchPage() {
   return (
     <main className="min-h-screen bg-surface">
       <div className="max-w-3xl mx-auto px-4 py-12">
-        <h1 className="text-3xl md:text-4xl font-bold text-aegean mb-6">
+        <h1 className="text-3xl md:text-4xl font-bold text-sea mb-6">
           {labels.title}
         </h1>
 
@@ -255,7 +255,7 @@ export default function SearchPage() {
             onChange={(e) => setQuery(e.target.value)}
             placeholder={labels.placeholder}
             autoFocus
-            className="w-full pl-12 pr-4 py-4 text-lg rounded-xl border border-border bg-white focus:border-aegean focus:ring-2 focus:ring-aegean/20 outline-none transition-all"
+            className="w-full pl-12 pr-4 py-4 text-lg rounded-xl border border-border bg-white focus:border-sea focus:ring-2 focus:ring-sea/20 outline-none transition-all"
           />
         </div>
 
@@ -276,9 +276,9 @@ export default function SearchPage() {
                   <Link
                     key={entry.path}
                     href={`/${locale}${entry.path}`}
-                    className="block rounded-xl border border-border bg-white px-5 py-4 hover:border-aegean/30 hover:shadow-md transition-all"
+                    className="block rounded-xl border border-border bg-white px-5 py-4 hover:border-sea/30 hover:shadow-md transition-all"
                   >
-                    <span className="font-semibold text-text hover:text-aegean transition-colors">
+                    <span className="font-semibold text-text hover:text-sea transition-colors">
                       {entry.title[locale] || entry.title.en}
                     </span>
                     <span className="block text-sm text-text-muted mt-0.5">
@@ -298,9 +298,9 @@ export default function SearchPage() {
               <Link
                 key={entry.path}
                 href={`/${locale}${entry.path}`}
-                className="block rounded-xl border border-border bg-white px-5 py-4 hover:border-aegean/30 hover:shadow-md transition-all"
+                className="block rounded-xl border border-border bg-white px-5 py-4 hover:border-sea/30 hover:shadow-md transition-all"
               >
-                <span className="font-semibold text-text hover:text-aegean transition-colors">
+                <span className="font-semibold text-text hover:text-sea transition-colors">
                   {entry.title[locale] || entry.title.en}
                 </span>
                 <span className="block text-sm text-text-muted mt-0.5">

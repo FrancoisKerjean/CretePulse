@@ -25,11 +25,11 @@ export function BeachBento({
   const tag = `${typeLabel(place.place_type, locale)}${place.prefecture ? ` · ${place.prefecture}` : ""}`;
 
   // 6 attributs structurés déjà en base.
-  const attrTiles: Array<{ big: string; label: string; variant?: "lagoon" | "sand" | "terra" | "aegean" }> = [];
+  const attrTiles: Array<{ big: string; label: string; variant?: "lagoon" | "sand" | "terracotta" | "sea" }> = [];
   if (place.water_color) attrTiles.push({ big: place.water_color, label: bentoLabel("water", locale), variant: "lagoon" });
   if (place.sand_type) attrTiles.push({ big: place.sand_type, label: bentoLabel("sand", locale), variant: "sand" });
-  if (place.depth) attrTiles.push({ big: place.depth, label: bentoLabel("depth", locale), variant: "terra" });
-  if (place.sea_surface) attrTiles.push({ big: place.sea_surface, label: bentoLabel("sea", locale), variant: "aegean" });
+  if (place.depth) attrTiles.push({ big: place.depth, label: bentoLabel("depth", locale), variant: "terracotta" });
+  if (place.sea_surface) attrTiles.push({ big: place.sea_surface, label: bentoLabel("sea", locale), variant: "sea" });
   if (place.crowds) attrTiles.push({ big: place.crowds, label: bentoLabel("crowds", locale) });
   if (place.accessibility) attrTiles.push({ big: place.accessibility, label: bentoLabel("access", locale) });
 

@@ -235,17 +235,17 @@ export function LiveMapClient({ locale }: { locale: string }) {
           {t.estimated}
         </span>
         <span className="pointer-events-auto inline-flex items-baseline gap-1.5 rounded-full bg-surface/90 px-3 py-1.5 text-sm text-text shadow backdrop-blur">
-          <span className="font-data font-bold text-aegean tabular-nums">{count}</span> {t.circulating}
+          <span className="font-data font-bold text-sea tabular-nums">{count}</span> {t.circulating}
         </span>
       </div>
 
       {!sheetVM && (
         <div className="pointer-events-none absolute inset-x-0 bottom-14 z-10 flex justify-center px-3 sm:bottom-6">
           <div className="flex w-full max-w-sm gap-2 sm:w-auto">
-            <Link href="/buses" className="pointer-events-auto inline-flex flex-1 items-center justify-center rounded-full bg-aegean px-5 py-2.5 text-sm font-heading font-semibold text-white shadow-lg transition hover:bg-aegean/90 sm:flex-none">
+            <Link href="/buses" className="pointer-events-auto inline-flex flex-1 items-center justify-center rounded-full bg-sea px-5 py-2.5 text-sm font-heading font-semibold text-white shadow-lg transition hover:bg-sea/90 sm:flex-none">
               {t.planTrip}
             </Link>
-            <Link href="/car-rental" className="pointer-events-auto inline-flex flex-1 items-center justify-center rounded-full bg-terra px-5 py-2.5 text-sm font-heading font-semibold text-white shadow-lg transition hover:bg-terra/90 sm:flex-none">
+            <Link href="/car-rental" className="pointer-events-auto inline-flex flex-1 items-center justify-center rounded-full bg-terracotta px-5 py-2.5 text-sm font-heading font-semibold text-white shadow-lg transition hover:bg-terracotta/90 sm:flex-none">
               {t.rentCar}
             </Link>
           </div>

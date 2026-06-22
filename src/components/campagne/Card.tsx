@@ -7,14 +7,14 @@ function renderCopy(html: string): string {
 }
 
 const KICKER_BG: Record<KickerVariant, string> = {
-  terra: "bg-terra text-white",
+  terracotta: "bg-terracotta text-white",
   go: "bg-sun text-[var(--color-text)]",
   calm: "bg-[var(--color-ok)] text-white",
 };
 
 export default function Card({
   kicker,
-  kickerVariant = "terra",
+  kickerVariant = "terracotta",
   tag,
   title,
   sub,

@@ -135,13 +135,13 @@ export function NearestSwimSpot({
     <section className="mb-10 rounded-[28px] bg-white px-7 py-5 shadow-[0_12px_32px_rgba(11,94,120,.10)] flex flex-wrap items-center gap-x-4 gap-y-2">
       {status === "prompting" ? (
         <p className="inline-flex items-center gap-2.5 text-sm text-text font-heading font-bold m-0">
-          <span className="w-4 h-4 rounded-full border-2 border-aegean border-t-transparent animate-spin" aria-hidden />
+          <span className="w-4 h-4 rounded-full border-2 border-sea border-t-transparent animate-spin" aria-hidden />
           {t.locating}
         </p>
       ) : (
         <button
           onClick={requestGeo}
-          className="inline-flex items-center gap-2 text-sm font-heading font-bold text-aegean hover:underline"
+          className="inline-flex items-center gap-2 text-sm font-heading font-bold text-sea hover:underline"
         >
           <CiCompass className="w-5 h-5 shrink-0" /> {t.find}
         </button>

@@ -33,8 +33,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 const PERIOD_COLORS: Record<string, string> = {
-  minoan: "bg-terra-faint text-terra",
-  venetian: "bg-aegean-faint text-aegean",
+  minoan: "bg-terracotta-faint text-terracotta",
+  venetian: "bg-sea-faint text-sea",
   ottoman: "bg-sand text-text-muted",
   modern: "bg-stone text-text-muted",
   abandoned: "bg-stone-warm text-text-light",
@@ -69,7 +69,7 @@ export default async function VillagesPage({ params }: { params: Promise<{ local
     <main className="min-h-screen bg-surface">
       <JsonLd data={listSchema} />
       <div className="max-w-6xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-aegean">
+        <h1 className="text-3xl font-bold text-sea">
           {loc === "fr" ? "Villages de Crète" :
            loc === "de" ? "Dörfer auf Kreta" :
            loc === "el" ? "Χωριά της Κρήτης" :
@@ -82,7 +82,7 @@ export default async function VillagesPage({ params }: { params: Promise<{ local
             <Link
               key={village.slug}
               href={`/${locale}/villages/${village.slug}`}
-              className="group rounded-xl border border-border bg-white overflow-hidden hover:border-aegean/30 hover:shadow-md transition-all"
+              className="group rounded-xl border border-border bg-white overflow-hidden hover:border-sea/30 hover:shadow-md transition-all"
             >
               {village.image_url && (
                 <div className="h-40 bg-stone overflow-hidden">
@@ -118,7 +118,7 @@ export default async function VillagesPage({ params }: { params: Promise<{ local
                   )}
                   {village.population != null && (
                     <span className="inline-flex items-center gap-1">
-                      <Users className="w-3 h-3 text-aegean" />
+                      <Users className="w-3 h-3 text-sea" />
                       {village.population.toLocaleString()}
                     </span>
                   )}
@@ -147,7 +147,7 @@ function VillagesPlaceholder({ locale }: { locale: Locale }) {
   return (
     <main className="min-h-screen bg-surface">
       <div className="max-w-6xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-aegean">{titles[locale] ?? titles.en}</h1>
+        <h1 className="text-3xl font-bold text-sea">{titles[locale] ?? titles.en}</h1>
         <p className="text-text-muted mt-2">300+ villages coming soon. Data being loaded.</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
           {Array.from({ length: 6 }).map((_, i) => (

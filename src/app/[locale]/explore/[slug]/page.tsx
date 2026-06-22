@@ -89,7 +89,7 @@ export default async function CbPlaceFichePage({
       <div className="mx-auto max-w-3xl px-4 py-6">
         <Link
           href={`/${locale}/explore?place=${place.slug}`}
-          className="mb-4 inline-flex items-center gap-1 text-sm text-aegean hover:underline"
+          className="mb-4 inline-flex items-center gap-1 text-sm text-sea hover:underline"
         >
           <ChevronLeft className="h-4 w-4" /> {t.backToMap}
         </Link>

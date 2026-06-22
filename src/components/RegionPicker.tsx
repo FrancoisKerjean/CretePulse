@@ -47,7 +47,7 @@ const DOT_COLOR: Record<RegionBeachLite["rating"], string> = {
 const PILL_CLASS: Record<RegionBeachLite["rating"], string> = {
   calm: "bg-[rgba(20,184,107,.13)] text-[#0B8A52]",
   fair: "bg-sun/20 text-[#8A6A14]",
-  exposed: "bg-terra/15 text-[#B84B30]",
+  exposed: "bg-terracotta/15 text-[#B84B30]",
 };
 
 // Position des labels de zone autour de l'ile (viewBox 460x176, ile 460x150)
@@ -84,7 +84,7 @@ export function RegionPicker({ zones, regionLabels, allLabel, hint, ratingLabels
             type="button"
             onClick={() => setActive(z === "all" ? "all" : (z as ZoneKey))}
             className={`rounded-full px-4 py-2 font-heading text-[13px] font-bold transition-colors ${
-              active === z ? "bg-text text-white" : "bg-white text-text-muted shadow-[0_6px_16px_rgba(11,94,120,.08)] hover:text-aegean"
+              active === z ? "bg-text text-white" : "bg-white text-text-muted shadow-[0_6px_16px_rgba(11,94,120,.08)] hover:text-sea"
             }`}
           >
             {z === "all" ? allLabel : regionLabels[z] ?? z}

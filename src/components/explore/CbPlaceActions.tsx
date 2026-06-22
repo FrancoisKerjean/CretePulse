@@ -59,7 +59,7 @@ export function CbPlaceActions({
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`${t.route} — ${name}`}
-          className={`${btnBase} bg-aegean text-white hover:bg-aegean/90`}
+          className={`${btnBase} bg-sea text-white hover:bg-sea/90`}
         >
           <MapPin className="w-4 h-4" /> {t.route}
         </a>
@@ -68,7 +68,7 @@ export function CbPlaceActions({
         <Link
           href={busHref}
           aria-label={`${busLabel} — ${name}`}
-          className={`${btnBase} bg-white text-aegean border-[1.5px] border-aegean/30 hover:border-aegean/60`}
+          className={`${btnBase} bg-white text-sea border-[1.5px] border-sea/30 hover:border-sea/60`}
         >
           <CiBus className="w-4 h-4" /> {busLabel}
         </Link>

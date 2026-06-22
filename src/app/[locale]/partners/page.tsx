@@ -89,28 +89,28 @@ export default async function PartnersPage({ params }: { params: Promise<{ local
   return (
     <main className="min-h-screen bg-surface">
       <div className="max-w-3xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-aegean mb-4">{T.title[ui]}</h1>
+        <h1 className="text-3xl font-bold text-sea mb-4">{T.title[ui]}</h1>
         <p className="text-text mb-8">{T.pitch[ui]}</p>
 
         <ul className="space-y-2 mb-8 list-none p-0">
           {T.includes[ui].map((item, i) => (
             <li key={i} className="flex items-start gap-2 text-sm text-text">
-              <CheckCircle2 className="w-4 h-4 text-aegean shrink-0 mt-0.5" /> {item}
+              <CheckCircle2 className="w-4 h-4 text-sea shrink-0 mt-0.5" /> {item}
             </li>
           ))}
         </ul>
 
-        <div className="rounded-xl border border-aegean/30 bg-white p-5 mb-8">
-          <p className="text-2xl font-bold text-aegean mb-3">{T.price[ui](PARTNER_PRICE_EUR)}</p>
+        <div className="rounded-xl border border-sea/30 bg-white p-5 mb-8">
+          <p className="text-2xl font-bold text-sea mb-3">{T.price[ui](PARTNER_PRICE_EUR)}</p>
           {STRIPE_URL ? (
             <a href={STRIPE_URL} target="_blank" rel="noopener"
-               className="inline-flex items-center gap-2 rounded-lg bg-aegean text-white font-semibold px-5 py-2.5 hover:opacity-90">
+               className="inline-flex items-center gap-2 rounded-lg bg-sea text-white font-semibold px-5 py-2.5 hover:opacity-90">
               <Tag className="w-4 h-4" /> {T.cta[ui]}
             </a>
           ) : null}
           <p className="text-sm text-text-muted mt-3 mb-0 flex items-center gap-1.5">
             <MailOpen className="w-4 h-4" /> {T.ctaEmail[ui]}{" "}
-            <a href={`mailto:${CONTACT}`} className="text-aegean hover:underline">{CONTACT}</a>
+            <a href={`mailto:${CONTACT}`} className="text-sea hover:underline">{CONTACT}</a>
           </p>
         </div>
 
@@ -129,7 +129,7 @@ export default async function PartnersPage({ params }: { params: Promise<{ local
         </div>
 
         <h2 className="text-xl font-semibold text-text mb-3 flex items-center gap-2">
-          <BarChart3 className="w-5 h-5 text-aegean" /> {T.howTitle[ui]}
+          <BarChart3 className="w-5 h-5 text-sea" /> {T.howTitle[ui]}
         </h2>
         <ol className="space-y-2 mb-4 pl-5">
           {T.how[ui].map((item, i) => (

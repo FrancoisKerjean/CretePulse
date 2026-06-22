@@ -20,9 +20,9 @@ export function BeachImage({ src, alt, className }: Props) {
       <div
         role="img"
         aria-label={alt}
-        className={`${className ?? ""} flex items-center justify-center bg-gradient-to-br from-aegean-faint via-aegean/20 to-aegean/40`}
+        className={`${className ?? ""} flex items-center justify-center bg-gradient-to-br from-sea-faint via-sea/20 to-sea/40`}
       >
-        <Waves className="w-10 h-10 text-aegean/60" aria-hidden="true" />
+        <Waves className="w-10 h-10 text-sea/60" aria-hidden="true" />
       </div>
     );
   }

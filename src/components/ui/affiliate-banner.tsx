@@ -163,11 +163,11 @@ export function AffiliateBanner({
           href={link.url}
           target="_blank"
           rel="noopener noreferrer nofollow sponsored"
-          className="group relative inline-flex shrink-0 items-center gap-2 overflow-hidden rounded-xl bg-white px-6 py-3 text-sm font-bold text-terra shadow-md transition-transform hover:scale-[1.03] active:scale-[0.98]"
+          className="group relative inline-flex shrink-0 items-center gap-2 overflow-hidden rounded-xl bg-white px-6 py-3 text-sm font-bold text-terracotta shadow-md transition-transform hover:scale-[1.03] active:scale-[0.98]"
         >
           {/* periodic light sweep across the button */}
           <span
-            className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-terra/20 to-transparent bg-[length:300%_100%] animate-gradient"
+            className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-terracotta/20 to-transparent bg-[length:300%_100%] animate-gradient"
             aria-hidden
           />
           <span className="relative">{cta}</span>

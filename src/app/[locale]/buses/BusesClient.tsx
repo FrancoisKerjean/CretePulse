@@ -163,12 +163,12 @@ function NoDirectBusCard({ destination, locale }: { destination: BusDestination;
       </div>
       <div className="px-4 pb-4 pt-2 border-t border-amber-200/60 flex flex-wrap gap-x-3 gap-y-1 text-xs mt-auto">
         {destination.beaches_near && (
-          <Link href={`/${locale}/beaches`} className="text-aegean hover:underline">
+          <Link href={`/${locale}/beaches`} className="text-sea hover:underline">
             {t("beachesNear", locale)} {destination.name}
           </Link>
         )}
         {destination.things_to_do_slug && THINGS_TO_DO_SLUGS.has(destination.things_to_do_slug) && (
-          <Link href={`/${locale}/things-to-do/${destination.things_to_do_slug}`} className="text-aegean hover:underline">
+          <Link href={`/${locale}/things-to-do/${destination.things_to_do_slug}`} className="text-sea hover:underline">
             {t("whatToDo", locale)} {destination.name}
           </Link>
         )}
@@ -263,7 +263,7 @@ function PopularRoutes({
             key={`${p.from}-${p.to}`}
             type="button"
             onClick={() => onPick(p.from, p.to)}
-            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3.5 py-1.5 text-sm text-text hover:border-aegean hover:text-aegean transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3.5 py-1.5 text-sm text-text hover:border-sea hover:text-sea transition-colors"
           >
             <span>{p.from}</span>
             <span className="text-text-muted" aria-hidden>·</span>
@@ -302,7 +302,7 @@ function CollapsibleRegion({
           {title} <span className="text-text-muted font-normal">({list.length})</span>
         </h2>
         {canToggle && (
-          <span className="inline-flex items-center gap-1.5 text-sm text-aegean font-semibold shrink-0">
+          <span className="inline-flex items-center gap-1.5 text-sm text-sea font-semibold shrink-0">
             {open ? t("showLess", locale) : t("seeAllRoutes", locale)}
             <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} />
           </span>
@@ -317,7 +317,7 @@ function CollapsibleRegion({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="mt-4 w-full rounded-2xl border border-border bg-surface py-2.5 text-sm font-semibold text-aegean hover:bg-sky/40 transition-colors"
+          className="mt-4 w-full rounded-2xl border border-border bg-surface py-2.5 text-sm font-semibold text-sea hover:bg-sky/40 transition-colors"
         >
           {t("seeAllRoutes", locale)} ({list.length})
         </button>
@@ -421,7 +421,7 @@ export function BusesClient({
         {/* Header compact (le titre SEO complet reste dans <title>/meta/JSON-LD) */}
         <div className="mb-6">
           <h1 className="font-heading font-extrabold text-2xl md:text-3xl tracking-tight text-text flex items-center gap-2">
-            <CiBus className="w-6 h-6 text-aegean" /> {t("title", locale)}
+            <CiBus className="w-6 h-6 text-sea" /> {t("title", locale)}
           </h1>
           <p className="text-text-muted text-sm mt-1">{t("subtitle", locale)}</p>
           {updatedAt && (

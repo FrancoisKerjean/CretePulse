@@ -280,7 +280,7 @@ const PRICE_SYMBOL: Record<string, string> = { budget: "€", mid: "€€", ups
 const RATING_CLASS: Record<"calm" | "fair" | "exposed", string> = {
   calm: "bg-[rgba(20,184,107,.13)] text-[#0B8A52]",
   fair: "bg-sun/20 text-[#8A6A14]",
-  exposed: "bg-terra/15 text-[#B84B30]",
+  exposed: "bg-terracotta/15 text-[#B84B30]",
 };
 
 /** "X.X" sous 10 km, entier au-delà. */
@@ -395,10 +395,10 @@ export function NearMeClient({
   if (!pos) {
     return (
       <div className="card-base p-7 sm:p-10 text-center">
-        <CiCompass className="w-12 h-12 text-aegean mx-auto" />
+        <CiCompass className="w-12 h-12 text-sea mx-auto" />
         {status === "prompting" ? (
           <p className="mt-5 inline-flex items-center gap-2.5 text-text font-heading font-bold">
-            <span className="w-5 h-5 rounded-full border-2 border-aegean border-t-transparent animate-spin" aria-hidden />
+            <span className="w-5 h-5 rounded-full border-2 border-sea border-t-transparent animate-spin" aria-hidden />
             {t.locating}
           </p>
         ) : (
@@ -433,7 +433,7 @@ export function NearMeClient({
   if (!onCrete) {
     return (
       <div className="card-base p-7 sm:p-10 text-center">
-        <CiCompass className="w-12 h-12 text-aegean mx-auto" />
+        <CiCompass className="w-12 h-12 text-sea mx-auto" />
         <p className="mt-4 text-text font-heading font-bold">{t.notInCrete}</p>
         <div className="mt-5 max-w-sm mx-auto">
           <PlacePicker value={null} onChange={setManual} label={t.pickLabel} />
@@ -453,7 +453,7 @@ export function NearMeClient({
       {/* Barre d'état : source de la position + changement */}
       <div className="card-base px-5 py-3.5 flex flex-wrap items-center gap-3">
         <span className="inline-flex items-center gap-2 font-heading font-bold text-sm text-text">
-          <CiCompass className="w-4.5 h-4.5 text-aegean" /> {t.aroundYou}
+          <CiCompass className="w-4.5 h-4.5 text-sea" /> {t.aroundYou}
         </span>
         {sections?.here && (
           <span className="text-xs text-text-muted">
@@ -465,7 +465,7 @@ export function NearMeClient({
           {status !== "prompting" && (
             <button
               onClick={requestGeo}
-              className="text-xs font-semibold text-aegean hover:underline whitespace-nowrap"
+              className="text-xs font-semibold text-sea hover:underline whitespace-nowrap"
             >
               {t.useMyLocation}
             </button>
@@ -477,7 +477,7 @@ export function NearMeClient({
       {/* 1. Ta plage du jour */}
       {sections?.best && (
         <section>
-          <SectionTitle icon={<CiWave className="w-6 h-6 text-aegean" />}>{t.beachOfDay}</SectionTitle>
+          <SectionTitle icon={<CiWave className="w-6 h-6 text-sea" />}>{t.beachOfDay}</SectionTitle>
           <Link
             href={`/${locale}/beaches/${sections.best.slug}`}
             onClick={() => track("beach-of-day")}
@@ -505,7 +505,7 @@ export function NearMeClient({
       {/* 2. Plages proches */}
       {sections && sections.beaches.length > 0 && (
         <section>
-          <SectionTitle icon={<CiWave className="w-6 h-6 text-aegean" />}>{t.beachesNear}</SectionTitle>
+          <SectionTitle icon={<CiWave className="w-6 h-6 text-sea" />}>{t.beachesNear}</SectionTitle>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {sections.beaches.map((p) => (
               <Link
@@ -531,7 +531,7 @@ export function NearMeClient({
       {/* 3. Manger et boire */}
       {sections && sections.eat.length > 0 && (
         <section>
-          <SectionTitle icon={<CiFood className="w-6 h-6 text-aegean" />}>{t.eatDrink}</SectionTitle>
+          <SectionTitle icon={<CiFood className="w-6 h-6 text-sea" />}>{t.eatDrink}</SectionTitle>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {sections.eat.map((f) => (
               <Link
@@ -559,7 +559,7 @@ export function NearMeClient({
       {/* 4. Ça vaut le détour */}
       {sections && sections.sights.length > 0 && (
         <section>
-          <SectionTitle icon={<CiMark className="w-6 h-6 text-aegean" />}>{t.sights}</SectionTitle>
+          <SectionTitle icon={<CiMark className="w-6 h-6 text-sea" />}>{t.sights}</SectionTitle>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {sections.sights.map((p) => (
               <Link
@@ -593,7 +593,7 @@ export function NearMeClient({
       {/* 5. Ton arrêt de bus (arrêt-centré) */}
       {sections?.busStop && (
         <section>
-          <SectionTitle icon={<CiBus className="w-6 h-6 text-aegean" />}>{t.busStop}</SectionTitle>
+          <SectionTitle icon={<CiBus className="w-6 h-6 text-sea" />}>{t.busStop}</SectionTitle>
           <div className="card-base p-5 sm:p-6">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <p className="font-heading font-bold text-lg text-text m-0">{sections.busStop.stop.name}</p>
@@ -651,7 +651,7 @@ export function NearMeClient({
       {/* 6. Météo locale */}
       {sections?.station && (
         <section>
-          <SectionTitle icon={<CiSun className="w-6 h-6 text-aegean" />}>{t.weatherNear}</SectionTitle>
+          <SectionTitle icon={<CiSun className="w-6 h-6 text-sea" />}>{t.weatherNear}</SectionTitle>
           <div className="bg-night rounded-[32px] text-[#EAF7FA] px-7 py-6">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <p className="text-[11px] font-bold tracking-[0.1em] uppercase text-lagoon m-0">

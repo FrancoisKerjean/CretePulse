@@ -132,7 +132,7 @@ export function autolinkHtml(
         const matched = mm[1];
         parts[i] =
           p.slice(0, start) +
-          `<a href="${e.href}" class="text-aegean hover:underline">${matched}</a>` +
+          `<a href="${e.href}" class="text-sea hover:underline">${matched}</a>` +
           p.slice(start + matched.length);
         usedHref.add(e.href);
         count += 1;

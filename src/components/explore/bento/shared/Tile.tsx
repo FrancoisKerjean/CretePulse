@@ -1,13 +1,13 @@
 import type { ReactNode } from "react";
 
-export type TileVariant = "sand" | "terra" | "sun" | "lagoon" | "aegean" | "community";
+export type TileVariant = "sand" | "terracotta" | "sun" | "lagoon" | "sea" | "community";
 
 const VARIANT: Record<TileVariant, string> = {
-  sand: "bg-sand text-aegean border-sand-warm",
-  terra: "bg-terra text-white border-terra",
+  sand: "bg-sand text-sea border-sand-warm",
+  terracotta: "bg-terracotta text-white border-terracotta",
   sun: "bg-sun text-night border-sun",
   lagoon: "bg-lagoon text-white border-lagoon",
-  aegean: "bg-aegean text-white border-aegean",
+  sea: "bg-sea text-white border-sea",
   community: "bg-lagoon-deep text-white border-lagoon-deep",
 };
 

@@ -62,7 +62,7 @@ export default function SignupForm() {
   if (success) {
     return (
       <div className="rounded-[1.75rem] border border-lagoon/40 bg-white p-6 shadow-[0_12px_30px_rgba(11,94,120,.12)]">
-        <h3 className="flex items-center gap-2 text-xl font-heading font-bold text-aegean mb-3">
+        <h3 className="flex items-center gap-2 text-xl font-heading font-bold text-sea mb-3">
           <CheckCircle2 className="w-5 h-5 text-ok" /> Your affiliate link is ready
         </h3>
         <p className="text-sm text-text mb-2">Share-ready link (already live):</p>
@@ -74,7 +74,7 @@ export default function SignupForm() {
               navigator.clipboard.writeText(success.link);
               setCopied(true);
             }}
-            className="inline-flex items-center gap-1 rounded-lg bg-aegean text-white px-3 py-2 text-sm hover:opacity-90"
+            className="inline-flex items-center gap-1 rounded-lg bg-sea text-white px-3 py-2 text-sm hover:opacity-90"
           >
             <Copy className="w-4 h-4" /> {copied ? "Copied" : "Copy"}
           </button>

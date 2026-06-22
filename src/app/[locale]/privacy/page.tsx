@@ -329,7 +329,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
       <div className="max-w-2xl mx-auto px-4 py-12 md:py-20">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-4xl font-bold text-aegean mb-4">{content.title}</h1>
+          <h1 className="text-4xl font-bold text-sea mb-4">{content.title}</h1>
           <p className="text-lg text-text leading-relaxed">{content.intro}</p>
         </div>
 
@@ -340,14 +340,14 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
               key={idx}
               className="pb-8 border-b border-border last:border-b-0"
             >
-              <h2 className="text-xl font-bold text-aegean mb-3">{section.heading}</h2>
+              <h2 className="text-xl font-bold text-sea mb-3">{section.heading}</h2>
               {typeof section.content === "string" ? (
                 <p className="text-text leading-relaxed">{section.content}</p>
               ) : (
                 <ul className="space-y-2">
                   {section.content.map((item, itemIdx) => (
                     <li key={itemIdx} className="text-text leading-relaxed flex gap-3">
-                      <span className="text-aegean font-bold shrink-0">•</span>
+                      <span className="text-sea font-bold shrink-0">•</span>
                       <span>{item}</span>
                     </li>
                   ))}
@@ -359,7 +359,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
 
         {/* Footer links */}
         <div className="mt-12 pt-8 border-t border-border flex justify-center gap-6 text-sm">
-          <Link href={`/${locale}/about`} className="text-aegean hover:underline">
+          <Link href={`/${locale}/about`} className="text-sea hover:underline">
             {loc === "en" ? "About" : loc === "fr" ? "À propos" : loc === "de" ? "Über" : "Σχετικά"}
           </Link>
         </div>

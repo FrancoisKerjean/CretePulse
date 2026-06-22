@@ -2,7 +2,7 @@
 
 // Board Solari des prochains departs DEPUIS le lieu actif (modele gare routiere).
 // Countdown TZ Athens recalcule chaque minute. Style B1 : fond night, heures sun,
-// destinations capitales, badge terra si depart < 15 min. Donnees via lib pure
+// destinations capitales, badge terracotta si depart < 15 min. Donnees via lib pure
 // bus-departures (deja testee). Spec 2026-06-12-buses-redesign-board-design.md
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@/i18n/navigation";
@@ -125,7 +125,7 @@ export function DepartureBoard({
                 {d.isTomorrow ? (
                   <span className="text-[10px] font-extrabold rounded px-2 py-1 bg-sun text-night">{T.tomorrow[ui]}</span>
                 ) : d.minutesUntil != null ? (
-                  <span className={`text-[10px] font-extrabold rounded px-2 py-1 ${soon ? "bg-terra text-white" : "bg-sun text-night"}`}>
+                  <span className={`text-[10px] font-extrabold rounded px-2 py-1 ${soon ? "bg-terracotta text-white" : "bg-sun text-night"}`}>
                     {T.inMin[ui](d.minutesUntil)}
                   </span>
                 ) : null}
@@ -143,7 +143,7 @@ export function DepartureBoard({
 
       {rows.length > limit && (
         <button type="button" onClick={() => setLimit((l) => l + PAGE)}
-          className="mt-2 text-xs text-aegean font-semibold hover:underline">
+          className="mt-2 text-xs text-sea font-semibold hover:underline">
           {T.later[ui]}
         </button>
       )}

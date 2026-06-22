@@ -6,8 +6,8 @@ import { getEntreprisesCopyFR, getEntreprisesCopyEN } from "./campagne-entrepris
 export const PRO_AUDIENCES = ["visiteur", "institutions", "entreprises"] as const;
 export type ProAudience = (typeof PRO_AUDIENCES)[number];
 
-// Variantes de pastille reutilisant celles de Card (terra | go | calm).
-export type ProKicker = "terra" | "go" | "calm";
+// Variantes de pastille reutilisant celles de Card (terracotta | go | calm).
+export type ProKicker = "terracotta" | "go" | "calm";
 // Scenes existantes reutilisables (BeatRow.SCENES).
 export type SceneKey = "terminal" | "busStop" | "signpost" | "phoneLive" | "summit" | "app" | "community";
 

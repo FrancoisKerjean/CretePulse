@@ -32,7 +32,7 @@ const ACTIVITIES: Activity[] = [
     descFr: "Eaux cristallines, criques rocheuses et vie marine abondante font de ces plages crétoises des spots parfaits pour le snorkeling.",
     descDe: "Kristallklares Wasser, felsige Buchten und reichhaltiges Meeresleben machen diese kretischen Strände perfekt zum Schnorcheln.",
     descEl: "Κρυστάλλινα νερά, βραχώδεις κόλποι και πλούσια θαλάσσια ζωή κάνουν αυτές τις παραλίες ιδανικές για snorkeling.",
-    icon: <Fish className="w-6 h-6 text-aegean" />,
+    icon: <Fish className="w-6 h-6 text-sea" />,
     filter: (b: Beach) => b.snorkeling,
   },
   {
@@ -42,7 +42,7 @@ const ACTIVITIES: Activity[] = [
     descFr: "Eaux peu profondes, rivages de sable et équipements à proximité font de ces plages des lieux idéaux pour les familles avec enfants en Crète.",
     descDe: "Flaches Wasser, Sandstrände und nahe Einrichtungen machen diese Strände ideal für Familien mit Kindern auf Kreta.",
     descEl: "Ρηχά νερά, αμμώδεις ακτές και κοντινές εγκαταστάσεις κάνουν αυτές τις παραλίες ιδανικές για οικογένειες με παιδιά.",
-    icon: <Baby className="w-6 h-6 text-terra" />,
+    icon: <Baby className="w-6 h-6 text-terracotta" />,
     filter: (b: Beach) => b.kids_friendly,
   },
   {
@@ -52,7 +52,7 @@ const ACTIVITIES: Activity[] = [
     descFr: "Protégées du vent et des vagues, ces plages crétoises calmes offrent les meilleures conditions pour une baignade confortable.",
     descDe: "Vor Wind und Wellen geschützt, bieten diese ruhigen kretischen Strände die besten Bedingungen zum Schwimmen.",
     descEl: "Προφυλαγμένες από τον αέρα και τα κύματα, αυτές οι ήρεμες παραλίες προσφέρουν τις καλύτερες συνθήκες για κολύμβηση.",
-    icon: <Waves className="w-6 h-6 text-aegean" />,
+    icon: <Waves className="w-6 h-6 text-sea" />,
     // Abritees du meltemi (vent dominant de secteur nord l'ete) : on garde les
     // plages orientees vers le sud via l'orientation geometrique beachFacing
     // (cf swim-today). La colonne wind_exposure est NULL sur toutes les plages
@@ -275,7 +275,7 @@ export default async function BestBeachesForPage({ params }: { params: Promise<{
       <JsonLd data={faqSchema} />
 
       {/* Hero */}
-      <section className="bg-aegean text-white py-12 md:py-20 px-4">
+      <section className="bg-sea text-white py-12 md:py-20 px-4">
         <div className="max-w-4xl mx-auto">
           <Link href={`/${locale}/beaches`} className="inline-flex items-center gap-1 text-white/50 text-sm hover:text-white/80 mb-4">
             <ChevronLeft className="w-4 h-4" /> {L.allBeaches}
@@ -304,10 +304,10 @@ export default async function BestBeachesForPage({ params }: { params: Promise<{
               <Link
                 key={beach.slug}
                 href={`/${locale}/beaches/${beach.slug}`}
-                className="group rounded-xl bg-white border border-border overflow-hidden hover:border-aegean/30 hover:shadow-sm transition-all"
+                className="group rounded-xl bg-white border border-border overflow-hidden hover:border-sea/30 hover:shadow-sm transition-all"
               >
                 {beach.image_url && (
-                  <div className="relative h-40 bg-aegean/5">
+                  <div className="relative h-40 bg-sea/5">
                     <Image
                       src={beach.image_url}
                       alt={`${name} beach, Crete`}
@@ -320,7 +320,7 @@ export default async function BestBeachesForPage({ params }: { params: Promise<{
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <h2 className="font-bold text-text group-hover:text-aegean transition-colors">{name}</h2>
+                      <h2 className="font-bold text-text group-hover:text-sea transition-colors">{name}</h2>
                       <div className="flex items-center gap-1 text-xs text-text-muted mt-0.5">
                         <MapPin className="w-3 h-3" /> {beach.region}
                       </div>
@@ -360,7 +360,7 @@ export default async function BestBeachesForPage({ params }: { params: Promise<{
 
         {/* FAQ */}
         <section>
-          <h2 className="text-xl font-bold text-aegean mb-4">{L.faq}</h2>
+          <h2 className="text-xl font-bold text-sea mb-4">{L.faq}</h2>
           <div className="space-y-4">
             {faqItems.map((faq, i) => (
               <div key={i} className="p-5 bg-white rounded-xl border border-border">
@@ -379,7 +379,7 @@ export default async function BestBeachesForPage({ params }: { params: Promise<{
               <Link
                 key={a.slug}
                 href={`/${locale}/beaches/best-for/${a.slug}`}
-                className="flex items-center gap-3 p-3 bg-white rounded-xl border border-border hover:border-aegean/30 transition-colors"
+                className="flex items-center gap-3 p-3 bg-white rounded-xl border border-border hover:border-sea/30 transition-colors"
               >
                 <div className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center flex-shrink-0">
                   {a.icon}
