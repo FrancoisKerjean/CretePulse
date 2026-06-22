@@ -147,7 +147,7 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  --radius: 0.875rem; /* Kalimera : arrondi genereux (rounded-2xl/3xl => 25-31px, DA cartes 24-32px) */
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -335,6 +335,17 @@ a, button {
 @utility font-data {
   font-family: var(--font-heading), "Comfortaa", system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
+}
+
+/* Ombres signature Kalimera : colorees (sea/night), jamais grises (DA grammaire) */
+@utility shadow-soft {
+  box-shadow: 0 6px 18px -6px rgb(11 94 120 / 0.14);
+}
+@utility shadow-card {
+  box-shadow: 0 12px 32px -10px rgb(11 94 120 / 0.16);
+}
+@utility shadow-float {
+  box-shadow: 0 20px 48px -14px rgb(7 55 74 / 0.22);
 }
 
 /* La carte unique du site : tous les styles de cartes convergent ici */

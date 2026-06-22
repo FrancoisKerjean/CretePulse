@@ -65,7 +65,7 @@ function PostList({ posts, locale, type }: { posts: Guide[]; locale: Locale; typ
           <li key={p.slug}>
             <Link
               href={`/${locale}/articles/${p.slug}`}
-              className="block bg-white border border-border rounded-xl p-4 hover:border-sea hover:shadow-sm transition-all"
+              className="block bg-white border border-border rounded-xl p-4 hover:border-sea hover:shadow-soft transition-all"
             >
               <div className="flex items-center gap-2 mb-1.5">
                 <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-semibold ${badge.classes}`}>

@@ -151,7 +151,7 @@ export default async function HikesPage({
                 <Link
                   key={hike.slug}
                   href={`/${locale}/hikes/${hike.slug}`}
-                  className="group rounded-xl border border-border bg-white overflow-hidden hover:border-sea/30 hover:shadow-md transition-all"
+                  className="group rounded-xl border border-border bg-white overflow-hidden hover:border-sea/30 hover:shadow-soft transition-all"
                 >
                   {hike.image_url && (
                     <div className="h-40 bg-sea-faint overflow-hidden">

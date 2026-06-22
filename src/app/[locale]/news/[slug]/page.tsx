@@ -267,7 +267,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
 
           {/* ── HERO IMAGE ─────────────────────────── */}
           {item.image_url && (
-            <div className="mb-8 rounded-xl overflow-hidden bg-surface shadow-sm">
+            <div className="mb-8 rounded-xl overflow-hidden bg-surface shadow-soft">
               <img
                 src={item.image_url}
                 alt={title}

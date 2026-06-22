@@ -282,7 +282,7 @@ export default async function PropertyManagementPage({ params }: { params: Promi
             href="https://kairosguest.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-terracotta text-white rounded-xl font-bold text-sm hover:bg-terracotta-light transition-colors shadow-lg hover:shadow-xl"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-terracotta text-white rounded-xl font-bold text-sm hover:bg-terracotta-light transition-colors shadow-card hover:shadow-card"
           >
             {c.ctaButton}
             <ChevronRight className="w-4 h-4" />

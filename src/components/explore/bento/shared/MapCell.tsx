@@ -101,10 +101,10 @@ export function MapCell({
       </div>
       {/* Placeholder pendant le chargement des tuiles (ou si pas de coords) */}
       {hasCoords && !ready && (
-        <span className="absolute left-1/2 top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 animate-pulse rounded-full border-2 border-white bg-terracotta shadow-md" />
+        <span className="absolute left-1/2 top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 animate-pulse rounded-full border-2 border-white bg-terracotta shadow-soft" />
       )}
       {label && (
-        <span className="pointer-events-none absolute bottom-2 left-3 z-10 rounded-md bg-white/95 px-2 py-1 text-[10px] font-semibold text-sea shadow-sm">
+        <span className="pointer-events-none absolute bottom-2 left-3 z-10 rounded-md bg-white/95 px-2 py-1 text-[10px] font-semibold text-sea shadow-soft">
           {label}
         </span>
       )}

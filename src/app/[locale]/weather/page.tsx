@@ -119,7 +119,7 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
           {cities.map((city) => (
             <div
               key={city.name}
-              className="rounded-xl border border-border bg-white overflow-hidden hover:shadow-md transition-shadow"
+              className="rounded-xl border border-border bg-white overflow-hidden hover:shadow-soft transition-shadow"
             >
               {/* Card header */}
               <div className="bg-sea px-4 pt-4 pb-3 text-white">

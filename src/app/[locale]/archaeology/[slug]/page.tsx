@@ -390,7 +390,7 @@ export default async function ArchaeologyDetailPage({
               <Link
                 key={s.slug}
                 href={`/${locale}/archaeology/${s.slug}`}
-                className="rounded-xl bg-white border border-border p-4 hover:shadow-md transition-shadow"
+                className="rounded-xl bg-white border border-border p-4 hover:shadow-soft transition-shadow"
               >
                 <div className="flex items-center gap-2 text-sea mb-1">
                   <Landmark className="w-4 h-4" />
@@ -414,21 +414,21 @@ export default async function ArchaeologyDetailPage({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Link
               href={`/${locale}/beaches`}
-              className="rounded-xl bg-white border border-border p-4 hover:shadow-md transition-shadow flex items-center gap-3"
+              className="rounded-xl bg-white border border-border p-4 hover:shadow-soft transition-shadow flex items-center gap-3"
             >
               <MapPin className="w-5 h-5 text-sea" />
               <span className="font-medium text-sm text-text">{L.beaches}</span>
             </Link>
             <Link
               href={`/${locale}/itineraries`}
-              className="rounded-xl bg-white border border-border p-4 hover:shadow-md transition-shadow flex items-center gap-3"
+              className="rounded-xl bg-white border border-border p-4 hover:shadow-soft transition-shadow flex items-center gap-3"
             >
               <Clock className="w-5 h-5 text-terracotta" />
               <span className="font-medium text-sm text-text">{L.itineraries}</span>
             </Link>
             <Link
               href={`/${locale}/villages`}
-              className="rounded-xl bg-white border border-border p-4 hover:shadow-md transition-shadow flex items-center gap-3"
+              className="rounded-xl bg-white border border-border p-4 hover:shadow-soft transition-shadow flex items-center gap-3"
             >
               <MapPin className="w-5 h-5 text-olive" />
               <span className="font-medium text-sm text-text">{L.villages}</span>

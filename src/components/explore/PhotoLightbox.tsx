@@ -133,7 +133,7 @@ export function LightboxModal({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.2 }}
             onClick={(e) => e.stopPropagation()}
-            className="max-h-[88vh] max-w-[94vw] object-contain rounded-lg shadow-2xl select-none"
+            className="max-h-[88vh] max-w-[94vw] object-contain rounded-lg shadow-float select-none"
           />
 
           {/* Suivant */}

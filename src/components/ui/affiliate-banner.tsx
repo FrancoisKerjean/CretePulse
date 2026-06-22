@@ -125,7 +125,7 @@ export function AffiliateBanner({
 
   return (
     <aside
-      className={`group/ad relative overflow-hidden rounded-[26px] shadow-lg ${className}`}
+      className={`group/ad relative overflow-hidden rounded-[26px] shadow-card ${className}`}
     >
       {/* Capture décisionnelle : impression du bandeau (CTR réel par placement,
           le pathname est attaché par Plausible). */}
@@ -163,7 +163,7 @@ export function AffiliateBanner({
           href={link.url}
           target="_blank"
           rel="noopener noreferrer nofollow sponsored"
-          className="group relative inline-flex shrink-0 items-center gap-2 overflow-hidden rounded-xl bg-white px-6 py-3 text-sm font-bold text-terracotta shadow-md transition-transform hover:scale-[1.03] active:scale-[0.98]"
+          className="group relative inline-flex shrink-0 items-center gap-2 overflow-hidden rounded-xl bg-white px-6 py-3 text-sm font-bold text-terracotta shadow-soft transition-transform hover:scale-[1.03] active:scale-[0.98]"
         >
           {/* periodic light sweep across the button */}
           <span

@@ -596,7 +596,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
     return (
       <button
         onClick={() => selectPlace(p.slug)}
-        className="flex gap-3 p-2 rounded-xl border border-sea/10 bg-white shadow-sm hover:shadow-md hover:border-sea/30 text-left transition-all w-full"
+        className="flex gap-3 p-2 rounded-xl border border-sea/10 bg-white shadow-soft hover:shadow-soft hover:border-sea/30 text-left transition-all w-full"
       >
         <div className="relative w-[72px] h-[64px] rounded-lg overflow-hidden bg-sand shrink-0">
           {p.photos?.[0] ? (
@@ -686,7 +686,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
               )}
             </button>
             {filtersOpen && (
-              <div className="absolute right-0 top-12 w-64 bg-white rounded-2xl shadow-2xl border border-sea/10 p-3 z-30">
+              <div className="absolute right-0 top-12 w-64 bg-white rounded-2xl shadow-float border border-sea/10 p-3 z-30">
                 {filtersPanel}
               </div>
             )}
@@ -819,7 +819,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
 
       {/* ===== Fiche lieu ===== */}
       {selected && (
-        <div className="absolute z-30 bg-white shadow-2xl overflow-y-auto inset-x-0 bottom-0 max-h-[78%] rounded-t-3xl md:inset-x-auto md:right-3 md:top-3 md:bottom-3 md:max-h-none md:w-[360px] md:rounded-2xl">
+        <div className="absolute z-30 bg-white shadow-float overflow-y-auto inset-x-0 bottom-0 max-h-[78%] rounded-t-3xl md:inset-x-auto md:right-3 md:top-3 md:bottom-3 md:max-h-none md:w-[360px] md:rounded-2xl">
           <div className="relative">
             {selectedPhotos.length > 0 ? (
               <div className="relative h-52 bg-sand">

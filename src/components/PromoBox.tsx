@@ -22,7 +22,7 @@ export function PromoBox({ icon: Icon, title, line, ctaLabel, ctaHref, disclosur
 
   if (photo) {
     return (
-      <aside className="group/ad relative overflow-hidden rounded-[26px] shadow-lg my-8">
+      <aside className="group/ad relative overflow-hidden rounded-[26px] shadow-card my-8">
         <img
           src={photo}
           alt=""
@@ -54,7 +54,7 @@ export function PromoBox({ icon: Icon, title, line, ctaLabel, ctaHref, disclosur
           <a
             href={ctaHref}
             {...(external ? { target: "_blank", rel: "nofollow noopener sponsored" } : {})}
-            className="group relative inline-flex shrink-0 items-center gap-2 overflow-hidden rounded-xl bg-white px-6 py-3 text-sm font-bold text-terracotta shadow-md transition-transform hover:scale-[1.03] active:scale-[0.98]"
+            className="group relative inline-flex shrink-0 items-center gap-2 overflow-hidden rounded-xl bg-white px-6 py-3 text-sm font-bold text-terracotta shadow-soft transition-transform hover:scale-[1.03] active:scale-[0.98]"
           >
             <span
               className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-terracotta/20 to-transparent bg-[length:300%_100%] animate-gradient"

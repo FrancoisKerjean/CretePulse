@@ -461,7 +461,7 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
         {AIRPORT_DATA_LINK[slug] && (
           <Link
             href={`/${locale}/airport/${AIRPORT_DATA_LINK[slug].airportSlug}`}
-            className="flex items-center gap-3 px-5 py-4 bg-white border border-border rounded-xl hover:border-sea hover:shadow-sm transition-all"
+            className="flex items-center gap-3 px-5 py-4 bg-white border border-border rounded-xl hover:border-sea hover:shadow-soft transition-all"
           >
             <Plane className="w-5 h-5 text-sea flex-shrink-0" />
             <span className="text-sm font-medium text-text">
@@ -522,7 +522,7 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
                 <Link
                   key={r.slug}
                   href={`/${locale}/getting-around/${r.slug}`}
-                  className="flex items-center gap-2 px-4 py-3 bg-white border border-border rounded-xl hover:border-sea hover:shadow-sm transition-all text-sm font-medium text-text"
+                  className="flex items-center gap-2 px-4 py-3 bg-white border border-border rounded-xl hover:border-sea hover:shadow-soft transition-all text-sm font-medium text-text"
                 >
                   <ArrowRight className="w-4 h-4 text-sea flex-shrink-0" />
                   {r.from} · {r.to}

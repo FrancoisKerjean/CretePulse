@@ -339,7 +339,7 @@ function FoodCard({
   return (
     <Link
       href={`/${locale}/food/${place.slug}`}
-      className={`group flex flex-col rounded-xl border border-border border-l-4 ${accent} bg-white overflow-hidden hover:shadow-md hover:border-opacity-60 transition-all duration-200`}
+      className={`group flex flex-col rounded-xl border border-border border-l-4 ${accent} bg-white overflow-hidden hover:shadow-soft hover:border-opacity-60 transition-all duration-200`}
     >
       {place.image_url && (
         <div className="h-40 bg-terracotta-faint overflow-hidden shrink-0">

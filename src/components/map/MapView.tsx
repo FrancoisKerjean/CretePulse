@@ -136,7 +136,7 @@ export function MapView({ beaches, villages, food, hikes, locale }: MapViewProps
           <button
             key={type}
             onClick={() => toggleFilter(type)}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold shadow-md transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold shadow-soft transition-all ${
               activeFilters.has(type)
                 ? "bg-white text-text border border-border"
                 : "bg-white/50 text-text-light border border-transparent"

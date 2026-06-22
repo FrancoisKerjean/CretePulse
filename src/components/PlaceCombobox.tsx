@@ -61,7 +61,7 @@ export function PlaceCombobox({
       />
       {open && filtered.length > 0 && (
         <ul id={listId} role="listbox"
-          className="absolute z-20 mt-1 w-full max-h-64 overflow-auto bg-white border border-border rounded-2xl shadow-lg py-1 list-none m-0 p-0">
+          className="absolute z-20 mt-1 w-full max-h-64 overflow-auto bg-white border border-border rounded-2xl shadow-card py-1 list-none m-0 p-0">
           {filtered.map((o, i) => (
             <li key={o} role="option" aria-selected={i === active}
               onMouseDown={(e) => { e.preventDefault(); commit(o); }}

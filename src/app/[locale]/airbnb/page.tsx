@@ -186,7 +186,7 @@ export default async function AirbnbIndexPage(
                   <li key={n.slug}>
                     <Link
                       href={`/${locale}/airbnb/${n.slug}`}
-                      className="flex items-center justify-between rounded-lg bg-white border border-border px-4 py-3 hover:border-sea/40 hover:shadow-sm transition-all group"
+                      className="flex items-center justify-between rounded-lg bg-white border border-border px-4 py-3 hover:border-sea/40 hover:shadow-soft transition-all group"
                     >
                       <span className="font-medium text-text">
                         {n.label[uiLoc] ?? n.label.en}

@@ -27,7 +27,7 @@ export default function YouTubeEmbed({
   const aspectClass = vertical ? "aspect-[9/16] max-w-[400px] mx-auto" : "aspect-video";
   return (
     <figure className="my-6 not-prose">
-      <div className={`relative overflow-hidden rounded-lg shadow-lg bg-black ${aspectClass}`}>
+      <div className={`relative overflow-hidden rounded-lg shadow-card bg-black ${aspectClass}`}>
         <iframe
           src={`https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1`}
           title={title}

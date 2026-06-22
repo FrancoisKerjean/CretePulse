@@ -122,7 +122,7 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
                   <Link
                     key={event.slug}
                     href={`/${locale}/events/${event.slug}`}
-                    className="group flex gap-4 rounded-xl border border-border bg-white p-4 hover:border-sea/30 hover:shadow-sm transition-all"
+                    className="group flex gap-4 rounded-xl border border-border bg-white p-4 hover:border-sea/30 hover:shadow-soft transition-all"
                   >
                     {/* Date column */}
                     <div className="shrink-0 w-14 text-center">

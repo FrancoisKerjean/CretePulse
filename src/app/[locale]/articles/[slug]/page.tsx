@@ -473,7 +473,7 @@ export default async function ArticleDetailPage({
                       <Link
                         key={rel.slug}
                         href={`/${locale}/articles/${rel.slug}`}
-                        className="group flex flex-col rounded-lg overflow-hidden border border-border hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+                        className="group flex flex-col rounded-lg overflow-hidden border border-border hover:shadow-soft hover:-translate-y-0.5 transition-all duration-200"
                       >
                         {rel.image_url && (
                           <div className="h-32 overflow-hidden">

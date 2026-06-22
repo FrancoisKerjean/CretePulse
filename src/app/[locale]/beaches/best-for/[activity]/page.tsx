@@ -304,7 +304,7 @@ export default async function BestBeachesForPage({ params }: { params: Promise<{
               <Link
                 key={beach.slug}
                 href={`/${locale}/beaches/${beach.slug}`}
-                className="group rounded-xl bg-white border border-border overflow-hidden hover:border-sea/30 hover:shadow-sm transition-all"
+                className="group rounded-xl bg-white border border-border overflow-hidden hover:border-sea/30 hover:shadow-soft transition-all"
               >
                 {beach.image_url && (
                   <div className="relative h-40 bg-sea/5">

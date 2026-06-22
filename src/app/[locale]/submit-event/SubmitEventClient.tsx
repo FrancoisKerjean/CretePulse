@@ -100,7 +100,7 @@ export function SubmitEventClient() {
   if (state === "success") {
     return (
       <main className="min-h-screen bg-surface flex items-center justify-center px-4">
-        <div className="bg-white border border-border rounded-2xl p-10 max-w-md w-full text-center shadow-sm">
+        <div className="bg-white border border-border rounded-2xl p-10 max-w-md w-full text-center shadow-soft">
           <div className="flex justify-center mb-5">
             <div className="bg-sea-faint rounded-full p-4">
               <CheckCircle className="size-8 text-sea" />
@@ -147,7 +147,7 @@ export function SubmitEventClient() {
         <form
           ref={formRef}
           onSubmit={handleSubmit}
-          className="bg-white border border-border rounded-2xl p-7 shadow-sm flex flex-col gap-5"
+          className="bg-white border border-border rounded-2xl p-7 shadow-soft flex flex-col gap-5"
           noValidate
         >
           {/* Honeypot · hidden from humans, bots fill it */}

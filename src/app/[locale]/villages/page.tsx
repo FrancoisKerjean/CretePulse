@@ -82,7 +82,7 @@ export default async function VillagesPage({ params }: { params: Promise<{ local
             <Link
               key={village.slug}
               href={`/${locale}/villages/${village.slug}`}
-              className="group rounded-xl border border-border bg-white overflow-hidden hover:border-sea/30 hover:shadow-md transition-all"
+              className="group rounded-xl border border-border bg-white overflow-hidden hover:border-sea/30 hover:shadow-soft transition-all"
             >
               {village.image_url && (
                 <div className="h-40 bg-surface overflow-hidden">

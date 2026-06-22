@@ -399,32 +399,32 @@ export default async function VisitMonthPage({ params }: { params: Promise<{ loc
         <section className="mb-10">
           <h2 className="mb-4 text-2xl font-semibold text-ink">{L.climate}</h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-            <div className="rounded-xl border border-border bg-white p-4 text-center shadow-sm">
+            <div className="rounded-xl border border-border bg-white p-4 text-center shadow-soft">
               <Thermometer className="mx-auto mb-2 h-6 w-6 text-red-500" />
               <p className="text-2xl font-bold text-ink">{climate.avgHigh}°C</p>
               <p className="text-xs text-text-muted">{L.airTemp}</p>
             </div>
-            <div className="rounded-xl border border-border bg-white p-4 text-center shadow-sm">
+            <div className="rounded-xl border border-border bg-white p-4 text-center shadow-soft">
               <Waves className="mx-auto mb-2 h-6 w-6 text-blue-500" />
               <p className="text-2xl font-bold text-ink">{climate.seaTemp}°C</p>
               <p className="text-xs text-text-muted">{L.seaTemp}</p>
             </div>
-            <div className="rounded-xl border border-border bg-white p-4 text-center shadow-sm">
+            <div className="rounded-xl border border-border bg-white p-4 text-center shadow-soft">
               <Sun className="mx-auto mb-2 h-6 w-6 text-yellow-500" />
               <p className="text-2xl font-bold text-ink">{climate.sunHours}h</p>
               <p className="text-xs text-text-muted">{L.sunHours}</p>
             </div>
-            <div className="rounded-xl border border-border bg-white p-4 text-center shadow-sm">
+            <div className="rounded-xl border border-border bg-white p-4 text-center shadow-soft">
               <svg className="mx-auto mb-2 h-6 w-6 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 17h1m16 0h1M5.6 10.6l.7.7m12.1-.7-.7.7M8 17a4 4 0 018 0M12 3v2" /></svg>
               <p className="text-2xl font-bold text-ink">{climate.rainyDays}</p>
               <p className="text-xs text-text-muted">{L.rainyDays}</p>
             </div>
-            <div className="rounded-xl border border-border bg-white p-4 text-center shadow-sm">
+            <div className="rounded-xl border border-border bg-white p-4 text-center shadow-soft">
               <Sun className="mx-auto mb-2 h-6 w-6 text-orange-500" />
               <p className="text-2xl font-bold text-ink">{climate.uvIndex}</p>
               <p className="text-xs text-text-muted">{L.uvIndex}</p>
             </div>
-            <div className="rounded-xl border border-border bg-white p-4 text-center shadow-sm">
+            <div className="rounded-xl border border-border bg-white p-4 text-center shadow-soft">
               <Waves className="mx-auto mb-2 h-6 w-6 text-cyan-500" />
               <p className="text-sm font-semibold text-ink">{swimVerdict}</p>
               <p className="text-xs text-text-muted">{L.swim}</p>
@@ -439,7 +439,7 @@ export default async function VisitMonthPage({ params }: { params: Promise<{ loc
           </h2>
           <ul className="grid gap-3 sm:grid-cols-2">
             {bestFor.map((item) => (
-              <li key={item} className="flex items-start gap-2 rounded-lg border border-border bg-white px-4 py-3 shadow-sm">
+              <li key={item} className="flex items-start gap-2 rounded-lg border border-border bg-white px-4 py-3 shadow-soft">
                 <ChevronRight className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500" />
                 <span className="text-ink">{item}</span>
               </li>
@@ -454,7 +454,7 @@ export default async function VisitMonthPage({ params }: { params: Promise<{ loc
           </h2>
           <ul className="grid gap-3 sm:grid-cols-2">
             {packingTips.map((item) => (
-              <li key={item} className="flex items-start gap-2 rounded-lg border border-border bg-white px-4 py-3 shadow-sm">
+              <li key={item} className="flex items-start gap-2 rounded-lg border border-border bg-white px-4 py-3 shadow-soft">
                 <ChevronRight className="mt-0.5 h-4 w-4 flex-shrink-0 text-purple-500" />
                 <span className="text-ink">{item}</span>
               </li>
@@ -469,7 +469,7 @@ export default async function VisitMonthPage({ params }: { params: Promise<{ loc
           </h2>
           <ul className="grid gap-3 sm:grid-cols-2">
             {events.map((item) => (
-              <li key={item} className="flex items-start gap-2 rounded-lg border border-border bg-white px-4 py-3 shadow-sm">
+              <li key={item} className="flex items-start gap-2 rounded-lg border border-border bg-white px-4 py-3 shadow-soft">
                 <Calendar className="mt-0.5 h-4 w-4 flex-shrink-0 text-pink-500" />
                 <span className="text-ink">{item}</span>
               </li>

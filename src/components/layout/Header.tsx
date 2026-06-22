@@ -102,7 +102,7 @@ function LocaleSwitcher({ locale, pathname, router }: { locale: string; pathname
       </button>
 
       {langOpen && (
-        <div className="absolute right-0 top-full mt-1.5 w-44 max-h-80 overflow-y-auto bg-white rounded-xl border border-border shadow-xl z-50">
+        <div className="absolute right-0 top-full mt-1.5 w-44 max-h-80 overflow-y-auto bg-white rounded-xl border border-border shadow-card z-50">
           <div className="py-1">
             {LOCALES.map((l) => (
               <button
@@ -168,7 +168,7 @@ export function Header() {
                   <ChevronDown className="w-3.5 h-3.5 opacity-60 group-hover:rotate-180 transition-transform" />
                 </button>
                 <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 absolute left-0 top-full pt-1 transition-all duration-150 z-50">
-                  <div className="bg-white rounded-3xl border border-border shadow-xl py-2 w-44">
+                  <div className="bg-white rounded-3xl border border-border shadow-card py-2 w-44">
                     {group.items.map((link) => (
                       <Link
                         key={link.href}
@@ -265,7 +265,7 @@ export function Header() {
                       }}
                       className={`py-2 rounded-lg text-xs font-bold transition-all text-center ${
                         locale === l.code
-                          ? "bg-sea text-white shadow-sm"
+                          ? "bg-sea text-white shadow-soft"
                           : "text-text-muted bg-surface hover:bg-surface"
                       }`}
                     >

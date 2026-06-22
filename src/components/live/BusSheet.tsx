@@ -22,7 +22,7 @@ export function BusSheet({ vm, locale, onClose }: { vm: BusSheetVM; locale: stri
       aria-modal="true"
       aria-label={`${vm.code} ${vm.origin} → ${vm.destination}`}
       tabIndex={-1}
-      className="absolute inset-x-0 bottom-0 z-20 mx-auto w-full max-w-md rounded-t-2xl bg-white p-4 shadow-2xl outline-none"
+      className="absolute inset-x-0 bottom-0 z-20 mx-auto w-full max-w-md rounded-t-2xl bg-white p-4 shadow-float outline-none"
       style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}
     >
       <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-black/15" aria-hidden />

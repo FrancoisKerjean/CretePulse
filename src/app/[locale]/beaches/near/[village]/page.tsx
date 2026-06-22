@@ -123,7 +123,7 @@ export default async function BeachesNearVillagePage({ params }: { params: Promi
             <Link
               key={beach.slug}
               href={`/${locale}/beaches/${beach.slug}`}
-              className="group rounded-xl border border-border bg-white overflow-hidden hover:border-sea/30 hover:shadow-md transition-all"
+              className="group rounded-xl border border-border bg-white overflow-hidden hover:border-sea/30 hover:shadow-soft transition-all"
             >
               {beach.image_url && (
                 <div className="relative h-36 overflow-hidden">

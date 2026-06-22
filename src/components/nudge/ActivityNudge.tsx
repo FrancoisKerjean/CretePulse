@@ -95,7 +95,7 @@ export function ActivityNudge() {
         className="absolute inset-0 cursor-default bg-black/50 backdrop-blur-sm"
       />
 
-      <div className="relative w-full max-w-sm rounded-3xl bg-surface p-6 text-center shadow-2xl">
+      <div className="relative w-full max-w-sm rounded-3xl bg-surface p-6 text-center shadow-float">
         <button
           type="button"
           onClick={handleLater}
@@ -117,7 +117,7 @@ export function ActivityNudge() {
           <Link
             href="/match"
             onClick={handleConvert}
-            className="rounded-full bg-terracotta px-5 py-3 font-heading font-bold text-white shadow-md transition hover:bg-terracotta-light"
+            className="rounded-full bg-terracotta px-5 py-3 font-heading font-bold text-white shadow-soft transition hover:bg-terracotta-light"
           >
             {t("cta")}
           </Link>

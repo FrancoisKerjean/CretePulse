@@ -611,7 +611,7 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
           {data.categories.map((cat, i) => (
             <div
               key={i}
-              className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto_2fr] gap-3 md:gap-4 items-start rounded-xl border border-border bg-surface/50 p-4 md:p-5 hover:shadow-md transition-shadow"
+              className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto_2fr] gap-3 md:gap-4 items-start rounded-xl border border-border bg-surface/50 p-4 md:p-5 hover:shadow-soft transition-shadow"
             >
               {/* Category label */}
               <div className="font-semibold text-ink text-sm md:text-base">
@@ -675,11 +675,11 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
           </h2>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-border">
+            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-soft border border-border">
               <h3 className="text-xl font-bold text-sky-700 mb-3">{comp.a}</h3>
               <p className="text-ink leading-relaxed">{t(data.verdictA, locale)}</p>
             </div>
-            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-border">
+            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-soft border border-border">
               <h3 className="text-xl font-bold text-sky-700 mb-3">{comp.b}</h3>
               <p className="text-ink leading-relaxed">{t(data.verdictB, locale)}</p>
             </div>
@@ -720,7 +720,7 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
               <Link
                 key={c.slug}
                 href={`/${locale}/compare/${c.slug}`}
-                className="flex items-center gap-3 rounded-xl bg-white border border-border px-4 py-3 hover:shadow-md hover:border-sky-200 transition-all text-sm"
+                className="flex items-center gap-3 rounded-xl bg-white border border-border px-4 py-3 hover:shadow-soft hover:border-sky-200 transition-all text-sm"
               >
                 <Scale className="w-4 h-4 text-sky-500 flex-shrink-0" />
                 <span className="text-ink font-medium">
@@ -736,7 +736,7 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
             <div className="mt-8">
               <Link
                 href={`/${locale}/buses/${busPair}`}
-                className="block rounded-2xl border border-border bg-white p-4 hover:bg-surface hover:border-sky-200 transition-all shadow-sm"
+                className="block rounded-2xl border border-border bg-white p-4 hover:bg-surface hover:border-sky-200 transition-all shadow-soft"
               >
                 <p className="text-sm font-medium text-sky-700">
                   {t(LABELS.gettingBetween, locale)

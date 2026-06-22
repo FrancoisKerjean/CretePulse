@@ -383,7 +383,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
         <section className="mt-10">
             <Link
               href="/match"
-              className="group relative block overflow-hidden rounded-[30px] no-underline shadow-lg"
+              className="group relative block overflow-hidden rounded-[30px] no-underline shadow-card"
             >
               {/* Visuel dédié Gemini (Kami 12/06) : cartes de lieux en éventail face à la mer */}
               <img
@@ -408,7 +408,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                   <p className="m-0 mt-1.5 text-[14px] text-white/90 drop-shadow-[0_1px_2px_rgba(8,38,58,0.6)]">
                     {T.matchSub[ui]}
                   </p>
-                  <span className="relative mt-5 inline-flex items-center gap-2 overflow-hidden rounded-full bg-white px-7 py-3 font-heading text-[14.5px] font-bold text-terracotta shadow-md transition-transform group-hover:scale-[1.03]">
+                  <span className="relative mt-5 inline-flex items-center gap-2 overflow-hidden rounded-full bg-white px-7 py-3 font-heading text-[14.5px] font-bold text-terracotta shadow-soft transition-transform group-hover:scale-[1.03]">
                     <span
                       className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-terracotta/20 to-transparent bg-[length:300%_100%] animate-gradient"
                       aria-hidden

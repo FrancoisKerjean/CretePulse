@@ -330,7 +330,7 @@ export default async function ItineraryPage({
                 </div>
 
                 {/* Card */}
-                <div className="flex-1 rounded-xl bg-white border border-border p-5 shadow-sm">
+                <div className="flex-1 rounded-xl bg-white border border-border p-5 shadow-soft">
                   <h2 className="text-lg font-semibold text-sea mb-2" style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}>
                     {getLocalized(dp.title, loc)}
                   </h2>
@@ -387,7 +387,7 @@ export default async function ItineraryPage({
               <Link
                 key={it.slug}
                 href={`/${locale}/itineraries/${it.slug}`}
-                className="rounded-xl bg-white border border-border p-4 hover:shadow-md transition-shadow"
+                className="rounded-xl bg-white border border-border p-4 hover:shadow-soft transition-shadow"
               >
                 <div className="flex items-center gap-2 text-sea mb-2">
                   <Calendar className="w-4 h-4" />
@@ -411,21 +411,21 @@ export default async function ItineraryPage({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Link
               href={`/${locale}/beaches`}
-              className="rounded-xl bg-white border border-border p-4 hover:shadow-md transition-shadow flex items-center gap-3"
+              className="rounded-xl bg-white border border-border p-4 hover:shadow-soft transition-shadow flex items-center gap-3"
             >
               <MapPin className="w-5 h-5 text-sea" />
               <span className="font-medium text-sm text-text">{L.beaches}</span>
             </Link>
             <Link
               href={`/${locale}/archaeology`}
-              className="rounded-xl bg-white border border-border p-4 hover:shadow-md transition-shadow flex items-center gap-3"
+              className="rounded-xl bg-white border border-border p-4 hover:shadow-soft transition-shadow flex items-center gap-3"
             >
               <Clock className="w-5 h-5 text-terracotta" />
               <span className="font-medium text-sm text-text">{L.archaeology}</span>
             </Link>
             <Link
               href={`/${locale}/villages`}
-              className="rounded-xl bg-white border border-border p-4 hover:shadow-md transition-shadow flex items-center gap-3"
+              className="rounded-xl bg-white border border-border p-4 hover:shadow-soft transition-shadow flex items-center gap-3"
             >
               <MapPin className="w-5 h-5 text-olive" />
               <span className="font-medium text-sm text-text">{L.villages}</span>

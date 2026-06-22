@@ -276,7 +276,7 @@ export default function SearchPage() {
                   <Link
                     key={entry.path}
                     href={`/${locale}${entry.path}`}
-                    className="block rounded-xl border border-border bg-white px-5 py-4 hover:border-sea/30 hover:shadow-md transition-all"
+                    className="block rounded-xl border border-border bg-white px-5 py-4 hover:border-sea/30 hover:shadow-soft transition-all"
                   >
                     <span className="font-semibold text-text hover:text-sea transition-colors">
                       {entry.title[locale] || entry.title.en}
@@ -298,7 +298,7 @@ export default function SearchPage() {
               <Link
                 key={entry.path}
                 href={`/${locale}${entry.path}`}
-                className="block rounded-xl border border-border bg-white px-5 py-4 hover:border-sea/30 hover:shadow-md transition-all"
+                className="block rounded-xl border border-border bg-white px-5 py-4 hover:border-sea/30 hover:shadow-soft transition-all"
               >
                 <span className="font-semibold text-text hover:text-sea transition-colors">
                   {entry.title[locale] || entry.title.en}

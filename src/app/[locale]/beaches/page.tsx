@@ -123,7 +123,7 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
             <Link
               key={beach.slug}
               href={`/${locale}/beaches/${beach.slug}`}
-              className="group rounded-xl border border-border bg-white overflow-hidden hover:border-sea/30 hover:shadow-md transition-all"
+              className="group rounded-xl border border-border bg-white overflow-hidden hover:border-sea/30 hover:shadow-soft transition-all"
             >
               <div className="h-40 overflow-hidden">
                 <BeachImage

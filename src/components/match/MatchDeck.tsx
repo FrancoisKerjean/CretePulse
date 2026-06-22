@@ -1006,7 +1006,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.85, opacity: 0 }}
               transition={{ type: "spring", stiffness: 260, damping: 20 }}
-              className="w-full max-w-sm overflow-hidden rounded-[32px] bg-white text-center shadow-2xl"
+              className="w-full max-w-sm overflow-hidden rounded-[32px] bg-white text-center shadow-float"
             >
               <div className="relative h-60">
                 {match.photos[0] && <Image src={match.photos[0]} alt={match.name} fill sizes="(max-width: 640px) 100vw, 384px" className="object-cover" />}
