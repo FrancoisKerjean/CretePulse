@@ -88,5 +88,10 @@
     "readMore": "Tovább olvasom",
     "seeAll": "Összes megtekintése",
     "back": "Vissza"
+  },
+  "nextDeparture": {
+    "next": "Következő járat",
+    "inMin": "{m} perc múlva",
+    "tomorrow": "Első busz holnap"
   }
 }

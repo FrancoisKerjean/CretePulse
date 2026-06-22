@@ -88,5 +88,10 @@
     "readMore": "Leggi di più",
     "seeAll": "Vedi tutti",
     "back": "Indietro"
+  },
+  "nextDeparture": {
+    "next": "Prossima partenza",
+    "inMin": "tra {m} min",
+    "tomorrow": "Primo bus domani"
   }
 }

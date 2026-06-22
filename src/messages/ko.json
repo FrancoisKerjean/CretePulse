@@ -88,5 +88,10 @@
     "readMore": "더 읽기",
     "seeAll": "모두 보기",
     "back": "뒤로"
+  },
+  "nextDeparture": {
+    "next": "다음 버스",
+    "inMin": "{m}분 후",
+    "tomorrow": "내일 첫차"
   }
 }

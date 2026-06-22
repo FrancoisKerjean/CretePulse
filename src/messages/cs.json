@@ -88,5 +88,10 @@
     "readMore": "Číst dále",
     "seeAll": "Zobrazit vše",
     "back": "Zpět"
+  },
+  "nextDeparture": {
+    "next": "Příští odjezd",
+    "inMin": "za {m} min",
+    "tomorrow": "První bus zítra"
   }
 }

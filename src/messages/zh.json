@@ -88,5 +88,10 @@
     "readMore": "阅读更多",
     "seeAll": "查看全部",
     "back": "返回"
+  },
+  "nextDeparture": {
+    "next": "下一班",
+    "inMin": "{m} 分钟后",
+    "tomorrow": "明天首班车"
   }
 }

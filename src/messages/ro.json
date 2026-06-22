@@ -88,5 +88,10 @@
     "readMore": "Citește mai mult",
     "seeAll": "Vezi tot",
     "back": "Înapoi"
+  },
+  "nextDeparture": {
+    "next": "Următoarea plecare",
+    "inMin": "peste {m} min",
+    "tomorrow": "Primul autobuz mâine"
   }
 }

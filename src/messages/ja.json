@@ -88,5 +88,10 @@
     "readMore": "続きを読む",
     "seeAll": "すべて見る",
     "back": "戻る"
+  },
+  "nextDeparture": {
+    "next": "次の便",
+    "inMin": "あと{m}分",
+    "tomorrow": "始発は明日"
   }
 }

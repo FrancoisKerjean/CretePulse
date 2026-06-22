@@ -88,5 +88,10 @@
     "readMore": "Lue lisää",
     "seeAll": "Näytä kaikki",
     "back": "Takaisin"
+  },
+  "nextDeparture": {
+    "next": "Seuraava lähtö",
+    "inMin": "{m} min kuluttua",
+    "tomorrow": "Ensimmäinen bussi huomenna"
   }
 }

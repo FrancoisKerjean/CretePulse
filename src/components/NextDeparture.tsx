@@ -5,19 +5,10 @@
 // Pas de depart restant -> "Premier bus demain HH:MM". Pas de donnees -> null.
 // Spec : docs/superpowers/specs/2026-06-11-ui-live-data-redesign-design.md
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Clock } from "lucide-react";
 import { timesForDate } from "@/lib/bus-journey";
 import type { BusRoute } from "@/lib/buses";
-
-const T = {
-  next: { en: "Next departure", fr: "Prochain départ", de: "Nächste Abfahrt", el: "Επόμενη αναχώρηση" },
-  inMin: {
-    en: (m: number) => `in ${m} min`, fr: (m: number) => `dans ${m} min`,
-    de: (m: number) => `in ${m} Min`, el: (m: number) => `σε ${m} λεπτά`,
-  },
-  tomorrow: { en: "First bus tomorrow", fr: "Premier bus demain", de: "Erster Bus morgen", el: "Πρώτο λεωφορείο αύριο" },
-} as const;
-type Ui = keyof typeof T.next;
 
 function athensParts(d: Date): { iso: string; minutes: number } {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -36,8 +27,8 @@ const toMin = (hhmm: string): number => {
   return (h || 0) * 60 + (m || 0);
 };
 
-export function NextDeparture({ route, locale }: { route: BusRoute; locale: string }) {
-  const ui = (["en", "fr", "de", "el"].includes(locale) ? locale : "en") as Ui;
+export function NextDeparture({ route }: { route: BusRoute; locale: string }) {
+  const t = useTranslations("nextDeparture");
   const [state, setState] = useState<{ time: string; inMin: number } | { tomorrow: string } | null>(null);
 
   useEffect(() => {
@@ -62,11 +53,11 @@ export function NextDeparture({ route, locale }: { route: BusRoute; locale: stri
       <Clock className="w-3.5 h-3.5" />
       {"time" in state ? (
         <>
-          {T.next[ui]} <b>{state.time}</b>
-          <span className="text-[#43E89D] font-bold">· {T.inMin[ui](state.inMin)}</span>
+          {t("next")} <b>{state.time}</b>
+          <span className="text-[#43E89D] font-bold">· {t("inMin", { m: state.inMin })}</span>
         </>
       ) : (
-        <>{T.tomorrow[ui]} <b>{state.tomorrow}</b></>
+        <>{t("tomorrow")} <b>{state.tomorrow}</b></>
       )}
     </span>
   );

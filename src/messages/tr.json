@@ -88,5 +88,10 @@
     "readMore": "Devamını oku",
     "seeAll": "Tümünü gör",
     "back": "Geri"
+  },
+  "nextDeparture": {
+    "next": "Sonraki sefer",
+    "inMin": "{m} dk içinde",
+    "tomorrow": "İlk otobüs yarın"
   }
 }
