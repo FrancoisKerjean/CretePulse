@@ -400,7 +400,7 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
       <JsonLd data={faqSchema} />
 
       {/* Hero */}
-      <section className="bg-sea text-white py-12 md:py-20 px-4">
+      <section className="relative overflow-hidden bg-sea text-white py-12 md:py-20 px-4">
         <div className="max-w-4xl mx-auto">
           <Link href={`/${locale}/buses`} className="inline-flex items-center gap-1 text-white/50 text-sm hover:text-white/80 mb-4">
             <ChevronLeft className="w-4 h-4" /> {L.back}
@@ -412,6 +412,9 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
             {L.heroPrefix} {route.from} {L.heroTo} {route.to}
           </p>
         </div>
+        <svg className="absolute bottom-0 left-0 w-full h-[56px]" viewBox="0 0 1440 70" preserveAspectRatio="none" aria-hidden>
+          <path d="M0 40 C180 0 320 70 540 42 C760 14 900 66 1130 40 C1290 22 1380 36 1440 28 L1440 70 L0 70 Z" fill="#F6FBFC" />
+        </svg>
       </section>
 
       <div className="max-w-4xl mx-auto px-4 py-10 space-y-12">
