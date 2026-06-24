@@ -299,10 +299,24 @@ export async function generateMetadata(
   const { locale } = await params;
   setRequestLocale(locale);
   if (!VALID_SITE_LOC(locale)) return {};
-  const t = L[pickUiLoc(locale)];
+  const uiLoc = pickUiLoc(locale);
+  const t = L[uiLoc];
   const data = await buildSwimToday();
   const speed = data ? `${data.wind.minSpeed}-${data.wind.maxSpeed}` : "10-30";
   const wind = data?.wind.cardinal ?? "N";
+
+  // OG image dynamique (route /api/og, charte Kalimera, type=beach) : la préco
+  // du jour, datée par la donnée live. Chaque partage Facebook/WhatsApp affiche
+  // une carte fraîche (plage + vent) au lieu d'aucune image -> CTR de partage.
+  const ogTitle = data
+    ? `${t.pickTitle}: ${getLocalizedField(data.pick.beach, "name", uiLoc)}`
+    : t.metaTitle;
+  const ogSubtitle = data
+    ? `${t.regions[data.pick.beach.region] ?? data.pick.beach.region} · ${data.wind.cardinal} ${data.wind.minSpeed}-${data.wind.maxSpeed} km/h · live`
+    : t.metaDesc(wind, speed);
+  const ogImageUrl =
+    `${BASE_URL}/api/og?type=beach&title=${encodeURIComponent(ogTitle)}&subtitle=${encodeURIComponent(ogSubtitle)}`;
+
   return {
     title: t.metaTitle,
     description: t.metaDesc(wind, speed),
@@ -311,6 +325,13 @@ export async function generateMetadata(
       title: t.metaTitle,
       description: t.metaDesc(wind, speed),
       url: `${BASE_URL}/${locale}/beaches/today`,
+      images: [{ url: ogImageUrl, width: 1200, height: 630, alt: ogTitle }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t.metaTitle,
+      description: t.metaDesc(wind, speed),
+      images: [ogImageUrl],
     },
   };
 }
