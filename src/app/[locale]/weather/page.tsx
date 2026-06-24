@@ -3,6 +3,7 @@ import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/types";
 import { Wind, Droplets, Sun, Thermometer, Waves, Eye } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
+import { ShareBar } from "@/components/ShareBar";
 
 export const revalidate = 7200;
 
@@ -112,6 +113,7 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-sea">{title}</h1>
           <p className="text-text-muted mt-2">{subtitle}</p>
+          <ShareBar url={`${BASE_URL}/${locale}/weather`} title={title} locale={locale} className="mt-4" />
         </div>
 
         {/* Cities grid */}
