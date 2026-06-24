@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Se déplacer en Crète en bus",
     "connector": "à"
+  },
+  "airportTransfer": {
+    "disclosure": "Lien partenaire",
+    "headline": "Besoin d'un transfert depuis l'aéroport ?",
+    "headlinePlace": "Besoin d'un transfert vers {place} ?",
+    "trust": "Transfert privé porte à porte · annulation gratuite · payez plus tard",
+    "cta": "Réserver sur GetYourGuide"
   }
 }

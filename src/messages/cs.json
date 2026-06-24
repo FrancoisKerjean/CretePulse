@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Cestování po Krétě autobusem",
     "connector": "do"
+  },
+  "airportTransfer": {
+    "disclosure": "Partnerský odkaz",
+    "headline": "Potřebujete transfer z letiště?",
+    "headlinePlace": "Potřebujete transfer do {place}?",
+    "trust": "Soukromý transfer ode dveří ke dveřím · zrušení zdarma · plaťte později",
+    "cta": "Rezervovat na GetYourGuide"
   }
 }

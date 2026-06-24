@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Jak poruszać się po Krecie autobusem",
     "connector": "do"
+  },
+  "airportTransfer": {
+    "disclosure": "Link partnerski",
+    "headline": "Potrzebujesz transferu z lotniska?",
+    "headlinePlace": "Potrzebujesz transferu do {place}?",
+    "trust": "Prywatny transfer od drzwi do drzwi · bezpłatne anulowanie · płatność później",
+    "cta": "Zarezerwuj na GetYourGuide"
   }
 }

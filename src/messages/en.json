@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Getting around Crete by bus",
     "connector": "to"
+  },
+  "airportTransfer": {
+    "disclosure": "Partner link",
+    "headline": "Need a transfer from the airport?",
+    "headlinePlace": "Need a transfer to {place}?",
+    "trust": "Private door-to-door transfer · free cancellation · pay later",
+    "cta": "Book on GetYourGuide"
   }
 }

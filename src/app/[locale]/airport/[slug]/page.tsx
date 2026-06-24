@@ -13,6 +13,7 @@ import {
 import { buildAlternates } from "@/lib/seo";
 import { routing } from "@/i18n/routing";
 import { CarPromo } from "@/components/car-rental/CarPromo";
+import { AirportTransferCTA } from "@/components/ui/airport-transfer-cta";
 import InvestmentCTA from "@/components/InvestmentCTA";
 import { JsonLd } from "@/components/JsonLd";
 
@@ -647,6 +648,17 @@ export default async function AirportPage(
             </ul>
           </div>
         </section>
+
+        {/* Transfert aéroport (affiliation GetYourGuide, même tracking que les
+            excursions). Posé sur Héraklion (HER) uniquement : c'est la porte
+            d'entrée vers l'est de la Crète (Ierapetra, Makrigialos, Sitia,
+            Agios Nikolaos), où le transfert privé répond à une vraie intention.
+            CHQ/JSH = aéroports proches du centre, pas de besoin transfert. */}
+        {airport.iata === "HER" && (
+          <div className="mb-10">
+            <AirportTransferCTA locale={locale} />
+          </div>
+        )}
 
         {/* Encart partenaire location de voiture (wizard interne /car-rental) */}
         <CarPromo locale={locale} pickup={CAR_PICKUP[airport.iata]} source="airport" />

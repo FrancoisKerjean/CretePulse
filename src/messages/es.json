@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Moverse por Creta en bus",
     "connector": "a"
+  },
+  "airportTransfer": {
+    "disclosure": "Enlace de socio",
+    "headline": "¿Necesitas un traslado desde el aeropuerto?",
+    "headlinePlace": "¿Necesitas un traslado a {place}?",
+    "trust": "Traslado privado puerta a puerta · cancelación gratuita · paga después",
+    "cta": "Reservar en GetYourGuide"
   }
 }

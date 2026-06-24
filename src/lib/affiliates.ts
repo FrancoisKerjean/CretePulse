@@ -23,6 +23,16 @@ export const AFFILIATE_LINKS = {
     url: "https://www.getyourguide.com/crete-l404/?partner_id=UIHUPYW",
     label: { en: "Book tours", fr: "Réserver des excursions", de: "Touren buchen", el: "Κράτηση εκδρομών" },
   },
+  airportTransfer: {
+    // Même compte/tracking GetYourGuide que `tours` (partner_id=UIHUPYW,
+    // account "Crete.direct") : on réutilise l'ID existant pour que les
+    // commissions soient attribuées au même compte. Deep-link vers la
+    // catégorie "Airport transfers" de la Crète (tc153) au lieu de la
+    // landing générique. Intention ciblée : arriver à HER et rejoindre
+    // l'est de la Crète (Ierapetra, Makrigialos, Sitia, Agios Nikolaos).
+    url: "https://www.getyourguide.com/crete-l404/airport-transfers-tc153/?partner_id=UIHUPYW",
+    label: { en: "Book an airport transfer", fr: "Réserver un transfert aéroport", de: "Flughafentransfer buchen", el: "Κράτηση μεταφοράς από αεροδρόμιο" },
+  },
   ferry: {
     url: "https://www.ferryhopper.com/en/destinations/greece/crete?affiliate=cretedirect",
     label: { en: "Book ferries", fr: "Réserver un ferry", de: "Fähren buchen", el: "Κράτηση πλοίων" },

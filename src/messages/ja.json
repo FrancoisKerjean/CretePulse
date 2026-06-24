@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "バスで巡るクレタ島",
     "connector": "→"
+  },
+  "airportTransfer": {
+    "disclosure": "パートナーリンク",
+    "headline": "空港からの送迎が必要ですか？",
+    "headlinePlace": "{place}への送迎が必要ですか？",
+    "trust": "ドアツードアの専用送迎 · 無料キャンセル · 後払い可",
+    "cta": "GetYourGuideで予約"
   }
 }

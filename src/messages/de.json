@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Mit dem Bus durch Kreta",
     "connector": "nach"
+  },
+  "airportTransfer": {
+    "disclosure": "Partnerlink",
+    "headline": "Transfer vom Flughafen gesucht?",
+    "headlinePlace": "Transfer nach {place} gesucht?",
+    "trust": "Privater Tür-zu-Tür-Transfer · kostenlose Stornierung · später zahlen",
+    "cta": "Auf GetYourGuide buchen"
   }
 }

@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Slik kommer du deg rundt på Kreta med buss",
     "connector": "til"
+  },
+  "airportTransfer": {
+    "disclosure": "Partnerlenke",
+    "headline": "Trenger du transport fra flyplassen?",
+    "headlinePlace": "Trenger du transport til {place}?",
+    "trust": "Privat transport dør til dør · gratis avbestilling · betal senere",
+    "cta": "Bestill på GetYourGuide"
   }
 }

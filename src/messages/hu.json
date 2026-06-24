@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Közlekedés Krétán busszal",
     "connector": "ide:"
+  },
+  "airportTransfer": {
+    "disclosure": "Partnerlink",
+    "headline": "Transzferre van szüksége a repülőtérről?",
+    "headlinePlace": "Transzferre van szüksége ide: {place}?",
+    "trust": "Privát háztól házig transzfer · ingyenes lemondás · fizetés később",
+    "cta": "Foglalás a GetYourGuide-on"
   }
 }

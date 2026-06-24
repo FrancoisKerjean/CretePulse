@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "크레타 버스로 이동하기",
     "connector": "→"
+  },
+  "airportTransfer": {
+    "disclosure": "파트너 링크",
+    "headline": "공항에서 이동할 교통편이 필요하세요?",
+    "headlinePlace": "{place}까지 이동할 교통편이 필요하세요?",
+    "trust": "프라이빗 도어투도어 이동 · 무료 취소 · 나중에 결제",
+    "cta": "GetYourGuide에서 예약"
   }
 }

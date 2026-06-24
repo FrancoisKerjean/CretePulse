@@ -4,8 +4,18 @@ import { notFound } from "next/navigation";
 import { ChevronLeft, Bus, Car, Ship, Plane, Clock, Euro, RefreshCw, Lightbulb, ArrowRight } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
 import { AffiliateBanner } from "@/components/ui/affiliate-banner";
+import { AirportTransferCTA } from "@/components/ui/airport-transfer-cta";
 import { JsonLd } from "@/components/JsonLd";
 import { CarPromo } from "@/components/car-rental/CarPromo";
+
+// Trajets dont l'intention = arriver vers l'est de la Crète depuis Héraklion
+// (le bus existe mais est lent/indirect). Le transfert privé GetYourGuide
+// (même tracking que les excursions, partner_id=UIHUPYW) y répond. Sitia est
+// rejoint via Agios Nikolaos : ce trajet est le pivot est-Crète.
+const EAST_TRANSFER_ROUTES = new Set<string>([
+  "heraklion-to-agios-nikolaos",
+  "heraklion-to-sitia",
+]);
 
 // Routes en zone couverte par le partenaire location (chania-west) : encart
 // wizard interne au lieu du placeholder affilié DiscoverCars. Ailleurs, le
@@ -497,6 +507,14 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
           <CarPromo locale={locale} pickup={CAR_PARTNER_PICKUP[slug]} source="getting-around" />
         ) : (
           <AffiliateBanner type="carRental" locale={locale} placeName={route.to} />
+        )}
+
+        {/* Transfert aéroport vers l'est (affiliation GetYourGuide, même
+            tracking que les excursions). Posé sur les trajets pivot est-Crète :
+            depuis Héraklion vers Agios Nikolaos / Sitia, où le transfert privé
+            répond à l'intention d'arriver et rejoindre l'est. */}
+        {EAST_TRANSFER_ROUTES.has(slug) && (
+          <AirportTransferCTA locale={locale} placeName={route.to} />
         )}
 
         {/* FAQ */}

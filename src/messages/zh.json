@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "在克里特乘巴士出行",
     "connector": "至"
+  },
+  "airportTransfer": {
+    "disclosure": "合作伙伴链接",
+    "headline": "需要从机场接送吗？",
+    "headlinePlace": "需要前往{place}的接送吗？",
+    "trust": "私人门到门接送 · 免费取消 · 稍后付款",
+    "cta": "在 GetYourGuide 预订"
   }
 }

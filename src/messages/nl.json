@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Met de bus door Kreta reizen",
     "connector": "naar"
+  },
+  "airportTransfer": {
+    "disclosure": "Partnerlink",
+    "headline": "Transfer vanaf de luchthaven nodig?",
+    "headlinePlace": "Transfer naar {place} nodig?",
+    "trust": "Privétransfer van deur tot deur · gratis annulering · later betalen",
+    "cta": "Boek op GetYourGuide"
   }
 }

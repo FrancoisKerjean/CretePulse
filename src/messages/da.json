@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Rundt på Kreta med bus",
     "connector": "til"
+  },
+  "airportTransfer": {
+    "disclosure": "Partnerlink",
+    "headline": "Har du brug for transfer fra lufthavnen?",
+    "headlinePlace": "Har du brug for transfer til {place}?",
+    "trust": "Privat transfer dør til dør · gratis afbestilling · betal senere",
+    "cta": "Book på GetYourGuide"
   }
 }

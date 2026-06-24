@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Girit'te otobüsle ulaşım",
     "connector": "→"
+  },
+  "airportTransfer": {
+    "disclosure": "Ortak bağlantısı",
+    "headline": "Havalimanından transfer mi gerekiyor?",
+    "headlinePlace": "{place} için transfer mi gerekiyor?",
+    "trust": "Özel kapıdan kapıya transfer · ücretsiz iptal · sonra öde",
+    "cta": "GetYourGuide'da rezervasyon yap"
   }
 }

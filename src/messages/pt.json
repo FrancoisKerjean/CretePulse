@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Deslocar-se em Creta de autocarro",
     "connector": "a"
+  },
+  "airportTransfer": {
+    "disclosure": "Link de parceiro",
+    "headline": "Precisa de um transfer do aeroporto?",
+    "headlinePlace": "Precisa de um transfer para {place}?",
+    "trust": "Transfer privado porta a porta · cancelamento gratuito · pague depois",
+    "cta": "Reservar no GetYourGuide"
   }
 }

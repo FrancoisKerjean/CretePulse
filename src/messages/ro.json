@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Cum te deplasezi în Creta cu autobuzul",
     "connector": "spre"
+  },
+  "airportTransfer": {
+    "disclosure": "Link partener",
+    "headline": "Ai nevoie de transfer de la aeroport?",
+    "headlinePlace": "Ai nevoie de transfer către {place}?",
+    "trust": "Transfer privat din ușă în ușă · anulare gratuită · plătești mai târziu",
+    "cta": "Rezervă pe GetYourGuide"
   }
 }

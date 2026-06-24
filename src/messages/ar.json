@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "التنقّل في كريت بالحافلة",
     "connector": "إلى"
+  },
+  "airportTransfer": {
+    "disclosure": "رابط شريك",
+    "headline": "هل تحتاج إلى توصيلة من المطار؟",
+    "headlinePlace": "هل تحتاج إلى توصيلة إلى {place}؟",
+    "trust": "توصيلة خاصة من الباب إلى الباب · إلغاء مجاني · ادفع لاحقًا",
+    "cta": "احجز على GetYourGuide"
   }
 }

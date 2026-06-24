@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Kreetalla liikkuminen bussilla",
     "connector": "–"
+  },
+  "airportTransfer": {
+    "disclosure": "Kumppanilinkki",
+    "headline": "Tarvitsetko kuljetuksen lentokentältä?",
+    "headlinePlace": "Tarvitsetko kuljetuksen kohteeseen {place}?",
+    "trust": "Yksityinen ovelta ovelle -kuljetus · ilmainen peruutus · maksa myöhemmin",
+    "cta": "Varaa GetYourGuidessa"
   }
 }
