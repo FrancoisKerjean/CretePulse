@@ -13,6 +13,7 @@ import { getLocalizedField } from "@/lib/types";
 import type { Locale } from "@/lib/types";
 import { routing } from "@/i18n/routing";
 import { JsonLd } from "@/components/JsonLd";
+import { ShareBar } from "@/components/ShareBar";
 
 // Weather cache refreshes hourly on the VPS; re-render at most every 30 min.
 export const revalidate = 1800;
@@ -524,6 +525,7 @@ export default async function SwimTodayPage(
       </section>
 
       <div className="mx-auto max-w-5xl px-4 pt-8 pb-12">
+        <ShareBar url={pageUrl} title={t.h1} locale={locale} className="mb-8 justify-center" />
         {/* Pourquoi cette plage : argumentaire + attributs terrain + s'y rendre */}
         <section className="mb-10 rounded-[28px] bg-white px-7 py-6 shadow-[0_12px_32px_rgba(11,94,120,.10)]">
           <div className="flex items-center gap-2 text-sm text-text-muted mb-1.5">

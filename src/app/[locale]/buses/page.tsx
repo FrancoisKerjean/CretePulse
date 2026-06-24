@@ -7,6 +7,7 @@ import { busesPageSchema } from "@/lib/schema";
 import { qualityPairSlugs } from "@/lib/bus-seo";
 import { eligiblePairs } from "@/lib/bus-pairs";
 import { JsonLd } from "@/components/JsonLd";
+import { ShareBar } from "@/components/ShareBar";
 
 export const revalidate = 86400;
 
@@ -82,6 +83,9 @@ export default async function BusesPage({ params }: { params: Promise<{ locale: 
         updatedAt={updatedAt}
         alerts={alerts}
       />
+      <div className="mx-auto max-w-5xl px-4 pb-12">
+        <ShareBar url={`${BASE_URL}/${locale}/buses`} title={m.title} locale={locale} />
+      </div>
     </>
   );
 }
