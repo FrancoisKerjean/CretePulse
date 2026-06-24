@@ -10,7 +10,7 @@ import {
 } from "@/lib/airports";
 import { buildAlternates } from "@/lib/seo";
 import { routing } from "@/i18n/routing";
-import InvestmentCTA from "@/components/InvestmentCTA";
+import TaxCTA from "@/components/TaxCTA";
 import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 86400;
@@ -239,7 +239,7 @@ export default async function AirportsIndexPage(
           <p className="text-stone-700">{t.kastelliText}</p>
         </section>
 
-        <InvestmentCTA locale={locale} contentType="airport" />
+        <TaxCTA locale={locale} contentType="airport" />
       </div>
     </main>
   );

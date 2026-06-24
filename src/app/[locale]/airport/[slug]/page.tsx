@@ -13,7 +13,7 @@ import {
 import { buildAlternates } from "@/lib/seo";
 import { routing } from "@/i18n/routing";
 import { CarPromo } from "@/components/car-rental/CarPromo";
-import InvestmentCTA from "@/components/InvestmentCTA";
+import TaxCTA from "@/components/TaxCTA";
 import { JsonLd } from "@/components/JsonLd";
 
 // Pickup contextuel du wizard /car-rental : CHQ -> chania-airport, HER ->
@@ -694,7 +694,7 @@ export default async function AirportPage(
           )}
         </section>
 
-        <InvestmentCTA locale={locale} contentType="airport-slug" contentSlug={airport.iata} />
+        <TaxCTA locale={locale} contentType="airport-slug" contentSlug={airport.iata} />
       </div>
     </main>
   );

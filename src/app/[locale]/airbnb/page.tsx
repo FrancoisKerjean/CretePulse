@@ -10,7 +10,6 @@ import {
 } from "@/lib/airbnb-mappings";
 import { buildAlternates } from "@/lib/seo";
 import InvestmentCTA from "@/components/InvestmentCTA";
-import TaxCTA from "@/components/TaxCTA";
 import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 86400;
@@ -209,7 +208,6 @@ export default async function AirbnbIndexPage(
         </div>
 
         <InvestmentCTA locale={locale} contentType="airbnb" />
-        <TaxCTA locale={locale} contentType="airbnb" />
       </div>
     </main>
   );
