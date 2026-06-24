@@ -15,6 +15,7 @@ import { RouteLine } from "@/components/RouteLine";
 import { originPlaces } from "@/lib/bus-departures";
 import { pairSlug } from "@/lib/bus-pairs";
 import { PushBell } from "@/components/PushBell";
+import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 
 // ---------------------------------------------------------------------------
 // Slugs valides des pages cibles (mirror des generateStaticParams cote serveur).
@@ -476,8 +477,18 @@ export function BusesClient({
               {filtered.length} route{filtered.length !== 1 ? "s" : ""}
             </h2>
             {filtered.length === 0 ? (
-              <div className="rounded-3xl border border-border bg-white p-6 text-center text-text-muted text-sm">
-                {t("noRoute", locale)}
+              <div className="space-y-4">
+                <div className="rounded-3xl border border-border bg-white p-6 text-center text-text-muted text-sm">
+                  {t("noRoute", locale)}
+                </div>
+                {/* Pas de bus direct = meilleur moment pour proposer la voiture.
+                    Signal mesuré (Plausible, 24/06) : /buses = ~74 % du trafic mais
+                    capture affiliée quasi nulle -> CTA contextuel sur l'intention. */}
+                <AffiliateBanner
+                  type="carRental"
+                  locale={locale}
+                  placeName={toPlace || fromPlace || undefined}
+                />
               </div>
             ) : (
               <RouteList list={filtered} locale={locale} />
@@ -500,6 +511,9 @@ export function BusesClient({
                     <NoDirectBusCard key={d.slug} destination={d} locale={locale} />
                   ))}
                 </div>
+                {/* Ces destinations n'ont pas de bus direct -> la voiture est la
+                    réponse pratique. CTA voiture contextuel (cf signal Plausible 24/06). */}
+                <AffiliateBanner type="carRental" locale={locale} className="mt-4" />
               </section>
             )}
           </>
