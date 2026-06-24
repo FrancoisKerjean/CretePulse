@@ -6,6 +6,7 @@ import { buildAlternates } from "@/lib/seo";
 import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 import { JsonLd } from "@/components/JsonLd";
 import { CarPromo } from "@/components/car-rental/CarPromo";
+import { ShareBar } from "@/components/ShareBar";
 
 // Routes en zone couverte par le partenaire location (chania-west) : encart
 // wizard interne au lieu du placeholder affilié DiscoverCars. Ailleurs, le
@@ -534,6 +535,8 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
             </div>
           </section>
         )}
+
+        <ShareBar url={`${BASE_URL}/${locale}/getting-around/${slug}`} title={`${route.from} - ${route.to}`} locale={locale} className="justify-center pt-4" />
 
         {/* Link to buses page */}
         <div className="text-center pt-4">

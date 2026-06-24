@@ -309,8 +309,10 @@ export async function generateMetadata(
   // OG image dynamique (route /api/og, charte Kalimera, type=beach) : la préco
   // du jour, datée par la donnée live. Chaque partage Facebook/WhatsApp affiche
   // une carte fraîche (plage + vent) au lieu d'aucune image -> CTR de partage.
+  // FR met une espace avant les deux-points (typographie française), pas EN/DE/EL.
+  const ogSep = uiLoc === "fr" ? " : " : ": ";
   const ogTitle = data
-    ? `${t.pickTitle}: ${getLocalizedField(data.pick.beach, "name", uiLoc)}`
+    ? `${t.pickTitle}${ogSep}${getLocalizedField(data.pick.beach, "name", uiLoc)}`
     : t.metaTitle;
   const ogSubtitle = data
     ? `${t.regions[data.pick.beach.region] ?? data.pick.beach.region} · ${data.wind.cardinal} ${data.wind.minSpeed}-${data.wind.maxSpeed} km/h · live`

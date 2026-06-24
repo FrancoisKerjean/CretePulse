@@ -24,6 +24,7 @@ import { SLUG_COORDS } from "@/lib/taxi-fare";
 import { nearestBy } from "@/lib/geo";
 import { getBathingWaterQuality } from "@/lib/bathing-water";
 import { WaterQualityBadge, wqStatusLabel } from "@/components/WaterQualityBadge";
+import { ShareBar } from "@/components/ShareBar";
 
 export const revalidate = 86400;
 
@@ -598,6 +599,8 @@ export default async function BeachDetailPage({
             </div>
           </section>
         )}
+
+        <ShareBar url={`${BASE_URL}/${locale}/beaches/${beach.slug}`} title={getLocalizedField(beach, "name", loc)} locale={locale} className="my-8" />
 
         {/* Cross-link rental funnel (kairosguest.com), UTM-tracked */}
         <RentalCTA locale={locale} contentSlug={beach.slug} contentType="beach" />
