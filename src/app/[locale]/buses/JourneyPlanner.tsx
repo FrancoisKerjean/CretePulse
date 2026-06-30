@@ -509,6 +509,15 @@ export function JourneyPlanner({
     (taxiSlugB && zoneForPickup(taxiSlugB) ? taxiSlugB : null) ??
     undefined;
 
+  // Cross-sell voiture quand un trajet existe MAIS impose au moins une
+  // correspondance (aucun bus direct) : avec des bagages, l'attente à la
+  // correspondance rend la voiture une vraie alternative. On ne montre rien
+  // sur les lignes directes (la force du planner). `source` distinct =
+  // mesurable séparément du cas 0 résultat (Plausible promo_impression).
+  const bestChanges =
+    journeys.length > 0 ? Math.min(...journeys.map((j) => j.legs.length - 1)) : 0;
+  const indirectOnly = journeys.length > 0 && bestChanges >= 1;
+
   return (
     <div className="rounded-[28px] bg-white p-6 mb-6 shadow-[0_12px_32px_rgba(11,94,120,.10)]">
       <p className="font-heading font-bold text-base text-text mb-3.5">{tp("searchTitle", locale)}</p>
@@ -609,6 +618,9 @@ export function JourneyPlanner({
             <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
             {tp("priceMethodo", locale)}
           </p>
+          {indirectOnly && (
+            <CarPromo locale={locale} pickup={carPickup} source="journey-indirect" />
+          )}
         </>
       )}
 
