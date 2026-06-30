@@ -50,6 +50,15 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       description: m.desc,
       url,
       type: "website",
+      // Aperçu social = vrai screenshot du hero (cf scripts/og : capture-og-home).
+      // Override le défaut /api/og du layout pour le lien partagé crete.direct.
+      images: [{ url: `${BASE_URL}/og-home.jpg`, width: 1200, height: 630, alt: m.title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: m.title,
+      description: m.desc,
+      images: [`${BASE_URL}/og-home.jpg`],
     },
     // WebSite + SearchAction JSON-LD is rendered as a real <script> in HomePage below
     // (Next renders `other` as <meta>, which Google does not read as structured data).
