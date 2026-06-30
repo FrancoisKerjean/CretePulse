@@ -1,8 +1,8 @@
 // Régénère public/og-home.jpg = screenshot du hero de la home en 1200x630 (@2x),
 // utilisé comme aperçu social (Open Graph / Twitter) du lien partagé crete.direct.
 // Playwright n'est pas une dépendance du repo : lancer via un install existant, ex.
-//   node scripts/capture-og-home.mjs            (si playwright résolvable)
-//   OG_URL=https://crete.direct/fr node scripts/capture-og-home.mjs   (variante locale)
+//   node scripts/capture-og-home.mjs            (EN -> public/og-home.jpg)
+//   OG_URL=https://crete.direct/fr OG_OUT=$PWD/public/og-home-fr.jpg node scripts/capture-og-home.mjs   (FR)
 // À rejouer après toute refonte visuelle du hero.
 import { chromium } from "playwright";
 
