@@ -14,7 +14,7 @@ export const revalidate = 86400;
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 const META: Record<string, { title: string; desc: string }> = {
-  en: { title: "Crete Bus Timetables 2026 - KTEL Schedules & Ticket Prices", desc: "All KTEL bus timetables for Crete with 2026 ticket prices: Heraklion–Chania, Heraklion–Agios Nikolaos, Chania–Elafonissi, airport connections, journey times and a free route planner." },
+  en: { title: "Crete Bus Guide 2026 — 88 KTEL Routes, Prices & Free Planner", desc: "Your practical guide to KTEL buses in Crete: 88 dedicated route pages with real 2026 prices, live timetables, airport connections. Free journey planner — plan any trip in 30 seconds." },
   fr: { title: "Horaires de Bus en Crète 2026 - Lignes et Prix KTEL", desc: "Tous les horaires de bus KTEL en Crète avec les prix 2026 : Héraklion–La Canée, Héraklion–Agios Nikolaos, La Canée–Elafonissi, liaisons aéroport, durées de trajet et planificateur d'itinéraire gratuit." },
   de: { title: "Kreta Busfahrplan 2026 - KTEL Abfahrtszeiten & Preise", desc: "Alle KTEL-Busfahrpläne für Kreta mit Ticketpreisen 2026: Heraklion–Chania, Heraklion–Agios Nikolaos, Chania–Elafonissi, Flughafenverbindungen, Fahrzeiten und kostenloser Routenplaner." },
   el: { title: "Δρομολόγια ΚΤΕΛ Κρήτης 2026 - Ώρες & Τιμές Εισιτηρίων", desc: "Όλα τα δρομολόγια ΚΤΕΛ Κρήτης με τιμές εισιτηρίων 2026: Ηράκλειο–Χανιά, Ηράκλειο–Άγιος Νικόλαος, Χανιά–Ελαφονήσι, συνδέσεις αεροδρομίου, χρόνοι διαδρομής και δωρεάν σχεδιασμός διαδρομής." },
