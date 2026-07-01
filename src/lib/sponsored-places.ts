@@ -9,12 +9,13 @@ export type SponsorCard = {
   id: string;
   name: string;
   category: string;
-  prefecture: string;
-  rating: number;
   photo: string;
   url: string;
-  lat: number;
-  lng: number;
+  // Optionnels : un partenaire en ligne peut n'avoir ni lieu, ni note Google.
+  prefecture?: string;
+  rating?: number;
+  lat?: number;
+  lng?: number;
 };
 
 const CARDS = data as SponsorCard[];

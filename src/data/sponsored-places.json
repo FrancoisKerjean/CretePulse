@@ -1,13 +1,9 @@
 [
   {
-    "id": "cabana-mare",
-    "name": "Cabana Mare",
-    "category": "Beach club",
-    "prefecture": "Chania",
-    "rating": 4.9,
-    "photo": "https://media.crete.direct/places/agadiko-beaches-kapetaniana-beach-koudoumas/1.jpg",
-    "url": "https://cabanamarechania.gr",
-    "lat": 35.5106,
-    "lng": 24.0242
+    "id": "meraki-greek-lessons",
+    "name": "Meraki Greek Lessons",
+    "category": "Greek lessons · online",
+    "photo": "/partners/meraki-greek-lessons.jpg",
+    "url": "https://merakigreeklessons.gr/"
   }
 ]
