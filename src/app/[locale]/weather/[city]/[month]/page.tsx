@@ -1,7 +1,8 @@
-import { CITIES, MONTHS, MONTH_NAMES, getClimateData, getCity, getSwimVerdict } from "@/lib/weather-monthly";
+import { CITIES, MONTHS, MONTH_NAMES, getClimateData, getCity, getSwimVerdict, getAnnualAverage, getCityLocativeEl } from "@/lib/weather-monthly";
+import { weatherInsight } from "@/lib/weather-insight";
 import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/types";
-import { Thermometer, Waves, Sun, CloudRain, ChevronLeft } from "lucide-react";
+import { Thermometer, Waves, Sun, CloudRain, ChevronLeft, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
@@ -76,6 +77,11 @@ export default async function WeatherCityMonthPage({ params }: { params: Promise
 
   const climate = getClimateData(citySlug, month);
   const swimVerdict = getSwimVerdict(climate.seaTemp, locale);
+  const annual = getAnnualAverage(citySlug);
+  const insightLabel = city.name;
+  const insightLocativeEl = locale === "el" ? getCityLocativeEl(citySlug) : undefined;
+  const insightCityName = locale === "el" ? city.nameEl : insightLabel;
+  const insightText = weatherInsight(insightCityName, monthName, climate, annual, locale, insightLocativeEl);
 
   const heroTitles: Record<string, string> = {
     en: `Weather in ${city.name} in ${monthName}`,
@@ -208,6 +214,14 @@ export default async function WeatherCityMonthPage({ params }: { params: Promise
             <p className="text-3xl font-bold text-text">{climate.uvIndex}</p>
           </div>
         </div>
+
+        {/* Data-driven insight: month vs. city's own annual baseline. */}
+        <aside className="rounded-xl bg-sea-faint/60 border border-sea/15 p-5 md:p-6">
+          <div className="flex items-start gap-3">
+            <Sparkles className="w-5 h-5 text-sea flex-shrink-0 mt-0.5" aria-hidden="true" />
+            <p className="text-sm md:text-base text-text leading-relaxed">{insightText}</p>
+          </div>
+        </aside>
 
         {/* FAQ section */}
         <section>
