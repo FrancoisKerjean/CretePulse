@@ -1,20 +1,31 @@
-// Partenaires sponsorises sur /explore.
-// Source de verite = qui paie. Config volontairement simple (JSON slug -> partenaire),
-// aucune migration DB, 100% reversible : config vide = /explore identique a aujourd'hui.
+// Cartes partenaires sponsorisees sur /explore (modele B : le partenaire a SA carte).
+// Source de verite = qui paie. Config simple (tableau JSON), aucune migration DB,
+// 100% reversible : tableau vide = /explore identique a aujourd'hui.
 // NB : l'entree de demonstration (Cabana Mare) sert a juger le rendu sur Preview.
 //      A retirer / remplacer par les vrais partenaires signes avant prod.
 import data from "@/data/sponsored-places.json";
 
-export type Sponsor = { sponsor: string; url?: string; label?: string };
+export type SponsorCard = {
+  id: string;
+  name: string;
+  category: string;
+  prefecture: string;
+  rating: number;
+  photo: string;
+  url: string;
+  lat: number;
+  lng: number;
+};
 
-const MAP = data as Record<string, Sponsor>;
+const CARDS = data as SponsorCard[];
 
-export function getSponsor(slug: string): Sponsor | undefined {
-  return MAP[slug];
+export function getSponsorCards(): SponsorCard[] {
+  return CARDS;
 }
 
-export function isSponsored(slug: string): boolean {
-  return Object.prototype.hasOwnProperty.call(MAP, slug);
+// Un lieu injecte par un partenaire a un slug prefixe "sponsor:".
+export function isSponsorSlug(slug: string): boolean {
+  return slug.startsWith("sponsor:");
 }
 
 // Libelle "Sponsorise" localise (etiquetage honnete obligatoire, charte crete.direct).

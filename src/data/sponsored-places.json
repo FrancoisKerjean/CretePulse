@@ -1,3 +1,13 @@
-{
-  "agadiko-beaches-kapetaniana-beach-koudoumas": { "sponsor": "Cabana Mare", "url": "https://cabanamarechania.gr" }
-}
+[
+  {
+    "id": "cabana-mare",
+    "name": "Cabana Mare",
+    "category": "Beach club",
+    "prefecture": "Chania",
+    "rating": 4.9,
+    "photo": "https://media.crete.direct/places/agadiko-beaches-kapetaniana-beach-koudoumas/1.jpg",
+    "url": "https://cabanamarechania.gr",
+    "lat": 35.5106,
+    "lng": 24.0242
+  }
+]

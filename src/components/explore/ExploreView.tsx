@@ -8,7 +8,7 @@ import {
 import type { CbPlaceListItem, CbPlace } from "@/lib/cb-places";
 import { WaterQualityBadge } from "@/components/WaterQualityBadge";
 import { getCbPlaceBySlug } from "@/lib/cb-places";
-import { getSponsor, isSponsored, sponsoredLabel } from "@/lib/sponsored-places";
+import { getSponsorCards, isSponsorSlug, sponsoredLabel } from "@/lib/sponsored-places";
 import { typeLabel } from "@/lib/cb-type-labels";
 import { nearestBy, circlePolygon, isOnCrete } from "@/lib/geo";
 import { cleanCbDescription } from "@/lib/cb-place-helpers";
@@ -226,7 +226,35 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
 
   // Liste affichée : distance quand Near me actif, sinon note décroissante
   // (les lieux notés et photographiés d'abord, plus engageant que l'ordre slug).
-  const displayed: Array<CbPlaceListItem & { km?: number }> = useMemo(() => {
+  // Cartes partenaires (modele B) : chacune est un lieu synthetique injecte en tete,
+  // avec sa propre photo/nom/note et un lien externe (slug prefixe "sponsor:").
+  const sponsorItems: Array<CbPlaceListItem & { __sponsorUrl: string }> = useMemo(
+    () =>
+      getSponsorCards().map((c) => ({
+        slug: `sponsor:${c.id}`,
+        name: c.name,
+        place_type: "sponsor",
+        category: c.category,
+        latitude: c.lat,
+        longitude: c.lng,
+        rating: c.rating,
+        prefecture: c.prefecture,
+        water_color: null,
+        sand_type: null,
+        depth: null,
+        sea_surface: null,
+        crowds: null,
+        facilities: null,
+        accessibility: null,
+        photos: [c.photo],
+        photo_count: 1,
+        water_quality: null,
+        __sponsorUrl: c.url,
+      })),
+    [],
+  );
+
+  const displayed: Array<CbPlaceListItem & { km?: number; __sponsorUrl?: string }> = useMemo(() => {
     const base: Array<CbPlaceListItem & { km?: number }> =
       nearActive && geo.pos
         ? nearestBy(
@@ -242,11 +270,9 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
               (p.rating ?? 0) + Math.min(p.photo_count ?? 0, 20) * 0.02;
             return score(b) - score(a);
           });
-    // Partenaires sponsorises remontes en tete (tri stable, etiquete cote carte).
-    return [...base].sort(
-      (a, b) => (isSponsored(b.slug) ? 1 : 0) - (isSponsored(a.slug) ? 1 : 0),
-    );
-  }, [filtered, nearActive, geo.pos]);
+    // Cartes partenaires en tete de liste (etiquetees Sponsorise).
+    return [...sponsorItems, ...base];
+  }, [filtered, nearActive, geo.pos, sponsorItems]);
 
   const geoBlocked = geo.status === "denied" || geo.status === "unavailable";
 
@@ -599,11 +625,15 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
   );
 
   // Card riche partagee entre le panneau desktop et la liste mobile.
-  function PlaceRow({ p }: { p: CbPlaceListItem & { km?: number } }) {
-    const spo = getSponsor(p.slug);
+  function PlaceRow({ p }: { p: CbPlaceListItem & { km?: number; __sponsorUrl?: string } }) {
+    const spo = isSponsorSlug(p.slug);
     return (
       <button
-        onClick={() => selectPlace(p.slug)}
+        onClick={() =>
+          spo && p.__sponsorUrl
+            ? window.open(p.__sponsorUrl, "_blank", "noopener")
+            : selectPlace(p.slug)
+        }
         className={`flex gap-3 p-2 rounded-xl bg-white shadow-soft text-left transition-all w-full ${
           spo ? "border border-amber-300 ring-1 ring-amber-200" : "border border-sea/10 hover:border-sea/30"
         }`}
@@ -633,7 +663,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
           <div className="text-xs text-text-muted mt-0.5">
             <span className="inline-block w-2 h-2 rounded-full mr-1"
               style={{ backgroundColor: TYPE_COLORS[p.place_type] || FALLBACK_COLOR }} />
-            {typeLabel(p.place_type, locale)}
+            {spo ? (p.category ?? "") : typeLabel(p.place_type, locale)}
             {detectPrefecture(p) ? ` · ${detectPrefecture(p)}` : ""}
           </div>
           {(p.water_quality || p.sand_type || p.water_color) && (
@@ -785,7 +815,11 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
               {displayed.slice(0, 30).map((p) => (
                 <button
                   key={p.slug}
-                  onClick={() => selectPlace(p.slug)}
+                  onClick={() =>
+                    isSponsorSlug(p.slug) && p.__sponsorUrl
+                      ? window.open(p.__sponsorUrl, "_blank", "noopener")
+                      : selectPlace(p.slug)
+                  }
                   className="snap-start shrink-0 w-[196px] bg-white rounded-2xl overflow-hidden shadow-[0_10px_30px_rgba(11,94,120,0.28)] text-left"
                 >
                   <div className="h-[84px] bg-sand relative">
@@ -798,7 +832,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
                       style={{ backgroundColor: TYPE_COLORS[p.place_type] || FALLBACK_COLOR }}>
                       {typeLabel(p.place_type, locale)}
                     </span>
-                    {getSponsor(p.slug) && (
+                    {isSponsorSlug(p.slug) && (
                       <span className="absolute top-1.5 right-1.5 text-[8px] font-bold uppercase tracking-wide text-amber-700 bg-white/95 px-1.5 py-0.5 rounded-full">
                         {sponsoredLabel(locale)}
                       </span>
