@@ -165,6 +165,10 @@ export async function GET() {
 
   // Utility pages
   push("/faq", "monthly", 0.7);
+  // Flagship interactive explorer (2296 places, filters by sand/water/crowds).
+  // Highest-priority utility page · was missing entirely, the likely root cause
+  // of it never getting indexed despite strong internal linking.
+  push("/explore", "weekly", 0.9);
   push("/map", "monthly", 0.6);
   push("/search", "monthly", 0.4);
   push("/match", "monthly", 0.6);
