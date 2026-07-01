@@ -8,6 +8,7 @@ import {
 import type { CbPlaceListItem, CbPlace } from "@/lib/cb-places";
 import { WaterQualityBadge } from "@/components/WaterQualityBadge";
 import { getCbPlaceBySlug } from "@/lib/cb-places";
+import { getSponsor, isSponsored, sponsoredLabel } from "@/lib/sponsored-places";
 import { typeLabel } from "@/lib/cb-type-labels";
 import { nearestBy, circlePolygon, isOnCrete } from "@/lib/geo";
 import { cleanCbDescription } from "@/lib/cb-place-helpers";
@@ -226,19 +227,25 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
   // Liste affichée : distance quand Near me actif, sinon note décroissante
   // (les lieux notés et photographiés d'abord, plus engageant que l'ordre slug).
   const displayed: Array<CbPlaceListItem & { km?: number }> = useMemo(() => {
-    if (nearActive && geo.pos) {
-      return nearestBy(
-        filtered,
-        (p) => (p.latitude != null && p.longitude != null ? [p.latitude, p.longitude] : null),
-        geo.pos,
-        filtered.length,
-      );
-    }
-    // Note ponderee par le nombre de photos : un 4.8 bien documente passe
-    // devant un 5.0 obscur a 1 photo.
-    const score = (p: CbPlaceListItem) =>
-      (p.rating ?? 0) + Math.min(p.photo_count ?? 0, 20) * 0.02;
-    return [...filtered].sort((a, b) => score(b) - score(a));
+    const base: Array<CbPlaceListItem & { km?: number }> =
+      nearActive && geo.pos
+        ? nearestBy(
+            filtered,
+            (p) => (p.latitude != null && p.longitude != null ? [p.latitude, p.longitude] : null),
+            geo.pos,
+            filtered.length,
+          )
+        : [...filtered].sort((a, b) => {
+            // Note ponderee par le nombre de photos : un 4.8 bien documente
+            // passe devant un 5.0 obscur a 1 photo.
+            const score = (p: CbPlaceListItem) =>
+              (p.rating ?? 0) + Math.min(p.photo_count ?? 0, 20) * 0.02;
+            return score(b) - score(a);
+          });
+    // Partenaires sponsorises remontes en tete (tri stable, etiquete cote carte).
+    return [...base].sort(
+      (a, b) => (isSponsored(b.slug) ? 1 : 0) - (isSponsored(a.slug) ? 1 : 0),
+    );
   }, [filtered, nearActive, geo.pos]);
 
   const geoBlocked = geo.status === "denied" || geo.status === "unavailable";
@@ -593,10 +600,13 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
 
   // Card riche partagee entre le panneau desktop et la liste mobile.
   function PlaceRow({ p }: { p: CbPlaceListItem & { km?: number } }) {
+    const spo = getSponsor(p.slug);
     return (
       <button
         onClick={() => selectPlace(p.slug)}
-        className="flex gap-3 p-2 rounded-xl border border-sea/10 bg-white shadow-soft hover:shadow-soft hover:border-sea/30 text-left transition-all w-full"
+        className={`flex gap-3 p-2 rounded-xl bg-white shadow-soft text-left transition-all w-full ${
+          spo ? "border border-amber-300 ring-1 ring-amber-200" : "border border-sea/10 hover:border-sea/30"
+        }`}
       >
         <div className="relative w-[72px] h-[64px] rounded-lg overflow-hidden bg-sand shrink-0">
           {p.photos?.[0] ? (
@@ -610,6 +620,11 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
         <div className="min-w-0 flex-1 py-0.5">
           <div className="flex items-center gap-2">
             <span className="font-semibold text-sm text-text truncate">{p.name}</span>
+            {spo && (
+              <span className="shrink-0 text-[9px] font-bold uppercase tracking-wide text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                {sponsoredLabel(locale)}
+              </span>
+            )}
             <RatingStars rating={p.rating} />
             {p.km != null && (
               <span className="text-xs text-text-muted font-data whitespace-nowrap">· {fmtKm(p.km)} km</span>
@@ -783,6 +798,11 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
                       style={{ backgroundColor: TYPE_COLORS[p.place_type] || FALLBACK_COLOR }}>
                       {typeLabel(p.place_type, locale)}
                     </span>
+                    {getSponsor(p.slug) && (
+                      <span className="absolute top-1.5 right-1.5 text-[8px] font-bold uppercase tracking-wide text-amber-700 bg-white/95 px-1.5 py-0.5 rounded-full">
+                        {sponsoredLabel(locale)}
+                      </span>
+                    )}
                   </div>
                   <div className="px-2.5 py-2">
                     <div className="flex items-center justify-between gap-1.5">
