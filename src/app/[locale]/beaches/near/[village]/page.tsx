@@ -2,7 +2,8 @@ import { getAllBeaches } from "@/lib/beaches";
 import { setRequestLocale } from "next-intl/server";
 import { getAllVillages } from "@/lib/villages";
 import { getLocalizedField, type Locale } from "@/lib/types";
-import { Waves, MapPin, ChevronLeft } from "lucide-react";
+import { Waves, MapPin, ChevronLeft, Sparkles } from "lucide-react";
+import { beachVillageInsight } from "@/lib/beach-village-insight";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -87,6 +88,13 @@ export default async function BeachesNearVillagePage({ params }: { params: Promi
     .sort((a, b) => a.dist - b.dist)
     .slice(0, 12);
 
+  const insightText = beachVillageInsight(
+    villageName,
+    nearbyBeaches,
+    locale,
+    (b) => getLocalizedField(b, "name", loc),
+  );
+
   const heroTitles: Record<string, string> = {
     en: `Beaches near ${villageName}`,
     fr: `Plages près de ${villageName}`,
@@ -119,6 +127,14 @@ export default async function BeachesNearVillagePage({ params }: { params: Promi
       </section>
 
       <div className="max-w-4xl mx-auto px-4 py-8">
+        {insightText && (
+          <aside className="rounded-xl bg-sea-faint/60 border border-sea/15 p-5 md:p-6 mb-6">
+            <div className="flex items-start gap-3">
+              <Sparkles className="w-5 h-5 text-sea flex-shrink-0 mt-0.5" aria-hidden="true" />
+              <p className="text-sm md:text-base text-text leading-relaxed">{insightText}</p>
+            </div>
+          </aside>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {nearbyBeaches.map(beach => {
             const wq = getBathingWaterQuality(beach.latitude, beach.longitude, beach.name_en);
