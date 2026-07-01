@@ -41,9 +41,15 @@ export interface BusDestination {
 }
 
 export async function getBusRoutes(): Promise<BusRoute[]> {
+  // Exclut les lignes urbaines d'Agios Nikolaos (operator agncitybus) : elles ont leur
+  // propre calculateur (/buses/agios-nikolaos) et pollueraient le planner INTERURBAIN
+  // qui itère TOUTES les routes (combobox JourneyPlanner, DepartureBoard, BusNetworkMap,
+  // PopularRoutes). NB : /buses/[pair] est déjà protégé indépendamment par la whitelist
+  // BUS_PLACE_SLUGS d'eligiblePairs (Terminal / hospital n'y figurent pas).
   const { data, error } = await supabase
     .from("bus_routes")
     .select("*")
+    .neq("operator_id", "agncitybus")
     .order("operator_id", { ascending: true })
     .order("from_place", { ascending: true })
     .order("to_place", { ascending: true });

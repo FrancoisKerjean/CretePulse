@@ -460,6 +460,29 @@ export function BusesClient({
           isToday={isToday}
         />
 
+        {/* Bus urbain gratuit d'Agios Nikolaos : réseau municipal, calculateur dédié */}
+        <Link
+          href={`/${locale}/buses/agios-nikolaos`}
+          className="mb-6 flex items-center gap-3 rounded-2xl border border-black/5 bg-white p-4 shadow-sm transition hover:shadow-md"
+        >
+          <span className="flex gap-1" aria-hidden>
+            <span className="h-6 w-2 rounded-full" style={{ background: "#F2C21E" }} />
+            <span className="h-6 w-2 rounded-full" style={{ background: "#E0342B" }} />
+            <span className="h-6 w-2 rounded-full" style={{ background: "#2FA24C" }} />
+          </span>
+          <span className="flex-1">
+            <span className="block text-sm font-semibold text-text">
+              {locale === "fr" ? "Bus urbain d'Agios Nikolaos · gratuit" : "Agios Nikolaos city bus · free"}
+            </span>
+            <span className="block text-xs text-text-muted">
+              {locale === "fr"
+                ? "3 lignes, toutes les 30 min · calculez votre trajet en ville"
+                : "3 lines, every 30 min · plan your trip in town"}
+            </span>
+          </span>
+          <ChevronDown className="h-4 w-4 -rotate-90 text-text-muted" />
+        </Link>
+
         {/* Plan réseau interactif · réagit aux sélecteurs + stations cliquables */}
         <BusNetworkMap
           locale={locale}

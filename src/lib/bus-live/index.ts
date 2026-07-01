@@ -2,6 +2,6 @@
 export { busesAt, orientRoute, elapsedToKm, kmToPoint, activeDepartures } from "./position";
 export type { NowAthens, OrientedRoute, PointOnLine } from "./position";
 export { loadLiveNetwork } from "./network";
-export type { LiveBus, LiveLine, LiveNetwork, LiveStop } from "./types";
+export type { LiveBus, LiveGpsBus, LiveLine, LiveNetwork, LiveStop } from "./types";
 export { lerp, lerpAngle, reconcile } from "./animate";
 export type { MarkerPose, PresentBus } from "./animate";

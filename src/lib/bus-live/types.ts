@@ -18,7 +18,8 @@ export interface LiveLine {
   id: number;
   code: string;
   codeOfficial: string | null;
-  source: "osm" | "ktel";
+  source: "osm" | "ktel" | "agncitybus";
+  color: string | null;         // couleur de la ligne (hex), utilisée pour le tracé (bus urbains)
   totalMinutes: number;
   lengthKm: number;
   partialGeo: boolean;
@@ -47,4 +48,19 @@ export interface LiveBus {
   headsign: string;
   direction: "fwd" | "rev";
   degraded: boolean;
+}
+
+/** Bus à position GPS RÉELLE (télématique agncitybus.gr). Couche live d'Agios Nikolaos.
+ *  Contrat de /api/buses/agncitybus-live consommé par la carte. */
+export interface LiveGpsBus {
+  id: string;        // imei (stable par véhicule)
+  lineCode: string;  // AGN-1 | AGN-2 | AGN-3
+  routeNum: number;
+  color: string;     // hex de la ligne
+  lat: number;
+  lng: number;
+  bearing: number;   // cap 0..360
+  speed: number;     // km/h source
+  plate: string | null;
+  vehicle: string | null;
 }

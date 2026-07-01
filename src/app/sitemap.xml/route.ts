@@ -45,6 +45,7 @@ const STATIC_PAGES = [
   "/daily",
   "/about",
   "/buses",
+  "/buses/agios-nikolaos",
   "/near-me",
   "/car-rental",
   "/fire-alerts",
@@ -188,7 +189,10 @@ export async function GET() {
   void ROUTE_SLUGS;
   // Pages par paire de villes /buses/[pair] (spec 2026-06-10-bus-pair-pages) :
   // data vivante (horaires MAJ hebdo scraper), indexables, revue GSC J+45.
-  const { data: busPairRoutes } = await supabase.from("bus_routes").select("from_place,to_place");
+  // exclut les lignes urbaines agncitybus (cohérence avec getBusRoutes : /buses/[pair] ne
+  // couvre que l'interurbain ; leurs terminus ne sont de toute façon pas dans BUS_PLACE_SLUGS)
+  const { data: busPairRoutes } = await supabase
+    .from("bus_routes").select("from_place,to_place").neq("operator_id", "agncitybus");
   for (const p of eligiblePairs(busPairRoutes ?? [])) push(`/buses/${p.slug}`, "weekly", 0.7);
 
   for (const s of COMP_SLUGS) push(`/compare/${s}`, "monthly", 0.6);
