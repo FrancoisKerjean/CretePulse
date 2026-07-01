@@ -45,6 +45,7 @@ const STATIC_PAGES = [
   "/daily",
   "/about",
   "/buses",
+  "/buses/agios-nikolaos",
   "/near-me",
   "/car-rental",
   "/fire-alerts",
@@ -195,7 +196,9 @@ export async function GET() {
   // data vivante (horaires MAJ hebdo scraper), indexables, revue GSC J+45.
   // Élagage : seules les paires AVEC horaires publiés (qualityPairSlugs) sont listées.
   // lastmod honnête = max(scraped_at) de la paire, pour signaler la fraîcheur réelle.
-  const { data: busPairRoutes } = await supabase.from("bus_routes").select("from_place,to_place,departures,scraped_at");
+  // Exclut les lignes urbaines agncitybus (elles ont leur propre page /buses/agios-nikolaos).
+  const { data: busPairRoutes } = await supabase
+    .from("bus_routes").select("from_place,to_place,departures,scraped_at").neq("operator_id", "agncitybus");
   const seoRoutes = (busPairRoutes ?? []) as import("@/lib/bus-seo").SeoRoute[];
   // Concentration du budget de crawl : paires entre hubs majeurs en priorité haute
   // (0.9), longue traîne des villages en 0.5. Sort les pages-trajet du « Discovered -

@@ -6,7 +6,7 @@ import type { LiveLine, LiveNetwork, LiveStop } from "./types";
 
 interface LineRow {
   id: number; code: string; code_official: string | null;
-  source: "osm" | "ktel"; geometry: [number, number][] | null;
+  source: "osm" | "ktel" | "agncitybus"; color: string | null; geometry: [number, number][] | null;
   total_minutes: number | null; length_km: number | null; partial_geo: boolean | null;
 }
 interface LineStopRow {
@@ -19,7 +19,7 @@ interface StopRow { id: number; slug: string; name: string; lat: number; lng: nu
 export async function loadLiveNetwork(): Promise<LiveNetwork> {
   const [linesRes, lsRes, stopsRes, routesRes] = await Promise.all([
     supabase.from("bus_lines").select(
-      "id, code, code_official, source, geometry, total_minutes, length_km, partial_geo",
+      "id, code, code_official, source, color, geometry, total_minutes, length_km, partial_geo",
     ),
     supabase.from("bus_line_stops")
       .select("line_id, stop_id, seq, cumulative_km, cumulative_minutes")
@@ -67,7 +67,7 @@ export async function loadLiveNetwork(): Promise<LiveNetwork> {
       partialGeo = true;
     }
     lines.set(l.id, {
-      id: l.id, code: l.code, codeOfficial: l.code_official, source: l.source,
+      id: l.id, code: l.code, codeOfficial: l.code_official, source: l.source, color: l.color ?? null,
       totalMinutes: total, lengthKm: l.length_km ?? stops[stops.length - 1].cumKm,
       partialGeo, geometry, stops,
     });
