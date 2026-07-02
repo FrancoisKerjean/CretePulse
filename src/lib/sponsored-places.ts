@@ -16,6 +16,7 @@ export type SponsorCard = {
   rating?: number;
   lat?: number;
   lng?: number;
+  address?: string;
 };
 
 const CARDS = data as SponsorCard[];

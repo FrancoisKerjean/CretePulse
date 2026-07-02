@@ -4,9 +4,10 @@
     "name": "Meraki Greek Lessons",
     "category": "Greek lessons",
     "prefecture": "Agios Nikolaos",
+    "address": "Dimokratias 9, Agios Nikolaos 72100",
     "photo": "/partners/meraki-greek-lessons.jpg",
     "url": "https://merakigreeklessons.gr/",
-    "lat": 35.1906,
-    "lng": 25.7176
+    "lat": 35.1898834,
+    "lng": 25.7153773
   }
 ]
