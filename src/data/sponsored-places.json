@@ -2,8 +2,11 @@
   {
     "id": "meraki-greek-lessons",
     "name": "Meraki Greek Lessons",
-    "category": "Greek lessons · online",
+    "category": "Greek lessons",
+    "prefecture": "Agios Nikolaos",
     "photo": "/partners/meraki-greek-lessons.jpg",
-    "url": "https://merakigreeklessons.gr/"
+    "url": "https://merakigreeklessons.gr/",
+    "lat": 35.1906,
+    "lng": 25.7176
   }
 ]

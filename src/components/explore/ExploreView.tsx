@@ -162,6 +162,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
   const maplibreRef = useRef<MaplibreModule | null>(null);
   const photoMarkersRef = useRef<MaplibreMarker[]>([]);
   const userMarkerRef = useRef<MaplibreMarker | null>(null);
+  const sponsorMarkersRef = useRef<MaplibreMarker[]>([]);
   const [mapReady, setMapReady] = useState(false);
   const [mapViewport, setMapViewport] = useState(0); // bump a chaque moveend -> recalcul photo-pins
   const [query, setQuery] = useState("");
@@ -480,6 +481,38 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
     const m = userMarkerRef.current;
     if (m && geo.pos) m.setLngLat([geo.pos.lon, geo.pos.lat]);
   }, [geo.pos]);
+
+  // Marqueurs partenaires : pin ambre mis en avant pour chaque sponsor ayant des coords.
+  useEffect(() => {
+    const map = mapRef.current;
+    const maplibre = maplibreRef.current;
+    if (!map || !maplibre || !mapReady) return;
+
+    for (const m of sponsorMarkersRef.current) m.remove();
+    sponsorMarkersRef.current = [];
+
+    for (const s of sponsorItems) {
+      if (s.latitude == null || s.longitude == null) continue;
+      const el = document.createElement("div");
+      el.title = s.name;
+      el.style.cssText = "cursor:pointer;z-index:6";
+      el.innerHTML =
+        '<div style="position:relative;width:30px;height:30px">' +
+        '<div style="position:absolute;inset:0;border-radius:50% 50% 50% 2px;transform:rotate(45deg);background:#F5A623;border:3px solid #fff;box-shadow:0 3px 10px rgba(7,40,52,.5)"></div>' +
+        '<div style="position:absolute;inset:0;margin:auto;width:9px;height:9px;border-radius:50%;background:#fff"></div>' +
+        "</div>";
+      el.addEventListener("click", () => window.open(s.__sponsorUrl, "_blank", "noopener"));
+      const marker = new maplibre.Marker({ element: el, anchor: "bottom" })
+        .setLngLat([s.longitude, s.latitude])
+        .addTo(map);
+      sponsorMarkersRef.current.push(marker);
+    }
+
+    return () => {
+      for (const m of sponsorMarkersRef.current) m.remove();
+      sponsorMarkersRef.current = [];
+    };
+  }, [mapReady, sponsorItems]);
 
   // Réaction asynchrone à la résolution GPS (le refus/succès arrive dans un callback,
   // pas au moment du clic). Pattern repris de MatchDeck (prevGeoStatus).
