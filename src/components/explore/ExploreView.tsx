@@ -501,7 +501,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
         '<div style="position:absolute;inset:0;border-radius:50% 50% 50% 2px;transform:rotate(45deg);background:#F5A623;border:3px solid #fff;box-shadow:0 3px 10px rgba(7,40,52,.5)"></div>' +
         '<div style="position:absolute;inset:0;margin:auto;width:9px;height:9px;border-radius:50%;background:#fff"></div>' +
         "</div>";
-      el.addEventListener("click", () => window.open(s.__sponsorUrl, "_blank", "noopener"));
+      el.addEventListener("click", () => selectPlace(s.slug));
       const marker = new maplibre.Marker({ element: el, anchor: "bottom" })
         .setLngLat([s.longitude, s.latitude])
         .addTo(map);
@@ -594,6 +594,23 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
     const base = places.find((p) => p.slug === slug);
     setPhotoIdx(0);
     setListExpanded(false);
+    // Partenaire sponsorisé : fiche synthétique (pas en base), aucun fetch DB.
+    const spo = sponsorItems.find((s) => s.slug === slug);
+    if (spo) {
+      setSelectedLoading(false);
+      setSelected({
+        ...spo,
+        meta_description: null,
+        description: null,
+        other_info: null,
+        source_url: null,
+        bento_tiles: null,
+      } as unknown as CbPlace);
+      if (spo.latitude != null && spo.longitude != null) {
+        mapRef.current?.flyTo({ center: [spo.longitude, spo.latitude], zoom: Math.max(mapRef.current?.getZoom() ?? 0, 13) });
+      }
+      return;
+    }
     setSelectedLoading(true);
     setSelected(base ? ({ ...base, description: null, meta_description: null, other_info: null, source_url: null } as CbPlace) : null);
     const full = await getCbPlaceBySlug(slug);
@@ -662,11 +679,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
     const spo = isSponsorSlug(p.slug);
     return (
       <button
-        onClick={() =>
-          spo && p.__sponsorUrl
-            ? window.open(p.__sponsorUrl, "_blank", "noopener")
-            : selectPlace(p.slug)
-        }
+        onClick={() => selectPlace(p.slug)}
         className={`flex gap-3 p-2 rounded-xl bg-white shadow-soft text-left transition-all w-full ${
           spo ? "border border-amber-300 ring-1 ring-amber-200" : "border border-sea/10 hover:border-sea/30"
         }`}
@@ -848,11 +861,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
               {displayed.slice(0, 30).map((p) => (
                 <button
                   key={p.slug}
-                  onClick={() =>
-                    isSponsorSlug(p.slug) && p.__sponsorUrl
-                      ? window.open(p.__sponsorUrl, "_blank", "noopener")
-                      : selectPlace(p.slug)
-                  }
+                  onClick={() => selectPlace(p.slug)}
                   className="snap-start shrink-0 w-[196px] bg-white rounded-2xl overflow-hidden shadow-[0_10px_30px_rgba(11,94,120,0.28)] text-left"
                 >
                   <div className="h-[84px] bg-sand relative">
@@ -943,10 +952,34 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
                 <RatingStars rating={selected.rating} />
               </div>
               <p className="text-xs text-text-muted mt-1">
-                {typeLabel(selected.place_type, locale)}
+                {isSponsorSlug(selected.slug) ? (selected.category ?? "") : typeLabel(selected.place_type, locale)}
                 {selected.prefecture ? ` · ${selected.prefecture}` : ""}
               </p>
             </div>
+
+            {isSponsorSlug(selected.slug) && (() => {
+              const sc = getSponsorCards().find((c) => `sponsor:${c.id}` === selected.slug);
+              const cta = ({ en: "Visit website", fr: "Voir le site", de: "Website besuchen", el: "Επίσκεψη" } as Record<string, string>)[locale] || "Visit website";
+              return (
+                <div className="space-y-2.5">
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full">
+                    {sponsoredLabel(locale)}
+                  </span>
+                  {sc?.address && (
+                    <p className="text-sm text-text flex items-start gap-1.5">
+                      <MapPin size={15} className="text-sea mt-0.5 shrink-0" />
+                      {sc.address}
+                    </p>
+                  )}
+                  {sc?.url && (
+                    <a href={sc.url} target="_blank" rel="noopener sponsored"
+                      className="flex items-center justify-center gap-2 bg-sea text-white font-bold text-sm py-2.5 rounded-xl hover:opacity-90 transition-opacity">
+                      {cta} <span aria-hidden>→</span>
+                    </a>
+                  )}
+                </div>
+              );
+            })()}
 
             {selected.water_quality && <WaterQualityBadge wq={selected.water_quality} locale={locale} />}
 
@@ -973,16 +1006,18 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
               )}
             </div>
 
-            <div className="border-t border-sea/10 pt-3">
-              <CbPlaceActions
-                slug={selected.slug}
-                name={selected.name}
-                latitude={selected.latitude}
-                longitude={selected.longitude}
-                locale={locale}
-                compact
-              />
-            </div>
+            {!isSponsorSlug(selected.slug) && (
+              <div className="border-t border-sea/10 pt-3">
+                <CbPlaceActions
+                  slug={selected.slug}
+                  name={selected.name}
+                  latitude={selected.latitude}
+                  longitude={selected.longitude}
+                  locale={locale}
+                  compact
+                />
+              </div>
+            )}
 
             {selectedLoading && <p className="text-xs text-text-muted">{t.loading}</p>}
             {(() => {
