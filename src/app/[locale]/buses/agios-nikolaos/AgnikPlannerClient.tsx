@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@/i18n/navigation";
 import { athensNow } from "@/lib/athens-time";
-import { AGNIK_LINES } from "@/data/agnik-bus";
+import { AGNIK_LINES, AGNIK_STOPS, type AgnikLine } from "@/data/agnik-bus";
 import {
   searchStops, planDoorToDoor, nextDepartures, isServiceRunning,
   type UrbanLeg, type UrbanPlace, type DoorPlan,
@@ -15,6 +15,7 @@ type Dict = {
   direct: string; transfer: string; changeAt: string; nextBuses: string;
   walkTo: string; toDest: string; doorTotal: string; walkDirect: string; fastest: string; otherOption: string;
   tooFar: string; serviceOver: string; viewLive: string; freeNote: string;
+  departure: string; arrival: string; tapLine: string;
   min: string; stopsN: (n: number) => string;
 };
 
@@ -38,6 +39,7 @@ const T: Record<string, Dict> = {
     tooFar: "The nearest stop is a bit far, walking may be simpler.",
     serviceOver: "Service has ended for today, resumes at 7am.",
     viewLive: "See buses on the live map", freeNote: "All rides are free. Times are estimated.",
+    departure: "Start", arrival: "End", tapLine: "Tap a line to see all its stops.",
     min: "min", stopsN: (n) => `${n} stop${n > 1 ? "s" : ""}`,
   },
   fr: {
@@ -52,6 +54,7 @@ const T: Record<string, Dict> = {
     tooFar: "L'arrêt le plus proche est à l'écart, la marche est peut-être plus simple.",
     serviceOver: "Service terminé pour aujourd'hui, reprise à 7h.",
     viewLive: "Voir les bus sur la carte en direct", freeNote: "Tous les trajets sont gratuits. Temps estimés.",
+    departure: "Départ", arrival: "Terminus", tapLine: "Cliquez sur une ligne pour voir tous ses arrêts.",
     min: "min", stopsN: (n) => `${n} arrêt${n > 1 ? "s" : ""}`,
   },
   de: {
@@ -66,6 +69,7 @@ const T: Record<string, Dict> = {
     tooFar: "Die nächste Haltestelle ist etwas weit, zu Fuß ist evtl. einfacher.",
     serviceOver: "Der Betrieb ist für heute beendet, Wiederbeginn um 7 Uhr.",
     viewLive: "Busse auf der Live-Karte ansehen", freeNote: "Alle Fahrten sind kostenlos. Zeiten geschätzt.",
+    departure: "Start", arrival: "Ende", tapLine: "Tippen Sie auf eine Linie für alle Haltestellen.",
     min: "Min.", stopsN: (n) => `${n} Halt${n > 1 ? "e" : ""}`,
   },
   el: {
@@ -80,6 +84,7 @@ const T: Record<string, Dict> = {
     tooFar: "Η πλησιέστερη στάση είναι λίγο μακριά, ίσως είναι πιο απλό με τα πόδια.",
     serviceOver: "Τα δρομολόγια ολοκληρώθηκαν για σήμερα, επιστροφή στις 7π.μ.",
     viewLive: "Δείτε τα λεωφορεία στον ζωντανό χάρτη", freeNote: "Όλες οι διαδρομές είναι δωρεάν. Χρόνοι εκτιμώμενοι.",
+    departure: "Αφετηρία", arrival: "Τέρμα", tapLine: "Πατήστε μια γραμμή για όλες τις στάσεις.",
     min: "λεπτά", stopsN: (n) => `${n} ${n > 1 ? "στάσεις" : "στάση"}`,
   },
 };
@@ -90,6 +95,37 @@ function LinePill({ hex, code, label }: { hex: string; code: string; label: stri
       <span className="h-1.5 w-1.5 rounded-full bg-white/90" /> {label}
       <span className="opacity-70 font-medium">{code}</span>
     </span>
+  );
+}
+
+/** Diagramme d'une ligne façon plan de métro : trait coloré vertical + toutes les stations. */
+function LineDiagram({ line, t }: { line: AgnikLine; t: Dict }) {
+  return (
+    <div className="mt-2">
+      {line.stops.map((s, i) => {
+        const stop = AGNIK_STOPS[s.slug];
+        const isFirst = i === 0, isLast = i === line.stops.length - 1;
+        const term = isFirst || isLast;
+        return (
+          <div key={`${s.slug}-${i}`} className="flex gap-3">
+            <div className="flex w-4 flex-col items-center">
+              <span className="h-2 w-1" style={{ background: isFirst ? "transparent" : line.hex }} />
+              <span className={`rounded-full border-2 border-white ${term ? "h-4 w-4" : "h-3 w-3"}`}
+                style={{ background: line.hex, boxShadow: `0 0 0 1.5px ${line.hex}` }} />
+              <span className="w-1 flex-1" style={{ background: isLast ? "transparent" : line.hex }} />
+            </div>
+            <div className="flex-1 pb-3 pt-0.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={`text-sm text-text ${term ? "font-bold" : ""}`}>{stop?.name ?? s.slug}</span>
+                {isFirst && <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase text-white" style={{ background: line.hex }}>{t.departure}</span>}
+                {isLast && <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase text-white" style={{ background: line.hex }}>{t.arrival}</span>}
+              </div>
+              {stop?.nameEl && <span className="block text-xs text-text-muted">{stop.nameEl}</span>}
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -260,6 +296,7 @@ export function AgnikPlannerClient({ locale }: { locale: string }) {
   const colorName = COLOR_NAME[locale] ?? COLOR_NAME.en;
   const [from, setFrom] = useState<UrbanPlace | null>(null);
   const [to, setTo] = useState<UrbanPlace | null>(null);
+  const [openLine, setOpenLine] = useState<string | null>(null);
 
   const plan = useMemo<DoorPlan | null>(() => (from && to ? planDoorToDoor(from, to) : null), [from, to]);
   const nowMin = athensNow().minutes;
@@ -283,15 +320,38 @@ export function AgnikPlannerClient({ locale }: { locale: string }) {
       </section>
 
       <div className="mx-auto max-w-2xl px-4 py-8">
-        <h2 className="mb-3 font-heading text-lg font-bold text-text">{t.linesTitle}</h2>
-        <div className="mb-8 grid gap-2 sm:grid-cols-3">
-          {AGNIK_LINES.map((l) => (
-            <div key={l.code} className="rounded-2xl border border-black/5 bg-white p-3 shadow-sm">
-              <LinePill hex={l.hex} code={l.code} label={colorName[l.color]} />
-              <p className="mt-2 text-xs text-text-muted">{l.stops.length} {t.stopsWord} · {l.totalMinutes} {t.min} {t.loop}</p>
-            </div>
-          ))}
+        <h2 className="mb-1 font-heading text-lg font-bold text-text">{t.linesTitle}</h2>
+        <p className="mb-3 text-xs text-text-muted">{t.tapLine}</p>
+        <div className="mb-4 grid gap-2 sm:grid-cols-3">
+          {AGNIK_LINES.map((l) => {
+            const active = openLine === l.code;
+            return (
+              <button key={l.code} type="button" aria-expanded={active}
+                onClick={() => setOpenLine(active ? null : l.code)}
+                className={`rounded-2xl border bg-white p-3 text-left shadow-sm transition ${active ? "" : "border-black/5 hover:shadow-md"}`}
+                style={active ? { borderColor: l.hex, boxShadow: `0 0 0 2px ${l.hex}` } : undefined}>
+                <LinePill hex={l.hex} code={l.code} label={colorName[l.color]} />
+                <p className="mt-2 text-xs text-text-muted">
+                  {l.stops.length} {t.stopsWord} · {l.totalMinutes} {t.min} {t.loop}
+                  <span className="ml-1" aria-hidden>{active ? "▲" : "▾"}</span>
+                </p>
+              </button>
+            );
+          })}
         </div>
+        {openLine && (() => {
+          const l = AGNIK_LINES.find((x) => x.code === openLine);
+          if (!l) return null;
+          return (
+            <div className="mb-8 rounded-2xl border bg-white p-4 shadow-sm" style={{ borderColor: l.hex }}>
+              <div className="mb-1 flex flex-wrap items-center gap-2">
+                <LinePill hex={l.hex} code={l.code} label={colorName[l.color]} />
+                <span className="text-xs text-text-muted">{l.stops.length} {t.stopsWord} · {l.totalMinutes} {t.min} {t.loop}</span>
+              </div>
+              <LineDiagram line={l} t={t} />
+            </div>
+          );
+        })()}
 
         <div className="rounded-[24px] bg-white p-5 shadow-[0_12px_32px_rgba(11,94,120,.10)]">
           <h2 className="mb-4 font-heading text-lg font-bold text-text">{t.planTitle}</h2>
