@@ -196,6 +196,7 @@ function writeDataTs(model) {
     id: l.code, code: l.code, color: l.color, hex: l.hex, nameEn: l.name, nameEl: l.nameEl,
     totalMinutes: l.totalMinutes, lengthKm: l.lengthKm,
     stops: l.stops.map((s) => ({ slug: s.stop.slug, seq: s.seq, cumKm: +s.cumKm.toFixed(3), cumMin: +s.cumMin.toFixed(2) })),
+    geometry: l.geometry.map(([lng, lat]) => [+lng.toFixed(6), +lat.toFixed(6)]), // [lng,lat] pour la carte
   }));
   const body = `// AUTO-GENERE par scripts/agncitybus_ingest.mjs — NE PAS EDITER A LA MAIN.
 // Reseau bus urbain gratuit d'Agios Nikolaos (agncitybus.gr), aspire le 2026-07-01.
@@ -206,6 +207,7 @@ export interface AgnikLineStop { slug: string; seq: number; cumKm: number; cumMi
 export interface AgnikLine {
   id: string; code: string; color: "yellow" | "red" | "green"; hex: string;
   nameEn: string; nameEl: string; totalMinutes: number; lengthKm: number; stops: AgnikLineStop[];
+  geometry: [number, number][]; // tracé GPS [lng, lat] (ordre GeoJSON), pour la carte
 }
 
 export const AGNIK_SERVICE = {

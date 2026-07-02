@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@/i18n/navigation";
 import { athensNow } from "@/lib/athens-time";
 import { AGNIK_LINES, AGNIK_STOPS, type AgnikLine } from "@/data/agnik-bus";
+import { LineMap } from "./LineMap";
 import {
   searchStops, planDoorToDoor, nextDepartures, isServiceRunning,
   type UrbanLeg, type UrbanPlace, type DoorPlan,
@@ -344,11 +345,12 @@ export function AgnikPlannerClient({ locale }: { locale: string }) {
           if (!l) return null;
           return (
             <div className="mb-8 rounded-2xl border bg-white p-4 shadow-sm" style={{ borderColor: l.hex }}>
-              <div className="mb-1 flex flex-wrap items-center gap-2">
+              <div className="mb-3 flex flex-wrap items-center gap-2">
                 <LinePill hex={l.hex} code={l.code} label={colorName[l.color]} />
                 <span className="text-xs text-text-muted">{l.stops.length} {t.stopsWord} · {l.totalMinutes} {t.min} {t.loop}</span>
               </div>
-              <LineDiagram line={l} t={t} />
+              <LineMap line={l} departureLabel={t.departure} arrivalLabel={t.arrival} />
+              <div className="mt-4"><LineDiagram line={l} t={t} /></div>
             </div>
           );
         })()}
