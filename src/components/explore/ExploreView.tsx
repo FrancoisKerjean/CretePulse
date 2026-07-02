@@ -482,7 +482,9 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
     if (m && geo.pos) m.setLngLat([geo.pos.lon, geo.pos.lat]);
   }, [geo.pos]);
 
-  // Marqueurs partenaires : pin ambre mis en avant pour chaque sponsor ayant des coords.
+  // Marqueurs partenaires : petit pin ambre, affiché SEULEMENT quand la carte
+  // regarde sa zone (zoom assez rapproché + dans les bounds visibles). Recalculé
+  // à chaque déplacement via mapViewport, pour ne pas polluer la vue d'ensemble.
   useEffect(() => {
     const map = mapRef.current;
     const maplibre = maplibreRef.current;
@@ -491,15 +493,21 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
     for (const m of sponsorMarkersRef.current) m.remove();
     sponsorMarkersRef.current = [];
 
+    // Vue trop large (île entière) : aucun pin partenaire.
+    if (map.getZoom() < 9) return;
+    const bounds = map.getBounds();
+
     for (const s of sponsorItems) {
       if (s.latitude == null || s.longitude == null) continue;
+      // Le partenaire n'apparaît que si son point est dans la fenêtre visible.
+      if (!bounds.contains([s.longitude, s.latitude])) continue;
       const el = document.createElement("div");
       el.title = s.name;
       el.style.cssText = "cursor:pointer;z-index:6";
       el.innerHTML =
-        '<div style="position:relative;width:30px;height:30px">' +
-        '<div style="position:absolute;inset:0;border-radius:50% 50% 50% 2px;transform:rotate(45deg);background:#F5A623;border:3px solid #fff;box-shadow:0 3px 10px rgba(7,40,52,.5)"></div>' +
-        '<div style="position:absolute;inset:0;margin:auto;width:9px;height:9px;border-radius:50%;background:#fff"></div>' +
+        '<div style="position:relative;width:22px;height:22px">' +
+        '<div style="position:absolute;inset:0;border-radius:50% 50% 50% 2px;transform:rotate(45deg);background:#F5A623;border:2px solid #fff;box-shadow:0 2px 7px rgba(7,40,52,.5)"></div>' +
+        '<div style="position:absolute;inset:0;margin:auto;width:6px;height:6px;border-radius:50%;background:#fff"></div>' +
         "</div>";
       el.addEventListener("click", () => selectPlace(s.slug));
       const marker = new maplibre.Marker({ element: el, anchor: "bottom" })
@@ -512,7 +520,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
       for (const m of sponsorMarkersRef.current) m.remove();
       sponsorMarkersRef.current = [];
     };
-  }, [mapReady, sponsorItems]);
+  }, [mapReady, mapViewport, sponsorItems]);
 
   // Réaction asynchrone à la résolution GPS (le refus/succès arrive dans un callback,
   // pas au moment du clic). Pattern repris de MatchDeck (prevGeoStatus).
