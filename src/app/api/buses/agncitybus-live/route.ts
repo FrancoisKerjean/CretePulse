@@ -4,6 +4,7 @@ import type { LiveGpsBus } from "@/lib/bus-live/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 15; // agncitybus.gr répond en 7-8 s : laisser de la marge (plan Vercel Pro)
 
 /**
  * Proxy des positions GPS temps réel des bus urbains d'Agios Nikolaos.
@@ -25,8 +26,10 @@ const LINE = {
 } as const;
 // bbox large autour d'Agios Nikolaos (rejette les fix GPS aberrants)
 const BBOX = { latMin: 35.14, latMax: 35.28, lngMin: 25.6, lngMax: 25.82 };
-const CACHE_MS = 4000;
-const FETCH_TIMEOUT_MS = 6000;
+// agncitybus.gr est LENT (7-8 s/requête, mesuré depuis EU) : timeout large sinon le fetch
+// abort et l'endpoint renvoie [] en permanence (bug : GPS jamais visible en prod).
+const CACHE_MS = 8000;
+const FETCH_TIMEOUT_MS = 12000;
 const MAX_BYTES = 512 * 1024; // borne anti-DoS sur la réponse upstream (tiers non maîtrisé)
 const MAX_ROWS = 200;         // plafond de bus traités par ligne
 const CACHE_HEADER = "public, max-age=4, s-maxage=4";
