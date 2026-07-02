@@ -152,15 +152,81 @@ export function urbanStopOptions(): { slug: string; name: string; nameEl: string
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
+/** Minutes de marche pour une distance à vol d'oiseau (km) : ×1.35 détour urbain, 4.5 km/h. */
+export function walkMinFromKm(km: number): number {
+  return Math.max(1, Math.round(((km * 1.35) / 4.5) * 60));
+}
+
 /**
- * Temps de marche estimé (min) entre 2 arrêts : distance à vol d'oiseau × détour urbain
- * 1.35, à 4.5 km/h. Agios Nikolaos est compacte et vallonnée. Sert à recommander la marche
- * quand elle bat le bus : les lignes sont des BOUCLES unidirectionnelles, donc "revenir en
- * arrière" impose un tour complet (~35 min) là où la marche prend 5-10 min.
+ * Temps de marche estimé (min) entre 2 arrêts. Sert à recommander la marche quand elle bat
+ * le bus : les lignes sont des BOUCLES unidirectionnelles, donc "revenir en arrière" impose
+ * un tour complet (~35 min) là où la marche prend 5-10 min.
  */
 export function walkMinutes(fromSlug: string, toSlug: string): number | null {
   const a = AGNIK_STOPS[fromSlug], b = AGNIK_STOPS[toSlug];
   if (!a || !b) return null;
-  const km = haversineKm([a.lat, a.lng], [b.lat, b.lng]);
-  return Math.max(1, Math.round(((km * 1.35) / 4.5) * 60));
+  return walkMinFromKm(haversineKm([a.lat, a.lng], [b.lat, b.lng]));
+}
+
+// --- Recherche de lieu + itinéraire PORTE-À-PORTE (adresse -> arrêt proche -> bus -> arrêt -> adresse) ---
+
+const GREEK_MAP: Record<string, string> = { Α: "A", Β: "V", Γ: "G", Δ: "D", Ε: "E", Ζ: "Z", Η: "I", Θ: "Th", Ι: "I", Κ: "K", Λ: "L", Μ: "M", Ν: "N", Ξ: "X", Ο: "O", Π: "P", Ρ: "R", Σ: "S", Τ: "T", Υ: "Y", Φ: "F", Χ: "Ch", Ψ: "Ps", Ω: "O" };
+function norm(s: string): string {
+  return s.replace(/[Α-Ω]/g, (c) => GREEK_MAP[c] ?? "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+}
+
+export interface UrbanPlace { label: string; lat: number; lng: number; kind: "stop" | "place"; slug?: string; }
+
+/** Recherche locale dans les noms d'arrêts (EN + grec), pour l'autocomplete offline. */
+export function searchStops(query: string, limit = 5): UrbanPlace[] {
+  const q = norm(query);
+  if (q.length < 2) return [];
+  return Object.values(AGNIK_STOPS)
+    .filter((s) => norm(s.name).includes(q) || norm(s.nameEl).includes(q))
+    .slice(0, limit)
+    .map((s) => ({ label: s.name, lat: s.lat, lng: s.lng, kind: "stop" as const, slug: s.slug }));
+}
+
+/** Arrêt le plus proche de coordonnées + distance (km). */
+export function nearestStop(lat: number, lng: number): { slug: string; name: string; lat: number; lng: number; distKm: number } | null {
+  let best: AgnikStopLite | null = null, bd = Infinity;
+  for (const s of Object.values(AGNIK_STOPS)) {
+    const d = haversineKm([lat, lng], [s.lat, s.lng]);
+    if (d < bd) { bd = d; best = s; }
+  }
+  return best ? { slug: best.slug, name: best.name, lat: best.lat, lng: best.lng, distKm: bd } : null;
+}
+type AgnikStopLite = { slug: string; name: string; lat: number; lng: number };
+
+export interface DoorPlan {
+  fromStop: { slug: string; name: string } | null;
+  toStop: { slug: string; name: string } | null;
+  walkFromMin: number;   // marche origine -> arrêt de départ
+  walkToMin: number;     // arrêt d'arrivée -> destination
+  bus: UrbanTrip | null; // meilleur trajet bus entre les 2 arrêts (null si même arrêt / aucun)
+  busTotalMin: number;   // walkFrom + bus + walkTo (Infinity si pas de bus)
+  directWalkMin: number; // tout à pied, porte à porte
+  recommendWalk: boolean;// marche directe <= trajet bus complet
+  tooFar: boolean;       // arrêt proche à plus de ~1.3 km (bus peu pertinent)
+}
+
+/** Plan porte-à-porte entre 2 points (adresse/position). */
+export function planDoorToDoor(from: { lat: number; lng: number }, to: { lat: number; lng: number }): DoorPlan {
+  const directWalkMin = walkMinFromKm(haversineKm([from.lat, from.lng], [to.lat, to.lng]));
+  const fs = nearestStop(from.lat, from.lng);
+  const ts = nearestStop(to.lat, to.lng);
+  if (!fs || !ts) {
+    return { fromStop: null, toStop: null, walkFromMin: 0, walkToMin: 0, bus: null, busTotalMin: Infinity, directWalkMin, recommendWalk: true, tooFar: true };
+  }
+  const walkFromMin = walkMinFromKm(fs.distKm);
+  const walkToMin = walkMinFromKm(ts.distKm);
+  const tooFar = fs.distKm > 1.3 || ts.distKm > 1.3;
+  const trips = fs.slug === ts.slug ? [] : findUrbanTrips(fs.slug, ts.slug);
+  const bus = trips[0] ?? null;
+  const busTotalMin = bus ? walkFromMin + bus.totalMinutes + walkToMin : Infinity;
+  const recommendWalk = directWalkMin <= busTotalMin;
+  return {
+    fromStop: { slug: fs.slug, name: fs.name }, toStop: { slug: ts.slug, name: ts.name },
+    walkFromMin, walkToMin, bus, busTotalMin, directWalkMin, recommendWalk, tooFar,
+  };
 }
