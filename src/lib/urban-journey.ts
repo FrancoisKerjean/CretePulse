@@ -3,6 +3,7 @@
 // Distinct du planner interurbain KTEL (src/lib/bus-journey.ts) : ici tout est intra-ville,
 // service en boucle à cadence fixe, temps estimé le long du tracer (cumMin).
 import { AGNIK_LINES, AGNIK_STOPS, AGNIK_SERVICE, type AgnikLine } from "@/data/agnik-bus";
+import { haversineKm } from "@/lib/geo";
 
 const WAIT_MIN = Math.round(AGNIK_SERVICE.headwayMin / 2); // attente moyenne a la correspondance
 
@@ -149,4 +150,17 @@ export function urbanStopOptions(): { slug: string; name: string; nameEl: string
   return Object.values(AGNIK_STOPS)
     .map((s) => ({ slug: s.slug, name: s.name, nameEl: s.nameEl }))
     .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/**
+ * Temps de marche estimé (min) entre 2 arrêts : distance à vol d'oiseau × détour urbain
+ * 1.35, à 4.5 km/h. Agios Nikolaos est compacte et vallonnée. Sert à recommander la marche
+ * quand elle bat le bus : les lignes sont des BOUCLES unidirectionnelles, donc "revenir en
+ * arrière" impose un tour complet (~35 min) là où la marche prend 5-10 min.
+ */
+export function walkMinutes(fromSlug: string, toSlug: string): number | null {
+  const a = AGNIK_STOPS[fromSlug], b = AGNIK_STOPS[toSlug];
+  if (!a || !b) return null;
+  const km = haversineKm([a.lat, a.lng], [b.lat, b.lng]);
+  return Math.max(1, Math.round(((km * 1.35) / 4.5) * 60));
 }

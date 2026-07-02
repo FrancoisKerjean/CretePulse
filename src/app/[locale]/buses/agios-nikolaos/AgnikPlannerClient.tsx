@@ -4,7 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { athensNow } from "@/lib/athens-time";
 import { AGNIK_LINES, AGNIK_SERVICE } from "@/data/agnik-bus";
 import {
-  findUrbanTrips, urbanStopOptions, nextDepartures, isServiceRunning,
+  findUrbanTrips, urbanStopOptions, nextDepartures, isServiceRunning, walkMinutes,
   type UrbanTrip, type UrbanLeg,
 } from "@/lib/urban-journey";
 
@@ -15,6 +15,7 @@ type Dict = {
   direct: string; transfer: string; totalMin: string; board: string; ride: string;
   changeAt: string; nextBuses: string; serviceOver: string; noTrip: string; noTripHint: string;
   viewLive: string; freeNote: string; min: string; stopsN: (n: number) => string;
+  byFoot: string; walkFaster: string;
 };
 
 const COLOR_NAME: Record<string, Record<"yellow" | "red" | "green", string>> = {
@@ -38,6 +39,7 @@ const T: Record<string, Dict> = {
     noTripHint: "They may sit on opposite branches near the terminal, walking is often quicker.",
     viewLive: "See buses on the live map", freeNote: "All rides are free. Times are estimated from the route.",
     min: "min", stopsN: (n) => `${n} stop${n > 1 ? "s" : ""}`,
+    byFoot: "On foot", walkFaster: "fastest here",
   },
   fr: {
     title: "Bus urbain d'Agios Nikolaos",
@@ -52,6 +54,7 @@ const T: Record<string, Dict> = {
     noTripHint: "Ils sont peut-être sur des branches opposées près du terminal, la marche est souvent plus rapide.",
     viewLive: "Voir les bus sur la carte en direct", freeNote: "Tous les trajets sont gratuits. Les temps sont estimés d'après le tracé.",
     min: "min", stopsN: (n) => `${n} arrêt${n > 1 ? "s" : ""}`,
+    byFoot: "À pied", walkFaster: "plus rapide ici",
   },
   de: {
     title: "Stadtbus Agios Nikolaos",
@@ -66,6 +69,7 @@ const T: Record<string, Dict> = {
     noTripHint: "Sie liegen evtl. auf gegenüberliegenden Ästen nahe dem Terminal, zu Fuß ist oft schneller.",
     viewLive: "Busse auf der Live-Karte ansehen", freeNote: "Alle Fahrten sind kostenlos. Zeiten sind anhand der Strecke geschätzt.",
     min: "Min.", stopsN: (n) => `${n} Halt${n > 1 ? "e" : ""}`,
+    byFoot: "Zu Fuß", walkFaster: "hier am schnellsten",
   },
   el: {
     title: "Αστικό λεωφορείο Αγίου Νικολάου",
@@ -80,6 +84,7 @@ const T: Record<string, Dict> = {
     noTripHint: "Ίσως βρίσκονται σε αντίθετους κλάδους κοντά στο τέρμα, το περπάτημα είναι συχνά πιο γρήγορο.",
     viewLive: "Δείτε τα λεωφορεία στον ζωντανό χάρτη", freeNote: "Όλες οι διαδρομές είναι δωρεάν. Οι χρόνοι είναι εκτιμώμενοι βάσει της διαδρομής.",
     min: "λεπτά", stopsN: (n) => `${n} ${n > 1 ? "στάσεις" : "στάση"}`,
+    byFoot: "Με τα πόδια", walkFaster: "πιο γρήγορο εδώ",
   },
 };
 
@@ -120,8 +125,12 @@ export function AgnikPlannerClient({ locale }: { locale: string }) {
   const [to, setTo] = useState("");
 
   const trips = useMemo<UrbanTrip[]>(() => (from && to ? findUrbanTrips(from, to) : []), [from, to]);
+  const walkMin = useMemo(() => (from && to ? walkMinutes(from, to) : null), [from, to]);
   const nowMin = athensNow().minutes;
   const running = isServiceRunning(nowMin);
+  // ville compacte : sur boucles unidirectionnelles, la marche bat souvent le bus.
+  const bestBus = trips[0]?.totalMinutes ?? Infinity;
+  const walkWins = walkMin != null && walkMin <= bestBus;
 
   const swap = () => { setFrom(to); setTo(from); };
 
@@ -186,6 +195,15 @@ export function AgnikPlannerClient({ locale }: { locale: string }) {
           {from && to && (
             <div className="mt-5 border-t border-black/5 pt-5">
               {!running && <p className="mb-3 rounded-lg bg-sun/15 px-3 py-2 text-xs text-night">{t.serviceOver}</p>}
+              {walkMin != null && walkWins && (
+                <div className="mb-4 flex items-center justify-between rounded-2xl border p-4" style={{ borderColor: "#A7E3C0", background: "#EAF9F0" }}>
+                  <span className="inline-flex items-center gap-2 text-sm font-semibold" style={{ color: "#0A6B3B" }}>
+                    <span aria-hidden>🚶</span> {t.byFoot}
+                    <span className="rounded-full px-2 py-0.5 text-[11px] font-bold text-white" style={{ background: "#12B76A" }}>{t.walkFaster}</span>
+                  </span>
+                  <span className="font-data text-sm font-bold tabular-nums" style={{ color: "#0A6B3B" }}>~{walkMin} {t.min}</span>
+                </div>
+              )}
               {trips.length === 0 ? (
                 <div className="text-sm">
                   <p className="font-semibold text-text">{t.noTrip}</p>
