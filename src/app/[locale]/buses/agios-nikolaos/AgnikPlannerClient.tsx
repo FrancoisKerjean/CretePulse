@@ -271,7 +271,7 @@ function OptionCard({
           {plan.walkFromMin > 0 && <WalkRow min={plan.walkFromMin} to={plan.fromStop!.name} t={t} />}
           {plan.bus.legs.map((leg, li) => (
             <div key={li}>
-              {li > 0 && <p className="mb-2 pl-4 text-xs font-medium text-terra">↳ {t.changeAt} {leg.fromName}</p>}
+              {li > 0 && <p className="mb-2 pl-4 text-xs font-medium text-terracotta">↳ {t.changeAt} {leg.fromName}</p>}
               <LegRow leg={leg} t={t} locale={locale} />
             </div>
           ))}
@@ -398,7 +398,7 @@ export function AgnikPlannerClient({ locale }: { locale: string }) {
         </div>
 
         <div className="mt-6 text-center">
-          <Link href="/live" className="inline-flex items-center gap-2 rounded-full bg-aegean px-5 py-2.5 text-sm font-heading font-semibold text-white shadow transition hover:bg-aegean/90">
+          <Link href="/live" className="inline-flex items-center gap-2 rounded-full bg-sea px-5 py-2.5 text-sm font-heading font-semibold text-white shadow transition hover:bg-sea/90">
             {t.viewLive}
           </Link>
         </div>
