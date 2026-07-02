@@ -8,7 +8,7 @@ import {
 import type { CbPlaceListItem, CbPlace } from "@/lib/cb-places";
 import { WaterQualityBadge } from "@/components/WaterQualityBadge";
 import { getCbPlaceBySlug } from "@/lib/cb-places";
-import { getSponsorCards, isSponsorSlug, sponsoredLabel } from "@/lib/sponsored-places";
+import { getSponsorCards, isSponsorSlug, sponsoredLabel, sponsorDescription } from "@/lib/sponsored-places";
 import { typeLabel } from "@/lib/cb-type-labels";
 import { nearestBy, circlePolygon, isOnCrete } from "@/lib/geo";
 import { cleanCbDescription } from "@/lib/cb-place-helpers";
@@ -968,11 +968,13 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
             {isSponsorSlug(selected.slug) && (() => {
               const sc = getSponsorCards().find((c) => `sponsor:${c.id}` === selected.slug);
               const cta = ({ en: "Visit website", fr: "Voir le site", de: "Website besuchen", el: "Επίσκεψη" } as Record<string, string>)[locale] || "Visit website";
+              const desc = sc ? sponsorDescription(sc, locale) : null;
               return (
                 <div className="space-y-2.5">
                   <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full">
                     {sponsoredLabel(locale)}
                   </span>
+                  {desc && <p className="text-sm text-text leading-relaxed">{desc}</p>}
                   {sc?.address && (
                     <p className="text-sm text-text flex items-start gap-1.5">
                       <MapPin size={15} className="text-sea mt-0.5 shrink-0" />

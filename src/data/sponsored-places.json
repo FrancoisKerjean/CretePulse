@@ -5,6 +5,12 @@
     "category": "Greek lessons",
     "prefecture": "Agios Nikolaos",
     "address": "Dimokratias 9, Agios Nikolaos 72100",
+    "description": {
+      "en": "Speak a little Greek before you even land. One-to-one online lessons with Chrisa, a native tutor: every level, your own pace, and a warm book club to make the language stick. Not just words, a real way into Cretan life.",
+      "fr": "Parlez un peu grec avant même d'arriver. Cours particuliers en ligne avec Chrisa, prof native : tous niveaux, à votre rythme, et un book club convivial pour ancrer la langue. Pas juste des mots, une vraie porte vers la vie crétoise.",
+      "de": "Sprich ein wenig Griechisch, bevor du landest. Online-Einzelunterricht mit Chrisa, Muttersprachlerin: jedes Niveau, dein Tempo, dazu ein herzlicher Buchclub. Nicht nur Wörter, ein echter Zugang zum kretischen Leben.",
+      "el": "Μάθε λίγα ελληνικά πριν καν φτάσεις. Ιδιαίτερα online μαθήματα με τη Χρύσα, φυσική ομιλήτρια: κάθε επίπεδο, με τον ρυθμό σου, και μια ζεστή παρέα book club. Όχι απλώς λέξεις, μια πραγματική είσοδος στην κρητική ζωή."
+    },
     "photo": "/partners/meraki-greek-lessons.jpg",
     "url": "https://merakigreeklessons.gr/",
     "lat": 35.188768092279034,

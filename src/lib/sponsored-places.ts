@@ -17,7 +17,15 @@ export type SponsorCard = {
   lat?: number;
   lng?: number;
   address?: string;
+  // Descriptif vendeur, localisé (fallback en). Affiché dans la fiche.
+  description?: Record<string, string>;
 };
+
+// Descriptif localisé du partenaire (fallback anglais), ou null.
+export function sponsorDescription(sc: SponsorCard, locale: string): string | null {
+  if (!sc.description) return null;
+  return sc.description[locale] || sc.description.en || null;
+}
 
 const CARDS = data as SponsorCard[];
 
