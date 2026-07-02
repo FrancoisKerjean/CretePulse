@@ -18,9 +18,9 @@ type Pose = { lat: number; lng: number; bearing: number };
 const SHEET_H = 240; // hauteur approx du bottom sheet, pour l'offset de recentrage
 const EMPTY = { type: "FeatureCollection" as const, features: [] };
 
-const T: Record<string, { estimated: string; circulating: string; planTrip: string; rentCar: string; gpsLive: string }> = {
-  en: { estimated: "Estimated from the timetable", circulating: "buses running", planTrip: "Plan a trip", rentCar: "Rent a car", gpsLive: "live GPS (Agios Nikolaos)" },
-  fr: { estimated: "Estimé selon l'horaire", circulating: "bus en circulation", planTrip: "Planifier un trajet", rentCar: "Louer une voiture", gpsLive: "en direct GPS (Agios Nikolaos)" },
+const T: Record<string, { estimated: string; circulating: string; planTrip: string; rentCar: string; gpsLive: string; legendKtel: string; legendUrban: string }> = {
+  en: { estimated: "Estimated from the timetable", circulating: "buses running", planTrip: "Plan a trip", rentCar: "Rent a car", gpsLive: "live GPS (Agios Nikolaos)", legendKtel: "KTEL (intercity)", legendUrban: "Free city bus (Agios Nikolaos)" },
+  fr: { estimated: "Estimé selon l'horaire", circulating: "bus en circulation", planTrip: "Planifier un trajet", rentCar: "Louer une voiture", gpsLive: "en direct GPS (Agios Nikolaos)", legendKtel: "KTEL (interurbain)", legendUrban: "Bus urbain gratuit (Agios Nikolaos)" },
 };
 
 // On affiche toute ligne ayant un tracé (>= 2 points), y compris les tracés OSRM
@@ -173,7 +173,9 @@ export function LiveMapClient({ locale }: { locale: string }) {
           const poses = new Map([...markers].map(([id, m]) => [id, m.cur]));
           const { entering, leaving } = reconcile(poses, buses);
           for (const bus of entering) {
-            const el = createBusEl(bus);
+            // marqueur coloré par ligne pour le réseau municipal (split KTEL / urbain)
+            const line = n.lines.get(bus.lineId);
+            const el = createBusEl(bus, line?.source === "agncitybus" ? line.color : null);
             el.addEventListener("click", (e) => { e.stopPropagation(); selectBus(bus.id); });
             el.addEventListener("keydown", (e) => {
               if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectBus(bus.id); }
@@ -318,6 +320,25 @@ export function LiveMapClient({ locale }: { locale: string }) {
             <Link href="/car-rental" className="pointer-events-auto inline-flex flex-1 items-center justify-center rounded-full bg-terracotta px-5 py-2.5 text-sm font-heading font-semibold text-white shadow-card transition hover:bg-terracotta/90 sm:flex-none">
               {t.rentCar}
             </Link>
+          </div>
+        </div>
+      )}
+
+      {!sheetVM && (
+        <div className="pointer-events-none absolute left-3 bottom-24 z-10 sm:bottom-6">
+          <div className="rounded-lg bg-surface/90 px-2.5 py-2 text-[11px] leading-tight text-text shadow backdrop-blur">
+            <div className="flex items-center gap-1.5">
+              <span className="inline-block h-1 w-4 rounded-full" style={{ background: "#0B5E78" }} aria-hidden />
+              {t.legendKtel}
+            </div>
+            <div className="mt-1 flex items-center gap-1.5">
+              <span className="inline-flex gap-0.5" aria-hidden>
+                <span className="inline-block h-1 w-1.5 rounded-full" style={{ background: "#F2C21E" }} />
+                <span className="inline-block h-1 w-1.5 rounded-full" style={{ background: "#E0342B" }} />
+                <span className="inline-block h-1 w-1.5 rounded-full" style={{ background: "#2FA24C" }} />
+              </span>
+              {t.legendUrban}
+            </div>
           </div>
         </div>
       )}

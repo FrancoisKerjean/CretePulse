@@ -3,8 +3,10 @@ import type { LiveBus, LiveGpsBus } from "@/lib/bus-live";
 const NORMAL = "#0B5E78";   // sea
 const SELECTED = "#ED7A5C"; // terracotta
 
-/** Élément DOM d'un marqueur bus : hit-area 44px + inner 26px (flèche + halo). */
-export function createBusEl(bus: LiveBus): HTMLDivElement {
+/** Élément DOM d'un marqueur bus : hit-area 44px + inner 26px (flèche + halo).
+ *  `lineColor` (hex #RRGGBB) colore le marqueur des bus municipaux Agios Nikolaos par
+ *  ligne (jaune/rouge/vert) ; null/absent -> bleu KTEL par défaut. */
+export function createBusEl(bus: LiveBus, lineColor?: string | null): HTMLDivElement {
   const el = document.createElement("div");
   // conteneur = zone tactile 44px transparente, centre l'inner
   el.style.cssText =
@@ -14,14 +16,15 @@ export function createBusEl(bus: LiveBus): HTMLDivElement {
   el.setAttribute("aria-label", `${bus.codeOfficial ?? bus.code} → ${bus.headsign}`);
   el.title = `${bus.codeOfficial ?? bus.code} → ${bus.headsign}`;
 
-  // Affichage uniforme : les bus à tracé estimé (degraded) sont rendus comme les
-  // autres (la page /live indique déjà « estimé d'après l'horaire »).
-  const color = NORMAL;
+  // Couleur = celle de la ligne pour le réseau municipal (split visuel KTEL / urbain),
+  // sinon bleu KTEL. La page /live indique déjà « estimé d'après l'horaire ».
+  const color = lineColor || NORMAL;
+  const halo = lineColor ? `${lineColor}29` : "rgba(11,94,120,.16)"; // #RRGGBB29 ~= 16% alpha
   const inner = document.createElement("div");
   inner.className = "bus-inner";
   inner.style.cssText = "position:relative;width:26px;height:26px;transition:transform .15s ease";
   inner.innerHTML =
-    `<span style="position:absolute;inset:-8px;border-radius:50%;background:rgba(11,94,120,.16);animation:cd-pulse 2s ease-out infinite"></span>` +
+    `<span style="position:absolute;inset:-8px;border-radius:50%;background:${halo};animation:cd-pulse 2s ease-out infinite"></span>` +
     `<span class="bus-arrow" data-base="${color}" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;` +
     `width:26px;height:26px;border-radius:50%;background:${color};color:#fff;font:700 11px/1 var(--font-heading),sans-serif;` +
     `box-shadow:0 1px 4px rgba(0,0,0,.3);transform:rotate(${bus.bearing}deg)">▲</span>`;
