@@ -8,6 +8,7 @@ import {
 } from "@/lib/affiliate";
 import { slugExists, codeExists, emailExists, insertAffiliate } from "@/lib/affiliate-store";
 import { notifyNewAffiliate } from "@/lib/affiliate-notify";
+import { sendAffiliateWelcome } from "@/lib/email";
 
 export const runtime = "nodejs";
 
@@ -54,6 +55,20 @@ export async function POST(request: NextRequest) {
     email: v.data.email,
     link,
   });
+
+  // Self-serve close: the affiliate gets their link + terms by email immediately,
+  // so no human reply is needed. Best-effort: never fail the signup on a mail error.
+  try {
+    await sendAffiliateWelcome({
+      email: v.data.email,
+      name: v.data.name,
+      link,
+      code,
+      commissionPct: AFFILIATE_DEFAULT_COMMISSION_PCT,
+    });
+  } catch (e) {
+    console.error("[affiliate-register] welcome email failed:", e);
+  }
 
   return NextResponse.json({
     ok: true,

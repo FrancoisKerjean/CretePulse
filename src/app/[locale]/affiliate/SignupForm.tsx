@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { CheckCircle2, Copy } from "lucide-react";
-import { CATEGORIES, AREAS } from "@/lib/affiliate";
+import { CATEGORIES, AREAS, AFFILIATE_DEFAULT_COMMISSION_PCT } from "@/lib/affiliate";
 
 interface Success {
   link: string;
@@ -82,7 +82,10 @@ export default function SignupForm() {
         <p className="text-sm text-text mb-1">
           Promo code: <strong>{success.code}</strong>
         </p>
-        <p className="text-sm text-text">We&apos;ll be in touch to set your terms.</p>
+        <p className="text-sm text-text">
+          That&apos;s it, you&apos;re live. You only pay {AFFILIATE_DEFAULT_COMMISSION_PCT}% on the bookings we send you, nothing otherwise.
+          We just emailed you this link and how to use it. No call needed.
+        </p>
       </div>
     );
   }
@@ -139,7 +142,7 @@ export default function SignupForm() {
 
       <label className="flex items-start gap-2 text-sm text-text">
         <input name="accept" type="checkbox" required className="mt-1" />
-        <span>I agree to a commission on referred bookings.</span>
+        <span>I agree to a {AFFILIATE_DEFAULT_COMMISSION_PCT}% commission on the bookings crete.direct refers to me. No setup fee, cancel anytime.</span>
       </label>
 
       {error && <p className="text-sm text-red-600">{error}</p>}

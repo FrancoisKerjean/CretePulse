@@ -1,11 +1,13 @@
 import { setRequestLocale } from "next-intl/server";
 import { Megaphone, LinkIcon, Coins, Check } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
+import { AFFILIATE_DEFAULT_COMMISSION_PCT } from "@/lib/affiliate";
 import SignupForm from "./SignupForm";
 
 export const revalidate = 86400;
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
+const PCT = AFFILIATE_DEFAULT_COMMISSION_PCT;
 
 const T = {
   title: "Affiliate program · turn crete.direct traffic into bookings",
@@ -15,18 +17,18 @@ const T = {
   metaDesc:
     "Join the crete.direct affiliate program. Sign up in under a minute, get your tracked link instantly, and pay a commission only on the bookings we send you.",
   pitch:
-    "crete.direct reaches travellers planning their trip to Crete · live guides, beaches, buses and the /explore directory, in several languages. We point that audience to your business. You pay a commission only on the bookings we refer.",
-  pillCommission: "Commission on bookings only",
-  pillFree: "No setup fee · no lock-in",
+    `crete.direct reaches travellers planning their trip to Crete · live guides, beaches, buses and the /explore directory, in several languages. We point that audience to your business. You pay a flat ${PCT}% commission, only on the bookings we refer. Nothing else, ever.`,
+  pillCommission: `${PCT}% on referred bookings only`,
+  pillFree: "No setup fee · no lock-in · cancel anytime",
   stepsTitle: "How it works",
   steps: [
     { icon: "megaphone", text: "Sign up in 3-5 clicks · tell us your business and booking page." },
     { icon: "link", text: "Get your tracked link crete.direct/go/your-name instantly · it goes live right away." },
-    { icon: "coins", text: "We send you visitors. You pay an agreed commission on the bookings they make." },
+    { icon: "coins", text: `We send you visitors. You pay a flat ${PCT}% commission on the bookings they make. Nothing otherwise.` },
   ],
   dealTitle: "The deal",
   deal: [
-    "Fair commission, agreed up front · only on bookings we refer.",
+    `A flat ${PCT}% commission, set up front · only on the bookings we actually refer.`,
     "Transparent click reporting · we reconcile bookings with you, no hidden numbers.",
     "No setup fee, no lock-in. Cancel whenever you want.",
   ],
