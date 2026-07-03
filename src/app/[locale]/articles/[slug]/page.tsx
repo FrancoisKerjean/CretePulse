@@ -21,7 +21,6 @@ import { breadcrumbSchema } from "@/lib/schema";
 import DiscoverCrete from "@/components/DiscoverCrete";
 import ReadingProgressBar from "@/components/ReadingProgressBar";
 import StickyNewsletterBar from "@/components/StickyNewsletterBar";
-import RentalCTA from "@/components/RentalCTA";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import { JsonLd } from "@/components/JsonLd";
 
@@ -508,8 +507,6 @@ export default async function ArticleDetailPage({
               </section>
             )}
 
-            {/* Cross-link rental funnel (kairosguest.com), UTM-tracked */}
-            <RentalCTA locale={locale} contentSlug={guide.slug} contentType="article" />
 
             {/* Discover Crete (internal links boost) */}
             <DiscoverCrete category={guide.category} locale={locale} />

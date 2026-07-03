@@ -207,7 +207,7 @@ export default async function AirbnbIndexPage(
           {l.source}
         </div>
 
-        <InvestmentCTA locale={locale} contentType="airbnb" />
+        <InvestmentCTA locale={locale} variant="biens" contentType="airbnb" />
       </div>
     </main>
   );

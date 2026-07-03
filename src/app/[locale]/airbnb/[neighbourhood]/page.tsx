@@ -1,7 +1,6 @@
-import { ChevronLeft, MapPin, Home, Euro, Calendar, Star, Award, Shield, TrendingUp } from "lucide-react";
+import { ChevronLeft, MapPin, Home, Euro, Calendar, Star, Award, Shield } from "lucide-react";
 import { setRequestLocale } from "next-intl/server";
 import { BusAccessBox } from "@/components/BusAccessBox";
-import { PromoBox } from "@/components/PromoBox";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -809,16 +808,16 @@ export default async function AirbnbNeighbourhoodPage(
           matchOn="slug"
         />
 
-        {/* CTA */}
-        <PromoBox
-          icon={TrendingUp}
-          title={t.cta}
-          ctaLabel={t.ctaButton}
-          ctaHref={t.ctaLink}
+        {/* CTA investissement (photo plein bloc) · variante analyzer : fusionne
+            l'ancien encart "analyse personnelle" et pointe vers l'estimateur
+            /rental-analyzer, l'entrée du funnel. Audience investisseur de cette
+            page de données. Un seul encart, plus de doublon boîte-claire. */}
+        <InvestmentCTA
+          locale={locale}
+          variant="biens"
+          contentType="airbnb-zone"
+          contentSlug={neighbourhood}
         />
-
-        {/* Cross-link investissement vers kairosguest (audience investisseur) */}
-        <InvestmentCTA locale={locale} contentType="airbnb-zone" contentSlug={neighbourhood} />
 
         {/* Sibling neighbourhoods */}
         {siblings.length > 0 && (

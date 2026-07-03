@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { Trophy, ArrowRight, ChevronLeft, Scale } from "lucide-react";
 import type { Metadata } from "next";
 import { compareSchema } from "@/lib/schema";
-import RentalCTA from "@/components/RentalCTA";
 import { getBusRoutes } from "@/lib/buses";
 import { compareToPairSlug, type SeoRoute } from "@/lib/bus-seo";
 import { JsonLd } from "@/components/JsonLd";
@@ -749,11 +748,6 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
               </Link>
             </div>
           )}
-
-          {/* Cross-link rental funnel (kairosguest.com), UTM-tracked */}
-          <div className="mt-8">
-            <RentalCTA locale={locale} contentSlug={slug} contentType="compare" />
-          </div>
 
           {/* Links back to site */}
           <div className="mt-8 flex flex-wrap gap-3">

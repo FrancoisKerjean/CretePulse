@@ -4,7 +4,6 @@ import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { breadcrumbSchema } from "@/lib/schema";
-import RentalCTA from "@/components/RentalCTA";
 import { BusAccessBox } from "@/components/BusAccessBox";
 import { buildAlternates } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
@@ -495,8 +494,6 @@ export default async function WhereToStayAreaPage({
           </div>
         </section>
 
-        {/* Cross-link rental funnel (kairosguest.com), UTM-tracked */}
-        <RentalCTA locale={locale} contentSlug={areaSlug} contentType="where-to-stay" />
 
         {/* Other areas */}
         <section className="mb-8">
