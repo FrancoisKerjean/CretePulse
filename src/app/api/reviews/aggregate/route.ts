@@ -13,5 +13,9 @@ export async function GET(req: NextRequest) {
     .eq("status", "published");
   if (error) return NextResponse.json({ avg: null, count: 0, distribution: { 1:0,2:0,3:0,4:0,5:0 } });
   const ratings = (data ?? []).map((r) => r.rating as number);
-  return NextResponse.json(computeAggregate(ratings));
+  // 03/07 optim couts Vercel : cache CDN 1h (avis changent lentement, revalidateTag
+  // sur cb_reviews casse le cache au besoin). Evite un fetch Supabase par revalidation.
+  return NextResponse.json(computeAggregate(ratings), {
+    headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=7200" },
+  });
 }

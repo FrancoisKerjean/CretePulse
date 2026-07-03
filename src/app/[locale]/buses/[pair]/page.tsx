@@ -20,7 +20,7 @@ import partnersData from "@/data/taxi-partners.json";
 import type { Locale } from "@/lib/types";
 import { JsonLd } from "@/components/JsonLd";
 
-export const revalidate = 86400;
+export const revalidate = 172800; // 03/07 optim couts Vercel (48h, ISR Writes)
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 const SUPPORTED: Locale[] = ["en", "fr", "de", "el"];

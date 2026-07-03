@@ -4,7 +4,7 @@ import { setRequestLocale } from "next-intl/server";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { ReviewsPage } from "@/components/reviews/ReviewsPage";
 
-export const revalidate = 60;
+export const revalidate = 86400; // 03/07 optim: etait 60s = poste #1 ISR Writes
 export async function generateStaticParams() { return []; }
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {

@@ -7,7 +7,7 @@ import type { Locale } from "@/lib/types";
 import { CarPromo } from "@/components/car-rental/CarPromo";
 import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 
-export const revalidate = 3600;
+export const revalidate = 7200; // 03/07 optim couts Vercel
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 

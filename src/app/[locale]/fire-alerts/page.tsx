@@ -3,7 +3,7 @@ import { setRequestLocale } from "next-intl/server";
 import { Flame, AlertTriangle, Phone, Shield } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
 
-export const revalidate = 3600;
+export const revalidate = 7200; // 03/07 optim couts Vercel
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 

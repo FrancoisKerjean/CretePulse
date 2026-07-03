@@ -15,7 +15,7 @@ import { ExploreBento } from "@/components/explore/bento/ExploreBento";
 import { ReadMoreAccordion } from "@/components/explore/bento/shared/ReadMoreAccordion";
 import { ReviewCTA } from "@/components/reviews/ReviewCTA";
 
-export const revalidate = 86400;
+export const revalidate = 172800; // 03/07 optim couts Vercel (48h, ISR Writes)
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 const T: Record<string, Record<string, string>> = {

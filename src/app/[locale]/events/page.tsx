@@ -6,7 +6,7 @@ import { Calendar, MapPin, Clock } from "lucide-react";
 import Link from "next/link";
 import { buildAlternates } from "@/lib/seo";
 
-export const revalidate = 3600;
+export const revalidate = 7200; // 03/07 optim couts Vercel
 
 const EVENTS_LABELS: Record<Locale, {
   subtitle: string;

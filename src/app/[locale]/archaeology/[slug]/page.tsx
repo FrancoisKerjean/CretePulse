@@ -9,7 +9,7 @@ import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
 import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 
-export const revalidate = 86400;
+export const revalidate = 172800; // 03/07 optim couts Vercel (48h, ISR Writes)
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 

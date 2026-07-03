@@ -95,11 +95,16 @@ export async function GET(req: NextRequest) {
     (data.byRegion[z] ?? []).map(lite),
   );
 
+  // 03/07 optim couts Vercel : cache CDN 30 min (donnees vent/plages, fraicheur 30 min OK).
+  // buildSwimToday() = calcul haversine + tri couteux (Fluid CPU) ; appele par
+  // /beaches/today + /near-me x22 locales. Le cache divise les recalculs.
   return NextResponse.json({
     date: new Date().toISOString().slice(0, 10),
     wind: data.wind,
     pick: lite(data.pick),
     alternatives,
     avoid: data.avoid.map(lite),
+  }, {
+    headers: { "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=3600" },
   });
 }
