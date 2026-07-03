@@ -61,7 +61,7 @@
       "website": "https://chaniacarrental.gr",
       "commission": 0.1,
       "since": "2026-05-12",
-      "leadRouting": "relay"
+      "leadRouting": "direct"
     }
   ]
 }

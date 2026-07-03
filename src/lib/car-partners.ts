@@ -44,9 +44,10 @@ export const CAR_PARTNERS: CarPartner[] = [
     website: "https://chaniacarrental.gr",
     commission: 0.10,
     since: "2026-05-12",
-    // Relais manuel tant que Panagoula n'est pas prévenue du flux automatique
-    // (à terme : canal WhatsApp automatisé, puis "direct").
-    leadRouting: "relay",
+    // Envoi DIRECT à l'agence (03/07/2026, choix Kami : avancer sans prévenir
+    // Panagoula). L'email lui demande un prix + son acceptation ; reply-to =
+    // Kami (contact@kairosguest.com), qui garde la main sur le client.
+    leadRouting: "direct",
   },
 ];
 

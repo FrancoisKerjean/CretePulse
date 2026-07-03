@@ -281,15 +281,20 @@ export async function sendCarLeadEmail(partner: CarLeadPartner, lead: CarLead) {
     ];
   } else {
     to = partner.email;
-    cc = RELAY_EMAIL; // preuve horodatée de l'apport (10%)
+    cc = RELAY_EMAIL; // Kami en copie : preuve horodatée de l'apport (10%)
     lines = [
       `Hi ${partner.name.split(" ")[0]},`,
       ``,
-      `New rental request via crete.direct (Kami's referral partnership, 10%):`,
+      `A customer just requested a car through crete.direct. Here is the booking:`,
       ``,
       ...leadSummary(lead),
       ``,
-      `Please reply directly to the customer (reply-to is set).`,
+      `Our referral commission on this rental is 10%.`,
+      ``,
+      `Please reply to this email with your price for this rental and let me know whether you accept the booking. I will take it from there with the customer.`,
+      ``,
+      `Thanks,`,
+      `Kami · crete.direct`,
     ];
   }
 
@@ -299,7 +304,9 @@ export async function sendCarLeadEmail(partner: CarLeadPartner, lead: CarLead) {
     from: FROM_EMAIL,
     to,
     ...(cc ? { cc } : {}),
-    replyTo: lead.customerEmail,
+    // Mode direct : l'agence répond à Kami (prix + acceptation). Mode relay :
+    // reply-to = client (Kami transfère et l'agence devise en direct).
+    replyTo: relay ? lead.customerEmail : RELAY_EMAIL,
     subject: relay ? `[Lead voiture · à transmettre] ${subject}` : subject,
     text: lines.join("\n"),
   });
