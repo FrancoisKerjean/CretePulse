@@ -2,8 +2,8 @@ Photos des categories de vehicules (car-rental wizard).
 Source : Wikimedia Commons. Licence : CC BY-SA 4.0. Modifications : recadrage + redimensionnement web (720x480, JPEG).
 
 city.jpg      — Toyota Aygo X (2022) — auteur : Alexander Migl (User:Alexander-93) — CC BY-SA 4.0
-compact.jpg   — Volkswagen Polo VI (2021) — auteur : Alexander Migl (User:Alexander-93) — CC BY-SA 4.0
-sedan.jpg     — Toyota Corolla (ZRE172R) Ascent sedan (2018) — auteur : EurovisionNim — CC BY-SA 4.0
+compact.jpg   — Volkswagen Polo VI (Genève 2018) — auteur : Alexander Migl (User:Alexander-93) — CC BY-SA 4.0
+sedan.jpg     — Toyota Corolla Limousine Hybrid (E210, Genève 2019) — auteur : Alexander Migl (User:Alexander-93) — CC BY-SA 4.0
 automatic.jpg — Toyota C-HR Hybrid (AX20) — auteur : Alexander Migl (User:Alexander-93) — CC BY-SA 4.0
 suv.jpg       — Citroen C3 Aircross (2017 facelift) — auteur : Alexander Migl (User:Alexander-93) — CC BY-SA 4.0
 
