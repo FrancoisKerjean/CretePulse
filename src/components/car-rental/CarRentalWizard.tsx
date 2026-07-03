@@ -604,27 +604,37 @@ export function CarRentalWizard({ locale }: { locale: string }) {
         <div data-testid="car-step-3">
           <h2 className="font-heading font-extrabold text-xl text-text mb-5">{t.title3}</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-            {CAR_TYPES.map((c) => {
-              const Icon = c.icon;
-              return (
-                <button
-                  key={c.id}
-                  type="button"
-                  data-testid={`car-type-${c.id}`}
-                  onClick={() => setCarType(c.id)}
-                  className={`flex flex-col items-center gap-1.5 rounded-2xl border-[1.5px] bg-white p-4 transition-colors ${
-                    carType === c.id ? "border-sea bg-sea-faint" : "border-border hover:border-sea/50"
-                  }`}
-                >
-                  <Icon className="w-10 h-10 text-sea" />
-                  <span className="font-heading font-bold text-[14px] leading-tight text-text text-center">
-                    {c.labels[locale] ?? c.labels.en}
+            {CAR_TYPES.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                data-testid={`car-type-${c.id}`}
+                onClick={() => setCarType(c.id)}
+                className={`flex flex-col items-stretch gap-1 overflow-hidden rounded-2xl border-[1.5px] bg-white p-2.5 transition-colors ${
+                  carType === c.id ? "border-sea bg-sea-faint" : "border-border hover:border-sea/50"
+                }`}
+              >
+                <img
+                  src={c.photo}
+                  alt=""
+                  loading="lazy"
+                  className="h-20 w-full rounded-xl bg-sea-faint object-cover"
+                />
+                <span className="mt-1 text-center font-heading font-bold text-[14px] leading-tight text-text">
+                  {c.labels[locale] ?? c.labels.en}
+                </span>
+                {c.examples.length > 0 && (
+                  <span className="text-center text-[10px] leading-tight text-text-muted">
+                    {c.examples.join(" · ")}
                   </span>
-                  <span className="font-data text-xs text-text-muted">{c.pax} pax</span>
-                </button>
-              );
-            })}
+                )}
+                <span className="text-center font-data text-xs text-text-muted">{c.pax} pax</span>
+              </button>
+            ))}
           </div>
+          <p className="mt-2 text-center text-[10px] leading-tight text-text-muted/70">
+            Photos : Wikimedia Commons · CC BY-SA 4.0
+          </p>
           <div className="mt-6 flex items-center justify-between gap-4 rounded-2xl bg-surface px-4 py-3.5">
             <span className="font-heading font-bold text-[15px] text-text">{t.paxLabel}</span>
             <div className="flex items-center gap-3.5">
