@@ -20,6 +20,8 @@ type Variant = "biens" | "study";
 
 const COPY: Record<Variant, {
   Icon: LucideIcon;
+  /** Photo plein bloc (public/images/partners/). */
+  image: string;
   disclosure: Record<string, string>;
   title: Record<string, string>;
   line: Record<string, string>;
@@ -29,6 +31,7 @@ const COPY: Record<Variant, {
 }> = {
   biens: {
     Icon: Home,
+    image: "villa.jpg",
     disclosure: {
       en: "Kairos · properties for sale",
       fr: "Kairos · biens à vendre",
@@ -58,6 +61,7 @@ const COPY: Record<Variant, {
   },
   study: {
     Icon: TrendingUp,
+    image: "investment.jpg",
     disclosure: {
       en: "Kairos · investment study",
       fr: "Kairos · bureau d'étude",
@@ -127,7 +131,7 @@ export default function InvestmentCTA({
       <ImpressionTracker event="promo_impression" props={{ block: `investment-${variant}` }} />
       {/* Photo plein bloc, même langage visuel que les bandeaux partenaires. */}
       <img
-        src="/images/partners/investment.jpg"
+        src={`/images/partners/${c.image}`}
         alt=""
         loading="lazy"
         className="absolute inset-0 h-full w-full object-cover transition-transform duration-[4000ms] ease-out group-hover/ad:scale-105"
