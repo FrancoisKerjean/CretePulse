@@ -511,6 +511,7 @@ export function BusesClient({
                   type="carRental"
                   locale={locale}
                   placeName={toPlace || fromPlace || undefined}
+                  placement="buses-noroute"
                 />
               </div>
             ) : (
@@ -536,7 +537,7 @@ export function BusesClient({
                 </div>
                 {/* Ces destinations n'ont pas de bus direct -> la voiture est la
                     réponse pratique. CTA voiture contextuel (cf signal Plausible 24/06). */}
-                <AffiliateBanner type="carRental" locale={locale} className="mt-4" />
+                <AffiliateBanner type="carRental" locale={locale} placement="buses-nodirect" className="mt-4" />
               </section>
             )}
           </>
