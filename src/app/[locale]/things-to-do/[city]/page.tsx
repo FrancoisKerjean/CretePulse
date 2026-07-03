@@ -7,7 +7,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
 import { cityThingsToDoSchema } from "@/lib/schema";
-import RentalCTA from "@/components/RentalCTA";
 import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 import { getBusRoutes } from "@/lib/buses";
 import { qualityPairSlugs, type SeoRoute } from "@/lib/bus-seo";
@@ -578,9 +577,6 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
 
         {/* Other cities */}
         <section>
-          {/* Cross-link rental funnel (kairosguest.com), UTM-tracked */}
-          <RentalCTA locale={locale} contentSlug={citySlug} contentType="things-to-do" />
-
           <h2 className="text-sm font-bold text-text-muted uppercase tracking-wider mb-3 mt-10">{L.allCities}</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
             {CITIES.filter(c => c.slug !== citySlug).map(c => (

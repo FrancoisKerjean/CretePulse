@@ -17,7 +17,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 import { buildAlternates } from "@/lib/seo";
-import RentalCTA from "@/components/RentalCTA";
 import { CarPromo } from "@/components/car-rental/CarPromo";
 import { allPickups } from "@/lib/car-partners";
 import { SLUG_COORDS } from "@/lib/taxi-fare";
@@ -602,8 +601,6 @@ export default async function BeachDetailPage({
 
         <ShareBar url={`${BASE_URL}/${locale}/beaches/${beach.slug}`} title={getLocalizedField(beach, "name", loc)} locale={locale} className="my-8" />
 
-        {/* Cross-link rental funnel (kairosguest.com), UTM-tracked */}
-        <RentalCTA locale={locale} contentSlug={beach.slug} contentType="beach" />
 
         {/* Internal linking + retention: editorial discovery grid + newsletter capture */}
         <DiscoverCrete category={null} locale={locale} />
