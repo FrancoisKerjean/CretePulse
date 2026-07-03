@@ -14,6 +14,7 @@ import { SLUG_COORDS } from "@/lib/taxi-fare";
 import { nearestBy } from "@/lib/geo";
 import { useGeoPosition } from "@/components/geo/useGeoPosition";
 import { CiCompass, CiMark, CiPlane } from "@/components/icons";
+import { CarPriceEstimate } from "@/components/car-rental/CarPriceEstimate";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -648,6 +649,15 @@ export function CarRentalWizard({ locale }: { locale: string }) {
               </button>
             </div>
           </div>
+          {carType && (
+            <CarPriceEstimate
+              carType={carType}
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              locale={locale}
+              placement="wizard-step3"
+            />
+          )}
         </div>
       )}
 
@@ -655,6 +665,15 @@ export function CarRentalWizard({ locale }: { locale: string }) {
       {step === 4 && (
         <div data-testid="car-step-4">
           <h2 className="font-heading font-extrabold text-xl text-text mb-5">{t.title4}</h2>
+          {carType && (
+            <CarPriceEstimate
+              carType={carType}
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              locale={locale}
+              placement="wizard-step4"
+            />
+          )}
           <div className="space-y-3 max-w-md">
             <div>
               <label htmlFor="cr-name" className={LABEL_CLS}>{t.nameLabel}</label>
