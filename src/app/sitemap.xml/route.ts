@@ -53,6 +53,7 @@ const STATIC_PAGES = [
   "/airport",
   "/partners",
   "/projet",
+  "/enquete/paradoxe-tourisme-crete",
 ];
 
 const BEACH_ACTIVITIES = ["snorkeling", "kids", "swimming", "secluded", "sandy", "pebble"];
