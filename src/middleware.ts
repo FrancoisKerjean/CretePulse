@@ -12,6 +12,6 @@ export default createMiddleware(routing);
 // affiliate link.
 export const config = {
   matcher: [
-    "/((?!api|go|_next|_vercel|sitemap\\.xml|sitemap/|robots\\.txt|feed\\.xml|manifest|favicon\\.ico|icon|.*\\..*).*)",
+    "/((?!api|admin|go|_next|_vercel|sitemap\\.xml|sitemap/|robots\\.txt|feed\\.xml|manifest|favicon\\.ico|icon|.*\\..*).*)",
   ],
 };
