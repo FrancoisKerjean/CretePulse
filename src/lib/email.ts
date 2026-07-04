@@ -358,6 +358,55 @@ export async function sendCarLeadEmail(partner: CarLeadPartner, lead: CarLead, q
   return data;
 }
 
+/** Appel d'offres : email « aveugle » à UN loueur direct avec son lien de
+ *  soumission de prix. Pas de copie Kami (synthèse unique via
+ *  sendLeadKamiSummary). Propage l'erreur Resend (la route compte les envois). */
+export async function sendAgencyQuoteRequest(partner: { name: string; email: string }, lead: CarLead, quoteUrl: string) {
+  const first = partner.name.split(" ")[0];
+  const subject = `New rental request · ${lead.pickupLabel} ${lead.dateFrom} → ${lead.dateTo} (${lead.carTypeLabel}${lead.pax ? `, ${lead.pax} pax` : ""})`;
+  const lines = [
+    `Hi ${first},`,
+    ``,
+    `A customer just requested a car through crete.direct. Here is the booking:`,
+    ``,
+    ...leadSummary(lead, false),
+    ``,
+    `Our referral commission on this rental is 10%.`,
+    ``,
+    `Send your price in one click, no login (first come, first served):`,
+    quoteUrl,
+    ``,
+    `As soon as you submit it, the customer receives your quote automatically. I connect you both the moment they accept.`,
+    ``,
+    `Thanks,`,
+    `Kami · crete.direct`,
+  ];
+  const { data, error } = await resend.emails.send({
+    from: FROM_EMAIL, to: partner.email, replyTo: RELAY_EMAIL, subject, text: lines.join("\n"),
+  });
+  if (error) throw new Error(`Resend: ${error.message}`);
+  return data;
+}
+
+/** Synthèse unique à Kami pour un lead diffusé en appel d'offres : coordonnées
+ *  client complètes + loueurs invités. Best-effort. */
+export async function sendLeadKamiSummary(lead: CarLead, partnerNames: string[]) {
+  const subject = `New rental request · ${lead.pickupLabel} ${lead.dateFrom} → ${lead.dateTo} (${lead.carTypeLabel}${lead.pax ? `, ${lead.pax} pax` : ""})`;
+  const lines = [
+    `Lead voiture diffusé à ${partnerNames.length} loueur(s) : ${partnerNames.join(", ")}.`,
+    ``,
+    ...leadSummary(lead, true),
+    ``,
+    `Premier qui soumet son prix gagne. Le client reçoit l'offre automatiquement ; tu es en copie à l'acceptation.`,
+  ];
+  try {
+    await resend.emails.send({
+      from: FROM_EMAIL, to: RELAY_EMAIL, replyTo: lead.customerEmail,
+      subject: `[Lead voiture · suivi] ${subject}`, text: lines.join("\n"),
+    });
+  } catch (e) { console.error("[sendLeadKamiSummary] échec:", e); }
+}
+
 // ── Devis voiture : prix au client + mise en relation ──────────────────────
 
 export interface CarQuoteInfo {

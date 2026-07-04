@@ -125,7 +125,7 @@ const T: Record<string, Strings> = {
     submit: "Send request",
     sending: "Sending…",
     sentTitle: "Request sent",
-    sentBody: "Request sent to {partner}. They reply directly with a quote · you pay the agency on the spot, cash accepted, no prepayment.",
+    sentBody: "Request sent. Local rental agencies are preparing their price · you'll get the best offer by email shortly. No prepayment.",
     fallbackTitle: "The email didn't go through",
     fallbackBody: "Our email to the agency failed. Reach them directly on WhatsApp · your request is ready to send.",
     whatsappCta: "Open WhatsApp",
@@ -168,7 +168,7 @@ const T: Record<string, Strings> = {
     submit: "Envoyer la demande",
     sending: "Envoi…",
     sentTitle: "Demande envoyée",
-    sentBody: "Demande transmise à {partner}. L'agence vous répond directement avec un devis : vous payez l'agence sur place, espèces acceptées, aucun prépaiement.",
+    sentBody: "Demande envoyée. Les agences locales préparent leur prix : vous recevrez la meilleure offre par email très vite. Aucun prépaiement.",
     fallbackTitle: "L'email n'est pas parti",
     fallbackBody: "Notre email vers l'agence a échoué. Contactez-la directement sur WhatsApp : votre demande est prête à envoyer.",
     whatsappCta: "Ouvrir WhatsApp",
@@ -211,7 +211,7 @@ const T: Record<string, Strings> = {
     submit: "Anfrage senden",
     sending: "Wird gesendet…",
     sentTitle: "Anfrage gesendet",
-    sentBody: "Anfrage an {partner} übermittelt. Die Agentur antwortet Ihnen direkt mit einem Angebot · Sie zahlen vor Ort an die Agentur, Barzahlung möglich, keine Vorauszahlung.",
+    sentBody: "Anfrage gesendet. Lokale Autovermietungen bereiten ihren Preis vor · Sie erhalten das beste Angebot in Kürze per E-Mail. Keine Vorauszahlung.",
     fallbackTitle: "E-Mail nicht zugestellt",
     fallbackBody: "Unsere E-Mail an die Agentur ist fehlgeschlagen. Kontaktieren Sie sie direkt per WhatsApp · Ihre Anfrage ist vorbereitet.",
     whatsappCta: "WhatsApp öffnen",
@@ -254,7 +254,7 @@ const T: Record<string, Strings> = {
     submit: "Αποστολή αιτήματος",
     sending: "Αποστολή…",
     sentTitle: "Το αίτημα στάλθηκε",
-    sentBody: "Το αίτημα στάλθηκε στο {partner}. Το γραφείο θα σας απαντήσει απευθείας με προσφορά · πληρώνετε το γραφείο επί τόπου, δεκτά μετρητά, καμία προπληρωμή.",
+    sentBody: "Το αίτημα στάλθηκε. Τα τοπικά γραφεία ετοιμάζουν την τιμή τους · θα λάβετε σύντομα την καλύτερη προσφορά με email. Καμία προπληρωμή.",
     fallbackTitle: "Το email δεν στάλθηκε",
     fallbackBody: "Το email προς το γραφείο απέτυχε. Επικοινωνήστε απευθείας μέσω WhatsApp · το αίτημά σας είναι έτοιμο για αποστολή.",
     whatsappCta: "Άνοιγμα WhatsApp",
@@ -429,7 +429,7 @@ export function CarRentalWizard({ locale }: { locale: string }) {
         <CiMark className="w-12 h-12 text-lagoon-deep mx-auto" />
         <h2 className="mt-4 font-heading font-extrabold text-2xl text-text">{t.sentTitle}</h2>
         <p className="mt-2 text-[15px] text-text-muted max-w-xl mx-auto">
-          {t.sentBody.replace("{partner}", partner?.name ?? "")}
+          {t.sentBody}
         </p>
         <div className="max-w-sm mx-auto">{recap}</div>
       </div>

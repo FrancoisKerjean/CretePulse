@@ -16,8 +16,8 @@ ok("honeypot rempli -> kind honeypot (avant toute validation)",
   validateCarLead({ pickup: "nope", website: "bot" }).kind === "honeypot");
 
 let r = validateCarLead({ ...valid, pickup: "sitia" });
-ok("zone est (sitia) sans partenaire -> error 400", r.kind === "error" && r.status === 400);
-ok("pickup inconnu -> error 400 (pas de partenaire)", validateCarLead({ ...valid, pickup: "nope" }).status === 400);
+ok("sitia (zone lasithi-est) -> ok, couverture vérifiée en route", r.kind === "ok" && r.row.zone_id === "lasithi-east");
+ok("pickup inconnu -> error 422 (hors zone)", validateCarLead({ ...valid, pickup: "nope" }).status === 422);
 
 ok("email invalide -> 422", (() => { const x = validateCarLead({ ...valid, email: "nope" }); return x.kind === "error" && x.status === 422; })());
 ok("nom vide -> 422", validateCarLead({ ...valid, name: "   " }).status === 422);
@@ -30,8 +30,9 @@ const good = validateCarLead(valid);
 ok("demande valide -> kind ok", good.kind === "ok");
 ok("email normalisé (trim + lowercase)", good.kind === "ok" && good.row.customer_email === "jane@example.com");
 ok("nom trimmé", good.kind === "ok" && good.row.customer_name === "Jane");
-ok("zone_id depuis le partenaire", good.kind === "ok" && good.row.zone_id === "chania-west");
-ok("partner = Auto Smart", good.kind === "ok" && good.partner.name === "Auto Smart Car Rental");
+ok("zone_id depuis la zone", good.kind === "ok" && good.row.zone_id === "chania-west");
+ok("zone résolue = chania-west", good.kind === "ok" && good.zone.id === "chania-west");
+ok("partner non résolu ici (registre DB, en route)", good.kind === "ok" && good.row.partner_email === null);
 ok("carType résolu (data, sans icône)", good.kind === "ok" && good.carType.id === "compact" && good.carType.labels.en === "Compact");
 ok("status sent", good.kind === "ok" && good.row.status === "sent");
 ok("pax entier conservé", good.kind === "ok" && good.row.pax === 3);

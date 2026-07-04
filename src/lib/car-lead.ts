@@ -3,7 +3,7 @@
 // (scripts/check-car-lead.mjs). La route ne garde que l'orchestration I/O
 // (dédup / insert / email Supabase). Importe uniquement des modules node-safe
 // (pas de next/react/@components) pour rester exécutable par les check-*.mjs.
-import { partnerForPickup, type CarPartner, type CarZone } from "./car-partners.ts";
+import { zoneForPickup, type CarZone } from "./car-partners.ts";
 import { CAR_TYPES_DATA, type CarTypeData } from "./car-types-data.ts";
 import { SLUG_COORDS } from "./taxi-fare.ts";
 
@@ -25,8 +25,8 @@ export type CarRequestRow = {
   locale: string;
   pickup_slug: string;
   zone_id: string;
-  partner_name: string;
-  partner_email: string;
+  partner_name: string | null;  // rempli au moment où un loueur gagne l'appel d'offres
+  partner_email: string | null;
   date_from: string;
   time_from: string | null;
   date_to: string;
@@ -47,7 +47,7 @@ export type CarRequestRow = {
 export type CarLeadResult =
   | { kind: "honeypot" }
   | { kind: "error"; status: number; error: string }
-  | { kind: "ok"; partner: CarPartner & { zone: CarZone }; carType: CarTypeData; row: CarRequestRow };
+  | { kind: "ok"; zone: CarZone; carType: CarTypeData; row: CarRequestRow };
 
 const str = (v: unknown): string | null => (typeof v === "string" && v.trim() ? v.trim() : null);
 
@@ -63,10 +63,11 @@ export function validateCarLead(body: Record<string, unknown>): CarLeadResult {
   const name = typeof body.name === "string" ? body.name.trim().slice(0, 120) : "";
   const dateFrom = String(body.dateFrom ?? "");
   const dateTo = String(body.dateTo ?? "");
-  const partner = partnerForPickup(pickup);
+  const zone = zoneForPickup(pickup);
 
-  if (!partner) return { kind: "error", status: 400, error: "No partner in this area yet" };
-  if (!SLUG_COORDS[pickup] || !carType || !name || !EMAIL_REGEX.test(email)) {
+  // La couverture réelle (un loueur actif existe dans la zone) est vérifiée par
+  // la route sur le registre DB (car_partners) : ici on ne valide que la forme.
+  if (!zone || !SLUG_COORDS[pickup] || !carType || !name || !EMAIL_REGEX.test(email)) {
     return { kind: "error", status: 422, error: "Invalid request" };
   }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateFrom) || !/^\d{4}-\d{2}-\d{2}$/.test(dateTo) || dateTo < dateFrom) {
@@ -76,9 +77,9 @@ export function validateCarLead(body: Record<string, unknown>): CarLeadResult {
   const row: CarRequestRow = {
     locale: typeof body.locale === "string" ? body.locale : "en",
     pickup_slug: pickup,
-    zone_id: partner.zone.id,
-    partner_name: partner.name,
-    partner_email: partner.email,
+    zone_id: zone.id,
+    partner_name: null,  // inconnu tant qu'un loueur n'a pas gagné l'appel d'offres
+    partner_email: null,
     date_from: dateFrom,
     time_from: str(body.timeFrom),
     date_to: dateTo,
@@ -96,5 +97,5 @@ export function validateCarLead(body: Record<string, unknown>): CarLeadResult {
     status: "sent",
   };
 
-  return { kind: "ok", partner, carType, row };
+  return { kind: "ok", zone, carType, row };
 }

@@ -20,10 +20,16 @@ export default async function CarQuotePage({ params }: { params: Promise<{ local
   const { locale, token } = await params;
   setRequestLocale(locale);
 
-  const { data: row } = await supabase.from("car_requests")
-    .select("id, status, pickup_slug, date_from, time_from, date_to, time_to, car_type, pax, note, insurance, payment_method")
+  // Le jeton pointe une invitation (un par loueur) → on charge la demande.
+  const { data: invite } = await supabase.from("car_quote_invites")
+    .select("request_id")
     .eq("quote_token_hash", hashToken(token))
     .maybeSingle();
+  const { data: row } = invite
+    ? await supabase.from("car_requests")
+        .select("id, status, pickup_slug, date_from, time_from, date_to, time_to, car_type, pax, note, insurance, payment_method")
+        .eq("id", invite.request_id).maybeSingle()
+    : { data: null };
 
   if (!row) {
     return (

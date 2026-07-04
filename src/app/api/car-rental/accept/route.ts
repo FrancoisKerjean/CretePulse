@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { carPickupLabel } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
-import { partnerForPickup } from "@/lib/car-partners";
+import { partnerById } from "@/lib/car-partners-db";
 import { hashToken } from "@/lib/car-quote";
 
 // Le client accepte le devis (page /car-offer/{token}). On consomme le jeton
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
   if (!token) return NextResponse.json({ error: "Missing token" }, { status: 400 });
 
   const { data: row } = await supabase.from("car_requests")
-    .select("id, status, locale, pickup_slug, date_from, date_to, car_type, quoted_price, quoted_currency, partner_name, partner_email, customer_name, customer_email, customer_phone")
+    .select("id, status, locale, pickup_slug, date_from, date_to, car_type, quoted_price, quoted_currency, partner_name, partner_email, quoted_by_partner_id, customer_name, customer_email, customer_phone")
     .eq("accept_token_hash", hashToken(token))
     .maybeSingle();
 
@@ -36,18 +36,18 @@ export async function POST(request: NextRequest) {
   const locale = row.locale || "en";
   const ct = CAR_TYPES_DATA.find((c) => c.id === row.car_type);
   const carTypeLabel = ct?.labels[locale] ?? ct?.labels.en ?? row.car_type;
-  // Le téléphone/WhatsApp du loueur n'est pas stocké sur la ligne : on le
-  // re-résout depuis la data statique via le pickup.
-  const partner = partnerForPickup(row.pickup_slug);
+  // Coordonnées du loueur gagnant depuis le registre (téléphone/WhatsApp non
+  // stockés sur la demande).
+  const partner = row.quoted_by_partner_id ? await partnerById(row.quoted_by_partner_id) : null;
 
   try {
     const { sendConnectionEmails } = await import("@/lib/email");
     await sendConnectionEmails({
       partner: {
-        name: row.partner_name,
-        email: row.partner_email,
+        name: row.partner_name ?? partner?.name ?? "the agency",
+        email: row.partner_email ?? partner?.email ?? "",
         phone: partner?.phone ?? "",
-        whatsapp: partner?.whatsapp,
+        whatsapp: partner?.whatsapp ?? undefined,
       },
       customer: {
         name: row.customer_name, email: row.customer_email,
