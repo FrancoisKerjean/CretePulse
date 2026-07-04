@@ -9,6 +9,7 @@ import {
 import { slugExists, codeExists, emailExists, insertAffiliate } from "@/lib/affiliate-store";
 import { notifyNewAffiliate } from "@/lib/affiliate-notify";
 import { sendAffiliateWelcome } from "@/lib/email";
+import { carPartnerEmailExists, insertCarRentalPartner, sendCarRentalDirectWelcome } from "@/lib/car-rental-signup";
 
 export const runtime = "nodejs";
 
@@ -29,6 +30,26 @@ export async function POST(request: NextRequest) {
 
   const v = validateRegisterPayload(body);
   if (!v.ok) return NextResponse.json({ error: v.error }, { status: 422 });
+
+  // Les loueurs de voiture ne passent pas par l'affiliation /go/ : ils rejoignent
+  // Car Rental Direct (leads + devis first-come). L'inscription vaut accord (inbound).
+  if (v.data.category === "car_rental") {
+    if (await carPartnerEmailExists(v.data.email)) {
+      return NextResponse.json({ error: "This email is already registered" }, { status: 409 });
+    }
+    const partner = await insertCarRentalPartner(v.data);
+    if (!partner) return NextResponse.json({ error: "Could not register, try again" }, { status: 500 });
+    await notifyNewAffiliate({
+      name: v.data.name, category: v.data.category, area: v.data.area,
+      email: v.data.email, link: `${SITE_URL}/car-rental`,
+    });
+    try {
+      await sendCarRentalDirectWelcome(v.data.name, v.data.email);
+    } catch (e) {
+      console.error("[affiliate-register] car-rental welcome failed:", e);
+    }
+    return NextResponse.json({ ok: true, carRentalDirect: true });
+  }
 
   if (await emailExists(v.data.email)) {
     return NextResponse.json({ error: "This email is already registered" }, { status: 409 });
