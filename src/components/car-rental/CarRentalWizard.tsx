@@ -231,15 +231,19 @@ const INPUT_CLS =
   "w-full rounded-xl border-[1.5px] border-border bg-white px-3.5 py-2.5 text-[15px] text-text focus:outline-none focus:border-sea transition-colors";
 const LABEL_CLS = "block text-[12px] font-semibold text-text-muted mb-1";
 
-export function CarRentalWizard({ locale }: { locale: string }) {
+export function CarRentalWizard(
+  { locale, initialPickup: forcedPickup }: { locale: string; initialPickup?: string },
+) {
   const t = T[locale] || T.en;
   const sp = useSearchParams();
 
-  // ?pickup= valide (slug connu d'une zone) → étape 2 directement.
+  // pickup contextuel valide (slug connu d'une zone) → étape 2 directement.
+  // Priorité à la prop (pages-lieu /car-rental/[location], canonical propre sans
+  // query string) puis repli sur ?pickup= (CarPromo, liens contextuels).
   const initialPickup = useMemo(() => {
-    const q = sp.get("pickup");
+    const q = forcedPickup ?? sp.get("pickup");
     return q && zoneForPickup(q) && SLUG_COORDS[q] ? q : null;
-  }, [sp]);
+  }, [sp, forcedPickup]);
 
   const [view, setView] = useState<View>("steps");
   const [step, setStep] = useState(initialPickup ? 2 : 1);

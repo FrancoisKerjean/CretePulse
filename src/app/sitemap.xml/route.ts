@@ -21,6 +21,7 @@ import { qualityPairSlugs, priorityPairSlugs, pairLastmod } from "@/lib/bus-seo"
 import { MONTHS, CITIES } from "@/lib/weather-monthly";
 import { CRETE_NEIGHBOURHOODS } from "@/lib/airbnb-mappings";
 import { CRETE_AIRPORTS } from "@/lib/airports";
+import { CAR_LOCATION_SLUGS } from "@/lib/car-locations";
 
 export const revalidate = 86400;
 
@@ -217,6 +218,11 @@ export async function GET() {
   // ISR-served for the other 18 locales with English UI fallback + proper
   // hreflang alternates.
   for (const n of CRETE_NEIGHBOURHOODS) push(`/airbnb/${n.slug}`, "monthly", 0.7);
+
+  // Car rental location pages /car-rental/[location] : long-tail geo (airports +
+  // ferry ports) with high transactional intent, same recipe as /buses/[pair].
+  // Prerendered en/fr/de, ISR (EN fallback) for the other locales.
+  for (const s of CAR_LOCATION_SLUGS) push(`/car-rental/${s}`, "monthly", 0.8);
 
   // HCAA airport traffic pages: 3 Crete airports, data-exclusive (official
   // monthly XLSX parsed by our pipeline, updated as HCAA publishes).

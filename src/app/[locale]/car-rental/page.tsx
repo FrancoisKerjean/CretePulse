@@ -4,6 +4,7 @@
 // répond directement avec un devis. Funnel discret, zéro branding Kairos.
 // Contenu i18n (22 locales) dans ./content. Spec : docs/superpowers/specs/2026-06-12-car-rental-wizard-design.md
 import { Suspense } from "react";
+import Link from "next/link";
 import { setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { routing } from "@/i18n/routing";
@@ -13,6 +14,16 @@ import { CarRentalWizard } from "@/components/car-rental/CarRentalWizard";
 import { AffiliateCTA } from "@/components/ui/affiliate-cta";
 import { META, L, ONLINE_FALLBACK } from "./content";
 import { JsonLd } from "@/components/JsonLd";
+import { CAR_LOCATIONS, CAR_LOC_LOCALES, type CarLocLocale } from "@/lib/car-locations";
+
+// Titre de la grille de maillage (pages-lieu). Rédigé main en/fr/de/el,
+// fallback EN pour les autres locales (cohérent avec le reste de la page).
+const HUBS_TITLE: Record<string, string> = {
+  en: "Rent a car by arrival point",
+  fr: "Louer une voiture par point d'arrivée",
+  de: "Mietwagen nach Ankunftsort",
+  el: "Ενοικίαση αυτοκινήτου ανά σημείο άφιξης",
+};
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
@@ -93,6 +104,33 @@ export default async function CarRentalPage(
           </p>
           <AffiliateCTA type="carRental" locale={locale} />
         </div>
+
+        {/* Maillage : pages-lieu SEO (aéroports + ports), fort intent
+            transactionnel. Grille de liens internes vers /car-rental/[location]. */}
+        <section className="mt-12">
+          <h2 className="font-heading font-extrabold text-[26px] text-text mb-5">
+            {HUBS_TITLE[locale] || HUBS_TITLE.en}
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {CAR_LOCATIONS.map((cl) => {
+              const hubUi: CarLocLocale = (CAR_LOC_LOCALES as string[]).includes(locale)
+                ? (locale as CarLocLocale)
+                : "en";
+              return (
+                <Link
+                  key={cl.slug}
+                  href={`/${locale}/car-rental/${cl.slug}`}
+                  className="card-base p-4 no-underline hover:shadow-[0_10px_26px_rgba(11,94,120,.14)] transition-shadow flex items-center gap-3"
+                >
+                  <span className="text-lagoon-deep font-extrabold">
+                    {cl.kind === "airport" ? "✈" : "⚓"}
+                  </span>
+                  <span className="font-heading font-bold text-[15px] text-text">{cl.hub[hubUi]}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
 
         {/* Section éditoriale : conduire en Crète, rédigée honnête */}
         <section className="mt-12">
