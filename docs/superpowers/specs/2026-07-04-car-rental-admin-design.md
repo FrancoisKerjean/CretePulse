@@ -51,6 +51,7 @@ Le cycle automatique existant (`status` sent/quoted/accepted/email_failed,
 | `outcome` | text, NULL | `rented` (location effectuée) ou `lost` (pas aboutie) |
 | `outcome_at` | timestamptz | horodatage de la saisie d'issue |
 | `final_amount_eur` | numeric | montant final réel (pré-rempli avec `quoted_price`) |
+| `commission_eur` | numeric | **snapshot** de la commission à la saisie de l'issue (montant × taux du partenaire ce jour-là) — l'édition ultérieure du taux ne réécrit pas l'historique facturable |
 | `commission_paid_at` | timestamptz, NULL | NULL = due, non-NULL = encaissée |
 | `admin_note` | text | note libre |
 
@@ -74,7 +75,7 @@ passent en cartes empilées. Pagination simple 50/page.
 ### Vue Demandes
 - **Bandeau** : compteurs par `status` (sent/quoted/accepted + email_failed en
   alerte), compteurs d'issue (rented/lost), **commission due**
-  (Σ `final_amount_eur × commission` du partenaire gagnant, sur
+  (Σ `commission_eur` snapshotée, fallback `final_amount_eur × commission` du partenaire gagnant, sur
   `outcome='rented'` et `commission_paid_at IS NULL`) et **commission
   encaissée** (idem avec `commission_paid_at NOT NULL`).
 - **Tableau** récent → ancien : date, client (nom/email/tél), pickup, dates +

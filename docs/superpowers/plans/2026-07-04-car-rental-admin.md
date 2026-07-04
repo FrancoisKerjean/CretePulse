@@ -585,7 +585,7 @@ Créer `src/app/admin/car-rental/actions.ts` :
 import { revalidatePath } from "next/cache";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { isCarAdmin } from "@/lib/car-admin-auth";
-import { OUTCOMES, validatePartnerUpdate, ZONE_IDS } from "@/lib/car-admin";
+import { OUTCOMES, commissionEur, validatePartnerUpdate, ZONE_IDS } from "@/lib/car-admin";
 
 const PATH = "/admin/car-rental";
 
@@ -606,10 +606,26 @@ export async function setOutcome(id: number, formData: FormData) {
   const outcome = String(formData.get("outcome") ?? "");
   if (!(OUTCOMES as readonly string[]).includes(outcome)) throw new Error("Invalid outcome");
   const finalAmount = outcome === "rented" ? num(formData.get("amount")) : null;
+
+  // Snapshot de la commission au taux du jour (colonne commission_eur) :
+  // l'édition ultérieure du taux partenaire ne réécrit pas l'historique
+  // facturable (finding revue qualité Task 2).
+  let commission: number | null = null;
+  if (outcome === "rented" && finalAmount != null) {
+    const { data: req } = await supabase.from("car_requests")
+      .select("quoted_by_partner_id").eq("id", id).maybeSingle();
+    if (req?.quoted_by_partner_id != null) {
+      const { data: p } = await supabase.from("car_partners")
+        .select("commission").eq("id", req.quoted_by_partner_id).maybeSingle();
+      if (p) commission = commissionEur(finalAmount, p.commission);
+    }
+  }
+
   const { error } = await supabase.from("car_requests").update({
     outcome,
     outcome_at: new Date().toISOString(),
     final_amount_eur: finalAmount,
+    commission_eur: commission,
     // une demande reperdue n'a plus de commission encaissable
     ...(outcome === "lost" ? { commission_paid_at: null } : {}),
   }).eq("id", id);
