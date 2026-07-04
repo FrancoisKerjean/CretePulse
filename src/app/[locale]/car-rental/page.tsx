@@ -10,8 +10,7 @@ import { routing } from "@/i18n/routing";
 import { buildAlternates } from "@/lib/seo";
 import { carRentalPageSchema } from "@/lib/schema";
 import { CarRentalWizard } from "@/components/car-rental/CarRentalWizard";
-import { AffiliateCTA } from "@/components/ui/affiliate-cta";
-import { META, L, ONLINE_FALLBACK } from "./content";
+import { META, L } from "./content";
 import { JsonLd } from "@/components/JsonLd";
 import { servedZoneIds } from "@/lib/car-partners-db";
 
@@ -93,15 +92,6 @@ export default async function CarRentalPage(
         <Suspense fallback={null}>
           <CarRentalWizard locale={locale} servedZones={servedZones} />
         </Suspense>
-
-        {/* Repli online secondaire : DiscoverCars (affilié réel). Volontairement
-            discret pour ne pas concurrencer le wizard Auto Smart primaire. */}
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-white/60 px-5 py-4">
-          <p className="m-0 max-w-md text-sm text-text-muted">
-            {ONLINE_FALLBACK[locale] || ONLINE_FALLBACK.en}
-          </p>
-          <AffiliateCTA type="carRental" locale={locale} />
-        </div>
 
         {/* Section éditoriale : conduire en Crète, rédigée honnête */}
         <section className="mt-12">

@@ -364,6 +364,35 @@ export async function sendCarLeadEmail(partner: CarLeadPartner, lead: CarLead, q
 export async function sendAgencyQuoteRequest(partner: { name: string; email: string }, lead: CarLead, quoteUrl: string) {
   const first = partner.name.split(" ")[0];
   const subject = `New rental request · ${lead.pickupLabel} ${lead.dateFrom} → ${lead.dateTo} (${lead.carTypeLabel}${lead.pax ? `, ${lead.pax} pax` : ""})`;
+
+  // Récap booking (aveugle : pas de coordonnées client à ce stade).
+  const recapRows: Array<[string, string]> = [
+    ["Pickup / drop-off", lead.pickupLabel],
+    ["Arrival", `${lead.dateFrom}${lead.timeFrom ? ` at ${lead.timeFrom}` : ""}${lead.flightNo ? ` (flight ${lead.flightNo})` : ""}`],
+    ["Departure", `${lead.dateTo}${lead.timeTo ? ` at ${lead.timeTo}` : ""}`],
+    ["Car type", lead.carTypeLabel],
+    ["People", `${lead.pax ?? "-"}`],
+  ];
+  const recap = recapRows
+    .map(
+      ([label, value]) =>
+        `<p style="margin:0 0 8px; font-size:14px; line-height:1.5;"><strong style="color:${C.text};">${label}:</strong> <span style="color:${C.muted};">${value}</span></p>`,
+    )
+    .join("");
+
+  const html = kalimeraShell(`
+      <h2 style="margin:0 0 12px; color:${C.text}; font-size:20px;">New car rental request</h2>
+      <p style="margin:0 0 18px; color:${C.muted}; line-height:1.6;">Hi ${first}, a customer just requested a car through crete.direct. Here is the booking:</p>
+      <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:16px 18px; margin:0 0 18px;">
+        ${recap}
+      </div>
+      <p style="margin:0 0 20px; color:${C.text}; font-weight:700; font-size:15px;">Our referral commission is 10%, only on confirmed bookings.</p>
+      <div style="text-align:center; margin:0 0 16px;">${pillButton(quoteUrl, "Send your price", C.terracotta)}</div>
+      <p style="margin:0 0 22px; color:${C.faint}; font-size:12px; line-height:1.6; text-align:center;">First come, first served, no login. The customer gets your quote automatically; I connect you both the moment they accept.</p>
+      <p style="margin:0; color:${C.text}; line-height:1.5;"><strong>Kami</strong><br><span style="color:${C.faint}; font-size:13px;">crete.direct</span></p>
+  `);
+
+  // Fallback texte brut (clients sans HTML).
   const lines = [
     `Hi ${first},`,
     ``,
@@ -371,18 +400,19 @@ export async function sendAgencyQuoteRequest(partner: { name: string; email: str
     ``,
     ...leadSummary(lead, false),
     ``,
-    `Our referral commission on this rental is 10%.`,
+    `Our referral commission is 10%, only on confirmed bookings.`,
     ``,
     `Send your price in one click, no login (first come, first served):`,
     quoteUrl,
     ``,
-    `As soon as you submit it, the customer receives your quote automatically. I connect you both the moment they accept.`,
+    `The customer gets your quote automatically; I connect you both the moment they accept.`,
     ``,
-    `Thanks,`,
-    `Kami · crete.direct`,
+    `Kami`,
+    `crete.direct`,
   ];
+
   const { data, error } = await resend.emails.send({
-    from: FROM_EMAIL, to: partner.email, replyTo: RELAY_EMAIL, subject, text: lines.join("\n"),
+    from: FROM_EMAIL, to: partner.email, replyTo: RELAY_EMAIL, subject, html, text: lines.join("\n"),
   });
   if (error) throw new Error(`Resend: ${error.message}`);
   return data;
