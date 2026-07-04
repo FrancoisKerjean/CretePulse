@@ -70,7 +70,8 @@ export function RequestsTable({
   }
   if (partnerFilter) rows = rows.filter((r) => String(r.quoted_by_partner_id ?? "") === partnerFilter);
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
-  const pageRows = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const safePage = Math.min(Math.max(1, page), totalPages);
+  const pageRows = rows.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
   const qs = (over: Record<string, string | number>) => {
     const p = new URLSearchParams();
     if (statusFilter) p.set("status", statusFilter);
@@ -105,11 +106,11 @@ export function RequestsTable({
         {pageRows.map((r) => {
           const winner = r.quoted_by_partner_id != null ? partnersById.get(r.quoted_by_partner_id) : undefined;
           const commission = requestCommission(r, partnersById);
-          const relayPartner = winner ?? [...partnersById.values()].find((p) => p.lead_routing === "relay" && p.zone_ids.includes(r.zone_id));
+          const relayPartner = winner ?? [...partnersById.values()].find((p) => p.active && p.lead_routing === "relay" && p.zone_ids.includes(r.zone_id));
           return (
             <li key={r.id} className="rounded-2xl border border-border bg-white p-4">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="font-data text-xs text-text-light">#{r.id} · {new Date(r.created_at).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" })}</span>
+                <span className="font-data text-xs text-text-light">#{r.id} · {new Date(r.created_at).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Athens" })}</span>
                 {statusBadge(r.status)}
                 {outcomeBadge(r.outcome)}
                 {r.commission_paid_at ? <span className="rounded-full bg-ok px-2 py-0.5 text-xs font-bold text-white">commission encaissée</span> : null}
@@ -173,9 +174,9 @@ export function RequestsTable({
 
       {totalPages > 1 ? (
         <div className="mt-4 flex items-center justify-center gap-3 text-sm">
-          {page > 1 ? <a href={qs({ page: page - 1 })} className="font-bold text-sea">← Précédent</a> : null}
-          <span className="text-text-muted">page {page} / {totalPages}</span>
-          {page < totalPages ? <a href={qs({ page: page + 1 })} className="font-bold text-sea">Suivant →</a> : null}
+          {safePage > 1 ? <a href={qs({ page: safePage - 1 })} className="font-bold text-sea">← Précédent</a> : null}
+          <span className="text-text-muted">page {safePage} / {totalPages}</span>
+          {safePage < totalPages ? <a href={qs({ page: safePage + 1 })} className="font-bold text-sea">Suivant →</a> : null}
         </div>
       ) : null}
     </section>

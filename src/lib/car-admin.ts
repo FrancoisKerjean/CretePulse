@@ -139,7 +139,7 @@ export const canSetOutcome = (req: Pick<AdminRequest, "status">): boolean =>
 
 export const ZONE_IDS: string[] = CAR_ZONES.map((z) => z.id);
 
-/** null = OK, sinon message d'erreur (server action l'affiche inline). */
+/** null = OK, sinon message d'erreur (la server action redirige avec ?error=, la page l'affiche en bandeau). */
 export function validatePartnerUpdate(u: { zone_ids: string[]; commission: number }): string | null {
   if (!Array.isArray(u.zone_ids) || u.zone_ids.length === 0) return "At least one zone required";
   if (u.zone_ids.some((z) => !ZONE_IDS.includes(z))) return "Unknown zone";

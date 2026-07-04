@@ -15,19 +15,22 @@ export const dynamic = "force-dynamic";
 export default async function CarAdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ key?: string; tab?: string; status?: string; partner?: string; page?: string }>;
+  searchParams: Promise<{ key?: string; tab?: string; status?: string; partner?: string; page?: string; error?: string }>;
 }) {
   const sp = await searchParams;
+  // Un param répété (?key=a&key=b) arrive en array au runtime malgré le type TS.
+  const key = typeof sp.key === "string" ? sp.key : undefined;
 
   // ?key= valide → on passe par la route auth/ qui pose le cookie et
   // redirige (contrat : ne JAMAIS rendre avec la clé dans l'URL).
   // Sinon cookie obligatoire, sinon 404.
-  if (sp.key) {
-    if (await isCarAdmin(sp.key)) redirect(`/admin/car-rental/auth?key=${encodeURIComponent(sp.key)}`);
+  if (key) {
+    if (await isCarAdmin(key)) redirect(`/admin/car-rental/auth?key=${encodeURIComponent(key)}`);
     notFound();
   }
   if (!(await isCarAdmin())) notFound();
 
+  // Cap 1000 demandes : à ce volume (quelques/semaine) c'est des années ; si un jour dépassé, les totaux du bandeau seraient tronqués.
   const [reqRes, partRes, invRes] = await Promise.all([
     supabase.from("car_requests").select("*").order("created_at", { ascending: false }).limit(1000),
     supabase.from("car_partners").select("*").order("id"),
@@ -56,6 +59,12 @@ export default async function CarAdminPage({
       {loadError ? (
         <p className="mt-4 rounded-xl border border-terracotta bg-terracotta-faint p-4 text-sm">
           Erreur de lecture : {loadError} (migration 20260705 appliquée ? DB joignable ?)
+        </p>
+      ) : null}
+
+      {typeof sp.error === "string" && sp.error ? (
+        <p className="mt-4 rounded-xl border border-terracotta bg-terracotta-faint p-4 text-sm">
+          {sp.error}
         </p>
       ) : null}
 

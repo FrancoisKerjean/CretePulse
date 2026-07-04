@@ -4,6 +4,7 @@
 // l'erreur, les données restent intactes (constat a posteriori, pas de
 // machine à états à réparer).
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { isCarAdmin } from "@/lib/car-admin-auth";
 import { OUTCOMES, commissionEur, validatePartnerUpdate, ZONE_IDS } from "@/lib/car-admin";
@@ -27,6 +28,9 @@ export async function setOutcome(id: number, formData: FormData) {
   const outcome = String(formData.get("outcome") ?? "");
   if (!(OUTCOMES as readonly string[]).includes(outcome)) throw new Error("Invalid outcome");
   const finalAmount = outcome === "rented" ? num(formData.get("amount")) : null;
+  if (outcome === "rented" && finalAmount == null) {
+    redirect(`${PATH}?error=${encodeURIComponent("Montant requis pour marquer une location « louée »")}`);
+  }
 
   // Snapshot de la commission au taux du jour (colonne commission_eur) :
   // l'édition ultérieure du taux partenaire ne réécrit pas l'historique
@@ -86,7 +90,7 @@ export async function updatePartner(id: number, formData: FormData) {
   const pct = num(formData.get("commissionPct"));
   const commission = pct == null ? NaN : Math.round(pct * 100) / 10000; // "12" -> 0.12
   const err = validatePartnerUpdate({ zone_ids, commission });
-  if (err) throw new Error(err);
+  if (err) redirect(`${PATH}?tab=partners&error=${encodeURIComponent(err)}`);
   const { error } = await supabase.from("car_partners").update({ zone_ids, commission }).eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath(PATH);

@@ -36,7 +36,7 @@ export function PartnersTable({
               <a href={`mailto:${p.email}`} className="text-sea">{p.email}</a>
               {p.phone ? <> · {p.phone}</> : null}
               {p.whatsapp && p.whatsapp !== p.phone ? <> · WA {p.whatsapp}</> : null}
-              {" · depuis "}{new Date(p.created_at).toLocaleDateString("fr-FR")}
+              {" · depuis "}{new Date(p.created_at).toLocaleDateString("fr-FR", { timeZone: "Europe/Athens" })}
             </div>
 
             <div className="mt-2 flex flex-wrap gap-4 text-sm">
