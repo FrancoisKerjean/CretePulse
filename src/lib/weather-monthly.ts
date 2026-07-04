@@ -93,7 +93,7 @@ export function getCity(slug: string) {
 }
 
 // Greek "in {city}" locative form per city, preposition included. The
-// article depends on the noun's gender and number — no reliable rule
+// article depends on the noun's gender and number, no reliable rule
 // exists from the name alone (e.g. Χανιά is neuter plural → "στα", but
 // Ιεράπετρα is feminine → "στην"), so we table it explicitly.
 const CITY_LOCATIVE_EL: Record<string, string> = {
@@ -115,7 +115,7 @@ export function getCityLocativeEl(slug: string): string | undefined {
 
 // Annual mean across the 12 months for a given city. Used by the
 // insight callout to contextualize each month against its city's
-// own baseline (not the Crete average — southern cities like
+// own baseline (not the Crete average: southern cities like
 // Ierapetra run consistently hotter and would look "average"
 // against Crete when they are in fact peak Mediterranean).
 export function getAnnualAverage(citySlug: string): MonthlyClimate {
