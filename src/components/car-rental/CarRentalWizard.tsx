@@ -8,7 +8,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { CAR_ZONES, allPickups, partnerForPickup, zoneForPickup } from "@/lib/car-partners";
+import { CAR_ZONES, allPickups, zoneForPickup } from "@/lib/car-partners";
 import { CAR_TYPES } from "@/lib/car-types";
 import { SLUG_COORDS } from "@/lib/taxi-fare";
 import { nearestBy } from "@/lib/geo";
@@ -272,7 +272,7 @@ const INPUT_CLS =
   "w-full rounded-xl border-[1.5px] border-border bg-white px-3.5 py-2.5 text-[15px] text-text focus:outline-none focus:border-sea transition-colors";
 const LABEL_CLS = "block text-[12px] font-semibold text-text-muted mb-1";
 
-export function CarRentalWizard({ locale }: { locale: string }) {
+export function CarRentalWizard({ locale, servedZones }: { locale: string; servedZones: string[] }) {
   const t = T[locale] || T.en;
   const sp = useSearchParams();
 
@@ -331,7 +331,7 @@ export function CarRentalWizard({ locale }: { locale: string }) {
   // "Près de moi" : dès que la position arrive, pickup le plus proche → étape 2.
   useEffect(() => {
     if (!nearRequested || !pos) return;
-    const nearest = nearestBy(allPickups(), (p) => SLUG_COORDS[p.slug] ?? null, pos, 1)[0];
+    const nearest = nearestBy(allPickups().filter((p) => servedZones.includes(p.zoneId)), (p) => SLUG_COORDS[p.slug] ?? null, pos, 1)[0];
     setNearRequested(false);
     if (nearest) {
       setPickup(nearest.slug);
@@ -340,8 +340,7 @@ export function CarRentalWizard({ locale }: { locale: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nearRequested, pos]);
 
-  const partner = pickup ? partnerForPickup(pickup) : null;
-  const served = partner !== null;
+  const served = pickup ? servedZones.includes(zoneForPickup(pickup)?.id ?? "") : false;
   const carTypeDef = CAR_TYPES.find((c) => c.id === carType) ?? null;
 
   // Pickup servi le plus proche du pickup non servi choisi (suggestion honnête).
@@ -350,7 +349,7 @@ export function CarRentalWizard({ locale }: { locale: string }) {
     const c = SLUG_COORDS[pickup];
     if (!c) return null;
     return nearestBy(
-      allPickups().filter((p) => p.served),
+      allPickups().filter((p) => servedZones.includes(p.zoneId)),
       (p) => SLUG_COORDS[p.slug] ?? null,
       { lat: c[0], lon: c[1] },
       1,

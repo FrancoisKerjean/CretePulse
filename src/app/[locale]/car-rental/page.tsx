@@ -13,10 +13,16 @@ import { CarRentalWizard } from "@/components/car-rental/CarRentalWizard";
 import { AffiliateCTA } from "@/components/ui/affiliate-cta";
 import { META, L, ONLINE_FALLBACK } from "./content";
 import { JsonLd } from "@/components/JsonLd";
+import { servedZoneIds } from "@/lib/car-partners-db";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
+// Zones couvertes = celles ayant un loueur actif (registre DB). Fallback = les
+// zones historiques d'Auto Smart si la DB est momentanément indisponible.
+const STATIC_SERVED = ["chania-west", "rethymno", "heraklion-center"];
+
 export const dynamicParams = true;
+export const revalidate = 300; // rafraîchit les zones couvertes toutes les 5 min
 
 export function generateStaticParams(): Array<{ locale: string }> {
   return routing.locales.map((locale) => ({ locale }));
@@ -57,6 +63,9 @@ export default async function CarRentalPage(
   const t = L[locale] || L.en;
   const m = META[locale] || META.en;
 
+  const dbZones = await servedZoneIds();
+  const servedZones = dbZones.length ? dbZones : STATIC_SERVED;
+
   const schema = carRentalPageSchema({
     locale,
     pageTitle: m.title,
@@ -82,7 +91,7 @@ export default async function CarRentalPage(
 
         {/* Île client : useSearchParams() exige un boundary Suspense (Next 16) */}
         <Suspense fallback={null}>
-          <CarRentalWizard locale={locale} />
+          <CarRentalWizard locale={locale} servedZones={servedZones} />
         </Suspense>
 
         {/* Repli online secondaire : DiscoverCars (affilié réel). Volontairement
