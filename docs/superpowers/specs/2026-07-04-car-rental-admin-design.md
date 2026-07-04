@@ -126,9 +126,10 @@ passent en cartes empilées. Pagination simple 50/page.
   calcul commission au taux partenaire, agrégats due/encaissée, stats
   partenaires, validations d'écriture (outcome invalide, commission hors
   bornes, zone inconnue).
-- Playwright : 404 sans clé, accès avec clé + cookie posé, onglets rendus.
-  (Écritures testées seulement si DB accessible en CI locale — sinon gate
-  d'accès uniquement.)
+- Gate d'accès vérifié en dev par curl (404 sans clé, 404 clé fausse, 307 +
+  cookie sur la route auth). Le repo n'a pas d'infra Playwright configurée ;
+  la vérification interactive complète (écritures) se fait sur la preview
+  Vercel, qui a la service key.
 - Build vert : `tsc` + `next build` avant tout push.
 
 ## 6. Livraison
