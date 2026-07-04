@@ -31,15 +31,25 @@ export default async function CarAdminPage({
   if (!(await isCarAdmin())) notFound();
 
   // Cap 1000 demandes : à ce volume (quelques/semaine) c'est des années ; si un jour dépassé, les totaux du bandeau seraient tronqués.
-  const [reqRes, partRes, invRes] = await Promise.all([
-    supabase.from("car_requests").select("*").order("created_at", { ascending: false }).limit(1000),
-    supabase.from("car_partners").select("*").order("id"),
-    supabase.from("car_quote_invites").select("request_id, partner_id"),
-  ]);
-  const loadError = reqRes.error?.message ?? partRes.error?.message ?? invRes.error?.message ?? null;
-  const requests = (reqRes.data ?? []) as AdminRequest[];
-  const partners = (partRes.data ?? []) as AdminPartner[];
-  const invites = (invRes.data ?? []) as { request_id: number; partner_id: number }[];
+  // try/catch : un client injoignable (ex. clé service absente en dev local)
+  // doit finir en bandeau d'erreur, pas en 500 (spec §4).
+  let requests: AdminRequest[] = [];
+  let partners: AdminPartner[] = [];
+  let invites: { request_id: number; partner_id: number }[] = [];
+  let loadError: string | null = null;
+  try {
+    const [reqRes, partRes, invRes] = await Promise.all([
+      supabase.from("car_requests").select("*").order("created_at", { ascending: false }).limit(1000),
+      supabase.from("car_partners").select("*").order("id"),
+      supabase.from("car_quote_invites").select("request_id, partner_id"),
+    ]);
+    loadError = reqRes.error?.message ?? partRes.error?.message ?? invRes.error?.message ?? null;
+    requests = (reqRes.data ?? []) as AdminRequest[];
+    partners = (partRes.data ?? []) as AdminPartner[];
+    invites = (invRes.data ?? []) as { request_id: number; partner_id: number }[];
+  } catch (e) {
+    loadError = e instanceof Error ? e.message : String(e);
+  }
 
   const partnersById = new Map(partners.map((p) => [p.id, p]));
   const invitesByRequest = new Map<number, number>();
