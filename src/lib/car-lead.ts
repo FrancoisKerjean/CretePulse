@@ -12,6 +12,15 @@ export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const carPickupLabel = (slug: string): string =>
   slug.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
 
+/** Libellé du type de véhicule enrichi de quelques modèles concrets, pour que
+ *  le loueur/le client visualisent la catégorie (ex. « Compact (VW Polo,
+ *  Peugeot 208) »). Modèles = universels, pas de « e.g. » (multilingue). */
+export function carTypeLabelWithExamples(ct: CarTypeData | undefined, locale: string, fallback = ""): string {
+  if (!ct) return fallback;
+  const label = ct.labels[locale] ?? ct.labels.en;
+  return ct.examples.length ? `${label} (${ct.examples.slice(0, 3).join(", ")})` : label;
+}
+
 export type CarRequestRow = {
   locale: string;
   pickup_slug: string;
@@ -29,6 +38,8 @@ export type CarRequestRow = {
   customer_email: string;
   customer_phone: string | null;
   note: string | null;
+  insurance: string | null;      // 'full' | 'basic' | null (peu importe)
+  payment_method: string | null; // 'cash' | 'card' | null (peu importe)
   source: string | null;
   status: string;
 };
@@ -79,6 +90,8 @@ export function validateCarLead(body: Record<string, unknown>): CarLeadResult {
     customer_email: email,
     customer_phone: str(body.phone),
     note: str(body.note)?.slice(0, 500) ?? null,
+    insurance: body.insurance === "full" || body.insurance === "basic" ? body.insurance : null,
+    payment_method: body.payment === "cash" || body.payment === "card" ? body.payment : null,
     source: str(body.source),
     status: "sent",
   };

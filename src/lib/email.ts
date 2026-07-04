@@ -218,8 +218,12 @@ export async function sendAffiliateWelcome(a: AffiliateWelcome): Promise<void> {
 export interface CarLead {
   pickupLabel: string; dateFrom: string; timeFrom?: string; dateTo: string; timeTo?: string;
   flightNo?: string; carTypeLabel: string; pax?: number;
+  insurance?: string; payment?: string; // 'full'|'basic' · 'cash'|'card'
   customerName: string; customerEmail: string; customerPhone?: string; note?: string;
 }
+
+const INSURANCE_LABEL: Record<string, string> = { full: "Full insurance (all-risk)", basic: "Basic insurance" };
+const PAYMENT_LABEL: Record<string, string> = { cash: "Cash", card: "Card" };
 
 // Mode relais (par défaut tant que l'agence n'est pas prévenue du flux
 // automatique) : le lead arrive UNIQUEMENT chez Kami, avec un lien WhatsApp
@@ -238,6 +242,8 @@ function leadSummary(lead: CarLead, includeContact = true): string[] {
     `Departure: ${lead.dateTo}${lead.timeTo ? ` at ${lead.timeTo}` : ""}`,
     `Car type: ${lead.carTypeLabel}`,
     `People: ${lead.pax ?? "-"}`,
+    ...(lead.insurance && INSURANCE_LABEL[lead.insurance] ? [`Insurance: ${INSURANCE_LABEL[lead.insurance]}`] : []),
+    ...(lead.payment && PAYMENT_LABEL[lead.payment] ? [`Payment: ${PAYMENT_LABEL[lead.payment]}`] : []),
     ...(includeContact
       ? [``, `Customer: ${lead.customerName}`, `Email: ${lead.customerEmail}`, `Phone / WhatsApp: ${lead.customerPhone ?? "-"}`]
       : []),

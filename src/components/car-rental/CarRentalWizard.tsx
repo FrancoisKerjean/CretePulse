@@ -61,6 +61,14 @@ type Strings = {
   flightOptional: string;
   title3: string;
   paxLabel: string;
+  insuranceLabel: string;
+  insFull: string;
+  insBasic: string;
+  insAny: string;
+  paymentLabel: string;
+  payCash: string;
+  payCard: string;
+  payAny: string;
   title4: string;
   nameLabel: string;
   emailLabel: string;
@@ -98,6 +106,14 @@ const T: Record<string, Strings> = {
     flightOptional: "Flight number (optional)",
     title3: "Which car?",
     paxLabel: "Travellers",
+    insuranceLabel: "Insurance (optional)",
+    insFull: "Full (all-risk)",
+    insBasic: "Basic",
+    insAny: "No preference",
+    paymentLabel: "Payment (optional)",
+    payCash: "Cash",
+    payCard: "Card",
+    payAny: "No preference",
     title4: "Your contact details",
     nameLabel: "Name",
     emailLabel: "Email",
@@ -133,6 +149,14 @@ const T: Record<string, Strings> = {
     flightOptional: "Numéro de vol (facultatif)",
     title3: "Quelle voiture ?",
     paxLabel: "Voyageurs",
+    insuranceLabel: "Assurance (facultatif)",
+    insFull: "Tous risques",
+    insBasic: "Basique",
+    insAny: "Peu importe",
+    paymentLabel: "Paiement (facultatif)",
+    payCash: "Espèces",
+    payCard: "Carte",
+    payAny: "Peu importe",
     title4: "Vos coordonnées",
     nameLabel: "Nom",
     emailLabel: "Email",
@@ -168,6 +192,14 @@ const T: Record<string, Strings> = {
     flightOptional: "Flugnummer (optional)",
     title3: "Welches Auto?",
     paxLabel: "Reisende",
+    insuranceLabel: "Versicherung (optional)",
+    insFull: "Vollkasko",
+    insBasic: "Basis",
+    insAny: "Egal",
+    paymentLabel: "Zahlung (optional)",
+    payCash: "Bar",
+    payCard: "Karte",
+    payAny: "Egal",
     title4: "Ihre Kontaktdaten",
     nameLabel: "Name",
     emailLabel: "E-Mail",
@@ -203,6 +235,14 @@ const T: Record<string, Strings> = {
     flightOptional: "Αριθμός πτήσης (προαιρετικό)",
     title3: "Ποιο αυτοκίνητο;",
     paxLabel: "Ταξιδιώτες",
+    insuranceLabel: "Ασφάλεια (προαιρετικό)",
+    insFull: "Πλήρης",
+    insBasic: "Βασική",
+    insAny: "Αδιάφορο",
+    paymentLabel: "Πληρωμή (προαιρετικό)",
+    payCash: "Μετρητά",
+    payCard: "Κάρτα",
+    payAny: "Αδιάφορο",
     title4: "Τα στοιχεία σας",
     nameLabel: "Όνομα",
     emailLabel: "Email",
@@ -252,6 +292,8 @@ export function CarRentalWizard({ locale }: { locale: string }) {
   const [flightNo, setFlightNo] = useState("");
   const [carType, setCarType] = useState<string | null>(null);
   const [pax, setPax] = useState(2);
+  const [insurance, setInsurance] = useState(""); // "" = peu importe, "full", "basic"
+  const [payment, setPayment] = useState("");     // "" = peu importe, "cash", "card"
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -335,6 +377,7 @@ export function CarRentalWizard({ locale }: { locale: string }) {
           name: name.trim(), email: email.trim(), phone: phone.trim() || undefined,
           dateFrom, timeFrom: timeFrom || undefined, dateTo, timeTo: timeTo || undefined,
           flightNo: flightNo.trim() || undefined, pax, note: note.trim() || undefined,
+          insurance: insurance || undefined, payment: payment || undefined,
           locale, source, website,
         }),
       });
@@ -657,6 +700,31 @@ export function CarRentalWizard({ locale }: { locale: string }) {
               >
                 +
               </button>
+            </div>
+          </div>
+          {/* Assurance + paiement (optionnels, défaut « peu importe ») */}
+          <div className="mt-5 space-y-3.5">
+            <div>
+              <span className="block mb-1.5 font-heading font-bold text-[14px] text-text">{t.insuranceLabel}</span>
+              <div className="flex flex-wrap gap-2">
+                {([["full", t.insFull], ["basic", t.insBasic], ["", t.insAny]] as const).map(([val, label]) => (
+                  <button key={val || "any"} type="button" onClick={() => setInsurance(val)}
+                    className={`rounded-full border-[1.5px] px-4 py-2 text-sm font-semibold transition-colors ${insurance === val ? "border-sea bg-sea-faint text-text" : "border-border bg-white text-text-muted hover:border-sea/50"}`}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <span className="block mb-1.5 font-heading font-bold text-[14px] text-text">{t.paymentLabel}</span>
+              <div className="flex flex-wrap gap-2">
+                {([["cash", t.payCash], ["card", t.payCard], ["", t.payAny]] as const).map(([val, label]) => (
+                  <button key={val || "any"} type="button" onClick={() => setPayment(val)}
+                    className={`rounded-full border-[1.5px] px-4 py-2 text-sm font-semibold transition-colors ${payment === val ? "border-sea bg-sea-faint text-text" : "border-border bg-white text-text-muted hover:border-sea/50"}`}>
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
           {carType && (

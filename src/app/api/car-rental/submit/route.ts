@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
-import { validateCarLead, carPickupLabel } from "@/lib/car-lead";
+import { validateCarLead, carPickupLabel, carTypeLabelWithExamples } from "@/lib/car-lead";
 import { newToken, hashToken, siteBase } from "@/lib/car-quote";
 
 export async function POST(request: NextRequest) {
@@ -37,7 +37,8 @@ export async function POST(request: NextRequest) {
     await sendCarLeadEmail(partner, {
       pickupLabel: carPickupLabel(row.pickup_slug), dateFrom: row.date_from, timeFrom: row.time_from ?? undefined,
       dateTo: row.date_to, timeTo: row.time_to ?? undefined, flightNo: row.flight_no ?? undefined,
-      carTypeLabel: carType.labels.en, pax: row.pax ?? undefined,
+      carTypeLabel: carTypeLabelWithExamples(carType, "en"), pax: row.pax ?? undefined,
+      insurance: row.insurance ?? undefined, payment: row.payment_method ?? undefined,
       customerName: row.customer_name, customerEmail: row.customer_email, customerPhone: row.customer_phone ?? undefined,
       note: row.note ?? undefined,
     }, quoteUrl);

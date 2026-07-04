@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
-import { carPickupLabel } from "@/lib/car-lead";
+import { carPickupLabel, carTypeLabelWithExamples } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { newToken, hashToken, siteBase } from "@/lib/car-quote";
 
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 
   const locale = row.locale || "en";
   const ct = CAR_TYPES_DATA.find((c) => c.id === row.car_type);
-  const carTypeLabel = ct?.labels[locale] ?? ct?.labels.en ?? row.car_type;
+  const carTypeLabel = carTypeLabelWithExamples(ct, locale, row.car_type);
 
   try {
     const { sendCustomerQuoteEmail } = await import("@/lib/email");

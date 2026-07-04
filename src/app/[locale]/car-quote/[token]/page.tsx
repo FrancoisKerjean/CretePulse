@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
-import { carPickupLabel } from "@/lib/car-lead";
+import { carPickupLabel, carTypeLabelWithExamples } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { hashToken } from "@/lib/car-quote";
 import { QuoteForm } from "./QuoteForm";
+
+const INSURANCE_LABEL: Record<string, string> = { full: "Full insurance (all-risk)", basic: "Basic insurance" };
+const PAYMENT_LABEL: Record<string, string> = { cash: "Cash", card: "Card" };
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -18,7 +21,7 @@ export default async function CarQuotePage({ params }: { params: Promise<{ local
   setRequestLocale(locale);
 
   const { data: row } = await supabase.from("car_requests")
-    .select("id, status, pickup_slug, date_from, time_from, date_to, time_to, car_type, pax, note")
+    .select("id, status, pickup_slug, date_from, time_from, date_to, time_to, car_type, pax, note, insurance, payment_method")
     .eq("quote_token_hash", hashToken(token))
     .maybeSingle();
 
@@ -36,7 +39,7 @@ export default async function CarQuotePage({ params }: { params: Promise<{ local
   }
 
   const ct = CAR_TYPES_DATA.find((c) => c.id === row.car_type);
-  const carTypeLabel = ct?.labels.en ?? row.car_type;
+  const carTypeLabel = carTypeLabelWithExamples(ct, "en", row.car_type);
 
   return (
     <main style={shell}>
@@ -53,6 +56,8 @@ export default async function CarQuotePage({ params }: { params: Promise<{ local
           <div><strong>Departure:</strong> {row.date_to}{row.time_to ? ` at ${row.time_to}` : ""}</div>
           <div><strong>Car type:</strong> {carTypeLabel}</div>
           <div><strong>People:</strong> {row.pax ?? "-"}</div>
+          {row.insurance && INSURANCE_LABEL[row.insurance] ? <div><strong>Insurance:</strong> {INSURANCE_LABEL[row.insurance]}</div> : null}
+          {row.payment_method && PAYMENT_LABEL[row.payment_method] ? <div><strong>Payment:</strong> {PAYMENT_LABEL[row.payment_method]}</div> : null}
           {row.note ? <div><strong>Note:</strong> {row.note}</div> : null}
         </div>
 
