@@ -253,7 +253,7 @@ export interface CarLeadPartner {
   leadRouting?: "relay" | "direct";
 }
 
-export async function sendCarLeadEmail(partner: CarLeadPartner, lead: CarLead) {
+export async function sendCarLeadEmail(partner: CarLeadPartner, lead: CarLead, quoteUrl?: string) {
   const subject = `New rental request · ${lead.pickupLabel} ${lead.dateFrom} → ${lead.dateTo} (${lead.carTypeLabel}${lead.pax ? `, ${lead.pax} pax` : ""})`;
   const relay = partner.leadRouting !== "direct";
   const first = partner.name.split(" ")[0];
@@ -303,7 +303,16 @@ export async function sendCarLeadEmail(partner: CarLeadPartner, lead: CarLead) {
     ``,
     `Our referral commission on this rental is 10%.`,
     ``,
-    `Please reply to this email with your price for this rental and let me know whether you accept the booking. I will share it with the customer and connect you both once they confirm.`,
+    ...(quoteUrl
+      ? [
+          `Send your price in one click (no login needed):`,
+          quoteUrl,
+          ``,
+          `As soon as you submit it, the customer receives your quote automatically. I connect you both the moment they accept.`,
+        ]
+      : [
+          `Please reply to this email with your price and let me know whether you accept the booking. I will share it with the customer and connect you both once they confirm.`,
+        ]),
     ``,
     `Thanks,`,
     `Kami · crete.direct`,
@@ -341,6 +350,131 @@ export async function sendCarLeadEmail(partner: CarLeadPartner, lead: CarLead) {
   }
 
   return data;
+}
+
+// ── Devis voiture : prix au client + mise en relation ──────────────────────
+
+export interface CarQuoteInfo {
+  pickupLabel: string; dateFrom: string; dateTo: string; carTypeLabel: string;
+  price: number; currency: string;
+}
+
+const money = (price: number, currency: string): string =>
+  currency === "EUR" ? `€${price}` : `${price} ${currency}`;
+
+const QUOTE_SUBJECT: Record<string, string> = {
+  en: "Your car rental quote for Crete",
+  fr: "Votre devis de location de voiture en Crète",
+  de: "Ihr Mietwagen-Angebot für Kreta",
+  el: "Η προσφορά ενοικίασης αυτοκινήτου στην Κρήτη",
+};
+
+const QUOTE_COPY: Record<string, { intro: string; details: string; cta: string; foot: string }> = {
+  en: { intro: "Good news, we received a price for your car rental request.", details: "Your request", cta: "Accept this offer", foot: "Accept and we connect you directly with the rental agency to finalise. Didn't request this? Just ignore this email." },
+  fr: { intro: "Bonne nouvelle, nous avons reçu un prix pour votre demande de location de voiture.", details: "Votre demande", cta: "Accepter cette offre", foot: "En acceptant, nous vous mettons directement en relation avec l'agence de location pour finaliser. Vous n'êtes pas à l'origine de cette demande ? Ignorez cet email." },
+  de: { intro: "Gute Nachrichten, wir haben einen Preis für Ihre Mietwagenanfrage erhalten.", details: "Ihre Anfrage", cta: "Angebot annehmen", foot: "Nach der Annahme verbinden wir Sie direkt mit der Autovermietung. Keine Anfrage gestellt? Ignorieren Sie diese E-Mail." },
+  el: { intro: "Καλά νέα, λάβαμε μια τιμή για το αίτημα ενοικίασης αυτοκινήτου σας.", details: "Το αίτημά σας", cta: "Αποδοχή προσφοράς", foot: "Με την αποδοχή, σας συνδέουμε απευθείας με το γραφείο ενοικίασης. Δεν κάνατε εσείς το αίτημα; Αγνοήστε αυτό το email." },
+};
+
+/** Email HTML au client avec le prix soumis par le loueur + bouton d'acceptation. */
+export async function sendCustomerQuoteEmail(opts: {
+  email: string; locale: string; customerName: string; acceptUrl: string; quote: CarQuoteInfo;
+}) {
+  const l = QUOTE_SUBJECT[opts.locale] ? opts.locale : "en";
+  const c = QUOTE_COPY[l];
+  const q = opts.quote;
+  const inner = `
+    <p style="margin:0 0 6px; color:${C.text}; font-size:18px; font-weight:800;">${opts.customerName ? `${opts.customerName}, ` : ""}${money(q.price, q.currency)}</p>
+    <p style="margin:0 0 18px; color:${C.muted}; font-size:14px; line-height:1.6;">${c.intro}</p>
+    <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 20px;">
+      <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${c.details}</p>
+      <p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">
+        ${q.pickupLabel}<br>${q.dateFrom} → ${q.dateTo}<br>${q.carTypeLabel}
+      </p>
+    </div>
+    <div style="text-align:center; margin:0 0 18px;">${pillButton(opts.acceptUrl, c.cta, C.lagoonDeep)}</div>
+    <p style="margin:0; color:${C.faint}; font-size:12px; line-height:1.6;">${c.foot}</p>
+  `;
+  const { data, error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: opts.email,
+    replyTo: RELAY_EMAIL,
+    subject: `${QUOTE_SUBJECT[l]} · ${money(q.price, q.currency)}`,
+    html: kalimeraShell(inner),
+  });
+  if (error) throw new Error(`Resend: ${error.message}`);
+  return data;
+}
+
+const CONNECT_SUBJECT: Record<string, string> = {
+  en: "You're connected with your car rental agency",
+  fr: "Vous êtes en relation avec votre agence de location",
+  de: "Sie sind mit Ihrer Autovermietung verbunden",
+  el: "Συνδεθήκατε με το γραφείο ενοικίασης αυτοκινήτων",
+};
+
+const CONNECT_COPY: Record<string, { intro: string; agency: string; foot: string }> = {
+  en: { intro: "You accepted the offer. Here are the rental agency's details, they will also reach out to finalise your booking.", agency: "Rental agency", foot: "Payment and terms are agreed directly with the agency." },
+  fr: { intro: "Vous avez accepté l'offre. Voici les coordonnées de l'agence de location, elle vous contactera aussi pour finaliser votre réservation.", agency: "Agence de location", foot: "Le paiement et les conditions se règlent directement avec l'agence." },
+  de: { intro: "Sie haben das Angebot angenommen. Hier sind die Kontaktdaten der Autovermietung, sie meldet sich ebenfalls bei Ihnen.", agency: "Autovermietung", foot: "Zahlung und Bedingungen werden direkt mit der Vermietung vereinbart." },
+  el: { intro: "Αποδεχτήκατε την προσφορά. Ακολουθούν τα στοιχεία του γραφείου ενοικίασης, θα επικοινωνήσει και εκείνο μαζί σας.", agency: "Γραφείο ενοικίασης", foot: "Η πληρωμή και οι όροι συμφωνούνται απευθείας με το γραφείο." },
+};
+
+/** Après acceptation : met loueur et client en relation (coordonnées échangées).
+ *  Loueur = email texte B2B (CC Kami, preuve) ; client = HTML localisé. */
+export async function sendConnectionEmails(opts: {
+  partner: { name: string; email: string; phone: string; whatsapp?: string };
+  customer: { name: string; email: string; phone?: string; locale: string };
+  quote: CarQuoteInfo;
+}) {
+  const { partner, customer, quote } = opts;
+  const l = CONNECT_SUBJECT[customer.locale] ? customer.locale : "en";
+  const c = CONNECT_COPY[l];
+
+  // 1. Au loueur : coordonnées du client (la commande est confirmée côté client).
+  const agencyLines = [
+    `Hi ${partner.name.split(" ")[0]},`,
+    ``,
+    `Good news: the customer accepted your ${money(quote.price, quote.currency)} quote. Here are their details to finalise the rental:`,
+    ``,
+    `Customer: ${customer.name}`,
+    `Email: ${customer.email}`,
+    `Phone / WhatsApp: ${customer.phone ?? "-"}`,
+    ``,
+    `Booking: ${quote.pickupLabel}, ${quote.dateFrom} → ${quote.dateTo}, ${quote.carTypeLabel}`,
+    `Our referral commission is 10%.`,
+    ``,
+    `Please contact the customer to confirm the details. Thanks!`,
+    `Kami · crete.direct`,
+  ];
+  const r1 = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: partner.email,
+    cc: RELAY_EMAIL,
+    replyTo: customer.email,
+    subject: `Booking confirmed · ${quote.pickupLabel} ${quote.dateFrom} → ${quote.dateTo} (${money(quote.price, quote.currency)})`,
+    text: agencyLines.join("\n"),
+  });
+  if (r1.error) throw new Error(`Resend: ${r1.error.message}`);
+
+  // 2. Au client : coordonnées du loueur (HTML localisé).
+  const inner = `
+    <p style="margin:0 0 16px; color:${C.muted}; font-size:14px; line-height:1.6;">${customer.name ? `${customer.name}, ` : ""}${c.intro}</p>
+    <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 18px;">
+      <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${c.agency}</p>
+      <p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">
+        ${partner.name}<br>${partner.whatsapp ?? partner.phone}<br>${partner.email}
+      </p>
+    </div>
+    <p style="margin:0; color:${C.faint}; font-size:12px; line-height:1.6;">${c.foot}</p>
+  `;
+  await resend.emails.send({
+    from: FROM_EMAIL,
+    to: customer.email,
+    replyTo: RELAY_EMAIL,
+    subject: CONNECT_SUBJECT[l],
+    html: kalimeraShell(inner),
+  });
 }
 
 // ── Sélection Match Swipe (« Le Tinder de la Crète ») ──────────────────────

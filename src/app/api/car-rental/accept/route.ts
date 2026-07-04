@@ -1,0 +1,67 @@
+import { NextRequest, NextResponse } from "next/server";
+import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
+import { carPickupLabel } from "@/lib/car-lead";
+import { CAR_TYPES_DATA } from "@/lib/car-types-data";
+import { partnerForPickup } from "@/lib/car-partners";
+import { hashToken } from "@/lib/car-quote";
+
+// Le client accepte le devis (page /car-offer/{token}). On consomme le jeton
+// d'acceptation et on met client et loueur en relation (coordonnées échangées).
+export async function POST(request: NextRequest) {
+  let body: Record<string, unknown>;
+  try { body = await request.json(); } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
+
+  const token = typeof body.token === "string" ? body.token : "";
+  if (!token) return NextResponse.json({ error: "Missing token" }, { status: 400 });
+
+  const { data: row } = await supabase.from("car_requests")
+    .select("id, status, locale, pickup_slug, date_from, date_to, car_type, quoted_price, quoted_currency, partner_name, partner_email, customer_name, customer_email, customer_phone")
+    .eq("accept_token_hash", hashToken(token))
+    .maybeSingle();
+
+  if (!row) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (row.status === "accepted") return NextResponse.json({ ok: true, already: true });
+  if (row.quoted_price == null) return NextResponse.json({ error: "No quote yet" }, { status: 409 });
+
+  const { error: upErr } = await supabase.from("car_requests").update({
+    status: "accepted",
+    accepted_at: new Date().toISOString(),
+    accept_token_hash: null, // consommé
+  }).eq("id", row.id);
+  if (upErr) {
+    console.error("[car-rental/accept] update error:", upErr.message);
+    return NextResponse.json({ error: "Could not accept" }, { status: 500 });
+  }
+
+  const locale = row.locale || "en";
+  const ct = CAR_TYPES_DATA.find((c) => c.id === row.car_type);
+  const carTypeLabel = ct?.labels[locale] ?? ct?.labels.en ?? row.car_type;
+  // Le téléphone/WhatsApp du loueur n'est pas stocké sur la ligne : on le
+  // re-résout depuis la data statique via le pickup.
+  const partner = partnerForPickup(row.pickup_slug);
+
+  try {
+    const { sendConnectionEmails } = await import("@/lib/email");
+    await sendConnectionEmails({
+      partner: {
+        name: row.partner_name,
+        email: row.partner_email,
+        phone: partner?.phone ?? "",
+        whatsapp: partner?.whatsapp,
+      },
+      customer: {
+        name: row.customer_name, email: row.customer_email,
+        phone: row.customer_phone ?? undefined, locale,
+      },
+      quote: {
+        pickupLabel: carPickupLabel(row.pickup_slug), dateFrom: row.date_from, dateTo: row.date_to,
+        carTypeLabel, price: row.quoted_price, currency: row.quoted_currency || "EUR",
+      },
+    });
+  } catch (e) {
+    console.error("[car-rental/accept] connection email error:", e);
+    return NextResponse.json({ ok: true, emailFailed: true });
+  }
+
+  return NextResponse.json({ ok: true });
+}

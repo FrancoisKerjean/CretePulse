@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { validateCarLead, carPickupLabel } from "@/lib/car-lead";
+import { newToken, hashToken, siteBase } from "@/lib/car-quote";
 
 export async function POST(request: NextRequest) {
   let body: Record<string, unknown>;
@@ -20,18 +21,26 @@ export async function POST(request: NextRequest) {
     .gte("created_at", tenMinAgo).limit(1);
   if (dup && dup.length > 0) return NextResponse.json({ ok: true });
 
-  const { data: inserted, error } = await supabase.from("car_requests").insert(row).select("id").single();
+  // Mode direct (appel d'offres auto) : on génère un jeton de devis pour que le
+  // loueur soumette son prix via /car-quote/{token}. En relais, Kami gère à la
+  // main : pas de jeton.
+  const isDirect = partner.leadRouting === "direct";
+  const quoteToken = isDirect ? newToken() : null;
+  const insertRow = quoteToken ? { ...row, quote_token_hash: hashToken(quoteToken) } : row;
+
+  const { data: inserted, error } = await supabase.from("car_requests").insert(insertRow).select("id").single();
   if (error) console.error("[car-rental/submit] insert error:", error.message); // on tente quand même l'email
 
   try {
     const { sendCarLeadEmail } = await import("@/lib/email");
+    const quoteUrl = quoteToken ? `${siteBase()}/en/car-quote/${quoteToken}` : undefined;
     await sendCarLeadEmail(partner, {
       pickupLabel: carPickupLabel(row.pickup_slug), dateFrom: row.date_from, timeFrom: row.time_from ?? undefined,
       dateTo: row.date_to, timeTo: row.time_to ?? undefined, flightNo: row.flight_no ?? undefined,
       carTypeLabel: carType.labels.en, pax: row.pax ?? undefined,
       customerName: row.customer_name, customerEmail: row.customer_email, customerPhone: row.customer_phone ?? undefined,
       note: row.note ?? undefined,
-    });
+    }, quoteUrl);
   } catch (e) {
     console.error("[car-rental/submit] email error:", e);
     if (inserted) await supabase.from("car_requests").update({ status: "email_failed" }).eq("id", inserted.id);
