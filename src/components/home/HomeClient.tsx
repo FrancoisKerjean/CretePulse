@@ -12,7 +12,7 @@ import { AbstractFallback } from "@/components/AbstractFallback";
 import { CreteMap } from "@/components/CreteMap";
 import { DepBoard } from "@/components/DepBoard";
 import { WindArrow } from "@/components/WindArrow";
-import { Heart, MapPin } from "lucide-react";
+import { Car, MapPin } from "lucide-react";
 import {
   CiBus, CiWave, CiSun, CiCompass, CiPlane, CiChart,
   CiCalendar, CiNews, CiBook,
@@ -159,7 +159,7 @@ const WTILE_CITIES = ["Heraklion", "Chania", "Ierapetra", "Sitia"];
 const TOOL_TINTS = ["bg-[#CFF3F7]", "bg-[#FFE9CF]", "bg-[#E4F0D5]", "bg-[#DCEBFF]", "bg-[#FFE0D6]", "bg-[#FFF1BF]"];
 
 export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, swimPick, swimSides, boardRoutes, locale }: HomeClientProps) {
-  const loc = locale as Locale;
+  const loc = locale as Locale;
   const t = useTranslations("home");
 
   const dateLabel = new Intl.DateTimeFormat(locale, {
@@ -301,15 +301,15 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
           </div>
         )}
 
-        {/* ═══════ MATCH : le Tinder de la Crète (photo plein bloc, pattern bandeaux v5) ═══════ */}
+        {/* ═══════ CAR RENTAL : agence locale, prix juste (photo plein bloc, pattern bandeaux v5) ═══════ */}
         <section className="mt-10">
             <Link
-              href="/match"
+              href="/car-rental"
               className="group relative block overflow-hidden rounded-[30px] no-underline shadow-card"
             >
-              {/* Visuel dédié Gemini (Kami 12/06) : cartes de lieux en éventail face à la mer */}
+              {/* Visuel partenaire location de voiture (Auto Smart) */}
               <img
-                src="/images/match/tinder-hero.jpg"
+                src="/images/partners/car-rental.jpg"
                 alt=""
                 loading="lazy"
                 aria-hidden
@@ -322,20 +322,20 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
               <div className="relative flex min-w-0 flex-wrap items-center justify-between gap-x-8 gap-y-6 p-6 md:min-h-[210px] md:p-8">
                 <div className="min-w-0 max-w-xl">
                   <p className="m-0 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 font-heading text-[10.5px] font-bold uppercase tracking-widest text-white/90 backdrop-blur-sm">
-                    <Heart size={11} fill="currentColor" aria-hidden /> {t("matchKicker")}
+                    <Car size={12} aria-hidden /> {t("carRentalKicker")}
                   </p>
                   <h2 className="m-0 mt-3 font-heading text-[28px] font-extrabold leading-tight text-white [text-wrap:balance] drop-shadow-[0_1px_3px_rgba(8,38,58,0.6)] md:text-[32px]">
-                    {t("matchTitle")}
+                    {t("carRentalTitle")}
                   </h2>
                   <p className="m-0 mt-1.5 text-[14px] text-white/90 drop-shadow-[0_1px_2px_rgba(8,38,58,0.6)]">
-                    {t("matchSub")}
+                    {t("carRentalSub")}
                   </p>
                   <span className="relative mt-5 inline-flex items-center gap-2 overflow-hidden rounded-full bg-white px-7 py-3 font-heading text-[14.5px] font-bold text-terracotta shadow-soft transition-transform group-hover:scale-[1.03]">
                     <span
                       className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-terracotta/20 to-transparent bg-[length:300%_100%] animate-gradient"
                       aria-hidden
                     />
-                    <span className="relative">{t("matchCta")}</span>
+                    <span className="relative">{t("carRentalCta")}</span>
                   </span>
                 </div>
               </div>

@@ -60,10 +60,10 @@
     "allGuides": "所有指南",
     "editorialGuides": "编辑精选",
     "heroTitle": "克里特岛，今日",
-    "matchKicker": "滑动配对",
-    "matchTitle": "克里特版 Tinder",
-    "matchSub": "滑动浏览海滩、峡谷和村庄。喜欢就右滑，不喜欢就左滑，找到你的专属配对。",
-    "matchCta": "开始滑动",
+    "carRentalKicker": "租车",
+    "carRentalTitle": "自驾探索克里特",
+    "carRentalSub": "本地租车行，价格公道，无需预付。四步获取报价，可机场取车。",
+    "carRentalCta": "获取报价",
     "heroMain": {
       "pre": "海滩、巴士、天气。",
       "hl": "克里特岛，实时直击。"
