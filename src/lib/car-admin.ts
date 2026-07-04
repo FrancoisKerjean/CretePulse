@@ -35,6 +35,7 @@ export interface AdminRequest {
   outcome?: string | null; // 'rented' | 'lost' | null
   outcome_at?: string | null;
   final_amount_eur?: number | null;
+  commission_eur?: number | null;
   commission_paid_at?: string | null;
   admin_note?: string | null;
 }
@@ -58,17 +59,22 @@ export interface AdminPartner {
 export const OUTCOMES = ["rented", "lost"] as const;
 export type Outcome = (typeof OUTCOMES)[number];
 
-/** Commission en euros, arrondie au centime. */
+/** Commission en euros, arrondie au centime (EPSILON contre le demi-centime
+ *  flottant qui arrondirait vers le bas). */
 export const commissionEur = (amountEur: number, rate: number): number =>
-  Math.round(amountEur * rate * 100) / 100;
+  Math.round((amountEur * rate + Number.EPSILON) * 100) / 100;
 
-/** Commission d'une demande : location effectuée + montant final + loueur
- *  gagnant connus, au taux DU partenaire (pas 10 % en dur). Sinon null. */
+/** Commission d'une demande : priorité au snapshot `commission_eur` figé à la
+ *  saisie de l'issue (l'édition ultérieure du taux partenaire ne réécrit pas
+ *  l'historique). Fallback calcul live au taux DU partenaire (preview avant
+ *  enregistrement de l'issue). Sinon null. */
 export function requestCommission(
   req: AdminRequest,
   partnersById: Map<number, AdminPartner>,
 ): number | null {
-  if (req.outcome !== "rented" || req.final_amount_eur == null || req.quoted_by_partner_id == null) return null;
+  if (req.outcome !== "rented") return null;
+  if (req.commission_eur != null) return req.commission_eur;
+  if (req.final_amount_eur == null || req.quoted_by_partner_id == null) return null;
   const p = partnersById.get(req.quoted_by_partner_id);
   return p ? commissionEur(req.final_amount_eur, p.commission) : null;
 }

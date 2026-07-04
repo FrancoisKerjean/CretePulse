@@ -12,6 +12,7 @@ const ok = (n, c) => { console.log(c ? `ok - ${n}` : `FAIL - ${n}`); if (!c) fai
 // --- commission ---
 ok("commissionEur arrondi au centime", commissionEur(333.33, 0.1) === 33.33);
 ok("commissionEur taux partenaire (pas 10% en dur)", commissionEur(200, 0.15) === 30);
+ok("commissionEur demi-centime arrondi haut", commissionEur(85.75, 0.1) === 8.58);
 
 const partner = { id: 1, name: "Auto Smart Car Rental", email: "a@b.c", phone: "+306974147291",
   whatsapp: "+306974147291", zone_ids: ["chania-west"], commission: 0.1, lead_routing: "direct",
@@ -29,6 +30,10 @@ ok("requestCommission lost -> null", requestCommission({ ...base, outcome: "lost
 ok("requestCommission sans montant -> null", requestCommission({ ...base, outcome: "rented", final_amount_eur: null }, byId) === null);
 ok("requestCommission partenaire inconnu -> null", requestCommission({ ...base, outcome: "rented", final_amount_eur: 300, quoted_by_partner_id: 99 }, byId) === null);
 ok("requestCommission colonnes admin absentes (pré-migration) -> null", requestCommission(base, byId) === null);
+ok("requestCommission snapshot stocké prime sur le taux courant",
+  requestCommission({ ...base, outcome: "rented", final_amount_eur: 300, commission_eur: 27 }, byId) === 27);
+ok("requestCommission snapshot même si partenaire inconnu",
+  requestCommission({ ...base, outcome: "rented", final_amount_eur: 300, commission_eur: 27, quoted_by_partner_id: 99 }, byId) === 27);
 
 // --- agrégats ---
 const reqs = [
@@ -50,6 +55,15 @@ ok("partnerStats invites", st.invites === 5);
 ok("partnerStats devis gagnés (quoted_by)", st.won === 5);
 ok("partnerStats rented", st.rented === 2);
 ok("partnerStats commission générée (due + encaissée)", st.commissionEur === 40);
+
+// --- accumulation flottante : 3 × 11.11 doit donner exactement 33.33 ---
+const fpReqs = [
+  { ...base, id: 21, outcome: "rented", final_amount_eur: 111.1 },
+  { ...base, id: 22, outcome: "rented", final_amount_eur: 111.1 },
+  { ...base, id: 23, outcome: "rented", final_amount_eur: 111.1 },
+];
+ok("summary somme flottante re-arrondie", requestsSummary(fpReqs, byId).commissionDueEur === 33.33);
+ok("partnerStats somme flottante re-arrondie", partnerStats(1, fpReqs, new Map(), byId).commissionEur === 33.33);
 
 // --- transitions / validations ---
 ok("canSetOutcome quoted", canSetOutcome({ ...base, status: "quoted" }) === true);
