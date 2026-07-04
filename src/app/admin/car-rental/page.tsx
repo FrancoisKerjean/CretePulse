@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 export default async function CarAdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ key?: string; tab?: string; status?: string; partner?: string; page?: string; error?: string }>;
+  searchParams: Promise<{ key?: string; tab?: string; status?: string; partner?: string; page?: string; error?: string; pactive?: string; poutreach?: string; q?: string }>;
 }) {
   const sp = await searchParams;
   // Un param répété (?key=a&key=b) arrive en array au runtime malgré le type TS.
@@ -78,25 +78,25 @@ export default async function CarAdminPage({
         </p>
       ) : null}
 
-      {/* Bandeau de synthèse */}
-      <section className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
-        {(["sent", "quoted", "accepted", "email_failed"] as const).map((st) => (
-          <div key={st} className={`rounded-xl border bg-white p-3 ${st === "email_failed" && (s.byStatus[st] ?? 0) > 0 ? "border-terracotta" : "border-border"}`}>
-            <div className="text-xs text-text-muted">{st}</div>
-            <div className="font-data text-xl font-bold">{s.byStatus[st] ?? 0}</div>
-          </div>
-        ))}
-        <div className="rounded-xl border border-border bg-white p-3">
-          <div className="text-xs text-text-muted">rented / lost</div>
-          <div className="font-data text-xl font-bold">{s.rented} / {s.lost}</div>
-        </div>
-        <div className="rounded-xl border border-sun bg-white p-3">
+      {/* Bandeau : les 2 chiffres qui comptent en vedette, le reste en
+          compteurs-liens compacts (audit UI 05/07). */}
+      <section className="mt-5 flex flex-wrap items-stretch gap-3">
+        <div className="rounded-xl border border-sun bg-white px-5 py-3">
           <div className="text-xs text-text-muted">commission due</div>
-          <div className="font-data text-xl font-bold">{s.commissionDueEur.toFixed(2)} €</div>
+          <div className="font-data text-2xl font-bold">{s.commissionDueEur.toFixed(2)} €</div>
         </div>
-        <div className="rounded-xl border border-ok bg-white p-3">
+        <div className="rounded-xl border border-ok bg-white px-5 py-3">
           <div className="text-xs text-text-muted">commission encaissée</div>
-          <div className="font-data text-xl font-bold">{s.commissionPaidEur.toFixed(2)} €</div>
+          <div className="font-data text-2xl font-bold">{s.commissionPaidEur.toFixed(2)} €</div>
+        </div>
+        <div className="flex flex-wrap content-center items-center gap-1.5 text-sm">
+          {([["sent", s.byStatus.sent ?? 0], ["quoted", s.byStatus.quoted ?? 0], ["accepted", s.byStatus.accepted ?? 0],
+             ["email_failed", s.byStatus.email_failed ?? 0], ["rented", s.rented], ["lost", s.lost]] as const).map(([st, n]) => (
+            <a key={st} href={`/admin/car-rental?status=${st}`}
+               className={`rounded-full border px-2.5 py-0.5 no-underline ${st === "email_failed" && n > 0 ? "border-terracotta bg-terracotta-faint font-bold" : "border-border bg-white text-text-muted"}`}>
+              {st} <span className="font-data font-bold text-text">{n}</span>
+            </a>
+          ))}
         </div>
       </section>
 
@@ -120,7 +120,15 @@ export default async function CarAdminPage({
           page={Math.max(1, Number(sp.page) || 1)}
         />
       ) : (
-        <PartnersTable partners={partners} requests={requests} invitesByPartner={invitesByPartner} partnersById={partnersById} />
+        <PartnersTable
+          partners={partners}
+          requests={requests}
+          invitesByPartner={invitesByPartner}
+          partnersById={partnersById}
+          activeFilter={typeof sp.pactive === "string" ? sp.pactive : ""}
+          outreachFilter={typeof sp.poutreach === "string" ? sp.poutreach : ""}
+          query={typeof sp.q === "string" ? sp.q : ""}
+        />
       )}
     </main>
   );

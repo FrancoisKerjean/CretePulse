@@ -1,7 +1,7 @@
 // Vue Demandes : cartes empilées (mobile-first), filtres par query string,
 // écritures par forms natifs bindés aux server actions (zéro client JS).
 import {
-  canSetOutcome, requestCommission, buildCarWaMessage, waHref,
+  requestCommission, buildCarWaMessage, waHref,
   type AdminPartner, type AdminRequest,
 } from "@/lib/car-admin";
 import { carPickupLabel } from "@/lib/car-lead";
@@ -86,7 +86,9 @@ export function RequestsTable({
 
   return (
     <section className="mt-5">
-      {/* Filtres (liens, pas de JS) */}
+      {/* Filtres (liens, pas de JS). Partenaires : seulement ceux qui ont
+          GAGNÉ au moins un devis : avec 59 loueurs en base, lister tout le
+          registre ici était un mur de pastilles (audit UI 05/07). */}
       <div className="flex flex-wrap gap-1.5 text-sm">
         {["", "sent", "quoted", "accepted", "email_failed", "rented", "lost"].map((f) => (
           <a key={f || "all"} href={qs({ status: f, page: "" })}
@@ -94,7 +96,10 @@ export function RequestsTable({
             {f || "tous"}
           </a>
         ))}
-        {[...partnersById.values()].map((p) => (
+        {[...new Set(requests.map((r) => r.quoted_by_partner_id).filter((id): id is number => id != null))]
+          .map((id) => partnersById.get(id))
+          .filter((p): p is AdminPartner => p != null)
+          .map((p) => (
           <a key={p.id} href={qs({ partner: partnerFilter === String(p.id) ? "" : p.id, page: "" })}
              className={`rounded-full border px-3 py-1 no-underline ${partnerFilter === String(p.id) ? "border-sea bg-sea text-white" : "border-border bg-white text-text"}`}>
             {p.name}
@@ -138,7 +143,10 @@ export function RequestsTable({
               </div>
 
               <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
-                {canSetOutcome(r) ? (
+                {r.outcome == null ? (
+                  // Toute demande non classée est classable, y compris `sent`
+                  // morte sans devis (client parti ailleurs → Perdu, ou loué
+                  // hors flux → Loué avec montant saisi main).
                   <>
                     <form action={setOutcome.bind(null, r.id)} className="flex items-center gap-1.5">
                       <input type="hidden" name="outcome" value="rented" />
@@ -151,7 +159,25 @@ export function RequestsTable({
                       <button className="rounded-full border border-border bg-white px-3 py-1 text-sm font-bold">Perdu</button>
                     </form>
                   </>
-                ) : null}
+                ) : (
+                  // Issue saisie : état compact, correction repliée pour
+                  // éviter le clic accidentel (audit UI 05/07).
+                  <details className="text-sm">
+                    <summary className="cursor-pointer text-text-muted underline">corriger l&apos;issue</summary>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <form action={setOutcome.bind(null, r.id)} className="flex items-center gap-1.5">
+                        <input type="hidden" name="outcome" value="rented" />
+                        <input name="amount" inputMode="decimal" defaultValue={r.final_amount_eur ?? r.quoted_price ?? ""}
+                               placeholder="€" className="w-20 rounded-lg border border-border px-2 py-1 text-sm" aria-label="Montant final (€)" />
+                        <button className="rounded-full bg-olive px-3 py-1 text-sm font-bold text-white">Loué</button>
+                      </form>
+                      <form action={setOutcome.bind(null, r.id)}>
+                        <input type="hidden" name="outcome" value="lost" />
+                        <button className="rounded-full border border-border bg-white px-3 py-1 text-sm font-bold">Perdu</button>
+                      </form>
+                    </div>
+                  </details>
+                )}
                 {r.outcome === "rented" ? (
                   <form action={setCommissionPaid.bind(null, r.id, !r.commission_paid_at)}>
                     <button className={`rounded-full px-3 py-1 text-sm font-bold ${r.commission_paid_at ? "border border-border bg-white" : "bg-sun text-night"}`}>

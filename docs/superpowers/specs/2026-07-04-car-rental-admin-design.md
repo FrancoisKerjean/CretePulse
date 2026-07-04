@@ -143,6 +143,28 @@ passent en cartes empilées. Pagination simple 50/page.
 - Post-déploiement : env `CAR_ADMIN_SECRET` dans Vercel, migration sur le
   VPS, URL + clé transmises à Kami en privé.
 
+## Addendum 05/07 — refonte échelle 59 partenaires (audit UI/UX prod, GO Kami)
+
+L'UI initiale supposait 1-3 partenaires ; l'outreach en a mis 59 en base.
+Lot correctif (branche `feat/car-admin-ux`) :
+1. Filtres partenaires de la vue Demandes : seulement les loueurs ayant
+   **gagné ≥ 1 devis** (fini le mur de 59 pastilles).
+2. Issue saisie → état compact, formulaires Loué/Perdu repliés derrière
+   « corriger l'issue » (`<details>`).
+3. `canSetOutcome` supprimé : **toute demande non classée est classable**
+   (les vieilles `sent` relais étaient inclassables à vie).
+4. Vue Partenaires : rangées compactes repliables (`<details>` natif),
+   tri actifs puis devis gagnés puis nom, filtres actifs/inactifs + statut
+   recrutement (dynamiques), recherche nom/email (form GET), compteur
+   « N affichés sur M ».
+5. Alerte rouge réservée à `declined` (l'inactif est l'état normal d'un
+   prospect) ; badge inactif neutre.
+6. Bandeau : commissions due/encaissée en vedette, statuts en
+   compteurs-liens compacts cliquables (→ filtre), `email_failed` en rouge
+   seulement si > 0.
+Nouveaux query params : `pactive`, `poutreach`, `q` (onglet partners).
+Toujours zéro JS client.
+
 ## Hors périmètre (YAGNI)
 
 - Multi-utilisateurs, rôles, page de login.

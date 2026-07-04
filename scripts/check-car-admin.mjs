@@ -3,7 +3,7 @@
 // commissions, agrégats, stats partenaires, validations, message WhatsApp.
 import {
   commissionEur, requestCommission, requestsSummary, partnerStats,
-  canSetOutcome, validatePartnerUpdate, buildCarWaMessage, waHref, ZONE_IDS,
+  validatePartnerUpdate, buildCarWaMessage, waHref, ZONE_IDS,
 } from "../src/lib/car-admin.ts";
 
 let fail = 0;
@@ -65,11 +65,10 @@ const fpReqs = [
 ok("summary somme flottante re-arrondie", requestsSummary(fpReqs, byId).commissionDueEur === 33.33);
 ok("partnerStats somme flottante re-arrondie", partnerStats(1, fpReqs, new Map(), byId).commissionEur === 33.33);
 
-// --- transitions / validations ---
-ok("canSetOutcome quoted", canSetOutcome({ ...base, status: "quoted" }) === true);
-ok("canSetOutcome accepted", canSetOutcome(base) === true);
-ok("canSetOutcome sent -> non", canSetOutcome({ ...base, status: "sent" }) === false);
-
+// --- validations ---
+// (canSetOutcome supprimé 05/07 : toute demande non classée est classable,
+// l'UI teste `outcome == null` — les vieilles `sent` relais étaient
+// inclassables à vie.)
 ok("ZONE_IDS = les 4 zones de car-partners.ts", ZONE_IDS.length === 4 && ZONE_IDS.includes("lasithi-east"));
 ok("update partenaire valide", validatePartnerUpdate({ zone_ids: ["chania-west"], commission: 0.12 }) === null);
 ok("update zone inconnue rejeté", validatePartnerUpdate({ zone_ids: ["mars"], commission: 0.1 }) !== null);

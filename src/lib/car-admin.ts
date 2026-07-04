@@ -131,11 +131,11 @@ export function partnerStats(
   return st;
 }
 
-/** L'issue se saisit dès qu'un prix existe : `accepted` (cas normal) ou
- *  `quoted` (client muet → `lost`). Constat a posteriori : re-cliquer
- *  l'autre issue écrase, pas de machine à états rigide. */
-export const canSetOutcome = (req: Pick<AdminRequest, "status">): boolean =>
-  req.status === "quoted" || req.status === "accepted";
+// NB : l'issue est saisissable sur TOUTE demande non classée (y compris
+// `sent` morte sans devis et `email_failed`) : constat a posteriori, l'UI
+// teste simplement `outcome == null`. L'ancien gate canSetOutcome
+// (quoted|accepted) rendait les vieilles demandes relais inclassables à vie
+// (audit UI 05/07).
 
 export const ZONE_IDS: string[] = CAR_ZONES.map((z) => z.id);
 
