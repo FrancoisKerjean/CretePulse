@@ -227,17 +227,20 @@ export interface CarLead {
 // direct : leadRouting "direct" sur le partenaire (car-partners.ts).
 const RELAY_EMAIL = "contact@kairosguest.com";
 
-function leadSummary(lead: CarLead): string[] {
+// includeContact=false : version « aveugle » pour le loueur en mode appel
+// d'offres. Il voit la demande (dates, lieu, type, pax, note) mais PAS les
+// coordonnées du client : la mise en relation n'a lieu qu'après acceptation
+// du devis. Kami reçoit toujours la version complète (includeContact=true).
+function leadSummary(lead: CarLead, includeContact = true): string[] {
   return [
     `Pickup / drop-off: ${lead.pickupLabel}`,
     `Arrival: ${lead.dateFrom}${lead.timeFrom ? ` at ${lead.timeFrom}` : ""}${lead.flightNo ? ` (flight ${lead.flightNo})` : ""}`,
     `Departure: ${lead.dateTo}${lead.timeTo ? ` at ${lead.timeTo}` : ""}`,
     `Car type: ${lead.carTypeLabel}`,
     `People: ${lead.pax ?? "-"}`,
-    ``,
-    `Customer: ${lead.customerName}`,
-    `Email: ${lead.customerEmail}`,
-    `Phone / WhatsApp: ${lead.customerPhone ?? "-"}`,
+    ...(includeContact
+      ? [``, `Customer: ${lead.customerName}`, `Email: ${lead.customerEmail}`, `Phone / WhatsApp: ${lead.customerPhone ?? "-"}`]
+      : []),
     lead.note ? `Note: ${lead.note}` : ``,
   ];
 }
@@ -253,64 +256,90 @@ export interface CarLeadPartner {
 export async function sendCarLeadEmail(partner: CarLeadPartner, lead: CarLead) {
   const subject = `New rental request · ${lead.pickupLabel} ${lead.dateFrom} → ${lead.dateTo} (${lead.carTypeLabel}${lead.pax ? `, ${lead.pax} pax` : ""})`;
   const relay = partner.leadRouting !== "direct";
+  const first = partner.name.split(" ")[0];
 
-  let to: string;
-  let cc: string | undefined;
-  let lines: string[];
   if (relay) {
-    // Message WhatsApp prêt à transférer, calé sur les champs convenus avec
-    // l'agence (arrival/departure time, car type, pax, dates).
+    // Mode relais : le lead arrive chez Kami avec un message WhatsApp prérempli
+    // (champs convenus avec l'agence) à transférer en un clic.
     const wa = [
-      `Hi ${partner.name.split(" ")[0]}, new rental request:`,
+      `Hi ${first}, new rental request:`,
       `${lead.pickupLabel}, ${lead.dateFrom}${lead.timeFrom ? ` ${lead.timeFrom}` : ""}${lead.flightNo ? ` (flight ${lead.flightNo})` : ""} to ${lead.dateTo}${lead.timeTo ? ` ${lead.timeTo}` : ""}`,
       `${lead.carTypeLabel}, ${lead.pax ?? "?"} people`,
       `Guest: ${lead.customerName}, ${lead.customerPhone ?? lead.customerEmail}`,
     ].join("\n");
     const waNumber = (partner.whatsapp ?? partner.phone).replace(/\D/g, "");
-    to = RELAY_EMAIL;
-    cc = undefined;
-    lines = [
+    const lines = [
       `Lead voiture à transmettre à ${partner.name}.`,
       ``,
-      ...leadSummary(lead),
+      ...leadSummary(lead, true),
       ``,
       `>>> Transférer en 1 clic (WhatsApp prérempli) :`,
       `https://wa.me/${waNumber}?text=${encodeURIComponent(wa)}`,
       ``,
       `Répondre au client : reply direct à cet email (reply-to = client).`,
     ];
-  } else {
-    to = partner.email;
-    cc = RELAY_EMAIL; // Kami en copie : preuve horodatée de l'apport (10%)
-    lines = [
-      `Hi ${partner.name.split(" ")[0]},`,
-      ``,
-      `A customer just requested a car through crete.direct. Here is the booking:`,
-      ``,
-      ...leadSummary(lead),
-      ``,
-      `Our referral commission on this rental is 10%.`,
-      ``,
-      `Please reply to this email with your price for this rental and let me know whether you accept the booking. I will take it from there with the customer.`,
-      ``,
-      `Thanks,`,
-      `Kami · crete.direct`,
-    ];
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: RELAY_EMAIL,
+      replyTo: lead.customerEmail,
+      subject: `[Lead voiture · à transmettre] ${subject}`,
+      text: lines.join("\n"),
+    });
+    if (error) throw new Error(`Resend: ${error.message}`);
+    return data;
   }
 
-  // Le SDK Resend ne throw pas sur erreur API ({ data, error }) : on propage
-  // explicitement pour que la route marque la row email_failed + fallback WhatsApp.
+  // Mode direct = appel d'offres. Le loueur reçoit la demande SANS les
+  // coordonnées du client et répond son prix à Kami (reply-to = Kami). Kami
+  // collecte les prix, les transmet au client ; la mise en relation n'a lieu
+  // qu'après acceptation. Kami reçoit à part un email de suivi AVEC les
+  // coordonnées client pour piloter la relance.
+  const agencyLines = [
+    `Hi ${first},`,
+    ``,
+    `A customer just requested a car through crete.direct. Here is the booking:`,
+    ``,
+    ...leadSummary(lead, false),
+    ``,
+    `Our referral commission on this rental is 10%.`,
+    ``,
+    `Please reply to this email with your price for this rental and let me know whether you accept the booking. I will share it with the customer and connect you both once they confirm.`,
+    ``,
+    `Thanks,`,
+    `Kami · crete.direct`,
+  ];
+  // L'email au loueur est le seul critique : on propage son erreur pour que la
+  // route marque email_failed + fallback WhatsApp.
   const { data, error } = await resend.emails.send({
     from: FROM_EMAIL,
-    to,
-    ...(cc ? { cc } : {}),
-    // Mode direct : l'agence répond à Kami (prix + acceptation). Mode relay :
-    // reply-to = client (Kami transfère et l'agence devise en direct).
-    replyTo: relay ? lead.customerEmail : RELAY_EMAIL,
-    subject: relay ? `[Lead voiture · à transmettre] ${subject}` : subject,
-    text: lines.join("\n"),
+    to: partner.email,
+    replyTo: RELAY_EMAIL,
+    subject,
+    text: agencyLines.join("\n"),
   });
   if (error) throw new Error(`Resend: ${error.message}`);
+
+  // Suivi interne à Kami AVEC coordonnées client (best-effort, n'interrompt pas
+  // le flux si Resend échoue sur ce second envoi).
+  try {
+    const followUp = [
+      `Lead voiture envoyé à ${partner.name} (${partner.email}), en attente de son prix.`,
+      ``,
+      ...leadSummary(lead, true),
+      ``,
+      `Prochaine étape : ${partner.name} répond son prix → transmettre au client → si OK, mise en relation.`,
+    ];
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: RELAY_EMAIL,
+      replyTo: lead.customerEmail,
+      subject: `[Lead voiture · suivi] ${subject}`,
+      text: followUp.join("\n"),
+    });
+  } catch (e) {
+    console.error("[sendCarLeadEmail] suivi Kami échoué:", e);
+  }
+
   return data;
 }
 
