@@ -1,7 +1,7 @@
 // Logique PURE du back-office /admin/car-rental, zéro I/O (pattern
 // car-lead.ts) : commissions au taux du partenaire, agrégats des bandeaux,
 // stats par loueur, validation des écritures, message WhatsApp relais
-// (partagé avec email.ts — source unique du format). Node-safe : importable
+// (partagé avec email.ts, source unique du format). Node-safe : importable
 // par scripts/check-car-admin.mjs. Les lectures/écritures Supabase vivent
 // dans la page et les server actions.
 import { CAR_ZONES } from "./car-partners.ts";
@@ -163,7 +163,7 @@ export interface WaLeadFields {
   customerContact: string; // téléphone sinon email
 }
 
-/** Message WhatsApp relais (champs convenus avec l'agence) — source UNIQUE
+/** Message WhatsApp relais (champs convenus avec l'agence) : source UNIQUE
  *  du format, consommée par email.ts (mode relay) et la page admin. */
 export function buildCarWaMessage(f: WaLeadFields): string {
   return [
