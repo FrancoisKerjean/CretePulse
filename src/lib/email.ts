@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { buildCarWaMessage, waHref } from "./car-admin";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -267,20 +268,22 @@ export async function sendCarLeadEmail(partner: CarLeadPartner, lead: CarLead, q
   if (relay) {
     // Mode relais : le lead arrive chez Kami avec un message WhatsApp prérempli
     // (champs convenus avec l'agence) à transférer en un clic.
-    const wa = [
-      `Hi ${first}, new rental request:`,
-      `${lead.pickupLabel}, ${lead.dateFrom}${lead.timeFrom ? ` ${lead.timeFrom}` : ""}${lead.flightNo ? ` (flight ${lead.flightNo})` : ""} to ${lead.dateTo}${lead.timeTo ? ` ${lead.timeTo}` : ""}`,
-      `${lead.carTypeLabel}, ${lead.pax ?? "?"} people`,
-      `Guest: ${lead.customerName}, ${lead.customerPhone ?? lead.customerEmail}`,
-    ].join("\n");
-    const waNumber = (partner.whatsapp ?? partner.phone).replace(/\D/g, "");
+    const wa = buildCarWaMessage({
+      partnerFirstName: first,
+      pickupLabel: lead.pickupLabel,
+      dateFrom: lead.dateFrom, timeFrom: lead.timeFrom, flightNo: lead.flightNo,
+      dateTo: lead.dateTo, timeTo: lead.timeTo,
+      carTypeLabel: lead.carTypeLabel, pax: lead.pax,
+      customerName: lead.customerName,
+      customerContact: lead.customerPhone ?? lead.customerEmail,
+    });
     const lines = [
       `Lead voiture à transmettre à ${partner.name}.`,
       ``,
       ...leadSummary(lead, true),
       ``,
       `>>> Transférer en 1 clic (WhatsApp prérempli) :`,
-      `https://wa.me/${waNumber}?text=${encodeURIComponent(wa)}`,
+      waHref(partner.whatsapp ?? partner.phone, wa),
       ``,
       `Répondre au client : reply direct à cet email (reply-to = client).`,
     ];
