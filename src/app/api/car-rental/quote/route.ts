@@ -55,6 +55,8 @@ export async function POST(request: NextRequest) {
   const ct = CAR_TYPES_DATA.find((c) => c.id === req.car_type);
   const carTypeLabel = carTypeLabelWithExamples(ct, locale, req.car_type);
 
+  const days = Math.max(1, Math.round((new Date(req.date_to).getTime() - new Date(req.date_from).getTime()) / 86400000));
+
   try {
     const { sendCustomerQuoteEmail } = await import("@/lib/email");
     await sendCustomerQuoteEmail({
@@ -65,6 +67,7 @@ export async function POST(request: NextRequest) {
       quote: {
         pickupLabel: carPickupLabel(req.pickup_slug), dateFrom: req.date_from, dateTo: req.date_to,
         carTypeLabel, price, currency: "EUR",
+        partnerName: partner.name, carModel, inclusions, days,
       },
     });
   } catch (e) {

@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
   if (!token) return NextResponse.json({ error: "Missing token" }, { status: 400 });
 
   const { data: row } = await supabase.from("car_requests")
-    .select("id, status, locale, pickup_slug, date_from, date_to, car_type, quoted_price, quoted_currency, partner_name, partner_email, quoted_by_partner_id, customer_name, customer_email, customer_phone")
+    .select("id, status, locale, pickup_slug, date_from, date_to, car_type, quoted_price, quoted_currency, quoted_car_model, quoted_inclusions, partner_name, partner_email, quoted_by_partner_id, customer_name, customer_email, customer_phone")
     .eq("accept_token_hash", hashToken(token))
     .maybeSingle();
 
@@ -39,12 +39,14 @@ export async function POST(request: NextRequest) {
   // Coordonnées du loueur gagnant depuis le registre (téléphone/WhatsApp non
   // stockés sur la demande).
   const partner = row.quoted_by_partner_id ? await partnerById(row.quoted_by_partner_id) : null;
+  const partnerName: string = row.partner_name ?? partner?.name ?? "the agency";
+  const days = Math.max(1, Math.round((new Date(row.date_to).getTime() - new Date(row.date_from).getTime()) / 86400000));
 
   try {
     const { sendConnectionEmails } = await import("@/lib/email");
     await sendConnectionEmails({
       partner: {
-        name: row.partner_name ?? partner?.name ?? "the agency",
+        name: partnerName,
         email: row.partner_email ?? partner?.email ?? "",
         phone: partner?.phone ?? "",
         whatsapp: partner?.whatsapp ?? undefined,
@@ -56,6 +58,9 @@ export async function POST(request: NextRequest) {
       quote: {
         pickupLabel: carPickupLabel(row.pickup_slug), dateFrom: row.date_from, dateTo: row.date_to,
         carTypeLabel, price: row.quoted_price, currency: row.quoted_currency || "EUR",
+        partnerName, carModel: row.quoted_car_model ?? null,
+        inclusions: Array.isArray(row.quoted_inclusions) ? row.quoted_inclusions : [],
+        days,
       },
     });
   } catch (e) {

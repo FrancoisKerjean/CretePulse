@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { buildCarWaMessage, waHref } from "./car-admin";
+import { inclusionLabels } from "@/lib/car-inclusions";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -445,6 +446,10 @@ export async function sendLeadKamiSummary(lead: CarLead, partnerNames: string[])
 export interface CarQuoteInfo {
   pickupLabel: string; dateFrom: string; dateTo: string; carTypeLabel: string;
   price: number; currency: string;
+  partnerName: string;
+  carModel?: string | null;
+  inclusions?: string[];
+  days: number;
 }
 
 const money = (price: number, currency: string): string =>
@@ -457,11 +462,39 @@ const QUOTE_SUBJECT: Record<string, string> = {
   el: "Η προσφορά ενοικίασης αυτοκινήτου στην Κρήτη",
 };
 
-const QUOTE_COPY: Record<string, { intro: string; details: string; cta: string; foot: string }> = {
-  en: { intro: "Good news, we received a price for your car rental request.", details: "Your request", cta: "Accept this offer", foot: "Accept and we connect you directly with the rental agency to finalise. Didn't request this? Just ignore this email." },
-  fr: { intro: "Bonne nouvelle, nous avons reçu un prix pour votre demande de location de voiture.", details: "Votre demande", cta: "Accepter cette offre", foot: "En acceptant, nous vous mettons directement en relation avec l'agence de location pour finaliser. Vous n'êtes pas à l'origine de cette demande ? Ignorez cet email." },
-  de: { intro: "Gute Nachrichten, wir haben einen Preis für Ihre Mietwagenanfrage erhalten.", details: "Ihre Anfrage", cta: "Angebot annehmen", foot: "Nach der Annahme verbinden wir Sie direkt mit der Autovermietung. Keine Anfrage gestellt? Ignorieren Sie diese E-Mail." },
-  el: { intro: "Καλά νέα, λάβαμε μια τιμή για το αίτημα ενοικίασης αυτοκινήτου σας.", details: "Το αίτημά σας", cta: "Αποδοχή προσφοράς", foot: "Με την αποδοχή, σας συνδέουμε απευθείας με το γραφείο ενοικίασης. Δεν κάνατε εσείς το αίτημα; Αγνοήστε αυτό το email." },
+const QUOTE_COPY: Record<string, {
+  intro: string; details: string; cta: string; foot: string;
+  offerFrom: string; localAgency: string; included: string; perDay: string; total: string;
+  reassure: string[]; steps: string[];
+}> = {
+  en: {
+    intro: "Good news, we received a price for your car rental request.", details: "Your request", cta: "Accept this offer", foot: "Accept and we connect you directly with the rental agency to finalise. Didn't request this? Just ignore this email.",
+    offerFrom: "Offer from", localAgency: "local rental agency in Crete",
+    included: "Included in the price", perDay: "per day", total: "total",
+    reassure: ["No online prepayment — no card needed to book", "You pay the agency on pickup — cash accepted", "A real local agency in Crete, direct contact"],
+    steps: ["You accept this offer", "We share your details with the agency", "The agency contacts you to finalise — payment on pickup"],
+  },
+  fr: {
+    intro: "Bonne nouvelle, nous avons reçu un prix pour votre demande de location de voiture.", details: "Votre demande", cta: "Accepter cette offre", foot: "En acceptant, nous vous mettons directement en relation avec l'agence de location pour finaliser. Vous n'êtes pas à l'origine de cette demande ? Ignorez cet email.",
+    offerFrom: "Offre de", localAgency: "agence de location locale en Crète",
+    included: "Inclus dans le prix", perDay: "par jour", total: "au total",
+    reassure: ["Aucun prépaiement en ligne — pas de carte pour réserver", "Vous payez l'agence au retrait — espèces acceptées", "Une vraie agence locale en Crète, en direct"],
+    steps: ["Vous acceptez cette offre", "On transmet vos coordonnées à l'agence", "L'agence vous contacte pour finaliser — paiement au retrait"],
+  },
+  de: {
+    intro: "Gute Nachrichten, wir haben einen Preis für Ihre Mietwagenanfrage erhalten.", details: "Ihre Anfrage", cta: "Angebot annehmen", foot: "Nach der Annahme verbinden wir Sie direkt mit der Autovermietung. Keine Anfrage gestellt? Ignorieren Sie diese E-Mail.",
+    offerFrom: "Angebot von", localAgency: "lokale Autovermietung auf Kreta",
+    included: "Im Preis enthalten", perDay: "pro Tag", total: "gesamt",
+    reassure: ["Keine Online-Vorauszahlung — keine Karte zum Buchen erforderlich", "Sie zahlen bei der Abholung — Barzahlung möglich", "Eine echte lokale Autovermietung auf Kreta, direkt"],
+    steps: ["Sie nehmen dieses Angebot an", "Wir übermitteln Ihre Daten an die Vermietung", "Die Vermietung kontaktiert Sie zur Bestätigung — Zahlung bei Abholung"],
+  },
+  el: {
+    intro: "Καλά νέα, λάβαμε μια τιμή για το αίτημα ενοικίασης αυτοκινήτου σας.", details: "Το αίτημά σας", cta: "Αποδοχή προσφοράς", foot: "Με την αποδοχή, σας συνδέουμε απευθείας με το γραφείο ενοικίασης. Δεν κάνατε εσείς το αίτημα; Αγνοήστε αυτό το email.",
+    offerFrom: "Προσφορά από", localAgency: "τοπικό γραφείο ενοικίασης στην Κρήτη",
+    included: "Περιλαμβάνεται στην τιμή", perDay: "ανά ημέρα", total: "συνολικά",
+    reassure: ["Χωρίς προπληρωμή στο διαδίκτυο — δεν χρειάζεται κάρτα για κράτηση", "Πληρώνετε το γραφείο κατά την παραλαβή — γίνονται δεκτά μετρητά", "Αληθινό τοπικό γραφείο ενοικίασης στην Κρήτη, σε απευθείας επαφή"],
+    steps: ["Αποδέχεστε αυτήν την προσφορά", "Μεταβιβάζουμε τα στοιχεία σας στο γραφείο", "Το γραφείο επικοινωνεί μαζί σας για να οριστικοποιήσει — πληρωμή κατά την παραλαβή"],
+  },
 };
 
 /** Email HTML au client avec le prix soumis par le loueur + bouton d'acceptation. */
@@ -471,18 +504,27 @@ export async function sendCustomerQuoteEmail(opts: {
   const l = QUOTE_SUBJECT[opts.locale] ? opts.locale : "en";
   const c = QUOTE_COPY[l];
   const q = opts.quote;
+  const perDay = q.days > 0 ? Math.round(q.price / q.days) : q.price;
+  const incl = inclusionLabels(q.inclusions, l);
   const inner = `
-    <p style="margin:0 0 6px; color:${C.text}; font-size:18px; font-weight:800;">${opts.customerName ? `${opts.customerName}, ` : ""}${money(q.price, q.currency)}</p>
-    <p style="margin:0 0 18px; color:${C.muted}; font-size:14px; line-height:1.6;">${c.intro}</p>
-    <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 20px;">
-      <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${c.details}</p>
-      <p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">
-        ${q.pickupLabel}<br>${q.dateFrom} → ${q.dateTo}<br>${q.carTypeLabel}
-      </p>
-    </div>
-    <div style="text-align:center; margin:0 0 18px;">${pillButton(opts.acceptUrl, c.cta, C.lagoonDeep)}</div>
-    <p style="margin:0; color:${C.faint}; font-size:12px; line-height:1.6;">${c.foot}</p>
-  `;
+  <p style="margin:0 0 6px; color:${C.text}; font-size:18px; font-weight:800;">${opts.customerName ? `${opts.customerName}, ` : ""}${money(q.price, q.currency)} <span style="font-weight:600; font-size:14px; color:${C.muted};">${c.total} · ~${money(perDay, q.currency)} ${c.perDay}</span></p>
+  <p style="margin:0 0 6px; color:${C.text}; font-size:14px;">${c.offerFrom} <strong>${q.partnerName}</strong> · ${c.localAgency}</p>
+  <p style="margin:0 0 18px; color:${C.muted}; font-size:14px; line-height:1.6;">${c.intro}</p>
+  <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 16px;">
+    <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${c.details}</p>
+    <p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">
+      ${q.pickupLabel}<br>${q.dateFrom} → ${q.dateTo}<br>${q.carTypeLabel}${q.carModel ? `<br><strong>${q.carModel}</strong>` : ""}
+    </p>
+  </div>
+  ${incl.length ? `<div style="margin:0 0 16px;"><p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${c.included}</p><p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">${incl.map((x) => `✓ ${x}`).join("<br>")}</p></div>` : ""}
+  <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:12px 16px; margin:0 0 18px;">
+    ${c.reassure.map((r) => `<p style="margin:0 0 4px; color:${C.text}; font-size:13px;">• ${r}</p>`).join("")}
+  </div>
+  <div style="text-align:center; margin:0 0 14px;">${pillButton(opts.acceptUrl, c.cta, C.lagoonDeep)}</div>
+  <p style="margin:0 0 4px; color:${C.faint}; font-size:12px; font-weight:700;">${c.details}:</p>
+  <p style="margin:0 0 14px; color:${C.muted}; font-size:12px; line-height:1.7;">${c.steps.map((s, i) => `${i + 1}. ${s}`).join("<br>")}</p>
+  <p style="margin:0; color:${C.faint}; font-size:12px; line-height:1.6;">${c.foot}</p>
+`;
   const { data, error } = await resend.emails.send({
     from: FROM_EMAIL,
     to: opts.email,
