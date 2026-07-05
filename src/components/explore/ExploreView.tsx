@@ -132,6 +132,11 @@ const PREFECTURES = ["Chania", "Rethymnon", "Heraklion", "Lassithi"];
 const PHOTO_PIN_ZOOM = 11.5;
 const PHOTO_PIN_MAX = 12;
 
+// Zoom mini pour qu'un partenaire apparaisse (pin sur la carte ET carte dans la
+// liste). En deca, vue trop large : on ne pollue pas la vue d'ensemble. Pin et
+// liste partagent ce seuil pour rester coherents (pin visible = carte visible).
+const SPONSOR_MIN_ZOOM = 9;
+
 // Rayon du disque "autour de moi" (visuel uniquement, ne filtre pas la liste).
 const NEAR_RADIUS_KM = 10;
 
@@ -255,8 +260,8 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
     [],
   );
 
-  const displayed: Array<CbPlaceListItem & { km?: number; __sponsorUrl?: string }> = useMemo(() => {
-    const base: Array<CbPlaceListItem & { km?: number }> =
+  const base: Array<CbPlaceListItem & { km?: number }> = useMemo(
+    () =>
       nearActive && geo.pos
         ? nearestBy(
             filtered,
@@ -270,10 +275,28 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
             const score = (p: CbPlaceListItem) =>
               (p.rating ?? 0) + Math.min(p.photo_count ?? 0, 20) * 0.02;
             return score(b) - score(a);
-          });
-    // Cartes partenaires en tete de liste (etiquetees Sponsorise).
-    return [...sponsorItems, ...base];
-  }, [filtered, nearActive, geo.pos, sponsorItems]);
+          }),
+    [filtered, nearActive, geo.pos],
+  );
+
+  // Cartes partenaires : injectees dans la liste UNIQUEMENT quand la carte regarde
+  // leur zone (meme regle que les pins : zoom rapproche + point dans les bounds).
+  // Recalcul a chaque deplacement via mapViewport. Hors zone = liste normale, zero
+  // partenaire en tete. Filtre 2 items = pas de cout de tri sur chaque pan.
+  const visibleSponsors = useMemo(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady || map.getZoom() < SPONSOR_MIN_ZOOM) return [];
+    const bounds = map.getBounds();
+    return sponsorItems.filter(
+      (s) => s.latitude != null && s.longitude != null && bounds.contains([s.longitude, s.latitude]),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sponsorItems, mapViewport, mapReady]);
+
+  const displayed: Array<CbPlaceListItem & { km?: number; __sponsorUrl?: string }> = useMemo(
+    () => [...visibleSponsors, ...base],
+    [visibleSponsors, base],
+  );
 
   const geoBlocked = geo.status === "denied" || geo.status === "unavailable";
 
@@ -494,7 +517,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
     sponsorMarkersRef.current = [];
 
     // Vue trop large (île entière) : aucun pin partenaire.
-    if (map.getZoom() < 9) return;
+    if (map.getZoom() < SPONSOR_MIN_ZOOM) return;
     const bounds = map.getBounds();
 
     for (const s of sponsorItems) {
