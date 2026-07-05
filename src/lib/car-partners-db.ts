@@ -19,22 +19,37 @@ const COLS = "id, name, email, phone, whatsapp, zone_ids, commission, lead_routi
 
 /** Loueurs actifs couvrant la zone : tous invités (appel d'offres first-come). */
 export async function partnersForZone(zoneId: string): Promise<DbPartner[]> {
-  const { data, error } = await supabase.from("car_partners")
-    .select(COLS).eq("active", true).contains("zone_ids", [zoneId]);
-  if (error) { console.error("[car-partners-db] partnersForZone:", error.message); return []; }
-  return (data ?? []) as DbPartner[];
+  try {
+    const { data, error } = await supabase.from("car_partners")
+      .select(COLS).eq("active", true).contains("zone_ids", [zoneId]);
+    if (error) { console.error("[car-partners-db] partnersForZone:", error.message); return []; }
+    return (data ?? []) as DbPartner[];
+  } catch (e) {
+    console.error("[car-partners-db] partnersForZone (exception):", e instanceof Error ? e.message : e);
+    return [];
+  }
 }
 
 export async function partnerById(id: number): Promise<DbPartner | null> {
-  const { data } = await supabase.from("car_partners").select(COLS).eq("id", id).maybeSingle();
-  return (data as DbPartner) ?? null;
+  try {
+    const { data } = await supabase.from("car_partners").select(COLS).eq("id", id).maybeSingle();
+    return (data as DbPartner) ?? null;
+  } catch (e) {
+    console.error("[car-partners-db] partnerById (exception):", e instanceof Error ? e.message : e);
+    return null;
+  }
 }
 
 /** Zones ayant au moins un loueur actif (pour griser les zones non couvertes). */
 export async function servedZoneIds(): Promise<string[]> {
-  const { data, error } = await supabase.from("car_partners").select("zone_ids").eq("active", true);
-  if (error) { console.error("[car-partners-db] servedZoneIds:", error.message); return []; }
-  const set = new Set<string>();
-  for (const r of (data ?? []) as { zone_ids: string[] }[]) for (const z of r.zone_ids ?? []) set.add(z);
-  return [...set];
+  try {
+    const { data, error } = await supabase.from("car_partners").select("zone_ids").eq("active", true);
+    if (error) { console.error("[car-partners-db] servedZoneIds:", error.message); return []; }
+    const set = new Set<string>();
+    for (const r of (data ?? []) as { zone_ids: string[] }[]) for (const z of r.zone_ids ?? []) set.add(z);
+    return [...set];
+  } catch (e) {
+    console.error("[car-partners-db] servedZoneIds (exception):", e instanceof Error ? e.message : e);
+    return [];
+  }
 }

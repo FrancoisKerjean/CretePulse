@@ -13,9 +13,24 @@ let client: SupabaseClient | null = null;
 
 function getAdmin(): SupabaseClient {
   if (!client) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_KEY;
+    // Build-safe : au prerender (`next build`), la clé service peut manquer sur
+    // le scope Vercel (ex. Preview). createClient(url, undefined) lève
+    // « supabaseKey is required » et casse tout le build. On instancie avec un
+    // placeholder non vide : createClient ne lève plus, et les requêtes
+    // échouent alors proprement (renvoyées dans `error`, catchées par les
+    // consommateurs → valeur de repli) au lieu de planter le build. En runtime
+    // prod la vraie clé est présente et tout fonctionne normalement.
+    if (!url || !key) {
+      console.warn(
+        "[supabase-admin] URL ou clé service absente — client dégradé " +
+          "(build-safe : requêtes en échec contrôlé, pas de crash build)",
+      );
+    }
     client = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_KEY!,
+      url || "https://placeholder.supabase.co",
+      key || "build-time-placeholder-key",
       { auth: { persistSession: false, autoRefreshToken: false } },
     );
   }
