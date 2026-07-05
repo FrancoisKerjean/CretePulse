@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { CAR_INCLUSION_KEYS, CAR_INCLUSION_LABELS_PARTNER } from "@/lib/car-inclusions";
 
 // Formulaire de saisie du prix par le loueur. Poste le prix + le jeton (en
 // clair, depuis l'URL) à l'API qui le hash et notifie le client.
 export function QuoteForm({ token }: { token: string }) {
   const [price, setPrice] = useState("");
+  const [carModel, setCarModel] = useState("");
+  const [inclusions, setInclusions] = useState<string[]>([]);
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
 
   async function submit(e: React.FormEvent) {
@@ -17,7 +20,7 @@ export function QuoteForm({ token }: { token: string }) {
       const res = await fetch("/api/car-rental/quote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, price: value }),
+        body: JSON.stringify({ token, price: value, carModel: carModel.trim() || null, inclusions }),
       });
       const json = await res.json();
       setState(res.ok && json.ok ? "done" : "error");
@@ -47,6 +50,27 @@ export function QuoteForm({ token }: { token: string }) {
           placeholder="150"
           style={{ flex: 1, padding: "12px 14px", fontSize: 18, borderRadius: 10, border: "1px solid #DCE9EE", outline: "none" }}
         />
+      </div>
+      <label style={{ fontSize: 14, fontWeight: 600, color: "#0B3954" }}>Car model offered (optional)</label>
+      <input
+        type="text" value={carModel} onChange={(e) => setCarModel(e.target.value)}
+        placeholder="e.g. VW Polo 2023"
+        style={{ padding: "12px 14px", fontSize: 16, borderRadius: 10, border: "1px solid #DCE9EE", outline: "none" }}
+      />
+      <span style={{ fontSize: 14, fontWeight: 600, color: "#0B3954" }}>Included in the price (optional)</span>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        {CAR_INCLUSION_KEYS.map((k) => {
+          const on = inclusions.includes(k);
+          return (
+            <button key={k} type="button"
+              onClick={() => setInclusions((cur) => on ? cur.filter((x) => x !== k) : [...cur, k])}
+              style={{ padding: "8px 12px", borderRadius: 999, fontSize: 13, cursor: "pointer",
+                border: on ? "1px solid #008C9E" : "1px solid #DCE9EE",
+                background: on ? "#008C9E" : "#fff", color: on ? "#fff" : "#0B3954" }}>
+              {CAR_INCLUSION_LABELS_PARTNER[k]}
+            </button>
+          );
+        })}
       </div>
       <button
         type="submit" disabled={state === "sending"}

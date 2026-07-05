@@ -4,6 +4,7 @@ import { carPickupLabel, carTypeLabelWithExamples } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { newToken, hashToken, siteBase } from "@/lib/car-quote";
 import { partnerById } from "@/lib/car-partners-db";
+import { isInclusionKey } from "@/lib/car-inclusions";
 
 // Un loueur soumet son prix (page /car-quote/{token}). Appel d'offres first-come :
 // le PREMIER à soumettre gagne (verrou conditionnel status='sent'→'quoted'), son
@@ -18,6 +19,8 @@ export async function POST(request: NextRequest) {
   if (!Number.isFinite(price) || price <= 0 || price > 100000) {
     return NextResponse.json({ error: "Invalid price" }, { status: 422 });
   }
+  const carModel = typeof body.carModel === "string" && body.carModel.trim() ? body.carModel.trim().slice(0, 120) : null;
+  const inclusions = Array.isArray(body.inclusions) ? body.inclusions.filter(isInclusionKey) : [];
 
   // Résout l'invitation (un jeton par loueur invité) → demande + loueur.
   const { data: invite } = await supabase.from("car_quote_invites")
@@ -41,6 +44,7 @@ export async function POST(request: NextRequest) {
     quoted_price: price, quoted_currency: "EUR", quoted_at: new Date().toISOString(),
     status: "quoted", accept_token_hash: hashToken(acceptToken),
     partner_name: partner.name, partner_email: partner.email, quoted_by_partner_id: partner.id,
+    quoted_car_model: carModel, quoted_inclusions: inclusions,
   }).eq("id", req.id).eq("status", "sent").select("id");
   if (!locked || locked.length === 0) {
     // Un autre loueur a gagné entre-temps.
