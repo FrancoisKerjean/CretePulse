@@ -4,8 +4,8 @@ import { useState } from "react";
 
 // Bouton d'acceptation du devis par le client. Poste le jeton à l'API qui
 // déclenche la mise en relation (coordonnées échangées par email).
-export function AcceptButton({ token, label, doneText }: { token: string; label: string; doneText: string }) {
-  const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
+export function AcceptButton({ token, label, doneText, expiredText }: { token: string; label: string; doneText: string; expiredText: string }) {
+  const [state, setState] = useState<"idle" | "sending" | "done" | "expired" | "error">("idle");
 
   async function accept() {
     setState("sending");
@@ -16,7 +16,11 @@ export function AcceptButton({ token, label, doneText }: { token: string; label:
         body: JSON.stringify({ token }),
       });
       const json = await res.json();
-      setState(res.ok && json.ok ? "done" : "error");
+      if (res.status === 410 || json.expired) {
+        setState("expired");
+      } else {
+        setState(res.ok && json.ok ? "done" : "error");
+      }
     } catch {
       setState("error");
     }
@@ -26,6 +30,14 @@ export function AcceptButton({ token, label, doneText }: { token: string; label:
     return (
       <p style={{ margin: 0, padding: "16px 18px", borderRadius: 12, background: "#ECFDF5", color: "#065F46", fontSize: 15, lineHeight: 1.6 }}>
         {doneText}
+      </p>
+    );
+  }
+
+  if (state === "expired") {
+    return (
+      <p style={{ margin: 0, padding: "16px 18px", borderRadius: 12, background: "#FEF9EC", color: "#92400E", fontSize: 15, lineHeight: 1.6 }}>
+        {expiredText}
       </p>
     );
   }

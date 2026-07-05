@@ -4,6 +4,7 @@ import { carPickupLabel } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { partnerById } from "@/lib/car-partners-db";
 import { hashToken } from "@/lib/car-quote";
+import { isOfferExpired } from "@/lib/car-offer-expiry";
 
 // Le client accepte le devis (page /car-offer/{token}). On consomme le jeton
 // d'acceptation et on met client et loueur en relation (coordonnées échangées).
@@ -15,13 +16,17 @@ export async function POST(request: NextRequest) {
   if (!token) return NextResponse.json({ error: "Missing token" }, { status: 400 });
 
   const { data: row } = await supabase.from("car_requests")
-    .select("id, status, locale, pickup_slug, date_from, date_to, car_type, quoted_price, quoted_currency, quoted_car_model, quoted_inclusions, partner_name, partner_email, quoted_by_partner_id, customer_name, customer_email, customer_phone")
+    .select("id, status, locale, pickup_slug, date_from, date_to, car_type, quoted_price, quoted_currency, quoted_car_model, quoted_inclusions, quoted_at, partner_name, partner_email, quoted_by_partner_id, customer_name, customer_email, customer_phone")
     .eq("accept_token_hash", hashToken(token))
     .maybeSingle();
 
   if (!row) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (row.status === "accepted") return NextResponse.json({ ok: true, already: true });
   if (row.quoted_price == null) return NextResponse.json({ error: "No quote yet" }, { status: 409 });
+
+  if (isOfferExpired(row.quoted_at, row.date_from, Date.now())) {
+    return NextResponse.json({ ok: false, expired: true }, { status: 410 });
+  }
 
   const { error: upErr } = await supabase.from("car_requests").update({
     status: "accepted",
