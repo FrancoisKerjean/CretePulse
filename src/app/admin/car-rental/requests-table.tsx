@@ -135,7 +135,11 @@ export function RequestsTable({
                   {r.customer_name} · <a href={`mailto:${r.customer_email}`} className="text-sea">{r.customer_email}</a>
                   {r.customer_phone ? <> · {r.customer_phone}</> : null}
                   <br />
-                  {winner ? <>Gagnant : <span className="font-bold">{winner.name}</span></> : <span className="text-text-muted">Pas encore de devis</span>}
+                  {winner ? (
+                    r.status === "accepted"
+                      ? <>Choisi par le client : <span className="font-bold">{winner.name}</span></>
+                      : <>Devis reçu de <span className="font-bold">{winner.name}</span> <span className="text-text-muted">· en attente du client</span></>
+                  ) : <span className="text-text-muted">Pas encore de devis</span>}
                   {r.quoted_price != null ? <> · devis <span className="font-data font-bold">{r.quoted_price} €</span></> : null}
                   {r.final_amount_eur != null ? <> · final <span className="font-data font-bold">{r.final_amount_eur} €</span></> : null}
                   {commission != null ? <> · commission <span className="font-data font-bold">{commission.toFixed(2)} €</span></> : null}
