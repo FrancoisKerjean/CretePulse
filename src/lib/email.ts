@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import { buildCarWaMessage, waHref } from "./car-admin";
 import { inclusionLabels } from "@/lib/car-inclusions";
+import { sharedOfferCopy } from "@/lib/car-offer-copy";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -464,36 +465,18 @@ const QUOTE_SUBJECT: Record<string, string> = {
 
 const QUOTE_COPY: Record<string, {
   intro: string; details: string; cta: string; foot: string;
-  offerFrom: string; localAgency: string; included: string; perDay: string; total: string;
-  reassure: string[]; steps: string[];
 }> = {
   en: {
     intro: "Good news, we received a price for your car rental request.", details: "Your request", cta: "Accept this offer", foot: "Accept and we connect you directly with the rental agency to finalise. Didn't request this? Just ignore this email.",
-    offerFrom: "Offer from", localAgency: "local rental agency in Crete",
-    included: "Included in the price", perDay: "per day", total: "total",
-    reassure: ["No online prepayment — no card needed to book", "You pay the agency on pickup — cash accepted", "A real local agency in Crete, direct contact"],
-    steps: ["You accept this offer", "We share your details with the agency", "The agency contacts you to finalise — payment on pickup"],
   },
   fr: {
     intro: "Bonne nouvelle, nous avons reçu un prix pour votre demande de location de voiture.", details: "Votre demande", cta: "Accepter cette offre", foot: "En acceptant, nous vous mettons directement en relation avec l'agence de location pour finaliser. Vous n'êtes pas à l'origine de cette demande ? Ignorez cet email.",
-    offerFrom: "Offre de", localAgency: "agence de location locale en Crète",
-    included: "Inclus dans le prix", perDay: "par jour", total: "au total",
-    reassure: ["Aucun prépaiement en ligne — pas de carte pour réserver", "Vous payez l'agence au retrait — espèces acceptées", "Une vraie agence locale en Crète, en direct"],
-    steps: ["Vous acceptez cette offre", "On transmet vos coordonnées à l'agence", "L'agence vous contacte pour finaliser — paiement au retrait"],
   },
   de: {
     intro: "Gute Nachrichten, wir haben einen Preis für Ihre Mietwagenanfrage erhalten.", details: "Ihre Anfrage", cta: "Angebot annehmen", foot: "Nach der Annahme verbinden wir Sie direkt mit der Autovermietung. Keine Anfrage gestellt? Ignorieren Sie diese E-Mail.",
-    offerFrom: "Angebot von", localAgency: "lokale Autovermietung auf Kreta",
-    included: "Im Preis enthalten", perDay: "pro Tag", total: "gesamt",
-    reassure: ["Keine Online-Vorauszahlung — keine Karte zum Buchen erforderlich", "Sie zahlen bei der Abholung — Barzahlung möglich", "Eine echte lokale Autovermietung auf Kreta, direkt"],
-    steps: ["Sie nehmen dieses Angebot an", "Wir übermitteln Ihre Daten an die Vermietung", "Die Vermietung kontaktiert Sie zur Bestätigung — Zahlung bei Abholung"],
   },
   el: {
     intro: "Καλά νέα, λάβαμε μια τιμή για το αίτημα ενοικίασης αυτοκινήτου σας.", details: "Το αίτημά σας", cta: "Αποδοχή προσφοράς", foot: "Με την αποδοχή, σας συνδέουμε απευθείας με το γραφείο ενοικίασης. Δεν κάνατε εσείς το αίτημα; Αγνοήστε αυτό το email.",
-    offerFrom: "Προσφορά από", localAgency: "τοπικό γραφείο ενοικίασης στην Κρήτη",
-    included: "Περιλαμβάνεται στην τιμή", perDay: "ανά ημέρα", total: "συνολικά",
-    reassure: ["Χωρίς προπληρωμή στο διαδίκτυο — δεν χρειάζεται κάρτα για κράτηση", "Πληρώνετε το γραφείο κατά την παραλαβή — γίνονται δεκτά μετρητά", "Αληθινό τοπικό γραφείο ενοικίασης στην Κρήτη, σε απευθείας επαφή"],
-    steps: ["Αποδέχεστε αυτήν την προσφορά", "Μεταβιβάζουμε τα στοιχεία σας στο γραφείο", "Το γραφείο επικοινωνεί μαζί σας για να οριστικοποιήσει — πληρωμή κατά την παραλαβή"],
   },
 };
 
@@ -502,7 +485,7 @@ export async function sendCustomerQuoteEmail(opts: {
   email: string; locale: string; customerName: string; acceptUrl: string; quote: CarQuoteInfo;
 }) {
   const l = QUOTE_SUBJECT[opts.locale] ? opts.locale : "en";
-  const c = QUOTE_COPY[l];
+  const c = { ...QUOTE_COPY[l], ...sharedOfferCopy(l) };
   const q = opts.quote;
   const perDay = q.days > 0 ? Math.round(q.price / q.days) : q.price;
   const incl = inclusionLabels(q.inclusions, l);
