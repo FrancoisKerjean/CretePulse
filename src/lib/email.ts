@@ -786,6 +786,40 @@ export async function sendReviewConfirmationEmail(opts: {
   });
 }
 
+// ── Cron silence >24h : aucune agence n'a encore soumis de prix ─────────────
+
+const NO_QUOTE_SUBJECT: Record<string, string> = {
+  en: "Update on your car rental request — Crete Direct",
+  fr: "Point sur votre demande de location — Crete Direct",
+  de: "Update zu Ihrer Mietwagenanfrage — Crete Direct",
+  el: "Ενημέρωση για το αίτημα ενοικίασης αυτοκινήτου σας — Crete Direct",
+};
+
+const NO_QUOTE_BODY: Record<string, string> = {
+  en: "No agency has sent a price yet for your car rental request. We're still on it — we'll email you as soon as we have an offer.",
+  fr: "Aucune agence n'a encore envoyé de prix pour votre demande de location. Nous y travaillons toujours — nous vous écrirons dès que nous avons une offre.",
+  de: "Noch keine Agentur hat einen Preis für Ihre Mietwagenanfrage gesendet. Wir sind noch dran — wir schreiben Ihnen, sobald wir ein Angebot haben.",
+  el: "Καμία εταιρεία δεν έχει στείλει ακόμα τιμή για το αίτημα ενοικίασης αυτοκινήτου σας. Συνεχίζουμε να εργαζόμαστε — θα σας στείλουμε email μόλις έχουμε μια προσφορά.",
+};
+
+export async function sendCustomerNoQuoteYet(opts: { email: string; locale: string; customerName?: string }) {
+  const l = NO_QUOTE_SUBJECT[opts.locale] ? opts.locale : "en";
+  const greeting = opts.customerName ? `${opts.customerName}, ` : "";
+  const inner = `
+  <p style="margin:0 0 16px; color:${C.muted}; font-size:14px; line-height:1.6;">${greeting}${NO_QUOTE_BODY[l]}</p>
+  <p style="margin:0; color:${C.faint}; font-size:12px; text-align:center; line-height:1.6;">Questions? Reply to this email, a real person reads it.</p>
+`;
+  const { data, error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: opts.email,
+    replyTo: RELAY_EMAIL,
+    subject: NO_QUOTE_SUBJECT[l],
+    html: kalimeraShell(inner),
+  });
+  if (error) throw new Error(`Resend: ${error.message}`);
+  return data;
+}
+
 // =============================================================================
 // Lead /projet (institutions / sponsors) -> Kami
 // =============================================================================
