@@ -60,10 +60,10 @@
     "allGuides": "Kaikki oppaat",
     "editorialGuides": "Toimitukselliset oppaat",
     "heroTitle": "Kreeta, tänään",
-    "matchKicker": "Pyyhkäise & matchaa",
-    "matchTitle": "Kreetan Tinder",
-    "matchSub": "Pyyhkäise rantoja, rotkoja ja kyliä. Tykkää tai ohita, ja löydä matchisi.",
-    "matchCta": "Aloita pyyhkäisy",
+    "carRentalKicker": "Auton vuokraus",
+    "carRentalTitle": "Autosi Kreetan tutkimiseen",
+    "carRentalSub": "Paikallinen toimisto, reilu hinta, ei ennakkomaksua. Tarjous 4 napautuksella, nouto lentokentältä mahdollista.",
+    "carRentalCta": "Pyydä tarjous",
     "heroMain": {
       "pre": "Rannat, bussit, sää.",
       "hl": "Kreeta, livenä."

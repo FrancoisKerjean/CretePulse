@@ -60,10 +60,10 @@
     "allGuides": "Tüm rehberler",
     "editorialGuides": "Editör rehberleri",
     "heroTitle": "Girit, bugün",
-    "matchKicker": "Kaydır & eşleş",
-    "matchTitle": "Girit'in Tinder'ı",
-    "matchSub": "Plajları, vadileri ve köyleri kaydır. Beğen ya da geç, eşleşmeni bul.",
-    "matchCta": "Kaydırmaya başla",
+    "carRentalKicker": "Araç kiralama",
+    "carRentalTitle": "Girit'i keşfetmek için aracın",
+    "carRentalSub": "Yerel acente, adil fiyat, ön ödeme yok. 4 dokunuşta teklif, havaalanında teslim mümkün.",
+    "carRentalCta": "Teklif al",
     "heroMain": {
       "pre": "Plajlar, otobüsler, hava durumu.",
       "hl": "Girit, canlı."

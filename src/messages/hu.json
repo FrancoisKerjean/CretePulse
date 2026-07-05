@@ -60,10 +60,10 @@
     "allGuides": "Összes útikalauz",
     "editorialGuides": "Szerkesztői útmutatók",
     "heroTitle": "Kréta, ma",
-    "matchKicker": "Lapozz & matchelj",
-    "matchTitle": "Kréta Tindere",
-    "matchSub": "Lapozz strandok, szurdokok és falvak között. Tetszik vagy passz, és meglesz a matched.",
-    "matchCta": "Kezdjük a lapozást",
+    "carRentalKicker": "Autóbérlés",
+    "carRentalTitle": "A te autód Kréta felfedezéséhez",
+    "carRentalSub": "Helyi iroda, tisztességes ár, előlegfizetés nélkül. Ajánlat 4 koppintással, reptéri átvétel lehetséges.",
+    "carRentalCta": "Kérj ajánlatot",
     "heroMain": {
       "pre": "Strandok, buszok, időjárás.",
       "hl": "Kréta, élőben."
