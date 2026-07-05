@@ -60,10 +60,10 @@
     "allGuides": "Tous les guides",
     "editorialGuides": "Guides éditoriaux",
     "heroTitle": "La Crète, aujourd'hui",
-    "matchKicker": "Swipe & match",
-    "matchTitle": "Le Tinder de la Crète",
-    "matchSub": "Fais défiler plages, gorges et villages. Like ou passe, et trouve ton match.",
-    "matchCta": "Commencer",
+    "carRentalKicker": "Location de voiture",
+    "carRentalTitle": "Votre voiture pour explorer la Crète",
+    "carRentalSub": "Agence locale, prix juste, sans prépaiement. Devis en 4 clics, prise à l'aéroport possible.",
+    "carRentalCta": "Demander un devis",
     "heroMain": {
       "pre": "Plages, bus, météo.",
       "hl": "La Crète, en direct."

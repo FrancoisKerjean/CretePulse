@@ -60,10 +60,10 @@
     "allGuides": "모든 가이드",
     "editorialGuides": "에디토리얼 가이드",
     "heroTitle": "오늘의 크레타",
-    "matchKicker": "스와이프 & 매치",
-    "matchTitle": "크레타의 틴더",
-    "matchSub": "해변, 협곡, 마을을 스와이프하세요. 좋아요 또는 패스, 그리고 당신의 매치를 찾으세요.",
-    "matchCta": "스와이프 시작",
+    "carRentalKicker": "렌터카",
+    "carRentalTitle": "크레타를 탐험할 당신의 차",
+    "carRentalSub": "현지 업체, 공정한 가격, 선결제 없음. 4번의 탭으로 견적, 공항 픽업 가능.",
+    "carRentalCta": "견적 요청",
     "heroMain": {
       "pre": "해변, 버스, 날씨.",
       "hl": "크레타, 실시간."

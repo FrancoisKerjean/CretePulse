@@ -60,10 +60,10 @@
     "allGuides": "すべてのガイド",
     "editorialGuides": "特集ガイド",
     "heroTitle": "今日のクレタ島",
-    "matchKicker": "スワイプしてマッチ",
-    "matchTitle": "クレタ島版Tinder",
-    "matchSub": "ビーチ、渓谷、村をスワイプ。いいね or パスで、運命の場所とマッチ。",
-    "matchCta": "スワイプを始める",
+    "carRentalKicker": "レンタカー",
+    "carRentalTitle": "クレタ島を巡るあなたの車",
+    "carRentalSub": "地元の代理店、公正な価格、前払い不要。4タップで見積もり、空港受け取り可能。",
+    "carRentalCta": "見積もりを取る",
     "heroMain": {
       "pre": "ビーチも、バスも、天気も。",
       "hl": "クレタ島、ライブ。"
