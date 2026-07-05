@@ -11,7 +11,7 @@ export function isInclusionKey(v: unknown): v is CarInclusionKey {
   return typeof v === "string" && (CAR_INCLUSION_KEYS as readonly string[]).includes(v);
 }
 
-// Libellés client (4 langues). EN/FR fournis ; DE/EL à compléter sur ce modèle.
+// Libellés client (4 langues : en/fr/de/el).
 export const CAR_INCLUSION_LABELS: Record<string, Record<CarInclusionKey, string>> = {
   en: { basic_insurance: "Basic insurance included", unlimited_km: "Unlimited mileage", second_driver: "Second driver included", free_cancellation: "Free cancellation", child_seat: "Child seat available", airport_pickup: "Airport pickup" },
   fr: { basic_insurance: "Assurance de base incluse", unlimited_km: "Kilométrage illimité", second_driver: "2ᵉ conducteur inclus", free_cancellation: "Annulation gratuite", child_seat: "Siège enfant disponible", airport_pickup: "Prise en charge à l'aéroport" },

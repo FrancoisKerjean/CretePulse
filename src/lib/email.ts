@@ -802,12 +802,19 @@ const NO_QUOTE_BODY: Record<string, string> = {
   el: "Καμία εταιρεία δεν έχει στείλει ακόμα τιμή για το αίτημα ενοικίασης αυτοκινήτου σας. Συνεχίζουμε να εργαζόμαστε — θα σας στείλουμε email μόλις έχουμε μια προσφορά.",
 };
 
+const NO_QUOTE_FOOT: Record<string, string> = {
+  en: "Questions? Reply to this email, a real person reads it.",
+  fr: "Une question ? Répondez à cet email, une vraie personne le lit.",
+  de: "Fragen? Antworten Sie auf diese E-Mail, ein echter Mensch liest sie.",
+  el: "Ερωτήσεις; Απαντήστε σε αυτό το email, το διαβάζει πραγματικός άνθρωπος.",
+};
+
 export async function sendCustomerNoQuoteYet(opts: { email: string; locale: string; customerName?: string }) {
   const l = NO_QUOTE_SUBJECT[opts.locale] ? opts.locale : "en";
   const greeting = opts.customerName ? `${opts.customerName}, ` : "";
   const inner = `
   <p style="margin:0 0 16px; color:${C.muted}; font-size:14px; line-height:1.6;">${greeting}${NO_QUOTE_BODY[l]}</p>
-  <p style="margin:0; color:${C.faint}; font-size:12px; text-align:center; line-height:1.6;">Questions? Reply to this email, a real person reads it.</p>
+  <p style="margin:0; color:${C.faint}; font-size:12px; text-align:center; line-height:1.6;">${NO_QUOTE_FOOT[l]}</p>
 `;
   const { data, error } = await resend.emails.send({
     from: FROM_EMAIL,

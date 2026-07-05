@@ -18,6 +18,14 @@ export async function POST(request: NextRequest) {
   // Appel d'offres : tous les loueurs actifs de la zone. Aucun → pas couvert.
   const partners = await partnersForZone(zone.id);
   if (partners.length === 0) {
+    try {
+      const { sendCustomerRequestReceived } = await import("@/lib/email");
+      await sendCustomerRequestReceived({
+        email: row.customer_email, locale: row.locale ?? "en", customerName: row.customer_name,
+        request: { pickupLabel: carPickupLabel(row.pickup_slug), dateFrom: row.date_from, dateTo: row.date_to, carTypeLabel: carTypeLabelWithExamples(carType, row.locale ?? "en") },
+        noAgency: true,
+      });
+    } catch (e) { console.error("[car-rental/submit] no-agency ack failed:", e); }
     return NextResponse.json({ error: "No partner in this area yet" }, { status: 400 });
   }
 
