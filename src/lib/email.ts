@@ -536,6 +536,70 @@ export async function sendCustomerQuoteEmail(opts: {
   return data;
 }
 
+// ── Accusé de réception immédiat au client (trou 3a) ────────────────────────
+
+const ACK_SUBJECT: Record<string, string> = {
+  en: "Your car rental request — Crete Direct",
+  fr: "Votre demande de location — Crete Direct",
+  de: "Ihre Mietwagenanfrage — Crete Direct",
+  el: "Το αίτημα ενοικίασης αυτοκινήτου σας — Crete Direct",
+};
+
+const ACK_COPY: Record<string, {
+  details: string; bodyOk: string; bodyNoAgency: string;
+}> = {
+  en: {
+    details: "Your request",
+    bodyOk: "We received your request and asked local rental agencies for a price. You'll get an offer shortly by email. If none reply, we'll let you know.",
+    bodyNoAgency: "We received your request, but no partner agency is available for these criteria right now. We'll get back to you.",
+  },
+  fr: {
+    details: "Votre demande",
+    bodyOk: "Nous avons bien reçu votre demande et interrogé les agences de location locales. Vous recevrez une offre très vite par email. Si aucune ne répond, nous vous préviendrons.",
+    bodyNoAgency: "Nous avons bien reçu votre demande, mais aucune agence partenaire n'est disponible pour ces critères pour le moment. Nous revenons vers vous.",
+  },
+  de: {
+    details: "Ihre Anfrage",
+    bodyOk: "Wir haben Ihre Anfrage erhalten und lokale Autovermietungen um ein Angebot gebeten. Sie erhalten bald ein Angebot per E-Mail. Falls keine antwortet, melden wir uns bei Ihnen.",
+    bodyNoAgency: "Wir haben Ihre Anfrage erhalten, aber momentan ist keine Partneragentur für diese Kriterien verfügbar. Wir melden uns bei Ihnen.",
+  },
+  el: {
+    details: "Το αίτημά σας",
+    bodyOk: "Λάβαμε το αίτημά σας και ζητήσαμε τιμή από τοπικά γραφεία ενοικίασης. Σύντομα θα λάβετε μια προσφορά μέσω email. Αν κανένα δεν απαντήσει, θα σας ενημερώσουμε.",
+    bodyNoAgency: "Λάβαμε το αίτημά σας, αλλά αυτή τη στιγμή δεν υπάρχει διαθέσιμη συνεργαζόμενη εταιρεία για αυτά τα κριτήρια. Θα επικοινωνήσουμε μαζί σας.",
+  },
+};
+
+/** Accusé de réception envoyé immédiatement au client après soumission du formulaire.
+ *  noAgency=true quand aucun loueur partenaire n'a pu être contacté. */
+export async function sendCustomerRequestReceived(opts: {
+  email: string; locale: string; customerName?: string;
+  request: { pickupLabel: string; dateFrom: string; dateTo: string; carTypeLabel: string };
+  noAgency: boolean;
+}) {
+  const l = ACK_SUBJECT[opts.locale] ? opts.locale : "en";
+  const c = ACK_COPY[l];
+  const r = opts.request;
+  const inner = `
+  <p style="margin:0 0 16px; color:${C.muted}; font-size:14px; line-height:1.6;">${opts.customerName ? `${opts.customerName}, ` : ""}${opts.noAgency ? c.bodyNoAgency : c.bodyOk}</p>
+  <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 16px;">
+    <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${c.details}</p>
+    <p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">
+      ${r.pickupLabel}<br>${r.dateFrom} → ${r.dateTo}<br>${r.carTypeLabel}
+    </p>
+  </div>
+`;
+  const { data, error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: opts.email,
+    replyTo: RELAY_EMAIL,
+    subject: ACK_SUBJECT[l],
+    html: kalimeraShell(inner),
+  });
+  if (error) throw new Error(`Resend: ${error.message}`);
+  return data;
+}
+
 const CONNECT_SUBJECT: Record<string, string> = {
   en: "You're connected with your car rental agency",
   fr: "Vous êtes en relation avec votre agence de location",

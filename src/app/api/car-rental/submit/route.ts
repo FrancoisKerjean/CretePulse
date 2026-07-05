@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
 
   // Fan-out : chaque loueur direct reçoit son propre lien de devis (invite) ;
   // un loueur en relais reçoit l'email WhatsApp legacy chez Kami.
-  const { sendAgencyQuoteRequest, sendCarLeadEmail, sendLeadKamiSummary } = await import("@/lib/email");
+  const { sendAgencyQuoteRequest, sendCarLeadEmail, sendLeadKamiSummary, sendCustomerRequestReceived } = await import("@/lib/email");
   const sentNames: string[] = [];
   for (const p of partners) {
     try {
@@ -66,9 +66,25 @@ export async function POST(request: NextRequest) {
   if (sentNames.length === 0) {
     await supabase.from("car_requests").update({ status: "email_failed" }).eq("id", requestId);
     const fb = partners[0];
+    try {
+      await sendCustomerRequestReceived({
+        email: row.customer_email, locale: row.locale,
+        customerName: row.customer_name,
+        request: { pickupLabel: lead.pickupLabel, dateFrom: lead.dateFrom, dateTo: lead.dateTo, carTypeLabel: lead.carTypeLabel },
+        noAgency: true,
+      });
+    } catch (e) { console.error("[car-rental/submit] ack email (no agency) failed:", e); }
     return NextResponse.json({ ok: false, fallbackWhatsapp: fb.whatsapp ?? fb.phone });
   }
 
   await sendLeadKamiSummary(lead, sentNames);
+  try {
+    await sendCustomerRequestReceived({
+      email: row.customer_email, locale: row.locale,
+      customerName: row.customer_name,
+      request: { pickupLabel: lead.pickupLabel, dateFrom: lead.dateFrom, dateTo: lead.dateTo, carTypeLabel: lead.carTypeLabel },
+      noAgency: false,
+    });
+  } catch (e) { console.error("[car-rental/submit] ack email failed:", e); }
   return NextResponse.json({ ok: true });
 }
