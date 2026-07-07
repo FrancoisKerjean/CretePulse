@@ -272,15 +272,22 @@ const INPUT_CLS =
   "w-full rounded-xl border-[1.5px] border-border bg-white px-3.5 py-2.5 text-[15px] text-text focus:outline-none focus:border-sea transition-colors";
 const LABEL_CLS = "block text-[12px] font-semibold text-text-muted mb-1";
 
-export function CarRentalWizard({ locale, servedZones }: { locale: string; servedZones: string[] }) {
+type CarRentalWizardProps = {
+  locale: string;
+  servedZones: string[];
+  initialPickup?: string;
+};
+
+export function CarRentalWizard({ locale, servedZones, initialPickup: initialPickupProp }: CarRentalWizardProps) {
   const t = T[locale] || T.en;
   const sp = useSearchParams();
 
-  // ?pickup= valide (slug connu d'une zone) → étape 2 directement.
+  // ?pickup= ou prop initialPickup valide (slug connu d'une zone) → étape 2 directement.
   const initialPickup = useMemo(() => {
     const q = sp.get("pickup");
-    return q && zoneForPickup(q) && SLUG_COORDS[q] ? q : null;
-  }, [sp]);
+    if (q && zoneForPickup(q) && SLUG_COORDS[q]) return q;
+    return initialPickupProp && zoneForPickup(initialPickupProp) && SLUG_COORDS[initialPickupProp] ? initialPickupProp : null;
+  }, [sp, initialPickupProp]);
 
   const [view, setView] = useState<View>("steps");
   const [step, setStep] = useState(initialPickup ? 2 : 1);

@@ -24,6 +24,6 @@ ok("served flags", allPickups().find((p) => p.slug === "chania").served === true
 const projected = JSON.stringify({ zones: CAR_ZONES, partners: CAR_PARTNERS }, null, 2) + "\n";
 let committed = null;
 try { committed = readFileSync(new URL("../src/data/car-partners.json", import.meta.url), "utf8"); } catch { /* absent */ }
-ok("car-partners.json en phase avec car-partners.ts (sinon: npm run gen:car-partners-json)", committed === projected);
+ok("car-partners.json en phase avec car-partners.ts (sinon: npm run gen:car-partners-json)", committed?.replace(/\r\n/g, "\n") === projected);
 
 process.exit(fail ? 1 : 0);

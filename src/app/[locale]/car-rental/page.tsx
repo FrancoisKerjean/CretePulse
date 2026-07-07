@@ -4,6 +4,7 @@
 // répond directement avec un devis. Funnel discret, zéro branding Kairos.
 // Contenu i18n (22 locales) dans ./content. Spec : docs/superpowers/specs/2026-06-12-car-rental-wizard-design.md
 import { Suspense } from "react";
+import Link from "next/link";
 import { setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { routing } from "@/i18n/routing";
@@ -13,12 +14,41 @@ import { CarRentalWizard } from "@/components/car-rental/CarRentalWizard";
 import { META, L } from "./content";
 import { JsonLd } from "@/components/JsonLd";
 import { servedZoneIds } from "@/lib/car-partners-db";
+import { CAR_LOCATIONS, CAR_LOC_LOCALES, type CarLocLocale } from "@/lib/car-locations";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 // Zones couvertes = celles ayant un loueur actif (registre DB). Fallback = les
 // zones historiques d'Auto Smart si la DB est momentanément indisponible.
 const STATIC_SERVED = ["chania-west", "rethymno", "heraklion-center"];
+
+const LOCATION_LINKS_COPY: Record<CarLocLocale, { title: string; intro: string; cta: string; airport: string; port: string }> = {
+  en: {
+    title: "Popular airport and port pick-up points",
+    intro: "Open a dedicated page for the main arrival points in Crete. The quote form starts directly on dates with the right pick-up point selected.",
+    cta: "Open",
+    airport: "Airport",
+    port: "Port",
+  },
+  fr: {
+    title: "Points de prise en charge populaires aux aéroports et ports",
+    intro: "Ouvrez une page dédiée aux principales arrivées en Crète. Le formulaire démarre directement sur les dates avec le bon point sélectionné.",
+    cta: "Ouvrir",
+    airport: "Aéroport",
+    port: "Port",
+  },
+  de: {
+    title: "Beliebte Abholpunkte an Flughäfen und Häfen",
+    intro: "Öffnen Sie eine eigene Seite für die wichtigsten Ankunftspunkte auf Kreta. Das Formular startet direkt bei den Daten mit dem passenden Abholpunkt.",
+    cta: "Öffnen",
+    airport: "Flughafen",
+    port: "Hafen",
+  },
+};
+
+function pickCarLocationLocale(locale: string): CarLocLocale {
+  return (CAR_LOC_LOCALES as string[]).includes(locale) ? (locale as CarLocLocale) : "en";
+}
 
 export const dynamicParams = true;
 export const revalidate = 300; // rafraîchit les zones couvertes toutes les 5 min
@@ -61,6 +91,8 @@ export default async function CarRentalPage(
   setRequestLocale(locale);
   const t = L[locale] || L.en;
   const m = META[locale] || META.en;
+  const carLocationLocale = pickCarLocationLocale(locale);
+  const locationCopy = LOCATION_LINKS_COPY[carLocationLocale];
 
   const dbZones = await servedZoneIds();
   const servedZones = dbZones.length ? dbZones : STATIC_SERVED;
@@ -92,6 +124,39 @@ export default async function CarRentalPage(
         <Suspense fallback={null}>
           <CarRentalWizard locale={locale} servedZones={servedZones} />
         </Suspense>
+
+        <section className="mt-12">
+          <h2 className="font-heading font-extrabold text-[26px] text-text mb-3">
+            {locationCopy.title}
+          </h2>
+          <p className="m-0 mb-5 text-[15px] leading-relaxed text-text-muted">
+            {locationCopy.intro}
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {CAR_LOCATIONS.map((location) => {
+              return (
+                <Link
+                  key={location.slug}
+                  href={`/${locale}/car-rental/${location.slug}`}
+                  className="card-base flex items-center justify-between gap-4 p-4 no-underline transition-transform hover:-translate-y-0.5"
+                >
+                  <span>
+                    <span className="block font-heading text-[16px] font-bold text-text">
+                      {location.hub[carLocationLocale]}
+                    </span>
+                    <span className="mt-1 block text-[12px] font-semibold uppercase tracking-[0.08em] text-text-muted">
+                      {location.kind === "airport" ? locationCopy.airport : locationCopy.port}
+                      {location.code ? ` · ${location.code}` : ""}
+                    </span>
+                  </span>
+                  <span className="shrink-0 rounded-full bg-sun px-3 py-1.5 text-[12px] font-bold text-text">
+                    {locationCopy.cta}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
 
         {/* Section éditoriale : conduire en Crète, rédigée honnête */}
         <section className="mt-12">

@@ -21,6 +21,7 @@ import { qualityPairSlugs, priorityPairSlugs, pairLastmod } from "@/lib/bus-seo"
 import { MONTHS, CITIES } from "@/lib/weather-monthly";
 import { CRETE_NEIGHBOURHOODS } from "@/lib/airbnb-mappings";
 import { CRETE_AIRPORTS } from "@/lib/airports";
+import { CAR_LOCATION_SLUGS } from "@/lib/car-locations";
 
 export const revalidate = 86400;
 
@@ -225,6 +226,10 @@ export async function GET() {
   // HCAA airport traffic pages: 3 Crete airports, data-exclusive (official
   // monthly XLSX parsed by our pipeline, updated as HCAA publishes).
   for (const a of CRETE_AIRPORTS) push(`/airport/${a.slug}`, "monthly", 0.7);
+
+  // Car Rental Direct location hubs: high-intent airport and ferry pick-up
+  // pages that feed the local quote wizard without query strings.
+  for (const slug of CAR_LOCATION_SLUGS) push(`/car-rental/${slug}`, "monthly", 0.8);
 
   // Live utility: "where to swim today" (wind-aware daily pick, ISR 30 min).
   push("/beaches/today", "daily", 0.9);
