@@ -25,6 +25,11 @@ ok("carType inconnu -> 422", validateCarLead({ ...valid, carType: "spaceship" })
 
 ok("date mal formée -> 422 'Invalid dates'", (() => { const x = validateCarLead({ ...valid, dateFrom: "01/07/2026" }); return x.kind === "error" && x.error === "Invalid dates"; })());
 ok("dateTo < dateFrom -> 422 'Invalid dates'", validateCarLead({ ...valid, dateTo: "2026-06-01" }).error === "Invalid dates");
+ok("même jour avec retour avant prise en charge -> 422 'Invalid times'", (() => {
+  const x = validateCarLead({ ...valid, dateFrom: "2026-09-25", dateTo: "2026-09-25", timeFrom: "17:40", timeTo: "02:40" });
+  return x.kind === "error" && x.error === "Invalid times";
+})());
+ok("même jour avec retour après prise en charge -> ok", validateCarLead({ ...valid, dateFrom: "2026-09-25", dateTo: "2026-09-25", timeFrom: "09:00", timeTo: "17:00" }).kind === "ok");
 
 const good = validateCarLead(valid);
 ok("demande valide -> kind ok", good.kind === "ok");

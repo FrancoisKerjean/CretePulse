@@ -50,6 +50,7 @@ export type CarLeadResult =
   | { kind: "ok"; zone: CarZone; carType: CarTypeData; row: CarRequestRow };
 
 const str = (v: unknown): string | null => (typeof v === "string" && v.trim() ? v.trim() : null);
+const isTime = (v: string | null): v is string => !!v && /^\d{2}:\d{2}$/.test(v);
 
 /** Valide la requête brute et construit la ligne car_requests. Zéro I/O :
  *  la dédup, l'insert et l'email restent dans la route. */
@@ -73,6 +74,11 @@ export function validateCarLead(body: Record<string, unknown>): CarLeadResult {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateFrom) || !/^\d{4}-\d{2}-\d{2}$/.test(dateTo) || dateTo < dateFrom) {
     return { kind: "error", status: 422, error: "Invalid dates" };
   }
+  const timeFrom = str(body.timeFrom);
+  const timeTo = str(body.timeTo);
+  if (dateTo === dateFrom && isTime(timeFrom) && isTime(timeTo) && timeTo <= timeFrom) {
+    return { kind: "error", status: 422, error: "Invalid times" };
+  }
 
   const row: CarRequestRow = {
     locale: typeof body.locale === "string" ? body.locale : "en",
@@ -81,9 +87,9 @@ export function validateCarLead(body: Record<string, unknown>): CarLeadResult {
     partner_name: null,  // inconnu tant qu'un loueur n'a pas gagné l'appel d'offres
     partner_email: null,
     date_from: dateFrom,
-    time_from: str(body.timeFrom),
+    time_from: timeFrom,
     date_to: dateTo,
-    time_to: str(body.timeTo),
+    time_to: timeTo,
     flight_no: str(body.flightNo),
     car_type: carType.id,
     pax: Number.isInteger(body.pax) ? (body.pax as number) : null,

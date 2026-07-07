@@ -59,6 +59,7 @@ type Strings = {
   dateLabel: string;
   timeOptional: string;
   flightOptional: string;
+  invalidTimeRange: string;
   title3: string;
   paxLabel: string;
   insuranceLabel: string;
@@ -104,6 +105,7 @@ const T: Record<string, Strings> = {
     dateLabel: "Date",
     timeOptional: "Time (optional)",
     flightOptional: "Flight number (optional)",
+    invalidTimeRange: "Drop-off time must be after pick-up time for a same-day rental.",
     title3: "Which car?",
     paxLabel: "Travellers",
     insuranceLabel: "Insurance (optional)",
@@ -147,6 +149,7 @@ const T: Record<string, Strings> = {
     dateLabel: "Date",
     timeOptional: "Heure (facultatif)",
     flightOptional: "Numéro de vol (facultatif)",
+    invalidTimeRange: "Pour une location le même jour, l'heure de restitution doit être après l'heure de prise du véhicule.",
     title3: "Quelle voiture ?",
     paxLabel: "Voyageurs",
     insuranceLabel: "Assurance (facultatif)",
@@ -190,6 +193,7 @@ const T: Record<string, Strings> = {
     dateLabel: "Datum",
     timeOptional: "Uhrzeit (optional)",
     flightOptional: "Flugnummer (optional)",
+    invalidTimeRange: "Bei einer Mietdauer am selben Tag muss die Rückgabezeit nach der Abholzeit liegen.",
     title3: "Welches Auto?",
     paxLabel: "Reisende",
     insuranceLabel: "Versicherung (optional)",
@@ -233,6 +237,7 @@ const T: Record<string, Strings> = {
     dateLabel: "Ημερομηνία",
     timeOptional: "Ώρα (προαιρετικό)",
     flightOptional: "Αριθμός πτήσης (προαιρετικό)",
+    invalidTimeRange: "Για ενοικίαση την ίδια ημέρα, η ώρα επιστροφής πρέπει να είναι μετά την ώρα παραλαβής.",
     title3: "Ποιο αυτοκίνητο;",
     paxLabel: "Ταξιδιώτες",
     insuranceLabel: "Ασφάλεια (προαιρετικό)",
@@ -366,6 +371,7 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
   const datesValid =
     /^\d{4}-\d{2}-\d{2}$/.test(dateFrom) && /^\d{4}-\d{2}-\d{2}$/.test(dateTo) &&
     dateFrom >= today && dateTo >= dateFrom;
+  const timesValid = dateTo !== dateFrom || !timeFrom || !timeTo || timeTo > timeFrom;
   const contactValid = name.trim().length > 0 && EMAIL_REGEX.test(email.trim());
 
   const source = sp.get("source") ?? (initialPickup ? "promo" : "direct");
@@ -645,6 +651,9 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
               </div>
             </fieldset>
           </div>
+          {!timesValid && (
+            <p className="mt-4 text-sm font-semibold text-terracotta">{t.invalidTimeRange}</p>
+          )}
         </div>
       )}
 
@@ -815,7 +824,7 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
                 if (step === 3 && !served) { setView("noPartner"); return; }
                 advance(step + 1);
               }}
-              disabled={step === 2 ? !datesValid : step === 3 ? !carType : false}
+              disabled={step === 2 ? !datesValid || !timesValid : step === 3 ? !carType : false}
               className="bg-sun text-text rounded-full px-6 py-3 text-[15px] font-heading font-bold hover:brightness-105 disabled:opacity-50 disabled:hover:brightness-100 transition-all"
             >
               {t.next}
