@@ -569,8 +569,8 @@ function hoursLabel(ms: number): string {
   return h >= 1 ? `${h}h` : `${Math.max(1, Math.round(ms / 60000))}min`;
 }
 
-function InviteRoster({ invites, requestStatus, createdAtMs, now }: {
-  invites: MonitorInvite[]; requestStatus: string; createdAtMs: number; now: number;
+function InviteRoster({ invites, requestStatus, now }: {
+  invites: MonitorInvite[]; requestStatus: string; now: number;
 }) {
   const { quoted, silent, declined } = classifyInvites(invites);
   if (invites.length === 0) return null;
@@ -586,7 +586,8 @@ function InviteRoster({ invites, requestStatus, createdAtMs, now }: {
         </li>
       ))}
       {silent.map((s) => {
-        const st = partnerRelanceState(s, requestStatus, createdAtMs, now);
+        // Fenêtre de relance basée sur le created_at de l'INVITE (aligné cron car-relance).
+        const st = partnerRelanceState(s, requestStatus, new Date(s.created_at).getTime(), now);
         const badge =
           st.kind === "relanced" ? `relancé le ${fmtDate(st.at)}` :
           st.kind === "due" ? "relance due" :
@@ -622,7 +623,6 @@ Au début du corps de `RequestsTable`, ajouter :
 Dans le `map` des `pageRows`, après avoir récupéré `const winner = ...`, ajouter :
 ```tsx
             const invites = monitorByRequest.get(r.id) ?? [];
-            const createdAtMs = new Date(r.created_at).getTime();
             const roll = partnerRelanceRollup(invites);
             const cRel = clientRelanceState(
               { status: r.status, client_relanced_at: r.client_relanced_at ?? null, client_relance_count: r.client_relance_count ?? 0 },
@@ -634,7 +634,7 @@ Dans le `map` des `pageRows`, après avoir récupéré `const winner = ...`, ajo
 
 Remplacer le bloc `{quotesByRequest.has(r.id) && (<QuotesList .../>)}` par :
 ```tsx
-              <InviteRoster invites={invites} requestStatus={r.status} createdAtMs={createdAtMs} now={now} />
+              <InviteRoster invites={invites} requestStatus={r.status} now={now} />
 
               {/* Relances + expiry (une ligne compacte). */}
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-muted">
@@ -643,7 +643,7 @@ Remplacer le bloc `{quotesByRequest.has(r.id) && (<QuotesList .../>)}` par :
                   Client :{" "}
                   {cRel.kind === "eligible" ? "relance éligible" :
                    cRel.kind === "waiting" ? `prochaine relance dans ${hoursLabel(cRel.nextEligibleMs - now)}` :
-                   cRel.kind === "exhausted" ? "relances épuisées (2/2)" : "—"}
+                   cRel.kind === "exhausted" ? "relances épuisées (2/2)" : "aucune"}
                   {" "}({r.client_relance_count ?? 0}/2)
                 </span>
                 {expMs != null && !startPassed ? (
@@ -1016,8 +1016,8 @@ Create `src/app/admin/car-rental/kpi-band.tsx` :
 // (dénominateur 0) → affichée "—", jamais un ratio inventé.
 import type { CockpitKpis } from "@/lib/car-monitoring";
 
-const pct = (r: number | null): string => (r == null ? "—" : `${Math.round(r * 100)} %`);
-const num = (r: number | null, d = 1): string => (r == null ? "—" : r.toFixed(d));
+const pct = (r: number | null): string => (r == null ? "n/d" : `${Math.round(r * 100)} %`);
+const num = (r: number | null, d = 1): string => (r == null ? "n/d" : r.toFixed(d));
 
 function Cell({ label, v }: { label: string; v: string }) {
   return (
@@ -1035,7 +1035,7 @@ function Window({ title, k }: { title: string; k: CockpitKpis }) {
       <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
         <Cell label="taux de devis" v={pct(k.quoteRate)} />
         <Cell label="devis / demande" v={num(k.avgQuotesPerRequest)} />
-        <Cell label="délai médian 1er devis" v={k.medianFirstQuoteHours == null ? "—" : `${num(k.medianFirstQuoteHours)}h`} />
+        <Cell label="délai médian 1er devis" v={k.medianFirstQuoteHours == null ? "n/d" : `${num(k.medianFirstQuoteHours)}h`} />
         <Cell label="taux de choix" v={pct(k.choiceRate)} />
         <Cell label="désist. loueur" v={pct(k.partnerDeclineRate)} />
         <Cell label="décline client" v={pct(k.clientDeclineRate)} />
