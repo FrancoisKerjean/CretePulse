@@ -149,3 +149,82 @@ export function buildTimeline(
 
   return ev.sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0));
 }
+
+export interface CockpitKpis {
+  count: number;
+  quoteRate: number | null;
+  avgQuotesPerRequest: number | null;
+  medianFirstQuoteHours: number | null;
+  choiceRate: number | null;
+  partnerDeclineRate: number | null;
+  clientDeclineRate: number | null;
+  partnerRelanceEfficacy: number | null;
+  clientRelanceEfficacy: number | null;
+  silentInviteRate: number | null;
+}
+
+const ratio = (num: number, den: number): number | null => (den === 0 ? null : num / den);
+
+function median(xs: number[]): number | null {
+  if (xs.length === 0) return null;
+  const s = [...xs].sort((a, b) => a - b);
+  const m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+
+/** KPI agrégés sur les demandes fournies (le caller filtre par fenêtre created_at). */
+export function kpis(
+  reqs: { id: number; status: string; created_at: string; accepted_at: string | null;
+          client_relanced_at: string | null; client_relance_count: number }[],
+  invitesByRequest: Map<number, MonitorInvite[]>,
+  _nowMs: number,
+): CockpitKpis {
+  let withQuote = 0, totalQuotes = 0, totalInvites = 0, declinedInvites = 0, silentInvites = 0;
+  let quotedWithDevis = 0, accepted = 0;
+  let declinedByClient = 0;
+  let relancedInvites = 0, relancedThenQuoted = 0;
+  let clientRelanced = 0, clientRelancedThenAccepted = 0;
+  const firstQuoteHours: number[] = [];
+
+  for (const r of reqs) {
+    const invites = invitesByRequest.get(r.id) ?? [];
+    totalInvites += invites.length;
+    const priced = invites.filter((i) => i.quote_price != null && i.quoted_at != null);
+    if (priced.length > 0) {
+      withQuote++;
+      totalQuotes += priced.length;
+      const firstAt = priced.reduce((m, i) => (i.quoted_at! < m ? i.quoted_at! : m), priced[0].quoted_at!);
+      firstQuoteHours.push((new Date(firstAt).getTime() - new Date(r.created_at).getTime()) / 3600000);
+      quotedWithDevis++;
+      if (r.status === "accepted") accepted++;
+      if (r.status === "declined_by_client") declinedByClient++;
+    }
+    for (const i of invites) {
+      if (i.status === "declined") declinedInvites++;
+      if (i.status === "invited" && i.quoted_at == null && i.declined_at == null) silentInvites++;
+      if (i.relanced_at != null) {
+        relancedInvites++;
+        if (i.quoted_at != null && i.quoted_at > i.relanced_at) relancedThenQuoted++;
+      }
+    }
+    if (r.client_relance_count > 0) {
+      clientRelanced++;
+      if (r.accepted_at != null && r.client_relanced_at != null && r.accepted_at > r.client_relanced_at) {
+        clientRelancedThenAccepted++;
+      }
+    }
+  }
+
+  return {
+    count: reqs.length,
+    quoteRate: ratio(withQuote, reqs.length),
+    avgQuotesPerRequest: ratio(totalQuotes, withQuote),
+    medianFirstQuoteHours: median(firstQuoteHours),
+    choiceRate: ratio(accepted, quotedWithDevis),
+    partnerDeclineRate: ratio(declinedInvites, totalInvites),
+    clientDeclineRate: ratio(declinedByClient, quotedWithDevis),
+    partnerRelanceEfficacy: ratio(relancedThenQuoted, relancedInvites),
+    clientRelanceEfficacy: ratio(clientRelancedThenAccepted, clientRelanced),
+    silentInviteRate: ratio(silentInvites, totalInvites),
+  };
+}

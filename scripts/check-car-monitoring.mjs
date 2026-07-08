@@ -1,5 +1,5 @@
 // node --experimental-strip-types scripts/check-car-monitoring.mjs
-import { classifyInvites, partnerRelanceState, partnerRelanceRollup, clientRelanceState, isSilentRequest, isAwaitingChoice, buildTimeline } from "../src/lib/car-monitoring.ts";
+import { classifyInvites, partnerRelanceState, partnerRelanceRollup, clientRelanceState, isSilentRequest, isAwaitingChoice, buildTimeline, kpis } from "../src/lib/car-monitoring.ts";
 
 let fail = 0;
 const ok = (n, c) => { console.log(c ? `ok - ${n}` : `FAIL - ${n}`); if (!c) fail++; };
@@ -93,6 +93,26 @@ const NOW = Date.parse("2026-07-09T10:00:00Z");
   ok("timeline contient 1er devis", tl.some((e) => e.label.includes("1er devis")));
   ok("timeline contient désistement", tl.some((e) => e.label.toLowerCase().includes("désist")));
   ok("timeline contient choix client", tl.some((e) => e.label.toLowerCase().includes("choisi")));
+}
+
+// Task 10 : kpis()
+{
+  const mkReq = (id, status, o = {}) => ({
+    id, status, created_at: o.created_at ?? T(NOW - 48 * H), accepted_at: o.accepted_at ?? null,
+    client_relanced_at: o.client_relanced_at ?? null, client_relance_count: o.client_relance_count ?? 0,
+  });
+  const reqs = [mkReq(1, "quoted"), mkReq(2, "accepted", { accepted_at: T(NOW - 10 * H) }), mkReq(3, "sent")];
+  const byReq = new Map([
+    [1, [inv(1, 200), inv(2, null, "invited")]],
+    [2, [inv(3, 180, "chosen", { quoted_at: T(NOW - 40 * H) })]],
+    [3, [inv(4, null, "invited")]],
+  ]);
+  const k = kpis(reqs, byReq, NOW);
+  ok("count = 3", k.count === 3);
+  ok("quoteRate = 2/3", Math.abs(k.quoteRate - 2 / 3) < 1e-9);
+  ok("choiceRate = 1/2 (accepted / quoted-avec-devis)", Math.abs(k.choiceRate - 0.5) < 1e-9);
+  ok("silentInviteRate = 2/4", Math.abs(k.silentInviteRate - 0.5) < 1e-9);
+  ok("dénominateur 0 → null (clientDeclineRate a des devis, partnerDecline 0/4=0)", k.partnerDeclineRate === 0);
 }
 
 console.log(fail ? `\n${fail} FAIL` : "\nAll passed");
