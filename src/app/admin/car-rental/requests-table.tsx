@@ -19,6 +19,7 @@ function statusBadge(st: string) {
     quoted: "bg-sun text-night",
     accepted: "bg-ok text-white",
     email_failed: "bg-terracotta text-white",
+    declined_by_client: "bg-text-light text-white",
   };
   return <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${cls[st] ?? "bg-border"}`}>{st}</span>;
 }
@@ -53,15 +54,19 @@ function relayWaLink(r: AdminRequest, p: AdminPartner | undefined) {
 }
 
 function QuotesList({ quotes }: { quotes: AdminQuote[] }) {
-  const withPrice = quotes.filter((q) => q.quote_price != null);
-  if (withPrice.length === 0) return null;
-  const sorted = [...withPrice].sort((a, b) => (a.quote_price ?? 0) - (b.quote_price ?? 0));
+  // Devis chiffrés (triés par prix) + loueurs désistés (badge « ne peut pas »).
+  const shown = quotes.filter((q) => q.quote_price != null || q.status === "declined");
+  if (shown.length === 0) return null;
+  const sorted = [...shown].sort((a, b) => {
+    if ((a.quote_price == null) !== (b.quote_price == null)) return a.quote_price == null ? 1 : -1;
+    return (a.quote_price ?? 0) - (b.quote_price ?? 0);
+  });
   return (
     <ul className="mt-2 flex flex-wrap gap-2 border-t border-border pt-2">
       {sorted.map((q) => (
         <li key={q.partner_id} className={`flex items-center gap-1.5 rounded-xl border px-3 py-1 text-sm ${q.status === "chosen" ? "border-ok bg-ok/10 font-bold" : "border-border bg-white text-text-muted"}`}>
           <span>{q.partner_name}</span>
-          <span className="font-data">{q.quote_price} €</span>
+          {q.quote_price != null && <span className="font-data">{q.quote_price} €</span>}
           {q.status === "chosen" && (
             <span className="rounded-full bg-ok px-2 py-0.5 text-xs font-bold text-white">choisi par le client</span>
           )}

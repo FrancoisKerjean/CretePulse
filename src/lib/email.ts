@@ -882,6 +882,80 @@ export async function sendPartnerNotChosen(email: string, partnerName: string): 
   if (error) console.error("[sendPartnerNotChosen] Resend error:", error.message);
 }
 
+// ── Relances (cron car-relance) : loueur silencieux + client indécis ────────
+
+/** Relance loueur qui n'a pas encore chiffré (1× max). EN, best-effort. */
+export async function sendPartnerRelance(email: string, partnerName: string, quoteUrl: string): Promise<void> {
+  const first = partnerName.split(" ")[0] || partnerName;
+  const { error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: email,
+    replyTo: RELAY_EMAIL,
+    subject: "Car Rental Direct - a customer is still waiting for your quote",
+    text: [
+      `Hi ${first},`,
+      ``,
+      `A customer is still waiting for your price on a crete.direct car rental request.`,
+      `Send your quote here, or tell us you can't take it this time:`,
+      quoteUrl,
+      ``,
+      `Referral commission is 10%. No action closes the request for you.`,
+      ``,
+      `Kami`,
+      `crete.direct`,
+    ].join("\n"),
+  });
+  if (error) console.error("[sendPartnerRelance] Resend error:", error.message);
+}
+
+const CUSTOMER_RELANCE_SUBJECT: Record<string, string> = {
+  en: "Your Crete car rental offers are waiting",
+  fr: "Vos offres de location en Crète vous attendent",
+  de: "Ihre Mietwagen-Angebote auf Kreta warten auf Sie",
+  el: "Οι προσφορές ενοικίασης αυτοκινήτου στην Κρήτη σας περιμένουν",
+};
+
+const CUSTOMER_RELANCE_COPY: Record<string, { body: string; cta: string }> = {
+  en: {
+    body: "your car rental offers are waiting. Choose the one that suits you, or let us know if none of them fits:",
+    cta: "See my offers",
+  },
+  fr: {
+    body: "vos offres de location vous attendent. Choisissez celle qui vous convient, ou dites-nous qu'aucune ne convient :",
+    cta: "Voir mes offres",
+  },
+  de: {
+    body: "Ihre Mietwagen-Angebote warten auf Sie. Wählen Sie das passende aus, oder sagen Sie uns, wenn keines passt:",
+    cta: "Meine Angebote ansehen",
+  },
+  el: {
+    body: "οι προσφορές ενοικίασης σας περιμένουν. Επιλέξτε αυτή που σας ταιριάζει, ή πείτε μας αν καμία δεν ταιριάζει:",
+    cta: "Δείτε τις προσφορές μου",
+  },
+};
+
+/** Relance client indécis avec ≥1 offre (max 2×). 4 langues, HTML brandé. */
+export async function sendCustomerRelance(opts: {
+  email: string; locale: string; customerName?: string; offersUrl: string;
+}): Promise<void> {
+  const l = CUSTOMER_RELANCE_SUBJECT[opts.locale] ? opts.locale : "en";
+  const c = CUSTOMER_RELANCE_COPY[l];
+  const greeting = opts.customerName ? `${opts.customerName}, ` : "";
+  const inner = `
+  <p style="margin:0 0 20px; color:${C.muted}; font-size:14px; line-height:1.6;">${greeting}${c.body}</p>
+  <div style="text-align:center; margin:0 0 18px;">${pillButton(opts.offersUrl, c.cta, C.lagoonDeep)}</div>
+  <p style="margin:0; color:${C.faint}; font-size:12px; text-align:center; line-height:1.6;">Questions ? Répondez à cet email, une vraie personne le lit.</p>
+`;
+  const { error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: opts.email,
+    replyTo: RELAY_EMAIL,
+    subject: CUSTOMER_RELANCE_SUBJECT[l],
+    html: kalimeraShell(inner),
+  });
+  if (error) throw new Error(`Resend: ${error.message}`);
+}
+
 // =============================================================================
 // Lead /projet (institutions / sponsors) -> Kami
 // =============================================================================
