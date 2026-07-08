@@ -7,9 +7,11 @@ import { isCarAdmin } from "@/lib/car-admin-auth";
 import {
   requestsSummary, type AdminPartner, type AdminRequest,
 } from "@/lib/car-admin";
+import { kpis } from "@/lib/car-monitoring";
 import type { MonitorInvite } from "@/lib/car-monitoring";
 import { RequestsTable } from "./requests-table";
 import { PartnersTable } from "./partners-table";
+import { KpiBand } from "./kpi-band";
 
 export const dynamic = "force-dynamic";
 
@@ -83,6 +85,29 @@ export default async function CarAdminPage({
     monitorByRequest.set(r.request_id, list);
   }
 
+  // Task 13 Step 1 : monitorByPartner construit UNE fois à partir de monitorByRequest (pas de N+1).
+  const monitorByPartner = new Map<number, MonitorInvite[]>();
+  for (const list of monitorByRequest.values()) {
+    for (const mi of list) {
+      const arr = monitorByPartner.get(mi.partner_id) ?? [];
+      arr.push(mi);
+      monitorByPartner.set(mi.partner_id, arr);
+    }
+  }
+
+  // Task 12 Step 2 : calcul des KPI sur fenêtres 7j / 30j.
+  const nowMs = Date.now();
+  const windowReqs = (days: number) => {
+    const from = nowMs - days * 86400000;
+    return requests.filter((r) => new Date(r.created_at).getTime() >= from);
+  };
+  const kpiReq = (r: AdminRequest) => ({
+    id: r.id, status: r.status, created_at: r.created_at, accepted_at: r.accepted_at,
+    client_relanced_at: r.client_relanced_at ?? null, client_relance_count: r.client_relance_count ?? 0,
+  });
+  const k7 = kpis(windowReqs(7).map(kpiReq), monitorByRequest, nowMs);
+  const k30 = kpis(windowReqs(30).map(kpiReq), monitorByRequest, nowMs);
+
   const s = requestsSummary(requests, partnersById);
   const tab = sp.tab === "partners" ? "partners" : "requests";
 
@@ -124,6 +149,9 @@ export default async function CarAdminPage({
         </div>
       </section>
 
+      {/* Bandeau KPI 7j/30j (onglet requests uniquement) */}
+      {tab === "requests" ? <KpiBand k7={k7} k30={k30} /> : null}
+
       {/* Onglets */}
       <nav className="mt-6 flex gap-2">
         <a href="/admin/car-rental" className={`rounded-full px-4 py-1.5 text-sm font-bold no-underline ${tab === "requests" ? "bg-sea text-white" : "border border-border bg-white text-text"}`}>
@@ -150,6 +178,7 @@ export default async function CarAdminPage({
           requests={requests}
           invitesByPartner={invitesByPartner}
           partnersById={partnersById}
+          monitorByPartner={monitorByPartner}
           activeFilter={typeof sp.pactive === "string" ? sp.pactive : ""}
           outreachFilter={typeof sp.poutreach === "string" ? sp.poutreach : ""}
           query={typeof sp.q === "string" ? sp.q : ""}
