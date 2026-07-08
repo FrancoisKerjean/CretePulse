@@ -1,5 +1,5 @@
 // node --experimental-strip-types scripts/check-car-monitoring.mjs
-import { classifyInvites, partnerRelanceState, partnerRelanceRollup, clientRelanceState, isSilentRequest, isAwaitingChoice } from "../src/lib/car-monitoring.ts";
+import { classifyInvites, partnerRelanceState, partnerRelanceRollup, clientRelanceState, isSilentRequest, isAwaitingChoice, buildTimeline } from "../src/lib/car-monitoring.ts";
 
 let fail = 0;
 const ok = (n, c) => { console.log(c ? `ok - ${n}` : `FAIL - ${n}`); if (!c) fail++; };
@@ -76,6 +76,23 @@ const NOW = Date.parse("2026-07-09T10:00:00Z");
   ok("en attente de choix : quoted + ≥1 devis", isAwaitingChoice({ status: "quoted" }, [inv(1, 200)]) === true);
   ok("pas en attente si accepted", isAwaitingChoice({ status: "accepted" }, [inv(1, 200, "chosen")]) === false);
   ok("pas en attente si quoted sans invite chiffrée", isAwaitingChoice({ status: "quoted" }, [inv(1, null, "invited")]) === false);
+}
+
+{
+  const req = {
+    created_at: "2026-07-08T08:00:00Z", accepted_at: "2026-07-08T12:00:00Z",
+    client_relanced_at: null, outcome: null, outcome_at: null,
+  };
+  const invites = [
+    inv(1, 200, "chosen", { created_at: "2026-07-08T08:05:00Z", quoted_at: "2026-07-08T10:00:00Z" }),
+    inv(2, null, "declined", { created_at: "2026-07-08T08:05:00Z", declined_at: "2026-07-08T09:00:00Z" }),
+  ];
+  const tl = buildTimeline(req, invites);
+  ok("timeline triée chrono", tl.every((e, i) => i === 0 || tl[i - 1].at <= e.at));
+  ok("timeline contient création", tl[0].at === "2026-07-08T08:00:00Z");
+  ok("timeline contient 1er devis", tl.some((e) => e.label.includes("1er devis")));
+  ok("timeline contient désistement", tl.some((e) => e.label.toLowerCase().includes("désist")));
+  ok("timeline contient choix client", tl.some((e) => e.label.toLowerCase().includes("choisi")));
 }
 
 console.log(fail ? `\n${fail} FAIL` : "\nAll passed");
