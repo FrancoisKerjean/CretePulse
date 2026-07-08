@@ -2,8 +2,14 @@
 // écritures par forms natifs bindés aux server actions (zéro client JS).
 import {
   requestCommission, buildCarWaMessage, waHref,
-  type AdminPartner, type AdminRequest, type AdminQuote,
+  type AdminPartner, type AdminRequest,
 } from "@/lib/car-admin";
+import {
+  classifyInvites, partnerRelanceState, clientRelanceState, partnerRelanceRollup, buildTimeline,
+  isSilentRequest, isAwaitingChoice,
+  type MonitorInvite,
+} from "@/lib/car-monitoring";
+import { offerExpiresAt } from "@/lib/car-offer-expiry";
 import { carPickupLabel } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { setOutcome, setCommissionPaid, saveNote } from "./actions";
@@ -53,26 +59,48 @@ function relayWaLink(r: AdminRequest, p: AdminPartner | undefined) {
   );
 }
 
-function QuotesList({ quotes }: { quotes: AdminQuote[] }) {
-  // Devis chiffrés (triés par prix) + loueurs désistés (badge « ne peut pas »).
-  const shown = quotes.filter((q) => q.quote_price != null || q.status === "declined");
-  if (shown.length === 0) return null;
-  const sorted = [...shown].sort((a, b) => {
-    if ((a.quote_price == null) !== (b.quote_price == null)) return a.quote_price == null ? 1 : -1;
-    return (a.quote_price ?? 0) - (b.quote_price ?? 0);
-  });
+function fmtDate(iso: string): string {
+  return new Date(iso).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Athens" });
+}
+function hoursLabel(ms: number): string {
+  const h = Math.round(ms / 3600000);
+  return h >= 1 ? `${h}h` : `${Math.max(1, Math.round(ms / 60000))}min`;
+}
+
+function InviteRoster({ invites, requestStatus, createdAtMs, now }: {
+  invites: MonitorInvite[]; requestStatus: string; createdAtMs: number; now: number;
+}) {
+  const { quoted, silent, declined } = classifyInvites(invites);
+  if (invites.length === 0) return null;
   return (
     <ul className="mt-2 flex flex-wrap gap-2 border-t border-border pt-2">
-      {sorted.map((q) => (
-        <li key={q.partner_id} className={`flex items-center gap-1.5 rounded-xl border px-3 py-1 text-sm ${q.status === "chosen" ? "border-ok bg-ok/10 font-bold" : "border-border bg-white text-text-muted"}`}>
+      {quoted.map((q) => (
+        <li key={q.id} className={`flex items-center gap-1.5 rounded-xl border px-3 py-1 text-sm ${q.status === "chosen" ? "border-ok bg-ok/10 font-bold" : "border-border bg-white text-text-muted"}`}>
           <span>{q.partner_name}</span>
-          {q.quote_price != null && <span className="font-data">{q.quote_price} €</span>}
-          {q.status === "chosen" && (
-            <span className="rounded-full bg-ok px-2 py-0.5 text-xs font-bold text-white">choisi par le client</span>
-          )}
-          {q.status === "declined" && (
-            <span className="rounded-full bg-border px-2 py-0.5 text-xs text-text-muted">ne peut pas</span>
-          )}
+          <span className="font-data">{q.quote_price} {q.quote_currency ?? "€"}</span>
+          {q.quote_car_model ? <span className="text-text-light">· {q.quote_car_model}</span> : null}
+          {q.quoted_at ? <span className="text-text-light">· {fmtDate(q.quoted_at)}</span> : null}
+          {q.status === "chosen" && <span className="rounded-full bg-ok px-2 py-0.5 text-xs font-bold text-white">choisi par le client</span>}
+        </li>
+      ))}
+      {silent.map((s) => {
+        const st = partnerRelanceState(s, requestStatus, createdAtMs, now);
+        const badge =
+          st.kind === "relanced" ? `relancé le ${fmtDate(st.at)}` :
+          st.kind === "due" ? "relance due" :
+          st.kind === "dueInMs" ? `relance dans ${hoursLabel(st.ms)}` : "jamais relancé";
+        return (
+          <li key={s.id} className="flex items-center gap-1.5 rounded-xl border border-dashed border-border bg-sand/40 px-3 py-1 text-sm text-text-muted">
+            <span>{s.partner_name}</span>
+            <span className="italic text-text-light">silencieux</span>
+            <span className={`rounded-full px-2 py-0.5 text-xs ${st.kind === "due" ? "bg-sun text-night font-bold" : "bg-border text-text-muted"}`}>{badge}</span>
+          </li>
+        );
+      })}
+      {declined.map((d) => (
+        <li key={d.id} className="flex items-center gap-1.5 rounded-xl border border-border bg-white px-3 py-1 text-sm text-text-muted">
+          <span>{d.partner_name}</span>
+          <span className="rounded-full bg-border px-2 py-0.5 text-xs">ne peut pas{d.declined_at ? ` · ${fmtDate(d.declined_at)}` : ""}</span>
         </li>
       ))}
     </ul>
@@ -80,21 +108,28 @@ function QuotesList({ quotes }: { quotes: AdminQuote[] }) {
 }
 
 export function RequestsTable({
-  requests, partnersById, invitesByRequest, quotesByRequest, statusFilter, partnerFilter, page,
+  requests, partnersById, invitesByRequest, monitorByRequest, statusFilter, partnerFilter, page,
 }: {
   requests: AdminRequest[];
   partnersById: Map<number, AdminPartner>;
   invitesByRequest: Map<number, number>;
-  quotesByRequest: Map<number, AdminQuote[]>;
+  monitorByRequest: Map<number, MonitorInvite[]>;
   statusFilter: string;
   partnerFilter: string;
   page: number;
 }) {
+  const now = Date.now();
   let rows = requests;
   if (statusFilter) {
-    rows = statusFilter === "rented" || statusFilter === "lost"
-      ? rows.filter((r) => r.outcome === statusFilter)
-      : rows.filter((r) => r.status === statusFilter);
+    if (statusFilter === "rented" || statusFilter === "lost") {
+      rows = rows.filter((r) => r.outcome === statusFilter);
+    } else if (statusFilter === "silent") {
+      rows = rows.filter((r) => isSilentRequest({ status: r.status, created_at: r.created_at }, monitorByRequest.get(r.id) ?? [], now));
+    } else if (statusFilter === "awaiting") {
+      rows = rows.filter((r) => isAwaitingChoice({ status: r.status }, monitorByRequest.get(r.id) ?? []));
+    } else {
+      rows = rows.filter((r) => r.status === statusFilter);
+    }
   }
   if (partnerFilter) rows = rows.filter((r) => String(r.quoted_by_partner_id ?? "") === partnerFilter);
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
@@ -118,12 +153,15 @@ export function RequestsTable({
           GAGNÉ au moins un devis : avec 59 loueurs en base, lister tout le
           registre ici était un mur de pastilles (audit UI 05/07). */}
       <div className="flex flex-wrap gap-1.5 text-sm">
-        {["", "sent", "quoted", "accepted", "email_failed", "rented", "lost"].map((f) => (
-          <a key={f || "all"} href={qs({ status: f, page: "" })}
-             className={`rounded-full border px-3 py-1 no-underline ${statusFilter === f ? "border-sea bg-sea text-white" : "border-border bg-white text-text"}`}>
-            {f || "tous"}
-          </a>
-        ))}
+        {["", "sent", "quoted", "silent", "awaiting", "accepted", "declined_by_client", "email_failed", "rented", "lost"].map((f) => {
+          const label = f === "" ? "tous" : f === "silent" ? "silencieux" : f === "awaiting" ? "attente choix" : f === "declined_by_client" ? "décliné client" : f;
+          return (
+            <a key={f || "all"} href={qs({ status: f, page: "" })}
+               className={`rounded-full border px-3 py-1 no-underline ${statusFilter === f ? "border-sea bg-sea text-white" : "border-border bg-white text-text"}`}>
+              {label}
+            </a>
+          );
+        })}
         {[...new Set(requests.map((r) => r.quoted_by_partner_id).filter((id): id is number => id != null))]
           .map((id) => partnersById.get(id))
           .filter((p): p is AdminPartner => p != null)
@@ -140,6 +178,15 @@ export function RequestsTable({
           const winner = r.quoted_by_partner_id != null ? partnersById.get(r.quoted_by_partner_id) : undefined;
           const commission = requestCommission(r, partnersById);
           const relayPartner = winner ?? [...partnersById.values()].find((p) => p.active && p.lead_routing === "relay" && p.zone_ids.includes(r.zone_id));
+          const invites = monitorByRequest.get(r.id) ?? [];
+          const createdAtMs = new Date(r.created_at).getTime();
+          const roll = partnerRelanceRollup(invites);
+          const cRel = clientRelanceState(
+            { status: r.status, client_relanced_at: r.client_relanced_at ?? null, client_relance_count: r.client_relance_count ?? 0 },
+            now,
+          );
+          const expMs = offerExpiresAt(r.quoted_at, r.date_from);
+          const startPassed = new Date(r.date_from + "T00:00:00").getTime() < now;
           return (
             <li key={r.id} className="rounded-2xl border border-border bg-white p-4">
               <div className="flex flex-wrap items-center gap-2">
@@ -174,9 +221,40 @@ export function RequestsTable({
                 </div>
               </div>
 
-              {quotesByRequest.has(r.id) && (
-                <QuotesList quotes={quotesByRequest.get(r.id)!} />
-              )}
+              <InviteRoster invites={invites} requestStatus={r.status} createdAtMs={createdAtMs} now={now} />
+
+              {/* Relances + expiry (une ligne compacte). */}
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-muted">
+                <span>Loueurs : {roll.invited} invité(s) · {roll.relanced} relancé(s) · {roll.silent} silencieux</span>
+                <span>
+                  Client :{" "}
+                  {cRel.kind === "eligible" ? "relance éligible" :
+                   cRel.kind === "waiting" ? `prochaine relance dans ${hoursLabel(cRel.nextEligibleMs - now)}` :
+                   cRel.kind === "exhausted" ? "relances épuisées (2/2)" : "—"}
+                  {" "}({r.client_relance_count ?? 0}/2)
+                </span>
+                {expMs != null && !startPassed ? (
+                  <span className={now > expMs ? "font-bold text-terracotta" : ""}>
+                    {now > expMs ? "offre expirée" : `expire dans ${hoursLabel(expMs - now)}`}
+                  </span>
+                ) : null}
+                {startPassed ? <span className="text-text-light">location commencée</span> : null}
+              </div>
+
+              {/* Timeline repliée. */}
+              {invites.length > 0 ? (
+                <details className="mt-2 text-xs">
+                  <summary className="cursor-pointer text-text-muted underline">timeline</summary>
+                  <ol className="mt-1 space-y-0.5 border-l border-border pl-3">
+                    {buildTimeline(
+                      { created_at: r.created_at, accepted_at: r.accepted_at, client_relanced_at: r.client_relanced_at ?? null, outcome: r.outcome, outcome_at: r.outcome_at },
+                      invites,
+                    ).map((e, i) => (
+                      <li key={i}><span className="font-data text-text-light">{fmtDate(e.at)}</span> · {e.label}</li>
+                    ))}
+                  </ol>
+                </details>
+              ) : null}
 
               <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
                 {r.outcome == null ? (

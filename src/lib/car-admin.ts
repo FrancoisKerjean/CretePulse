@@ -38,6 +38,8 @@ export interface AdminRequest {
   commission_eur?: number | null;
   commission_paid_at?: string | null;
   admin_note?: string | null;
+  client_relanced_at?: string | null;
+  client_relance_count?: number;
 }
 
 export interface AdminPartner {
