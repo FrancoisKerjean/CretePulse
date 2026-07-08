@@ -52,7 +52,7 @@ const NOW = Date.parse("2026-07-09T10:00:00Z");
   ]);
   ok("rollup invited=2", roll.invited === 2);
   ok("rollup relanced=1", roll.relanced === 1);
-  ok("rollup silent=2 (invited-status)", roll.silent === 2);
+  ok("rollup silent=1 (invited non relancé)", roll.silent === 1);
 }
 
 {

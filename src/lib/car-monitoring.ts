@@ -2,7 +2,7 @@
 // car-quotes.ts) : classification des invites, état des relances, timeline, KPI,
 // perf loueur. Zéro I/O. Node-safe : importable par scripts/check-car-monitoring.mjs.
 // Réutilise car-quotes.ts et car-offer-expiry.ts (jamais réécrits).
-import { partnerNeedsRelance, clientNeedsRelance, findChosenInvite } from "./car-quotes.ts";
+import { partnerNeedsRelance, clientNeedsRelance } from "./car-quotes.ts";
 
 const HOUR = 3600000;
 
@@ -25,7 +25,13 @@ export interface MonitorInvite {
 const isPriced = (i: MonitorInvite): boolean =>
   i.quote_price != null && (i.status === "quoted" || i.status === "chosen" || i.status === "not_chosen");
 
-/** Classe les invites d'UNE demande : chiffrés (choisi en tête puis prix↑), silencieux, désistés. */
+/**
+ * Classe les invites d'UNE demande : chiffrés (choisi en tête puis prix↑), silencieux, désistés.
+ *
+ * Note : les statuts `chosen` et `not_chosen` (avec prix) atterrissent dans le bucket `quoted`
+ * via le prédicat `isPriced` — `chosen` est remonté en tête par le tri, avant les prix croissants.
+ * Le bucket `silent` contient uniquement les invités (status `invited`) sans aucune relance.
+ */
 export function classifyInvites(invites: MonitorInvite[]): {
   quoted: MonitorInvite[]; silent: MonitorInvite[]; declined: MonitorInvite[];
 } {
@@ -69,7 +75,7 @@ export function partnerRelanceRollup(invites: MonitorInvite[]): {
   return {
     invited: invitedStatus.length,
     relanced: invites.filter((i) => i.relanced_at != null).length,
-    silent: invitedStatus.length,
+    silent: invitedStatus.filter((i) => !i.relanced_at).length,
   };
 }
 
@@ -136,8 +142,7 @@ export function buildTimeline(
 
   if (req.client_relanced_at) ev.push({ at: req.client_relanced_at, label: "Relance client" });
   if (req.accepted_at) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const chosen = findChosenInvite(invites as any[], invites.find((i) => i.status === "chosen")?.id ?? -1);
+    const chosen = invites.find((i) => i.status === "chosen" && i.quote_price != null) ?? null;
     ev.push({ at: req.accepted_at, label: `Client a choisi${chosen ? ` (${chosen.partner_name})` : ""}` });
   }
   if (req.outcome && req.outcome_at) ev.push({ at: req.outcome_at, label: `Issue : ${req.outcome}` });
