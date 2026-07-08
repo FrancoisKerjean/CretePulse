@@ -206,3 +206,55 @@ Signup /affiliate ──► table affiliates (+lat/lng saisis à la main pour l'
 - Vert avant push : `tsc` (+ `next build` si dispo) OK.
 - Git author `kerjeanfrancois29`.
 - Funnel Kairos discret ; accents corrects dans toutes les langues.
+
+---
+
+## Lot 2.5 — Polish fiches partenaires (ajout 08/07, retours Kami sur la preview)
+
+Après validation visuelle de la preview (4 pins OK), Kami lève 4 réserves : pin peu esthétique, pas
+de photo, fiche pauvre (« Visit website » sec), et crainte que les partenaires envahissent la
+colonne de gauche. Décisions prises :
+
+- **Photo + description** : générées **automatiquement au signup** depuis le site du partenaire
+  (OG image + description IA courte). 0 friction, 0 ops. Backfill des affiliés existants.
+- **Gouvernance liste** : les affiliés **ne passent plus en tête** de la colonne ; triés par
+  distance avec le reste (contenu = roi). Les sponsored **payants** (JSON, ex. Meraki) gardent
+  leur priorité de tête (c'est leur modèle).
+- **Pin** : **photo-vignette** (cercle avec la photo du partenaire + pastille or), avec fallback
+  cercle-or + icône catégorie si pas de photo.
+
+### P1 — Modèle enrichi
+Migration `supabase/migrations/20260708_affiliates_content.sql` :
+```sql
+alter table affiliates add column if not exists photo_url   text;
+alter table affiliates add column if not exists description jsonb; -- { en, fr, de, el }
+```
+Appliquer sur VPS + **`NOTIFY pgrst, 'reload schema'`** (piège PostgREST) + vérif REST.
+
+### P2 — Enrichissement automatique
+- Dans `api/affiliate/register/route.ts`, après l'insert (branche non-car_rental), **best-effort**
+  (jamais bloquant, comme l'email) : fetch `redirect_url` → extraire `<meta property="og:image">`
+  (+ fallback favicon) → `photo_url` ; générer une **description courte** (≈ 25-40 mots) en 4 langues
+  (en/fr/de/el) → `description`. Si l'IA n'est pas disponible côté serverless (pas de clé Anthropic
+  en env Vercel), **dégrader** : description basée sur catégorie/nom + OG image seule, et laisser
+  la vraie génération IA au backfill / à un worker (documenter le TODO avec owner + butoir).
+- **Backfill** `scripts/backfill-affiliate-content.mjs` (exécuté localement où l'IA est dispo) :
+  remplit `photo_url` + `description` pour les affiliés actifs existants (Halepa, JMP,
+  Travel in Chania, Theodosi). Traçable, idempotent.
+
+### P3 — Carte + fiche + liste (`ExploreView.tsx`, regroupé pour éviter les conflits)
+- **Pin photo-vignette** pour les affiliés (`affiliate:` slug) : cercle avec `photo_url` + pastille
+  or + pointe. **Fallback** cercle-or + icône catégorie si `photo_url` absent. Réutilise le gating
+  `SPONSOR_MIN_ZOOM`. Les sponsored JSON gardent leur pin actuel (ou adoptent la vignette aussi —
+  au choix de l'implémenteur si trivial, sinon inchangés).
+- **Fiche drawer partenaire enrichie** : photo (si dispo) + **description localisée** (`description[locale]`
+  → fallback `en` → fallback catégorie) + badge Partner + CTA `/go` tracké. Fini le « Visit website »
+  sec sans contexte.
+- **Gouvernance liste** : dans `displayed`, séparer les `affiliate:` des `sponsor:` — les affiliés
+  entrent dans le flux **trié par distance** avec `base` (calculer leur `km`), plus de préfixe de
+  tête ; les `sponsor:` payants gardent le préfixe de tête. **Sur la carte, rien ne change** (les
+  deux restent des pins).
+
+### Hors scope P (rappel)
+Champ photo/desc dans le formulaire public, worker d'enrichissement dédié (au-delà du TODO),
+traduction au-delà de en/fr/de/el, Lot 3 (formulaire devis).
