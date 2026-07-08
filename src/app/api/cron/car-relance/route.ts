@@ -65,6 +65,14 @@ export async function GET(request: NextRequest) {
       { status: r.status, client_relanced_at: r.client_relanced_at, client_relance_count: r.client_relance_count ?? 0 },
       now,
     )) continue;
+    // Ne relance que si ≥1 offre RÉELLEMENT visible sur la page (invite chiffrée).
+    // Garde-fou : les demandes chiffrées sous l'ancien first-come portent le devis
+    // sur car_requests.quoted_* mais leurs invites restent 'invited' → page vide,
+    // relance trompeuse. On les ignore.
+    const { count: pricedCount } = await supabase.from("car_quote_invites")
+      .select("id", { count: "exact", head: true })
+      .eq("request_id", r.id).not("quote_price", "is", null);
+    if (!pricedCount) continue;
 
     const locale = r.locale ?? "en";
     const clientToken = newToken();
