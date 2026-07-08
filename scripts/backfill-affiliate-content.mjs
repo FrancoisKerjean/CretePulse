@@ -73,7 +73,7 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ─── claude CLI detection ─────────────────────────────────────────────────────
+// ─── claude CLI detection + model config ─────────────────────────────────────
 const CLAUDE_CLI = (() => {
   try {
     execSync("claude --version", { stdio: "ignore" });
@@ -81,6 +81,13 @@ const CLAUDE_CLI = (() => {
   } catch {}
   return null;
 })();
+
+/**
+ * Model to use for description generation.
+ * Override via env var CLAUDE_MODEL (e.g. in the VPS cron environment).
+ * Default: claude-haiku-4-5-20251001 (Haiku — fast + cheap for batch enrichment).
+ */
+const CLAUDE_MODEL = ENV.CLAUDE_MODEL || process.env.CLAUDE_MODEL || "claude-haiku-4-5-20251001";
 
 // ─── Pure utils (mirrors src/lib/affiliate-enrich.ts) ─────────────────────────
 
@@ -309,8 +316,9 @@ function fallbackDescription(category) {
 function callClaudeCli(prompt) {
   if (!CLAUDE_CLI) return null;
   try {
-    // Pipe prompt via stdin to avoid shell-escaping issues with special chars
-    const result = execSync("claude -p", {
+    // Pipe prompt via stdin to avoid shell-escaping issues with special chars.
+    // --model forces Haiku (configurable via CLAUDE_MODEL env var, default claude-haiku-4-5-20251001).
+    const result = execSync(`claude -p --model ${CLAUDE_MODEL}`, {
       input: prompt,
       timeout: 90000,
       // capture both stdout and stderr; let stderr show for debug
@@ -350,7 +358,7 @@ async function fetchSiteHtml(url) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 async function run() {
   console.log(`--- backfill-affiliate-content ---`);
-  console.log(`force=${FORCE} photos-only=${PHOTOS_ONLY} slug=${SINGLE_SLUG ?? MULTI_SLUGS?.join(",") ?? "all active"} claude-cli=${!!CLAUDE_CLI}\n`);
+  console.log(`force=${FORCE} photos-only=${PHOTOS_ONLY} slug=${SINGLE_SLUG ?? MULTI_SLUGS?.join(",") ?? "all active"} claude-cli=${!!CLAUDE_CLI} model=${CLAUDE_MODEL}\n`);
 
   let q = supabase
     .from("affiliates")
