@@ -17,6 +17,7 @@ import { useGeoPosition } from "@/components/geo/useGeoPosition";
 import Image from "next/image";
 import { CiCompass } from "@/components/icons";
 import { CbPlaceActions } from "@/components/explore/CbPlaceActions";
+import { CarPromo } from "@/components/car-rental/CarPromo";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 type MaplibreMap = import("maplibre-gl").Map;
@@ -946,6 +947,11 @@ export function ExploreView({
           </span>
         </div>
         <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-2">
+          {/* Encart voiture en tete de liste : /explore est la 1re landing de la
+              campagne FB (rebond ~75 %) et n'avait aucun CTA voiture. Contexte
+              pertinent (rejoindre plages/gorges = voiture). source=explore trace
+              le CTR dans Plausible. */}
+          <CarPromo locale={locale} source="explore" />
           {displayed.length === 0 && (
             <p className="p-4 text-sm text-text-muted">{t.noResults}</p>
           )}
@@ -1024,6 +1030,9 @@ export function ExploreView({
               className="bg-sea-faint text-sea rounded-full p-2"><X size={16} /></button>
           </div>
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            {/* Meme encart voiture en tete de la liste depliee mobile (FB = 87 %
+                mobile sur /explore). */}
+            <CarPromo locale={locale} source="explore" />
             {displayed.length === 0 && <p className="p-4 text-sm text-text-muted">{t.noResults}</p>}
             {displayed.slice(0, 200).map((p) => <PlaceRow key={p.slug} p={p} />)}
           </div>
