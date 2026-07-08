@@ -68,6 +68,20 @@ export function hashIp(ip: string, salt: string): string {
   return createHash("sha256").update(`${salt}:${ip}`).digest("hex");
 }
 
+/**
+ * Segments an affiliate by category for email copy and commission logic.
+ * - "quotable" : tour | activity | transfer → booking-referral model, 15% commission on accepted quotes.
+ * - "vitrine"  : everything else (restaurant, cafe, bar, hotel, beach_club, car_rental, other, unknown)
+ *                → free visibility on the map, no commission.
+ *
+ * This is the SINGLE source of truth for the segmentation.
+ */
+export function affiliateClass(category: string): "vitrine" | "quotable" {
+  const c = category.toLowerCase().trim();
+  if (c === "tour" || c === "activity" || c === "transfer" || c === "taxi") return "quotable";
+  return "vitrine";
+}
+
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export interface RegisterData {

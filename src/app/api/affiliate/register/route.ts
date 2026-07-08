@@ -83,6 +83,7 @@ export async function POST(request: NextRequest) {
     await sendAffiliateWelcome({
       email: v.data.email,
       name: v.data.name,
+      category: v.data.category,
       link,
       code,
       commissionPct: AFFILIATE_DEFAULT_COMMISSION_PCT,
