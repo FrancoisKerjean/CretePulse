@@ -1,5 +1,5 @@
 // node --experimental-strip-types scripts/check-car-monitoring.mjs
-import { classifyInvites, partnerRelanceState, partnerRelanceRollup, clientRelanceState } from "../src/lib/car-monitoring.ts";
+import { classifyInvites, partnerRelanceState, partnerRelanceRollup, clientRelanceState, isSilentRequest, isAwaitingChoice } from "../src/lib/car-monitoring.ts";
 
 let fail = 0;
 const ok = (n, c) => { console.log(c ? `ok - ${n}` : `FAIL - ${n}`); if (!c) fail++; };
@@ -64,6 +64,18 @@ const NOW = Date.parse("2026-07-09T10:00:00Z");
     clientRelanceState({ status: "quoted", client_relanced_at: null, client_relance_count: 2 }, NOW).kind === "exhausted");
   const w = clientRelanceState({ status: "quoted", client_relanced_at: T(NOW - 5 * H), client_relance_count: 1 }, NOW);
   ok("client relance waiting (<24h depuis dernière)", w.kind === "waiting" && w.nextEligibleMs > NOW);
+}
+
+{
+  const old = { status: "sent", created_at: T(NOW - 30 * H) };
+  const fresh = { status: "sent", created_at: T(NOW - 2 * H) };
+  ok("silencieux : sent >24h sans devis", isSilentRequest(old, [inv(1, null, "invited")], NOW) === true);
+  ok("pas silencieux si <24h", isSilentRequest(fresh, [inv(1, null, "invited")], NOW) === false);
+  ok("pas silencieux si ≥1 devis", isSilentRequest(old, [inv(1, 200)], NOW) === false);
+
+  ok("en attente de choix : quoted + ≥1 devis", isAwaitingChoice({ status: "quoted" }, [inv(1, 200)]) === true);
+  ok("pas en attente si accepted", isAwaitingChoice({ status: "accepted" }, [inv(1, 200, "chosen")]) === false);
+  ok("pas en attente si quoted sans invite chiffrée", isAwaitingChoice({ status: "quoted" }, [inv(1, null, "invited")]) === false);
 }
 
 console.log(fail ? `\n${fail} FAIL` : "\nAll passed");
