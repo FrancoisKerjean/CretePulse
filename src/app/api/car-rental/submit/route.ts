@@ -72,7 +72,10 @@ export async function POST(request: NextRequest) {
     .gte("created_at", tenMinAgo).limit(1);
   if (dup && dup.length > 0) return NextResponse.json({ ok: true });
 
-  const { data: inserted, error } = await supabase.from("car_requests").insert({ ...row, ip_hash: ipHash }).select("id").single();
+  const clientToken = newToken();
+  const { data: inserted, error } = await supabase.from("car_requests")
+    .insert({ ...row, ip_hash: ipHash, accept_token_hash: hashToken(clientToken) })
+    .select("id").single();
   if (error || !inserted) {
     console.error("[car-rental/submit] insert error:", error?.message);
     return NextResponse.json({ error: "Could not save request" }, { status: 500 });
