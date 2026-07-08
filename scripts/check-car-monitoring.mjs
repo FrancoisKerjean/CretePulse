@@ -1,5 +1,5 @@
 // node --experimental-strip-types scripts/check-car-monitoring.mjs
-import { classifyInvites, partnerRelanceState, partnerRelanceRollup } from "../src/lib/car-monitoring.ts";
+import { classifyInvites, partnerRelanceState, partnerRelanceRollup, clientRelanceState } from "../src/lib/car-monitoring.ts";
 
 let fail = 0;
 const ok = (n, c) => { console.log(c ? `ok - ${n}` : `FAIL - ${n}`); if (!c) fail++; };
@@ -53,6 +53,17 @@ const NOW = Date.parse("2026-07-09T10:00:00Z");
   ok("rollup invited=2", roll.invited === 2);
   ok("rollup relanced=1", roll.relanced === 1);
   ok("rollup silent=2 (invited-status)", roll.silent === 2);
+}
+
+{
+  ok("client relance na si pas 'quoted'",
+    clientRelanceState({ status: "sent", client_relanced_at: null, client_relance_count: 0 }, NOW).kind === "na");
+  ok("client relance eligible (jamais relancé)",
+    clientRelanceState({ status: "quoted", client_relanced_at: null, client_relance_count: 0 }, NOW).kind === "eligible");
+  ok("client relance exhausted (count>=2)",
+    clientRelanceState({ status: "quoted", client_relanced_at: null, client_relance_count: 2 }, NOW).kind === "exhausted");
+  const w = clientRelanceState({ status: "quoted", client_relanced_at: T(NOW - 5 * H), client_relance_count: 1 }, NOW);
+  ok("client relance waiting (<24h depuis dernière)", w.kind === "waiting" && w.nextEligibleMs > NOW);
 }
 
 console.log(fail ? `\n${fail} FAIL` : "\nAll passed");
