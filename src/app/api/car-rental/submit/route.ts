@@ -1,9 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createHash } from "crypto";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { validateCarLead, carPickupLabel, carTypeLabelWithExamples } from "@/lib/car-lead";
 import { newToken, hashToken, siteBase } from "@/lib/car-quote";
 import { partnersForZone } from "@/lib/car-partners-db";
 import type { CarLead } from "@/lib/email";
+
+// Anti-abus : plafonds de demandes par IP. Un fan-out = N emails à de vrais
+// loueurs ; changer d'email bypasse la dédup mais pas l'IP. Silencieux quand
+// atteint (on ne révèle pas la limite, on ne déclenche aucun envoi).
+const RL_MAX_PER_HOUR = 4;
+const RL_MAX_PER_DAY = 12;
+
+/** SHA256(IP + sel) — l'IP en clair n'est jamais stockée (RGPD). */
+function clientIpHash(request: NextRequest): string | null {
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  if (!ip) return null;
+  const salt = process.env.CAR_RL_SALT || "crete-direct-car-rl";
+  return createHash("sha256").update(ip + salt).digest("hex");
+}
+
+/** true si l'IP a dépassé un plafond (heure ou jour). */
+async function ipRateLimited(ipHash: string): Promise<boolean> {
+  const countSince = async (ms: number): Promise<number> => {
+    const since = new Date(Date.now() - ms).toISOString();
+    const { count } = await supabase.from("car_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("ip_hash", ipHash).gte("created_at", since);
+    return count ?? 0;
+  };
+  if (await countSince(60 * 60 * 1000) >= RL_MAX_PER_HOUR) return true;
+  if (await countSince(24 * 60 * 60 * 1000) >= RL_MAX_PER_DAY) return true;
+  return false;
+}
 
 export async function POST(request: NextRequest) {
   let body: Record<string, unknown>;
@@ -14,6 +43,13 @@ export async function POST(request: NextRequest) {
   if (v.kind === "honeypot") return NextResponse.json({ ok: true });
   if (v.kind === "error") return NextResponse.json({ error: v.error }, { status: v.status });
   const { zone, carType, row } = v;
+
+  // Rate-limit par IP AVANT tout travail coûteux (lookup loueurs, fan-out).
+  // Silencieux : succès renvoyé sans déclencher d'envoi.
+  const ipHash = clientIpHash(request);
+  if (ipHash && await ipRateLimited(ipHash)) {
+    return NextResponse.json({ ok: true });
+  }
 
   // Appel d'offres : tous les loueurs actifs de la zone. Aucun → pas couvert.
   const partners = await partnersForZone(zone.id);
@@ -36,7 +72,7 @@ export async function POST(request: NextRequest) {
     .gte("created_at", tenMinAgo).limit(1);
   if (dup && dup.length > 0) return NextResponse.json({ ok: true });
 
-  const { data: inserted, error } = await supabase.from("car_requests").insert(row).select("id").single();
+  const { data: inserted, error } = await supabase.from("car_requests").insert({ ...row, ip_hash: ipHash }).select("id").single();
   if (error || !inserted) {
     console.error("[car-rental/submit] insert error:", error?.message);
     return NextResponse.json({ error: "Could not save request" }, { status: 500 });
