@@ -85,6 +85,9 @@ export function affiliateClass(category: string): "vitrine" | "quotable" {
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+export const ACTIVITY_SUB_CATEGORIES = ["food_tours", "boat_trips", "hiking", "other"] as const;
+export type ActivitySubCategory = (typeof ACTIVITY_SUB_CATEGORIES)[number];
+
 export interface RegisterData {
   name: string;
   category: CategoryId;
@@ -92,6 +95,7 @@ export interface RegisterData {
   area: Area;
   email: string;
   redirect_url: string;
+  sub_category?: string;
 }
 
 export type ValidationResult =
@@ -118,6 +122,15 @@ export function validateRegisterPayload(body: Record<string, unknown>): Validati
       ? body.category_other.trim().slice(0, 120)
       : null;
 
+  // sub_category : accepté seulement parmi les valeurs connues — ignoré sinon (ne bloque pas).
+  const sub_category_raw =
+    typeof body.sub_category === "string" ? body.sub_category.trim() : undefined;
+  const sub_category =
+    sub_category_raw &&
+    (ACTIVITY_SUB_CATEGORIES as readonly string[]).includes(sub_category_raw)
+      ? sub_category_raw
+      : undefined;
+
   if (body.accept !== true) return { ok: false, error: "Terms not accepted" };
   if (!name) return { ok: false, error: "Missing name" };
   if (!(CATEGORIES as readonly { id: string }[]).some((c) => c.id === category))
@@ -128,6 +141,6 @@ export function validateRegisterPayload(body: Record<string, unknown>): Validati
 
   return {
     ok: true,
-    data: { name, category: category as CategoryId, category_other, area: area as Area, email, redirect_url },
+    data: { name, category: category as CategoryId, category_other, area: area as Area, email, redirect_url, sub_category },
   };
 }
