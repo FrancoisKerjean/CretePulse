@@ -16,13 +16,29 @@ export async function POST(request: NextRequest) {
   try { body = await request.json(); } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
   const token = typeof body.token === "string" ? body.token : "";
-  const inviteId = typeof body.invite_id === "number" ? body.invite_id : Number(body.invite_id);
-  if (!token || !Number.isFinite(inviteId)) return NextResponse.json({ error: "Missing token/invite" }, { status: 400 });
+  if (!token) return NextResponse.json({ error: "Missing token" }, { status: 400 });
+  const decline = new URL(request.url).searchParams.get("decline") === "1";
 
   const found = await requestByClientToken(token);
   if (!found) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const { request: row, quotes } = found;
   if (row.status === "accepted") return NextResponse.json({ ok: true, already: true });
+  if (row.status === "declined_by_client") return NextResponse.json({ ok: true, declined: true });
+
+  // Désistement client : « aucune de ces offres ne me convient ». La demande se
+  // ferme, les relances client s'arrêtent, les devis passent 'not_chosen' — mais
+  // PAS d'email « pas retenu » aux loueurs (on n'ennuie pas sur un décline global).
+  if (decline) {
+    await supabase.from("car_requests").update({
+      status: "declined_by_client", accept_token_hash: null,
+    }).eq("id", row.id);
+    await supabase.from("car_quote_invites").update({ status: "not_chosen" })
+      .eq("request_id", row.id).eq("status", "quoted");
+    return NextResponse.json({ ok: true, declined: true });
+  }
+
+  const inviteId = typeof body.invite_id === "number" ? body.invite_id : Number(body.invite_id);
+  if (!Number.isFinite(inviteId)) return NextResponse.json({ error: "Missing invite" }, { status: 400 });
 
   const chosen = findChosenInvite(quotes, inviteId);
   if (!chosen) return NextResponse.json({ error: "No quote for this invite" }, { status: 409 });

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { carPickupLabel } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { AcceptButton } from "./AcceptButton";
+import { DeclineButton } from "./DeclineButton";
 import { inclusionLabels } from "@/lib/car-inclusions";
 import { isOfferExpired } from "@/lib/car-offer-expiry";
 import { sharedOfferCopy } from "@/lib/car-offer-copy";
@@ -22,21 +23,21 @@ const money = (p: number, c: string) => (c === "EUR" ? `€${p}` : `${p} ${c}`);
 type Copy = {
   title: string; intro: string; request: string; accept: string; done: string;
   expired: string; expiredOffer: string; alreadyTitle: string; alreadyBody: string;
-  noOffers: string; offersTitle: string;
+  noOffers: string; offersTitle: string; declineLink: string; declineDone: string;
 };
 
 const COPY: Record<string, Copy> = {
   en: {
-    title: "Your car rental quotes", intro: "Choose the offer that suits you. Accept one and we connect you directly with the rental agency.", request: "Your request", accept: "Accept this offer", done: "Accepted! The rental agency now has your details and will contact you. Check your inbox for their contact info.", expired: "This offer link is no longer valid.", expiredOffer: "This offer has expired. Send a new request and local agencies will quote you again.", alreadyTitle: "Already accepted", alreadyBody: "You already accepted an offer. The rental agency will contact you, and their details are in your inbox.", noOffers: "Your offers are on the way — check back shortly.", offersTitle: "Your car rental offers",
+    title: "Your car rental quotes", intro: "Choose the offer that suits you. Accept one and we connect you directly with the rental agency.", request: "Your request", accept: "Accept this offer", done: "Accepted! The rental agency now has your details and will contact you. Check your inbox for their contact info.", expired: "This offer link is no longer valid.", expiredOffer: "This offer has expired. Send a new request and local agencies will quote you again.", alreadyTitle: "Already accepted", alreadyBody: "You already accepted an offer. The rental agency will contact you, and their details are in your inbox.", noOffers: "Your offers are on the way — check back shortly.", offersTitle: "Your car rental offers", declineLink: "None of these offers suits me", declineDone: "Noted, no problem. This request is now closed.",
   },
   fr: {
-    title: "Vos devis de location", intro: "Choisissez l'offre qui vous convient. Acceptez-en une et nous vous mettons directement en relation avec l'agence.", request: "Votre demande", accept: "Accepter cette offre", done: "Accepté ! L'agence de location a maintenant vos coordonnées et va vous contacter. Ses coordonnées sont dans votre boîte mail.", expired: "Ce lien d'offre n'est plus valide.", expiredOffer: "Cette offre a expiré. Refaites une demande et les agences locales vous proposeront un nouveau prix.", alreadyTitle: "Déjà accepté", alreadyBody: "Vous avez déjà accepté une offre. L'agence va vous contacter, ses coordonnées sont dans votre boîte mail.", noOffers: "Vos offres arrivent, revenez bientôt.", offersTitle: "Vos offres de location",
+    title: "Vos devis de location", intro: "Choisissez l'offre qui vous convient. Acceptez-en une et nous vous mettons directement en relation avec l'agence.", request: "Votre demande", accept: "Accepter cette offre", done: "Accepté ! L'agence de location a maintenant vos coordonnées et va vous contacter. Ses coordonnées sont dans votre boîte mail.", expired: "Ce lien d'offre n'est plus valide.", expiredOffer: "Cette offre a expiré. Refaites une demande et les agences locales vous proposeront un nouveau prix.", alreadyTitle: "Déjà accepté", alreadyBody: "Vous avez déjà accepté une offre. L'agence va vous contacter, ses coordonnées sont dans votre boîte mail.", noOffers: "Vos offres arrivent, revenez bientôt.", offersTitle: "Vos offres de location", declineLink: "Aucune de ces offres ne me convient", declineDone: "Noté, pas de souci. Votre demande est clôturée.",
   },
   de: {
-    title: "Ihre Mietwagen-Angebote", intro: "Wählen Sie das passende Angebot. Nehmen Sie eines an und wir verbinden Sie direkt mit der Autovermietung.", request: "Ihre Anfrage", accept: "Angebot annehmen", done: "Angenommen! Die Autovermietung hat nun Ihre Daten und wird Sie kontaktieren. Ihre Kontaktdaten finden Sie in Ihrem Postfach.", expired: "Dieser Angebotslink ist nicht mehr gültig.", expiredOffer: "Dieses Angebot ist abgelaufen. Stellen Sie eine neue Anfrage und lokale Agenturen machen Ihnen wieder ein Angebot.", alreadyTitle: "Bereits angenommen", alreadyBody: "Sie haben bereits ein Angebot angenommen. Die Vermietung wird Sie kontaktieren, ihre Daten sind in Ihrem Postfach.", noOffers: "Ihre Angebote sind unterwegs — schauen Sie bald wieder vorbei.", offersTitle: "Ihre Mietwagen-Angebote",
+    title: "Ihre Mietwagen-Angebote", intro: "Wählen Sie das passende Angebot. Nehmen Sie eines an und wir verbinden Sie direkt mit der Autovermietung.", request: "Ihre Anfrage", accept: "Angebot annehmen", done: "Angenommen! Die Autovermietung hat nun Ihre Daten und wird Sie kontaktieren. Ihre Kontaktdaten finden Sie in Ihrem Postfach.", expired: "Dieser Angebotslink ist nicht mehr gültig.", expiredOffer: "Dieses Angebot ist abgelaufen. Stellen Sie eine neue Anfrage und lokale Agenturen machen Ihnen wieder ein Angebot.", alreadyTitle: "Bereits angenommen", alreadyBody: "Sie haben bereits ein Angebot angenommen. Die Vermietung wird Sie kontaktieren, ihre Daten sind in Ihrem Postfach.", noOffers: "Ihre Angebote sind unterwegs — schauen Sie bald wieder vorbei.", offersTitle: "Ihre Mietwagen-Angebote", declineLink: "Keines dieser Angebote passt mir", declineDone: "Notiert, kein Problem. Ihre Anfrage ist nun geschlossen.",
   },
   el: {
-    title: "Οι προσφορές ενοικίασής σας", intro: "Επιλέξτε την προσφορά που σας ταιριάζει. Αποδεχτείτε μία και σας συνδέουμε απευθείας με το γραφείο.", request: "Το αίτημά σας", accept: "Αποδοχή προσφοράς", done: "Έγινε αποδοχή! Το γραφείο ενοικίασης έχει τα στοιχεία σας και θα επικοινωνήσει μαζί σας. Τα στοιχεία του είναι στο email σας.", expired: "Αυτός ο σύνδεσμος προσφοράς δεν ισχύει πλέον.", expiredOffer: "Αυτή η προσφορά έχει λήξει. Στείλτε νέο αίτημα και οι τοπικές εταιρείες θα σας προτείνουν νέα τιμή.", alreadyTitle: "Έχει ήδη γίνει αποδοχή", alreadyBody: "Έχετε ήδη αποδεχτεί μια προσφορά. Το γραφείο θα επικοινωνήσει μαζί σας, τα στοιχεία του είναι στο email σας.", noOffers: "Οι προσφορές σας έρχονται, ελέγξτε ξανά σύντομα.", offersTitle: "Οι προσφορές ενοικίασής σας",
+    title: "Οι προσφορές ενοικίασής σας", intro: "Επιλέξτε την προσφορά που σας ταιριάζει. Αποδεχτείτε μία και σας συνδέουμε απευθείας με το γραφείο.", request: "Το αίτημά σας", accept: "Αποδοχή προσφοράς", done: "Έγινε αποδοχή! Το γραφείο ενοικίασης έχει τα στοιχεία σας και θα επικοινωνήσει μαζί σας. Τα στοιχεία του είναι στο email σας.", expired: "Αυτός ο σύνδεσμος προσφοράς δεν ισχύει πλέον.", expiredOffer: "Αυτή η προσφορά έχει λήξει. Στείλτε νέο αίτημα και οι τοπικές εταιρείες θα σας προτείνουν νέα τιμή.", alreadyTitle: "Έχει ήδη γίνει αποδοχή", alreadyBody: "Έχετε ήδη αποδεχτεί μια προσφορά. Το γραφείο θα επικοινωνήσει μαζί σας, τα στοιχεία του είναι στο email σας.", noOffers: "Οι προσφορές σας έρχονται, ελέγξτε ξανά σύντομα.", offersTitle: "Οι προσφορές ενοικίασής σας", declineLink: "Καμία από αυτές τις προσφορές δεν μου ταιριάζει", declineDone: "Σημειώθηκε, κανένα πρόβλημα. Το αίτημά σας έκλεισε.",
   },
 };
 
@@ -140,6 +141,7 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
       {offers.map((offer) => (
         <OfferCard key={offer.id} offer={offer} token={token} request={request} locale={locale} c={c} />
       ))}
+      <DeclineButton token={token} label={c.declineLink} doneText={c.declineDone} />
     </main>
   );
 }
