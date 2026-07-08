@@ -13,6 +13,7 @@
     "check:car-partners": "node --experimental-strip-types scripts/check-car-partners.mjs",
     "check:car-lead": "node --experimental-strip-types scripts/check-car-lead.mjs",
     "check:car-quotes": "node --experimental-strip-types scripts/check-car-quotes.mjs",
+    "check:activity-taxonomy": "node --experimental-strip-types scripts/check-activity-taxonomy.mjs",
     "check:car-admin": "node --experimental-strip-types scripts/check-car-admin.mjs",
     "check:car-monitoring": "node --experimental-strip-types scripts/check-car-monitoring.mjs",
     "check:bus-select": "node --experimental-strip-types scripts/check-bus-live-selection.mjs",
