@@ -194,7 +194,7 @@ export interface AffiliateWelcome {
  * Exported for testing without hitting Resend.
  *
  * - "vitrine" (restaurant, café, bar, unknown…): free map visibility, no mention of commission.
- * - "quotable" (tour, activity, transfer): 15% on accepted quotes, no setup.
+ * - "quotable" (tour, activity, taxi): 15% on accepted quotes, no setup.
  */
 export function affiliateWelcomeBody(
   cls: "vitrine" | "quotable",
@@ -209,16 +209,16 @@ export function affiliateWelcomeBody(
       <p style="margin:0 0 16px; color:${C.muted}; line-height:1.6;">When a traveller clicks your link and requests a booking, we send you the lead. You only pay <strong>${commissionPct}% on accepted quotes</strong> — no setup fee, no monthly cost, cancel anytime by replying to this email.</p>`
       : `
       <p style="margin:0 0 6px; color:${C.text}; font-weight:700; font-size:15px;">What this means</p>
-      <p style="margin:0 0 16px; color:${C.muted}; line-height:1.6;">Your listing is now on the crete.direct map, free of charge. Travellers planning their trip will find you there. No setup fee, no monthly cost — just visibility.</p>`;
+      <p style="margin:0 0 16px; color:${C.muted}; line-height:1.6;">We're adding your listing to the crete.direct map, free of charge. Once it's live, travellers planning their trip will find you there. No setup fee, no monthly cost — just visibility.</p>`;
 
   return kalimeraShell(`
-      <h2 style="margin:0 0 12px; color:${C.text}; font-size:20px;">You're on the crete.direct map 🗺️</h2>
-      <p style="margin:0 0 16px; color:${C.muted}; line-height:1.6;">Hi ${name.split(" ")[0] || name}, <strong>${name}</strong> is now listed on crete.direct. Here is your tracked link:</p>
+      <h2 style="margin:0 0 12px; color:${C.text}; font-size:20px;">You're joining the crete.direct map 🗺️</h2>
+      <p style="margin:0 0 16px; color:${C.muted}; line-height:1.6;">Hi ${name.split(" ")[0] || name}, <strong>${name}</strong> is now part of the crete.direct affiliate program. Here is your tracked link:</p>
       <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 18px; word-break:break-all; font-size:14px; color:${C.sea}; font-weight:700;">${link}</div>
       ${dealSection}
       <p style="margin:0 0 6px; color:${C.text}; font-weight:700; font-size:15px;">Your promo code</p>
       <p style="margin:0 0 18px; color:${C.muted}; line-height:1.6;">Use <strong>${code}</strong> to reconcile any leads we send you — it lets us match requests to your listing accurately.</p>
-      <div style="text-align:center; margin:0 0 18px;">${pillButton("https://crete.direct/explore", "See the map you're on", C.sea)}</div>
+      <div style="text-align:center; margin:0 0 18px;">${pillButton("https://crete.direct/explore", "Explore the crete.direct map", C.sea)}</div>
       <p style="margin:0; color:${C.faint}; font-size:12px; text-align:center;">Questions? Just reply to this email, a real person reads it.</p>
   `);
 }
