@@ -22,7 +22,7 @@ export default async function CarQuotePage({ params }: { params: Promise<{ local
 
   // Le jeton pointe une invitation (un par loueur) → on charge la demande.
   const { data: invite } = await supabase.from("car_quote_invites")
-    .select("request_id")
+    .select("request_id, status")
     .eq("quote_token_hash", hashToken(token))
     .maybeSingle();
   const { data: row } = invite
@@ -67,12 +67,16 @@ export default async function CarQuotePage({ params }: { params: Promise<{ local
           {row.note ? <div><strong>Note:</strong> {row.note}</div> : null}
         </div>
 
-        {row.status === "quoted" || row.status === "accepted" ? (
+        {row.status === "accepted" || row.status === "declined_by_client" ? (
+          <p style={{ margin: 0, padding: "16px 18px", borderRadius: 12, background: "#F1F5F9", color: "#334155", fontSize: 15, lineHeight: 1.6 }}>
+            This request is now closed. Thank you.
+          </p>
+        ) : invite?.status === "quoted" ? (
           <p style={{ margin: 0, padding: "16px 18px", borderRadius: 12, background: "#ECFDF5", color: "#065F46", fontSize: 15, lineHeight: 1.6 }}>
-            A price was already submitted for this request. Thank you.
+            Your price was submitted for this request. Thank you. We will connect you if the customer chooses your offer.
           </p>
         ) : (
-          <QuoteForm token={token} />
+          <QuoteForm token={token} locale={locale} />
         )}
       </div>
     </main>

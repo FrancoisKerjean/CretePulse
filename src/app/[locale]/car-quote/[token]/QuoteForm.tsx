@@ -3,13 +3,24 @@
 import { useState } from "react";
 import { CAR_INCLUSION_KEYS, CAR_INCLUSION_LABELS_PARTNER } from "@/lib/car-inclusions";
 
+// Copy i18n du bouton de désistement loueur (le reste du form reste EN : les
+// loueurs sont des pros locaux, l'anglais suffit — cf sendAgencyQuoteRequest).
+const DECLINE_COPY: Record<string, { link: string; sending: string; done: string }> = {
+  en: { link: "I can't quote this request", sending: "Sending…", done: "Noted, thank you." },
+  fr: { link: "Je ne peux pas répondre à cette demande", sending: "Envoi…", done: "Noté, merci." },
+  de: { link: "Ich kann diese Anfrage nicht bedienen", sending: "Senden…", done: "Notiert, danke." },
+  el: { link: "Δεν μπορώ να απαντήσω σε αυτό το αίτημα", sending: "Αποστολή…", done: "Σημειώθηκε, ευχαριστούμε." },
+};
+
 // Formulaire de saisie du prix par le loueur. Poste le prix + le jeton (en
 // clair, depuis l'URL) à l'API qui le hash et notifie le client.
-export function QuoteForm({ token }: { token: string }) {
+export function QuoteForm({ token, locale = "en" }: { token: string; locale?: string }) {
   const [price, setPrice] = useState("");
   const [carModel, setCarModel] = useState("");
   const [inclusions, setInclusions] = useState<string[]>([]);
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
+  const [decline, setDecline] = useState<"idle" | "sending" | "done">("idle");
+  const d = DECLINE_COPY[locale] ?? DECLINE_COPY.en;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -27,6 +38,29 @@ export function QuoteForm({ token }: { token: string }) {
     } catch {
       setState("error");
     }
+  }
+
+  async function declineRequest() {
+    setDecline("sending");
+    try {
+      const res = await fetch("/api/car-rental/quote?decline=1", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+      const json = await res.json();
+      setDecline(res.ok && json.ok ? "done" : "idle");
+    } catch {
+      setDecline("idle");
+    }
+  }
+
+  if (decline === "done") {
+    return (
+      <p style={{ margin: 0, padding: "16px 18px", borderRadius: 12, background: "#F1F5F9", color: "#334155", fontSize: 15, lineHeight: 1.6 }}>
+        {d.done}
+      </p>
+    );
   }
 
   if (state === "done") {
@@ -81,6 +115,12 @@ export function QuoteForm({ token }: { token: string }) {
       {state === "error" && (
         <p style={{ margin: 0, color: "#B91C1C", fontSize: 13 }}>Something went wrong. Please check the amount and try again.</p>
       )}
+      <button
+        type="button" onClick={declineRequest} disabled={decline === "sending"}
+        style={{ marginTop: 2, padding: "8px", border: "none", background: "transparent", color: "#94A3B8", fontSize: 13, textDecoration: "underline", cursor: "pointer" }}
+      >
+        {decline === "sending" ? d.sending : d.link}
+      </button>
     </form>
   );
 }

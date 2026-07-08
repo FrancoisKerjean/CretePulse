@@ -14,13 +14,8 @@ export async function POST(request: NextRequest) {
   try { body = await request.json(); } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
   const token = typeof body.token === "string" ? body.token : "";
-  const price = typeof body.price === "number" ? body.price : Number(body.price);
   if (!token) return NextResponse.json({ error: "Missing token" }, { status: 400 });
-  if (!Number.isFinite(price) || price <= 0 || price > 100000) {
-    return NextResponse.json({ error: "Invalid price" }, { status: 422 });
-  }
-  const carModel = typeof body.carModel === "string" && body.carModel.trim() ? body.carModel.trim().slice(0, 120) : null;
-  const inclusions = Array.isArray(body.inclusions) ? body.inclusions.filter(isInclusionKey) : [];
+  const decline = new URL(request.url).searchParams.get("decline") === "1";
 
   const { data: invite } = await supabase.from("car_quote_invites")
     .select("request_id, partner_id")
@@ -33,6 +28,22 @@ export async function POST(request: NextRequest) {
     .eq("id", invite.request_id).maybeSingle();
   if (!req) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (!canPartnerQuote(req.status)) return NextResponse.json({ ok: true, already: true });
+
+  // Désistement loueur : « je ne peux pas répondre à cette demande ». Pas de prix
+  // requis. L'invite passe 'declined' → plus relancée, absente des offres client.
+  if (decline) {
+    await supabase.from("car_quote_invites").update({
+      status: "declined", declined_at: new Date().toISOString(),
+    }).eq("request_id", req.id).eq("partner_id", invite.partner_id);
+    return NextResponse.json({ ok: true, declined: true });
+  }
+
+  const price = typeof body.price === "number" ? body.price : Number(body.price);
+  if (!Number.isFinite(price) || price <= 0 || price > 100000) {
+    return NextResponse.json({ error: "Invalid price" }, { status: 422 });
+  }
+  const carModel = typeof body.carModel === "string" && body.carModel.trim() ? body.carModel.trim().slice(0, 120) : null;
+  const inclusions = Array.isArray(body.inclusions) ? body.inclusions.filter(isInclusionKey) : [];
 
   const partner = await partnerById(invite.partner_id);
   if (!partner) return NextResponse.json({ error: "Partner not found" }, { status: 404 });
