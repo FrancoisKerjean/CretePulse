@@ -6,6 +6,7 @@
 // Écritures : toggle active + zones/commission (forms natifs → server actions).
 // Pas de création ici : l'auto-enroll signup + INSERT SQL couvrent l'onboarding.
 import { partnerStats, ZONE_IDS, type AdminPartner, type AdminRequest } from "@/lib/car-admin";
+import { partnerPerf, type MonitorInvite } from "@/lib/car-monitoring";
 import { togglePartnerActive, updatePartner } from "./actions";
 
 const BASE = "/admin/car-rental";
@@ -21,12 +22,13 @@ function outreachBadge(status?: string | null) {
 }
 
 export function PartnersTable({
-  partners, requests, invitesByPartner, partnersById, activeFilter, outreachFilter, query,
+  partners, requests, invitesByPartner, partnersById, monitorByPartner, activeFilter, outreachFilter, query,
 }: {
   partners: AdminPartner[];
   requests: AdminRequest[];
   invitesByPartner: Map<number, number>;
   partnersById: Map<number, AdminPartner>;
+  monitorByPartner: Map<number, MonitorInvite[]>;
   activeFilter: string;   // "" | "actifs" | "inactifs"
   outreachFilter: string; // "" | un outreach_status présent en base
   query: string;
@@ -94,6 +96,7 @@ export function PartnersTable({
       <div className="mt-3 space-y-2">
         {rows.map((p) => {
           const st = statsById.get(p.id)!;
+          const perf = partnerPerf(p.id, monitorByPartner);
           const declined = p.outreach_status === "declined";
           return (
             <details key={p.id} className={`rounded-2xl border bg-white ${declined ? "border-terracotta" : "border-border"}`}>
@@ -126,6 +129,13 @@ export function PartnersTable({
                       {p.active ? "Désactiver" : "Activer"}
                     </button>
                   </form>
+                </div>
+
+                <div className="text-xs text-text-muted">
+                  {perf.invited} invité(s) · {perf.quoted} chiffré(s) · {perf.chosen} choisi(s) · {perf.declined} désisté(s)
+                  {perf.avgQuotePriceEur != null ? ` · prix moy ${perf.avgQuotePriceEur.toFixed(0)} €` : ""}
+                  {perf.responseRate != null ? ` · réponse ${Math.round(perf.responseRate * 100)} %` : ""}
+                  {perf.avgResponseHours != null ? ` · délai moy ${perf.avgResponseHours.toFixed(1)}h` : ""}
                 </div>
 
                 <form action={updatePartner.bind(null, p.id)} className="mt-3 flex flex-wrap items-center gap-3 border-t border-border pt-3">
