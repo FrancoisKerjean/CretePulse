@@ -29,7 +29,7 @@ const isPriced = (i: MonitorInvite): boolean =>
  * Classe les invites d'UNE demande : chiffrés (choisi en tête puis prix↑), silencieux, désistés.
  *
  * Note : les statuts `chosen` et `not_chosen` (avec prix) atterrissent dans le bucket `quoted`
- * via le prédicat `isPriced` — `chosen` est remonté en tête par le tri, avant les prix croissants.
+ * via le prédicat `isPriced` ; `chosen` est remonté en tête par le tri, avant les prix croissants.
  * Le bucket `silent` contient uniquement les invités (status `invited`) sans aucune relance.
  */
 export function classifyInvites(invites: MonitorInvite[]): {
