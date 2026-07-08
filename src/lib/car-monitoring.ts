@@ -136,7 +136,8 @@ export function buildTimeline(
 
   if (req.client_relanced_at) ev.push({ at: req.client_relanced_at, label: "Relance client" });
   if (req.accepted_at) {
-    const chosen = findChosenInvite(invites, invites.find((i) => i.status === "chosen")?.id ?? -1);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const chosen = findChosenInvite(invites as any[], invites.find((i) => i.status === "chosen")?.id ?? -1);
     ev.push({ at: req.accepted_at, label: `Client a choisi${chosen ? ` (${chosen.partner_name})` : ""}` });
   }
   if (req.outcome && req.outcome_at) ev.push({ at: req.outcome_at, label: `Issue : ${req.outcome}` });
