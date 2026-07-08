@@ -18,6 +18,7 @@
     "check:activity-lead": "node --experimental-strip-types scripts/check-activity-lead.mjs",
     "check:car-admin": "node --experimental-strip-types scripts/check-car-admin.mjs",
     "check:car-monitoring": "node --experimental-strip-types scripts/check-car-monitoring.mjs",
+    "check:activity-monitoring": "node --experimental-strip-types scripts/check-activity-monitoring.mjs",
     "check:bus-select": "node --experimental-strip-types scripts/check-bus-live-selection.mjs",
     "check:gtfs-stops": "node scripts/check-gtfs-stops.mjs",
     "check:stop-departures": "node --experimental-strip-types scripts/check-stop-departures.mjs",
