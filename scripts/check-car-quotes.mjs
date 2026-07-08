@@ -1,5 +1,6 @@
 // node --experimental-strip-types scripts/check-car-quotes.mjs
-import { sortQuotesByPrice, canPartnerQuote, findChosenInvite, partnerNeedsRelance, clientNeedsRelance } from "../src/lib/car-quotes.ts";
+import { sortQuotesByPrice, canPartnerQuote, findChosenInvite, partnerNeedsRelance, clientNeedsRelance,
+  normalizeQuoteOption, normalizeQuoteOptions, bestOption, sortOptionsByPrice, findChosenOption } from "../src/lib/car-quotes.ts";
 
 let fail = 0;
 const ok = (n, c) => { console.log(c ? `ok - ${n}` : `FAIL - ${n}`); if (!c) fail++; };
@@ -29,6 +30,22 @@ ok("relance client due (jamais relance)", clientNeedsRelance({ status: "quoted",
 ok("pas de relance client si count>=2", !clientNeedsRelance({ status: "quoted", client_relanced_at: null, client_relance_count: 2 }, 1751961600000));
 ok("pas de relance client si <24h depuis derniere", !clientNeedsRelance({ status: "quoted", client_relanced_at: new Date(1751961600000 - 5 * H).toISOString(), client_relance_count: 1 }, 1751961600000));
 ok("pas de relance client si pas d'offre", !clientNeedsRelance({ status: "sent", client_relanced_at: null, client_relance_count: 0 }, 1751961600000));
+
+// ── Multi-offres (retour Lux Trans « only one option to send ») ──────────────
+ok("normalise une option valide", (() => { const o = normalizeQuoteOption({ price: 30, carModel: " VW Polo ", gearbox: "manual", inclusions: ["gps", "unlimited_km"] }); return o && o.price === 30 && o.car_model === "VW Polo" && o.gearbox === "manual" && o.inclusions.join() === "unlimited_km"; })());
+ok("prix invalide -> null", normalizeQuoteOption({ price: 0 }) === null && normalizeQuoteOption({ price: 200000 }) === null && normalizeQuoteOption({ price: "abc" }) === null);
+ok("gearbox inconnu -> null (peu importe)", normalizeQuoteOption({ price: 30, gearbox: "cvt" }).gearbox === null);
+ok("inclusions inconnues filtrées", normalizeQuoteOption({ price: 30, inclusions: ["unlimited_km", "teleport"] }).inclusions.join() === "unlimited_km");
+ok("normalizeQuoteOptions ignore les invalides", normalizeQuoteOptions([{ price: 30 }, { price: 0 }, { price: 40 }]).length === 2);
+ok("normalizeQuoteOptions cap à 6", normalizeQuoteOptions(Array.from({ length: 9 }, (_, i) => ({ price: i + 1 }))).length === 6);
+ok("normalizeQuoteOptions non-array -> []", normalizeQuoteOptions("x").length === 0);
+ok("bestOption = la moins chère", bestOption([{ price: 40 }, { price: 30 }, { price: 35 }]).price === 30);
+ok("bestOption liste vide -> null", bestOption([]) === null);
+
+const opt = (id, invite_id, price) => ({ id, invite_id, partner_id: invite_id, partner_name: `P${invite_id}`, price, currency: "EUR", car_model: null, gearbox: null, inclusions: [], created_at: "2026-07-08T10:00:00Z" });
+ok("sortOptionsByPrice croissant toutes invites confondues", sortOptionsByPrice([opt(1, 10, 40), opt(2, 10, 30), opt(3, 20, 35)]).map((o) => o.id).join() === "2,3,1");
+ok("findChosenOption existante", findChosenOption([opt(1, 10, 40), opt(2, 20, 30)], 2)?.id === 2);
+ok("findChosenOption inexistante -> null", findChosenOption([opt(1, 10, 40)], 99) === null);
 
 console.log(fail ? `\n${fail} FAIL` : "\nAll passed");
 process.exit(fail ? 1 : 0);

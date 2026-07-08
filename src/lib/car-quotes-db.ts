@@ -1,7 +1,7 @@
 // Lectures Supabase du modèle multi-devis. La page offres et l'admin lisent ici.
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { hashToken } from "@/lib/car-quote";
-import type { QuoteInvite } from "@/lib/car-quotes";
+import type { QuoteInvite, QuoteOption } from "@/lib/car-quotes";
 
 /** Tous les devis/invites d'une demande, avec le nom du loueur. */
 export async function quotesForRequest(requestId: number): Promise<QuoteInvite[]> {
@@ -29,12 +29,35 @@ export async function quotesForRequest(requestId: number): Promise<QuoteInvite[]
   }));
 }
 
-/** Demande + ses devis à partir du token client (page offres). null si introuvable. */
-export async function requestByClientToken(token: string): Promise<{ request: Record<string, unknown>; quotes: QuoteInvite[] } | null> {
+/** Toutes les options (variantes de prix) d'une demande, avec le nom du loueur.
+ *  Source des offres présentées au client dans la page /car-offer. */
+export async function optionsForRequest(requestId: number): Promise<QuoteOption[]> {
+  const { data } = await supabase.from("car_quote_options")
+    .select("id, invite_id, partner_id, price, currency, car_model, gearbox, inclusions, created_at, car_partners(name)")
+    .eq("request_id", requestId);
+  type Row = {
+    id: number; invite_id: number; partner_id: number;
+    price: number; currency: string | null;
+    car_model: string | null; gearbox: string | null; inclusions: string[] | null;
+    created_at: string | null; car_partners?: { name?: string } | null;
+  };
+  return ((data ?? []) as Row[]).map((r) => ({
+    id: r.id, invite_id: r.invite_id, partner_id: r.partner_id,
+    partner_name: r.car_partners?.name ?? "Agency",
+    price: r.price, currency: r.currency ?? "EUR",
+    car_model: r.car_model, gearbox: r.gearbox, inclusions: r.inclusions,
+    created_at: r.created_at,
+  }));
+}
+
+/** Demande + ses devis (invite-level, admin) et options (client) à partir du
+ *  token client. null si introuvable. */
+export async function requestByClientToken(token: string): Promise<{ request: Record<string, unknown>; quotes: QuoteInvite[]; options: QuoteOption[] } | null> {
   const { data: request } = await supabase.from("car_requests")
     .select("id, status, locale, pickup_slug, date_from, date_to, car_type, customer_name, customer_email, customer_phone")
     .eq("accept_token_hash", hashToken(token)).maybeSingle();
   if (!request) return null;
   const quotes = await quotesForRequest(request.id as number);
-  return { request, quotes };
+  const options = await optionsForRequest(request.id as number);
+  return { request, quotes, options };
 }

@@ -5,12 +5,14 @@ import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { partnerById } from "@/lib/car-partners-db";
 import { isOfferExpired } from "@/lib/car-offer-expiry";
 import { requestByClientToken } from "@/lib/car-quotes-db";
-import { findChosenInvite } from "@/lib/car-quotes";
+import { findChosenOption, sortOptionsByPrice } from "@/lib/car-quotes";
 
-// Le client choisit une offre (page /car-offer/{token}). Il désigne l'invite
-// (invite_id) qu'il retient ; on snapshot son devis sur car_requests
-// (retro-compat admin/commissions) et on met client + loueur choisi en relation.
-// Les autres devis passent 'not_chosen'.
+const GEARBOX_LABEL: Record<string, string> = { automatic: "Automatic", manual: "Manual" };
+
+// Le client choisit une OFFRE précise (option) parmi toutes les variantes de
+// tous les loueurs (page /car-offer/{token}). On snapshot cette option sur
+// car_requests (retro-compat admin/commissions) et on met client + loueur choisi
+// en relation. Les invites des autres loueurs passent 'not_chosen'.
 export async function POST(request: NextRequest) {
   let body: Record<string, unknown>;
   try { body = await request.json(); } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
@@ -21,7 +23,7 @@ export async function POST(request: NextRequest) {
 
   const found = await requestByClientToken(token);
   if (!found) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const { request: row, quotes } = found;
+  const { request: row, quotes, options } = found;
   if (row.status === "accepted") return NextResponse.json({ ok: true, already: true });
   if (row.status === "declined_by_client") return NextResponse.json({ ok: true, declined: true });
 
@@ -37,26 +39,33 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, declined: true });
   }
 
+  // Nouveau flux : le client désigne une OPTION (option_id). Rétro-compat : un
+  // ancien lien mono-offre poste invite_id → on prend la meilleure option de
+  // cette invite.
+  const optionId = typeof body.option_id === "number" ? body.option_id : Number(body.option_id);
   const inviteId = typeof body.invite_id === "number" ? body.invite_id : Number(body.invite_id);
-  if (!Number.isFinite(inviteId)) return NextResponse.json({ error: "Missing invite" }, { status: 400 });
-
-  const chosen = findChosenInvite(quotes, inviteId);
-  if (!chosen) return NextResponse.json({ error: "No quote for this invite" }, { status: 409 });
-  if (isOfferExpired(chosen.quoted_at, row.date_from as string, Date.now())) {
+  let chosen = Number.isFinite(optionId) ? findChosenOption(options, optionId) : null;
+  if (!chosen && Number.isFinite(inviteId)) {
+    chosen = sortOptionsByPrice(options.filter((o) => o.invite_id === inviteId))[0] ?? null;
+  }
+  if (!chosen) return NextResponse.json({ error: "No quote for this option" }, { status: 409 });
+  if (isOfferExpired(chosen.created_at, row.date_from as string, Date.now())) {
     return NextResponse.json({ ok: false, expired: true }, { status: 410 });
   }
 
   const partner = await partnerById(chosen.partner_id);
+  const gearboxLabel = chosen.gearbox ? GEARBOX_LABEL[chosen.gearbox] : null;
+  const carModelSnapshot = [chosen.car_model, gearboxLabel].filter(Boolean).join(" · ") || null;
   await supabase.from("car_requests").update({
     status: "accepted", accepted_at: new Date().toISOString(), accept_token_hash: null,
-    quoted_price: chosen.quote_price, quoted_currency: chosen.quote_currency ?? "EUR",
-    quoted_car_model: chosen.quote_car_model ?? null, quoted_inclusions: chosen.quote_inclusions ?? [],
-    quoted_at: chosen.quoted_at, quoted_by_partner_id: chosen.partner_id,
+    quoted_price: chosen.price, quoted_currency: chosen.currency ?? "EUR",
+    quoted_car_model: carModelSnapshot, quoted_inclusions: chosen.inclusions ?? [],
+    quoted_at: chosen.created_at, quoted_by_partner_id: chosen.partner_id,
     partner_name: partner?.name ?? chosen.partner_name, partner_email: partner?.email ?? null,
   }).eq("id", row.id);
-  await supabase.from("car_quote_invites").update({ status: "chosen" }).eq("id", inviteId);
+  await supabase.from("car_quote_invites").update({ status: "chosen" }).eq("id", chosen.invite_id);
   await supabase.from("car_quote_invites").update({ status: "not_chosen" })
-    .eq("request_id", row.id).eq("status", "quoted").neq("id", inviteId);
+    .eq("request_id", row.id).eq("status", "quoted").neq("id", chosen.invite_id);
 
   const locale = (row.locale as string) || "en";
   const ct = CAR_TYPES_DATA.find((c) => c.id === row.car_type);
@@ -71,12 +80,13 @@ export async function POST(request: NextRequest) {
       customer: { name: row.customer_name as string, email: row.customer_email as string, phone: (row.customer_phone as string | null) ?? undefined, locale },
       quote: {
         pickupLabel: carPickupLabel(row.pickup_slug as string), dateFrom: row.date_from as string, dateTo: row.date_to as string,
-        carTypeLabel, price: chosen.quote_price as number, currency: chosen.quote_currency ?? "EUR",
-        partnerName, carModel: chosen.quote_car_model ?? null,
-        inclusions: Array.isArray(chosen.quote_inclusions) ? chosen.quote_inclusions : [], days,
+        carTypeLabel, price: chosen.price, currency: chosen.currency ?? "EUR",
+        partnerName, carModel: carModelSnapshot,
+        inclusions: Array.isArray(chosen.inclusions) ? chosen.inclusions : [], days,
       },
     });
-    const losers = quotes.filter((qq) => qq.id !== inviteId && qq.quote_price != null);
+    // 1 email « pas retenu » par loueur perdant (au niveau invite, pas par option).
+    const losers = quotes.filter((qq) => qq.id !== chosen.invite_id && qq.quote_price != null);
     for (const l of losers) {
       const p = await partnerById(l.partner_id);
       if (p?.email) await sendPartnerNotChosen(p.email, p.name);

@@ -12,26 +12,41 @@ const DECLINE_COPY: Record<string, { link: string; sending: string; done: string
   el: { link: "Δεν μπορώ να απαντήσω σε αυτό το αίτημα", sending: "Αποστολή…", done: "Σημειώθηκε, ευχαριστούμε." },
 };
 
-// Formulaire de saisie du prix par le loueur. Poste le prix + le jeton (en
-// clair, depuis l'URL) à l'API qui le hash et notifie le client.
+const GEARBOX_CHOICES = [["automatic", "Automatic"], ["manual", "Manual"], ["", "Any"]] as const;
+
+type OptionDraft = { price: string; carModel: string; gearbox: string; inclusions: string[] };
+const emptyOption = (): OptionDraft => ({ price: "", carModel: "", gearbox: "", inclusions: [] });
+
+// Formulaire de saisie des prix par le loueur. Multi-offres : le loueur peut
+// proposer plusieurs variantes (ex. manuelle vs automatique). Poste la liste +
+// le jeton (en clair, depuis l'URL) à l'API qui hash et notifie le client.
 export function QuoteForm({ token, locale = "en" }: { token: string; locale?: string }) {
-  const [price, setPrice] = useState("");
-  const [carModel, setCarModel] = useState("");
-  const [inclusions, setInclusions] = useState<string[]>([]);
+  const [options, setOptions] = useState<OptionDraft[]>([emptyOption()]);
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
   const [decline, setDecline] = useState<"idle" | "sending" | "done">("idle");
   const d = DECLINE_COPY[locale] ?? DECLINE_COPY.en;
 
+  const patch = (i: number, up: Partial<OptionDraft>) =>
+    setOptions((cur) => cur.map((o, idx) => (idx === i ? { ...o, ...up } : o)));
+  const toggleIncl = (i: number, k: string) =>
+    setOptions((cur) => cur.map((o, idx) => idx !== i ? o : {
+      ...o, inclusions: o.inclusions.includes(k) ? o.inclusions.filter((x) => x !== k) : [...o.inclusions, k],
+    }));
+  const addOption = () => setOptions((cur) => (cur.length >= 6 ? cur : [...cur, emptyOption()]));
+  const removeOption = (i: number) => setOptions((cur) => cur.filter((_, idx) => idx !== i));
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    const value = Number(price);
-    if (!Number.isFinite(value) || value <= 0) { setState("error"); return; }
+    const payload = options
+      .map((o) => ({ price: Number(o.price), carModel: o.carModel.trim() || null, gearbox: o.gearbox || null, inclusions: o.inclusions }))
+      .filter((o) => Number.isFinite(o.price) && o.price > 0);
+    if (payload.length === 0) { setState("error"); return; }
     setState("sending");
     try {
       const res = await fetch("/api/car-rental/quote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, price: value, carModel: carModel.trim() || null, inclusions }),
+        body: JSON.stringify({ token, options: payload }),
       });
       const json = await res.json();
       setState(res.ok && json.ok ? "done" : "error");
@@ -66,54 +81,87 @@ export function QuoteForm({ token, locale = "en" }: { token: string; locale?: st
   if (state === "done") {
     return (
       <p style={{ margin: 0, padding: "16px 18px", borderRadius: 12, background: "#ECFDF5", color: "#065F46", fontSize: 15, lineHeight: 1.6 }}>
-        Thank you. Your price has been sent to the customer. We will connect you both as soon as they accept.
+        Thank you. Your {options.length > 1 ? "prices have" : "price has"} been sent to the customer. We will connect you both as soon as they accept.
       </p>
     );
   }
 
+  const multi = options.length > 1;
+
   return (
-    <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <label style={{ fontSize: 14, fontWeight: 600, color: "#0B3954" }}>
-        Your total price for this rental
-      </label>
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <span style={{ fontSize: 22, fontWeight: 800, color: "#0B3954" }}>€</span>
-        <input
-          type="number" min="1" step="1" inputMode="numeric" required
-          value={price} onChange={(e) => setPrice(e.target.value)}
-          placeholder="150"
-          style={{ flex: 1, padding: "12px 14px", fontSize: 18, borderRadius: 10, border: "1px solid #DCE9EE", outline: "none" }}
-        />
-      </div>
-      <label style={{ fontSize: 14, fontWeight: 600, color: "#0B3954" }}>Car model offered (optional)</label>
-      <input
-        type="text" value={carModel} onChange={(e) => setCarModel(e.target.value)}
-        placeholder="e.g. VW Polo 2023"
-        style={{ padding: "12px 14px", fontSize: 16, borderRadius: 10, border: "1px solid #DCE9EE", outline: "none" }}
-      />
-      <span style={{ fontSize: 14, fontWeight: 600, color: "#0B3954" }}>Included in the price (optional)</span>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-        {CAR_INCLUSION_KEYS.map((k) => {
-          const on = inclusions.includes(k);
-          return (
-            <button key={k} type="button"
-              onClick={() => setInclusions((cur) => on ? cur.filter((x) => x !== k) : [...cur, k])}
-              style={{ padding: "8px 12px", borderRadius: 999, fontSize: 13, cursor: "pointer",
-                border: on ? "1px solid #008C9E" : "1px solid #DCE9EE",
-                background: on ? "#008C9E" : "#fff", color: on ? "#fff" : "#0B3954" }}>
-              {CAR_INCLUSION_LABELS_PARTNER[k]}
-            </button>
-          );
-        })}
-      </div>
+    <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      {options.map((o, i) => (
+        <div key={i} style={{ display: "flex", flexDirection: "column", gap: 12, padding: multi ? "16px 16px 18px" : 0, borderRadius: 14, border: multi ? "1px solid #DCE9EE" : "none", background: multi ? "#F6FBFC" : "transparent" }}>
+          {multi && (
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#008C9E", textTransform: "uppercase", letterSpacing: ".05em" }}>Option {i + 1}</span>
+              <button type="button" onClick={() => removeOption(i)} style={{ border: "none", background: "transparent", color: "#94A3B8", fontSize: 13, cursor: "pointer", textDecoration: "underline" }}>Remove</button>
+            </div>
+          )}
+          <label style={{ fontSize: 14, fontWeight: 600, color: "#0B3954" }}>
+            Total price for this rental
+          </label>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 22, fontWeight: 800, color: "#0B3954" }}>€</span>
+            <input
+              type="number" min="1" step="1" inputMode="numeric" required={i === 0}
+              value={o.price} onChange={(e) => patch(i, { price: e.target.value })}
+              placeholder="150"
+              style={{ flex: 1, padding: "12px 14px", fontSize: 18, borderRadius: 10, border: "1px solid #DCE9EE", outline: "none" }}
+            />
+          </div>
+          <label style={{ fontSize: 14, fontWeight: 600, color: "#0B3954" }}>Car model offered (optional)</label>
+          <input
+            type="text" value={o.carModel} onChange={(e) => patch(i, { carModel: e.target.value })}
+            placeholder="e.g. VW Polo 2023"
+            style={{ padding: "12px 14px", fontSize: 16, borderRadius: 10, border: "1px solid #DCE9EE", outline: "none" }}
+          />
+          <span style={{ fontSize: 14, fontWeight: 600, color: "#0B3954" }}>Gearbox</span>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {GEARBOX_CHOICES.map(([val, lab]) => {
+              const on = o.gearbox === val;
+              return (
+                <button key={val || "any"} type="button" onClick={() => patch(i, { gearbox: val })}
+                  style={{ padding: "8px 14px", borderRadius: 999, fontSize: 13, cursor: "pointer",
+                    border: on ? "1px solid #008C9E" : "1px solid #DCE9EE",
+                    background: on ? "#008C9E" : "#fff", color: on ? "#fff" : "#0B3954" }}>
+                  {lab}
+                </button>
+              );
+            })}
+          </div>
+          <span style={{ fontSize: 14, fontWeight: 600, color: "#0B3954" }}>Included in the price (optional)</span>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {CAR_INCLUSION_KEYS.map((k) => {
+              const on = o.inclusions.includes(k);
+              return (
+                <button key={k} type="button" onClick={() => toggleIncl(i, k)}
+                  style={{ padding: "8px 12px", borderRadius: 999, fontSize: 13, cursor: "pointer",
+                    border: on ? "1px solid #008C9E" : "1px solid #DCE9EE",
+                    background: on ? "#008C9E" : "#fff", color: on ? "#fff" : "#0B3954" }}>
+                  {CAR_INCLUSION_LABELS_PARTNER[k]}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+
+      {options.length < 6 && (
+        <button type="button" onClick={addOption}
+          style={{ alignSelf: "flex-start", padding: "8px 14px", borderRadius: 999, border: "1px dashed #008C9E", background: "#fff", color: "#008C9E", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+          + Add another car / price
+        </button>
+      )}
+
       <button
         type="submit" disabled={state === "sending"}
-        style={{ marginTop: 6, padding: "13px 20px", borderRadius: 999, border: "none", background: "#008C9E", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", opacity: state === "sending" ? 0.6 : 1 }}
+        style={{ marginTop: 2, padding: "13px 20px", borderRadius: 999, border: "none", background: "#008C9E", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", opacity: state === "sending" ? 0.6 : 1 }}
       >
-        {state === "sending" ? "Sending…" : "Send my price to the customer"}
+        {state === "sending" ? "Sending…" : multi ? "Send my offers to the customer" : "Send my price to the customer"}
       </button>
       {state === "error" && (
-        <p style={{ margin: 0, color: "#B91C1C", fontSize: 13 }}>Something went wrong. Please check the amount and try again.</p>
+        <p style={{ margin: 0, color: "#B91C1C", fontSize: 13 }}>Please enter at least one valid price and try again.</p>
       )}
       <button
         type="button" onClick={declineRequest} disabled={decline === "sending"}

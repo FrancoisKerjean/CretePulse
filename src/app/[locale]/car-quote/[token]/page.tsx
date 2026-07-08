@@ -75,12 +75,15 @@ export default async function CarQuotePage({ params }: { params: Promise<{ local
           <p style={{ margin: 0, padding: "16px 18px", borderRadius: 12, background: "#F1F5F9", color: "#334155", fontSize: 15, lineHeight: 1.6 }}>
             This request is now closed. Thank you.
           </p>
-        ) : invite?.status === "quoted" ? (
-          <p style={{ margin: 0, padding: "16px 18px", borderRadius: 12, background: "#ECFDF5", color: "#065F46", fontSize: 15, lineHeight: 1.6 }}>
-            Your price was submitted for this request. Thank you. We will connect you if the customer chooses your offer.
-          </p>
         ) : (
-          <QuoteForm token={token} locale={locale} />
+          <>
+            {invite?.status === "quoted" ? (
+              <p style={{ margin: "0 0 16px", padding: "12px 16px", borderRadius: 12, background: "#ECFDF5", color: "#065F46", fontSize: 14, lineHeight: 1.6 }}>
+                You already sent an offer for this request. You can send more options or update it below · your new submission replaces the previous one.
+              </p>
+            ) : null}
+            <QuoteForm token={token} locale={locale} />
+          </>
         )}
       </div>
     </main>

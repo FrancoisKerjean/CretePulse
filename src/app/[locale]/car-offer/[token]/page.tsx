@@ -9,8 +9,10 @@ import { inclusionLabels } from "@/lib/car-inclusions";
 import { isOfferExpired } from "@/lib/car-offer-expiry";
 import { sharedOfferCopy } from "@/lib/car-offer-copy";
 import { requestByClientToken } from "@/lib/car-quotes-db";
-import { sortQuotesByPrice } from "@/lib/car-quotes";
-import type { QuoteInvite } from "@/lib/car-quotes";
+import { sortOptionsByPrice } from "@/lib/car-quotes";
+import type { QuoteOption } from "@/lib/car-quotes";
+
+const GEARBOX_LABEL: Record<string, string> = { automatic: "Automatic", manual: "Manual" };
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -44,19 +46,20 @@ const COPY: Record<string, Copy> = {
 function OfferCard({
   offer, token, request, locale, c,
 }: {
-  offer: QuoteInvite;
+  offer: QuoteOption;
   token: string;
   request: Record<string, unknown>;
   locale: string;
   c: Copy & ReturnType<typeof sharedOfferCopy>;
 }) {
-  const expired = isOfferExpired(offer.quoted_at, request.date_from as string, Date.now());
+  const expired = isOfferExpired(offer.created_at, request.date_from as string, Date.now());
   const ct = CAR_TYPES_DATA.find((cc) => cc.id === (request.car_type as string));
   const carTypeLabel = ct?.labels[locale] ?? ct?.labels.en ?? (request.car_type as string);
-  const priceStr = money(offer.quote_price!, offer.quote_currency ?? "EUR");
-  const incl = inclusionLabels(offer.quote_inclusions ?? null, locale);
+  const priceStr = money(offer.price, offer.currency ?? "EUR");
+  const incl = inclusionLabels(offer.inclusions ?? null, locale);
   const days = Math.max(1, Math.round((new Date(request.date_to as string).getTime() - new Date(request.date_from as string).getTime()) / 86400000));
-  const perDay = money(Math.round(offer.quote_price! / days), offer.quote_currency ?? "EUR");
+  const perDay = money(Math.round(offer.price / days), offer.currency ?? "EUR");
+  const carLine = [offer.car_model, offer.gearbox ? GEARBOX_LABEL[offer.gearbox] : null].filter(Boolean).join(" · ");
 
   return (
     <div style={{ ...card, marginBottom: 20, opacity: expired ? 0.65 : 1 }}>
@@ -64,6 +67,7 @@ function OfferCard({
       <h2 style={{ margin: "0 0 6px", fontSize: 28, color: "#0B3954", fontWeight: 800 }}>{priceStr}</h2>
       <p style={{ margin: "0 0 6px", color: "#5C7886", fontSize: 13 }}>{priceStr} {c.total} · ~{perDay} {c.perDay}</p>
       {offer.partner_name ? <p style={{ margin: "0 0 12px", color: "#0B3954", fontSize: 14 }}>{c.offerFrom} <strong>{offer.partner_name}</strong> · {c.localAgency}</p> : null}
+      {carLine ? <p style={{ margin: "0 0 12px", color: "#0B3954", fontSize: 15, fontWeight: 700 }}>{carLine}</p> : null}
       <p style={{ margin: "0 0 20px", color: "#5C7886", fontSize: 14, lineHeight: 1.6 }}>{c.intro}</p>
 
       <div style={{ background: "#F6FBFC", border: "1px solid #DCE9EE", borderRadius: 14, padding: "14px 16px", marginBottom: 22, color: "#0B3954", fontSize: 14, lineHeight: 1.8 }}>
@@ -71,7 +75,6 @@ function OfferCard({
         <div>{carPickupLabel(request.pickup_slug as string)}</div>
         <div>{request.date_from as string} → {request.date_to as string}</div>
         <div>{carTypeLabel}</div>
-        {offer.quote_car_model ? <div style={{ fontWeight: 700 }}>{offer.quote_car_model}</div> : null}
       </div>
 
       {incl.length ? (
@@ -91,7 +94,7 @@ function OfferCard({
       {expired ? (
         <p style={{ margin: 0, padding: "16px 18px", borderRadius: 12, background: "#FEF9EC", color: "#92400E", fontSize: 15, lineHeight: 1.6 }}>{c.expiredOffer}</p>
       ) : (
-        <AcceptButton token={token} inviteId={offer.id} label={c.accept} doneText={c.done} expiredText={c.expiredOffer} />
+        <AcceptButton token={token} optionId={offer.id} label={c.accept} doneText={c.done} expiredText={c.expiredOffer} />
       )}
     </div>
   );
@@ -104,8 +107,8 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
 
   const found = await requestByClientToken(token);
   if (!found) notFound();
-  const { request, quotes } = found;
-  const offers = sortQuotesByPrice(quotes);
+  const { request, options } = found;
+  const offers = sortOptionsByPrice(options);
 
   // Etat : déjà accepté
   if (request.status === "accepted") {
