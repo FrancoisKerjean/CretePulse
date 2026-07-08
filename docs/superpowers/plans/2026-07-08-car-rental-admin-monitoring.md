@@ -94,7 +94,7 @@ Create `src/lib/car-monitoring.ts` :
 // car-quotes.ts) : classification des invites, état des relances, timeline, KPI,
 // perf loueur. Zéro I/O. Node-safe : importable par scripts/check-car-monitoring.mjs.
 // Réutilise car-quotes.ts et car-offer-expiry.ts (jamais réécrits).
-import { partnerNeedsRelance, clientNeedsRelance, findChosenInvite } from "./car-quotes.ts";
+import { partnerNeedsRelance, clientNeedsRelance } from "./car-quotes.ts";
 
 const HOUR = 3600000;
 
@@ -180,7 +180,7 @@ const NOW = Date.parse("2026-07-09T10:00:00Z");
   ]);
   ok("rollup invited=2", roll.invited === 2);
   ok("rollup relanced=1", roll.relanced === 1);
-  ok("rollup silent=2 (invited-status)", roll.silent === 2);
+  ok("rollup silent=1 (invited non relancé)", roll.silent === 1);
 }
 ```
 
@@ -225,7 +225,7 @@ export function partnerRelanceRollup(invites: MonitorInvite[]): {
   return {
     invited: invitedStatus.length,
     relanced: invites.filter((i) => i.relanced_at != null).length,
-    silent: invitedStatus.length,
+    silent: invitedStatus.filter((i) => !i.relanced_at).length,
   };
 }
 ```
@@ -437,7 +437,7 @@ export function buildTimeline(
 
   if (req.client_relanced_at) ev.push({ at: req.client_relanced_at, label: "Relance client" });
   if (req.accepted_at) {
-    const chosen = findChosenInvite(invites, invites.find((i) => i.status === "chosen")?.id ?? -1);
+    const chosen = invites.find((i) => i.status === "chosen" && i.quote_price != null) ?? null;
     ev.push({ at: req.accepted_at, label: `Client a choisi${chosen ? ` (${chosen.partner_name})` : ""}` });
   }
   if (req.outcome && req.outcome_at) ev.push({ at: req.outcome_at, label: `Issue : ${req.outcome}` });
