@@ -1,5 +1,5 @@
 // node --experimental-strip-types scripts/check-car-monitoring.mjs
-import { classifyInvites, partnerRelanceState, partnerRelanceRollup, clientRelanceState, isSilentRequest, isAwaitingChoice, buildTimeline, kpis, partnerPerf } from "../src/lib/car-monitoring.ts";
+import { classifyInvites, reconcileWinnerSnapshot, partnerRelanceState, partnerRelanceRollup, clientRelanceState, isSilentRequest, isAwaitingChoice, buildTimeline, kpis, partnerPerf } from "../src/lib/car-monitoring.ts";
 
 let fail = 0;
 const ok = (n, c) => { console.log(c ? `ok - ${n}` : `FAIL - ${n}`); if (!c) fail++; };
@@ -14,6 +14,25 @@ const inv = (id, price, status = "quoted", o = {}) => ({
   declined_at: o.declined_at ?? (status === "declined" ? "2026-07-08T09:00:00Z" : null),
   relanced_at: o.relanced_at ?? null,
 });
+
+// reconcileWinnerSnapshot : reporte le devis gagnant first-come (car_requests.quoted_*) sur l'invite du loueur.
+{
+  const legacy = [
+    inv(7, null, "invited", { created_at: "2026-07-08T08:00:00Z" }),
+    inv(8, null, "invited"),
+  ];
+  const rec = reconcileWinnerSnapshot(legacy, { status: "quoted", quoted_by_partner_id: 7, quoted_price: 370, quoted_at: "2026-07-08T10:00:00Z" });
+  ok("gagnant legacy -> chiffré 370", rec.find((i) => i.partner_id === 7).quote_price === 370);
+  ok("gagnant legacy -> status quoted", rec.find((i) => i.partner_id === 7).status === "quoted");
+  ok("gagnant legacy -> plus silencieux", classifyInvites(rec).silent.every((i) => i.partner_id !== 7));
+  ok("autre invite inchangée", rec.find((i) => i.partner_id === 8).quote_price === null);
+  const recA = reconcileWinnerSnapshot(legacy, { status: "accepted", quoted_by_partner_id: 7, quoted_price: 370, quoted_at: null });
+  ok("gagnant accepted -> chosen", recA.find((i) => i.partner_id === 7).status === "chosen");
+  const real = [inv(7, 300, "quoted")];
+  const recR = reconcileWinnerSnapshot(real, { status: "quoted", quoted_by_partner_id: 7, quoted_price: 999, quoted_at: null });
+  ok("invite déjà chiffrée non écrasée", recR[0].quote_price === 300);
+  ok("sans snapshot -> identité", reconcileWinnerSnapshot(legacy, { status: "sent", quoted_by_partner_id: null, quoted_price: null, quoted_at: null }) === legacy);
+}
 
 // classifyInvites : 3 seaux, chiffrés triés prix↑ (choisi en tête), puis silencieux, puis désistés.
 {

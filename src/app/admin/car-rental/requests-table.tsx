@@ -67,8 +67,8 @@ function hoursLabel(ms: number): string {
   return h >= 1 ? `${h}h` : `${Math.max(1, Math.round(ms / 60000))}min`;
 }
 
-function InviteRoster({ invites, requestStatus, now }: {
-  invites: MonitorInvite[]; requestStatus: string; now: number;
+function InviteRoster({ invites, requestStatus, now, startPassed }: {
+  invites: MonitorInvite[]; requestStatus: string; now: number; startPassed: boolean;
 }) {
   const { quoted, silent, declined } = classifyInvites(invites);
   if (invites.length === 0) return null;
@@ -87,15 +87,17 @@ function InviteRoster({ invites, requestStatus, now }: {
       {silent.map((s) => {
         const invCreatedMs = new Date(s.created_at).getTime();
         const st = partnerRelanceState(s, requestStatus, invCreatedMs, now);
-        const badge =
+        // Une location déjà commencée ne se relance plus (cohérent avec le cron car-relance).
+        const badge = startPassed ? "location commencée" :
           st.kind === "relanced" ? `relancé le ${fmtDate(st.at)}` :
           st.kind === "due" ? "relance due" :
           st.kind === "dueInMs" ? `relance dans ${hoursLabel(st.ms)}` : "jamais relancé";
+        const highlight = !startPassed && st.kind === "due";
         return (
           <li key={s.id} className="flex items-center gap-1.5 rounded-xl border border-dashed border-border bg-sand/40 px-3 py-1 text-sm text-text-muted">
             <span>{s.partner_name}</span>
             <span className="italic text-text-light">silencieux</span>
-            <span className={`rounded-full px-2 py-0.5 text-xs ${st.kind === "due" ? "bg-sun text-night font-bold" : "bg-border text-text-muted"}`}>{badge}</span>
+            <span className={`rounded-full px-2 py-0.5 text-xs ${highlight ? "bg-sun text-night font-bold" : "bg-border text-text-muted"}`}>{badge}</span>
           </li>
         );
       })}
@@ -222,7 +224,7 @@ export function RequestsTable({
                 </div>
               </div>
 
-              <InviteRoster invites={invites} requestStatus={r.status} now={now} />
+              <InviteRoster invites={invites} requestStatus={r.status} now={now} startPassed={startPassed} />
 
               {/* Relances + expiry (une ligne compacte). */}
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-muted">

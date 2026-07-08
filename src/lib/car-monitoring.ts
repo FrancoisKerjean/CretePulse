@@ -26,6 +26,33 @@ const isPriced = (i: MonitorInvite): boolean =>
   i.quote_price != null && (i.status === "quoted" || i.status === "chosen" || i.status === "not_chosen");
 
 /**
+ * Réconcilie le snapshot gagnant du modèle first-come (`car_requests.quoted_*`) dans les invites.
+ * Les demandes d'avant le multi-devis portent le devis gagnant sur la DEMANDE, mais l'invite du
+ * loueur reste `invited` sans prix : sans réconciliation, le gagnant apparaît à tort « silencieux »
+ * et les KPI comptent 0 devis. On reporte le devis snapshoté sur l'invite du loueur gagnant.
+ * Les vraies invites déjà chiffrées (vrai multi-devis) ne sont JAMAIS écrasées. Zéro invention :
+ * `quoted_price`/`quoted_at` sont des colonnes réelles. Renvoie la liste inchangée sans snapshot.
+ */
+export function reconcileWinnerSnapshot(
+  invites: MonitorInvite[],
+  req: { status: string; quoted_by_partner_id: number | null; quoted_price: number | null; quoted_at: string | null },
+): MonitorInvite[] {
+  if (req.quoted_by_partner_id == null || req.quoted_price == null) return invites;
+  let patched = false;
+  const out = invites.map((i) => {
+    if (patched || i.partner_id !== req.quoted_by_partner_id || i.quote_price != null) return i;
+    patched = true;
+    return {
+      ...i,
+      quote_price: req.quoted_price,
+      quoted_at: req.quoted_at ?? i.quoted_at ?? i.created_at,
+      status: req.status === "accepted" ? "chosen" : "quoted",
+    };
+  });
+  return patched ? out : invites;
+}
+
+/**
  * Classe les invites d'UNE demande : chiffrés (choisi en tête puis prix↑), silencieux, désistés.
  *
  * Note : les statuts `chosen` et `not_chosen` (avec prix) atterrissent dans le bucket `quoted`

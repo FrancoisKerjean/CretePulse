@@ -7,7 +7,7 @@ import { isCarAdmin } from "@/lib/car-admin-auth";
 import {
   requestsSummary, type AdminPartner, type AdminRequest,
 } from "@/lib/car-admin";
-import { kpis } from "@/lib/car-monitoring";
+import { kpis, reconcileWinnerSnapshot } from "@/lib/car-monitoring";
 import type { MonitorInvite } from "@/lib/car-monitoring";
 import { RequestsTable } from "./requests-table";
 import { PartnersTable } from "./partners-table";
@@ -83,6 +83,14 @@ export default async function CarAdminPage({
       quoted_at: r.quoted_at, declined_at: r.declined_at, relanced_at: r.relanced_at,
     });
     monitorByRequest.set(r.request_id, list);
+  }
+
+  // Réconcilie le snapshot gagnant first-come (car_requests.quoted_*) sur l'invite du loueur :
+  // sinon les vieilles demandes affichent le gagnant comme « silencieux » et 0 devis en KPI.
+  const requestsById = new Map(requests.map((r) => [r.id, r]));
+  for (const [rid, list] of monitorByRequest) {
+    const req = requestsById.get(rid);
+    if (req) monitorByRequest.set(rid, reconcileWinnerSnapshot(list, req));
   }
 
   // Task 13 Step 1 : monitorByPartner construit UNE fois à partir de monitorByRequest (pas de N+1).
