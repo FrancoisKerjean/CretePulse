@@ -27,15 +27,15 @@ const baseOpts = {
   commissionPct: 15,
 };
 
-describe("affiliateWelcomeBody — quotable (tour/activity/transfer)", () => {
+describe("affiliateWelcomeBody — quotable (tour/activity/taxi)", () => {
   it("contains '15%' for a quotable affiliate", () => {
     const html = affiliateWelcomeBody("quotable", baseOpts);
     expect(html).toContain("15%");
   });
 
-  it("contains 'commission' or '15%' for quotable", () => {
-    const html = affiliateWelcomeBody("quotable", baseOpts);
-    expect(html.toLowerCase()).toMatch(/15%|commission/);
+  it("reflects a custom commissionPct (guards against hardcoded 15%)", () => {
+    const html = affiliateWelcomeBody("quotable", { ...baseOpts, commissionPct: 20 });
+    expect(html).toContain("20%");
   });
 
   it("contains the affiliate link", () => {

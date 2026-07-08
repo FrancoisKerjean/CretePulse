@@ -110,8 +110,8 @@ test("affiliateClass: activity → quotable", () => {
   assert.equal(affiliateClass("activity"), "quotable");
 });
 
-test("affiliateClass: transfer → quotable", () => {
-  assert.equal(affiliateClass("transfer"), "quotable");
+test("affiliateClass: whitespace-padded taxi → quotable (trim check)", () => {
+  assert.equal(affiliateClass("  taxi  "), "quotable");
 });
 
 test("affiliateClass: taxi → quotable", () => {
