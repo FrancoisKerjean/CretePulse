@@ -2,7 +2,7 @@
 // écritures par forms natifs bindés aux server actions (zéro client JS).
 import {
   requestCommission, buildCarWaMessage, waHref,
-  type AdminPartner, type AdminRequest,
+  type AdminPartner, type AdminRequest, type AdminQuote,
 } from "@/lib/car-admin";
 import { carPickupLabel } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
@@ -52,12 +52,35 @@ function relayWaLink(r: AdminRequest, p: AdminPartner | undefined) {
   );
 }
 
+function QuotesList({ quotes }: { quotes: AdminQuote[] }) {
+  const withPrice = quotes.filter((q) => q.quote_price != null);
+  if (withPrice.length === 0) return null;
+  const sorted = [...withPrice].sort((a, b) => (a.quote_price ?? 0) - (b.quote_price ?? 0));
+  return (
+    <ul className="mt-2 flex flex-wrap gap-2 border-t border-border pt-2">
+      {sorted.map((q) => (
+        <li key={q.partner_id} className={`flex items-center gap-1.5 rounded-xl border px-3 py-1 text-sm ${q.status === "chosen" ? "border-ok bg-ok/10 font-bold" : "border-border bg-white text-text-muted"}`}>
+          <span>{q.partner_name}</span>
+          <span className="font-data">{q.quote_price} €</span>
+          {q.status === "chosen" && (
+            <span className="rounded-full bg-ok px-2 py-0.5 text-xs font-bold text-white">choisi par le client</span>
+          )}
+          {q.status === "declined" && (
+            <span className="rounded-full bg-border px-2 py-0.5 text-xs text-text-muted">ne peut pas</span>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function RequestsTable({
-  requests, partnersById, invitesByRequest, statusFilter, partnerFilter, page,
+  requests, partnersById, invitesByRequest, quotesByRequest, statusFilter, partnerFilter, page,
 }: {
   requests: AdminRequest[];
   partnersById: Map<number, AdminPartner>;
   invitesByRequest: Map<number, number>;
+  quotesByRequest: Map<number, AdminQuote[]>;
   statusFilter: string;
   partnerFilter: string;
   page: number;
@@ -145,6 +168,10 @@ export function RequestsTable({
                   {commission != null ? <> · commission <span className="font-data font-bold">{commission.toFixed(2)} €</span></> : null}
                 </div>
               </div>
+
+              {quotesByRequest.has(r.id) && (
+                <QuotesList quotes={quotesByRequest.get(r.id)!} />
+              )}
 
               <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
                 {r.outcome == null ? (

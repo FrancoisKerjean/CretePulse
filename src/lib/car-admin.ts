@@ -149,6 +149,13 @@ export function validatePartnerUpdate(u: { zone_ids: string[]; commission: numbe
   return null;
 }
 
+export interface AdminQuote {
+  partner_id: number;
+  partner_name: string;
+  status: string;
+  quote_price: number | null;
+}
+
 export interface WaLeadFields {
   partnerFirstName: string;
   pickupLabel: string;
