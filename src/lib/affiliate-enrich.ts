@@ -1,16 +1,18 @@
 /**
  * affiliate-enrich.ts
  *
- * Shared logic for enriching affiliates with photo_url + description.
+ * Shared logic for enriching affiliates with photo_url.
+ * Description generation is intentionally NOT done here: it is delegated to the
+ * VPS Haiku worker (`scripts/backfill-affiliate-content.mjs`) which fills rows
+ * where `description IS NULL` via `claude -p --model claude-haiku-4-5-20251001`.
  *
  * Used by:
  *   - scripts/backfill-affiliate-content.mjs  (Node CLI, uses claude CLI via child_process)
- *   - src/app/api/affiliate/register/route.ts  (Vercel serverless, uses Anthropic HTTP API)
+ *   - src/app/api/affiliate/register/route.ts  (Vercel serverless, photo-only)
  *
- * OG-image extraction is shared. AI description generation is branched:
- *   - CLI context  → caller passes an `askAi` function wrapping the claude CLI / Python shim
- *   - Serverless   → caller passes an `askAi` function using Anthropic HTTP (ANTHROPIC_API_KEY)
- *   - No key       → caller passes null → fallback per-category templates (4 languages, no AI)
+ * OG-image extraction is shared.
+ * `generateDescriptionViaApi` and `fallbackDescription` are kept exported for
+ * the backfill script and tests, but MUST NOT be called on signup.
  */
 
 // ─── OG image extraction ────────────────────────────────────────────────────
@@ -358,27 +360,22 @@ export async function fetchOgImage(
 }
 
 /**
- * Full serverless enrichment: fetch og:image + generate description via Anthropic HTTP API.
- * Degrades gracefully if the API key is absent or calls fail.
+ * Serverless signup enrichment: fetch og:image only.
+ * Description is intentionally left NULL so the VPS Haiku worker picks it up.
+ * Never blocks the signup (always best-effort).
  *
- * Returns { photo_url, description } — both may be null if unavailable.
- *
- * TODO [owner: Kami, butoir: 2026-07-31] — add ANTHROPIC_API_KEY to Vercel env vars
- * (https://vercel.com/kerjeanfrancois29/crete-direct/settings/environment-variables)
- * to enable AI-generated descriptions on signup. Without it, description falls back
- * to per-category template (still 4 languages, factual, decent).
+ * Returns { photo_url } — may be null if the fetch fails or no real image is found.
  */
 export async function enrichAffiliate(opts: {
   redirectUrl: string;
   name: string;
   category: string;
-}): Promise<{ photo_url: string | null; description: LocalizedDescription }> {
-  const { redirectUrl, name, category } = opts;
+}): Promise<{ photo_url: string | null }> {
+  const { redirectUrl } = opts;
 
-  // 1. Fetch site HTML (shared for both photo and AI text)
-  let html = "";
+  // Fetch site HTML to extract the OG/content photo only.
+  // Description is NOT generated here — it is left NULL for the VPS Haiku worker.
   let photo_url: string | null = null;
-  let siteText = "";
 
   try {
     const resp = await fetch(redirectUrl, {
@@ -386,22 +383,12 @@ export async function enrichAffiliate(opts: {
       signal: AbortSignal.timeout(8000),
     });
     if (resp.ok) {
-      html = await resp.text();
+      const html = await resp.text();
       photo_url = extractOgImage(html, redirectUrl);
-      siteText = extractSiteText(html);
     }
   } catch (err) {
     console.error("[affiliate-enrich] fetch failed:", err);
   }
 
-  // 2. Generate description
-  let description: LocalizedDescription;
-  if (siteText) {
-    const aiResult = await generateDescriptionViaApi(name, category, siteText);
-    description = aiResult ?? fallbackDescription(category);
-  } else {
-    description = fallbackDescription(category);
-  }
-
-  return { photo_url, description };
+  return { photo_url };
 }

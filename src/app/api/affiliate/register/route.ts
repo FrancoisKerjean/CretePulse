@@ -94,29 +94,27 @@ export async function POST(request: NextRequest) {
     console.error("[affiliate-register] welcome email failed:", e);
   }
 
-  // Auto-enrich: fetch photo + generate description after the response is sent.
+  // Auto-enrich: fetch photo_url after the response is sent.
+  // Description is intentionally left NULL — the VPS Haiku worker fills it
+  // by selecting rows where description IS NULL (backfill-affiliate-content.mjs).
   // Runs via next/server `after()` so the HTTP response is NOT delayed.
   // Best-effort: any error is swallowed — signup must always succeed.
-  // NOTE: description uses Anthropic HTTP API if ANTHROPIC_API_KEY is set in
-  // Vercel env vars, otherwise falls back to per-category template (4 languages).
-  // TODO [owner: Kami, butoir: 2026-07-31] — add ANTHROPIC_API_KEY to Vercel:
-  //   https://vercel.com/kerjeanfrancois29/crete-direct/settings/environment-variables
   after(async () => {
     try {
-      const { photo_url, description } = await enrichAffiliate({
+      const { photo_url } = await enrichAffiliate({
         redirectUrl: v.data.redirect_url,
         name: v.data.name,
         category: v.data.category,
       });
       const { error: enrichErr } = await supabaseAdmin
         .from("affiliates")
-        .update({ photo_url, description })
+        .update({ photo_url })
         .eq("slug", slug);
       if (enrichErr) {
         console.error("[affiliate-register] enrich update failed:", enrichErr.message);
       } else {
         console.log(
-          `[affiliate-register] enriched ${slug}: photo=${photo_url ?? "null"} desc_en="${description.en.slice(0, 60)}…"`,
+          `[affiliate-register] enriched ${slug}: photo=${photo_url ?? "null"} (desc=null, pending VPS worker)`,
         );
       }
     } catch (e) {

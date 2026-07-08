@@ -1,15 +1,17 @@
 /**
  * Unit tests for the pure functions in affiliate-enrich.ts.
- * Tests: isLikelyRealPhoto, extractOgImage, extractSiteText, fallbackDescription, parseDescriptionJson.
- * No network calls, no DB, no env vars needed.
+ * Tests: isLikelyRealPhoto, extractOgImage, extractSiteText, fallbackDescription,
+ *        parseDescriptionJson, enrichAffiliate (photo-only — no description on signup).
+ * No real network calls, no DB, no env vars needed.
  */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import {
   isLikelyRealPhoto,
   extractOgImage,
   extractSiteText,
   fallbackDescription,
   parseDescriptionJson,
+  enrichAffiliate,
 } from "@/lib/affiliate-enrich";
 
 // ─── isLikelyRealPhoto ───────────────────────────────────────────────────────
@@ -239,5 +241,78 @@ describe("parseDescriptionJson", () => {
   it("throws when no JSON found", () => {
     const raw = "No JSON here at all.";
     expect(() => parseDescriptionJson(raw)).toThrow();
+  });
+});
+
+// ─── enrichAffiliate (photo-only, no description on signup) ──────────────────
+
+describe("enrichAffiliate", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("returns photo_url when the site has an og:image, and no description field", async () => {
+    const html = `<meta property="og:image" content="https://hotel.example.com/hero.jpg">`;
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      text: async () => html,
+    }));
+
+    const result = await enrichAffiliate({
+      redirectUrl: "https://hotel.example.com/",
+      name: "Test Hotel",
+      category: "hotel",
+    });
+
+    expect(result.photo_url).toBe("https://hotel.example.com/hero.jpg");
+    // description must NOT be set — the VPS Haiku worker fills it
+    expect(result).not.toHaveProperty("description");
+  });
+
+  it("returns photo_url=null when fetch fails, and no description field", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("network error")));
+
+    const result = await enrichAffiliate({
+      redirectUrl: "https://broken.example.com/",
+      name: "Broken Site",
+      category: "restaurant",
+    });
+
+    expect(result.photo_url).toBeNull();
+    expect(result).not.toHaveProperty("description");
+  });
+
+  it("returns photo_url=null when the page has no real image (only favicon)", async () => {
+    const html = `<link rel="icon" href="https://example.com/favicon.ico">`;
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      text: async () => html,
+    }));
+
+    const result = await enrichAffiliate({
+      redirectUrl: "https://example.com/",
+      name: "Minimal Site",
+      category: "tour",
+    });
+
+    expect(result.photo_url).toBeNull();
+    expect(result).not.toHaveProperty("description");
+  });
+
+  it("returns photo_url=null when HTTP response is not ok", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+      text: async () => "Not Found",
+    }));
+
+    const result = await enrichAffiliate({
+      redirectUrl: "https://example.com/404",
+      name: "404 Partner",
+      category: "other",
+    });
+
+    expect(result.photo_url).toBeNull();
+    expect(result).not.toHaveProperty("description");
   });
 });
