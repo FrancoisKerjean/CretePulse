@@ -15,7 +15,6 @@ import { MapPin, Car, Waves, Fish, Sun, Wind, Baby, UtensilsCrossed, ChevronLeft
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 import { buildAlternates } from "@/lib/seo";
 import { CarPromo } from "@/components/car-rental/CarPromo";
 import { allPickups } from "@/lib/car-partners";
@@ -560,12 +559,10 @@ export default async function BeachDetailPage({
           </div>
         </section>
 
-        {/* Car rental (audit 13/06, Vague B) : Auto Smart primaire partout où
-            il couvre réellement. On route vers le wizard quand le pickup le plus
-            proche de la plage est dans une zone servie (chania-ouest, rethymno,
-            heraklion-centre), sinon repli affilié DiscoverCars (lasithi-est non
-            couvert). Remplace l'ancien `region === "west"` qui envoyait à tort
-            les plages du centre/rethymno vers DiscoverCars. */}
+        {/* Car rental : wizard interne uniquement (DiscoverCars retire du site,
+            decision Kami 08/07 - Zorbas couvre desormais toute la Crete). On
+            pre-remplit le pickup le plus proche s'il est dans une zone servie,
+            sinon le wizard ouvre a l'etape 1. */}
         {(() => {
           const nearestPickup = nearestBy(
             allPickups(),
@@ -573,10 +570,12 @@ export default async function BeachDetailPage({
             { lat: beach.latitude, lon: beach.longitude },
             1,
           )[0];
-          return nearestPickup?.served ? (
-            <CarPromo locale={locale} pickup={nearestPickup.slug} source="beach" />
-          ) : (
-            <AffiliateBanner type="carRental" locale={locale} placeName={name} className="mb-4" />
+          return (
+            <CarPromo
+              locale={locale}
+              pickup={nearestPickup?.served ? nearestPickup.slug : undefined}
+              source="beach"
+            />
           );
         })()}
 

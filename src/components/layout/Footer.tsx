@@ -85,16 +85,12 @@ export function Footer() {
             <Link href="/buses" className={linkCls}>{t("buses")}</Link>
             <Link href="/airport" className={linkCls}>{t("airports")}</Link>
             <Link href="/weather" className={linkCls}>{t("weather")}</Link>
-            {/* Affiliate (DiscoverCars). Site-wide incl. homepage: secures the
-                partner's lifetime 80% homepage-link offer (11/06/2026). */}
-            <a
-              href={carRental.url}
-              target="_blank"
-              rel="noopener noreferrer nofollow sponsored"
-              className={linkCls}
-            >
+            {/* Voiture = wizard interne /car-rental (loueurs partenaires locaux).
+                DiscoverCars retire du site (decision Kami 08/07) : on ne pousse
+                que notre outil. */}
+            <Link href="/car-rental" className={linkCls}>
               {carRentalLabel}
-            </a>
+            </Link>
           </Col>
 
           <Col title={t("discover")}>

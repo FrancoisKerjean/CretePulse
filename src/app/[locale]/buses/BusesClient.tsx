@@ -15,7 +15,7 @@ import { RouteLine } from "@/components/RouteLine";
 import { originPlaces } from "@/lib/bus-departures";
 import { pairSlug } from "@/lib/bus-pairs";
 import { PushBell } from "@/components/PushBell";
-import { AffiliateBanner } from "@/components/ui/affiliate-banner";
+import { CarPromo } from "@/components/car-rental/CarPromo";
 
 // ---------------------------------------------------------------------------
 // Slugs valides des pages cibles (mirror des generateStaticParams cote serveur).
@@ -505,14 +505,9 @@ export function BusesClient({
                   {t("noRoute", locale)}
                 </div>
                 {/* Pas de bus direct = meilleur moment pour proposer la voiture.
-                    Signal mesuré (Plausible, 24/06) : /buses = ~74 % du trafic mais
-                    capture affiliée quasi nulle -> CTA contextuel sur l'intention. */}
-                <AffiliateBanner
-                  type="carRental"
-                  locale={locale}
-                  placeName={toPlace || fromPlace || undefined}
-                  placement="buses-noroute"
-                />
+                    Wizard interne uniquement (DiscoverCars retire, decision Kami
+                    08/07). Signal Plausible 24/06 : /buses = ~74 % du trafic. */}
+                <CarPromo locale={locale} source="buses-noroute" />
               </div>
             ) : (
               <RouteList list={filtered} locale={locale} />
@@ -521,6 +516,13 @@ export function BusesClient({
         ) : (
           <>
             <PopularRoutes popular={popular} locale={locale} onPick={pick} />
+            {/* Levier expo (audit Plausible 08/07) : /buses = page n1 (2366 vis/30j)
+                mais le CTA voiture n'apparaissait qu'apres une recherche. Encart
+                statique sur le landing = expose le wizard a tout le trafic bus,
+                l'audience la plus intentionnee (se deplacer sans voiture). */}
+            <div className="mb-6">
+              <CarPromo locale={locale} source="buses-home" />
+            </div>
             {east.length > 0 && (
               <CollapsibleRegion title={t("regionEast", locale)} list={east} locale={locale} />
             )}
@@ -536,8 +538,8 @@ export function BusesClient({
                   ))}
                 </div>
                 {/* Ces destinations n'ont pas de bus direct -> la voiture est la
-                    réponse pratique. CTA voiture contextuel (cf signal Plausible 24/06). */}
-                <AffiliateBanner type="carRental" locale={locale} placement="buses-nodirect" className="mt-4" />
+                    réponse pratique. Wizard interne (cf signal Plausible 24/06). */}
+                <CarPromo locale={locale} source="buses-nodirect" />
               </section>
             )}
           </>

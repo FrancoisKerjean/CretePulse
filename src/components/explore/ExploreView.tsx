@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Star, X, MapPin, Search, ChevronLeft, ChevronRight, ChevronUp,
-  SlidersHorizontal, Waves, Mountain, Home, Landmark, TreePine, Sparkles,
+  SlidersHorizontal, Waves, Mountain, Home, Landmark, TreePine, Sparkles, Car,
 } from "lucide-react";
+import { ImpressionTracker } from "@/components/ui/ImpressionTracker";
 import type { CbPlaceListItem, CbPlace } from "@/lib/cb-places";
 import { WaterQualityBadge } from "@/components/WaterQualityBadge";
 import { getCbPlaceBySlug } from "@/lib/cb-places";
@@ -19,6 +20,15 @@ import { CiCompass } from "@/components/icons";
 import { CbPlaceActions } from "@/components/explore/CbPlaceActions";
 import { CarPromo } from "@/components/car-rental/CarPromo";
 import "maplibre-gl/dist/maplibre-gl.css";
+
+// Copy de la carte voiture du carrousel mobile (fallback en). Rejoindre
+// plages/gorges = voiture -> CTA contextuel vers le wizard interne.
+const CAR_CARD: Record<string, { title: string; cta: string }> = {
+  en: { title: "Need a car to get there?", cta: "Get a quote" },
+  fr: { title: "Besoin d'une voiture ?", cta: "Obtenir un devis" },
+  de: { title: "Mietwagen gesucht?", cta: "Angebot anfordern" },
+  el: { title: "Χρειάζεστε αυτοκίνητο;", cta: "Ζητήστε προσφορά" },
+};
 
 type MaplibreMap = import("maplibre-gl").Map;
 type MaplibreModule = typeof import("maplibre-gl");
@@ -981,6 +991,24 @@ export function ExploreView({
               <ChevronUp size={14} /> {filtered.length} {t.results}
             </button>
             <div className="flex gap-2.5 overflow-x-auto px-3 pb-3 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {/* Carte voiture en tete du carrousel mobile : /explore = 1re landing
+                  campagne FB (87% mobile) et le carrousel est la vue par defaut
+                  (sans tap). Wizard interne, source tracee dans Plausible. */}
+              <a
+                href={`/${locale}/car-rental?source=explore-carousel`}
+                className="snap-start shrink-0 w-[150px] rounded-2xl overflow-hidden shadow-[0_10px_30px_rgba(11,94,120,0.28)] bg-gradient-to-br from-[#0F2B4C] to-[#08263a] text-white flex flex-col justify-between p-3 no-underline"
+              >
+                <ImpressionTracker event="promo_impression" props={{ block: "car-promo", source: "explore-carousel" }} />
+                <Car size={22} className="text-sun" aria-hidden />
+                <div>
+                  <p className="m-0 font-heading font-extrabold text-[13.5px] leading-tight">
+                    {(CAR_CARD[locale] || CAR_CARD.en).title}
+                  </p>
+                  <p className="m-0 mt-1.5 text-[11px] font-semibold text-sun">
+                    {(CAR_CARD[locale] || CAR_CARD.en).cta} →
+                  </p>
+                </div>
+              </a>
               {displayed.slice(0, 30).map((p) => (
                 <button
                   key={p.slug}
