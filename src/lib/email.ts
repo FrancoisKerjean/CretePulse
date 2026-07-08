@@ -1102,7 +1102,7 @@ export async function sendActivityQuoteRequest(
       </div>
       <p style="margin:0 0 20px; color:${C.text}; font-weight:700; font-size:15px;">Our referral commission is 15%, only on accepted quotes.</p>
       <div style="text-align:center; margin:0 0 16px;">${pillButton(quoteUrl, "Send your price for the whole group", C.terracotta)}</div>
-      <p style="margin:0 0 22px; color:${C.faint}; font-size:12px; line-height:1.6; text-align:center;">No login needed. The traveller compares all offers and picks one. You pay the traveller directly on the day, no online prepayment.</p>
+      <p style="margin:0 0 22px; color:${C.faint}; font-size:12px; line-height:1.6; text-align:center;">No login needed. The traveller compares all offers and picks one. The traveller pays you directly on the day, no online prepayment.</p>
       <p style="margin:0; color:${C.text}; line-height:1.5;"><strong>Kami</strong><br><span style="color:${C.faint}; font-size:13px;">crete.direct</span></p>
   `);
 
@@ -1118,7 +1118,7 @@ export async function sendActivityQuoteRequest(
     `Send your price for the whole group (no login):`,
     quoteUrl,
     ``,
-    `You pay the traveller directly on the day, no online prepayment.`,
+    `The traveller pays you directly on the day, no online prepayment.`,
     ``,
     `Kami`,
     `crete.direct`,
