@@ -1,5 +1,5 @@
 // node --experimental-strip-types scripts/check-car-monitoring.mjs
-import { classifyInvites } from "../src/lib/car-monitoring.ts";
+import { classifyInvites, partnerRelanceState, partnerRelanceRollup } from "../src/lib/car-monitoring.ts";
 
 let fail = 0;
 const ok = (n, c) => { console.log(c ? `ok - ${n}` : `FAIL - ${n}`); if (!c) fail++; };
@@ -26,6 +26,33 @@ const inv = (id, price, status = "quoted", o = {}) => ({
   ok("puis prix croissant", c.quoted[1].id === 2 && c.quoted[2].id === 1);
   ok("silencieux = invite 3", c.silent.length === 1 && c.silent[0].id === 3);
   ok("désisté = invite 5", c.declined.length === 1 && c.declined[0].id === 5);
+}
+
+const H = 3600000;
+const T = (ms) => new Date(ms).toISOString();
+const NOW = Date.parse("2026-07-09T10:00:00Z");
+
+// partnerRelanceState (demande ouverte 'sent')
+{
+  const created = NOW - 30 * H; // >24h
+  ok("relance loueur due (>24h, jamais relancé)",
+    partnerRelanceState(inv(1, null, "invited", { created_at: T(created) }), "sent", created, NOW).kind === "due");
+  ok("relance loueur déjà faite",
+    partnerRelanceState(inv(1, null, "invited", { created_at: T(created), relanced_at: T(NOW - 2 * H) }), "sent", created, NOW).kind === "relanced");
+  const dueIn = partnerRelanceState(inv(1, null, "invited", { created_at: T(NOW - 5 * H) }), "sent", NOW - 5 * H, NOW);
+  ok("relance loueur due dans Xh (<24h)", dueIn.kind === "dueInMs" && dueIn.ms > 18 * H && dueIn.ms < 20 * H);
+  ok("pas de relance si demande fermée",
+    partnerRelanceState(inv(1, null, "invited", { created_at: T(created) }), "accepted", created, NOW).kind === "never");
+}
+
+// partnerRelanceRollup
+{
+  const roll = partnerRelanceRollup([
+    inv(1, 200), inv(2, null, "invited"), inv(3, null, "invited", { relanced_at: T(NOW) }), inv(4, null, "declined"),
+  ]);
+  ok("rollup invited=2", roll.invited === 2);
+  ok("rollup relanced=1", roll.relanced === 1);
+  ok("rollup silent=2 (invited-status)", roll.silent === 2);
 }
 
 console.log(fail ? `\n${fail} FAIL` : "\nAll passed");
