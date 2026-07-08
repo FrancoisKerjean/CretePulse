@@ -255,6 +255,9 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
   }
   const sa = slugifyPlace(placeA)!;
   const sb = slugifyPlace(placeB)!;
+  // Encart location de voiture : incomplet -> prioritaire ; complet -> en option.
+  const busIncomplete = pr.outbound.length === 0 || pr.inbound.length === 0;
+  const carPickup = zoneForPickup(sa) ? sa : zoneForPickup(sb) ? sb : undefined;
   // Alertes service concernant ce trajet : une des deux extrémités est dans matched_routes.
   const routeAlerts = allAlerts.filter((a) =>
     (a.matched_routes ?? []).some((r) => {
@@ -359,14 +362,11 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
         <DirectionSection from={placeA} to={placeB} routes={pr.outbound} ui={ui} />
         <DirectionSection from={placeB} to={placeA} routes={pr.inbound} ui={ui} />
 
+        {/* Pickup contextuel = placeA si en zone partenaire, sinon placeB. */}
         {/* Liaison bus incomplète (au moins un sens sans horaires publiés) ->
-            encart location de voiture, pickup = placeA si en zone partenaire */}
-        {(pr.outbound.length === 0 || pr.inbound.length === 0) && (
-          <CarPromo
-            locale={locale}
-            pickup={zoneForPickup(sa) ? sa : zoneForPickup(sb) ? sb : undefined}
-            source="bus-pair"
-          />
+            encart location de voiture prioritaire (le bus n'est pas fiable). */}
+        {busIncomplete && (
+          <CarPromo locale={locale} pickup={carPickup} source="bus-pair" />
         )}
 
         {taxiFare && (
@@ -379,6 +379,13 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
             partnersData={partnersData}
             compact={false}
           />
+        )}
+
+        {/* Trajet bus complet : le CTA voiture existe mais était masqué sur ces
+            pages (les plus fréquentées). Affiché APRÈS le comparatif (le bus
+            reste en tête), en option, source distincte pour mesurer la conv. */}
+        {!busIncomplete && (
+          <CarPromo locale={locale} pickup={carPickup} source="bus-pair-complete" />
         )}
 
         {onwardB.length > 0 && (
