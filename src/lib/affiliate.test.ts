@@ -97,3 +97,49 @@ test("validateRegisterPayload keeps category_other when category=other", () => {
   assert.equal(r.ok, true);
   if (r.ok) assert.equal(r.data.category_other, "Diving school");
 });
+
+// ── affiliateClass segmentation ─────────────────────────────────────────────
+
+import { affiliateClass } from "./affiliate.ts";
+
+test("affiliateClass: tour → quotable", () => {
+  assert.equal(affiliateClass("tour"), "quotable");
+});
+
+test("affiliateClass: activity → quotable", () => {
+  assert.equal(affiliateClass("activity"), "quotable");
+});
+
+test("affiliateClass: whitespace-padded taxi → quotable (trim check)", () => {
+  assert.equal(affiliateClass("  taxi  "), "quotable");
+});
+
+test("affiliateClass: taxi → quotable", () => {
+  assert.equal(affiliateClass("taxi"), "quotable");
+});
+
+test("affiliateClass: restaurant → vitrine", () => {
+  assert.equal(affiliateClass("restaurant"), "vitrine");
+});
+
+test("affiliateClass: cafe → vitrine", () => {
+  assert.equal(affiliateClass("cafe"), "vitrine");
+});
+
+test("affiliateClass: bar → vitrine", () => {
+  assert.equal(affiliateClass("bar"), "vitrine");
+});
+
+test("affiliateClass: hotel → vitrine", () => {
+  assert.equal(affiliateClass("hotel"), "vitrine");
+});
+
+test("affiliateClass: unknown/empty → vitrine (safe default)", () => {
+  assert.equal(affiliateClass(""), "vitrine");
+  assert.equal(affiliateClass("unknown-category"), "vitrine");
+});
+
+test("affiliateClass: case-insensitive", () => {
+  assert.equal(affiliateClass("TOUR"), "quotable");
+  assert.equal(affiliateClass("Restaurant"), "vitrine");
+});

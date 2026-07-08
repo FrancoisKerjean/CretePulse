@@ -9,8 +9,9 @@ import type { CbPlaceListItem, CbPlace } from "@/lib/cb-places";
 import { WaterQualityBadge } from "@/components/WaterQualityBadge";
 import { getCbPlaceBySlug } from "@/lib/cb-places";
 import { getSponsorCards, isSponsorSlug, sponsoredLabel, sponsorDescription } from "@/lib/sponsored-places";
+import { isAffiliateSlug, partnerLabel, affiliateDescription, type AffiliatePlace } from "@/lib/affiliate-places";
 import { typeLabel } from "@/lib/cb-type-labels";
-import { nearestBy, circlePolygon, isOnCrete } from "@/lib/geo";
+import { nearestBy, haversineKm, circlePolygon, isOnCrete } from "@/lib/geo";
 import { cleanCbDescription } from "@/lib/cb-place-helpers";
 import { useGeoPosition } from "@/components/geo/useGeoPosition";
 import Image from "next/image";
@@ -160,7 +161,15 @@ function RatingStars({ rating }: { rating: number | null }) {
   );
 }
 
-export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; locale: string }) {
+export function ExploreView({
+  places,
+  affiliatePlaces = [],
+  locale,
+}: {
+  places: CbPlaceListItem[];
+  affiliatePlaces?: AffiliatePlace[];
+  locale: string;
+}) {
   const t = T[locale] || T.en;
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MaplibreMap | null>(null);
@@ -233,10 +242,22 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
   // Liste affichée : distance quand Near me actif, sinon note décroissante
   // (les lieux notés et photographiés d'abord, plus engageant que l'ordre slug).
   // Cartes partenaires (modele B) : chacune est un lieu synthetique injecte en tete,
-  // avec sa propre photo/nom/note et un lien externe (slug prefixe "sponsor:").
-  const sponsorItems: Array<CbPlaceListItem & { __sponsorUrl: string }> = useMemo(
-    () =>
-      getSponsorCards().map((c) => ({
+  // avec sa propre photo/nom/note et un lien externe (slug prefixe "sponsor:" ou "affiliate:").
+  // Les affiliés DB sont fusionnés ici et réutilisent exactement le même marqueur ambre,
+  // le même gating zoom ≥ 9 et le même drawer. Dédup : si un slug de base apparaît des
+  // deux côtés, l'affilié DB gagne (filtre sur les slugs JSON).
+  const sponsorItems: Array<CbPlaceListItem & { __sponsorUrl: string }> = useMemo(() => {
+    // Slugs de base des affiliés DB (ex. "jmp-chania-tours") → utilisés pour filtrer le JSON.
+    // Invariant : affiliates.slug (sans préfixe) doit correspondre au sponsored-places.json `id`
+    // pour que le dédup se déclenche ; en cas de match, l'affilié DB gagne.
+    // Comparaison insensible à la casse pour éviter un raté silencieux (ex. "JMP" vs "jmp").
+    const affiliateBaseSlugs = new Set(
+      affiliatePlaces.map((a) => a.slug.replace(/^affiliate:/, "").toLowerCase())
+    );
+
+    const fromJson = getSponsorCards()
+      .filter((c) => !affiliateBaseSlugs.has(c.id.toLowerCase()))  // dédup : affilié DB prioritaire
+      .map((c) => ({
         slug: `sponsor:${c.id}`,
         name: c.name,
         place_type: "sponsor",
@@ -256,9 +277,10 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
         photo_count: 1,
         water_quality: null,
         __sponsorUrl: c.url,
-      })),
-    [],
-  );
+      }));
+
+    return [...fromJson, ...affiliatePlaces];
+  }, [affiliatePlaces]);
 
   const base: Array<CbPlaceListItem & { km?: number }> = useMemo(
     () =>
@@ -293,10 +315,33 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sponsorItems, mapViewport, mapReady]);
 
-  const displayed: Array<CbPlaceListItem & { km?: number; __sponsorUrl?: string }> = useMemo(
-    () => [...visibleSponsors, ...base],
-    [visibleSponsors, base],
-  );
+  // Gouvernance liste :
+  // - Sponsors payants (JSON, slug "sponsor:") : gardent la priorité de tête (modèle payant).
+  // - Affiliés DB (slug "affiliate:") : triés par distance avec le reste du contenu.
+  //   Leur `km` est calculé ici pour s'intégrer dans le sort sans inventer de nouveau mécanisme.
+  const displayed: Array<CbPlaceListItem & { km?: number; __sponsorUrl?: string }> = useMemo(() => {
+    const visiblePaidSponsors = visibleSponsors.filter((s) => !isAffiliateSlug(s.slug));
+    const visibleAffiliates = visibleSponsors.filter((s) => isAffiliateSlug(s.slug));
+
+    // Calculer les km pour les affiliés (même logique que base en mode nearActive).
+    const affiliatesWithKm: Array<CbPlaceListItem & { km?: number; __sponsorUrl?: string }> =
+      visibleAffiliates.map((a) => {
+        if (a.latitude != null && a.longitude != null && geo.pos) {
+          return { ...a, km: haversineKm([a.latitude, a.longitude], [geo.pos.lat, geo.pos.lon]) };
+        }
+        return { ...a };
+      });
+
+    // Fusionner affiliés et base, puis trier :
+    //   - Geo/near mode : mélanger affiliés+base triés par distance (km croissant).
+    //   - Non-geo mode : base d'abord (trié par score), affiliés APRÈS — jamais en tête.
+    const sorted: Array<CbPlaceListItem & { km?: number; __sponsorUrl?: string }> =
+      nearActive && geo.pos
+        ? [...affiliatesWithKm, ...base].sort((a, b) => (a.km ?? Infinity) - (b.km ?? Infinity))
+        : [...base, ...affiliatesWithKm];
+
+    return [...visiblePaidSponsors, ...sorted];
+  }, [visibleSponsors, base, nearActive, geo.pos]);
 
   const geoBlocked = geo.status === "denied" || geo.status === "unavailable";
 
@@ -527,11 +572,49 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
       const el = document.createElement("div");
       el.title = s.name;
       el.style.cssText = "cursor:pointer;z-index:6";
-      el.innerHTML =
-        '<div style="position:relative;width:22px;height:22px">' +
-        '<div style="position:absolute;inset:0;border-radius:50% 50% 50% 2px;transform:rotate(45deg);background:#F5A623;border:2px solid #fff;box-shadow:0 2px 7px rgba(7,40,52,.5)"></div>' +
-        '<div style="position:absolute;inset:0;margin:auto;width:6px;height:6px;border-radius:50%;background:#fff"></div>' +
-        "</div>";
+
+      const photo = s.photos?.[0] ?? null;
+      if (photo) {
+        // Photo-vignette : cercle avec la photo du partenaire + pastille or + pointe.
+        // Taille 50px = bien lisible au zoom ≥ 9, sans écraser les pins normaux.
+        const GOLD = "#C8A35F";
+        el.innerHTML =
+          '<div style="position:relative;width:52px;height:60px">' +
+            // Pointe (triangle vers le bas, sous le cercle)
+            '<div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:0;height:0;' +
+              'border-left:6px solid transparent;border-right:6px solid transparent;' +
+              'border-top:9px solid #fff"></div>' +
+            // Cercle photo
+            '<div style="position:absolute;top:0;left:0;right:0;margin:0 auto;width:50px;height:50px;border-radius:50%;' +
+              "background:url('" + photo + "') center/cover no-repeat;" +
+              'border:3px solid #fff;box-shadow:0 3px 10px rgba(7,40,52,.45)">' +
+              // Pastille or (top-right)
+              '<div style="position:absolute;top:-2px;right:-2px;width:14px;height:14px;border-radius:50%;' +
+                'background:' + GOLD + ';border:2px solid #fff"></div>' +
+            '</div>' +
+          '</div>';
+      } else {
+        // Fallback : cercle or + icône catégorie si pas de photo.
+        const CATEGORY_GLYPHS: Record<string, string> = {
+          tour: "🧭", tours: "🧭", activity: "🧭", transfer: "🧭",
+          restaurant: "🍽️", cafe: "☕", bar: "🍸", hotel: "🛏️",
+        };
+        const glyph = CATEGORY_GLYPHS[s.category ?? ""] ?? "📍";
+        el.innerHTML =
+          '<div style="position:relative;width:36px;height:42px">' +
+            // Pointe
+            '<div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:0;height:0;' +
+              'border-left:5px solid transparent;border-right:5px solid transparent;' +
+              'border-top:8px solid #fff"></div>' +
+            // Cercle or
+            '<div style="position:absolute;top:0;left:0;right:0;margin:0 auto;width:34px;height:34px;border-radius:50%;' +
+              'background:#C8A35F;border:3px solid #fff;box-shadow:0 2px 7px rgba(7,40,52,.5);' +
+              'display:flex;align-items:center;justify-content:center;font-size:14px">' +
+              glyph +
+            '</div>' +
+          '</div>';
+      }
+
       el.addEventListener("click", () => selectPlace(s.slug));
       const marker = new maplibre.Marker({ element: el, anchor: "bottom" })
         .setLngLat([s.longitude, s.latitude])
@@ -625,7 +708,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
     const base = places.find((p) => p.slug === slug);
     setPhotoIdx(0);
     setListExpanded(false);
-    // Partenaire sponsorisé : fiche synthétique (pas en base), aucun fetch DB.
+    // Partenaire sponsorisé ou affilié : fiche synthétique (pas en base), aucun fetch DB.
     const spo = sponsorItems.find((s) => s.slug === slug);
     if (spo) {
       setSelectedLoading(false);
@@ -708,11 +791,14 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
   // Card riche partagee entre le panneau desktop et la liste mobile.
   function PlaceRow({ p }: { p: CbPlaceListItem & { km?: number; __sponsorUrl?: string } }) {
     const spo = isSponsorSlug(p.slug);
+    const aff = isAffiliateSlug(p.slug);
+    const isCommercial = spo || aff;
+    const commercialBadge = aff ? partnerLabel(locale) : spo ? sponsoredLabel(locale) : null;
     return (
       <button
         onClick={() => selectPlace(p.slug)}
         className={`flex gap-3 p-2 rounded-xl bg-white shadow-soft text-left transition-all w-full ${
-          spo ? "border border-amber-300 ring-1 ring-amber-200" : "border border-sea/10 hover:border-sea/30"
+          isCommercial ? "border border-amber-300 ring-1 ring-amber-200" : "border border-sea/10 hover:border-sea/30"
         }`}
       >
         <div className="relative w-[72px] h-[64px] rounded-lg overflow-hidden bg-sand shrink-0">
@@ -727,9 +813,9 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
         <div className="min-w-0 flex-1 py-0.5">
           <div className="flex items-center gap-2">
             <span className="font-semibold text-sm text-text truncate">{p.name}</span>
-            {spo && (
+            {commercialBadge && (
               <span className="shrink-0 text-[9px] font-bold uppercase tracking-wide text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full whitespace-nowrap">
-                {sponsoredLabel(locale)}
+                {commercialBadge}
               </span>
             )}
             <RatingStars rating={p.rating} />
@@ -740,7 +826,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
           <div className="text-xs text-text-muted mt-0.5">
             <span className="inline-block w-2 h-2 rounded-full mr-1"
               style={{ backgroundColor: TYPE_COLORS[p.place_type] || FALLBACK_COLOR }} />
-            {spo ? (p.category ?? "") : typeLabel(p.place_type, locale)}
+            {isCommercial ? (p.category ?? "") : typeLabel(p.place_type, locale)}
             {detectPrefecture(p) ? ` · ${detectPrefecture(p)}` : ""}
           </div>
           {(p.water_quality || p.sand_type || p.water_color) && (
@@ -905,9 +991,9 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
                       style={{ backgroundColor: TYPE_COLORS[p.place_type] || FALLBACK_COLOR }}>
                       {typeLabel(p.place_type, locale)}
                     </span>
-                    {isSponsorSlug(p.slug) && (
+                    {(isSponsorSlug(p.slug) || isAffiliateSlug(p.slug)) && (
                       <span className="absolute top-1.5 right-1.5 text-[8px] font-bold uppercase tracking-wide text-amber-700 bg-white/95 px-1.5 py-0.5 rounded-full">
-                        {sponsoredLabel(locale)}
+                        {isAffiliateSlug(p.slug) ? partnerLabel(locale) : sponsoredLabel(locale)}
                       </span>
                     )}
                   </div>
@@ -983,14 +1069,51 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
                 <RatingStars rating={selected.rating} />
               </div>
               <p className="text-xs text-text-muted mt-1">
-                {isSponsorSlug(selected.slug) ? (selected.category ?? "") : typeLabel(selected.place_type, locale)}
+                {(isSponsorSlug(selected.slug) || isAffiliateSlug(selected.slug)) ? (selected.category ?? "") : typeLabel(selected.place_type, locale)}
                 {selected.prefecture ? ` · ${selected.prefecture}` : ""}
               </p>
             </div>
 
-            {isSponsorSlug(selected.slug) && (() => {
-              const sc = getSponsorCards().find((c) => `sponsor:${c.id}` === selected.slug);
+            {(isSponsorSlug(selected.slug) || isAffiliateSlug(selected.slug)) && (() => {
               const cta = ({ en: "Visit website", fr: "Voir le site", de: "Website besuchen", el: "Επίσκεψη" } as Record<string, string>)[locale] || "Visit website";
+
+              if (isAffiliateSlug(selected.slug)) {
+                // Affilié DB : photo + description localisée + badge Partner + CTA tracké.
+                const affiliatePlace = selected as unknown as AffiliatePlace;
+                const affiliateSponsorUrl = affiliatePlace.__sponsorUrl;
+                const affiliatePhoto = selected.photos?.[0] ?? null;
+                const affiliateDesc = affiliateDescription(affiliatePlace, locale);
+                return (
+                  <div className="space-y-2.5">
+                    {affiliatePhoto && (
+                      <div className="rounded-xl overflow-hidden aspect-video bg-sea-faint">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={affiliatePhoto}
+                          alt={selected.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => { e.currentTarget.style.display = "none"; }}
+                        />
+                      </div>
+                    )}
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full">
+                      {partnerLabel(locale)}
+                    </span>
+                    {affiliateDesc && (
+                      <p className="text-sm text-text leading-relaxed">{affiliateDesc}</p>
+                    )}
+                    {affiliateSponsorUrl && (
+                      <a href={affiliateSponsorUrl} target="_blank" rel="noopener sponsored"
+                        className="flex items-center justify-center gap-2 bg-sea text-white font-bold text-sm py-2.5 rounded-xl hover:opacity-90 transition-opacity">
+                        {cta} <span aria-hidden>→</span>
+                      </a>
+                    )}
+                  </div>
+                );
+              }
+
+              // Partenaire JSON (sponsored) : comportement d'origine.
+              const sc = getSponsorCards().find((c) => `sponsor:${c.id}` === selected.slug);
               const desc = sc ? sponsorDescription(sc, locale) : null;
               return (
                 <div className="space-y-2.5">
@@ -1039,7 +1162,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
               )}
             </div>
 
-            {!isSponsorSlug(selected.slug) && (
+            {!isSponsorSlug(selected.slug) && !isAffiliateSlug(selected.slug) && (
               <div className="border-t border-sea/10 pt-3">
                 <CbPlaceActions
                   slug={selected.slug}

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import {
   validateRegisterPayload,
   buildUniqueSlug,
@@ -10,6 +10,8 @@ import { slugExists, codeExists, emailExists, insertAffiliate } from "@/lib/affi
 import { notifyNewAffiliate } from "@/lib/affiliate-notify";
 import { sendAffiliateWelcome } from "@/lib/email";
 import { carPartnerEmailExists, insertCarRentalPartner, sendCarRentalDirectWelcome } from "@/lib/car-rental-signup";
+import { enrichAffiliate } from "@/lib/affiliate-enrich";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 
 export const runtime = "nodejs";
 
@@ -83,6 +85,7 @@ export async function POST(request: NextRequest) {
     await sendAffiliateWelcome({
       email: v.data.email,
       name: v.data.name,
+      category: v.data.category,
       link,
       code,
       commissionPct: AFFILIATE_DEFAULT_COMMISSION_PCT,
@@ -90,6 +93,36 @@ export async function POST(request: NextRequest) {
   } catch (e) {
     console.error("[affiliate-register] welcome email failed:", e);
   }
+
+  // Auto-enrich: fetch photo + generate description after the response is sent.
+  // Runs via next/server `after()` so the HTTP response is NOT delayed.
+  // Best-effort: any error is swallowed — signup must always succeed.
+  // NOTE: description uses Anthropic HTTP API if ANTHROPIC_API_KEY is set in
+  // Vercel env vars, otherwise falls back to per-category template (4 languages).
+  // TODO [owner: Kami, butoir: 2026-07-31] — add ANTHROPIC_API_KEY to Vercel:
+  //   https://vercel.com/kerjeanfrancois29/crete-direct/settings/environment-variables
+  after(async () => {
+    try {
+      const { photo_url, description } = await enrichAffiliate({
+        redirectUrl: v.data.redirect_url,
+        name: v.data.name,
+        category: v.data.category,
+      });
+      const { error: enrichErr } = await supabaseAdmin
+        .from("affiliates")
+        .update({ photo_url, description })
+        .eq("slug", slug);
+      if (enrichErr) {
+        console.error("[affiliate-register] enrich update failed:", enrichErr.message);
+      } else {
+        console.log(
+          `[affiliate-register] enriched ${slug}: photo=${photo_url ?? "null"} desc_en="${description.en.slice(0, 60)}…"`,
+        );
+      }
+    } catch (e) {
+      console.error("[affiliate-register] enrich after() failed:", e);
+    }
+  });
 
   return NextResponse.json({
     ok: true,

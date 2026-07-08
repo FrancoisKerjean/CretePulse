@@ -2,6 +2,7 @@ import { Resend } from "resend";
 import { buildCarWaMessage, waHref } from "./car-admin";
 import { inclusionLabels } from "@/lib/car-inclusions";
 import { sharedOfferCopy } from "@/lib/car-offer-copy";
+import { affiliateClass } from "@/lib/affiliate";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -182,33 +183,59 @@ export async function sendWelcomeEmail(email: string, locale: string) {
 export interface AffiliateWelcome {
   email: string;
   name: string;
+  category: string;
   link: string;
   code: string;
   commissionPct: number;
 }
 
-export async function sendAffiliateWelcome(a: AffiliateWelcome): Promise<void> {
-  const first = a.name.split(" ")[0] || a.name;
-  const html = kalimeraShell(`
-      <h2 style="margin:0 0 12px; color:${C.text}; font-size:20px;">You're live on crete.direct 🎉</h2>
-      <p style="margin:0 0 16px; color:${C.muted}; line-height:1.6;">Hi ${first}, ${a.name} is now part of the crete.direct affiliate program. Here is your tracked link, it is already live:</p>
-      <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 18px; word-break:break-all; font-size:14px; color:${C.sea}; font-weight:700;">${a.link}</div>
-      <p style="margin:0 0 6px; color:${C.text}; font-weight:700; font-size:15px;">The deal, in one line</p>
-      <p style="margin:0 0 16px; color:${C.muted}; line-height:1.6;">You pay a flat <strong>${a.commissionPct}%</strong> commission only on the bookings we refer to you. No setup fee, no monthly cost, cancel anytime by replying to this email.</p>
-      <p style="margin:0 0 6px; color:${C.text}; font-weight:700; font-size:15px;">What happens now</p>
-      <ul style="margin:0 0 18px; color:${C.muted}; line-height:1.8; padding-left:20px;">
-        <li>We feature ${a.name} across crete.direct, where travellers plan their trip.</li>
-        <li>Every visitor we send you goes through your tracked link, so bookings are counted transparently.</li>
-        <li>Your promo code <strong>${a.code}</strong> lets us reconcile bookings with you, no hidden numbers.</li>
-      </ul>
-      <div style="text-align:center; margin:0 0 18px;">${pillButton("https://crete.direct/explore", "See the map you're on", C.sea)}</div>
+/**
+ * Pure function that builds the HTML body for the affiliate welcome email.
+ * Exported for testing without hitting Resend.
+ *
+ * - "vitrine" (restaurant, café, bar, unknown…): free map visibility, no mention of commission.
+ * - "quotable" (tour, activity, taxi): 15% on accepted quotes, no setup.
+ */
+export function affiliateWelcomeBody(
+  cls: "vitrine" | "quotable",
+  opts: { name: string; link: string; code: string; commissionPct: number },
+): string {
+  const { name, link, code, commissionPct } = opts;
+
+  const dealSection =
+    cls === "quotable"
+      ? `
+      <p style="margin:0 0 6px; color:${C.text}; font-weight:700; font-size:15px;">How it works</p>
+      <p style="margin:0 0 16px; color:${C.muted}; line-height:1.6;">When a traveller clicks your link and requests a booking, we send you the lead. You only pay <strong>${commissionPct}% on accepted quotes</strong> — no setup fee, no monthly cost, cancel anytime by replying to this email.</p>`
+      : `
+      <p style="margin:0 0 6px; color:${C.text}; font-weight:700; font-size:15px;">What this means</p>
+      <p style="margin:0 0 16px; color:${C.muted}; line-height:1.6;">We're adding your listing to the crete.direct map, free of charge. Once it's live, travellers planning their trip will find you there. No setup fee, no monthly cost — just visibility.</p>`;
+
+  return kalimeraShell(`
+      <h2 style="margin:0 0 12px; color:${C.text}; font-size:20px;">You're joining the crete.direct map 🗺️</h2>
+      <p style="margin:0 0 16px; color:${C.muted}; line-height:1.6;">Hi ${name.split(" ")[0] || name}, <strong>${name}</strong> is now part of the crete.direct affiliate program. Here is your tracked link:</p>
+      <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 18px; word-break:break-all; font-size:14px; color:${C.sea}; font-weight:700;">${link}</div>
+      ${dealSection}
+      <p style="margin:0 0 6px; color:${C.text}; font-weight:700; font-size:15px;">Your promo code</p>
+      <p style="margin:0 0 18px; color:${C.muted}; line-height:1.6;">Use <strong>${code}</strong> to reconcile any leads we send you — it lets us match requests to your listing accurately.</p>
+      <div style="text-align:center; margin:0 0 18px;">${pillButton("https://crete.direct/explore", "Explore the crete.direct map", C.sea)}</div>
       <p style="margin:0; color:${C.faint}; font-size:12px; text-align:center;">Questions? Just reply to this email, a real person reads it.</p>
   `);
+}
+
+export async function sendAffiliateWelcome(a: AffiliateWelcome): Promise<void> {
+  const cls = affiliateClass(a.category);
+  const html = affiliateWelcomeBody(cls, {
+    name: a.name,
+    link: a.link,
+    code: a.code,
+    commissionPct: a.commissionPct,
+  });
   const { error } = await resend.emails.send({
     from: FROM_EMAIL,
     to: a.email,
     replyTo: "hello@crete.direct",
-    subject: `You're live on crete.direct · your affiliate link is ready`,
+    subject: `You're now on crete.direct · ${cls === "quotable" ? "your affiliate link is ready" : "free listing confirmed"}`,
     html,
   });
   if (error) throw new Error(`Resend: ${error.message}`);
