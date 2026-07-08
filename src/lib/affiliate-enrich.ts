@@ -16,29 +16,127 @@
 // ─── OG image extraction ────────────────────────────────────────────────────
 
 /**
- * Parse the first og:image / twitter:image / favicon URL from raw HTML.
+ * Returns true if the URL looks like a real content photo.
+ * Rejects favicons, icons, sprites, logos, apple-touch images, and .ico files.
+ */
+export function isLikelyRealPhoto(url: string): boolean {
+  try {
+    const u = new URL(url);
+    const path = u.pathname.toLowerCase();
+    // Reject by extension
+    if (path.endsWith(".ico")) return false;
+    // Reject by path keywords
+    const rejectKeywords = ["favicon", "/icon", "apple-touch", "sprite", "logo"];
+    for (const kw of rejectKeywords) {
+      if (path.includes(kw)) return false;
+    }
+    // Must end with a photo-like extension (jpg, jpeg, png, webp, or no extension but not .ico/.svg)
+    // Accept paths that end with photo extensions, OR paths that look like CDN photo URLs
+    const photoExtRe = /\.(jpe?g|png|webp)(\?.*)?$/i;
+    if (photoExtRe.test(path)) return true;
+    // Accept URLs without extension but with CDN / upload path segments
+    const uploadKeywords = ["/uploads/", "/wp-content/uploads/", "/images/", "/photos/", "/media/", "/gallery/"];
+    for (const kw of uploadKeywords) {
+      if (path.includes(kw)) return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Extract the first large content <img> src from HTML.
+ * Prefers imgs with width/height >= 400, or whose path suggests a content photo.
+ * Never returns a URL that fails isLikelyRealPhoto.
  * Returns an absolute URL or null.
  */
+function extractContentImg(html: string, baseUrl: string): string | null {
+  // Remove script/style/noscript blocks first to avoid false matches
+  const cleaned = html
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, "");
+
+  // Match all <img ...> tags
+  const imgRe = /<img\s[^>]+>/gi;
+  const candidates: { url: string; score: number }[] = [];
+
+  let m: RegExpExecArray | null;
+  while ((m = imgRe.exec(cleaned)) !== null) {
+    const tag = m[0];
+
+    // Extract src (or data-src for lazy-loading)
+    const srcMatch =
+      tag.match(/\bsrc=["']([^"']+)["']/i) ??
+      tag.match(/\bdata-src=["']([^"']+)["']/i);
+    if (!srcMatch?.[1]) continue;
+
+    const resolved = resolveUrl(srcMatch[1].trim(), baseUrl);
+    if (!isLikelyRealPhoto(resolved)) continue;
+
+    let score = 0;
+
+    // Bonus if dimensions look large
+    const wMatch = tag.match(/\bwidth=["']?(\d+)/i);
+    const hMatch = tag.match(/\bheight=["']?(\d+)/i);
+    const w = wMatch ? parseInt(wMatch[1], 10) : 0;
+    const h = hMatch ? parseInt(hMatch[1], 10) : 0;
+    if (w >= 400 || h >= 400) score += 10;
+    if (w >= 800 || h >= 600) score += 5;
+
+    // Bonus for upload/content paths
+    const uploadPaths = ["/wp-content/uploads/", "/uploads/", "/photos/", "/gallery/", "/media/"];
+    for (const kw of uploadPaths) {
+      if (resolved.includes(kw)) { score += 3; break; }
+    }
+
+    candidates.push({ url: resolved, score });
+  }
+
+  if (!candidates.length) return null;
+  // Sort by score descending, return the best
+  candidates.sort((a, b) => b.score - a.score);
+  return candidates[0].url;
+}
+
+/**
+ * Parse the best real content photo URL from raw HTML.
+ * Selection order: og:image → og:image:secure_url → twitter:image → link[image_src] → first large <img>.
+ * NEVER returns a favicon or icon URL — returns null instead.
+ */
 export function extractOgImage(html: string, baseUrl: string): string | null {
-  // og:image (both attribute orders)
+  // 1. og:image (both attribute orders)
   const ogPatterns = [
     /property=["']og:image["'][^>]*content=["']([^"']+)["']/i,
     /content=["']([^"']+)["'][^>]*property=["']og:image["']/i,
+    /property=["']og:image:secure_url["'][^>]*content=["']([^"']+)["']/i,
+    /content=["']([^"']+)["'][^>]*property=["']og:image:secure_url["']/i,
     /name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i,
     /content=["']([^"']+)["'][^>]*name=["']twitter:image["']/i,
   ];
   for (const re of ogPatterns) {
-    const m = html.match(re);
-    if (m?.[1]) return resolveUrl(m[1].trim(), baseUrl);
+    const match = html.match(re);
+    if (match?.[1]) {
+      const resolved = resolveUrl(match[1].trim(), baseUrl);
+      if (isLikelyRealPhoto(resolved)) return resolved;
+      // candidate failed isLikelyRealPhoto — try next source
+    }
   }
-  // favicon fallback
-  const faviconRe = /(?:rel=["'](?:icon|shortcut icon)["'][^>]*href=["']([^"']+)["']|href=["']([^"']+)["'][^>]*rel=["'](?:icon|shortcut icon)["'])/i;
-  const fm = html.match(faviconRe);
-  if (fm) {
-    const href = (fm[1] || fm[2] || "").trim();
-    if (href) return resolveUrl(href, baseUrl);
+
+  // 2. <link rel="image_src">
+  const imgSrcRe = /rel=["']image_src["'][^>]*href=["']([^"']+)["']/i;
+  const imgSrcAlt = /href=["']([^"']+)["'][^>]*rel=["']image_src["']/i;
+  for (const re of [imgSrcRe, imgSrcAlt]) {
+    const match = html.match(re);
+    if (match?.[1]) {
+      const resolved = resolveUrl(match[1].trim(), baseUrl);
+      if (isLikelyRealPhoto(resolved)) return resolved;
+    }
   }
-  return null;
+
+  // 3. First large content <img> in the HTML
+  return extractContentImg(html, baseUrl);
 }
 
 function resolveUrl(href: string, base: string): string {

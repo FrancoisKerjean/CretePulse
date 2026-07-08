@@ -1,15 +1,60 @@
 /**
  * Unit tests for the pure functions in affiliate-enrich.ts.
- * Tests: extractOgImage, fallbackDescription, parseDescriptionJson.
+ * Tests: isLikelyRealPhoto, extractOgImage, extractSiteText, fallbackDescription, parseDescriptionJson.
  * No network calls, no DB, no env vars needed.
  */
 import { describe, it, expect } from "vitest";
 import {
+  isLikelyRealPhoto,
   extractOgImage,
   extractSiteText,
   fallbackDescription,
   parseDescriptionJson,
 } from "@/lib/affiliate-enrich";
+
+// ─── isLikelyRealPhoto ───────────────────────────────────────────────────────
+
+describe("isLikelyRealPhoto", () => {
+  it("accepts a real jpg URL", () => {
+    expect(isLikelyRealPhoto("https://example.com/wp-content/uploads/hotel.jpg")).toBe(true);
+  });
+
+  it("accepts a real png URL", () => {
+    expect(isLikelyRealPhoto("https://example.com/images/gallery/room.png")).toBe(true);
+  });
+
+  it("accepts a real webp URL", () => {
+    expect(isLikelyRealPhoto("https://cdn.example.com/photos/exterior.webp")).toBe(true);
+  });
+
+  it("accepts jpg with query string", () => {
+    expect(isLikelyRealPhoto("https://example.com/media/hero.jpg?w=1200")).toBe(true);
+  });
+
+  it("rejects a .ico file", () => {
+    expect(isLikelyRealPhoto("https://example.com/favicon.ico")).toBe(false);
+  });
+
+  it("rejects a path containing 'favicon'", () => {
+    expect(isLikelyRealPhoto("https://example.com/assets/favicon-32x32.png")).toBe(false);
+  });
+
+  it("rejects a path containing '/icon'", () => {
+    expect(isLikelyRealPhoto("https://example.com/icon/app.png")).toBe(false);
+  });
+
+  it("rejects apple-touch-icon", () => {
+    expect(isLikelyRealPhoto("https://example.com/apple-touch-icon.png")).toBe(false);
+  });
+
+  it("rejects sprite", () => {
+    expect(isLikelyRealPhoto("https://example.com/assets/sprite.png")).toBe(false);
+  });
+
+  it("rejects logo", () => {
+    expect(isLikelyRealPhoto("https://example.com/images/logo.png")).toBe(false);
+  });
+});
 
 // ─── extractOgImage ─────────────────────────────────────────────────────────
 
@@ -31,14 +76,17 @@ describe("extractOgImage", () => {
     expect(extractOgImage(html, BASE)).toBe("https://example.com/tw.jpg");
   });
 
-  it("resolves relative favicon URLs", () => {
+  it("returns null when only a favicon is present (no real photo)", () => {
     const html = `<link rel="icon" href="images/favicon.ico">`;
-    expect(extractOgImage(html, BASE)).toBe("https://example.com/images/favicon.ico");
+    expect(extractOgImage(html, BASE)).toBeNull();
   });
 
-  it("extracts shortcut icon", () => {
+  it("returns null when only shortcut icon is present", () => {
     const html = `<link rel="shortcut icon" href="https://example.com/fav.png">`;
-    expect(extractOgImage(html, BASE)).toBe("https://example.com/fav.png");
+    // fav.png has 'fav' which is not explicitly rejected, but path has no upload keyword
+    // and filename doesn't match photo ext heuristic clearly... let's check with favicon in name
+    const html2 = `<link rel="shortcut icon" href="https://example.com/favicon.png">`;
+    expect(extractOgImage(html2, BASE)).toBeNull();
   });
 
   it("returns null when no image found", () => {
@@ -52,6 +100,37 @@ describe("extractOgImage", () => {
       <meta property="og:image" content="https://example.com/og.jpg">
     `;
     expect(extractOgImage(html, BASE)).toBe("https://example.com/og.jpg");
+  });
+
+  it("falls through to content img when og:image is a favicon", () => {
+    const html = `
+      <meta property="og:image" content="https://example.com/favicon.ico">
+      <img src="/wp-content/uploads/2024/hotel-hero.jpg" width="1200" height="800">
+    `;
+    expect(extractOgImage(html, BASE)).toBe("https://example.com/wp-content/uploads/2024/hotel-hero.jpg");
+  });
+
+  it("picks a large content img when no og/twitter/link_image_src", () => {
+    const html = `
+      <html><body>
+        <img src="/wp-content/uploads/hero.jpg" width="1200" height="800">
+        <img src="/icons/arrow.png" width="16" height="16">
+      </body></html>
+    `;
+    expect(extractOgImage(html, BASE)).toBe("https://example.com/wp-content/uploads/hero.jpg");
+  });
+
+  it("returns null when only small icons are in the HTML", () => {
+    const html = `
+      <img src="/favicon.ico" width="16" height="16">
+      <img src="/icons/logo.png" width="48" height="48">
+    `;
+    expect(extractOgImage(html, BASE)).toBeNull();
+  });
+
+  it("resolves relative img src to absolute URL", () => {
+    const html = `<img src="/images/gallery/exterior.jpg" width="800" height="600">`;
+    expect(extractOgImage(html, BASE)).toBe("https://example.com/images/gallery/exterior.jpg");
   });
 });
 

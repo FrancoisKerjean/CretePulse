@@ -28,9 +28,16 @@ import { createClient } from "@supabase/supabase-js";
 // ─── CLI args ─────────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
 const FORCE = args.includes("--force");
+/** --photos-only: re-evaluate photo_url only (skip description re-generation) */
+const PHOTOS_ONLY = args.includes("--photos-only");
 const SINGLE_SLUG = (() => {
   const i = args.indexOf("--slug");
   return i >= 0 ? args[i + 1] : null;
+})();
+/** --slugs a,b,c: re-evaluate multiple slugs at once */
+const MULTI_SLUGS = (() => {
+  const i = args.indexOf("--slugs");
+  return i >= 0 ? args[i + 1].split(",").map((s) => s.trim()).filter(Boolean) : null;
 })();
 
 // ─── Load env (kairos-keys + .env.local) ─────────────────────────────────────
@@ -81,24 +88,112 @@ function resolveUrl(href, base) {
   try { return new URL(href, base).href; } catch { return href; }
 }
 
+/**
+ * Returns true if the URL looks like a real content photo.
+ * Rejects favicons, icons, sprites, logos, apple-touch images, and .ico files.
+ */
+function isLikelyRealPhoto(url) {
+  try {
+    const u = new URL(url);
+    const path = u.pathname.toLowerCase();
+    if (path.endsWith(".ico")) return false;
+    const rejectKeywords = ["favicon", "/icon", "apple-touch", "sprite", "logo"];
+    for (const kw of rejectKeywords) {
+      if (path.includes(kw)) return false;
+    }
+    const photoExtRe = /\.(jpe?g|png|webp)(\?.*)?$/i;
+    if (photoExtRe.test(path)) return true;
+    const uploadKeywords = ["/uploads/", "/wp-content/uploads/", "/images/", "/photos/", "/media/", "/gallery/"];
+    for (const kw of uploadKeywords) {
+      if (path.includes(kw)) return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Extract the first large content <img> src from HTML.
+ * Prefers imgs with width/height >= 400, or whose path suggests a content photo.
+ */
+function extractContentImg(html, baseUrl) {
+  const cleaned = html
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, "");
+
+  const imgRe = /<img\s[^>]+>/gi;
+  const candidates = [];
+
+  let m;
+  while ((m = imgRe.exec(cleaned)) !== null) {
+    const tag = m[0];
+    const srcMatch =
+      tag.match(/\bsrc=["']([^"']+)["']/i) ??
+      tag.match(/\bdata-src=["']([^"']+)["']/i);
+    if (!srcMatch?.[1]) continue;
+
+    const resolved = resolveUrl(srcMatch[1].trim(), baseUrl);
+    if (!isLikelyRealPhoto(resolved)) continue;
+
+    let score = 0;
+    const wMatch = tag.match(/\bwidth=["']?(\d+)/i);
+    const hMatch = tag.match(/\bheight=["']?(\d+)/i);
+    const w = wMatch ? parseInt(wMatch[1], 10) : 0;
+    const h = hMatch ? parseInt(hMatch[1], 10) : 0;
+    if (w >= 400 || h >= 400) score += 10;
+    if (w >= 800 || h >= 600) score += 5;
+
+    const uploadPaths = ["/wp-content/uploads/", "/uploads/", "/photos/", "/gallery/", "/media/"];
+    for (const kw of uploadPaths) {
+      if (resolved.includes(kw)) { score += 3; break; }
+    }
+
+    candidates.push({ url: resolved, score });
+  }
+
+  if (!candidates.length) return null;
+  candidates.sort((a, b) => b.score - a.score);
+  return candidates[0].url;
+}
+
+/**
+ * Parse the best real content photo URL from raw HTML.
+ * Selection order: og:image → og:image:secure_url → twitter:image → link[image_src] → first large <img>.
+ * NEVER returns a favicon or icon URL — returns null instead.
+ */
 function extractOgImage(html, baseUrl) {
   const ogPatterns = [
     /property=["']og:image["'][^>]*content=["']([^"']+)["']/i,
     /content=["']([^"']+)["'][^>]*property=["']og:image["']/i,
+    /property=["']og:image:secure_url["'][^>]*content=["']([^"']+)["']/i,
+    /content=["']([^"']+)["'][^>]*property=["']og:image:secure_url["']/i,
     /name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i,
     /content=["']([^"']+)["'][^>]*name=["']twitter:image["']/i,
   ];
   for (const re of ogPatterns) {
-    const m = html.match(re);
-    if (m?.[1]) return resolveUrl(m[1].trim(), baseUrl);
+    const match = html.match(re);
+    if (match?.[1]) {
+      const resolved = resolveUrl(match[1].trim(), baseUrl);
+      if (isLikelyRealPhoto(resolved)) return resolved;
+    }
   }
-  const faviconRe = /(?:rel=["'](?:icon|shortcut icon)["'][^>]*href=["']([^"']+)["']|href=["']([^"']+)["'][^>]*rel=["'](?:icon|shortcut icon)["'])/i;
-  const fm = html.match(faviconRe);
-  if (fm) {
-    const href = (fm[1] || fm[2] || "").trim();
-    if (href) return resolveUrl(href, baseUrl);
+
+  // <link rel="image_src">
+  for (const re of [
+    /rel=["']image_src["'][^>]*href=["']([^"']+)["']/i,
+    /href=["']([^"']+)["'][^>]*rel=["']image_src["']/i,
+  ]) {
+    const match = html.match(re);
+    if (match?.[1]) {
+      const resolved = resolveUrl(match[1].trim(), baseUrl);
+      if (isLikelyRealPhoto(resolved)) return resolved;
+    }
   }
-  return null;
+
+  // First large content <img>
+  return extractContentImg(html, baseUrl);
 }
 
 function extractSiteText(html) {
@@ -255,15 +350,21 @@ async function fetchSiteHtml(url) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 async function run() {
   console.log(`--- backfill-affiliate-content ---`);
-  console.log(`force=${FORCE} slug=${SINGLE_SLUG ?? "all active"} claude-cli=${!!CLAUDE_CLI}\n`);
+  console.log(`force=${FORCE} photos-only=${PHOTOS_ONLY} slug=${SINGLE_SLUG ?? MULTI_SLUGS?.join(",") ?? "all active"} claude-cli=${!!CLAUDE_CLI}\n`);
 
   let q = supabase
     .from("affiliates")
     .select("id, slug, category, redirect_url, photo_url, description")
     .eq("status", "active");
 
-  if (SINGLE_SLUG) q = q.eq("slug", SINGLE_SLUG);
-  if (!FORCE) q = q.or("photo_url.is.null,description.is.null");
+  if (SINGLE_SLUG) {
+    q = q.eq("slug", SINGLE_SLUG);
+  } else if (MULTI_SLUGS?.length) {
+    q = q.in("slug", MULTI_SLUGS);
+  } else if (!FORCE && !PHOTOS_ONLY) {
+    q = q.or("photo_url.is.null,description.is.null");
+  }
+  // --photos-only with no slug filter: process all active (re-evaluate photos)
 
   const { data: affiliates, error } = await q;
   if (error) {
@@ -293,19 +394,20 @@ async function run() {
     }
 
     // 2. Extract photo URL
-    const photo_url = (!FORCE && aff.photo_url)
+    // Always re-evaluate if FORCE or PHOTOS_ONLY, otherwise keep existing non-null value
+    const photo_url = (!FORCE && !PHOTOS_ONLY && aff.photo_url)
       ? aff.photo_url
       : extractOgImage(html, redirect_url);
 
     if (photo_url) {
       console.log(`  photo_url: ${photo_url}`);
     } else {
-      console.log(`  photo_url: null (no OG/twitter image or favicon resolves to absolute URL)`);
+      console.log(`  photo_url: null (no real content photo found — will set to NULL)`);
     }
 
-    // 3. Generate description
+    // 3. Generate description (skip if --photos-only)
     let description;
-    const needDesc = FORCE || !aff.description;
+    const needDesc = !PHOTOS_ONLY && (FORCE || !aff.description);
 
     if (needDesc && CLAUDE_CLI) {
       const siteText = extractSiteText(html);
@@ -338,8 +440,9 @@ async function run() {
 
     // 4. Build update payload
     const update = {};
-    if (FORCE || !aff.photo_url) update.photo_url = photo_url;
-    if (FORCE || !aff.description) update.description = description;
+    // Update photo if forced, photos-only mode, or previously null
+    if (FORCE || PHOTOS_ONLY || !aff.photo_url) update.photo_url = photo_url;
+    if (!PHOTOS_ONLY && (FORCE || !aff.description)) update.description = description;
 
     if (!Object.keys(update).length) {
       console.log(`  Nothing to update (all fields already set).\n`);
