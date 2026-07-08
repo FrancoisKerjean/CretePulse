@@ -9,6 +9,7 @@ import type { CbPlaceListItem, CbPlace } from "@/lib/cb-places";
 import { WaterQualityBadge } from "@/components/WaterQualityBadge";
 import { getCbPlaceBySlug } from "@/lib/cb-places";
 import { getSponsorCards, isSponsorSlug, sponsoredLabel, sponsorDescription } from "@/lib/sponsored-places";
+import { isAffiliateSlug, partnerLabel, type AffiliatePlace } from "@/lib/affiliate-places";
 import { typeLabel } from "@/lib/cb-type-labels";
 import { nearestBy, circlePolygon, isOnCrete } from "@/lib/geo";
 import { cleanCbDescription } from "@/lib/cb-place-helpers";
@@ -160,7 +161,15 @@ function RatingStars({ rating }: { rating: number | null }) {
   );
 }
 
-export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; locale: string }) {
+export function ExploreView({
+  places,
+  affiliatePlaces = [],
+  locale,
+}: {
+  places: CbPlaceListItem[];
+  affiliatePlaces?: AffiliatePlace[];
+  locale: string;
+}) {
   const t = T[locale] || T.en;
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MaplibreMap | null>(null);
@@ -233,10 +242,17 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
   // Liste affichée : distance quand Near me actif, sinon note décroissante
   // (les lieux notés et photographiés d'abord, plus engageant que l'ordre slug).
   // Cartes partenaires (modele B) : chacune est un lieu synthetique injecte en tete,
-  // avec sa propre photo/nom/note et un lien externe (slug prefixe "sponsor:").
-  const sponsorItems: Array<CbPlaceListItem & { __sponsorUrl: string }> = useMemo(
-    () =>
-      getSponsorCards().map((c) => ({
+  // avec sa propre photo/nom/note et un lien externe (slug prefixe "sponsor:" ou "affiliate:").
+  // Les affiliés DB sont fusionnés ici et réutilisent exactement le même marqueur ambre,
+  // le même gating zoom ≥ 9 et le même drawer. Dédup : si un slug de base apparaît des
+  // deux côtés, l'affilié DB gagne (filtre sur les slugs JSON).
+  const sponsorItems: Array<CbPlaceListItem & { __sponsorUrl: string }> = useMemo(() => {
+    // Slugs de base des affiliés DB (ex. "jmp-chania-tours") → utilisés pour filtrer le JSON.
+    const affiliateBaseSlugs = new Set(affiliatePlaces.map((a) => a.slug.replace(/^affiliate:/, "")));
+
+    const fromJson = getSponsorCards()
+      .filter((c) => !affiliateBaseSlugs.has(c.id))  // dédup : affilié DB prioritaire
+      .map((c) => ({
         slug: `sponsor:${c.id}`,
         name: c.name,
         place_type: "sponsor",
@@ -256,9 +272,10 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
         photo_count: 1,
         water_quality: null,
         __sponsorUrl: c.url,
-      })),
-    [],
-  );
+      }));
+
+    return [...fromJson, ...affiliatePlaces];
+  }, [affiliatePlaces]);
 
   const base: Array<CbPlaceListItem & { km?: number }> = useMemo(
     () =>
@@ -625,7 +642,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
     const base = places.find((p) => p.slug === slug);
     setPhotoIdx(0);
     setListExpanded(false);
-    // Partenaire sponsorisé : fiche synthétique (pas en base), aucun fetch DB.
+    // Partenaire sponsorisé ou affilié : fiche synthétique (pas en base), aucun fetch DB.
     const spo = sponsorItems.find((s) => s.slug === slug);
     if (spo) {
       setSelectedLoading(false);
@@ -708,11 +725,14 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
   // Card riche partagee entre le panneau desktop et la liste mobile.
   function PlaceRow({ p }: { p: CbPlaceListItem & { km?: number; __sponsorUrl?: string } }) {
     const spo = isSponsorSlug(p.slug);
+    const aff = isAffiliateSlug(p.slug);
+    const isCommercial = spo || aff;
+    const commercialBadge = aff ? partnerLabel(locale) : spo ? sponsoredLabel(locale) : null;
     return (
       <button
         onClick={() => selectPlace(p.slug)}
         className={`flex gap-3 p-2 rounded-xl bg-white shadow-soft text-left transition-all w-full ${
-          spo ? "border border-amber-300 ring-1 ring-amber-200" : "border border-sea/10 hover:border-sea/30"
+          isCommercial ? "border border-amber-300 ring-1 ring-amber-200" : "border border-sea/10 hover:border-sea/30"
         }`}
       >
         <div className="relative w-[72px] h-[64px] rounded-lg overflow-hidden bg-sand shrink-0">
@@ -727,9 +747,9 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
         <div className="min-w-0 flex-1 py-0.5">
           <div className="flex items-center gap-2">
             <span className="font-semibold text-sm text-text truncate">{p.name}</span>
-            {spo && (
+            {commercialBadge && (
               <span className="shrink-0 text-[9px] font-bold uppercase tracking-wide text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full whitespace-nowrap">
-                {sponsoredLabel(locale)}
+                {commercialBadge}
               </span>
             )}
             <RatingStars rating={p.rating} />
@@ -740,7 +760,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
           <div className="text-xs text-text-muted mt-0.5">
             <span className="inline-block w-2 h-2 rounded-full mr-1"
               style={{ backgroundColor: TYPE_COLORS[p.place_type] || FALLBACK_COLOR }} />
-            {spo ? (p.category ?? "") : typeLabel(p.place_type, locale)}
+            {isCommercial ? (p.category ?? "") : typeLabel(p.place_type, locale)}
             {detectPrefecture(p) ? ` · ${detectPrefecture(p)}` : ""}
           </div>
           {(p.water_quality || p.sand_type || p.water_color) && (
@@ -905,9 +925,9 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
                       style={{ backgroundColor: TYPE_COLORS[p.place_type] || FALLBACK_COLOR }}>
                       {typeLabel(p.place_type, locale)}
                     </span>
-                    {isSponsorSlug(p.slug) && (
+                    {(isSponsorSlug(p.slug) || isAffiliateSlug(p.slug)) && (
                       <span className="absolute top-1.5 right-1.5 text-[8px] font-bold uppercase tracking-wide text-amber-700 bg-white/95 px-1.5 py-0.5 rounded-full">
-                        {sponsoredLabel(locale)}
+                        {isAffiliateSlug(p.slug) ? partnerLabel(locale) : sponsoredLabel(locale)}
                       </span>
                     )}
                   </div>
@@ -983,14 +1003,34 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
                 <RatingStars rating={selected.rating} />
               </div>
               <p className="text-xs text-text-muted mt-1">
-                {isSponsorSlug(selected.slug) ? (selected.category ?? "") : typeLabel(selected.place_type, locale)}
+                {(isSponsorSlug(selected.slug) || isAffiliateSlug(selected.slug)) ? (selected.category ?? "") : typeLabel(selected.place_type, locale)}
                 {selected.prefecture ? ` · ${selected.prefecture}` : ""}
               </p>
             </div>
 
-            {isSponsorSlug(selected.slug) && (() => {
-              const sc = getSponsorCards().find((c) => `sponsor:${c.id}` === selected.slug);
+            {(isSponsorSlug(selected.slug) || isAffiliateSlug(selected.slug)) && (() => {
               const cta = ({ en: "Visit website", fr: "Voir le site", de: "Website besuchen", el: "Επίσκεψη" } as Record<string, string>)[locale] || "Visit website";
+
+              if (isAffiliateSlug(selected.slug)) {
+                // Affilié DB : CTA tracké via /go/<slug>, badge "Partner".
+                const affItem = sponsorItems.find((s) => s.slug === selected.slug) as (CbPlaceListItem & { __sponsorUrl: string }) | undefined;
+                return (
+                  <div className="space-y-2.5">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full">
+                      {partnerLabel(locale)}
+                    </span>
+                    {affItem?.__sponsorUrl && (
+                      <a href={affItem.__sponsorUrl} target="_blank" rel="noopener sponsored"
+                        className="flex items-center justify-center gap-2 bg-sea text-white font-bold text-sm py-2.5 rounded-xl hover:opacity-90 transition-opacity">
+                        {cta} <span aria-hidden>→</span>
+                      </a>
+                    )}
+                  </div>
+                );
+              }
+
+              // Partenaire JSON (sponsored) : comportement d'origine.
+              const sc = getSponsorCards().find((c) => `sponsor:${c.id}` === selected.slug);
               const desc = sc ? sponsorDescription(sc, locale) : null;
               return (
                 <div className="space-y-2.5">
@@ -1039,7 +1079,7 @@ export function ExploreView({ places, locale }: { places: CbPlaceListItem[]; loc
               )}
             </div>
 
-            {!isSponsorSlug(selected.slug) && (
+            {!isSponsorSlug(selected.slug) && !isAffiliateSlug(selected.slug) && (
               <div className="border-t border-sea/10 pt-3">
                 <CbPlaceActions
                   slug={selected.slug}

@@ -15,21 +15,5 @@
     "url": "https://merakigreeklessons.gr/",
     "lat": 35.188768092279034,
     "lng": 25.71619638321431
-  },
-  {
-    "id": "jmp-chania-tours",
-    "name": "JMP Chania Tours",
-    "category": "Tours & transfers",
-    "prefecture": "Chania",
-    "description": {
-      "en": "See Crete without driving. JMP runs private, tailor-made day tours to Elafonisi, Knossos and beyond, plus reliable airport and cruise-port transfers with a local driver. Small groups, your own pace, someone who knows the roads.",
-      "fr": "Découvrez la Crète sans prendre le volant. JMP organise des excursions privées sur mesure vers Elafonisi, Knossos et au-delà, ainsi que des transferts fiables aéroport et port de croisière avec chauffeur local. Petits groupes, à votre rythme, quelqu'un qui connaît les routes.",
-      "de": "Entdecke Kreta, ohne selbst zu fahren. JMP bietet private, maßgeschneiderte Tagestouren nach Elafonisi, Knossos und darüber hinaus, dazu zuverlässige Transfers vom Flughafen und Kreuzfahrthafen mit einheimischem Fahrer. Kleine Gruppen, dein Tempo, jemand der die Straßen kennt.",
-      "el": "Δείτε την Κρήτη χωρίς να οδηγείτε. Η JMP οργανώνει ιδιωτικές, εξατομικευμένες ημερήσιες εκδρομές στο Ελαφονήσι, την Κνωσό και όχι μόνο, καθώς και αξιόπιστες μεταφορές από το αεροδρόμιο και το λιμάνι κρουαζιέρας με ντόπιο οδηγό. Μικρές ομάδες, με τον δικό σας ρυθμό, κάποιος που ξέρει τους δρόμους."
-    },
-    "photo": "/partners/jmp-chania-tours.jpg",
-    "url": "https://crete.direct/go/jmp-chania-tours",
-    "lat": 35.5138,
-    "lng": 24.018
   }
 ]

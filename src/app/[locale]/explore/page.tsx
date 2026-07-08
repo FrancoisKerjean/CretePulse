@@ -1,5 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 import { getAllCbPlaces } from "@/lib/cb-places";
+import { getAffiliatePlaces } from "@/lib/affiliate-places";
 import { buildAlternates } from "@/lib/seo";
 import { ExploreView } from "@/components/explore/ExploreView";
 
@@ -56,7 +57,10 @@ export default async function ExplorePage({ params }: { params: Promise<{ locale
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const places = await getAllCbPlaces().catch(() => []);
+  const [places, affiliatePlaces] = await Promise.all([
+    getAllCbPlaces().catch(() => []),
+    getAffiliatePlaces().catch(() => []),
+  ]);
 
   const m = META[locale] || META.en;
   const pageUrl = `${BASE_URL}/${locale}/explore`;
@@ -91,7 +95,7 @@ export default async function ExplorePage({ params }: { params: Promise<{ locale
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <ExploreView places={places} locale={locale} />
+      <ExploreView places={places} affiliatePlaces={affiliatePlaces} locale={locale} />
     </main>
   );
 }
