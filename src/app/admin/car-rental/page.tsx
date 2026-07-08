@@ -5,8 +5,9 @@ import { notFound, redirect } from "next/navigation";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { isCarAdmin } from "@/lib/car-admin-auth";
 import {
-  requestsSummary, type AdminPartner, type AdminRequest, type AdminQuote,
+  requestsSummary, type AdminPartner, type AdminRequest,
 } from "@/lib/car-admin";
+import type { MonitorInvite } from "@/lib/car-monitoring";
 import { RequestsTable } from "./requests-table";
 import { PartnersTable } from "./partners-table";
 
@@ -36,14 +37,21 @@ export default async function CarAdminPage({
   let requests: AdminRequest[] = [];
   let partners: AdminPartner[] = [];
   let invites: { request_id: number; partner_id: number }[] = [];
-  let invitesFull: { request_id: number; partner_id: number; status: string; quote_price: number | null; car_partners?: { name?: string } }[] = [];
+  let invitesFull: {
+    id: number; request_id: number; partner_id: number; status: string;
+    quote_price: number | null; quote_currency: string | null; quote_car_model: string | null;
+    created_at: string; quoted_at: string | null; declined_at: string | null; relanced_at: string | null;
+    car_partners?: { name?: string };
+  }[] = [];
   let loadError: string | null = null;
   try {
     const [reqRes, partRes, invRes, invFullRes] = await Promise.all([
       supabase.from("car_requests").select("*").order("created_at", { ascending: false }).limit(1000),
       supabase.from("car_partners").select("*").order("id"),
       supabase.from("car_quote_invites").select("request_id, partner_id"),
-      supabase.from("car_quote_invites").select("request_id, partner_id, status, quote_price, car_partners(name)"),
+      supabase.from("car_quote_invites").select(
+        "id, request_id, partner_id, status, quote_price, quote_currency, quote_car_model, created_at, quoted_at, declined_at, relanced_at, car_partners(name)"
+      ),
     ]);
     loadError = reqRes.error?.message ?? partRes.error?.message ?? invRes.error?.message ?? invFullRes.error?.message ?? null;
     requests = (reqRes.data ?? []) as AdminRequest[];
@@ -62,16 +70,17 @@ export default async function CarAdminPage({
     invitesByPartner.set(i.partner_id, (invitesByPartner.get(i.partner_id) ?? 0) + 1);
   }
 
-  const quotesByRequest = new Map<number, AdminQuote[]>();
+  const monitorByRequest = new Map<number, MonitorInvite[]>();
   for (const r of invitesFull) {
-    const list = quotesByRequest.get(r.request_id) ?? [];
+    const list = monitorByRequest.get(r.request_id) ?? [];
     list.push({
-      partner_id: r.partner_id,
+      id: r.id, request_id: r.request_id, partner_id: r.partner_id,
       partner_name: r.car_partners?.name ?? "Agency",
-      status: r.status,
-      quote_price: r.quote_price,
+      status: r.status, quote_price: r.quote_price, quote_currency: r.quote_currency,
+      quote_car_model: r.quote_car_model, created_at: r.created_at,
+      quoted_at: r.quoted_at, declined_at: r.declined_at, relanced_at: r.relanced_at,
     });
-    quotesByRequest.set(r.request_id, list);
+    monitorByRequest.set(r.request_id, list);
   }
 
   const s = requestsSummary(requests, partnersById);
@@ -130,7 +139,7 @@ export default async function CarAdminPage({
           requests={requests}
           partnersById={partnersById}
           invitesByRequest={invitesByRequest}
-          quotesByRequest={quotesByRequest}
+          monitorByRequest={monitorByRequest}
           statusFilter={sp.status ?? ""}
           partnerFilter={sp.partner ?? ""}
           page={Math.max(1, Number(sp.page) || 1)}
