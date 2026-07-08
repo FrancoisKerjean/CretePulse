@@ -228,3 +228,27 @@ export function kpis(
     silentInviteRate: ratio(silentInvites, totalInvites),
   };
 }
+
+export interface PartnerPerf {
+  invited: number; quoted: number; chosen: number; declined: number;
+  avgQuotePriceEur: number | null; responseRate: number | null; avgResponseHours: number | null;
+}
+
+/** Perf loueur enrichie (au-delà de partnerStats.won). invitesByPartner = invites du loueur. */
+export function partnerPerf(partnerId: number, invitesByPartner: Map<number, MonitorInvite[]>): PartnerPerf {
+  const invites = invitesByPartner.get(partnerId) ?? [];
+  const priced = invites.filter((i) => i.quote_price != null);
+  const respHours = invites
+    .filter((i) => i.quoted_at != null)
+    .map((i) => (new Date(i.quoted_at!).getTime() - new Date(i.created_at).getTime()) / 3600000);
+  const avg = (xs: number[]): number | null => (xs.length === 0 ? null : xs.reduce((a, b) => a + b, 0) / xs.length);
+  return {
+    invited: invites.length,
+    quoted: priced.length,
+    chosen: invites.filter((i) => i.status === "chosen").length,
+    declined: invites.filter((i) => i.status === "declined").length,
+    avgQuotePriceEur: avg(priced.map((i) => i.quote_price!)),
+    responseRate: invites.length === 0 ? null : (priced.length + invites.filter((i) => i.status === "declined").length) / invites.length,
+    avgResponseHours: avg(respHours),
+  };
+}

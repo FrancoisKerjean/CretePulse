@@ -1,5 +1,5 @@
 // node --experimental-strip-types scripts/check-car-monitoring.mjs
-import { classifyInvites, partnerRelanceState, partnerRelanceRollup, clientRelanceState, isSilentRequest, isAwaitingChoice, buildTimeline, kpis } from "../src/lib/car-monitoring.ts";
+import { classifyInvites, partnerRelanceState, partnerRelanceRollup, clientRelanceState, isSilentRequest, isAwaitingChoice, buildTimeline, kpis, partnerPerf } from "../src/lib/car-monitoring.ts";
 
 let fail = 0;
 const ok = (n, c) => { console.log(c ? `ok - ${n}` : `FAIL - ${n}`); if (!c) fail++; };
@@ -113,6 +113,25 @@ const NOW = Date.parse("2026-07-09T10:00:00Z");
   ok("choiceRate = 1/2 (accepted / quoted-avec-devis)", Math.abs(k.choiceRate - 0.5) < 1e-9);
   ok("silentInviteRate = 2/4", Math.abs(k.silentInviteRate - 0.5) < 1e-9);
   ok("dénominateur 0 → null (clientDeclineRate a des devis, partnerDecline 0/4=0)", k.partnerDeclineRate === 0);
+}
+
+// Task 11 : partnerPerf()
+{
+  const byPartner = new Map([[7, [
+    inv(1, 200, "chosen", { created_at: T(NOW - 40 * H), quoted_at: T(NOW - 38 * H) }),
+    inv(2, 240, "not_chosen", { created_at: T(NOW - 30 * H), quoted_at: T(NOW - 29 * H) }),
+    { ...inv(3, null, "declined"), partner_id: 7 },
+    { ...inv(4, null, "invited"), partner_id: 7 },
+  ]]]);
+  const p = partnerPerf(7, byPartner);
+  ok("invited = 4", p.invited === 4);
+  ok("quoted = 2", p.quoted === 2);
+  ok("chosen = 1", p.chosen === 1);
+  ok("declined = 1", p.declined === 1);
+  ok("avg quote = 220", p.avgQuotePriceEur === 220);
+  ok("responseRate = 3/4 (quoted+declined)", Math.abs(p.responseRate - 0.75) < 1e-9);
+  ok("avgResponseHours ≈ 1.5", p.avgResponseHours != null && Math.abs(p.avgResponseHours - 1.5) < 0.01);
+  ok("partenaire inconnu → invited 0, ratios null", partnerPerf(99, byPartner).invited === 0 && partnerPerf(99, byPartner).responseRate === null);
 }
 
 console.log(fail ? `\n${fail} FAIL` : "\nAll passed");
