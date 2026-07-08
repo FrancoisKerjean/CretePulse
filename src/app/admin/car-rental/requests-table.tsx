@@ -67,24 +67,26 @@ function hoursLabel(ms: number): string {
   return h >= 1 ? `${h}h` : `${Math.max(1, Math.round(ms / 60000))}min`;
 }
 
-function InviteRoster({ invites, requestStatus, createdAtMs, now }: {
-  invites: MonitorInvite[]; requestStatus: string; createdAtMs: number; now: number;
+function InviteRoster({ invites, requestStatus, now }: {
+  invites: MonitorInvite[]; requestStatus: string; now: number;
 }) {
   const { quoted, silent, declined } = classifyInvites(invites);
   if (invites.length === 0) return null;
   return (
     <ul className="mt-2 flex flex-wrap gap-2 border-t border-border pt-2">
       {quoted.map((q) => (
-        <li key={q.id} className={`flex items-center gap-1.5 rounded-xl border px-3 py-1 text-sm ${q.status === "chosen" ? "border-ok bg-ok/10 font-bold" : "border-border bg-white text-text-muted"}`}>
+        <li key={q.id} className={`flex items-center gap-1.5 rounded-xl border px-3 py-1 text-sm ${q.status === "chosen" ? "border-ok bg-ok/10 font-bold" : q.status === "not_chosen" ? "border-border bg-white text-text-muted opacity-60" : "border-border bg-white text-text-muted"}`}>
           <span>{q.partner_name}</span>
           <span className="font-data">{q.quote_price} {q.quote_currency ?? "€"}</span>
           {q.quote_car_model ? <span className="text-text-light">· {q.quote_car_model}</span> : null}
           {q.quoted_at ? <span className="text-text-light">· {fmtDate(q.quoted_at)}</span> : null}
           {q.status === "chosen" && <span className="rounded-full bg-ok px-2 py-0.5 text-xs font-bold text-white">choisi par le client</span>}
+          {q.status === "not_chosen" && <span className="rounded-full bg-border px-2 py-0.5 text-xs text-text-muted">non retenu</span>}
         </li>
       ))}
       {silent.map((s) => {
-        const st = partnerRelanceState(s, requestStatus, createdAtMs, now);
+        const invCreatedMs = new Date(s.created_at).getTime();
+        const st = partnerRelanceState(s, requestStatus, invCreatedMs, now);
         const badge =
           st.kind === "relanced" ? `relancé le ${fmtDate(st.at)}` :
           st.kind === "due" ? "relance due" :
@@ -179,7 +181,6 @@ export function RequestsTable({
           const commission = requestCommission(r, partnersById);
           const relayPartner = winner ?? [...partnersById.values()].find((p) => p.active && p.lead_routing === "relay" && p.zone_ids.includes(r.zone_id));
           const invites = monitorByRequest.get(r.id) ?? [];
-          const createdAtMs = new Date(r.created_at).getTime();
           const roll = partnerRelanceRollup(invites);
           const cRel = clientRelanceState(
             { status: r.status, client_relanced_at: r.client_relanced_at ?? null, client_relance_count: r.client_relance_count ?? 0 },
@@ -190,7 +191,7 @@ export function RequestsTable({
           return (
             <li key={r.id} className="rounded-2xl border border-border bg-white p-4">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="font-data text-xs text-text-light">#{r.id} · {new Date(r.created_at).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Athens" })}</span>
+                <span className="font-data text-xs text-text-light">#{r.id} · {fmtDate(r.created_at)}</span>
                 {statusBadge(r.status)}
                 {outcomeBadge(r.outcome)}
                 {r.commission_paid_at ? <span className="rounded-full bg-ok px-2 py-0.5 text-xs font-bold text-white">commission encaissée</span> : null}
@@ -221,7 +222,7 @@ export function RequestsTable({
                 </div>
               </div>
 
-              <InviteRoster invites={invites} requestStatus={r.status} createdAtMs={createdAtMs} now={now} />
+              <InviteRoster invites={invites} requestStatus={r.status} now={now} />
 
               {/* Relances + expiry (une ligne compacte). */}
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-muted">
@@ -230,7 +231,7 @@ export function RequestsTable({
                   Client :{" "}
                   {cRel.kind === "eligible" ? "relance éligible" :
                    cRel.kind === "waiting" ? `prochaine relance dans ${hoursLabel(cRel.nextEligibleMs - now)}` :
-                   cRel.kind === "exhausted" ? "relances épuisées (2/2)" : "—"}
+                   cRel.kind === "exhausted" ? "relances épuisées (2/2)" : "aucune"}
                   {" "}({r.client_relance_count ?? 0}/2)
                 </span>
                 {expMs != null && !startPassed ? (
