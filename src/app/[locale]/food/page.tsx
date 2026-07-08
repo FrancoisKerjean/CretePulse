@@ -5,7 +5,7 @@ import { UtensilsCrossed, MapPin } from "lucide-react";
 import Link from "next/link";
 import { buildAlternates } from "@/lib/seo";
 import { itemListSchema } from "@/lib/schema";
-import { AffiliateBanner } from "@/components/ui/affiliate-banner";
+import { CarPromo } from "@/components/car-rental/CarPromo";
 import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 86400;
@@ -254,7 +254,9 @@ export default async function FoodPage({
 
         {/* Monetisation (trou residuel 17/06) : guide food = visiteurs en
             planification locale, intention excursions/sorties. GYG (8%). */}
-        <AffiliateBanner type="tours" locale={locale} className="mt-12" />
+        <div className="mt-12">
+          <CarPromo locale={locale} source="food-index" />
+        </div>
       </div>
     </main>
   );

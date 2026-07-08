@@ -559,8 +559,7 @@ export default async function BeachDetailPage({
           </div>
         </section>
 
-        {/* Car rental : wizard interne uniquement (DiscoverCars retire du site,
-            decision Kami 08/07 - Zorbas couvre desormais toute la Crete). On
+        {/* Car rental : wizard interne uniquement. On
             pre-remplit le pickup le plus proche s'il est dans une zone servie,
             sinon le wizard ouvre a l'etape 1. */}
         {(() => {

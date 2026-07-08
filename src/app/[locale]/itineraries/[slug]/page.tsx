@@ -7,7 +7,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
 import { CarPromo } from "@/components/car-rental/CarPromo";
-import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 172800; // 03/07 optim couts Vercel (48h, ISR Writes)
@@ -343,14 +342,9 @@ export default async function ItineraryPage({
           </div>
         </div>
 
-        {/* Monétisation (audit 13/06/2026, A1) : un roadtrip = intention
-            voiture maximale (la FAQ recommande explicitement la location) +
-            sorties bateau dans les day plans (Spinalonga, Chrysi, Balos).
-            Auto Smart primaire (CarPromo → wizard), GetYourGuide pour les
-            excursions. Pas de pickup : itinéraire multi-zones → wizard étape 1. */}
+        {/* Monetisation: roadtrip intent to Car Rental Direct. */}
         <section className="mt-10 space-y-4">
           <CarPromo locale={locale} source="itineraries" />
-          <AffiliateBanner type="tours" locale={locale} />
         </section>
 
         {/* FAQ section */}

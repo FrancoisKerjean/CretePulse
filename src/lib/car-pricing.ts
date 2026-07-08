@@ -2,7 +2,7 @@
  * Estimation de prix location de voiture — grille INDICATIVE marche Crete.
  *
  * Sources (03/07/2026) : rental-center-crete.com (moyennes par categorie/mois),
- * KAYAK (dec ~12€/j -> aout ~42€/j), DiscoverCars Crete. Ce NE SONT PAS les
+ * KAYAK (dec ~12€/j -> aout ~42€/j), market comparators. Ce NE SONT PAS les
  * tarifs Auto Smart : le partenaire ne publie aucune grille (devis au cas par
  * cas). A afficher donc comme "estimation indicative, prix final confirme par
  * l'agence", et a remplacer par la grille reelle du partenaire des qu'elle est

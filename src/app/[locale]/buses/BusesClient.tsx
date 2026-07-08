@@ -505,8 +505,8 @@ export function BusesClient({
                   {t("noRoute", locale)}
                 </div>
                 {/* Pas de bus direct = meilleur moment pour proposer la voiture.
-                    Wizard interne uniquement (DiscoverCars retire, decision Kami
-                    08/07). Signal Plausible 24/06 : /buses = ~74 % du trafic. */}
+                    Wizard interne uniquement. Signal Plausible 24/06 :
+                    /buses = ~74 % du trafic. */}
                 <CarPromo locale={locale} source="buses-noroute" />
               </div>
             ) : (
@@ -539,7 +539,9 @@ export function BusesClient({
                 </div>
                 {/* Ces destinations n'ont pas de bus direct -> la voiture est la
                     réponse pratique. Wizard interne (cf signal Plausible 24/06). */}
-                <CarPromo locale={locale} source="buses-nodirect" />
+                <div className="mt-4">
+                  <CarPromo locale={locale} source="buses-nodirect" />
+                </div>
               </section>
             )}
           </>

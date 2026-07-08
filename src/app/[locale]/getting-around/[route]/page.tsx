@@ -488,8 +488,7 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
           </section>
         )}
 
-        {/* Car rental : wizard interne uniquement (DiscoverCars retire du site,
-            decision Kami 08/07). Pre-remplit le pickup si zone servie. */}
+        {/* Car rental : wizard interne uniquement. Pre-remplit le pickup si zone servie. */}
         <CarPromo locale={locale} pickup={CAR_PARTNER_PICKUP[slug] ?? undefined} source="getting-around" />
 
         {/* FAQ */}

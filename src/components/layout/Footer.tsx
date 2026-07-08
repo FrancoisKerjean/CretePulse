@@ -3,9 +3,8 @@
 // Footer nuit Kalimera : vague d'entree, wordmark creme, colonnes par univers.
 // Reference visuelle : docs/design/kalimera/home-v8.html (footer).
 import { Link } from "@/i18n/navigation";
-import { useTranslations, useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Wordmark } from "@/components/Wordmark";
-import { AFFILIATE_LINKS } from "@/lib/affiliates";
 import { CiInstagram, CiFacebook, CiYouTube } from "@/components/icons";
 
 function Col({ title, children }: { title: string; children: React.ReactNode }) {
@@ -18,14 +17,35 @@ function Col({ title, children }: { title: string; children: React.ReactNode }) 
 }
 
 const linkCls = "block text-[#EAF7FA]/75 hover:text-white transition-colors no-underline";
+const CAR_RENTAL_LABELS: Record<string, string> = {
+  en: "Rent a car",
+  fr: "Louer une voiture",
+  de: "Mietwagen",
+  el: "Ενοικίαση αυτοκινήτου",
+  it: "Noleggio auto",
+  nl: "Auto huren",
+  pl: "Wynajem auta",
+  es: "Alquiler de coche",
+  pt: "Alugar carro",
+  ru: "Аренда авто",
+  ja: "レンタカー",
+  ko: "렌터카",
+  zh: "租车",
+  tr: "Araç kiralama",
+  sv: "Hyrbil",
+  da: "Billeje",
+  no: "Leiebil",
+  fi: "Autonvuokraus",
+  cs: "Půjčení auta",
+  hu: "Autóbérlés",
+  ro: "Închiriere auto",
+  ar: "تأجير سيارات",
+};
 
 export function Footer() {
   const t = useTranslations("footer");
   const tn = useTranslations("nav");
   const locale = useLocale();
-  const carRental = AFFILIATE_LINKS.carRental;
-  const carRentalLabel =
-    carRental.label[locale as keyof typeof carRental.label] || carRental.label.en;
 
   return (
     <footer className="relative bg-night text-[#EAF7FA]/75 mt-[70px]">
@@ -86,10 +106,9 @@ export function Footer() {
             <Link href="/airport" className={linkCls}>{t("airports")}</Link>
             <Link href="/weather" className={linkCls}>{t("weather")}</Link>
             {/* Voiture = wizard interne /car-rental (loueurs partenaires locaux).
-                DiscoverCars retire du site (decision Kami 08/07) : on ne pousse
-                que notre outil. */}
+                On ne pousse que notre outil. */}
             <Link href="/car-rental" className={linkCls}>
-              {carRentalLabel}
+              {CAR_RENTAL_LABELS[locale] || CAR_RENTAL_LABELS.en}
             </Link>
           </Col>
 

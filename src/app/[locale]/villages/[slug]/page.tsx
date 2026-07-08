@@ -9,7 +9,7 @@ import { MapPin, Mountain, Users, Clock, ChevronLeft, Star } from "lucide-react"
 import { buildAlternates, buildVillageTitle, buildVillageDescription } from "@/lib/seo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AffiliateBanner } from "@/components/ui/affiliate-banner";
+import { CarPromo } from "@/components/car-rental/CarPromo";
 import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 172800; // 03/07 optim couts Vercel (48h, ISR Writes)
@@ -200,10 +200,9 @@ export default async function VillageDetailPage({
           <MapPin className="w-4 h-4" /> Open in Google Maps
         </a>
 
-        {/* Monétisation (audit 13/06/2026, A3) : tours/excursions au départ du
-            village, GetYourGuide contextualisé. */}
+        {/* Monetisation: village intent to Car Rental Direct. */}
         <div className="mb-12">
-          <AffiliateBanner type="tours" locale={locale} placeName={name} />
+          <CarPromo locale={locale} source="village" />
         </div>
 
         {/* Nearby villages */}

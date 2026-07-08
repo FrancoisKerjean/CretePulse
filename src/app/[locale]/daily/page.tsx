@@ -5,7 +5,6 @@ import { getDailyPosts, getLocalizedGuideField, type Guide } from "@/lib/guides"
 import { buildAlternates } from "@/lib/seo";
 import type { Locale } from "@/lib/types";
 import { CarPromo } from "@/components/car-rental/CarPromo";
-import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 
 export const revalidate = 7200; // 03/07 optim couts Vercel
 
@@ -124,11 +123,9 @@ export default async function DailyPage({ params }: { params: Promise<{ locale: 
           <PostList posts={news} locale={loc} type="news" />
         </section>
 
-        {/* Monétisation (audit 13/06/2026, A2+A3) : hub planification quotidienne
-            → CarPromo (Auto Smart primaire) + tours GetYourGuide. */}
+        {/* Monetisation: daily planning to Car Rental Direct. */}
         <section className="mt-12 space-y-4">
           <CarPromo locale={loc} source="daily" />
-          <AffiliateBanner type="tours" locale={loc} />
         </section>
       </div>
     </main>
