@@ -14,6 +14,7 @@
     "check:car-lead": "node --experimental-strip-types scripts/check-car-lead.mjs",
     "check:car-quotes": "node --experimental-strip-types scripts/check-car-quotes.mjs",
     "check:car-admin": "node --experimental-strip-types scripts/check-car-admin.mjs",
+    "check:car-monitoring": "node --experimental-strip-types scripts/check-car-monitoring.mjs",
     "check:bus-select": "node --experimental-strip-types scripts/check-bus-live-selection.mjs",
     "check:gtfs-stops": "node scripts/check-gtfs-stops.mjs",
     "check:stop-departures": "node --experimental-strip-types scripts/check-stop-departures.mjs",
@@ -21,7 +22,7 @@
     "check:projet-lead": "node --experimental-strip-types scripts/check-projet-lead.mjs",
     "check:da": "node scripts/check-da.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
-    "check": "npm run check:geo && npm run check:car-partners && npm run check:car-lead && npm run check:car-admin && npm run check:bus-select && npm run check:stop-departures && npm run check:projet-copy && npm run check:projet-lead && npm run check:da && npm run check:i18n && tsc --noEmit",
+    "check": "npm run check:geo && npm run check:car-partners && npm run check:car-lead && npm run check:car-admin && npm run check:car-monitoring && npm run check:bus-select && npm run check:stop-departures && npm run check:projet-copy && npm run check:projet-lead && npm run check:da && npm run check:i18n && tsc --noEmit",
     "test:affiliate": "node --test --experimental-strip-types src/lib/affiliate.test.ts"
   },
   "dependencies": {
