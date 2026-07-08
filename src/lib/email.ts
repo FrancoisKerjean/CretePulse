@@ -393,7 +393,7 @@ export async function sendAgencyQuoteRequest(partner: { name: string; email: str
       </div>
       <p style="margin:0 0 20px; color:${C.text}; font-weight:700; font-size:15px;">Our referral commission is 10%, only on confirmed bookings.</p>
       <div style="text-align:center; margin:0 0 16px;">${pillButton(quoteUrl, "Send your price", C.terracotta)}</div>
-      <p style="margin:0 0 22px; color:${C.faint}; font-size:12px; line-height:1.6; text-align:center;">First come, first served, no login. The customer gets your quote automatically; I connect you both the moment they accept.</p>
+      <p style="margin:0 0 22px; color:${C.faint}; font-size:12px; line-height:1.6; text-align:center;">No login needed. The customer compares all offers and picks one. Send your best price.</p>
       <p style="margin:0; color:${C.text}; line-height:1.5;"><strong>Kami</strong><br><span style="color:${C.faint}; font-size:13px;">crete.direct</span></p>
   `);
 
@@ -407,10 +407,10 @@ export async function sendAgencyQuoteRequest(partner: { name: string; email: str
     ``,
     `Our referral commission is 10%, only on confirmed bookings.`,
     ``,
-    `Send your price in one click, no login (first come, first served):`,
+    `Send your price in one click, no login:`,
     quoteUrl,
     ``,
-    `The customer gets your quote automatically; I connect you both the moment they accept.`,
+    `The customer compares all offers and picks one. Send your best price.`,
     ``,
     `Kami`,
     `crete.direct`,
@@ -860,6 +860,26 @@ export async function sendCustomerNewOffer(opts: {
     html: kalimeraShell(inner),
   });
   if (error) throw new Error(`Resend: ${error.message}`);
+}
+
+/** Email court au loueur non retenu. Best-effort : appelé depuis accept route. */
+export async function sendPartnerNotChosen(email: string, partnerName: string): Promise<void> {
+  const first = partnerName.split(" ")[0] || partnerName;
+  const { error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: email,
+    replyTo: RELAY_EMAIL,
+    subject: "Car Rental Direct - not selected this time",
+    text: [
+      `Hi ${first},`,
+      ``,
+      `The customer chose another offer this time. Thanks for your quote, more requests will come. No action needed.`,
+      ``,
+      `Kami`,
+      `crete.direct`,
+    ].join("\n"),
+  });
+  if (error) console.error("[sendPartnerNotChosen] Resend error:", error.message);
 }
 
 // =============================================================================

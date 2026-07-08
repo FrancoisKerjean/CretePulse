@@ -32,7 +32,7 @@ export async function quotesForRequest(requestId: number): Promise<QuoteInvite[]
 /** Demande + ses devis à partir du token client (page offres). null si introuvable. */
 export async function requestByClientToken(token: string): Promise<{ request: Record<string, unknown>; quotes: QuoteInvite[] } | null> {
   const { data: request } = await supabase.from("car_requests")
-    .select("id, status, locale, pickup_slug, date_from, date_to, car_type, customer_name, customer_email")
+    .select("id, status, locale, pickup_slug, date_from, date_to, car_type, customer_name, customer_email, customer_phone")
     .eq("accept_token_hash", hashToken(token)).maybeSingle();
   if (!request) return null;
   const quotes = await quotesForRequest(request.id as number);

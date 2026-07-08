@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 
-// Bouton d'acceptation du devis par le client. Poste le jeton à l'API qui
-// déclenche la mise en relation (coordonnées échangées par email).
-export function AcceptButton({ token, label, doneText, expiredText }: { token: string; label: string; doneText: string; expiredText: string }) {
+// Bouton d'acceptation d'une offre par le client. Poste le jeton et l'ID de
+// l'invite retenue à l'API qui déclenche la mise en relation.
+export function AcceptButton({ token, inviteId, label, doneText, expiredText }: { token: string; inviteId: number; label: string; doneText: string; expiredText: string }) {
   const [state, setState] = useState<"idle" | "sending" | "done" | "expired" | "error">("idle");
 
   async function accept() {
@@ -13,7 +13,7 @@ export function AcceptButton({ token, label, doneText, expiredText }: { token: s
       const res = await fetch("/api/car-rental/accept", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ token, invite_id: inviteId }),
       });
       const json = await res.json();
       if (res.status === 410 || json.expired) {
