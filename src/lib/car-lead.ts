@@ -6,6 +6,7 @@
 import { zoneForPickup, type CarZone } from "./car-partners.ts";
 import { CAR_TYPES_DATA, type CarTypeData } from "./car-types-data.ts";
 import { SLUG_COORDS } from "./taxi-fare.ts";
+import { isChildSeatKey } from "./car-child-seats.ts";
 
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -40,6 +41,8 @@ export type CarRequestRow = {
   note: string | null;
   insurance: string | null;      // 'full' | 'basic' | null (peu importe)
   payment_method: string | null; // 'cash' | 'card' | null (peu importe)
+  gearbox: string | null;        // 'automatic' | 'manual' | null (peu importe)
+  child_seats: string[];         // clés de car-child-seats (jsonb array, [] si aucun)
   source: string | null;
   status: string;
 };
@@ -99,6 +102,8 @@ export function validateCarLead(body: Record<string, unknown>): CarLeadResult {
     note: str(body.note)?.slice(0, 500) ?? null,
     insurance: body.insurance === "full" || body.insurance === "basic" ? body.insurance : null,
     payment_method: body.payment === "cash" || body.payment === "card" ? body.payment : null,
+    gearbox: body.gearbox === "automatic" || body.gearbox === "manual" ? body.gearbox : null,
+    child_seats: Array.isArray(body.childSeats) ? body.childSeats.filter(isChildSeatKey) : [],
     source: str(body.source),
     status: "sent",
   };

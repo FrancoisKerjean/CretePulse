@@ -44,6 +44,16 @@ ok("pax entier conservé", good.kind === "ok" && good.row.pax === 3);
 ok("champs str() nullables", good.kind === "ok" && good.row.flight_no === "A3 123" && good.row.note === "x");
 ok("source mappée", good.kind === "ok" && good.row.source === "airport");
 
+// gearbox + sièges enfants (retour loueur Lux Trans 08/07)
+ok("gearbox par défaut null (non fourni)", good.kind === "ok" && good.row.gearbox === null);
+ok("child_seats par défaut []", good.kind === "ok" && Array.isArray(good.row.child_seats) && good.row.child_seats.length === 0);
+ok("gearbox automatic accepté", (() => { const x = validateCarLead({ ...valid, gearbox: "automatic" }); return x.kind === "ok" && x.row.gearbox === "automatic"; })());
+ok("gearbox manual accepté", (() => { const x = validateCarLead({ ...valid, gearbox: "manual" }); return x.kind === "ok" && x.row.gearbox === "manual"; })());
+ok("gearbox invalide -> null (peu importe)", (() => { const x = validateCarLead({ ...valid, gearbox: "cvt" }); return x.kind === "ok" && x.row.gearbox === null; })());
+ok("child_seats clés valides conservées", (() => { const x = validateCarLead({ ...valid, childSeats: ["baby_cot", "booster"] }); return x.kind === "ok" && x.row.child_seats.length === 2 && x.row.child_seats[0] === "baby_cot"; })());
+ok("child_seats clés inconnues filtrées", (() => { const x = validateCarLead({ ...valid, childSeats: ["baby_seat", "spaceship_seat"] }); return x.kind === "ok" && x.row.child_seats.length === 1 && x.row.child_seats[0] === "baby_seat"; })());
+ok("child_seats non-array -> []", (() => { const x = validateCarLead({ ...valid, childSeats: "baby_cot" }); return x.kind === "ok" && x.row.child_seats.length === 0; })());
+
 ok("carPickupLabel", carPickupLabel("agios-nikolaos") === "Agios Nikolaos");
 
 process.exit(fail ? 1 : 0);

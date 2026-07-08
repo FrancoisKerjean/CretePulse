@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { CAR_ZONES, allPickups, zoneForPickup } from "@/lib/car-partners";
 import { CAR_TYPES } from "@/lib/car-types";
+import { CAR_CHILD_SEAT_KEYS, CAR_CHILD_SEAT_LABELS } from "@/lib/car-child-seats";
 import { SLUG_COORDS } from "@/lib/taxi-fare";
 import { nearestBy } from "@/lib/geo";
 import { useGeoPosition } from "@/components/geo/useGeoPosition";
@@ -70,6 +71,11 @@ type Strings = {
   payCash: string;
   payCard: string;
   payAny: string;
+  gearboxLabel: string;
+  gbAuto: string;
+  gbManual: string;
+  gbAny: string;
+  childSeatsLabel: string;
   title4: string;
   nameLabel: string;
   emailLabel: string;
@@ -116,6 +122,11 @@ const T: Record<string, Strings> = {
     payCash: "Cash",
     payCard: "Card",
     payAny: "No preference",
+    gearboxLabel: "Gearbox (optional)",
+    gbAuto: "Automatic",
+    gbManual: "Manual",
+    gbAny: "No preference",
+    childSeatsLabel: "Child seats (optional)",
     title4: "Your contact details",
     nameLabel: "Name",
     emailLabel: "Email",
@@ -160,6 +171,11 @@ const T: Record<string, Strings> = {
     payCash: "Espèces",
     payCard: "Carte",
     payAny: "Peu importe",
+    gearboxLabel: "Boîte de vitesses (facultatif)",
+    gbAuto: "Automatique",
+    gbManual: "Manuelle",
+    gbAny: "Peu importe",
+    childSeatsLabel: "Sièges enfants (facultatif)",
     title4: "Vos coordonnées",
     nameLabel: "Nom",
     emailLabel: "Email",
@@ -204,6 +220,11 @@ const T: Record<string, Strings> = {
     payCash: "Bar",
     payCard: "Karte",
     payAny: "Egal",
+    gearboxLabel: "Getriebe (optional)",
+    gbAuto: "Automatik",
+    gbManual: "Schaltgetriebe",
+    gbAny: "Egal",
+    childSeatsLabel: "Kindersitze (optional)",
     title4: "Ihre Kontaktdaten",
     nameLabel: "Name",
     emailLabel: "E-Mail",
@@ -248,6 +269,11 @@ const T: Record<string, Strings> = {
     payCash: "Μετρητά",
     payCard: "Κάρτα",
     payAny: "Αδιάφορο",
+    gearboxLabel: "Κιβώτιο ταχυτήτων (προαιρετικό)",
+    gbAuto: "Αυτόματο",
+    gbManual: "Χειροκίνητο",
+    gbAny: "Αδιάφορο",
+    childSeatsLabel: "Παιδικά καθίσματα (προαιρετικό)",
     title4: "Τα στοιχεία σας",
     nameLabel: "Όνομα",
     emailLabel: "Email",
@@ -306,6 +332,8 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
   const [pax, setPax] = useState(2);
   const [insurance, setInsurance] = useState(""); // "" = peu importe, "full", "basic"
   const [payment, setPayment] = useState("");     // "" = peu importe, "cash", "card"
+  const [gearbox, setGearbox] = useState("");     // "" = peu importe, "automatic", "manual"
+  const [childSeats, setChildSeats] = useState<string[]>([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -390,6 +418,7 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
           dateFrom, timeFrom: timeFrom || undefined, dateTo, timeTo: timeTo || undefined,
           flightNo: flightNo.trim() || undefined, pax, note: note.trim() || undefined,
           insurance: insurance || undefined, payment: payment || undefined,
+          gearbox: gearbox || undefined, childSeats,
           locale, source, website,
         }),
       });
@@ -739,6 +768,33 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
                     {label}
                   </button>
                 ))}
+              </div>
+            </div>
+            <div>
+              <span className="block mb-1.5 font-heading font-bold text-[14px] text-text">{t.gearboxLabel}</span>
+              <div className="flex flex-wrap gap-2">
+                {([["automatic", t.gbAuto], ["manual", t.gbManual], ["", t.gbAny]] as const).map(([val, label]) => (
+                  <button key={val || "any"} type="button" onClick={() => setGearbox(val)}
+                    className={`rounded-full border-[1.5px] px-4 py-2 text-sm font-semibold transition-colors ${gearbox === val ? "border-sea bg-sea-faint text-text" : "border-border bg-white text-text-muted hover:border-sea/50"}`}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <span className="block mb-1.5 font-heading font-bold text-[14px] text-text">{t.childSeatsLabel}</span>
+              <div className="flex flex-wrap gap-2">
+                {CAR_CHILD_SEAT_KEYS.map((k) => {
+                  const on = childSeats.includes(k);
+                  const label = (CAR_CHILD_SEAT_LABELS[locale] ?? CAR_CHILD_SEAT_LABELS.en)[k];
+                  return (
+                    <button key={k} type="button"
+                      onClick={() => setChildSeats((cur) => on ? cur.filter((x) => x !== k) : [...cur, k])}
+                      className={`rounded-full border-[1.5px] px-4 py-2 text-sm font-semibold transition-colors ${on ? "border-sea bg-sea-faint text-text" : "border-border bg-white text-text-muted hover:border-sea/50"}`}>
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>

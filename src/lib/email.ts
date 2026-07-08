@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import { buildCarWaMessage, waHref } from "./car-admin";
 import { inclusionLabels } from "@/lib/car-inclusions";
+import { CAR_CHILD_SEAT_LABELS_PARTNER, type CarChildSeatKey } from "@/lib/car-child-seats";
 import { sharedOfferCopy } from "@/lib/car-offer-copy";
 import { affiliateClass } from "@/lib/affiliate";
 
@@ -249,11 +250,13 @@ export interface CarLead {
   pickupLabel: string; dateFrom: string; timeFrom?: string; dateTo: string; timeTo?: string;
   flightNo?: string; carTypeLabel: string; pax?: number;
   insurance?: string; payment?: string; // 'full'|'basic' · 'cash'|'card'
+  gearbox?: string; childSeats?: string[]; // 'automatic'|'manual' · clés car-child-seats
   customerName: string; customerEmail: string; customerPhone?: string; note?: string;
 }
 
 const INSURANCE_LABEL: Record<string, string> = { full: "Full insurance (all-risk)", basic: "Basic insurance" };
 const PAYMENT_LABEL: Record<string, string> = { cash: "Cash", card: "Card" };
+const GEARBOX_LABEL: Record<string, string> = { automatic: "Automatic", manual: "Manual" };
 
 // Mode relais (par défaut tant que l'agence n'est pas prévenue du flux
 // automatique) : le lead arrive UNIQUEMENT chez Kami, avec un lien WhatsApp
@@ -274,6 +277,8 @@ function leadSummary(lead: CarLead, includeContact = true): string[] {
     `People: ${lead.pax ?? "-"}`,
     ...(lead.insurance && INSURANCE_LABEL[lead.insurance] ? [`Insurance: ${INSURANCE_LABEL[lead.insurance]}`] : []),
     ...(lead.payment && PAYMENT_LABEL[lead.payment] ? [`Payment: ${PAYMENT_LABEL[lead.payment]}`] : []),
+    ...(lead.gearbox && GEARBOX_LABEL[lead.gearbox] ? [`Gearbox: ${GEARBOX_LABEL[lead.gearbox]}`] : []),
+    ...(lead.childSeats && lead.childSeats.length ? [`Child seats: ${lead.childSeats.map((k) => CAR_CHILD_SEAT_LABELS_PARTNER[k as CarChildSeatKey] ?? k).join(", ")}`] : []),
     ...(includeContact
       ? [``, `Customer: ${lead.customerName}`, `Email: ${lead.customerEmail}`, `Phone / WhatsApp: ${lead.customerPhone ?? "-"}`]
       : []),
