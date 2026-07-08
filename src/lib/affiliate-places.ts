@@ -5,7 +5,14 @@
 import { supabase } from "./supabase";
 import type { CbPlaceListItem } from "./cb-places";
 
-export type AffiliatePlace = CbPlaceListItem & { __sponsorUrl: string };
+/** Descriptif court localisé de l'affilié (en/fr/de/el). */
+export type AffiliateDescription = { en?: string; fr?: string; de?: string; el?: string } | null;
+
+export type AffiliatePlace = CbPlaceListItem & {
+  __sponsorUrl: string;
+  /** Description localisée du partenaire (null quand non encore enrichie). */
+  __affiliateDescription: AffiliateDescription;
+};
 
 interface AffiliateRow {
   slug: string;
@@ -14,6 +21,8 @@ interface AffiliateRow {
   area: string;
   latitude: number;
   longitude: number;
+  photo_url: string | null;
+  description: AffiliateDescription;
 }
 
 /**
@@ -27,7 +36,7 @@ interface AffiliateRow {
 export async function getAffiliatePlaces(): Promise<AffiliatePlace[]> {
   const { data, error } = await supabase
     .from("affiliates")
-    .select("slug, name, category, area, latitude, longitude")
+    .select("slug, name, category, area, latitude, longitude, photo_url, description")
     .eq("status", "active")
     .not("latitude", "is", null)
     .not("longitude", "is", null)
@@ -62,11 +71,22 @@ export function mapAffiliateRow(row: AffiliateRow): AffiliatePlace {
     crowds: null,
     facilities: null,
     accessibility: null,
-    photos: [],                      // no photo in DB; drawer falls back to placeholder
-    photo_count: 0,
+    photos: row.photo_url ? [row.photo_url] : [],
+    photo_count: row.photo_url ? 1 : 0,
     water_quality: null,
     __sponsorUrl: `https://crete.direct/go/${row.slug}`,
+    __affiliateDescription: row.description ?? null,
   };
+}
+
+/**
+ * Descriptif localisé de l'affilié : locale → fallback 'en' → null.
+ * Miroir de sponsorDescription() dans sponsored-places.ts.
+ */
+export function affiliateDescription(place: AffiliatePlace, locale: string): string | null {
+  const desc = place.__affiliateDescription;
+  if (!desc) return null;
+  return (desc as Record<string, string | undefined>)[locale] || desc.en || null;
 }
 
 /** True when a map-item slug was injected from the affiliates table. */

@@ -1,7 +1,7 @@
 /**
  * Tests for the pure exported helpers in affiliate-places.ts.
  * getAffiliatePlaces() is NOT tested here (hits Supabase).
- * Only pure pieces: mapAffiliateRow, isAffiliateSlug, partnerLabel.
+ * Only pure pieces: mapAffiliateRow, isAffiliateSlug, partnerLabel, affiliateDescription.
  */
 import { describe, it, expect, vi } from "vitest";
 
@@ -15,7 +15,7 @@ vi.mock("@/lib/supabase", () => ({
 // Mock cb-places (CbPlaceListItem type only — no runtime side-effects needed).
 vi.mock("@/lib/cb-places", () => ({}));
 
-const { mapAffiliateRow, isAffiliateSlug, partnerLabel } = await import(
+const { mapAffiliateRow, isAffiliateSlug, partnerLabel, affiliateDescription } = await import(
   "@/lib/affiliate-places"
 );
 
@@ -31,6 +31,8 @@ describe("mapAffiliateRow", () => {
     area: "Chania",
     latitude: 35.5138,
     longitude: 24.0183,
+    photo_url: null as string | null,
+    description: null as { en?: string; fr?: string; de?: string; el?: string } | null,
   };
 
   it('prefixes slug with "affiliate:"', () => {
@@ -64,9 +66,26 @@ describe("mapAffiliateRow", () => {
     expect(place.longitude).toBe(24.0183);
   });
 
-  it("leaves photos as an empty array", () => {
-    const place = mapAffiliateRow(sampleRow);
+  it("leaves photos as an empty array when photo_url is null", () => {
+    const place = mapAffiliateRow({ ...sampleRow, photo_url: null });
     expect(place.photos).toEqual([]);
+  });
+
+  it("carries photo_url as first photo when present", () => {
+    const url = "https://media.crete.direct/instagram/jmp/cover.jpg";
+    const place = mapAffiliateRow({ ...sampleRow, photo_url: url });
+    expect(place.photos).toEqual([url]);
+  });
+
+  it("carries __affiliateDescription when description is set", () => {
+    const desc = { en: "Great tours", fr: "Super excursions" };
+    const place = mapAffiliateRow({ ...sampleRow, description: desc });
+    expect(place.__affiliateDescription).toEqual(desc);
+  });
+
+  it("carries __affiliateDescription as null when description is null", () => {
+    const place = mapAffiliateRow({ ...sampleRow, description: null });
+    expect(place.__affiliateDescription).toBeNull();
   });
 });
 
@@ -85,6 +104,59 @@ describe("isAffiliateSlug", () => {
 
   it("returns false for a bare slug (no prefix)", () => {
     expect(isAffiliateSlug("jmp-chania-tours")).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// partnerLabel
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// affiliateDescription
+// ---------------------------------------------------------------------------
+
+describe("affiliateDescription", () => {
+  const makePlace = (desc: { en?: string; fr?: string; de?: string; el?: string } | null) => ({
+    slug: "affiliate:test",
+    name: "Test",
+    place_type: "sponsor",
+    category: null,
+    latitude: 35.5,
+    longitude: 24.0,
+    rating: null,
+    prefecture: null,
+    water_color: null,
+    sand_type: null,
+    depth: null,
+    sea_surface: null,
+    crowds: null,
+    facilities: null,
+    accessibility: null,
+    photos: [] as string[],
+    photo_count: 0,
+    water_quality: null,
+    __sponsorUrl: "https://crete.direct/go/test",
+    __affiliateDescription: desc,
+  });
+
+  it("returns the localized description for a known locale", () => {
+    const place = makePlace({ en: "English desc", fr: "Description FR" });
+    expect(affiliateDescription(place, "fr")).toBe("Description FR");
+  });
+
+  it("falls back to 'en' when the requested locale is missing", () => {
+    const place = makePlace({ en: "English desc" });
+    expect(affiliateDescription(place, "de")).toBe("English desc");
+  });
+
+  it("returns null when description is null", () => {
+    const place = makePlace(null);
+    expect(affiliateDescription(place, "en")).toBeNull();
+  });
+
+  it("returns null when both locale and en are missing", () => {
+    const place = makePlace({ fr: "Uniquement FR" });
+    expect(affiliateDescription(place, "de")).toBeNull();
   });
 });
 
