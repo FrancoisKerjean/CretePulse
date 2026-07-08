@@ -332,16 +332,13 @@ export function ExploreView({
         return { ...a };
       });
 
-    // Fusionner affiliés et base, puis trier : nearActive → distance, sinon score note/photos.
-    const combined: Array<CbPlaceListItem & { km?: number; __sponsorUrl?: string }> = [
-      ...affiliatesWithKm,
-      ...base,
-    ];
-
-    const sorted = nearActive && geo.pos
-      ? [...combined].sort((a, b) => (a.km ?? Infinity) - (b.km ?? Infinity))
-      : combined; // base est déjà trié par score ; les affiliés arrivent en premier dans combined
-                  // mais sans km défini ils tombent naturellement après le contenu trié.
+    // Fusionner affiliés et base, puis trier :
+    //   - Geo/near mode : mélanger affiliés+base triés par distance (km croissant).
+    //   - Non-geo mode : base d'abord (trié par score), affiliés APRÈS — jamais en tête.
+    const sorted: Array<CbPlaceListItem & { km?: number; __sponsorUrl?: string }> =
+      nearActive && geo.pos
+        ? [...affiliatesWithKm, ...base].sort((a, b) => (a.km ?? Infinity) - (b.km ?? Infinity))
+        : [...base, ...affiliatesWithKm];
 
     return [...visiblePaidSponsors, ...sorted];
   }, [visibleSponsors, base, nearActive, geo.pos]);
@@ -589,7 +586,7 @@ export function ExploreView({
               'border-top:9px solid #fff"></div>' +
             // Cercle photo
             '<div style="position:absolute;top:0;left:0;right:0;margin:0 auto;width:50px;height:50px;border-radius:50%;' +
-              'background:url(' + JSON.stringify(photo) + ') center/cover no-repeat;' +
+              "background:url('" + photo + "') center/cover no-repeat;" +
               'border:3px solid #fff;box-shadow:0 3px 10px rgba(7,40,52,.45)">' +
               // Pastille or (top-right)
               '<div style="position:absolute;top:-2px;right:-2px;width:14px;height:14px;border-radius:50%;' +
@@ -1095,6 +1092,7 @@ export function ExploreView({
                           src={affiliatePhoto}
                           alt={selected.name}
                           className="w-full h-full object-cover"
+                          onError={(e) => { e.currentTarget.style.display = "none"; }}
                         />
                       </div>
                     )}
