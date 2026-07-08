@@ -810,6 +810,58 @@ export async function sendCustomerNoQuoteYet(opts: { email: string; locale: stri
   return data;
 }
 
+// ── Nouvelle offre disponible : notif client multi-devis ────────────────────
+
+const NEW_OFFER_SUBJECT: Record<string, string> = {
+  en: "A new offer for your Crete car rental",
+  fr: "Une nouvelle offre pour votre location en Crète",
+  de: "Ein neues Angebot für Ihre Mietwagen-Buchung auf Kreta",
+  el: "Μια νέα προσφορά για την ενοικίαση αυτοκινήτου στην Κρήτη",
+};
+
+const NEW_OFFER_COPY: Record<string, { body: string; cta: string }> = {
+  en: {
+    body: "a new offer just arrived for your car rental at {pickupLabel}. More may follow. Compare and choose here:",
+    cta: "Compare offers",
+  },
+  fr: {
+    body: "une offre vient d'arriver pour votre location de voiture à {pickupLabel}. D'autres peuvent suivre. Comparez et choisissez ici :",
+    cta: "Comparer les offres",
+  },
+  de: {
+    body: "ein neues Angebot ist für Ihre Mietwagen-Anfrage in {pickupLabel} eingegangen. Weitere können folgen. Vergleichen und wählen Sie hier:",
+    cta: "Angebote vergleichen",
+  },
+  el: {
+    body: "μια νέα προσφορά μόλις έφτασε για την ενοικίαση αυτοκινήτου σας στο {pickupLabel}. Ενδέχεται να ακολουθήσουν κι άλλες. Συγκρίνετε και επιλέξτε εδώ:",
+    cta: "Σύγκριση προσφορών",
+  },
+};
+
+/** Notifie le client qu'une nouvelle offre est disponible (modèle multi-devis). */
+export async function sendCustomerNewOffer(opts: {
+  email: string; locale: string; customerName: string;
+  offersUrl: string; pickupLabel: string;
+}): Promise<void> {
+  const l = NEW_OFFER_SUBJECT[opts.locale] ? opts.locale : "en";
+  const c = NEW_OFFER_COPY[l];
+  const body = c.body.replace("{pickupLabel}", opts.pickupLabel);
+  const greeting = opts.customerName ? `${opts.customerName}, ` : "";
+  const inner = `
+  <p style="margin:0 0 20px; color:${C.muted}; font-size:14px; line-height:1.6;">${greeting}${body}</p>
+  <div style="text-align:center; margin:0 0 18px;">${pillButton(opts.offersUrl, c.cta, C.lagoonDeep)}</div>
+  <p style="margin:0; color:${C.faint}; font-size:12px; text-align:center; line-height:1.6;">Questions ? Répondez à cet email, une vraie personne le lit.</p>
+`;
+  const { error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: opts.email,
+    replyTo: RELAY_EMAIL,
+    subject: NEW_OFFER_SUBJECT[l],
+    html: kalimeraShell(inner),
+  });
+  if (error) throw new Error(`Resend: ${error.message}`);
+}
+
 // =============================================================================
 // Lead /projet (institutions / sponsors) -> Kami
 // =============================================================================
