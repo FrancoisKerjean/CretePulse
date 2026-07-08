@@ -102,17 +102,24 @@ const NOW = Date.parse("2026-07-09T10:00:00Z");
     client_relanced_at: o.client_relanced_at ?? null, client_relance_count: o.client_relance_count ?? 0,
   });
   const reqs = [mkReq(1, "quoted"), mkReq(2, "accepted", { accepted_at: T(NOW - 10 * H) }), mkReq(3, "sent")];
+  // req 1 : 2 invites chiffrées (→ withQuote++ ; totalQuotes += 2) + 1 silencieuse
+  // req 2 : 1 invite chiffrée chosen (→ withQuote++ ; totalQuotes += 1)
+  // req 3 : 1 invite silencieuse
+  // Totaux : withQuote=2, totalQuotes=3 → avgQuotesPerRequest=1.5
+  //          totalInvites=5, silentInvites=2 → silentInviteRate=2/5
   const byReq = new Map([
-    [1, [inv(1, 200), inv(2, null, "invited")]],
+    [1, [inv(1, 200), inv(5, 250), inv(2, null, "invited")]],
     [2, [inv(3, 180, "chosen", { quoted_at: T(NOW - 40 * H) })]],
     [3, [inv(4, null, "invited")]],
   ]);
   const k = kpis(reqs, byReq, NOW);
   ok("count = 3", k.count === 3);
   ok("quoteRate = 2/3", Math.abs(k.quoteRate - 2 / 3) < 1e-9);
-  ok("choiceRate = 1/2 (accepted / quoted-avec-devis)", Math.abs(k.choiceRate - 0.5) < 1e-9);
-  ok("silentInviteRate = 2/4", Math.abs(k.silentInviteRate - 0.5) < 1e-9);
-  ok("dénominateur 0 → null (clientDeclineRate a des devis, partnerDecline 0/4=0)", k.partnerDeclineRate === 0);
+  ok("choiceRate = 1/2 (accepted / withQuote)", Math.abs(k.choiceRate - 0.5) < 1e-9);
+  ok("silentInviteRate = 2/5", Math.abs(k.silentInviteRate - 2 / 5) < 1e-9);
+  ok("partnerDeclineRate = 0/5 = 0 (aucun désisté sur 5 invites)", k.partnerDeclineRate === 0);
+  // Correction 5 : avgQuotesPerRequest > 1 quand une demande a 2 invites chiffrées
+  ok("avgQuotesPerRequest = 3/2 = 1.5 (req1 a 2 devis, req2 en a 1)", Math.abs(k.avgQuotesPerRequest - 1.5) < 1e-9);
 }
 
 // Task 11 : partnerPerf()

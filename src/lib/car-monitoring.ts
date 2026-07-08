@@ -172,7 +172,12 @@ function median(xs: number[]): number | null {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
-/** KPI agrégés sur les demandes fournies (le caller filtre par fenêtre created_at). */
+/**
+ * KPI agrégés sur les demandes fournies (le caller filtre par fenêtre created_at).
+ *
+ * `avgQuotesPerRequest` = moyenne du nombre de devis **parmi les demandes ayant au moins
+ * un devis chiffré** (dénominateur `withQuote`, pas `reqs.length`).
+ */
 export function kpis(
   reqs: { id: number; status: string; created_at: string; accepted_at: string | null;
           client_relanced_at: string | null; client_relance_count: number }[],
@@ -180,7 +185,7 @@ export function kpis(
   _nowMs: number,
 ): CockpitKpis {
   let withQuote = 0, totalQuotes = 0, totalInvites = 0, declinedInvites = 0, silentInvites = 0;
-  let quotedWithDevis = 0, accepted = 0;
+  let accepted = 0;
   let declinedByClient = 0;
   let relancedInvites = 0, relancedThenQuoted = 0;
   let clientRelanced = 0, clientRelancedThenAccepted = 0;
@@ -189,13 +194,17 @@ export function kpis(
   for (const r of reqs) {
     const invites = invitesByRequest.get(r.id) ?? [];
     totalInvites += invites.length;
-    const priced = invites.filter((i) => i.quote_price != null && i.quoted_at != null);
+    // Correction 1 : utilise le prédicat isPriced unifié (quote_price != null + statut cohérent)
+    const priced = invites.filter(isPriced);
     if (priced.length > 0) {
       withQuote++;
       totalQuotes += priced.length;
-      const firstAt = priced.reduce((m, i) => (i.quoted_at! < m ? i.quoted_at! : m), priced[0].quoted_at!);
-      firstQuoteHours.push((new Date(firstAt).getTime() - new Date(r.created_at).getTime()) / 3600000);
-      quotedWithDevis++;
+      // Correction 1 : délai 1er devis calculé sur les invites ayant un quoted_at
+      const quotedAts = priced.map((i) => i.quoted_at).filter((x): x is string => x != null);
+      if (quotedAts.length > 0) {
+        const firstAtMs = Math.min(...quotedAts.map((x) => new Date(x).getTime()));
+        firstQuoteHours.push((firstAtMs - new Date(r.created_at).getTime()) / 3600000);
+      }
       if (r.status === "accepted") accepted++;
       if (r.status === "declined_by_client") declinedByClient++;
     }
@@ -204,12 +213,17 @@ export function kpis(
       if (i.status === "invited" && i.quoted_at == null && i.declined_at == null) silentInvites++;
       if (i.relanced_at != null) {
         relancedInvites++;
-        if (i.quoted_at != null && i.quoted_at > i.relanced_at) relancedThenQuoted++;
+        // Correction 2 : comparaison numérique getTime() au lieu de comparaison lexicographique
+        if (i.quoted_at != null && new Date(i.quoted_at).getTime() > new Date(i.relanced_at).getTime()) {
+          relancedThenQuoted++;
+        }
       }
     }
     if (r.client_relance_count > 0) {
       clientRelanced++;
-      if (r.accepted_at != null && r.client_relanced_at != null && r.accepted_at > r.client_relanced_at) {
+      // Correction 2 : comparaison numérique getTime() au lieu de comparaison lexicographique
+      if (r.accepted_at != null && r.client_relanced_at != null &&
+          new Date(r.accepted_at).getTime() > new Date(r.client_relanced_at).getTime()) {
         clientRelancedThenAccepted++;
       }
     }
@@ -220,9 +234,10 @@ export function kpis(
     quoteRate: ratio(withQuote, reqs.length),
     avgQuotesPerRequest: ratio(totalQuotes, withQuote),
     medianFirstQuoteHours: median(firstQuoteHours),
-    choiceRate: ratio(accepted, quotedWithDevis),
+    // Correction 3 : withQuote remplace quotedWithDevis (supprimé car toujours identique)
+    choiceRate: ratio(accepted, withQuote),
     partnerDeclineRate: ratio(declinedInvites, totalInvites),
-    clientDeclineRate: ratio(declinedByClient, quotedWithDevis),
+    clientDeclineRate: ratio(declinedByClient, withQuote),
     partnerRelanceEfficacy: ratio(relancedThenQuoted, relancedInvites),
     clientRelanceEfficacy: ratio(clientRelancedThenAccepted, clientRelanced),
     silentInviteRate: ratio(silentInvites, totalInvites),
@@ -237,8 +252,10 @@ export interface PartnerPerf {
 /** Perf loueur enrichie (au-delà de partnerStats.won). invitesByPartner = invites du loueur. */
 export function partnerPerf(partnerId: number, invitesByPartner: Map<number, MonitorInvite[]>): PartnerPerf {
   const invites = invitesByPartner.get(partnerId) ?? [];
-  const priced = invites.filter((i) => i.quote_price != null);
-  const respHours = invites
+  // Correction 1 : utilise le prédicat isPriced unifié au lieu de quote_price != null seul
+  const priced = invites.filter(isPriced);
+  // Correction 1 : avgResponseHours calculé sur les invites isPriced ayant un quoted_at
+  const respHours = priced
     .filter((i) => i.quoted_at != null)
     .map((i) => (new Date(i.quoted_at!).getTime() - new Date(i.created_at).getTime()) / 3600000);
   const avg = (xs: number[]): number | null => (xs.length === 0 ? null : xs.reduce((a, b) => a + b, 0) / xs.length);
