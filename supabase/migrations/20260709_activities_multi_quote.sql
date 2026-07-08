@@ -26,7 +26,7 @@ create table if not exists public.activity_partners (
   category_slug text not null references public.activity_categories(slug),
   cities        text[] not null default '{}',  -- chania|rethymno|heraklion|agios-nikolaos|ierapetra
   languages     text[] not null default '{en}',
-  commission    numeric not null default 0.10,
+  commission    numeric not null default 0.15,
   lead_routing  text not null default 'direct', -- 'direct' | 'relay'
   active        boolean not null default true,
   outreach_status text not null default 'new',  -- 'new' | 'inbound' (car: colonne hors-repo, ici migrée proprement)

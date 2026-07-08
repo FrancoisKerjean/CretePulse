@@ -65,7 +65,7 @@ create table if not exists public.activity_partners (
   category_slug text not null references public.activity_categories(slug),
   cities        text[] not null default '{}',  -- chania|rethymno|heraklion|agios-nikolaos|ierapetra
   languages     text[] not null default '{en}',
-  commission    numeric not null default 0.10,
+  commission    numeric not null default 0.15,
   lead_routing  text not null default 'direct', -- 'direct' | 'relay'
   active        boolean not null default true,
   outreach_status text not null default 'new',  -- 'new' | 'inbound' (car: colonne hors-repo, ici migrée proprement)
@@ -249,7 +249,7 @@ Cas à couvrir (un `check(name, cond)` par cas) : 3 catégories, 5 villes, `isCa
 Ajouter dans `package.json` scripts : `"check:activity-taxonomy": "node --experimental-strip-types scripts/check-activity-taxonomy.mjs"`.
 Run : `npm run check:activity-taxonomy` — Expected : tous les checks PASS, exit 0.
 
-- [ ] **Step 2.4 : Commit** — `git add -A && git commit -m "feat(activities): taxonomie statique + tests"`
+- [ ] **Step 2.4 : Commit** — `git add src/lib/activity-taxonomy.ts scripts/check-activity-taxonomy.mjs package.json && git commit -m "feat(activities): taxonomie statique + tests"` (règle repo : JAMAIS `git add -A`, staging explicite)
 
 ---
 
@@ -471,7 +471,7 @@ Senders à créer, clone 1:1 du sender car correspondant (même signature adapt�
 | `sendActivityPartnerNotChosen(email, name)` | `sendPartnerNotChosen` | EN | — |
 | `sendActivityConnectionEmails({partner, customer, quote})` | `sendConnectionEmails` | 4 client / EN partenaire | `quote` porte categoryLabel/cityLabel/date/price/currency/partnerName/details/inclusions/groupe |
 | `sendActivityLeadKamiSummary(lead, sentNames)` | `sendLeadKamiSummary` | FR | — |
-| `sendActivitiesDirectWelcome(name, email)` | `sendCarRentalDirectWelcome` (dans `car-rental-signup.ts`) | EN | texte : « Activities Direct », « the quote is for the whole group », « 10% commission only on the bookings we bring you » — PAS de « First to reply wins » (multi-devis : le client compare) |
+| `sendActivitiesDirectWelcome(name, email)` | `sendCarRentalDirectWelcome` (dans `car-rental-signup.ts`) | EN | texte : « Activities Direct », « the quote is for the whole group », « 15% commission only on the bookings we bring you » — PAS de « First to reply wins » (multi-devis : le client compare) |
 
 Règle de traduction : pour chaque sender 4 langues, écrire EN d'abord puis traduire fr/de/el soi-même dans la map, en copiant le TON des maps car existantes du même sender. Diacritiques grecs/allemands complets. Aucun placeholder, aucune langue laissée en anglais dans une map fr/de/el.
 
@@ -561,7 +561,7 @@ Expected : sans `SUPABASE_SERVICE_KEY` locale, erreur propre 500 « Could not sa
 - Modify: `src/app/[locale]/affiliate/SignupForm.tsx`
 - Modify: `src/lib/affiliate.ts` (validation du sous-champ)
 
-- [ ] **Step 10.1 : Cloner `car-rental-signup.ts` → `activity-signup.ts`.** Transformations : table `activity_partners` ; insert `{ name, email, category_slug: subCategory, cities: ALL_CITY_SLUGS, languages: ["en"], commission: 0.10, lead_routing: "direct", active: true, outreach_status: "inbound" }` où `ALL_CITY_SLUGS = ACTIVITY_CITIES.map(c => c.slug)` ; la fonction prend `(data: RegisterData, subCategory: string)` ; welcome = `sendActivitiesDirectWelcome` (texte défini Task 6). Exporter aussi `activityPartnerEmailExists`.
+- [ ] **Step 10.1 : Cloner `car-rental-signup.ts` → `activity-signup.ts`.** Transformations : table `activity_partners` ; insert `{ name, email, category_slug: subCategory, cities: ALL_CITY_SLUGS, languages: ["en"], commission: 0.15, lead_routing: "direct", active: true, outreach_status: "inbound" }` où `ALL_CITY_SLUGS = ACTIVITY_CITIES.map(c => c.slug)` ; la fonction prend `(data: RegisterData, subCategory: string)` ; welcome = `sendActivitiesDirectWelcome` (texte défini Task 6). Exporter aussi `activityPartnerEmailExists`.
 
 - [ ] **Step 10.2 : Étendre la validation `affiliate.ts`.** Dans `validateRegisterPayload` (lire `src/lib/affiliate.ts:110-133`), accepter un champ optionnel `sub_category` (string parmi `food_tours|boat_trips|hiking|other`) et l'exposer dans `RegisterData`. Mapping slug DB : `food_tours→food-tours`, `boat_trips→boat-trips`, `hiking→hiking`.
 
