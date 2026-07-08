@@ -12,6 +12,7 @@
     "check:geo": "node --experimental-strip-types scripts/check-geo.mjs",
     "check:car-partners": "node --experimental-strip-types scripts/check-car-partners.mjs",
     "check:car-lead": "node --experimental-strip-types scripts/check-car-lead.mjs",
+    "check:car-quotes": "node --experimental-strip-types scripts/check-car-quotes.mjs",
     "check:car-admin": "node --experimental-strip-types scripts/check-car-admin.mjs",
     "check:bus-select": "node --experimental-strip-types scripts/check-bus-live-selection.mjs",
     "check:gtfs-stops": "node scripts/check-gtfs-stops.mjs",
