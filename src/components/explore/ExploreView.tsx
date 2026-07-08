@@ -248,10 +248,15 @@ export function ExploreView({
   // deux côtés, l'affilié DB gagne (filtre sur les slugs JSON).
   const sponsorItems: Array<CbPlaceListItem & { __sponsorUrl: string }> = useMemo(() => {
     // Slugs de base des affiliés DB (ex. "jmp-chania-tours") → utilisés pour filtrer le JSON.
-    const affiliateBaseSlugs = new Set(affiliatePlaces.map((a) => a.slug.replace(/^affiliate:/, "")));
+    // Invariant : affiliates.slug (sans préfixe) doit correspondre au sponsored-places.json `id`
+    // pour que le dédup se déclenche ; en cas de match, l'affilié DB gagne.
+    // Comparaison insensible à la casse pour éviter un raté silencieux (ex. "JMP" vs "jmp").
+    const affiliateBaseSlugs = new Set(
+      affiliatePlaces.map((a) => a.slug.replace(/^affiliate:/, "").toLowerCase())
+    );
 
     const fromJson = getSponsorCards()
-      .filter((c) => !affiliateBaseSlugs.has(c.id))  // dédup : affilié DB prioritaire
+      .filter((c) => !affiliateBaseSlugs.has(c.id.toLowerCase()))  // dédup : affilié DB prioritaire
       .map((c) => ({
         slug: `sponsor:${c.id}`,
         name: c.name,
@@ -1013,14 +1018,16 @@ export function ExploreView({
 
               if (isAffiliateSlug(selected.slug)) {
                 // Affilié DB : CTA tracké via /go/<slug>, badge "Partner".
-                const affItem = sponsorItems.find((s) => s.slug === selected.slug) as (CbPlaceListItem & { __sponsorUrl: string }) | undefined;
+                // __sponsorUrl est déjà présent sur `selected` (injecté au moment de la sélection).
+                // On lit directement plutôt que de faire un scan linéaire sur sponsorItems.
+                const affiliateSponsorUrl = (selected as unknown as AffiliatePlace).__sponsorUrl;
                 return (
                   <div className="space-y-2.5">
                     <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full">
                       {partnerLabel(locale)}
                     </span>
-                    {affItem?.__sponsorUrl && (
-                      <a href={affItem.__sponsorUrl} target="_blank" rel="noopener sponsored"
+                    {affiliateSponsorUrl && (
+                      <a href={affiliateSponsorUrl} target="_blank" rel="noopener sponsored"
                         className="flex items-center justify-center gap-2 bg-sea text-white font-bold text-sm py-2.5 rounded-xl hover:opacity-90 transition-opacity">
                         {cta} <span aria-hidden>→</span>
                       </a>

@@ -32,6 +32,7 @@ export async function getAffiliatePlaces(): Promise<AffiliatePlace[]> {
     .not("latitude", "is", null)
     .not("longitude", "is", null)
     .neq("category", "car_rental");
+  // PostgREST cap: 1000 rows; the affiliates table is expected to stay well under this.
 
   if (error) {
     console.error("[affiliate-places] Supabase error:", error.message);
@@ -40,7 +41,12 @@ export async function getAffiliatePlaces(): Promise<AffiliatePlace[]> {
 
   const rows = (data as unknown as AffiliateRow[]) ?? [];
 
-  return rows.map((row): AffiliatePlace => ({
+  return rows.map(mapAffiliateRow);
+}
+
+/** Pure mapping: one DB row → one AffiliatePlace (no Supabase call). Exported for testing. */
+export function mapAffiliateRow(row: AffiliateRow): AffiliatePlace {
+  return {
     slug: `affiliate:${row.slug}`,
     name: row.name,
     place_type: "sponsor",           // reuse amber marker + gating (ExploreView keys off this)
@@ -60,7 +66,7 @@ export async function getAffiliatePlaces(): Promise<AffiliatePlace[]> {
     photo_count: 0,
     water_quality: null,
     __sponsorUrl: `https://crete.direct/go/${row.slug}`,
-  }));
+  };
 }
 
 /** True when a map-item slug was injected from the affiliates table. */
