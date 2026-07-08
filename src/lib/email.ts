@@ -1102,7 +1102,7 @@ export async function sendActivityQuoteRequest(
       </div>
       <p style="margin:0 0 20px; color:${C.text}; font-weight:700; font-size:15px;">Our referral commission is 15%, only on accepted quotes.</p>
       <div style="text-align:center; margin:0 0 16px;">${pillButton(quoteUrl, "Send your price for the whole group", C.terracotta)}</div>
-      <p style="margin:0 0 22px; color:${C.faint}; font-size:12px; line-height:1.6; text-align:center;">No login needed. The traveller compares all offers and picks one. You pay the traveller directly on the day — no online prepayment.</p>
+      <p style="margin:0 0 22px; color:${C.faint}; font-size:12px; line-height:1.6; text-align:center;">No login needed. The traveller compares all offers and picks one. You pay the traveller directly on the day, no online prepayment.</p>
       <p style="margin:0; color:${C.text}; line-height:1.5;"><strong>Kami</strong><br><span style="color:${C.faint}; font-size:13px;">crete.direct</span></p>
   `);
 
@@ -1118,7 +1118,7 @@ export async function sendActivityQuoteRequest(
     `Send your price for the whole group (no login):`,
     quoteUrl,
     ``,
-    `You pay the traveller directly on the day — no online prepayment.`,
+    `You pay the traveller directly on the day, no online prepayment.`,
     ``,
     `Kami`,
     `crete.direct`,
@@ -1139,10 +1139,10 @@ export async function sendActivityQuoteRequest(
 // ── Accusé de réception activités : client ────────────────────────────────────
 
 const ACT_ACK_SUBJECT: Record<string, string> = {
-  en: "Your activity request — Crete Direct",
-  fr: "Votre demande d'activité — Crete Direct",
-  de: "Ihre Aktivitätsanfrage — Crete Direct",
-  el: "Το αίτημα δραστηριότητάς σας — Crete Direct",
+  en: "Your activity request · Crete Direct",
+  fr: "Votre demande d'activité · Crete Direct",
+  de: "Ihre Aktivitätsanfrage · Crete Direct",
+  el: "Το αίτημα δραστηριότητάς σας · Crete Direct",
 };
 
 const ACT_ACK_COPY: Record<string, { details: string; bodyOk: string; bodyNoProvider: string }> = {
@@ -1314,17 +1314,17 @@ export async function sendActivityCustomerRelance(opts: {
 // ── Cron silence >24h : aucun prestataire n'a encore soumis de prix ───────────
 
 const ACT_NO_QUOTE_SUBJECT: Record<string, string> = {
-  en: "Update on your activity request — Crete Direct",
-  fr: "Point sur votre demande d'activité — Crete Direct",
-  de: "Update zu Ihrer Aktivitätsanfrage — Crete Direct",
-  el: "Ενημέρωση για το αίτημα δραστηριότητάς σας — Crete Direct",
+  en: "Update on your activity request · Crete Direct",
+  fr: "Point sur votre demande d'activité · Crete Direct",
+  de: "Update zu Ihrer Aktivitätsanfrage · Crete Direct",
+  el: "Ενημέρωση για το αίτημα δραστηριότητάς σας · Crete Direct",
 };
 
 const ACT_NO_QUOTE_BODY: Record<string, string> = {
-  en: "No provider has sent a price yet for your activity request. We're still on it — we'll email you as soon as we have an offer.",
-  fr: "Aucun prestataire n'a encore envoyé de prix pour votre demande d'activité. Nous y travaillons toujours — nous vous écrirons dès que nous avons une offre.",
-  de: "Noch kein Anbieter hat einen Preis für Ihre Aktivitätsanfrage gesendet. Wir sind noch dran — wir schreiben Ihnen, sobald wir ein Angebot haben.",
-  el: "Κανένας πάροχος δεν έχει στείλει ακόμα τιμή για το αίτημα δραστηριότητάς σας. Συνεχίζουμε να εργαζόμαστε — θα σας στείλουμε email μόλις έχουμε μια προσφορά.",
+  en: "No provider has sent a price yet for your activity request. We're still on it, we'll email you as soon as we have an offer.",
+  fr: "Aucun prestataire n'a encore envoyé de prix pour votre demande d'activité. Nous y travaillons toujours, nous vous écrirons dès que nous avons une offre.",
+  de: "Noch kein Anbieter hat einen Preis für Ihre Aktivitätsanfrage gesendet. Wir sind noch dran, wir schreiben Ihnen, sobald wir ein Angebot haben.",
+  el: "Κανένας πάροχος δεν έχει στείλει ακόμα τιμή για το αίτημα δραστηριότητάς σας. Συνεχίζουμε να εργαζόμαστε, θα σας στείλουμε email μόλις έχουμε μια προσφορά.",
 };
 
 const ACT_NO_QUOTE_FOOT: Record<string, string> = {
@@ -1437,22 +1437,22 @@ const ACT_CONNECT_COPY: Record<string, { intro: string; provider: string; foot: 
   en: {
     intro: "You accepted the offer. Here are the provider's details, they will also reach out to finalise the booking.",
     provider: "Activity provider",
-    foot: "You pay the provider directly on the day — no online prepayment.",
+    foot: "You pay the provider directly on the day, no online prepayment.",
   },
   fr: {
     intro: "Vous avez accepté l'offre. Voici les coordonnées du prestataire, il vous contactera aussi pour finaliser la réservation.",
     provider: "Prestataire d'activité",
-    foot: "Vous réglez directement avec le prestataire le jour J — aucun prépaiement en ligne.",
+    foot: "Vous réglez directement avec le prestataire le jour J, aucun prépaiement en ligne.",
   },
   de: {
     intro: "Sie haben das Angebot angenommen. Hier sind die Kontaktdaten des Anbieters, er meldet sich ebenfalls bei Ihnen.",
     provider: "Aktivitätsanbieter",
-    foot: "Sie zahlen direkt beim Anbieter am Tag der Aktivität — keine Online-Vorauszahlung.",
+    foot: "Sie zahlen direkt beim Anbieter am Tag der Aktivität, keine Online-Vorauszahlung.",
   },
   el: {
     intro: "Αποδεχτήκατε την προσφορά. Ακολουθούν τα στοιχεία του παρόχου, θα επικοινωνήσει και εκείνος μαζί σας.",
     provider: "Πάροχος δραστηριότητας",
-    foot: "Πληρώνετε απευθείας τον πάροχο την ημέρα της δραστηριότητας — χωρίς διαδικτυακή προπληρωμή.",
+    foot: "Πληρώνετε απευθείας τον πάροχο την ημέρα της δραστηριότητας, χωρίς διαδικτυακή προπληρωμή.",
   },
 };
 
