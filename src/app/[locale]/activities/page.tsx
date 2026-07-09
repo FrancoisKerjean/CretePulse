@@ -12,7 +12,10 @@ import { routing } from "@/i18n/routing";
 import { buildAlternates } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { ActivityWizard } from "@/components/activities/ActivityWizard";
+import { ActivityCatalogSection } from "@/components/activities/ActivityCatalogSection";
 import { servedCombos } from "@/lib/activity-partners-db";
+import { allCatalogRows } from "@/lib/activity-catalog-db";
+import { localizeItem, pickHighlights } from "@/lib/activity-catalog";
 import { ACTIVITY_CATEGORIES, categoryLabel } from "@/lib/activity-taxonomy";
 import { META, STRINGS } from "./content";
 
@@ -61,6 +64,7 @@ export default async function ActivitiesPage(
   const m = META[locale] ?? META.en;
 
   const combos = await servedCombos();
+  const catalogItems = pickHighlights(await allCatalogRows(), 6).map((r) => localizeItem(r, locale));
 
   const pageUrl = `${BASE_URL}/${locale}/activities`;
 
@@ -124,9 +128,21 @@ export default async function ActivitiesPage(
         </header>
 
         {/* Wizard : useSearchParams() exige un boundary Suspense (Next 16) */}
-        <Suspense fallback={null}>
-          <ActivityWizard locale={locale} servedCombos={combos} />
-        </Suspense>
+        <div id="wizard" className="scroll-mt-6">
+          <Suspense fallback={null}>
+            <ActivityWizard locale={locale} servedCombos={combos} />
+          </Suspense>
+        </div>
+
+        <ActivityCatalogSection
+          locale={locale}
+          items={catalogItems}
+          title={t.catalogTitle}
+          note={t.catalogNote}
+          fromTpl={t.catalogFrom}
+          cta={t.catalogCta}
+          showCity
+        />
 
         {/* Cartes catégories */}
         <section className="mt-12">
