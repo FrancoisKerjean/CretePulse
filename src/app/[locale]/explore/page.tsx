@@ -1,5 +1,5 @@
 import { setRequestLocale } from "next-intl/server";
-import { getAllCbPlacesSlim } from "@/lib/cb-places";
+import { getAllCbPlacesSlim, packCbPlaces, EMPTY_PACKED_PLACES } from "@/lib/cb-places";
 import { getAffiliatePlaces } from "@/lib/affiliate-places";
 import { buildAlternates } from "@/lib/seo";
 import { ExploreView } from "@/components/explore/ExploreView";
@@ -129,8 +129,10 @@ export default async function ExplorePage({ params }: { params: Promise<{ locale
   const { locale } = await params;
   setRequestLocale(locale);
 
+  // packCbPlaces : tuples + tables de dédup → divise le poids du flight RSC
+  // (clés JSON répétées, water_quality dupliqués, préfixe photo commun).
   const [places, affiliatePlaces] = await Promise.all([
-    getAllCbPlacesSlim().catch(() => []),
+    getAllCbPlacesSlim().then(packCbPlaces).catch(() => EMPTY_PACKED_PLACES),
     getAffiliatePlaces().catch(() => []),
   ]);
 

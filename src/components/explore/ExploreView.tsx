@@ -7,9 +7,9 @@ import {
   Layers, Bus, Timer,
 } from "lucide-react";
 import { ImpressionTracker } from "@/components/ui/ImpressionTracker";
-import type { CbPlaceListItem, CbPlace } from "@/lib/cb-places";
+import type { CbPlaceSlim, CbPlacesPacked, CbPlace } from "@/lib/cb-places";
 import { WaterQualityBadge } from "@/components/WaterQualityBadge";
-import { getCbPlaceBySlug } from "@/lib/cb-places";
+import { getCbPlaceBySlug, unpackCbPlaces } from "@/lib/cb-places";
 import { getSponsorCards, isSponsorSlug, sponsoredLabel, sponsorDescription } from "@/lib/sponsored-places";
 import { isAffiliateSlug, partnerLabel, affiliateDescription, type AffiliatePlace } from "@/lib/affiliate-places";
 import { typeLabel } from "@/lib/cb-type-labels";
@@ -187,7 +187,7 @@ function readInitialParams() {
   return new URLSearchParams(window.location.search);
 }
 
-function detectPrefecture(p: CbPlaceListItem): string | null {
+function detectPrefecture(p: { prefecture: string | null }): string | null {
   const txt = p.prefecture || "";
   for (const pref of PREFECTURES) if (txt.includes(pref)) return pref;
   return null;
@@ -208,14 +208,17 @@ function RatingStars({ rating }: { rating: number | null }) {
 }
 
 export function ExploreView({
-  places,
+  places: packedPlaces,
   affiliatePlaces = [],
   locale,
 }: {
-  places: CbPlaceListItem[];
+  // Format packé (tuples + tables de dédup) : ~2300 lieux traversent la
+  // frontière RSC → le poids du flight compte. Déballé une fois au mount.
+  places: CbPlacesPacked;
   affiliatePlaces?: AffiliatePlace[];
   locale: string;
 }) {
+  const places = useMemo(() => unpackCbPlaces(packedPlaces), [packedPlaces]);
   const t = T[locale] || T.en;
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MaplibreMap | null>(null);
@@ -332,7 +335,7 @@ export function ExploreView({
   // Les affiliés DB sont fusionnés ici et réutilisent exactement le même marqueur ambre,
   // le même gating zoom ≥ 9 et le même drawer. Dédup : si un slug de base apparaît des
   // deux côtés, l'affilié DB gagne (filtre sur les slugs JSON).
-  const sponsorItems: Array<CbPlaceListItem & { __sponsorUrl: string }> = useMemo(() => {
+  const sponsorItems: Array<CbPlaceSlim & { __sponsorUrl: string }> = useMemo(() => {
     // Slugs de base des affiliés DB (ex. "jmp-chania-tours") → utilisés pour filtrer le JSON.
     // Invariant : affiliates.slug (sans préfixe) doit correspondre au sponsored-places.json `id`
     // pour que le dédup se déclenche ; en cas de match, l'affilié DB gagne.
@@ -354,11 +357,7 @@ export function ExploreView({
         prefecture: c.prefecture ?? null,
         water_color: null,
         sand_type: null,
-        depth: null,
-        sea_surface: null,
         crowds: null,
-        facilities: null,
-        accessibility: null,
         photos: [c.photo],
         photo_count: 1,
         water_quality: null,
@@ -368,7 +367,7 @@ export function ExploreView({
     return [...fromJson, ...affiliatePlaces];
   }, [affiliatePlaces]);
 
-  const base: Array<CbPlaceListItem & { km?: number }> = useMemo(
+  const base: Array<CbPlaceSlim & { km?: number }> = useMemo(
     () =>
       nearActive && geo.pos
         ? nearestBy(
@@ -380,7 +379,7 @@ export function ExploreView({
         : [...filtered].sort((a, b) => {
             // Note ponderee par le nombre de photos : un 4.8 bien documente
             // passe devant un 5.0 obscur a 1 photo.
-            const score = (p: CbPlaceListItem) =>
+            const score = (p: CbPlaceSlim) =>
               (p.rating ?? 0) + Math.min(p.photo_count ?? 0, 20) * 0.02;
             return score(b) - score(a);
           }),
@@ -405,12 +404,12 @@ export function ExploreView({
   // - Sponsors payants (JSON, slug "sponsor:") : gardent la priorité de tête (modèle payant).
   // - Affiliés DB (slug "affiliate:") : triés par distance avec le reste du contenu.
   //   Leur `km` est calculé ici pour s'intégrer dans le sort sans inventer de nouveau mécanisme.
-  const displayed: Array<CbPlaceListItem & { km?: number; __sponsorUrl?: string }> = useMemo(() => {
+  const displayed: Array<CbPlaceSlim & { km?: number; __sponsorUrl?: string }> = useMemo(() => {
     const visiblePaidSponsors = visibleSponsors.filter((s) => !isAffiliateSlug(s.slug));
     const visibleAffiliates = visibleSponsors.filter((s) => isAffiliateSlug(s.slug));
 
     // Calculer les km pour les affiliés (même logique que base en mode nearActive).
-    const affiliatesWithKm: Array<CbPlaceListItem & { km?: number; __sponsorUrl?: string }> =
+    const affiliatesWithKm: Array<CbPlaceSlim & { km?: number; __sponsorUrl?: string }> =
       visibleAffiliates.map((a) => {
         if (a.latitude != null && a.longitude != null && geo.pos) {
           return { ...a, km: haversineKm([a.latitude, a.longitude], [geo.pos.lat, geo.pos.lon]) };
@@ -421,7 +420,7 @@ export function ExploreView({
     // Fusionner affiliés et base, puis trier :
     //   - Geo/near mode : mélanger affiliés+base triés par distance (km croissant).
     //   - Non-geo mode : base d'abord (trié par score), affiliés APRÈS — jamais en tête.
-    const sorted: Array<CbPlaceListItem & { km?: number; __sponsorUrl?: string }> =
+    const sorted: Array<CbPlaceSlim & { km?: number; __sponsorUrl?: string }> =
       nearActive && geo.pos
         ? [...affiliatesWithKm, ...base].sort((a, b) => (a.km ?? Infinity) - (b.km ?? Infinity))
         : [...base, ...affiliatesWithKm];
@@ -1083,7 +1082,7 @@ export function ExploreView({
   // Utilise <Link> pour rendre le href crawlable par Google (Fix SEO #2),
   // tout en preservant le comportement interactif existant (drawer + carte)
   // via e.preventDefault() dans le onClick.
-  function PlaceRow({ p }: { p: CbPlaceListItem & { km?: number; __sponsorUrl?: string } }) {
+  function PlaceRow({ p }: { p: CbPlaceSlim & { km?: number; __sponsorUrl?: string } }) {
     const spo = isSponsorSlug(p.slug);
     const aff = isAffiliateSlug(p.slug);
     const isCommercial = spo || aff;
@@ -1601,7 +1600,7 @@ export function ExploreView({
   );
 }
 
-function uniqueValues(places: CbPlaceListItem[], field: "sand_type" | "water_color" | "crowds"): string[] {
+function uniqueValues(places: CbPlaceSlim[], field: "sand_type" | "water_color" | "crowds"): string[] {
   const set = new Set<string>();
   for (const p of places) {
     for (const part of (p[field] || "").split(",")) {
