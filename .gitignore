@@ -1,16 +1,3 @@
-node_modules/
-.next/
-.env
+scripts/out/
 .env.local
-.env.*.local
-*.tsbuildinfo
-next-env.d.ts
-
-.vercel
-
-# local env backups + data pipeline artifacts (re-downloadable)
-.env*.bak*
-.env.local.bak.*
-__pycache__/
-/fraport_*.pdf
-/hcaa_kinisi_*.xlsx
+node_modules
