@@ -1094,9 +1094,18 @@ export function ExploreView({
     return (
       <Link
         href={href}
+        prefetch={false}
         onClick={(e) => {
           e.preventDefault();
           selectPlace(p.slug);
+        }}
+        onKeyDown={(e) => {
+          // Sur <a>, Espace navigue vers href sans passer par onClick :
+          // on garde le comportement drawer du <button> d'origine.
+          if (e.key === " ") {
+            e.preventDefault();
+            selectPlace(p.slug);
+          }
         }}
         className={`flex gap-3 p-2 rounded-xl bg-white shadow-soft text-left transition-all w-full ${
           isCommercial ? "border border-amber-300 ring-1 ring-amber-200" : "border border-sea/10 hover:border-sea/30"

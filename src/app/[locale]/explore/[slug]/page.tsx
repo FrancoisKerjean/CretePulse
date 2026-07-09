@@ -59,7 +59,7 @@ export async function generateMetadata({
 
 // Pré-rend le top 150 lieux par note décroissante pour les 4 locales principales.
 // Les 18 autres locales + tous les autres slugs restent en ISR (revalidate 48h).
-// Pattern identique à /airbnb/[neighbourhood] : 4 locales × 150 slugs = 600 pages build.
+// Même découpage de locales que /airbnb/[neighbourhood] (mais slugs fetchés en DB) : 4 × 150 = 600 pages build.
 const STATIC_LOCALES = ["en", "fr", "de", "el"] as const;
 
 export async function generateStaticParams(): Promise<Array<{ locale: string; slug: string }>> {
