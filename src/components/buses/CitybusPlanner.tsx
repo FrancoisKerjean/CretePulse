@@ -1,15 +1,15 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@/i18n/navigation";
-import { HKL_LINES, HKL_INFO } from "@/data/heraklion-bus";
+import type { CitybusData } from "@/lib/citybus/types";
 import {
-  searchHklStops, planHklDoorToDoor,
-  type HklLeg, type HklPlace, type HklDoorPlan,
-} from "@/lib/heraklion-journey";
+  createCitybusEngine,
+  type CitybusLeg, type CitybusPlace, type CitybusDoorPlan,
+} from "@/lib/citybus/engine";
 
 type Dict = {
-  title: string; tagline: string; operator: string; faresApply: string; freqVary: string;
-  linesTitle: string; linesIntro: string; routesWord: string;
+  title: string; tagline: string; faresApply: string; freqVary: string; linesWord: string;
+  linesTitle: string; linesIntro: string;
   planTitle: string; fromQ: string; toQ: string; swap: string; placeholder: string; myPosition: string;
   direct: string; transfer: string; changeAt: string;
   walkTo: string; toDest: string; doorTotal: string; walkDirect: string; fastest: string; otherOption: string;
@@ -17,11 +17,12 @@ type Dict = {
   min: string; stopsN: (n: number) => string;
 };
 
+// {city} est remplacé par data.info.city au rendu.
 const T: Record<string, Dict> = {
   en: {
-    title: "Heraklion City Bus", tagline: "Plan a trip on Heraklion's urban bus network (Astiko KTEL).",
-    operator: HKL_INFO.operator, faresApply: "Tickets apply", freqVary: "Frequencies vary by line",
-    linesTitle: "Bus lines", linesIntro: "The urban network serves the city and suburbs.", routesWord: "routes",
+    title: "{city} City Bus", tagline: "Plan a trip on {city}'s urban bus network (Astiko KTEL).",
+    faresApply: "Tickets apply", freqVary: "Frequencies vary by line", linesWord: "lines",
+    linesTitle: "Bus lines", linesIntro: "The urban network serves the city and suburbs.",
     planTitle: "Plan your trip", fromQ: "From (address or place)", toQ: "To", swap: "Swap",
     placeholder: "Hotel, port, street…", myPosition: "My location",
     direct: "Direct", transfer: "1 change", changeAt: "Change at",
@@ -33,9 +34,9 @@ const T: Record<string, Dict> = {
     min: "min", stopsN: (n) => `${n} stop${n > 1 ? "s" : ""}`,
   },
   fr: {
-    title: "Bus urbain d'Héraklion", tagline: "Calculez un trajet sur le réseau de bus urbain d'Héraklion (Astiko KTEL).",
-    operator: HKL_INFO.operator, faresApply: "Billet payant", freqVary: "Fréquences variables selon la ligne",
-    linesTitle: "Lignes de bus", linesIntro: "Le réseau urbain dessert la ville et sa périphérie.", routesWord: "itinéraires",
+    title: "Bus urbain de {city}", tagline: "Calculez un trajet sur le réseau de bus urbain de {city} (Astiko KTEL).",
+    faresApply: "Billet payant", freqVary: "Fréquences variables selon la ligne", linesWord: "lignes",
+    linesTitle: "Lignes de bus", linesIntro: "Le réseau urbain dessert la ville et sa périphérie.",
     planTitle: "Calculez votre trajet", fromQ: "Départ (adresse ou lieu)", toQ: "Arrivée", swap: "Inverser",
     placeholder: "Hôtel, port, rue…", myPosition: "Ma position",
     direct: "Direct", transfer: "1 correspondance", changeAt: "Correspondance à",
@@ -47,9 +48,9 @@ const T: Record<string, Dict> = {
     min: "min", stopsN: (n) => `${n} arrêt${n > 1 ? "s" : ""}`,
   },
   de: {
-    title: "Stadtbus Heraklion", tagline: "Planen Sie eine Fahrt im Stadtbusnetz von Heraklion (Astiko KTEL).",
-    operator: HKL_INFO.operator, faresApply: "Ticketpflichtig", freqVary: "Taktzeiten je nach Linie unterschiedlich",
-    linesTitle: "Buslinien", linesIntro: "Das Stadtnetz bedient die Stadt und die Vororte.", routesWord: "Routen",
+    title: "Stadtbus {city}", tagline: "Planen Sie eine Fahrt im Stadtbusnetz von {city} (Astiko KTEL).",
+    faresApply: "Ticketpflichtig", freqVary: "Taktzeiten je nach Linie unterschiedlich", linesWord: "Linien",
+    linesTitle: "Buslinien", linesIntro: "Das Stadtnetz bedient die Stadt und die Vororte.",
     planTitle: "Route planen", fromQ: "Von (Adresse oder Ort)", toQ: "Nach", swap: "Tauschen",
     placeholder: "Hotel, Hafen, Straße…", myPosition: "Mein Standort",
     direct: "Direkt", transfer: "1 Umstieg", changeAt: "Umsteigen an",
@@ -61,9 +62,9 @@ const T: Record<string, Dict> = {
     min: "Min.", stopsN: (n) => `${n} Halt${n > 1 ? "e" : ""}`,
   },
   el: {
-    title: "Αστικό λεωφορείο Ηρακλείου", tagline: "Σχεδιάστε διαδρομή στο αστικό δίκτυο λεωφορείων Ηρακλείου (Αστικό ΚΤΕΛ).",
-    operator: HKL_INFO.operator, faresApply: "Απαιτείται εισιτήριο", freqVary: "Οι συχνότητες διαφέρουν ανά γραμμή",
-    linesTitle: "Γραμμές λεωφορείων", linesIntro: "Το αστικό δίκτυο εξυπηρετεί την πόλη και τα προάστια.", routesWord: "διαδρομές",
+    title: "Αστικό λεωφορείο {city}", tagline: "Σχεδιάστε διαδρομή στο αστικό δίκτυο λεωφορείων {city} (Αστικό ΚΤΕΛ).",
+    faresApply: "Απαιτείται εισιτήριο", freqVary: "Οι συχνότητες διαφέρουν ανά γραμμή", linesWord: "γραμμές",
+    linesTitle: "Γραμμές λεωφορείων", linesIntro: "Το αστικό δίκτυο εξυπηρετεί την πόλη και τα προάστια.",
     planTitle: "Σχεδιάστε τη διαδρομή σας", fromQ: "Από (διεύθυνση ή σημείο)", toQ: "Προς", swap: "Αντιστροφή",
     placeholder: "Ξενοδοχείο, λιμάνι, οδός…", myPosition: "Η θέση μου",
     direct: "Απευθείας", transfer: "1 μετεπιβίβαση", changeAt: "Αλλαγή στη",
@@ -77,6 +78,7 @@ const T: Record<string, Dict> = {
 };
 
 const FALLBACK_HEX = "#0B5E78";
+const fill = (s: string, city: string) => s.replace(/\{city\}/g, city);
 
 function LinePill({ hex, code, label }: { hex: string; code: string; label?: string }) {
   return (
@@ -87,7 +89,7 @@ function LinePill({ hex, code, label }: { hex: string; code: string; label?: str
   );
 }
 
-function LegRow({ leg, t }: { leg: HklLeg; t: Dict }) {
+function LegRow({ leg, t }: { leg: CitybusLeg; t: Dict }) {
   const hex = leg.hex ?? FALLBACK_HEX;
   return (
     <div className="flex items-start gap-3">
@@ -116,28 +118,28 @@ function WalkRow({ min, to, t }: { min: number; to: string; t: Dict }) {
   );
 }
 
-/** Champ de recherche : arrêts locaux + géocodage OSM + "Ma position". */
 function PlaceInput({
-  locale, t, label, value, onChange, allowGeo,
+  locale, t, label, value, onChange, allowGeo, search,
 }: {
   locale: string; t: Dict; label: string;
-  value: HklPlace | null; onChange: (p: HklPlace | null) => void; allowGeo?: boolean;
+  value: CitybusPlace | null; onChange: (p: CitybusPlace | null) => void; allowGeo?: boolean;
+  search: (q: string, limit?: number) => CitybusPlace[];
 }) {
   const [q, setQ] = useState("");
-  const [sugg, setSugg] = useState<HklPlace[]>([]);
+  const [sugg, setSugg] = useState<CitybusPlace[]>([]);
   const [open, setOpen] = useState(false);
   const [locating, setLocating] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (q.length < 2) { setSugg([]); return; }
-    const local = searchHklStops(q, 5);
+    const local = search(q, 5);
     setSugg(local);
     const id = setTimeout(async () => {
       try {
         const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}&lang=${locale}`);
         const data = (await res.json()) as { results?: { label: string; lat: number; lng: number }[] };
-        const merged: HklPlace[] = [...local];
+        const merged: CitybusPlace[] = [...local];
         for (const r of data.results ?? []) {
           if (!merged.some((m) => m.label.toLowerCase() === r.label.toLowerCase())) {
             merged.push({ label: r.label, lat: r.lat, lng: r.lng, kind: "place" });
@@ -147,7 +149,7 @@ function PlaceInput({
       } catch { /* garde les arrêts locaux */ }
     }, 350);
     return () => clearTimeout(id);
-  }, [q, locale]);
+  }, [q, locale, search]);
 
   useEffect(() => {
     const h = (e: MouseEvent) => { if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false); };
@@ -155,7 +157,7 @@ function PlaceInput({
     return () => document.removeEventListener("mousedown", h);
   }, []);
 
-  const pick = (p: HklPlace) => { onChange(p); setQ(p.label); setSugg([]); setOpen(false); };
+  const pick = (p: CitybusPlace) => { onChange(p); setQ(p.label); setSugg([]); setOpen(false); };
   const geo = () => {
     if (typeof navigator === "undefined" || !navigator.geolocation) return;
     setLocating(true);
@@ -201,11 +203,7 @@ function PlaceInput({
   );
 }
 
-function OptionCard({
-  plan, kind, badge, t,
-}: {
-  plan: HklDoorPlan; kind: "walk" | "bus"; badge: string | null; t: Dict;
-}) {
+function OptionCard({ plan, kind, badge, t }: { plan: CitybusDoorPlan; kind: "walk" | "bus"; badge: string | null; t: Dict }) {
   const total = kind === "walk" ? plan.directWalkMin : plan.busTotalMin;
   const isFastest = badge != null;
   const border = isFastest ? "#A7E3C0" : "rgba(0,0,0,.06)";
@@ -237,14 +235,16 @@ function OptionCard({
   );
 }
 
-export function HeraklionPlannerClient({ locale }: { locale: string }) {
-  const t = T[locale] ?? T.en;
-  const [from, setFrom] = useState<HklPlace | null>(null);
-  const [to, setTo] = useState<HklPlace | null>(null);
+export function CitybusPlanner({ locale, data }: { locale: string; data: CitybusData }) {
+  const base = T[locale] ?? T.en;
+  const city = data.info.city;
+  const t: Dict = { ...base, title: fill(base.title, city), tagline: fill(base.tagline, city) };
+  const engine = useMemo(() => createCitybusEngine(data), [data]);
+  const [from, setFrom] = useState<CitybusPlace | null>(null);
+  const [to, setTo] = useState<CitybusPlace | null>(null);
 
-  const plan = useMemo<HklDoorPlan | null>(() => (from && to ? planHklDoorToDoor(from, to) : null), [from, to]);
+  const plan = useMemo<CitybusDoorPlan | null>(() => (from && to ? engine.planDoorToDoor(from, to) : null), [from, to, engine]);
   const swap = () => { setFrom(to); setTo(from); };
-
   const hasBus = !!plan?.bus;
   const walkFirst = !!plan && (plan.recommendWalk || !hasBus);
 
@@ -254,7 +254,7 @@ export function HeraklionPlannerClient({ locale }: { locale: string }) {
         <h1 className="font-heading text-3xl font-extrabold sm:text-4xl">{t.title}</h1>
         <p className="mx-auto mt-2 max-w-xl text-sand/90">{t.tagline}</p>
         <div className="mt-4 flex flex-wrap justify-center gap-2 text-sm">
-          <span className="rounded-full bg-white/10 px-3 py-1">{HKL_LINES.length} {t.linesTitle.toLowerCase()}</span>
+          <span className="rounded-full bg-white/10 px-3 py-1">{data.lines.length} {t.linesWord}</span>
           <span className="rounded-full bg-white/10 px-3 py-1">{t.faresApply}</span>
           <span className="rounded-full bg-white/10 px-3 py-1">{t.freqVary}</span>
         </div>
@@ -264,14 +264,14 @@ export function HeraklionPlannerClient({ locale }: { locale: string }) {
         <div className="rounded-[24px] bg-white p-5 shadow-[0_12px_32px_rgba(11,94,120,.10)]">
           <h2 className="mb-4 font-heading text-lg font-bold text-text">{t.planTitle}</h2>
           <div className="flex flex-col gap-3">
-            <PlaceInput locale={locale} t={t} label={t.fromQ} value={from} onChange={setFrom} allowGeo />
+            <PlaceInput locale={locale} t={t} label={t.fromQ} value={from} onChange={setFrom} allowGeo search={engine.searchStops} />
             <div className="flex justify-center">
               <button onClick={swap} aria-label={t.swap}
                 className="rounded-full border border-black/10 bg-surface px-3 py-1 text-xs font-semibold text-text-muted transition hover:bg-black/5">
                 ↑↓ {t.swap}
               </button>
             </div>
-            <PlaceInput locale={locale} t={t} label={t.toQ} value={to} onChange={setTo} />
+            <PlaceInput locale={locale} t={t} label={t.toQ} value={to} onChange={setTo} search={engine.searchStops} />
           </div>
 
           {plan && (
@@ -309,7 +309,7 @@ export function HeraklionPlannerClient({ locale }: { locale: string }) {
           <h2 className="mb-1 font-heading text-lg font-bold text-text">{t.linesTitle}</h2>
           <p className="mb-3 text-xs text-text-muted">{t.linesIntro}</p>
           <div className="grid gap-2 sm:grid-cols-2">
-            {HKL_LINES.map((l) => (
+            {data.lines.map((l) => (
               <div key={l.code} className="flex items-center gap-2 rounded-xl border border-black/5 bg-white p-2.5 shadow-sm">
                 <LinePill hex={l.hex ?? FALLBACK_HEX} code={l.apiCode} />
                 <span className="min-w-0 flex-1 truncate text-sm font-medium text-text">{l.name}</span>

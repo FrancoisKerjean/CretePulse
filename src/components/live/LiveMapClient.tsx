@@ -19,8 +19,8 @@ const SHEET_H = 240; // hauteur approx du bottom sheet, pour l'offset de recentr
 const EMPTY = { type: "FeatureCollection" as const, features: [] };
 
 const T: Record<string, { estimated: string; circulating: string; planTrip: string; rentCar: string; gpsLive: string; legendKtel: string; legendUrban: string }> = {
-  en: { estimated: "Estimated from the timetable", circulating: "buses running", planTrip: "Plan a trip", rentCar: "Rent a car", gpsLive: "live GPS (Agios Nikolaos)", legendKtel: "KTEL (intercity)", legendUrban: "City bus (Heraklion, Agios Nikolaos)" },
-  fr: { estimated: "Estimé selon l'horaire", circulating: "bus en circulation", planTrip: "Planifier un trajet", rentCar: "Louer une voiture", gpsLive: "en direct GPS (Agios Nikolaos)", legendKtel: "KTEL (interurbain)", legendUrban: "Bus urbain (Héraklion, Ag. Nikolaos)" },
+  en: { estimated: "Estimated from the timetable", circulating: "buses running", planTrip: "Plan a trip", rentCar: "Rent a car", gpsLive: "live GPS (Agios Nikolaos)", legendKtel: "KTEL (intercity)", legendUrban: "City bus (urban networks)" },
+  fr: { estimated: "Estimé selon l'horaire", circulating: "bus en circulation", planTrip: "Planifier un trajet", rentCar: "Louer une voiture", gpsLive: "en direct GPS (Agios Nikolaos)", legendKtel: "KTEL (interurbain)", legendUrban: "Bus urbain (réseaux de ville)" },
 };
 
 // Sources "urbaines" (réseaux municipaux) dont on colore le tracé par leur couleur propre.

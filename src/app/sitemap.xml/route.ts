@@ -49,6 +49,7 @@ const STATIC_PAGES = [
   "/buses",
   "/buses/agios-nikolaos",
   "/buses/heraklion",
+  "/buses/chania",
   "/near-me",
   "/car-rental",
   "/activities",

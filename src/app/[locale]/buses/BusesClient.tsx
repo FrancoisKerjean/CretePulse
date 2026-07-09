@@ -507,6 +507,29 @@ export function BusesClient({
           <ChevronDown className="h-4 w-4 -rotate-90 text-text-muted" />
         </Link>
 
+        {/* Bus urbain de Chania : réseau Astiko KTEL, calculateur dédié */}
+        <Link
+          href={`/${locale}/buses/chania`}
+          className="mb-6 flex items-center gap-3 rounded-2xl border border-black/5 bg-white p-4 shadow-sm transition hover:shadow-md"
+        >
+          <span className="flex gap-1" aria-hidden>
+            <span className="h-6 w-2 rounded-full" style={{ background: "#4a148c" }} />
+            <span className="h-6 w-2 rounded-full" style={{ background: "#00695c" }} />
+            <span className="h-6 w-2 rounded-full" style={{ background: "#e65100" }} />
+          </span>
+          <span className="flex-1">
+            <span className="block text-sm font-semibold text-text">
+              {locale === "fr" ? "Bus urbain de Chania" : "Chania city bus"}
+            </span>
+            <span className="block text-xs text-text-muted">
+              {locale === "fr"
+                ? "12 lignes · calculez votre trajet en ville"
+                : "12 lines · plan your trip in town"}
+            </span>
+          </span>
+          <ChevronDown className="h-4 w-4 -rotate-90 text-text-muted" />
+        </Link>
+
         {/* Plan réseau interactif · réagit aux sélecteurs + stations cliquables */}
         <BusNetworkMap
           locale={locale}

@@ -1,6 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 import { buildAlternates } from "@/lib/seo";
-import { HeraklionPlannerClient } from "./HeraklionPlannerClient";
+import { CitybusPlanner } from "@/components/buses/CitybusPlanner";
+import { CITYBUS_DATA } from "@/data/heraklion-bus";
 
 // Calculateur de trajets du bus urbain d'Heraklion (Astiko KTEL, 23 lignes citybus.gr).
 // Data statique (src/data/heraklion-bus.ts) -> page rendue statiquement (ISR 24h).
@@ -43,5 +44,5 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function HeraklionBusPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  return <HeraklionPlannerClient locale={locale} />;
+  return <CitybusPlanner locale={locale} data={CITYBUS_DATA} />;
 }
