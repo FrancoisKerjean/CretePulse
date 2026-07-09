@@ -16,7 +16,7 @@
         "summary": "Une promenade en soirée dans les ruelles de la vieille ville, associant bières artisanales grecques à un menu de dégustation crétois complet. La balade se termine en plein air avec vue sur le phare du port."
       },
       "de": {
-        "title": "Abendspaziergang mit Craft Beer und Cretan Food bei Sonnenuntergang",
+        "title": "Abendspaziergang mit Craft Beer und kretischem Essen bei Sonnenuntergang",
         "summary": "Ein Abendspaziergang durch die Gässchen der Altstadt mit griechischen Craft Beers und einem vollständigen kretischen Degustationsmenü. Der Abend endet an einem Freiluftplatz mit Blick auf den Leuchtturm des Hafens."
       },
       "el": {
@@ -45,7 +45,7 @@
       },
       "ru": {
         "title": "Вечерняя прогулка по старому городу с едой и крафтовым пивом",
-        "summary": "Прогулка по переулкам старого города с критским крафтовым пивом и полноценным дегустационным меню. Завершается у открытой площадки с видом на маяк у гавани."
+        "summary": "Прогулка по переулкам старого города с греческим крафтовым пивом и полноценным дегустационным меню. Завершается у открытой площадки с видом на маяк у гавани."
       },
       "ja": {
         "title": "旧市街サンセット・クラフトビール散歩",
@@ -77,14 +77,14 @@
       },
       "fi": {
         "title": "Auringonlaskun ruoka- ja craft-olutretki vanhassakaupungissa",
-        "summary": "Iltakävely vanhan kaupungin kapeiden kujien läpi yhdistäen kreikkalaisen craft-oluen täyteen kretalaisten makuihin. Retki päättyy ulkoilmapaikkaan, josta avautuu näkymä sataman majakkaan."
+        "summary": "Iltakävely vanhankaupungin kujilla: kreikkalaisia craft-oluita yhdistettynä täyteen kreetalaiseen maistelumenuun, päätepisteenä sataman majakan lähistö."
       },
       "cs": {
         "title": "Večerní prohlídka s jídlem a craft pivem ve starém městě při západu slunce",
         "summary": "Večerní procházka uličkami starého města, kde se řecká craft piva páruují s plnou krétskou degustační nabídkou. Zakončení na venkovním místě s výhledem na přístavní maják."
       },
       "hu": {
-        "title": "Naplementes ételes és kézműves sörsétány az óvárosban",
+        "title": "Naplementes ételes és kézműves sörséta az óvárosban",
         "summary": "Esti séta az óváros szűk utcáin, ahol a görög kézműves söröket a teljes krétai kóstolómenüvel párosítják. A séta egy a kikötői világítótoronyra néző szabadtéri helyszínen ér véget."
       },
       "ro": {
@@ -167,7 +167,7 @@
       },
       "da": {
         "title": "Middagstur med mad og lokale øl i den gamle bydel",
-        "summary": "En afslappet dagtidsvandring through den gamle bydels roligere gader med craft-øl, en græsk smagsmenu og en session om lokalt olivenolie, honning og spiritus."
+        "summary": "En afslappet dagtidsvandring gennem den gamle bydels roligere gader med craft-øl, en græsk smagsmenu og en session om lokalt olivenolie, honning og spiritus."
       },
       "no": {
         "title": "Middagstur med mat og lokale øl i gamlebyen",
@@ -182,7 +182,7 @@
         "summary": "Uvolněná denní procházka klidnějšími uličkami starého města s ochutnávkami craft piva, řeckou degustační nabídkou a ukázkou místního olivového oleje, medu a lihovin."
       },
       "hu": {
-        "title": "Déli ételes és helyi sörsétány az óvárosban",
+        "title": "Déli ételes és helyi sörséta az óvárosban",
         "summary": "Pihentető nappali séta az óváros csendesebb utcáin kézműves sörök kóstolásával, görög ételes menüvel és a helyi olívaolaj, méz és párlat megismerésével."
       },
       "ro": {
@@ -378,7 +378,7 @@
         "summary": "Procházka mezi trhem a letitými specializovanými obchody s ochutnávkou každodenních místních pochutin a kávy. Sobotní odchody zahrnují farmářský trh."
       },
       "hu": {
-        "title": "Városi étel és piacsétány",
+        "title": "Városi étel és piaci séta",
         "summary": "Séta a piac és a régóta működő szaküzletek között, útközben mindennapos helyi rágcsálnivalók és kávé kóstolásával. Szombati indulásokhoz gazdapiac is csatlakozik."
       },
       "ro": {
@@ -665,7 +665,7 @@
       },
       "fi": {
         "title": "Maaseudun oliiviöljy- ja hunajamaisteluretki lounaalla",
-        "summary": "Retki maaseudulle perheen pyörittämälle olivimylllle ja hunajämuseoon rannikkokylästen takana, lopuksi yhteinen lounas."
+        "summary": "Retki maaseudulle perheen pyörittämälle oliivimyllylle ja hunajamuseoon rannikkokylien takana, lopuksi yhteinen lounas."
       },
       "cs": {
         "title": "Venkovská ochutnávka olivového oleje a medu s obědem",
@@ -801,7 +801,7 @@
       },
       "de": {
         "title": "Kulinarischer Viertelspaziergang mit lokalen Geschichten",
-        "summary": "Acht Kostprobenstops, darunter eine seit einem Jahrhundert betriebene Bäckerei, Marktlkäse und Olivenöl, hausgemachte Gerichte und kretische Weine."
+        "summary": "Acht Kostprobenstops, darunter eine seit einem Jahrhundert betriebene Bäckerei, Marktkäse und Olivenöl, hausgemachte Gerichte und kretische Weine."
       },
       "el": {
         "title": "Γαστρονομική βόλτα στη γειτονιά με τοπικές ιστορίες",
@@ -1253,7 +1253,7 @@
       },
       "fi": {
         "title": "Luomuviljelmävierailu kretalaisen aterian kera",
-        "summary": "Vierailu perheen pyörittämälle luomuviljelmälle kaupungin ulkopuolella, kävely yrttipelloilla ja pienen kansanperinnekokoelman läpi, sitten yhteinen perinteinen tilatila-ateria. Sopimuksen mukaan."
+        "summary": "Vierailu perheen pyörittämälle luomuviljelmälle kaupungin ulkopuolella, kävely yrttipelloilla ja pienen kansanperinnekokoelman läpi, sitten yhteinen perinteinen tila-ateria. Sopimuksen mukaan."
       },
       "cs": {
         "title": "Návštěva ekologické farmy s krétským jídlem",
@@ -1363,7 +1363,7 @@
       },
       "ro": {
         "title": "Croazieră de dimineață cu barcă cu fund de sticlă și opriri pentru înot",
-        "summary": "O croazieră de dimineață din portul vechi pe o barcă cu fund de sticlă, trecând pe lângă un habitat de capre sălbatice și un avion scufundat din al Doilea Război Mondial, cu opriri pentru înot și scuba. Echipament, fructe și băuturi răcoritoare sunt incluse."
+        "summary": "O croazieră de dimineață din portul vechi pe o barcă cu fund de sticlă, trecând pe lângă un habitat de capre sălbatice și un avion scufundat din al Doilea Război Mondial, cu opriri pentru înot și snorkeling. Echipament, fructe și băuturi răcoritoare sunt incluse."
       },
       "ar": {
         "title": "رحلة صباحية بالقارب ذي القاع الزجاجي مع توقفات سباحة",
@@ -1657,7 +1657,7 @@
       },
       "ro": {
         "title": "Croazieră de o zi cu catamaranul de-a lungul coastei",
-        "summary": "O croazieră de zi din portul venețian spre o baie mai la vest, cu două opriri de înot, brunch și un prânz cretan la bord. Grup mic, cu paddleboards și echipament de scuba incluse."
+        "summary": "O croazieră de zi din portul venețian spre o baie mai la vest, cu două opriri de înot, brunch și un prânz cretan la bord. Grup mic, cu paddleboards și echipament de snorkeling incluse."
       },
       "ar": {
         "title": "رحلة كاتاماران يوم كامل على طول الساحل",
@@ -1751,7 +1751,7 @@
       },
       "hu": {
         "title": "Naplementes katamarán-kirándulás",
-        "summary": "Esti katamaránkikirándulás a kikötőből, rövidebb, naplement köré épített formátumban, italokkal a fedélzeten."
+        "summary": "Esti katamaránkirándulás a kikötőből, rövidebb, naplement köré épített formátumban, italokkal a fedélzeten."
       },
       "ro": {
         "title": "Croazieră cu catamaranul la apus de soare",
@@ -1951,7 +1951,7 @@
       },
       "ro": {
         "title": "Croazieră de o zi cu catamaran comun pe insula din fața orașului",
-        "summary": "O excursie de o zi cu catamaran comun din port la insula nelocuită de pe coastă, cu opriri de înot și scuba în cale clare."
+        "summary": "O excursie de o zi cu catamaran comun din port la insula nelocuită de pe coastă, cu opriri de înot și snorkeling în cale clare."
       },
       "ar": {
         "title": "رحلة كاتاماران مشتركة ليوم كامل إلى الجزيرة المقابلة للمدينة",
@@ -2147,7 +2147,7 @@
       },
       "ro": {
         "title": "Croazieră cu catamaranul cu masă și bar liber",
-        "summary": "O croazieră cu catamaranul pe insula din fața orașului cu o masă gătită la bord, băuturi și echipament de scuba incluse."
+        "summary": "O croazieră cu catamaranul pe insula din fața orașului cu o masă gătită la bord, băuturi și echipament de snorkeling incluse."
       },
       "ar": {
         "title": "رحلة كاتاماران مع وجبة وبار مفتوح",
@@ -2209,7 +2209,7 @@
       },
       "ko": {
         "title": "스피날롱가 섬 요새 보트 이동",
-        "summary": "만 안에 있는 역사적인 스피날롱가 요새 섬까지 정기 운항하는 보트편으로, 만 주변 마을에서 하루 대부분의 시간 동안 30분 간격으로 출발합니다."
+        "summary": "만 안에 있는 역사적인 요새 섬까지 정기 운항하는 보트편으로, 만 주변 마을에서 하루 대부분의 시간 동안 30분 간격으로 출발합니다."
       },
       "zh": {
         "title": "渡船前往岛屿要塞",
@@ -2539,7 +2539,7 @@
       },
       "ro": {
         "title": "Croazieră privată cu skipper în golf",
-        "summary": "O croazieră privată din portul orașului pe o barcă tradițională sau șalupă cu skipper, cu echipament de scuba și asigurare incluse. Prețul este per barcă."
+        "summary": "O croazieră privată din portul orașului pe o barcă tradițională sau șalupă cu skipper, cu echipament de snorkeling și asigurare incluse. Prețul este per barcă."
       },
       "ar": {
         "title": "رحلة خاصة بربان في الخليج",
@@ -2833,7 +2833,7 @@
       },
       "ro": {
         "title": "Croazieră confortabilă la Chrissi cu masă la bord",
-        "summary": "O excursie cu iahturi la insulă, cu o masă cretană tradițională servită la bord, băuturi și echipament de scuba și pescuit disponibil."
+        "summary": "O excursie cu iahturi la insulă, cu o masă cretană tradițională servită la bord, băuturi și echipament de snorkeling și pescuit disponibil."
       },
       "ar": {
         "title": "رحلة مريحة إلى Chrissi مع وجبة على المتن",
@@ -3213,7 +3213,7 @@
       },
       "fi": {
         "title": "Samarian rotko päiväretki Rethymnosta",
-        "summary": "Varhainen lähtö bussilla ylänkö, 16 km omatahtinen lasku rotkon läpi, vapaa aika rannikkokylässa ulostulon jälkeen, sitten vene ja bussi takaisin. Pääsy- ja veneliiput ovat lisää."
+        "summary": "Varhainen lähtö bussilla ylängölle, 16 km omatahtinen lasku rotkon läpi, vapaa aika rannikkokylässa ulostulon jälkeen, sitten vene ja bussi takaisin. Pääsy- ja veneliiput ovat lisää."
       },
       "cs": {
         "title": "Celodenní výlet do soutěsky Samaria z Rethymna",
