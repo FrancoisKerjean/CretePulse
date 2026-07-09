@@ -4,6 +4,7 @@
 // nourrit le wizard (conversion), il ne crée aucune sortie externe.
 // Aucun nom de prestataire ni lien source ici (anonymisation, commission 15%).
 import Link from "next/link";
+import Image from "next/image";
 import type { CatalogItem } from "@/lib/activity-catalog";
 import { cityLabel } from "@/lib/activity-taxonomy";
 
@@ -37,26 +38,39 @@ export function ActivityCatalogSection({
           <Link
             key={it.id}
             href={hrefFor(it)}
-            className="card-base flex flex-col gap-2 p-5 no-underline transition-transform hover:-translate-y-0.5"
+            className="group card-base overflow-hidden p-0 flex flex-col no-underline transition-transform hover:-translate-y-0.5"
           >
-            <span className="font-heading text-[16px] font-bold text-text leading-snug">
-              {it.title}
-            </span>
-            <span className="text-[13.5px] text-text-muted leading-relaxed">
-              {it.summary}
-            </span>
-            <span className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 text-[12.5px] font-semibold text-text-muted">
-              {showCity && <span>{cityLabel(it.city, locale)}</span>}
-              {it.duration_label && <span>{it.duration_label}</span>}
-              {it.price_from_eur != null && (
-                <span className="text-text">
-                  {fromTpl.replace("{price}", String(it.price_from_eur))}
-                </span>
-              )}
-              <span className="ml-auto shrink-0 rounded-full bg-sun px-3 py-1 text-[12px] font-bold text-text">
-                {cta}
+            {it.image_url && (
+              <div className="relative h-36 w-full overflow-hidden">
+                <Image
+                  src={it.image_url}
+                  alt={it.title}
+                  fill
+                  sizes="(max-width: 640px) 100vw, 50vw"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              </div>
+            )}
+            <div className="p-4 flex flex-col gap-2 flex-1">
+              <span className="font-heading text-[16px] font-bold text-text leading-snug line-clamp-2">
+                {it.title}
               </span>
-            </span>
+              <span className="text-[13.5px] text-text-muted leading-relaxed line-clamp-2">
+                {it.summary}
+              </span>
+              <span className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 text-[12.5px] font-semibold text-text-muted">
+                {showCity && <span>{cityLabel(it.city, locale)}</span>}
+                {it.duration_label && <span>{it.duration_label}</span>}
+                {it.price_from_eur != null && (
+                  <span className="text-text">
+                    {fromTpl.replace("{price}", String(it.price_from_eur))}
+                  </span>
+                )}
+                <span className="ml-auto shrink-0 rounded-full bg-sun px-3 py-1 text-[12px] font-bold text-text">
+                  {cta}
+                </span>
+              </span>
+            </div>
           </Link>
         ))}
       </div>

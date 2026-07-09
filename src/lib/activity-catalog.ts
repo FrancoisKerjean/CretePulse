@@ -12,6 +12,7 @@ export interface CatalogItem {
   summary: string;
   duration_label: string | null;
   price_from_eur: number | null;
+  image_url: string | null;
 }
 
 /** Row brute renvoyée par la db (title/summary = EN source). */
@@ -32,6 +33,7 @@ export function localizeItem(row: CatalogRow, locale: string): CatalogItem {
     summary: tr?.summary || row.summary,
     duration_label: row.duration_label,
     price_from_eur: row.price_from_eur,
+    image_url: row.image_url,
   };
 }
 

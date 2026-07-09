@@ -15,7 +15,7 @@ const ok = (n, c) => { console.log(c ? `ok - ${n}` : `FAIL - ${n}`); if (!c) fai
 const row = (over = {}) => ({
   id: 1, category: "food-tours", city: "chania",
   title: "Old town food walk", summary: "Tastings across the market.",
-  duration_label: "~3h", price_from_eur: 45,
+  duration_label: "~3h", price_from_eur: 45, image_url: null,
   translations: { fr: { title: "Balade gourmande", summary: "Dégustations au marché." } },
   display_order: 0, ...over,
 });
@@ -29,6 +29,7 @@ ok("localizeItem locale absente : fallback EN", pt.title === "Old town food walk
 const partial = localizeItem(row({ translations: { fr: { title: "Titre seul" } } }), "fr");
 ok("localizeItem traduction partielle : summary retombe EN", partial.summary === "Tastings across the market.");
 ok("localizeItem ne renvoie pas translations", !("translations" in fr));
+ok("localizeItem passe image_url", localizeItem(row({ image_url: "https://x/y.jpg" }), "fr").image_url === "https://x/y.jpg");
 
 // sortCatalogRows : display_order puis id
 const sorted = sortCatalogRows([row({ id: 2, display_order: 1 }), row({ id: 3 }), row({ id: 1 })]);
@@ -77,6 +78,7 @@ if (existsSync("data/activity-catalog-seed.json")) {
     seed.every((i) => !("contact" in i) && !("email" in i) && !("phone" in i)));
   ok("seed : duration_label numérique sans mots",
     seed.every((i) => i.duration_label == null || /^[~0-9hHmin\-\s.]+$/.test(i.duration_label)));
+  ok("seed : image_url https ou absent", seed.every((i) => i.image_url == null || /^https:\/\//.test(i.image_url)));
 } else {
   console.log("skip - data/activity-catalog-seed.json absent (Task 7)");
 }

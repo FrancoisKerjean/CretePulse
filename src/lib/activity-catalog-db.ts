@@ -6,7 +6,7 @@
 import { supabaseAdmin as supabase } from "./supabase-admin";
 import type { CatalogRow } from "./activity-catalog";
 
-const COLS = "id, category, city, title, summary, duration_label, price_from_eur, translations, display_order";
+const COLS = "id, category, city, title, summary, duration_label, price_from_eur, image_url, translations, display_order";
 
 /** Items actifs d'un combo catégorie × ville. */
 export async function catalogRowsFor(categorySlug: string, city: string): Promise<CatalogRow[]> {
