@@ -12,7 +12,8 @@ import {
 import { offerExpiresAt } from "@/lib/car-offer-expiry";
 import { carPickupLabel } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
-import { setOutcome, setCommissionPaid, saveNote } from "./actions";
+import { canCancelRequest } from "@/lib/car-quotes";
+import { setOutcome, setCommissionPaid, saveNote, cancelRequest } from "./actions";
 
 const PAGE_SIZE = 50;
 
@@ -26,6 +27,7 @@ function statusBadge(st: string) {
     accepted: "bg-ok text-white",
     email_failed: "bg-terracotta text-white",
     declined_by_client: "bg-text-light text-white",
+    cancelled: "bg-text-light text-white line-through",
   };
   return <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${cls[st] ?? "bg-border"}`}>{st}</span>;
 }
@@ -157,8 +159,8 @@ export function RequestsTable({
           GAGNÉ au moins un devis : avec 59 loueurs en base, lister tout le
           registre ici était un mur de pastilles (audit UI 05/07). */}
       <div className="flex flex-wrap gap-1.5 text-sm">
-        {["", "sent", "quoted", "silent", "awaiting", "accepted", "declined_by_client", "email_failed", "rented", "lost"].map((f) => {
-          const label = f === "" ? "tous" : f === "silent" ? "silencieux" : f === "awaiting" ? "attente choix" : f === "declined_by_client" ? "décliné client" : f;
+        {["", "sent", "quoted", "silent", "awaiting", "accepted", "declined_by_client", "cancelled", "email_failed", "rented", "lost"].map((f) => {
+          const label = f === "" ? "tous" : f === "silent" ? "silencieux" : f === "awaiting" ? "attente choix" : f === "declined_by_client" ? "décliné client" : f === "cancelled" ? "hors flow" : f;
           return (
             <a key={f || "all"} href={qs({ status: f, page: "" })}
                className={`rounded-full border px-3 py-1 no-underline ${statusFilter === f ? "border-sea bg-sea text-white" : "border-border bg-white text-text"}`}>
@@ -213,10 +215,15 @@ export function RequestsTable({
                   {r.customer_name} · <a href={`mailto:${r.customer_email}`} className="text-sea">{r.customer_email}</a>
                   {r.customer_phone ? <> · {r.customer_phone}</> : null}
                   <br />
-                  {winner ? (
-                    r.status === "accepted"
-                      ? <>Choisi par le client : <span className="font-bold">{winner.name}</span></>
-                      : <>Devis reçu de <span className="font-bold">{winner.name}</span> <span className="text-text-muted">· en attente du client</span></>
+                  {r.status === "accepted" && winner ? (
+                    <>Choisi par le client : <span className="font-bold">{winner.name}</span></>
+                  ) : roll.quoted > 0 ? (
+                    // Multi-devis : tant que le client n'a pas tranché, aucun `winner`
+                    // n'est snapshoté. On reflète le nombre RÉEL de devis reçus au lieu
+                    // du trompeur « Pas encore de devis » (bug 09/07).
+                    <><span className="font-bold">{roll.quoted} devis reçu{roll.quoted > 1 ? "s" : ""}</span> <span className="text-text-muted">· en attente du choix client</span></>
+                  ) : winner ? (
+                    <>Devis reçu de <span className="font-bold">{winner.name}</span> <span className="text-text-muted">· en attente du client</span></>
                   ) : <span className="text-text-muted">Pas encore de devis</span>}
                   {r.quoted_price != null ? <> · devis <span className="font-data font-bold">{r.quoted_price} €</span></> : null}
                   {r.final_amount_eur != null ? <> · final <span className="font-data font-bold">{r.final_amount_eur} €</span></> : null}
@@ -228,9 +235,10 @@ export function RequestsTable({
 
               {/* Relances + expiry (une ligne compacte). */}
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-muted">
-                <span>Loueurs : {roll.invited} invité(s) · {roll.relanced} relancé(s) · {roll.silent} silencieux</span>
+                <span>Loueurs : {roll.invited} invité(s) · {roll.quoted} chiffré(s) · {roll.silent} silencieux{roll.relanced > 0 ? ` · ${roll.relanced} relancé(s)` : ""}{roll.declined > 0 ? ` · ${roll.declined} décliné(s)` : ""}</span>
                 <span>
                   Client :{" "}
+                  {roll.quoted > 0 ? "offre envoyée (lecture non suivie) · " : ""}
                   {cRel.kind === "eligible" ? "relance éligible" :
                    cRel.kind === "waiting" ? `prochaine relance dans ${hoursLabel(cRel.nextEligibleMs - now)}` :
                    cRel.kind === "exhausted" ? "relances épuisées (2/2)" : "aucune"}
@@ -308,6 +316,21 @@ export function RequestsTable({
                          className="w-full flex-1 rounded-lg border border-border px-2 py-1 text-sm" />
                   <button className="rounded-full border border-border bg-white px-3 py-1 text-sm font-bold">OK</button>
                 </form>
+                {/* Sortie du flow : demande erronée/spam. Repliée pour éviter le
+                    clic accidentel (arrête relances loueur + client, coupe le
+                    lien client, refuse tout devis tardif). */}
+                {canCancelRequest(r.status) ? (
+                  <details className="text-sm">
+                    <summary className="cursor-pointer text-text-muted underline">sortir du flow</summary>
+                    <div className="mt-2">
+                      <form action={cancelRequest.bind(null, r.id)}>
+                        <button className="rounded-full border border-terracotta bg-white px-3 py-1 text-sm font-bold text-terracotta">
+                          Confirmer la sortie du flow
+                        </button>
+                      </form>
+                    </div>
+                  </details>
+                ) : null}
               </div>
             </li>
           );

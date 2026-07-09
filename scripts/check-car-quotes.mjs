@@ -1,5 +1,5 @@
 // node --experimental-strip-types scripts/check-car-quotes.mjs
-import { sortQuotesByPrice, canPartnerQuote, findChosenInvite, partnerNeedsRelance, clientNeedsRelance,
+import { sortQuotesByPrice, canPartnerQuote, canCancelRequest, findChosenInvite, partnerNeedsRelance, clientNeedsRelance,
   normalizeQuoteOption, normalizeQuoteOptions, bestOption, sortOptionsByPrice, findChosenOption } from "../src/lib/car-quotes.ts";
 
 let fail = 0;
@@ -15,6 +15,9 @@ ok("peut chiffrer sur demande quoted", canPartnerQuote("quoted") === true);
 ok("ne peut pas chiffrer sur accepted", canPartnerQuote("accepted") === false);
 ok("ne peut pas chiffrer sur declined_by_client", canPartnerQuote("declined_by_client") === false);
 
+ok("annulable si sent/quoted/email_failed", canCancelRequest("sent") && canCancelRequest("quoted") && canCancelRequest("email_failed"));
+ok("non annulable si terminal", !canCancelRequest("accepted") && !canCancelRequest("declined_by_client") && !canCancelRequest("cancelled"));
+
 ok("choix valide", findChosenInvite([q(1, 300), q(2, 200)], 2)?.id === 2);
 ok("choix d'une invite sans devis -> null", findChosenInvite([q(1, null, "invited")], 1) === null);
 ok("choix d'une invite inexistante -> null", findChosenInvite([q(1, 300)], 99) === null);
@@ -25,6 +28,8 @@ ok("pas de relance si deja relance", !partnerNeedsRelance({ status: "invited", r
 ok("pas de relance si <24h", !partnerNeedsRelance({ status: "invited", relanced_at: null }, "quoted", 1751961600000, 1751961600000 - 5 * H));
 ok("pas de relance si deja chiffre", !partnerNeedsRelance({ status: "quoted", relanced_at: null }, "quoted", 1751961600000, 1751961600000 - 25 * H));
 ok("pas de relance si demande fermee", !partnerNeedsRelance({ status: "invited", relanced_at: null }, "accepted", 1751961600000, 1751961600000 - 25 * H));
+ok("demande annulee = hors relance loueur", !partnerNeedsRelance({ status: "invited", relanced_at: null }, "cancelled", 1751961600000, 1751961600000 - 25 * H));
+ok("demande annulee = hors relance client", !clientNeedsRelance({ status: "cancelled", client_relanced_at: null, client_relance_count: 0 }, 1751961600000));
 
 ok("relance client due (jamais relance)", clientNeedsRelance({ status: "quoted", client_relanced_at: null, client_relance_count: 0 }, 1751961600000));
 ok("pas de relance client si count>=2", !clientNeedsRelance({ status: "quoted", client_relanced_at: null, client_relance_count: 2 }, 1751961600000));

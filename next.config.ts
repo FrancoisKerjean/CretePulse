@@ -46,6 +46,9 @@ const nextConfig: NextConfig = {
       gar("heraklion-to-rethymno", "heraklion-to-rethymno"),
       gar("heraklion-to-agios-nikolaos", "agios-nikolaos-to-heraklion"),
       gar("heraklion-to-sitia", "heraklion-to-sitia"),
+      // /map supprimée (décision 09/07/2026) : /explore est LA carte unique du site.
+      { source: "/:locale/map", destination: "/:locale/explore", permanent: true },
+      { source: "/map", destination: "/explore", permanent: true },
     ];
   },
   async headers() {

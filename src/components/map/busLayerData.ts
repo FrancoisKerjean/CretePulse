@@ -1,6 +1,6 @@
-// Couche bus pour la carte /map.
+// Couche bus pour la carte /explore.
 // Charge lignes + arrêts une seule fois par session (Promise mémorisée).
-// Contrat consommé par MapView.tsx — ne pas modifier l'interface publique.
+// Contrat consommé par ExploreView.tsx — ne pas modifier l'interface publique.
 
 import { supabase } from "@/lib/supabase";
 

@@ -32,6 +32,18 @@ export function canPartnerQuote(requestStatus: string): boolean {
   return requestStatus === "sent" || requestStatus === "quoted";
 }
 
+/** Statuts terminaux d'une demande : plus aucune action (relance, devis, choix).
+ *  'cancelled' = sortie manuelle du flow par l'admin (demande erronée/spam). */
+const TERMINAL_STATUSES = new Set(["accepted", "declined_by_client", "cancelled"]);
+
+/** Une demande peut être sortie du flow (annulée) tant qu'elle n'est pas déjà
+ *  terminale. Annuler passe le statut à 'cancelled' → les deux passes du cron
+ *  car-relance l'ignorent (canPartnerQuote=false, passe client filtre 'quoted')
+ *  et tout devis loueur tardif est refusé (canPartnerQuote=false). */
+export function canCancelRequest(requestStatus: string): boolean {
+  return !TERMINAL_STATUSES.has(requestStatus);
+}
+
 /** L'invite choisie par le client : doit exister et porter un devis. Sinon null. */
 export function findChosenInvite(quotes: QuoteInvite[], inviteId: number): QuoteInvite | null {
   const inv = quotes.find((q) => q.id === inviteId);

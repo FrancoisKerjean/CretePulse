@@ -94,15 +94,23 @@ export function partnerRelanceState(
   return { kind: "never" };
 }
 
-/** Rollup relances loueur d'une demande : invités (status 'invited'), relancés, silencieux. */
+/**
+ * Rollup loueurs d'une demande. `invited` = TOTAL des loueurs sollicités (pas
+ * seulement ceux restés au statut 'invited' : le bug d'affichage 09/07 venait
+ * de là — « 3 invités » alors que 6 loueurs avaient été sollicités dont 3 chiffrés).
+ * `quoted` = ceux qui ont chiffré, `silent` = invités sans devis ni relance,
+ * `relanced` = relancés, `declined` = désistés.
+ */
 export function partnerRelanceRollup(invites: MonitorInvite[]): {
-  invited: number; relanced: number; silent: number;
+  invited: number; quoted: number; silent: number; relanced: number; declined: number;
 } {
   const invitedStatus = invites.filter((i) => i.status === "invited");
   return {
-    invited: invitedStatus.length,
-    relanced: invites.filter((i) => i.relanced_at != null).length,
+    invited: invites.length,
+    quoted: invites.filter(isPriced).length,
     silent: invitedStatus.filter((i) => !i.relanced_at).length,
+    relanced: invites.filter((i) => i.relanced_at != null).length,
+    declined: invites.filter((i) => i.status === "declined").length,
   };
 }
 
@@ -156,18 +164,24 @@ export function buildTimeline(
     ev.push({ at: firstInvite, label: `${invites.length} loueur(s) invité(s)` });
   }
 
-  const priced = invites.filter((i) => i.quoted_at != null);
-  if (priced.length > 0) {
-    const first = priced.reduce((m, i) => (i.quoted_at! < m.quoted_at! ? i : m));
-    ev.push({ at: first.quoted_at!, label: `1er devis reçu (${first.partner_name})` });
-  }
+  // Un événement PAR devis (le bug 09/07 n'en montrait qu'un, « 1er devis »).
+  // Chaque devis notifie le client par email (route quote), sauf statut
+  // email_failed géré ailleurs : on matérialise l'action côté client ici.
+  const priced = invites
+    .filter((i) => i.quoted_at != null)
+    .sort((a, b) => (a.quoted_at! < b.quoted_at! ? -1 : a.quoted_at! > b.quoted_at! ? 1 : 0));
+  priced.forEach((i, idx) => {
+    const price = i.quote_price != null ? ` ${i.quote_price}${i.quote_currency ?? "€"}` : "";
+    const rank = idx === 0 ? "1er devis" : `devis n°${idx + 1}`;
+    ev.push({ at: i.quoted_at!, label: `${rank} — ${i.partner_name}${price} · client notifié` });
+  });
 
   for (const i of invites) {
     if (i.relanced_at) ev.push({ at: i.relanced_at, label: `Relance loueur (${i.partner_name})` });
     if (i.declined_at) ev.push({ at: i.declined_at, label: `Désistement (${i.partner_name})` });
   }
 
-  if (req.client_relanced_at) ev.push({ at: req.client_relanced_at, label: "Relance client" });
+  if (req.client_relanced_at) ev.push({ at: req.client_relanced_at, label: "Relance client envoyée" });
   if (req.accepted_at) {
     const chosen = invites.find((i) => i.status === "chosen" && i.quote_price != null) ?? null;
     ev.push({ at: req.accepted_at, label: `Client a choisi${chosen ? ` (${chosen.partner_name})` : ""}` });
