@@ -180,13 +180,20 @@ export type CbPlaceTuple = [
   wqIdx: number, // index dans CbPlacesPacked.wq, -1 = null
 ];
 
+// Version du format tuple : à incrémenter à CHAQUE changement de CbPlaceTuple.
+// Une page HTML en cache ISR (jusqu'à 24h) peut être servie avec un bundle JS
+// plus récent : sans ce garde-fou, un tuple décalé produit des données
+// corrompues silencieuses (place_type undefined, filtres vides).
+export const CB_PLACES_PACK_VERSION = 1;
+
 export interface CbPlacesPacked {
+  v: number;
   types: string[];
   wq: WaterQuality[];
   items: CbPlaceTuple[];
 }
 
-export const EMPTY_PACKED_PLACES: CbPlacesPacked = { types: [], wq: [], items: [] };
+export const EMPTY_PACKED_PLACES: CbPlacesPacked = { v: CB_PLACES_PACK_VERSION, types: [], wq: [], items: [] };
 
 const PHOTO_BASE = "https://media.crete.direct/places";
 
@@ -233,10 +240,16 @@ export function packCbPlaces(places: CbPlaceSlim[]): CbPlacesPacked {
       wi,
     ];
   });
-  return { types, wq, items };
+  return { v: CB_PLACES_PACK_VERSION, types, wq, items };
 }
 
 export function unpackCbPlaces(packed: CbPlacesPacked): CbPlaceSlim[] {
+  if (packed.v !== CB_PLACES_PACK_VERSION) {
+    // Payload ISR d'une version antérieure du format : carte vide plutôt que
+    // des données corrompues. Se résorbe à la revalidation de la page.
+    console.error(`[cb-places] packed payload v${packed.v} ≠ v${CB_PLACES_PACK_VERSION}, skipping unpack`);
+    return [];
+  }
   return packed.items.map(
     ([slug, name, ti, latitude, longitude, rating, pi, water_color, sand_type, crowds, photo, photo_count, wi]) => ({
       slug,

@@ -963,6 +963,9 @@ export function ExploreView({
     setSelectedLoading(true);
     setSelected(base ? ({ ...base, description: null, meta_description: null, other_info: null, source_url: null } as CbPlace) : null);
     const full = await getCbPlaceBySlug(slug);
+    // L'utilisateur a pu changer de fiche pendant le fetch : une réponse
+    // périmée ne doit pas écraser la sélection courante.
+    if (selectedSlugRef.current !== slug) return;
     if (full) setSelected(full);
     setSelectedLoading(false);
     if (base?.latitude != null && base?.longitude != null) {
