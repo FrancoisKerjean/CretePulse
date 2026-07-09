@@ -16,6 +16,10 @@ export type ActivityPageStrings = {
   breadcrumbActivities: string;
   categoriesTitle: string;
   onRequestBadge: string;
+  catalogTitle: string;
+  catalogNote: string;
+  catalogFrom: string;
+  catalogCta: string;
 };
 
 // ---- Page mère /activities ------------------------------------------------------
@@ -153,6 +157,10 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     breadcrumbActivities: "Activities",
     categoriesTitle: "Choose a category",
     onRequestBadge: "on request",
+    catalogTitle: "Example activities",
+    catalogNote: "Real activities offered in the area, shown as examples. The exact price and availability come from the providers' quotes for your group.",
+    catalogFrom: "from ~{price}€ / person",
+    catalogCta: "Request a quote",
   },
   fr: {
     h1: "Activités en Crète · recevez des devis de prestataires locaux",
@@ -195,6 +203,10 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     breadcrumbActivities: "Activités",
     categoriesTitle: "Choisissez une catégorie",
     onRequestBadge: "sur demande",
+    catalogTitle: "Exemples d'activités",
+    catalogNote: "Activités réellement proposées dans la région, montrées à titre d'exemple. Le prix exact et la disponibilité viennent des devis des prestataires pour votre groupe.",
+    catalogFrom: "à partir de ~{price}€ / pers",
+    catalogCta: "Demander un devis",
   },
   de: {
     h1: "Aktivitäten auf Kreta · Angebote von lokalen Anbietern erhalten",
@@ -237,6 +249,10 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     breadcrumbActivities: "Aktivitäten",
     categoriesTitle: "Kategorie wählen",
     onRequestBadge: "auf Anfrage",
+    catalogTitle: "Beispiel-Aktivitäten",
+    catalogNote: "Aktivitäten, die in der Region tatsächlich angeboten werden, als Beispiele gezeigt. Der genaue Preis und die Verfügbarkeit kommen aus den Angeboten der Anbieter für Ihre Gruppe.",
+    catalogFrom: "ab ~{price}€ / Person",
+    catalogCta: "Angebot anfordern",
   },
   el: {
     h1: "Δραστηριότητες στην Κρήτη · λάβετε προσφορές από τοπικούς παρόχους",
@@ -279,6 +295,10 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     breadcrumbActivities: "Δραστηριότητες",
     categoriesTitle: "Επιλέξτε κατηγορία",
     onRequestBadge: "κατόπιν αιτήματος",
+    catalogTitle: "Παραδείγματα δραστηριοτήτων",
+    catalogNote: "Δραστηριότητες που πραγματικά προσφέρονται στην περιοχή, ως παραδείγματα. Η ακριβής τιμή και η διαθεσιμότητα προκύπτουν από τις προσφορές των παρόχων για την παρέα σας.",
+    catalogFrom: "από ~{price}€ / άτομο",
+    catalogCta: "Ζητήστε προσφορά",
   },
   it: {
     h1: "Attività a Creta · ricevi preventivi da operatori locali",
@@ -321,6 +341,10 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     breadcrumbActivities: "Attività",
     categoriesTitle: "Scegli una categoria",
     onRequestBadge: "su richiesta",
+    catalogTitle: "Esempi di attività",
+    catalogNote: "Attività realmente proposte nella zona, mostrate a titolo di esempio. Il prezzo esatto e la disponibilità provengono dai preventivi dei fornitori per il tuo gruppo.",
+    catalogFrom: "da ~{price}€ / persona",
+    catalogCta: "Richiedi un preventivo",
   },
   nl: {
     h1: "Activiteiten op Kreta · ontvang offertes van lokale aanbieders",
@@ -363,6 +387,10 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     breadcrumbActivities: "Activiteiten",
     categoriesTitle: "Kies een categorie",
     onRequestBadge: "op aanvraag",
+    catalogTitle: "Voorbeeldactiviteiten",
+    catalogNote: "Activiteiten die echt in de regio worden aangeboden, getoond als voorbeelden. De exacte prijs en beschikbaarheid komen uit de offertes van de aanbieders voor jouw groep.",
+    catalogFrom: "vanaf ~{price}€ / persoon",
+    catalogCta: "Offerte aanvragen",
   },
   pl: {
     h1: "Atrakcje na Krecie · otrzymaj wyceny od lokalnych organizatorów",
@@ -405,6 +433,10 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     breadcrumbActivities: "Atrakcje",
     categoriesTitle: "Wybierz kategorię",
     onRequestBadge: "na żądanie",
+    catalogTitle: "Przykładowe atrakcje",
+    catalogNote: "Atrakcje rzeczywiście dostępne w regionie, pokazane jako przykłady. Dokładna cena i dostępność pochodzą z wycen organizatorów dla Twojej grupy.",
+    catalogFrom: "od ~{price}€ / os.",
+    catalogCta: "Poproś o wycenę",
   },
   es: {
     h1: "Actividades en Creta · recibe presupuestos de proveedores locales",
@@ -447,6 +479,10 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     breadcrumbActivities: "Actividades",
     categoriesTitle: "Elige una categoría",
     onRequestBadge: "a petición",
+    catalogTitle: "Ejemplos de actividades",
+    catalogNote: "Actividades realmente ofrecidas en la zona, mostradas como ejemplos. El precio exacto y la disponibilidad provienen de los presupuestos de los proveedores para tu grupo.",
+    catalogFrom: "desde ~{price}€ / persona",
+    catalogCta: "Solicitar presupuesto",
   },
   pt: {
     h1: "Atividades em Creta · recebe orçamentos de fornecedores locais",
@@ -489,6 +525,10 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     breadcrumbActivities: "Atividades",
     categoriesTitle: "Escolhe uma categoria",
     onRequestBadge: "a pedido",
+    catalogTitle: "Exemplos de atividades",
+    catalogNote: "Atividades realmente oferecidas na região, mostradas como exemplos. O preço exato e a disponibilidade vêm dos orçamentos dos fornecedores para o teu grupo.",
+    catalogFrom: "a partir de ~{price}€ / pessoa",
+    catalogCta: "Pedir orçamento",
   },
   ru: {
     h1: "Активности на Крите · получите расчёты от местных операторов",
@@ -531,6 +571,10 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     breadcrumbActivities: "Активности",
     categoriesTitle: "Выберите категорию",
     onRequestBadge: "по запросу",
+    catalogTitle: "Примеры активностей",
+    catalogNote: "Активности, которые реально предлагаются в данном районе, показаны в качестве примеров. Точная цена и наличие берутся из расчётов операторов для вашей группы.",
+    catalogFrom: "от ~{price}€ / чел.",
+    catalogCta: "Запросить расчёт",
   },
   ja: {
     h1: "クレタ島のアクティビティ · 地元業者から見積もりを受け取る",
@@ -573,6 +617,10 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     breadcrumbActivities: "アクティビティ",
     categoriesTitle: "カテゴリーを選ぶ",
     onRequestBadge: "要リクエスト",
+    catalogTitle: "アクティビティ例",
+    catalogNote: "この地域で実際に提供されているアクティビティを例として紹介しています。正確な料金と空き状況は、業者があなたのグループへ提示する見積もりによります。",
+    catalogFrom: "~{price}€ / 人から",
+    catalogCta: "見積もりを依頼する",
   },
   ko: {
     h1: "크레타 액티비티 · 현지 업체의 견적 받기",
@@ -615,6 +663,10 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     breadcrumbActivities: "액티비티",
     categoriesTitle: "카테고리 선택",
     onRequestBadge: "요청 시",
+    catalogTitle: "활동 예시",
+    catalogNote: "해당 지역에서 실제로 제공되는 활동을 예시로 보여드립니다. 정확한 가격과 가용 여부는 업체가 귀하의 그룹에 제시하는 견적에 따라 다릅니다.",
+    catalogFrom: "~{price}€ / 인당부터",
+    catalogCta: "견적 요청하기",
   },
   zh: {
     h1: "克里特岛活动 · 获取本地供应商报价",
@@ -657,6 +709,10 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     breadcrumbActivities: "活动",
     categoriesTitle: "选择类别",
     onRequestBadge: "按需预约",
+    catalogTitle: "活动示例",
+    catalogNote: "该地区实际提供的活动，仅作示例展示。确切价格和可用性来自供应商针对您团队的报价。",
+    catalogFrom: "约~{price}€ / 人起",
+    catalogCta: "申请报价",
   },
   tr: {
     h1: "Girit'te aktiviteler · yerel tedarikçilerden fiyat teklifleri alın",
@@ -699,6 +755,10 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     breadcrumbActivities: "Aktiviteler",
     categoriesTitle: "Bir kategori seçin",
     onRequestBadge: "talep üzerine",
+    catalogTitle: "Örnek aktiviteler",
+    catalogNote: "Bölgede gerçekten sunulan aktiviteler, örnek olarak gösterilmektedir. Kesin fiyat ve uygunluk, grubunuz için tedarikçilerin tekliflerinden gelir.",
+    catalogFrom: "~{price}€ / kişiden itibaren",
+    catalogCta: "Teklif isteyin",
   },
   sv: {
     h1: "Aktiviteter på Kreta · få offerter från lokala aktörer",
@@ -741,6 +801,10 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     breadcrumbActivities: "Aktiviteter",
     categoriesTitle: "Välj en kategori",
     onRequestBadge: "på begäran",
+    catalogTitle: "Exempelaktiviteter",
+    catalogNote: "Aktiviteter som faktiskt erbjuds i området, visade som exempel. Det exakta priset och tillgängligheten kommer från aktörernas offerter för din grupp.",
+    catalogFrom: "från ~{price}€ / person",
+    catalogCta: "Begär offert",
   },
   da: {
     h1: "Aktiviteter på Kreta · modtag tilbud fra lokale udbydere",
@@ -783,6 +847,10 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     breadcrumbActivities: "Aktiviteter",
     categoriesTitle: "Vælg en kategori",
     onRequestBadge: "på forespørgsel",
+    catalogTitle: "Eksempelaktiviteter",
+    catalogNote: "Aktiviteter der faktisk tilbydes i området, vist som eksempler. Den nøjagtige pris og tilgængelighed kommer fra udbydernes tilbud til din gruppe.",
+    catalogFrom: "fra ~{price}€ / person",
+    catalogCta: "Bed om tilbud",
   },
   no: {
     h1: "Aktiviteter på Kreta · motta tilbud fra lokale tilbydere",
@@ -825,6 +893,10 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     breadcrumbActivities: "Aktiviteter",
     categoriesTitle: "Velg en kategori",
     onRequestBadge: "på forespørsel",
+    catalogTitle: "Eksempelaktiviteter",
+    catalogNote: "Aktiviteter som faktisk tilbys i området, vist som eksempler. Den nøyaktige prisen og tilgjengeligheten kommer fra tilbydernes tilbud for gruppen din.",
+    catalogFrom: "fra ~{price}€ / person",
+    catalogCta: "Be om tilbud",
   },
   fi: {
     h1: "Aktiviteetit Kreetalla · vastaanota tarjoukset paikallisilta toimijoilta",
@@ -867,6 +939,10 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     breadcrumbActivities: "Aktiviteetit",
     categoriesTitle: "Valitse kategoria",
     onRequestBadge: "pyynnöstä",
+    catalogTitle: "Esimerkkiaktiviteetteja",
+    catalogNote: "Alueella todella tarjottavia aktiviteetteja, esitelty esimerkkeinä. Tarkka hinta ja saatavuus tulevat toimijoiden tarjouksista ryhmällesi.",
+    catalogFrom: "noin ~{price}€ / henkilö alkaen",
+    catalogCta: "Pyydä tarjous",
   },
   cs: {
     h1: "Aktivity na Krétě · získejte nabídky od místních poskytovatelů",
@@ -909,6 +985,10 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     breadcrumbActivities: "Aktivity",
     categoriesTitle: "Vyberte kategorii",
     onRequestBadge: "na vyžádání",
+    catalogTitle: "Ukázkové aktivity",
+    catalogNote: "Aktivity skutečně nabízené v dané oblasti, zobrazené jako příklady. Přesná cena a dostupnost vycházejí z nabídek poskytovatelů pro vaši skupinu.",
+    catalogFrom: "od ~{price}€ / os.",
+    catalogCta: "Požádat o nabídku",
   },
   hu: {
     h1: "Tevékenységek Krétán · kapjon árajánlatokat helyi szolgáltatóktól",
@@ -951,6 +1031,10 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     breadcrumbActivities: "Tevékenységek",
     categoriesTitle: "Válasszon kategóriát",
     onRequestBadge: "kérésre",
+    catalogTitle: "Példa tevékenységek",
+    catalogNote: "A területen ténylegesen kínált tevékenységek, példaként bemutatva. A pontos ár és elérhetőség a szolgáltatók csoportjára vonatkozó árajánlataiból derül ki.",
+    catalogFrom: "~{price}€-tól / fő",
+    catalogCta: "Árajánlat kérése",
   },
   ro: {
     h1: "Activități în Creta · primește oferte de la furnizori locali",
@@ -993,6 +1077,10 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     breadcrumbActivities: "Activități",
     categoriesTitle: "Alege o categorie",
     onRequestBadge: "la cerere",
+    catalogTitle: "Exemple de activități",
+    catalogNote: "Activități oferite cu adevărat în zonă, prezentate ca exemple. Prețul exact și disponibilitatea provin din ofertele furnizorilor pentru grupul tău.",
+    catalogFrom: "de la ~{price}€ / persoană",
+    catalogCta: "Solicită o ofertă",
   },
   ar: {
     h1: "أنشطة في كريت · احصل على عروض أسعار من مزودين محليين",
@@ -1035,6 +1123,10 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     breadcrumbActivities: "الأنشطة",
     categoriesTitle: "اختر فئة",
     onRequestBadge: "عند الطلب",
+    catalogTitle: "أمثلة على الأنشطة",
+    catalogNote: "أنشطة مقدَّمة فعلياً في المنطقة، معروضة بوصفها أمثلة. السعر الدقيق والتوفر يأتيان من عروض المزودين لمجموعتك.",
+    catalogFrom: "من ~{price}€ / شخص",
+    catalogCta: "طلب عرض سعر",
   },
 };
 
