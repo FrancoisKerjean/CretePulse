@@ -20,18 +20,26 @@ import { createClient } from "@supabase/supabase-js";
 import { writeFileSync, mkdirSync } from "node:fs";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  throw new Error("Missing Supabase env vars. Use --env-file=.env.local");
+// Reads work with anon; the beaches table only grants UPDATE to service_role, so
+// --write needs SUPABASE_SERVICE_KEY. Falls back to anon for dry-run/--sql.
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  throw new Error("Missing Supabase env vars. Use --env-file=.env.local (and SUPABASE_SERVICE_KEY for --write).");
 }
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const WRITE = process.argv.includes("--write");
 const EMIT_SQL = process.argv.includes("--sql");
+// --wide: recover cb matches whose coordinates are offset from the beach point.
+// Widens the geo ceiling to 2km BUT requires a distinctive name overlap at ANY
+// distance (not just the 120-200m band), so "Ammos beach in Ag. Nikolaos" can
+// never bleed into "Orthi Ammos" 100km away. Generic Greek words (ammos, paralia,
+// agios...) are excluded from the name guard below.
+const WIDE = process.argv.includes("--wide");
 const sqlEsc = (s) => `'${String(s).replace(/'/g, "''")}'`;
 const sqlLines = [];
-const MAX_DIST_M = 200;       // hard geo ceiling for a match
-const CLOSE_DIST_M = 120;     // below this, distance alone is enough
+const MAX_DIST_M = WIDE ? 2000 : 200;   // hard geo ceiling for a match
+const CLOSE_DIST_M = 120;     // below this, distance alone is enough (narrow mode only)
 const LANGS = ["en", "fr", "de", "el"];
 
 // ---------------------------------------------------------------------------
@@ -113,7 +121,12 @@ function haversine(la1, lo1, la2, lo2) {
   return 2 * R * Math.asin(Math.min(1, Math.sqrt(a)));
 }
 
-const STOP = new Set(["beach", "beaches", "the", "of", "and", "cove", "bay", "plage"]);
+// Generic descriptors + generic Greek toponym words that must NOT be the sole
+// basis for a name match (ammos=sand, ammoudi=sandy cove, paralia/akti=beach,
+// agios/agia=saint). Without these, "Ammos beach" matches every sandy beach.
+const STOP = new Set(["beach", "beaches", "the", "of", "and", "cove", "bay", "plage",
+  "paralia", "akti", "ammos", "ammoudi", "agios", "agia", "nea", "kato", "ano",
+  "mikro", "megalo", "megali", "limani", "limanaki", "nudist", "nude", "naturist"]);
 function nameTokens(s) {
   return new Set((s || "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/)
     .filter((w) => w.length > 2 && !STOP.has(w)));
@@ -178,7 +191,7 @@ function buildDesc(beachName, region, cb, lang) {
 
 // ---------------------------------------------------------------------------
 async function main() {
-  console.log(`Mode: ${WRITE ? "WRITE" : "DRY-RUN"}  ·  URL: ${SUPABASE_URL}`);
+  console.log(`Mode: ${WRITE ? "WRITE" : "DRY-RUN"}${WIDE ? " · WIDE(2km+name)" : ""}  ·  radius ${MAX_DIST_M}m  ·  URL: ${SUPABASE_URL}`);
 
   const { data: beaches, error: e1 } = await supabase
     .from("beaches")
@@ -203,11 +216,15 @@ async function main() {
     let best = null, bestD = Infinity;
     for (const c of cbGeo) {
       const d = haversine(b.latitude, b.longitude, c.latitude, c.longitude);
+      // Wide mode: only name-overlapping candidates are eligible, so the nearest
+      // cb without a shared distinctive token can't win the slot.
+      if (WIDE && !nameOverlap(b.name_en, c.name)) continue;
       if (d < bestD) { bestD = d; best = c; }
     }
     if (!best || bestD > MAX_DIST_M) { skippedNoMatch++; continue; }
-    // Name guard for the 120-200m band (very close = trust distance).
-    if (bestD > CLOSE_DIST_M && !nameOverlap(b.name_en, best.name)) { skippedNoMatch++; continue; }
+    // Narrow mode name guard for the 120-200m band (very close = trust distance).
+    // Wide mode already filtered on name overlap above.
+    if (!WIDE && bestD > CLOSE_DIST_M && !nameOverlap(b.name_en, best.name)) { skippedNoMatch++; continue; }
 
     const region = regionFromLng(b.longitude);
     const names = { en: b.name_en, fr: b.name_fr || b.name_en, de: b.name_de || b.name_en, el: b.name_el || b.name_en };
