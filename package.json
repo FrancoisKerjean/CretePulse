@@ -14,6 +14,7 @@
     "check:car-lead": "node --experimental-strip-types scripts/check-car-lead.mjs",
     "check:car-quotes": "node --experimental-strip-types scripts/check-car-quotes.mjs",
     "check:activity-taxonomy": "node --experimental-strip-types scripts/check-activity-taxonomy.mjs",
+    "check:activity-catalog": "node --experimental-strip-types scripts/check-activity-catalog.mjs",
     "check:activity-quotes": "node --experimental-strip-types scripts/check-activity-quotes.mjs",
     "check:activity-lead": "node --experimental-strip-types scripts/check-activity-lead.mjs",
     "check:car-admin": "node --experimental-strip-types scripts/check-car-admin.mjs",
