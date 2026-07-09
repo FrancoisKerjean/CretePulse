@@ -15,7 +15,7 @@ function EmojiBox({ emoji, cap }: { emoji: string; cap?: string }) {
   return (
     <div className="w-[260px] rounded-[20px] border-[3px] border-[var(--color-text)] bg-white p-[18px] text-center shadow-[0_6px_0_var(--color-text)]">
       <div className="text-[56px] leading-none">{emoji}</div>
-      {cap && <div className="mt-2 font-[family-name:var(--font-heading)] text-[13px] font-bold text-[var(--color-muted,#56707d)]">{cap}</div>}
+      {cap && <div className="mt-2 font-[family-name:var(--font-heading)] text-[13px] font-extrabold text-[var(--color-text)]">{cap}</div>}
     </div>
   );
 }
@@ -37,7 +37,7 @@ export default function ProParcours({ locale, copy }: { locale: string; copy: Pr
               {copy.stats.map((s) => (
                 <div key={s.n + s.l} className="rounded-[16px] border-[3px] border-[var(--color-text)] bg-white p-[14px] text-center shadow-[0_5px_0_var(--color-text)]">
                   <div className="font-[family-name:var(--font-heading)] text-[22px] font-extrabold text-sea">{s.n}</div>
-                  <div className="mt-1 text-[11px] text-[var(--color-muted,#56707d)]">{s.l}</div>
+                  <div className="mt-1 text-[11px] font-extrabold leading-tight text-[var(--color-text)]">{s.l}</div>
                 </div>
               ))}
             </Reveal>

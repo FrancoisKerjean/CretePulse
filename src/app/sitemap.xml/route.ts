@@ -56,6 +56,8 @@ const STATIC_PAGES = [
   "/airport",
   "/partners",
   "/projet",
+  "/projet/institutions",
+  "/projet/entreprises",
   "/enquete/paradoxe-tourisme-crete",
 ];
 

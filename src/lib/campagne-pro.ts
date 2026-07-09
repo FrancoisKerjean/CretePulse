@@ -1,7 +1,7 @@
 // Types + helpers partages des pages /projet pro (institutions, entreprises).
 // Node-safe (aucun import react/next) pour etre testable par check-projet-copy.mjs.
-import { getInstitutionsCopyFR, getInstitutionsCopyEN } from "./campagne-institutions.ts";
-import { getEntreprisesCopyFR, getEntreprisesCopyEN } from "./campagne-entreprises.ts";
+import { getInstitutionsCopyFR, getInstitutionsCopyEN, getInstitutionsCopyEL } from "./campagne-institutions.ts";
+import { getEntreprisesCopyFR, getEntreprisesCopyEN, getEntreprisesCopyEL } from "./campagne-entreprises.ts";
 
 export const PRO_AUDIENCES = ["visiteur", "institutions", "entreprises"] as const;
 export type ProAudience = (typeof PRO_AUDIENCES)[number];
@@ -49,14 +49,19 @@ export type ProCopy = {
 export const AUDIENCE_LABELS: Record<string, Record<ProAudience, string>> = {
   fr: { visiteur: "Visiteur", institutions: "Institution", entreprises: "Entreprise" },
   en: { visiteur: "Visitor", institutions: "Institution", entreprises: "Business" },
+  el: { visiteur: "Επισκέπτης", institutions: "Θεσμός", entreprises: "Επιχείρηση" },
 };
 export function audienceLabels(locale: string): Record<ProAudience, string> {
   return AUDIENCE_LABELS[locale] ?? AUDIENCE_LABELS.en;
 }
 
 export function getInstitutionsCopy(locale: string): ProCopy {
-  return locale === "fr" ? getInstitutionsCopyFR() : getInstitutionsCopyEN();
+  if (locale === "fr") return getInstitutionsCopyFR();
+  if (locale === "el") return getInstitutionsCopyEL();
+  return getInstitutionsCopyEN();
 }
 export function getEntreprisesCopy(locale: string): ProCopy {
-  return locale === "fr" ? getEntreprisesCopyFR() : getEntreprisesCopyEN();
+  if (locale === "fr") return getEntreprisesCopyFR();
+  if (locale === "el") return getEntreprisesCopyEL();
+  return getEntreprisesCopyEN();
 }
