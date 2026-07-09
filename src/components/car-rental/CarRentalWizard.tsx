@@ -58,7 +58,7 @@ type Strings = {
   arrival: string;
   departure: string;
   dateLabel: string;
-  timeOptional: string;
+  timeLabel: string;
   flightOptional: string;
   invalidTimeRange: string;
   title3: string;
@@ -109,7 +109,7 @@ const T: Record<string, Strings> = {
     arrival: "Arrival / pick-up",
     departure: "Departure / drop-off",
     dateLabel: "Date",
-    timeOptional: "Time (optional)",
+    timeLabel: "Time",
     flightOptional: "Flight number (optional)",
     invalidTimeRange: "Drop-off time must be after pick-up time for a same-day rental.",
     title3: "Which car?",
@@ -158,7 +158,7 @@ const T: Record<string, Strings> = {
     arrival: "Arrivée / prise du véhicule",
     departure: "Départ / restitution",
     dateLabel: "Date",
-    timeOptional: "Heure (facultatif)",
+    timeLabel: "Heure",
     flightOptional: "Numéro de vol (facultatif)",
     invalidTimeRange: "Pour une location le même jour, l'heure de restitution doit être après l'heure de prise du véhicule.",
     title3: "Quelle voiture ?",
@@ -207,7 +207,7 @@ const T: Record<string, Strings> = {
     arrival: "Ankunft / Abholung",
     departure: "Abreise / Rückgabe",
     dateLabel: "Datum",
-    timeOptional: "Uhrzeit (optional)",
+    timeLabel: "Uhrzeit",
     flightOptional: "Flugnummer (optional)",
     invalidTimeRange: "Bei einer Mietdauer am selben Tag muss die Rückgabezeit nach der Abholzeit liegen.",
     title3: "Welches Auto?",
@@ -256,7 +256,7 @@ const T: Record<string, Strings> = {
     arrival: "Άφιξη / παραλαβή",
     departure: "Αναχώρηση / επιστροφή",
     dateLabel: "Ημερομηνία",
-    timeOptional: "Ώρα (προαιρετικό)",
+    timeLabel: "Ώρα",
     flightOptional: "Αριθμός πτήσης (προαιρετικό)",
     invalidTimeRange: "Για ενοικίαση την ίδια ημέρα, η ώρα επιστροφής πρέπει να είναι μετά την ώρα παραλαβής.",
     title3: "Ποιο αυτοκίνητο;",
@@ -399,7 +399,8 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
   const datesValid =
     /^\d{4}-\d{2}-\d{2}$/.test(dateFrom) && /^\d{4}-\d{2}-\d{2}$/.test(dateTo) &&
     dateFrom >= today && dateTo >= dateFrom;
-  const timesValid = dateTo !== dateFrom || !timeFrom || !timeTo || timeTo > timeFrom;
+  const timeFilled = /^\d{2}:\d{2}$/.test(timeFrom) && /^\d{2}:\d{2}$/.test(timeTo);
+  const timesValid = timeFilled && (dateTo !== dateFrom || timeTo > timeFrom);
   const contactValid = name.trim().length > 0 && EMAIL_REGEX.test(email.trim());
 
   const source = sp.get("source") ?? (initialPickup ? "promo" : "direct");
@@ -415,7 +416,7 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
         body: JSON.stringify({
           pickup, carType: carTypeDef.id,
           name: name.trim(), email: email.trim(), phone: phone.trim() || undefined,
-          dateFrom, timeFrom: timeFrom || undefined, dateTo, timeTo: timeTo || undefined,
+          dateFrom, timeFrom, dateTo, timeTo,
           flightNo: flightNo.trim() || undefined, pax, note: note.trim() || undefined,
           insurance: insurance || undefined, payment: payment || undefined,
           gearbox: gearbox || undefined, childSeats,
@@ -631,10 +632,11 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
                   />
                 </div>
                 <div>
-                  <label htmlFor="cr-time-from" className={LABEL_CLS}>{t.timeOptional}</label>
+                  <label htmlFor="cr-time-from" className={LABEL_CLS}>{t.timeLabel}</label>
                   <input
                     id="cr-time-from"
                     type="time"
+                    required
                     value={timeFrom}
                     onChange={(e) => setTimeFrom(e.target.value)}
                     className={`${INPUT_CLS} font-data`}
@@ -668,10 +670,11 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
                   />
                 </div>
                 <div>
-                  <label htmlFor="cr-time-to" className={LABEL_CLS}>{t.timeOptional}</label>
+                  <label htmlFor="cr-time-to" className={LABEL_CLS}>{t.timeLabel}</label>
                   <input
                     id="cr-time-to"
                     type="time"
+                    required
                     value={timeTo}
                     onChange={(e) => setTimeTo(e.target.value)}
                     className={`${INPUT_CLS} font-data`}
