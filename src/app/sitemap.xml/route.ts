@@ -265,16 +265,32 @@ export async function GET() {
   for (const n of news) push(`/news/${n.slug}`, "daily", 0.5, n.lastmod);
   for (const g of guides) push(`/articles/${g.slug}`, "weekly", 0.7, g.lastmod);
 
-  // /explore/[slug] : 2294 fiches lieux (cb_places). Toutes les fiches sont
+  // /explore/[slug] : 2294+ fiches lieux (cb_places). Toutes les fiches sont
   // indexables : pages dédiées avec bento, description, JSON-LD, CTAs. Priorité
   // 0.6 (infra, comme /beaches/[slug]) ; changefreq mensuelle (données stables).
   // Le sitemap ne filtre pas par locale (/en/* est la loc canonique dans urlEntry).
+  // PostgREST plafonne à 1000 lignes par requête : on pagine par tranches de 1000
+  // avec .range(offset, offset+999) + .order("slug") jusqu'à épuisement.
   try {
-    const { data: cbSlugs } = await supabase
-      .from("cb_places")
-      .select("slug");
-    for (const row of (cbSlugs || []) as Array<{ slug: string }>) {
-      push(`/explore/${row.slug}`, "monthly", 0.6);
+    const PAGE_SIZE = 1000;
+    let offset = 0;
+    let done = false;
+    while (!done) {
+      const { data: page, error } = await supabase
+        .from("cb_places")
+        .select("slug")
+        .order("slug")
+        .range(offset, offset + PAGE_SIZE - 1);
+      if (error) break;
+      const rows = (page || []) as Array<{ slug: string }>;
+      for (const row of rows) {
+        push(`/explore/${row.slug}`, "monthly", 0.6);
+      }
+      if (rows.length < PAGE_SIZE) {
+        done = true;
+      } else {
+        offset += PAGE_SIZE;
+      }
     }
   } catch {
     // Silencieux : le sitemap reste valide sans les fiches /explore.
