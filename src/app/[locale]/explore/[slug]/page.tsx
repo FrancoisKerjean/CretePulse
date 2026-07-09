@@ -14,6 +14,8 @@ import { buildAlternates } from "@/lib/seo";
 import { ExploreBento } from "@/components/explore/bento/ExploreBento";
 import { ReadMoreAccordion } from "@/components/explore/bento/shared/ReadMoreAccordion";
 import { ReviewCTA } from "@/components/reviews/ReviewCTA";
+import { JsonLd } from "@/components/JsonLd";
+import { cbPlaceSchema, breadcrumbSchema } from "@/lib/schema";
 
 export const revalidate = 172800; // 03/07 optim couts Vercel (48h, ISR Writes)
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
@@ -55,9 +57,31 @@ export async function generateMetadata({
   };
 }
 
-export async function generateStaticParams() {
-  // Pas de pre-rendu massif (24K pages) : on laisse l'ISR generer a la demande.
-  return [];
+// Pré-rend le top 150 lieux par note décroissante pour les 4 locales principales.
+// Les 18 autres locales + tous les autres slugs restent en ISR (revalidate 48h).
+// Même découpage de locales que /airbnb/[neighbourhood] (mais slugs fetchés en DB) : 4 × 150 = 600 pages build.
+const STATIC_LOCALES = ["en", "fr", "de", "el"] as const;
+
+export async function generateStaticParams(): Promise<Array<{ locale: string; slug: string }>> {
+  try {
+    const { data } = await import("@/lib/supabase").then(({ supabase }) =>
+      supabase
+        .from("cb_places")
+        .select("slug, rating")
+        .order("rating", { ascending: false, nullsFirst: false })
+        .limit(150),
+    );
+    const slugs = (data as Array<{ slug: string }> | null) ?? [];
+    const out: Array<{ locale: string; slug: string }> = [];
+    for (const loc of STATIC_LOCALES) {
+      for (const { slug } of slugs) {
+        out.push({ locale: loc, slug });
+      }
+    }
+    return out;
+  } catch {
+    return [];
+  }
 }
 
 export default async function CbPlaceFichePage({
@@ -84,8 +108,16 @@ export default async function CbPlaceFichePage({
   const communityAvg: number | null = aggregate.avg;
   const communityCount: number = aggregate.count;
 
+  const placeJsonLd = cbPlaceSchema(place, locale, communityAvg, communityCount);
+  const breadcrumb = breadcrumbSchema([
+    { name: "Crete Direct", url: `${BASE_URL}/${locale}` },
+    { name: typeLabel(place.place_type, locale), url: `${BASE_URL}/${locale}/explore` },
+    { name: place.name, url: `${BASE_URL}/${locale}/explore/${place.slug}` },
+  ]);
+
   return (
     <main className="min-h-screen bg-surface">
+      <JsonLd data={[placeJsonLd, breadcrumb]} />
       <div className="mx-auto max-w-3xl px-4 py-6">
         <Link
           href={`/${locale}/explore?place=${place.slug}`}

@@ -22,6 +22,7 @@ import {
 import { cleanCbDescription } from "@/lib/cb-place-helpers";
 import { useGeoPosition } from "@/components/geo/useGeoPosition";
 import Image from "next/image";
+import Link from "next/link";
 import { CiCompass } from "@/components/icons";
 import { CbPlaceActions } from "@/components/explore/CbPlaceActions";
 import { CarPromo } from "@/components/car-rental/CarPromo";
@@ -1079,14 +1080,33 @@ export function ExploreView({
   );
 
   // Card riche partagee entre le panneau desktop et la liste mobile.
+  // Utilise <Link> pour rendre le href crawlable par Google (Fix SEO #2),
+  // tout en preservant le comportement interactif existant (drawer + carte)
+  // via e.preventDefault() dans le onClick.
   function PlaceRow({ p }: { p: CbPlaceListItem & { km?: number; __sponsorUrl?: string } }) {
     const spo = isSponsorSlug(p.slug);
     const aff = isAffiliateSlug(p.slug);
     const isCommercial = spo || aff;
     const commercialBadge = aff ? partnerLabel(locale) : spo ? sponsoredLabel(locale) : null;
+    // href canonique de la fiche (crawlable par les moteurs ; à éviter pour les fiches
+    // commerciales qui n'ont pas de page dédiée : on garde un href symbolique "#").
+    const href = isCommercial ? "#" : `/${locale}/explore/${p.slug}`;
     return (
-      <button
-        onClick={() => selectPlace(p.slug)}
+      <Link
+        href={href}
+        prefetch={false}
+        onClick={(e) => {
+          e.preventDefault();
+          selectPlace(p.slug);
+        }}
+        onKeyDown={(e) => {
+          // Sur <a>, Espace navigue vers href sans passer par onClick :
+          // on garde le comportement drawer du <button> d'origine.
+          if (e.key === " ") {
+            e.preventDefault();
+            selectPlace(p.slug);
+          }
+        }}
         className={`flex gap-3 p-2 rounded-xl bg-white shadow-soft text-left transition-all w-full ${
           isCommercial ? "border border-amber-300 ring-1 ring-amber-200" : "border border-sea/10 hover:border-sea/30"
         }`}
@@ -1130,7 +1150,7 @@ export function ExploreView({
             </div>
           )}
         </div>
-      </button>
+      </Link>
     );
   }
 
