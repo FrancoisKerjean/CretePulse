@@ -68,6 +68,9 @@ export interface CityBusArrival {
   etaMin: number;
   etaSec: number;
   vehicleCode: string | null;
+  /** Position GPS réelle du bus approchant (null si absente de la réponse upstream). */
+  lat: number | null;
+  lng: number | null;
 }
 
 async function fetchArrivals(
@@ -136,6 +139,8 @@ function parseArrivals(raw: unknown): CityBusArrival[] {
     const r = item as Record<string, unknown>;
     const etaMin = Number(r.departureMins);
     if (!Number.isFinite(etaMin)) continue;
+    const lat = Number(r.latitude);
+    const lng = Number(r.longitude);
     out.push({
       lineCode: String(r.lineCode ?? ""),
       lineName: String(r.lineName ?? ""),
@@ -146,6 +151,8 @@ function parseArrivals(raw: unknown): CityBusArrival[] {
       etaMin: Math.max(0, Math.round(etaMin)),
       etaSec: Math.max(0, Math.round(Number(r.departureSeconds) || 0)),
       vehicleCode: r.vehicleCode ? String(r.vehicleCode) : null,
+      lat: Number.isFinite(lat) && lat !== 0 ? lat : null,
+      lng: Number.isFinite(lng) && lng !== 0 ? lng : null,
     });
   }
   out.sort((a, b) => a.etaMin - b.etaMin || a.etaSec - b.etaSec);

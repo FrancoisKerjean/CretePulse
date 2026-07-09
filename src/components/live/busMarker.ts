@@ -52,6 +52,40 @@ export function setBusDimmed(el: HTMLElement, on: boolean): void {
   el.style.opacity = on ? "0.35" : "1";
 }
 
+/** Marqueur d'un bus citybus APPROCHANT un arrêt (position GPS réelle de la réponse
+ *  stops/live, affiché tant que le StopSheet est ouvert). Même langage visuel que le
+ *  GPS Agios Nikolaos (anneau vert live) mais sans flèche (pas de bearing upstream) :
+ *  rond couleur ligne avec le code de ligne dedans + badge ETA sous le rond. */
+export function createApproachingBusEl(
+  lineCode: string,
+  color: string | null,
+  textColor: string | null,
+  title: string,
+): HTMLDivElement {
+  const bg = color || NORMAL;
+  const el = document.createElement("div");
+  el.style.cssText = "position:absolute;top:0;left:0;width:30px;height:30px;will-change:transform";
+  el.innerHTML =
+    `<span style="position:absolute;inset:-9px;border-radius:50%;background:${bg}2b;animation:cd-pulse 2s ease-out infinite"></span>` +
+    `<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;` +
+    `width:30px;height:30px;border-radius:50%;background:${bg};color:${textColor || "#fff"};` +
+    `font:800 10px/1 var(--font-heading),sans-serif;box-shadow:0 0 0 2.5px #12B76A,0 1px 5px rgba(0,0,0,.35)">${lineCode}</span>` +
+    `<span style="position:absolute;right:-2px;top:-2px;width:9px;height:9px;border-radius:50%;background:#12B76A;` +
+    `box-shadow:0 0 0 2px #fff"></span>` +
+    `<span class="bus-eta" style="position:absolute;left:50%;top:34px;transform:translateX(-50%);white-space:nowrap;` +
+    `border-radius:9999px;background:#0B3954;color:#fff;padding:1px 6px;font:700 10px/1.4 var(--font-heading),sans-serif;` +
+    `font-variant-numeric:tabular-nums;` +
+    `box-shadow:0 1px 3px rgba(0,0,0,.3)"></span>`;
+  el.title = title;
+  return el;
+}
+
+/** Met à jour le badge ETA d'un marqueur de bus approchant. */
+export function setApproachingBusEta(el: HTMLElement, label: string): void {
+  const eta = el.querySelector(".bus-eta") as HTMLElement | null;
+  if (eta) eta.textContent = label;
+}
+
 /** Marqueur d'un bus à position GPS RÉELLE (Agios Nikolaos). Visuellement distinct de
  *  l'estimé : rond à la couleur de la ligne + anneau vert "live" + halo pulsé.
  *  Hypothèse: bus.color est un hex #RRGGBB (garanti par /api/buses/agncitybus-live,

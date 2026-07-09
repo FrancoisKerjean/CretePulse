@@ -54,6 +54,8 @@ const L: Record<string, {
   },
 };
 
+const REFRESH_MS = 10_000; // aligné sur le cache serveur du proxy citybus-live
+
 export interface StopSheetProps {
   stopName: string;
   stopApiCode: string;
@@ -61,30 +63,41 @@ export interface StopSheetProps {
   lineColor: string | null;   // couleur de la ligne (pour la puce colorée)
   locale: string;
   onClose: () => void;
+  /** Remonte les passages à chaque refresh (positions GPS des bus pour la carte). */
+  onArrivals?: (arrivals: CityBusArrival[]) => void;
 }
 
-export function StopSheet({ stopName, stopApiCode, city, lineColor, locale, onClose }: StopSheetProps) {
+export function StopSheet({ stopName, stopApiCode, city, lineColor, locale, onClose, onArrivals }: StopSheetProps) {
   const t = L[locale] ?? L.en;
   const ref = useRef<HTMLDivElement>(null);
   const [arrivals, setArrivals] = useState<CityBusArrival[] | null>(null);
   const [error, setError] = useState(false);
+  const onArrivalsRef = useRef(onArrivals);
+  onArrivalsRef.current = onArrivals;
 
   useEffect(() => {
     ref.current?.focus();
     let cancelled = false;
+    let hadSuccess = false; // un refresh raté après succès garde la dernière liste affichée
     const lang = locale === "el" ? "el" : "en";
     async function load() {
       try {
         const r = await fetch(`/api/buses/citybus-live/${stopApiCode}?city=${city}&lang=${lang}`, { cache: "no-store" });
-        if (!r.ok || cancelled) { setError(true); return; }
+        if (!r.ok || cancelled) { if (!hadSuccess) setError(true); return; }
         const data = (await r.json()) as { arrivals?: CityBusArrival[] };
-        if (!cancelled) setArrivals(data.arrivals ?? []);
+        if (!cancelled) {
+          hadSuccess = true;
+          setError(false);
+          setArrivals(data.arrivals ?? []);
+          onArrivalsRef.current?.(data.arrivals ?? []);
+        }
       } catch {
-        if (!cancelled) setError(true);
+        if (!cancelled && !hadSuccess) setError(true);
       }
     }
     load();
-    return () => { cancelled = true; };
+    const iv = setInterval(() => { if (document.visibilityState === "visible") load(); }, REFRESH_MS);
+    return () => { cancelled = true; clearInterval(iv); };
   }, [stopApiCode, city, locale]);
 
   return (
