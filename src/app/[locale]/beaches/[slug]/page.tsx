@@ -44,6 +44,7 @@ const BEACH_LABELS: Record<Locale, {
   taverna: string;
   snorkeling: string;
   openInMaps: string;
+  viewOnMap: string;
   nearbyBeaches: string;
   photo: string;
   crete: string;
@@ -64,6 +65,7 @@ const BEACH_LABELS: Record<Locale, {
     taverna: "Taverna",
     snorkeling: "Snorkeling",
     openInMaps: "Open in Google Maps",
+    viewOnMap: "View on the map",
     nearbyBeaches: "Nearby beaches",
     photo: "Photo",
     crete: "Crete",
@@ -84,6 +86,7 @@ const BEACH_LABELS: Record<Locale, {
     taverna: "Taverne",
     snorkeling: "Snorkeling",
     openInMaps: "Ouvrir dans Google Maps",
+    viewOnMap: "Voir sur la carte",
     nearbyBeaches: "Plages à proximité",
     photo: "Photo",
     crete: "Crète",
@@ -104,6 +107,7 @@ const BEACH_LABELS: Record<Locale, {
     taverna: "Taverne",
     snorkeling: "Schnorcheln",
     openInMaps: "In Google Maps öffnen",
+    viewOnMap: "Auf der Karte ansehen",
     nearbyBeaches: "Strände in der Nähe",
     photo: "Foto",
     crete: "Kreta",
@@ -124,6 +128,7 @@ const BEACH_LABELS: Record<Locale, {
     taverna: "Ταβέρνα",
     snorkeling: "Snorkeling",
     openInMaps: "Άνοιγμα στο Google Maps",
+    viewOnMap: "Δείτε στον χάρτη",
     nearbyBeaches: "Κοντινές παραλίες",
     photo: "Φωτογραφία",
     crete: "Κρήτη",
@@ -536,15 +541,28 @@ export default async function BeachDetailPage({
           </div>
         )}
 
-        {/* Map link */}
-        <a
-          href={`https://www.google.com/maps?q=${beach.latitude},${beach.longitude}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-sea text-white rounded-lg text-sm font-medium hover:bg-sea-light transition-colors mb-12"
-        >
-          <MapPin className="w-4 h-4" /> {L.openInMaps}
-        </a>
+        {/* Map links : Google Maps externe + maillage interne vers /explore.
+            Le lieu cb_places équivalent (match GPS <= 1.5 km, 180/183 plages
+            couvertes) donne l'URL canonique /explore/[slug] ; sinon fallback
+            carte centrée via ?lat&lng&z (params supportés par ExploreView). */}
+        <div className="flex flex-wrap gap-3 mb-12">
+          <a
+            href={`https://www.google.com/maps?q=${beach.latitude},${beach.longitude}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-sea text-white rounded-lg text-sm font-medium hover:bg-sea-light transition-colors"
+          >
+            <MapPin className="w-4 h-4" /> {L.openInMaps}
+          </a>
+          <Link
+            href={cb
+              ? `/${locale}/explore/${cb.slug}`
+              : `/${locale}/explore?lat=${beach.latitude}&lng=${beach.longitude}&z=13`}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white text-sea border border-sea/30 rounded-lg text-sm font-medium hover:border-sea transition-colors"
+          >
+            <MapPin className="w-4 h-4" /> {L.viewOnMap}
+          </Link>
+        </div>
 
         {/* FAQ */}
         <section className="mb-12">
