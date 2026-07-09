@@ -152,7 +152,7 @@ export default async function ActivityCategoryPage(
         </header>
 
         {/* Wizard pré-rempli avec la catégorie */}
-        <div id="wizard" className="scroll-mt-6">
+        <div id="wizard" className="scroll-mt-24">
           <Suspense fallback={null}>
             <ActivityWizard locale={locale} initialCategory={category} servedCombos={combos} />
           </Suspense>

@@ -170,7 +170,7 @@ export default async function ActivityCityPage(
         </header>
 
         {/* Wizard pré-rempli catégorie + ville */}
-        <div id="wizard" className="scroll-mt-6">
+        <div id="wizard" className="scroll-mt-24">
           <Suspense fallback={null}>
             <ActivityWizard
               locale={locale}

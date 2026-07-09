@@ -128,7 +128,7 @@ export default async function ActivitiesPage(
         </header>
 
         {/* Wizard : useSearchParams() exige un boundary Suspense (Next 16) */}
-        <div id="wizard" className="scroll-mt-6">
+        <div id="wizard" className="scroll-mt-24">
           <Suspense fallback={null}>
             <ActivityWizard locale={locale} servedCombos={combos} />
           </Suspense>
