@@ -510,7 +510,7 @@ export function NearMeClient({
             {sections.beaches.map((p) => (
               <Link
                 key={p.slug}
-                href={`/${locale}/explore`}
+                href={`/${locale}/explore/${p.slug}`}
                 onClick={() => track("beaches")}
                 className="card-base overflow-hidden block no-underline"
               >
@@ -564,7 +564,7 @@ export function NearMeClient({
             {sections.sights.map((p) => (
               <Link
                 key={p.slug}
-                href={`/${locale}/explore`}
+                href={`/${locale}/explore/${p.slug}`}
                 onClick={() => track("sights")}
                 className="card-base overflow-hidden block no-underline"
               >
