@@ -23,6 +23,7 @@ export interface CatalogRow extends CatalogItem {
 /** Applique la traduction de la locale (champ par champ, fallback EN). */
 export function localizeItem(row: CatalogRow, locale: string): CatalogItem {
   const tr = row.translations?.[locale];
+  // || délibéré (pas ??) : une traduction vide "" doit retomber sur l'anglais.
   return {
     id: row.id,
     category: row.category,
