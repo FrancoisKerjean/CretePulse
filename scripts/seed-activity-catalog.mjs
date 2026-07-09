@@ -21,6 +21,7 @@ const rows = items.map((i) => ({
   price_from_eur: i.price_from_eur ?? null,
   price_seen_at: i.price_seen_at ?? null,
   translations: i.translations ?? {},
+  image_url: i.image_url ?? null,
   source_url: i.source_url,
   source_name: i.source_name,
   display_order: i.display_order ?? 0,
