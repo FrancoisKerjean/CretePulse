@@ -174,7 +174,6 @@ export async function GET() {
   // Highest-priority utility page · was missing entirely, the likely root cause
   // of it never getting indexed despite strong internal linking.
   push("/explore", "weekly", 0.9);
-  push("/map", "monthly", 0.6);
   push("/search", "monthly", 0.4);
   push("/match", "monthly", 0.6);
 

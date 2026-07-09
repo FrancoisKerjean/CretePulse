@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Map as MlMap } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-// Même fond de carte que la carte immersive /explore et /map (CartoDB Voyager,
+// Même fond de carte que la carte immersive /explore (CartoDB Voyager,
 // tuiles vectorielles réelles, gratuit, sans clé API).
 const CARTO_STYLE = "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json";
 

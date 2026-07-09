@@ -48,9 +48,9 @@ const SEARCH_INDEX: SearchEntry[] = [
     tags: ["bus", "transport", "ktel", "route", "λεωφορείο"],
   },
   {
-    title: { en: "Map of Crete", fr: "Carte de la Crète", de: "Karte von Kreta", el: "Χάρτης Κρήτης" },
-    path: "/map",
-    tags: ["map", "carte", "karte", "χάρτης", "location"],
+    title: { en: "Crete Explorer - Interactive Map", fr: "Explorateur de Crète - Carte Interactive", de: "Kreta Explorer - Interaktive Karte", el: "Εξερευνητής Κρήτης - Διαδραστικός Χάρτης" },
+    path: "/explore",
+    tags: ["map", "carte", "karte", "χάρτης", "location", "explore", "explorer"],
   },
   {
     title: { en: "FAQ About Crete", fr: "FAQ sur la Crète", de: "FAQ über Kreta", el: "Συχνές Ερωτήσεις Κρήτη" },
