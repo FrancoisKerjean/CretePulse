@@ -6,6 +6,7 @@ import { getAllHikes } from "@/lib/hikes";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { buildAlternates } from "@/lib/seo";
 import { MapView } from "@/components/map/MapView";
+import type { MapPOI } from "@/components/map/mapUtils";
 
 export const revalidate = 86400;
 
@@ -44,25 +45,25 @@ export default async function MapPage({ params }: { params: Promise<{ locale: st
     getAllHikes().catch(() => []),
   ]);
 
-  // Transform to POI format
-  const beachPOIs = beaches.filter(b => b.latitude && b.longitude).map(b => ({
-    id: b.id, name: getLocalizedField(b, "name", loc), type: "beach" as const,
-    lat: b.latitude, lng: b.longitude, slug: b.slug, extra: b.type || "",
+  // Transform to POI format (sub = valeur de sous-filtre par catégorie)
+  const beachPOIs: MapPOI[] = beaches.filter(b => b.latitude && b.longitude).map(b => ({
+    name: getLocalizedField(b, "name", loc), type: "beach" as const,
+    lat: b.latitude, lng: b.longitude, slug: b.slug, extra: b.type || "", sub: b.type || "",
   }));
 
-  const villagePOIs = villages.filter(v => v.latitude && v.longitude).map(v => ({
-    id: v.id, name: getLocalizedField(v, "name", loc), type: "village" as const,
-    lat: v.latitude, lng: v.longitude, slug: v.slug, extra: v.region || "",
+  const villagePOIs: MapPOI[] = villages.filter(v => v.latitude && v.longitude).map(v => ({
+    name: getLocalizedField(v, "name", loc), type: "village" as const,
+    lat: v.latitude, lng: v.longitude, slug: v.slug, extra: v.region || "", sub: v.period || "",
   }));
 
-  const foodPOIs = foodPlaces.filter(f => f.latitude && f.longitude).map(f => ({
-    id: f.id, name: f.name, type: "food" as const,
-    lat: f.latitude!, lng: f.longitude!, slug: f.slug, extra: f.cuisine || f.type || "",
+  const foodPOIs: MapPOI[] = foodPlaces.filter(f => f.latitude && f.longitude).map(f => ({
+    name: f.name, type: "food" as const,
+    lat: f.latitude!, lng: f.longitude!, slug: f.slug, extra: f.cuisine || f.type || "", sub: f.type || "",
   }));
 
-  const hikePOIs = hikes.filter(h => h.start_latitude && h.start_longitude).map(h => ({
-    id: h.id, name: getLocalizedField(h, "name", loc), type: "hike" as const,
-    lat: h.start_latitude!, lng: h.start_longitude!, slug: h.slug, extra: h.difficulty || "",
+  const hikePOIs: MapPOI[] = hikes.filter(h => h.start_latitude && h.start_longitude).map(h => ({
+    name: getLocalizedField(h, "name", loc), type: "hike" as const,
+    lat: h.start_latitude!, lng: h.start_longitude!, slug: h.slug, extra: h.difficulty || "", sub: h.difficulty || "",
   }));
 
   const titles: Record<string, string> = {

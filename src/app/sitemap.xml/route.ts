@@ -22,6 +22,7 @@ import { MONTHS, CITIES } from "@/lib/weather-monthly";
 import { CRETE_NEIGHBOURHOODS } from "@/lib/airbnb-mappings";
 import { CRETE_AIRPORTS } from "@/lib/airports";
 import { CAR_LOCATION_SLUGS } from "@/lib/car-locations";
+import { ACTIVITY_CATEGORIES, ACTIVITY_CITIES } from "@/lib/activity-taxonomy";
 
 export const revalidate = 86400;
 
@@ -49,6 +50,7 @@ const STATIC_PAGES = [
   "/buses/agios-nikolaos",
   "/near-me",
   "/car-rental",
+  "/activities",
   "/fire-alerts",
   "/airbnb",
   "/airport",
@@ -230,6 +232,12 @@ export async function GET() {
   // Car Rental Direct location hubs: high-intent airport and ferry pick-up
   // pages that feed the local quote wizard without query strings.
   for (const slug of CAR_LOCATION_SLUGS) push(`/car-rental/${slug}`, "monthly", 0.8);
+
+  // Activities verticale: catégorie hubs + hubs par ville.
+  for (const c of ACTIVITY_CATEGORIES) {
+    push(`/activities/${c.slug}`, "monthly", 0.8);
+    for (const city of ACTIVITY_CITIES) push(`/activities/${c.slug}/${city.slug}`, "monthly", 0.8);
+  }
 
   // Live utility: "where to swim today" (wind-aware daily pick, ISR 30 min).
   push("/beaches/today", "daily", 0.9);
