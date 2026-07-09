@@ -69,6 +69,17 @@ export async function getAllCbPlaces(): Promise<CbPlaceListItem[]> {
   return all;
 }
 
+// Slim variant for /explore: trims photos array to the first entry only.
+// The drawer fetches the full row via getCbPlaceBySlug (select *) on demand.
+// Reduces RSC payload by ~50–60% (photos[] is the dominant field by size).
+export async function getAllCbPlacesSlim(): Promise<CbPlaceListItem[]> {
+  const places = await getAllCbPlaces();
+  return places.map((p) => ({
+    ...p,
+    photos: p.photos && p.photos.length > 0 ? [p.photos[0]] : p.photos,
+  }));
+}
+
 export async function getCbPlaceBySlug(slug: string): Promise<CbPlace | null> {
   const { data, error } = await supabase
     .from("cb_places")
