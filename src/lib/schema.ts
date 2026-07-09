@@ -568,9 +568,13 @@ export function newsSchema(news: NewsItem, locale: Locale): Record<string, unkno
     datePublished: news.published_at,
     dateModified: news.published_at,
     articleSection: news.category || "News",
-    image: news.image_url
-      ? { "@type": "ImageObject", url: news.image_url, width: 1200, height: 630 }
-      : undefined,
+    image: {
+      "@type": "ImageObject",
+      // Fallback OG dynamique : Discover/Top Stories exigent une image >=1200px sur chaque article.
+      url: news.image_url || `${BASE_URL}/api/og?title=${encodeURIComponent(headline || "Crete Direct")}`,
+      width: 1200,
+      height: 630,
+    },
     author: {
       "@type": "Organization",
       name: "Crete Direct",

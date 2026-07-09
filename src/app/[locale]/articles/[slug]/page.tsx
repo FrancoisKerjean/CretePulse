@@ -3,7 +3,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { ChevronLeft, Clock, Calendar, BookOpen } from "lucide-react";
-import { buildAlternates } from "@/lib/seo";
+import { buildAlternates, INDEXABLE_ROBOTS } from "@/lib/seo";
 import {
   getGuideBySlug,
   getRelatedGuides,
@@ -18,6 +18,7 @@ import { getAutolinkIndex, autolinkHtml } from "@/lib/autolink";
 import type { Locale } from "@/lib/types";
 import { CATEGORY_LABELS, CATEGORY_COLORS } from "../articles-shared";
 import { breadcrumbSchema } from "@/lib/schema";
+import { sanitizeImageUrl } from "@/lib/beaches";
 import DiscoverCrete from "@/components/DiscoverCrete";
 import ReadingProgressBar from "@/components/ReadingProgressBar";
 import StickyNewsletterBar from "@/components/StickyNewsletterBar";
@@ -45,18 +46,24 @@ export async function generateMetadata({
   const title = getLocalizedGuideField(guide, "titles", locale);
   const description = getLocalizedGuideField(guide, "meta_descs", locale);
   const url = `${BASE_URL}/${locale}/articles/${slug}`;
+  // Discover exige une grande image sur CHAQUE article : fallback OG dynamique 1200x630.
+  // sanitizeImageUrl : des image_url .pdf/.djvu Wikimedia subsistent en base (poison connu).
+  const ogImage = sanitizeImageUrl(guide.image_url)
+    || `${BASE_URL}/api/og?title=${encodeURIComponent(title || "Crete Direct")}`;
   return {
     title,
     description,
     alternates: buildAlternates(locale, `/articles/${slug}`),
     // noindex EN-fallback locales (e.g. daily guides that exist only in EN) so 22
     // identical-content URLs don't cannibalise each other; keep follow for link equity.
-    robots: isGuideTranslated(guide, locale) ? undefined : { index: false, follow: true },
+    // INDEXABLE_ROBOTS (pas undefined) : une clé robots même undefined écrase
+    // le max-image-preview:large du layout, requis par Discover.
+    robots: isGuideTranslated(guide, locale) ? INDEXABLE_ROBOTS : { index: false, follow: true },
     openGraph: {
       title,
       description,
       url,
-      images: guide.image_url ? [{ url: guide.image_url, width: 1200, height: 630, alt: title }] : [],
+      images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
       type: "article",
       publishedTime: guide.published_at,
       authors: ["Crete Direct"],
@@ -67,7 +74,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title,
       description,
-      images: guide.image_url ? [guide.image_url] : [],
+      images: [ogImage],
       site: "@cretedirect",
     },
   };
@@ -135,9 +142,14 @@ function JsonLdSchemas({
     "@type": (guide.format as string) === "news" ? "NewsArticle" : "Article",
     headline: title,
     description,
-    image: guide.image_url
-      ? { "@type": "ImageObject", url: guide.image_url, width: 1200, height: 630 }
-      : undefined,
+    image: {
+      "@type": "ImageObject",
+      // Fallback OG dynamique : Discover/Top Stories exigent une image >=1200px sur chaque article.
+      url: sanitizeImageUrl(guide.image_url)
+        || `${BASE_URL}/api/og?title=${encodeURIComponent(title || "Crete Direct")}`,
+      width: 1200,
+      height: 630,
+    },
     datePublished: guide.published_at,
     dateModified:
       (guide as { updated_at?: string }).updated_at || guide.published_at,
@@ -288,6 +300,8 @@ export default async function ArticleDetailPage({
   const description = getLocalizedGuideField(guide, "meta_descs", loc);
   const content = getLocalizedGuideField(guide, "contents", loc);
   const faqs = getLocalizedFaqs(guide, loc);
+  // Poison connu : des image_url .pdf/.djvu Wikimedia subsistent en base.
+  const heroImage = sanitizeImageUrl(guide.image_url);
   const toc = extractToc(content);
   // Auto-link the first mention of known beaches/villages/hikes to their pages (in-body
   // internal links; the most-clicked + best-for-crawl link type, absent from auto articles).
@@ -341,10 +355,10 @@ export default async function ArticleDetailPage({
       />
 
       {/* Hero (PR2: editorial 60vh, category + Baloo H1 + dek) */}
-      {guide.image_url ? (
+      {heroImage ? (
         <header className="relative h-[60vh] min-h-[440px] max-h-[640px] bg-surface overflow-hidden">
           <img
-            src={guide.image_url}
+            src={heroImage}
             alt={title}
             className="w-full h-full object-cover"
           />

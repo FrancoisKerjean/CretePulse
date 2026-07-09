@@ -61,6 +61,15 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     robots: {
       index: true,
       follow: true,
+      // Google Discover n'affiche une grande image (condition de sélection)
+      // que si max-image-preview:large est explicitement autorisé.
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
+      },
     },
   };
 }
