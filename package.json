@@ -28,6 +28,7 @@
     "check:da": "node scripts/check-da.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
     "check": "npm run check:geo && npm run check:car-partners && npm run check:car-lead && npm run check:car-admin && npm run check:car-monitoring && npm run check:bus-select && npm run check:stop-departures && npm run check:projet-copy && npm run check:projet-lead && npm run check:da && npm run check:i18n && tsc --noEmit",
+    "seed:activity-catalog": "node scripts/seed-activity-catalog.mjs",
     "test:affiliate": "node --test --experimental-strip-types src/lib/affiliate.test.ts"
   },
   "dependencies": {
