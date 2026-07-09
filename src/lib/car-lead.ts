@@ -79,7 +79,10 @@ export function validateCarLead(body: Record<string, unknown>): CarLeadResult {
   }
   const timeFrom = str(body.timeFrom);
   const timeTo = str(body.timeTo);
-  if (dateTo === dateFrom && isTime(timeFrom) && isTime(timeTo) && timeTo <= timeFrom) {
+  if (!isTime(timeFrom) || !isTime(timeTo)) {
+    return { kind: "error", status: 422, error: "Invalid times" };
+  }
+  if (dateTo === dateFrom && timeTo <= timeFrom) {
     return { kind: "error", status: 422, error: "Invalid times" };
   }
 

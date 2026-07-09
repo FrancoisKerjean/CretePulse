@@ -9,7 +9,7 @@ const ok = (n, c) => { console.log(c ? `ok - ${n}` : `FAIL - ${n}`); if (!c) fai
 const valid = {
   pickup: "chania", carType: "compact", email: "Jane@Example.com ", name: "  Jane  ",
   dateFrom: "2026-07-01", dateTo: "2026-07-08", locale: "fr",
-  timeFrom: "10:00", flightNo: "A3 123", pax: 3, phone: "+30 555", note: "x", source: "airport",
+  timeFrom: "10:00", timeTo: "18:00", flightNo: "A3 123", pax: 3, phone: "+30 555", note: "x", source: "airport",
 };
 
 ok("honeypot rempli -> kind honeypot (avant toute validation)",
@@ -25,6 +25,18 @@ ok("carType inconnu -> 422", validateCarLead({ ...valid, carType: "spaceship" })
 
 ok("date mal formée -> 422 'Invalid dates'", (() => { const x = validateCarLead({ ...valid, dateFrom: "01/07/2026" }); return x.kind === "error" && x.error === "Invalid dates"; })());
 ok("dateTo < dateFrom -> 422 'Invalid dates'", validateCarLead({ ...valid, dateTo: "2026-06-01" }).error === "Invalid dates");
+ok("heure d'arrivée manquante -> 422 'Invalid times'", (() => {
+  const x = validateCarLead({ ...valid, timeFrom: undefined, timeTo: "17:00" });
+  return x.kind === "error" && x.error === "Invalid times";
+})());
+ok("heure de retour manquante -> 422 'Invalid times'", (() => {
+  const x = validateCarLead({ ...valid, timeFrom: "09:00", timeTo: undefined });
+  return x.kind === "error" && x.error === "Invalid times";
+})());
+ok("heure mal formée -> 422 'Invalid times'", (() => {
+  const x = validateCarLead({ ...valid, timeFrom: "9am", timeTo: "17:00" });
+  return x.kind === "error" && x.error === "Invalid times";
+})());
 ok("même jour avec retour avant prise en charge -> 422 'Invalid times'", (() => {
   const x = validateCarLead({ ...valid, dateFrom: "2026-09-25", dateTo: "2026-09-25", timeFrom: "17:40", timeTo: "02:40" });
   return x.kind === "error" && x.error === "Invalid times";
