@@ -58,6 +58,17 @@ export async function generateMetadata({
   };
 }
 
+// Maillage interne vers la carte /explore. Vérifié 09/07 : les villages n'ont
+// PAS d'équivalent cb_places (0/28 par slug ou nom, 2/28 par GPS <= 1.5 km),
+// donc pas d'URL canonique /explore/[slug] possible → carte centrée ?lat&lng&z
+// (params supportés par l'init MapLibre d'ExploreView).
+const VIEW_ON_MAP: Record<string, string> = {
+  en: "View on the map",
+  fr: "Voir sur la carte",
+  de: "Auf der Karte ansehen",
+  el: "Δείτε στον χάρτη",
+};
+
 const PERIOD_LABEL: Record<string, string> = {
   minoan: "Minoan era",
   venetian: "Venetian era",
@@ -190,15 +201,23 @@ export default async function VillageDetailPage({
           </div>
         )}
 
-        {/* Map link */}
-        <a
-          href={`https://www.google.com/maps?q=${village.latitude},${village.longitude}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-sea text-white rounded-lg text-sm font-medium hover:bg-sea-light transition-colors mb-12"
-        >
-          <MapPin className="w-4 h-4" /> Open in Google Maps
-        </a>
+        {/* Map links : Google Maps externe + carte interne /explore centrée */}
+        <div className="flex flex-wrap gap-3 mb-12">
+          <a
+            href={`https://www.google.com/maps?q=${village.latitude},${village.longitude}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-sea text-white rounded-lg text-sm font-medium hover:bg-sea-light transition-colors"
+          >
+            <MapPin className="w-4 h-4" /> Open in Google Maps
+          </a>
+          <Link
+            href={`/${locale}/explore?lat=${village.latitude}&lng=${village.longitude}&z=13`}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white text-sea border border-sea/30 rounded-lg text-sm font-medium hover:border-sea transition-colors"
+          >
+            <MapPin className="w-4 h-4" /> {VIEW_ON_MAP[locale] ?? VIEW_ON_MAP.en}
+          </Link>
+        </div>
 
         {/* Monetisation: village intent to Car Rental Direct. */}
         <div className="mb-12">

@@ -750,7 +750,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
                   </p>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     <Link
-                      href={`/explore?place=${p.slug}`}
+                      href={`/explore/${p.slug}`}
                       onClick={() => track("synthesis_place_clicked", { slug: p.slug })}
                       className="rounded-full bg-surface px-3 py-1.5 font-heading text-[12px] font-bold text-sea no-underline"
                     >
@@ -966,7 +966,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
             {likedPlaces.map((p) => (
               <Link
                 key={p.slug}
-                href={`/explore?place=${p.slug}`}
+                href={`/explore/${p.slug}`}
                 className="block shrink-0 no-underline"
                 title={p.name}
               >
@@ -1021,7 +1021,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
                   {match.rating != null && match.rating > 0 ? ` · ${match.rating.toFixed(1)} ★` : ""}
                 </p>
                 <Link
-                  href={`/explore?place=${match.slug}`}
+                  href={`/explore/${match.slug}`}
                   onClick={() => {
                     track("match_clicked", { slug: match.slug });
                     // Marquer le lieu comme vu avant la navigation, sinon le slug

@@ -4,12 +4,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Star, X, MapPin, Search, ChevronLeft, ChevronRight, ChevronUp,
   SlidersHorizontal, Waves, Mountain, Home, Landmark, TreePine, Sparkles, Car,
-  Layers, Bus, Timer,
+  Layers, Bus, Timer, ArrowUpRight,
 } from "lucide-react";
 import { ImpressionTracker } from "@/components/ui/ImpressionTracker";
-import type { CbPlaceListItem, CbPlace } from "@/lib/cb-places";
+import type { CbPlaceSlim, CbPlacesPacked, CbPlace } from "@/lib/cb-places";
 import { WaterQualityBadge } from "@/components/WaterQualityBadge";
-import { getCbPlaceBySlug } from "@/lib/cb-places";
+import { getCbPlaceBySlug, unpackCbPlaces } from "@/lib/cb-places";
 import { getSponsorCards, isSponsorSlug, sponsoredLabel, sponsorDescription } from "@/lib/sponsored-places";
 import { isAffiliateSlug, partnerLabel, affiliateDescription, type AffiliatePlace } from "@/lib/affiliate-places";
 import { typeLabel } from "@/lib/cb-type-labels";
@@ -20,6 +20,8 @@ import {
   circlePolygon as circleFeature,
 } from "@/components/map/mapUtils";
 import { cleanCbDescription } from "@/lib/cb-place-helpers";
+import { activityCtaFor } from "@/lib/activity-cta";
+import { categoryLabel, cityLabel } from "@/lib/activity-taxonomy";
 import { useGeoPosition } from "@/components/geo/useGeoPosition";
 import Image from "next/image";
 import Link from "next/link";
@@ -106,6 +108,7 @@ const T: Record<string, Record<string, string>> = {
     satellite: "Satellite", busLayer: "Bus stops", driveTime: "Drive time",
     driveLegend: "15 / 30 / 60 min drive (approx.)",
     noSearchResults: "No results", searchOnMap: "Press Enter to search the map",
+    activitiesCta: "Book an activity",
   },
   fr: {
     search: "Chercher un lieu...", results: "lieux", rating: "Note min.",
@@ -122,6 +125,7 @@ const T: Record<string, Record<string, string>> = {
     satellite: "Satellite", busLayer: "Arrêts de bus", driveTime: "Temps de route",
     driveLegend: "15 / 30 / 60 min de route (approx.)",
     noSearchResults: "Aucun résultat", searchOnMap: "Entrée pour chercher sur la carte",
+    activitiesCta: "Réserver une activité",
   },
   de: {
     search: "Ort suchen...", results: "Orte", rating: "Min. Bewertung",
@@ -138,6 +142,7 @@ const T: Record<string, Record<string, string>> = {
     satellite: "Satellit", busLayer: "Bushaltestellen", driveTime: "Fahrzeit",
     driveLegend: "15 / 30 / 60 Min. Fahrt (ca.)",
     noSearchResults: "Keine Ergebnisse", searchOnMap: "Enter: auf der Karte suchen",
+    activitiesCta: "Aktivität buchen",
   },
   el: {
     search: "Αναζήτηση τοποθεσίας...", results: "μέρη", rating: "Ελάχ. βαθμολογία",
@@ -154,6 +159,7 @@ const T: Record<string, Record<string, string>> = {
     satellite: "Δορυφόρος", busLayer: "Στάσεις λεωφορείων", driveTime: "Χρόνος οδήγησης",
     driveLegend: "15 / 30 / 60 λεπτά οδήγησης (περίπου)",
     noSearchResults: "Κανένα αποτέλεσμα", searchOnMap: "Enter: αναζήτηση στον χάρτη",
+    activitiesCta: "Κράτηση δραστηριότητας",
   },
 };
 
@@ -187,7 +193,7 @@ function readInitialParams() {
   return new URLSearchParams(window.location.search);
 }
 
-function detectPrefecture(p: CbPlaceListItem): string | null {
+function detectPrefecture(p: { prefecture: string | null }): string | null {
   const txt = p.prefecture || "";
   for (const pref of PREFECTURES) if (txt.includes(pref)) return pref;
   return null;
@@ -208,14 +214,17 @@ function RatingStars({ rating }: { rating: number | null }) {
 }
 
 export function ExploreView({
-  places,
+  places: packedPlaces,
   affiliatePlaces = [],
   locale,
 }: {
-  places: CbPlaceListItem[];
+  // Format packé (tuples + tables de dédup) : ~2300 lieux traversent la
+  // frontière RSC → le poids du flight compte. Déballé une fois au mount.
+  places: CbPlacesPacked;
   affiliatePlaces?: AffiliatePlace[];
   locale: string;
 }) {
+  const places = useMemo(() => unpackCbPlaces(packedPlaces), [packedPlaces]);
   const t = T[locale] || T.en;
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MaplibreMap | null>(null);
@@ -332,7 +341,7 @@ export function ExploreView({
   // Les affiliés DB sont fusionnés ici et réutilisent exactement le même marqueur ambre,
   // le même gating zoom ≥ 9 et le même drawer. Dédup : si un slug de base apparaît des
   // deux côtés, l'affilié DB gagne (filtre sur les slugs JSON).
-  const sponsorItems: Array<CbPlaceListItem & { __sponsorUrl: string }> = useMemo(() => {
+  const sponsorItems: Array<CbPlaceSlim & { __sponsorUrl: string }> = useMemo(() => {
     // Slugs de base des affiliés DB (ex. "jmp-chania-tours") → utilisés pour filtrer le JSON.
     // Invariant : affiliates.slug (sans préfixe) doit correspondre au sponsored-places.json `id`
     // pour que le dédup se déclenche ; en cas de match, l'affilié DB gagne.
@@ -354,11 +363,7 @@ export function ExploreView({
         prefecture: c.prefecture ?? null,
         water_color: null,
         sand_type: null,
-        depth: null,
-        sea_surface: null,
         crowds: null,
-        facilities: null,
-        accessibility: null,
         photos: [c.photo],
         photo_count: 1,
         water_quality: null,
@@ -368,7 +373,7 @@ export function ExploreView({
     return [...fromJson, ...affiliatePlaces];
   }, [affiliatePlaces]);
 
-  const base: Array<CbPlaceListItem & { km?: number }> = useMemo(
+  const base: Array<CbPlaceSlim & { km?: number }> = useMemo(
     () =>
       nearActive && geo.pos
         ? nearestBy(
@@ -380,7 +385,7 @@ export function ExploreView({
         : [...filtered].sort((a, b) => {
             // Note ponderee par le nombre de photos : un 4.8 bien documente
             // passe devant un 5.0 obscur a 1 photo.
-            const score = (p: CbPlaceListItem) =>
+            const score = (p: CbPlaceSlim) =>
               (p.rating ?? 0) + Math.min(p.photo_count ?? 0, 20) * 0.02;
             return score(b) - score(a);
           }),
@@ -405,12 +410,12 @@ export function ExploreView({
   // - Sponsors payants (JSON, slug "sponsor:") : gardent la priorité de tête (modèle payant).
   // - Affiliés DB (slug "affiliate:") : triés par distance avec le reste du contenu.
   //   Leur `km` est calculé ici pour s'intégrer dans le sort sans inventer de nouveau mécanisme.
-  const displayed: Array<CbPlaceListItem & { km?: number; __sponsorUrl?: string }> = useMemo(() => {
+  const displayed: Array<CbPlaceSlim & { km?: number; __sponsorUrl?: string }> = useMemo(() => {
     const visiblePaidSponsors = visibleSponsors.filter((s) => !isAffiliateSlug(s.slug));
     const visibleAffiliates = visibleSponsors.filter((s) => isAffiliateSlug(s.slug));
 
     // Calculer les km pour les affiliés (même logique que base en mode nearActive).
-    const affiliatesWithKm: Array<CbPlaceListItem & { km?: number; __sponsorUrl?: string }> =
+    const affiliatesWithKm: Array<CbPlaceSlim & { km?: number; __sponsorUrl?: string }> =
       visibleAffiliates.map((a) => {
         if (a.latitude != null && a.longitude != null && geo.pos) {
           return { ...a, km: haversineKm([a.latitude, a.longitude], [geo.pos.lat, geo.pos.lon]) };
@@ -421,7 +426,7 @@ export function ExploreView({
     // Fusionner affiliés et base, puis trier :
     //   - Geo/near mode : mélanger affiliés+base triés par distance (km croissant).
     //   - Non-geo mode : base d'abord (trié par score), affiliés APRÈS — jamais en tête.
-    const sorted: Array<CbPlaceListItem & { km?: number; __sponsorUrl?: string }> =
+    const sorted: Array<CbPlaceSlim & { km?: number; __sponsorUrl?: string }> =
       nearActive && geo.pos
         ? [...affiliatesWithKm, ...base].sort((a, b) => (a.km ?? Infinity) - (b.km ?? Infinity))
         : [...base, ...affiliatesWithKm];
@@ -958,6 +963,9 @@ export function ExploreView({
     setSelectedLoading(true);
     setSelected(base ? ({ ...base, description: null, meta_description: null, other_info: null, source_url: null } as CbPlace) : null);
     const full = await getCbPlaceBySlug(slug);
+    // L'utilisateur a pu changer de fiche pendant le fetch : une réponse
+    // périmée ne doit pas écraser la sélection courante.
+    if (selectedSlugRef.current !== slug) return;
     if (full) setSelected(full);
     setSelectedLoading(false);
     if (base?.latitude != null && base?.longitude != null) {
@@ -1083,7 +1091,7 @@ export function ExploreView({
   // Utilise <Link> pour rendre le href crawlable par Google (Fix SEO #2),
   // tout en preservant le comportement interactif existant (drawer + carte)
   // via e.preventDefault() dans le onClick.
-  function PlaceRow({ p }: { p: CbPlaceListItem & { km?: number; __sponsorUrl?: string } }) {
+  function PlaceRow({ p }: { p: CbPlaceSlim & { km?: number; __sponsorUrl?: string } }) {
     const spo = isSponsorSlug(p.slug);
     const aff = isAffiliateSlug(p.slug);
     const isCommercial = spo || aff;
@@ -1558,6 +1566,33 @@ export function ExploreView({
                   locale={locale}
                   compact
                 />
+                {/* CTA contextuel vers la verticale /activities (wizard multi-devis) :
+                    plage/île → bateau, gorge/nature → rando, ville → food tour,
+                    ville de départ = la plus proche des 5 servies. Pas de mapping
+                    pertinent (culture, activity) = pas de CTA. */}
+                {(() => {
+                  const cta = activityCtaFor(selected.place_type, selected.latitude, selected.longitude);
+                  if (!cta) return null;
+                  return (
+                    <Link
+                      href={`/${locale}/activities/${cta.category}/${cta.city}#wizard`}
+                      onClick={() => {
+                        window.plausible?.("explore_activities_cta", {
+                          props: { category: cta.category, city: cta.city, place: selected.slug },
+                        });
+                      }}
+                      className="mt-2 flex items-center justify-between gap-2 rounded-xl border-[1.5px] border-sea/15 bg-surface px-3 py-2 no-underline hover:border-sea/50 transition-colors"
+                    >
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-sea">
+                        <Sparkles className="w-3.5 h-3.5" /> {t.activitiesCta}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-xs text-text-muted">
+                        {categoryLabel(cta.category, locale)} · {cityLabel(cta.city, locale)}
+                        <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
+                      </span>
+                    </Link>
+                  );
+                })()}
               </div>
             )}
 
@@ -1601,7 +1636,7 @@ export function ExploreView({
   );
 }
 
-function uniqueValues(places: CbPlaceListItem[], field: "sand_type" | "water_color" | "crowds"): string[] {
+function uniqueValues(places: CbPlaceSlim[], field: "sand_type" | "water_color" | "crowds"): string[] {
   const set = new Set<string>();
   for (const p of places) {
     for (const part of (p[field] || "").split(",")) {
