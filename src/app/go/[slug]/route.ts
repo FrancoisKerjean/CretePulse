@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { findActiveBySlug, insertClick } from "@/lib/affiliate-store";
 import { hashIp } from "@/lib/affiliate";
+import { leavingPage } from "@/lib/leaving-page";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,5 +30,17 @@ export async function GET(request: NextRequest, ctx: { params: Promise<{ slug: s
     console.error("[go] click log failed:", e);
   }
 
-  return NextResponse.redirect(affiliate.redirect_url, 302);
+  // Interstitial exit page instead of an immediate 302. The affiliate self-serve
+  // lets anyone register an arbitrary redirect_url, so a bare redirect would let
+  // crete.direct's reputation be borrowed for phishing. Showing the destination
+  // domain before leaving neutralises that (standard exit-interstitial pattern).
+  const html = leavingPage(affiliate.redirect_url);
+  return new NextResponse(html, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store",
+      "Referrer-Policy": "no-referrer",
+    },
+  });
 }
