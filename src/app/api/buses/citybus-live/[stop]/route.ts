@@ -6,11 +6,15 @@ export const maxDuration = 10;
 
 /**
  * Proxy des prochaines arrivées temps réel pour un arrêt du réseau citybus.gr
- * (Heraklion ou Chania). Source : rest.citybus.gr/api/v1/el/{agency}/stops/live/{stopCode}.
+ * (Heraklion ou Chania). Source : rest.citybus.gr/api/v1/{lang}/{agency}/stops/live/{stopCode}.
+ * Réponse upstream : { vehicles: [{ lineCode, lineName, routeCode, routeName,
+ *   latitude, longitude, departureMins, departureSeconds, vehicleCode,
+ *   lineColor, lineTextColor, borderColor }] } — 404 si arrêt sans passage.
  *
  * Paramètres :
- *   - [stop]  : code API natif de l'arrêt (ex: "500", depuis bus_stops.api_code)
+ *   - [stop]  : code API natif de l'arrêt (ex: "0122", depuis bus_stops.api_code)
  *   - ?city   : "her" (Heraklion, agency 110) | "cha" (Chania, agency 120)
+ *   - ?lang   : "en" (défaut) | "el" — langue des noms de ligne/destination
  *
  * Réponse : { arrivals: CityBusArrival[] }
  * Fallback : { arrivals: [] } (jamais de 500)
@@ -56,6 +60,7 @@ async function fetchToken(subdomain: string): Promise<string> {
 
 export interface CityBusArrival {
   lineCode: string;
+  lineName: string;
   routeCode: string;
   routeName: string;
   color: string | null;
@@ -69,15 +74,16 @@ async function fetchArrivals(
   agency: string,
   subdomain: string,
   stopCode: string,
+  lang: "en" | "el",
 ): Promise<CityBusArrival[]> {
-  const cacheKey = `${agency}:${stopCode}`;
+  const cacheKey = `${agency}:${stopCode}:${lang}`;
   const cached = arrivalsCache[cacheKey];
   if (cached && Date.now() - cached.ts < CACHE_ARRIVALS_MS) {
     return cached.data as CityBusArrival[];
   }
 
   const token = await fetchToken(subdomain);
-  const url = `${API_BASE}/el/${agency}/stops/live/${stopCode}`;
+  const url = `${API_BASE}/${lang}/${agency}/stops/live/${stopCode}`;
   const ctrl = new AbortController();
   const to = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
   try {
@@ -121,25 +127,28 @@ async function fetchArrivals(
 }
 
 function parseArrivals(raw: unknown): CityBusArrival[] {
-  if (!Array.isArray(raw)) return [];
+  // Réponse upstream : { vehicles: [...] }
+  const vehicles = (raw as { vehicles?: unknown })?.vehicles;
+  if (!Array.isArray(vehicles)) return [];
   const out: CityBusArrival[] = [];
-  for (const item of raw) {
+  for (const item of vehicles) {
     if (!item || typeof item !== "object") continue;
     const r = item as Record<string, unknown>;
-    const etaMin = Number(r.departureMins ?? r.etaMin ?? 0);
-    const etaSec = Number(r.departureSeconds ?? r.etaSec ?? 0);
+    const etaMin = Number(r.departureMins);
     if (!Number.isFinite(etaMin)) continue;
     out.push({
-      lineCode: String(r.lineCode ?? r.line_code ?? ""),
-      routeCode: String(r.routeCode ?? r.route_code ?? ""),
-      routeName: String(r.routeName ?? r.route_name ?? ""),
-      color: r.color ? String(r.color) : null,
-      textColor: r.textColor ? String(r.textColor) : null,
+      lineCode: String(r.lineCode ?? ""),
+      lineName: String(r.lineName ?? ""),
+      routeCode: String(r.routeCode ?? ""),
+      routeName: String(r.routeName ?? ""),
+      color: r.lineColor ? String(r.lineColor) : null,
+      textColor: r.lineTextColor ? String(r.lineTextColor) : null,
       etaMin: Math.max(0, Math.round(etaMin)),
-      etaSec: Math.max(0, Math.round(etaSec)),
+      etaSec: Math.max(0, Math.round(Number(r.departureSeconds) || 0)),
       vehicleCode: r.vehicleCode ? String(r.vehicleCode) : null,
     });
   }
+  out.sort((a, b) => a.etaMin - b.etaMin || a.etaSec - b.etaSec);
   return out.slice(0, 20); // borne: 20 passages max
 }
 
@@ -149,12 +158,13 @@ export async function GET(
 ) {
   const { stop } = await params;
   const city = req.nextUrl.searchParams.get("city") ?? "";
+  const lang = req.nextUrl.searchParams.get("lang") === "el" ? "el" : "en";
   const cfg = CITY_CONFIG[city];
   if (!cfg || !stop || !/^\d+$/.test(stop)) {
     return NextResponse.json({ arrivals: [] }, { status: 400 });
   }
   try {
-    const arrivals = await fetchArrivals(cfg.agency, cfg.subdomain, stop);
+    const arrivals = await fetchArrivals(cfg.agency, cfg.subdomain, stop, lang);
     return NextResponse.json(
       { arrivals },
       { headers: { "Cache-Control": "public, max-age=10, s-maxage=10" } },

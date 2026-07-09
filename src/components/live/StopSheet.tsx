@@ -72,9 +72,10 @@ export function StopSheet({ stopName, stopApiCode, city, lineColor, locale, onCl
   useEffect(() => {
     ref.current?.focus();
     let cancelled = false;
+    const lang = locale === "el" ? "el" : "en";
     async function load() {
       try {
-        const r = await fetch(`/api/buses/citybus-live/${stopApiCode}?city=${city}`, { cache: "no-store" });
+        const r = await fetch(`/api/buses/citybus-live/${stopApiCode}?city=${city}&lang=${lang}`, { cache: "no-store" });
         if (!r.ok || cancelled) { setError(true); return; }
         const data = (await r.json()) as { arrivals?: CityBusArrival[] };
         if (!cancelled) setArrivals(data.arrivals ?? []);
@@ -84,7 +85,7 @@ export function StopSheet({ stopName, stopApiCode, city, lineColor, locale, onCl
     }
     load();
     return () => { cancelled = true; };
-  }, [stopApiCode, city]);
+  }, [stopApiCode, city, locale]);
 
   return (
     <div
