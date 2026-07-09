@@ -17,8 +17,23 @@ const AREA_LABELS: Record<string, string> = {
   other: "Other / island-wide",
 };
 
+const SUB_CATEGORY_OPTIONS = [
+  { value: "food_tours", label: "Food & wine tours" },
+  { value: "boat_trips", label: "Boat trips" },
+  { value: "hiking", label: "Hiking & nature" },
+  { value: "other", label: "Other" },
+] as const;
+
+const ACTIVITY_CATEGORIES_IDS = ["activity", "tour"] as const;
+type ActivityCategoryId = (typeof ACTIVITY_CATEGORIES_IDS)[number];
+
+function isActivityCategory(cat: string): cat is ActivityCategoryId {
+  return (ACTIVITY_CATEGORIES_IDS as readonly string[]).includes(cat);
+}
+
 export default function SignupForm() {
   const [category, setCategory] = useState("hotel");
+  const [subCategory, setSubCategory] = useState("food_tours");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<Success | null>(null);
@@ -29,9 +44,10 @@ export default function SignupForm() {
     setSubmitting(true);
     setError(null);
     const fd = new FormData(e.currentTarget);
-    const payload = {
+    const catValue = String(fd.get("category") ?? "");
+    const payload: Record<string, unknown> = {
       name: fd.get("name"),
-      category: fd.get("category"),
+      category: catValue,
       category_other: fd.get("category_other"),
       area: fd.get("area"),
       email: fd.get("email"),
@@ -39,6 +55,9 @@ export default function SignupForm() {
       website: fd.get("website"), // honeypot
       accept: fd.get("accept") === "on",
     };
+    if (isActivityCategory(catValue)) {
+      payload.sub_category = fd.get("sub_category");
+    }
     try {
       const res = await fetch("/api/affiliate/register", {
         method: "POST",
@@ -103,7 +122,7 @@ export default function SignupForm() {
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-text mb-1">Category</label>
-          <select name="category" value={category} onChange={(e) => setCategory(e.target.value)}
+          <select name="category" value={category} onChange={(e) => { setCategory(e.target.value); setSubCategory("food_tours"); }}
             className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-text focus:outline-none focus:border-lagoon focus:ring-2 focus:ring-lagoon/30 transition-colors">
             {CATEGORIES.map((c) => (
               <option key={c.id} value={c.id}>{c.label}</option>
@@ -119,6 +138,18 @@ export default function SignupForm() {
           </select>
         </div>
       </div>
+
+      {isActivityCategory(category) && (
+        <div>
+          <label className="block text-sm font-medium text-text mb-1">Activity type</label>
+          <select name="sub_category" required value={subCategory} onChange={(e) => setSubCategory(e.target.value)}
+            className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-text focus:outline-none focus:border-lagoon focus:ring-2 focus:ring-lagoon/30 transition-colors">
+            {SUB_CATEGORY_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {category === "other" && (
         <div>
