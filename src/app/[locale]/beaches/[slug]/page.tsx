@@ -1,4 +1,6 @@
-import { getBeachBySlug, getNearbyBeaches } from "@/lib/beaches";
+import { getBeachBySlug, getNearbyBeaches, getBeachesByRegion } from "@/lib/beaches";
+import { getCrowdScore, quieterAlternatives } from "@/lib/beach-crowd";
+import { CrowdBadge, QuieterAlternatives } from "@/components/beaches/BeachCrowd";
 import { getCbBeachNear } from "@/lib/cb-beach-match";
 import {
   SAND_LABELS, WATER_LABELS, DEPTH_LABELS, CROWD_LABELS, SEA_LABELS,
@@ -23,6 +25,8 @@ import { nearestBy } from "@/lib/geo";
 import { getBathingWaterQuality } from "@/lib/bathing-water";
 import { WaterQualityBadge, wqStatusLabel } from "@/components/WaterQualityBadge";
 import { ShareBar } from "@/components/ShareBar";
+import { BeachConditionsLive } from "@/components/beaches/BeachConditionsLive";
+import { BeachBusBlock } from "@/components/beaches/BeachBusBlock";
 
 export const revalidate = 172800; // 03/07 optim couts Vercel (48h, ISR Writes)
 
@@ -267,10 +271,13 @@ export default async function BeachDetailPage({
   const beach = await getBeachBySlug(slug);
   if (!beach) notFound();
 
-  const [nearby, cb] = await Promise.all([
+  const [nearby, cb, regionBeaches] = await Promise.all([
     getNearbyBeaches(beach.latitude, beach.longitude, beach.slug),
     getCbBeachNear(beach.latitude, beach.longitude),
+    getBeachesByRegion(beach.region),
   ]);
+  const crowd = getCrowdScore(beach.slug);
+  const quieter = quieterAlternatives(beach, regionBeaches);
   const name = getLocalizedField(beach, "name", loc);
   const description = getLocalizedField(beach, "description", loc);
 
@@ -492,6 +499,9 @@ export default async function BeachDetailPage({
           </div>
         </div>
 
+        {/* Conditions du jour (client, API cache CDN 30 min : la page reste ISR 48 h) */}
+        <BeachConditionsLive slug={beach.slug} locale={locale} />
+
         {/* Qualité de l'eau de baignade (UE, source AEE) */}
         {waterQuality && (
           <div className="mb-8 max-w-sm">
@@ -521,11 +531,13 @@ export default async function BeachDetailPage({
               <Waves className="w-4 h-4" /> {seaL}
             </span>
           )}
-          {crowdsL && (
+          {crowd ? (
+            <CrowdBadge crowd={crowd} locale={locale} />
+          ) : crowdsL ? (
             <span className="inline-flex items-center gap-1 text-sm bg-surface px-3 py-1 rounded-full">
               {crowdsL}
             </span>
-          )}
+          ) : null}
           {cb?.rating != null && cb.rating > 0 && (
             <span className="inline-flex items-center gap-1 text-sm bg-amber-50 text-amber-800 px-3 py-1 rounded-full font-medium">
               ★ {cb.rating.toFixed(1)}/5
@@ -564,6 +576,9 @@ export default async function BeachDetailPage({
           </Link>
         </div>
 
+        {/* Y aller en bus (arrêt physique + réseau urbain + pages horaires KTEL) */}
+        <BeachBusBlock lat={beach.latitude} lng={beach.longitude} locale={locale} />
+
         {/* FAQ */}
         <section className="mb-12">
           <h2 className="text-xl font-bold text-sea mb-4">FAQ</h2>
@@ -595,6 +610,10 @@ export default async function BeachDetailPage({
             />
           );
         })()}
+
+        {/* Alternatives plus calmes (même région, score d'affluence bien inférieur) :
+            angle redistribution des flux, n'apparaît que sur les plages moderate/busy */}
+        <QuieterAlternatives alternatives={quieter} locale={locale} />
 
         {/* Nearby beaches */}
         {nearby.length > 0 && (

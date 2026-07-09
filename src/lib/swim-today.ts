@@ -130,7 +130,7 @@ export interface SwimToday {
   scored: ScoredBeach[];
 }
 
-interface StopRow {
+export interface StopRow {
   name: string;
   lat: number | null;
   lng: number | null;
@@ -149,7 +149,7 @@ function nearestStop(beach: Beach, stops: StopRow[]): NearestBusStop | null {
   return best;
 }
 
-function scoreBeach(
+export function scoreBeach(
   beach: Beach,
   cities: CityWeather[],
   stops: StopRow[],

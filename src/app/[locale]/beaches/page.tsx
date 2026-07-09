@@ -9,6 +9,8 @@ import { BeachImage } from "@/components/BeachImage";
 import { JsonLd } from "@/components/JsonLd";
 import { getBathingWaterQuality } from "@/lib/bathing-water";
 import { WaterQualityBadge } from "@/components/WaterQualityBadge";
+import { getCrowdScore } from "@/lib/beach-crowd";
+import { BeachesLiveNow } from "@/components/beaches/BeachesLiveNow";
 
 const REGION_LABELS: Record<Locale, Record<string, string>> = {
   en: { east: "east Crete", west: "west Crete", central: "central Crete", south: "south Crete" },
@@ -31,6 +33,19 @@ const BEACHES_LABELS: Record<Locale, { subtitle: string; parking: string; kidsOk
   fr: { subtitle: "plages avec conditions en temps réel", parking: "Parking", kidsOk: "Enfants OK", coming: "500+ plages à venir. Données en cours de chargement." },
   de: { subtitle: "Strände mit Echtzeitbedingungen", parking: "Parkplatz", kidsOk: "Kinder OK", coming: "500+ Strände demnächst. Daten werden geladen." },
   el: { subtitle: "παραλίες με συνθήκες σε πραγματικό χρόνο", parking: "Πάρκινγκ", kidsOk: "Παιδιά OK", coming: "500+ παραλίες σύντομα. Τα δεδομένα φορτώνονται." },
+};
+
+// Affluence estimée (JSON précalculé lib/beach-crowd) : libellés courts des cartes.
+const CROWD_LABELS: Record<Locale, Record<string, string>> = {
+  en: { quiet: "quiet", moderate: "moderate", busy: "busy" },
+  fr: { quiet: "calme", moderate: "modérée", busy: "fréquentée" },
+  de: { quiet: "ruhig", moderate: "mäßig", busy: "voll" },
+  el: { quiet: "ήσυχη", moderate: "μέτρια", busy: "πολυσύχναστη" },
+};
+const CROWD_STYLES: Record<string, string> = {
+  quiet: "bg-emerald-50 text-emerald-800",
+  moderate: "bg-amber-50 text-amber-800",
+  busy: "bg-red-50 text-red-800",
 };
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
@@ -63,6 +78,7 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
   const regionLabels = REGION_LABELS[loc] ?? REGION_LABELS.en;
   const typeLabels = TYPE_LABELS[loc] ?? TYPE_LABELS.en;
   const beachesLabels = BEACHES_LABELS[loc] ?? BEACHES_LABELS.en;
+  const crowdLabels = CROWD_LABELS[loc] ?? CROWD_LABELS.en;
 
   let beaches: Awaited<ReturnType<typeof getAllBeaches>> = [];
   try {
@@ -116,9 +132,14 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
           <span className="shrink-0 text-lagoon font-extrabold">·</span>
         </Link>
 
+        {/* Classement vivant du moment par zone (client, API cache CDN 30 min :
+            le hub reste en ISR 24 h) */}
+        <BeachesLiveNow locale={locale} />
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
           {beaches.map((beach) => {
             const wq = getBathingWaterQuality(beach.latitude, beach.longitude, beach.name_en);
+            const crowd = getCrowdScore(beach.slug);
             return (
             <Link
               key={beach.slug}
@@ -142,6 +163,11 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
                 </div>
                 <div className="flex flex-wrap items-center gap-2 mt-3">
                   {wq && <WaterQualityBadge wq={wq} locale={locale} variant="pill" />}
+                  {crowd && (
+                    <span className={`inline-flex items-center text-xs px-2 py-0.5 rounded-full ${CROWD_STYLES[crowd.band]}`}>
+                      {crowdLabels[crowd.band]}
+                    </span>
+                  )}
                   {beach.type && (
                     <span className="inline-flex items-center gap-1 text-xs bg-sea-faint text-sea px-2 py-0.5 rounded-full">
                       <Waves className="w-3 h-3" /> {beach.type}
