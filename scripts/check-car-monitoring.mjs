@@ -69,9 +69,11 @@ const NOW = Date.parse("2026-07-09T10:00:00Z");
   const roll = partnerRelanceRollup([
     inv(1, 200), inv(2, null, "invited"), inv(3, null, "invited", { relanced_at: T(NOW) }), inv(4, null, "declined"),
   ]);
-  ok("rollup invited=2", roll.invited === 2);
+  ok("rollup invited(total)=4", roll.invited === 4);
+  ok("rollup quoted=1", roll.quoted === 1);
   ok("rollup relanced=1", roll.relanced === 1);
   ok("rollup silent=1 (invited non relancé)", roll.silent === 1);
+  ok("rollup declined=1", roll.declined === 1);
 }
 
 {
@@ -112,6 +114,27 @@ const NOW = Date.parse("2026-07-09T10:00:00Z");
   ok("timeline contient 1er devis", tl.some((e) => e.label.includes("1er devis")));
   ok("timeline contient désistement", tl.some((e) => e.label.toLowerCase().includes("désist")));
   ok("timeline contient choix client", tl.some((e) => e.label.toLowerCase().includes("choisi")));
+}
+
+// Timeline : UN événement par devis (bug 09/07 : un seul « 1er devis » affiché)
+{
+  const req = {
+    created_at: "2026-07-08T08:00:00Z", accepted_at: null,
+    client_relanced_at: null, outcome: null, outcome_at: null,
+  };
+  const invites = [
+    inv(1, 750, "quoted", { created_at: "2026-07-08T08:05:00Z", quoted_at: "2026-07-08T23:56:00Z" }),
+    inv(2, 665, "quoted", { created_at: "2026-07-08T08:05:00Z", quoted_at: "2026-07-09T08:28:00Z" }),
+    inv(3, 680, "quoted", { created_at: "2026-07-08T08:05:00Z", quoted_at: "2026-07-09T08:37:00Z" }),
+    inv(4, null, "invited"),
+  ];
+  const tl = buildTimeline(req, invites);
+  const devisEvents = tl.filter((e) => /devis/i.test(e.label));
+  ok("timeline : 3 devis (un par loueur chiffré)", devisEvents.length === 3);
+  ok("timeline : 1er devis = Luxtrans le + tôt", tl.find((e) => e.label.includes("1er devis")).label.includes("P1"));
+  ok("timeline : devis suivants numérotés", tl.some((e) => e.label.includes("devis n°2")) && tl.some((e) => e.label.includes("devis n°3")));
+  ok("timeline : montre le prix du devis", tl.some((e) => e.label.includes("665")));
+  ok("timeline : matérialise la notif client", tl.filter((e) => e.label.includes("client notifié")).length === 3);
 }
 
 // Task 10 : kpis()
