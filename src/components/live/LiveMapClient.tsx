@@ -19,12 +19,18 @@ const SHEET_H = 240; // hauteur approx du bottom sheet, pour l'offset de recentr
 const EMPTY = { type: "FeatureCollection" as const, features: [] };
 
 const T: Record<string, { estimated: string; circulating: string; planTrip: string; rentCar: string; gpsLive: string; legendKtel: string; legendUrban: string }> = {
-  en: { estimated: "Estimated from the timetable", circulating: "buses running", planTrip: "Plan a trip", rentCar: "Rent a car", gpsLive: "live GPS (Agios Nikolaos)", legendKtel: "KTEL (intercity)", legendUrban: "Free city bus (Agios Nikolaos)" },
-  fr: { estimated: "Estimé selon l'horaire", circulating: "bus en circulation", planTrip: "Planifier un trajet", rentCar: "Louer une voiture", gpsLive: "en direct GPS (Agios Nikolaos)", legendKtel: "KTEL (interurbain)", legendUrban: "Bus urbain gratuit (Agios Nikolaos)" },
+  en: { estimated: "Estimated from the timetable", circulating: "buses running", planTrip: "Plan a trip", rentCar: "Rent a car", gpsLive: "live GPS (Agios Nikolaos)", legendKtel: "KTEL (intercity)", legendUrban: "City bus (Heraklion, Agios Nikolaos)" },
+  fr: { estimated: "Estimé selon l'horaire", circulating: "bus en circulation", planTrip: "Planifier un trajet", rentCar: "Louer une voiture", gpsLive: "en direct GPS (Agios Nikolaos)", legendKtel: "KTEL (interurbain)", legendUrban: "Bus urbain (Héraklion, Ag. Nikolaos)" },
 };
 
+// Sources "urbaines" (réseaux municipaux) dont on colore le tracé par leur couleur propre.
+// Les interurbains ktel/osm restent en bleu unique.
+function isUrbanSource(source: string): boolean {
+  return source === "agncitybus" || source === "citybus";
+}
+
 // On affiche toute ligne ayant un tracé (>= 2 points), y compris les tracés OSRM
-// estimés (source ktel / partialGeo) et les lignes urbaines agncitybus. La page /live
+// estimés (source ktel / partialGeo) et les lignes urbaines. La page /live
 // indique déjà « estimé d'après l'horaire ».
 function hasTrace(l: { geometry: [number, number][] | null }): boolean {
   return Array.isArray(l.geometry) && l.geometry.length >= 2;
@@ -36,7 +42,7 @@ function linesGeoJSON(net: LiveNetwork) {
     features: [...net.lines.values()].filter(hasTrace).map((l) => ({
       type: "Feature" as const,
       // lineId pour le highlight de sélection ; color pour les lignes urbaines (null -> fallback)
-      properties: { code: l.code, lineId: l.id, color: l.source === "agncitybus" ? l.color : null },
+      properties: { code: l.code, lineId: l.id, color: isUrbanSource(l.source) ? l.color : null },
       geometry: { type: "LineString" as const, coordinates: l.geometry },
     })),
   };
@@ -175,7 +181,7 @@ export function LiveMapClient({ locale }: { locale: string }) {
           for (const bus of entering) {
             // marqueur coloré par ligne pour le réseau municipal (split KTEL / urbain)
             const line = n.lines.get(bus.lineId);
-            const el = createBusEl(bus, line?.source === "agncitybus" ? line.color : null);
+            const el = createBusEl(bus, line && isUrbanSource(line.source) ? line.color : null);
             el.addEventListener("click", (e) => { e.stopPropagation(); selectBus(bus.id); });
             el.addEventListener("keydown", (e) => {
               if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectBus(bus.id); }

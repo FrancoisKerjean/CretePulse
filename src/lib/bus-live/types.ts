@@ -18,7 +18,7 @@ export interface LiveLine {
   id: number;
   code: string;
   codeOfficial: string | null;
-  source: "osm" | "ktel" | "agncitybus";
+  source: "osm" | "ktel" | "agncitybus" | "citybus";
   color: string | null;         // couleur de la ligne (hex), utilisée pour le tracé (bus urbains)
   totalMinutes: number;
   lengthKm: number;

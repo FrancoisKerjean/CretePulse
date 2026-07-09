@@ -6,7 +6,7 @@ import type { LiveLine, LiveNetwork, LiveStop } from "./types";
 
 interface LineRow {
   id: number; code: string; code_official: string | null;
-  source: "osm" | "ktel" | "agncitybus"; color: string | null; geometry: [number, number][] | null;
+  source: "osm" | "ktel" | "agncitybus" | "citybus"; color: string | null; geometry: [number, number][] | null;
   total_minutes: number | null; length_km: number | null; partial_geo: boolean | null;
 }
 interface LineStopRow {

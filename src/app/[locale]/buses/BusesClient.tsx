@@ -484,6 +484,29 @@ export function BusesClient({
           <ChevronDown className="h-4 w-4 -rotate-90 text-text-muted" />
         </Link>
 
+        {/* Bus urbain d'Heraklion : réseau Astiko KTEL, calculateur dédié */}
+        <Link
+          href={`/${locale}/buses/heraklion`}
+          className="mb-6 flex items-center gap-3 rounded-2xl border border-black/5 bg-white p-4 shadow-sm transition hover:shadow-md"
+        >
+          <span className="flex gap-1" aria-hidden>
+            <span className="h-6 w-2 rounded-full" style={{ background: "#ff4081" }} />
+            <span className="h-6 w-2 rounded-full" style={{ background: "#8d6e63" }} />
+            <span className="h-6 w-2 rounded-full" style={{ background: "#880e4f" }} />
+          </span>
+          <span className="flex-1">
+            <span className="block text-sm font-semibold text-text">
+              {locale === "fr" ? "Bus urbain d'Héraklion" : "Heraklion city bus"}
+            </span>
+            <span className="block text-xs text-text-muted">
+              {locale === "fr"
+                ? "23 lignes · calculez votre trajet en ville"
+                : "23 lines · plan your trip in town"}
+            </span>
+          </span>
+          <ChevronDown className="h-4 w-4 -rotate-90 text-text-muted" />
+        </Link>
+
         {/* Plan réseau interactif · réagit aux sélecteurs + stations cliquables */}
         <BusNetworkMap
           locale={locale}
