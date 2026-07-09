@@ -1,5 +1,6 @@
 import type { Beach, Event, NewsItem, FoodPlace, Village, Locale } from "./types";
 import { getLocalizedField } from "./types";
+import type { CbPlace } from "./cb-places";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
@@ -11,6 +12,60 @@ function formatRegionLabel(region: string | null | undefined): string {
   if (!r) return "Crete";
   const capitalized = r.charAt(0).toUpperCase() + r.slice(1);
   return CARDINAL_REGIONS.has(r) ? `${capitalized} Crete` : `${capitalized}, Crete`;
+}
+
+/**
+ * Schéma JSON-LD schema.org/Place pour les fiches /explore/[slug] (cb_places).
+ * N'invente jamais de données : les champs optionnels (geo, image, aggregateRating)
+ * ne sont émis que si les valeurs sont réellement présentes dans la row.
+ * Le rating cb_places est une note communautaire scraping (non UE) : on l'émet
+ * uniquement si rating > 0 et photo_count > 0 (signal de qualité minimal).
+ */
+export function cbPlaceSchema(
+  place: CbPlace,
+  locale: string,
+  communityAvg?: number | null,
+  communityCount?: number,
+): Record<string, unknown> {
+  const url = `${BASE_URL}/${locale}/explore/${place.slug}`;
+
+  const schema: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Place",
+    name: place.name,
+    url,
+    ...(place.meta_description || place.description
+      ? { description: (place.meta_description || place.description!).substring(0, 300) }
+      : {}),
+    ...(place.latitude != null && place.longitude != null
+      ? {
+          geo: {
+            "@type": "GeoCoordinates",
+            latitude: place.latitude,
+            longitude: place.longitude,
+          },
+        }
+      : {}),
+    ...(place.photos?.[0] ? { image: place.photos[0] } : {}),
+    address: {
+      "@type": "PostalAddress",
+      ...(place.prefecture ? { addressRegion: place.prefecture } : {}),
+      addressCountry: "GR",
+    },
+  };
+
+  // aggregateRating : seulement si on a des avis communautaires publiés (vérifiés).
+  if (communityAvg != null && communityCount && communityCount > 0) {
+    schema.aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: communityAvg.toFixed(1),
+      reviewCount: communityCount,
+      bestRating: "5",
+      worstRating: "1",
+    };
+  }
+
+  return schema;
 }
 
 export function breadcrumbSchema(
