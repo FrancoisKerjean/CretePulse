@@ -5,6 +5,7 @@
 
 export interface CitybusStop {
   slug: string;
+  apiCode?: string;   // code natif citybus.gr (ex: "500"), présent depuis re-ingest 09/07
   name: string;
   nameEl: string;
   lat: number;

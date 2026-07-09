@@ -12,6 +12,7 @@ export const CITYBUS_DATA: CitybusData = {
   "stops": {
     "hkl-irakleitou-29": {
       "slug": "hkl-irakleitou-29",
+      "apiCode": "0001",
       "name": "Irakleitou 29",
       "nameEl": "ΗΡΑΚΛΕΙΤΟΥ 29",
       "lat": 35.3428691521937,
@@ -19,6 +20,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-street-stadiou-22": {
       "slug": "hkl-street-stadiou-22",
+      "apiCode": "0002",
       "name": "Street Stadiou 22",
       "nameEl": "ΟΔΟΣ ΣΤΑΔΙΟΥ 22",
       "lat": 35.34318255525226,
@@ -26,6 +28,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-elmepa": {
       "slug": "hkl-ts-elmepa",
+      "apiCode": "0012",
       "name": "TS Elmepa",
       "nameEl": "ΤΣ ΕΛΜΕΠΑ",
       "lat": 35.30959080338453,
@@ -33,6 +36,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-idryma-texnologias-ereunas-i-t-e": {
       "slug": "hkl-ts-idryma-texnologias-ereunas-i-t-e",
+      "apiCode": "0013",
       "name": "TS_ Idryma Texnologias & Ereunas (i.t.e)",
       "nameEl": "ΤΣ  ΙΔΡΥΜΑ ΤΕΧΝΟΛΟΓΙΑΣ ΚΑΙ ΕΡΕΥΝΑΣ (Ι.Τ.Ε)",
       "lat": 35.3053489,
@@ -40,6 +44,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-giofyro-e": {
       "slug": "hkl-ts-giofyro-e",
+      "apiCode": "0014",
       "name": "TS Giofyro (E)",
       "nameEl": "ΤΣ ΓΙΟΦΥΡΟ (Ε)",
       "lat": 35.3290339,
@@ -47,6 +52,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-ammoudara": {
       "slug": "hkl-ts-ammoudara",
+      "apiCode": "0015",
       "name": "TS Ammoudara",
       "nameEl": "ΤΣ ΑΜΜΟΥΔΑΡΑ",
       "lat": 35.3400704,
@@ -54,6 +60,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-gazi": {
       "slug": "hkl-ts-gazi",
+      "apiCode": "0016",
       "name": "TS Gazi",
       "nameEl": "ΤΣ ΓΑΖΙ",
       "lat": 35.3218506,
@@ -61,6 +68,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-kavroxori": {
       "slug": "hkl-ts-kavroxori",
+      "apiCode": "0017",
       "name": "Ts_kavroxori",
       "nameEl": "ΤΣ ΚΑΒΡΟΧΩΡΙ",
       "lat": 35.30836,
@@ -68,6 +76,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-athanati": {
       "slug": "hkl-ts-athanati",
+      "apiCode": "0020",
       "name": "TS_ Athanati",
       "nameEl": "ΤΣ - ΑΘΑΝΑΤΟΙ",
       "lat": 35.27983217349887,
@@ -75,6 +84,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-cemetery": {
       "slug": "hkl-ts-cemetery",
+      "apiCode": "0021",
       "name": "TS Cemetery",
       "nameEl": "ΤΣ ΚΟΙΜΗΤΗΡΙΟ",
       "lat": 35.3217012,
@@ -82,6 +92,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-port": {
       "slug": "hkl-ts-port",
+      "apiCode": "0022",
       "name": "TS Port",
       "nameEl": "ΤΣ ΛΙΜΑΝΙ",
       "lat": 35.34099608740013,
@@ -89,6 +100,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-knossos": {
       "slug": "hkl-ts-knossos",
+      "apiCode": "0024",
       "name": "TS Knossos",
       "nameEl": "ΤΣ ΚΝΩΣΣΟΣ (Ε)",
       "lat": 35.29942044815481,
@@ -96,6 +108,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-giofyro": {
       "slug": "hkl-ts-giofyro",
+      "apiCode": "0025",
       "name": "TS Giofyro",
       "nameEl": "ΤΣ ΓΙΟΦΥΡΟ",
       "lat": 35.3293,
@@ -103,6 +116,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-manou-katraki-34": {
       "slug": "hkl-manou-katraki-34",
+      "apiCode": "0034",
       "name": "Manou Katraki 34",
       "nameEl": "ΜΑΝΟΥ ΚΑΤΡΑΚΗ 34",
       "lat": 35.3170675,
@@ -110,6 +124,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-foinikia": {
       "slug": "hkl-ts-foinikia",
+      "apiCode": "0037",
       "name": "TS Foinikia",
       "nameEl": "ΤΣ ΦΟΙΝΙΚΙΑ",
       "lat": 35.2819883,
@@ -117,6 +132,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-knossou-259": {
       "slug": "hkl-avenue-knossou-259",
+      "apiCode": "0075",
       "name": "Avenue Knossou 259",
       "nameEl": "ΛΕΩΦΟΡΟΣ ΚΝΩΣΣΟΥ 259",
       "lat": 35.30978614536969,
@@ -124,6 +140,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-knossou-202-agios-ioannis": {
       "slug": "hkl-avenue-knossou-202-agios-ioannis",
+      "apiCode": "0076",
       "name": "Avenue Knossou 202 Agios Ioannis",
       "nameEl": "ΛΕΩΦΟΡΟΣ ΚΝΩΣΣΟΥ 202  ΑΓΙΟΣ ΙΩΑΝΝΗΣ",
       "lat": 35.3153197,
@@ -131,6 +148,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-venizelio-iospital-fortetsa": {
       "slug": "hkl-venizelio-iospital-fortetsa",
+      "apiCode": "0077",
       "name": "Venizelio Iospital Fortetsa",
       "nameEl": "ΒΕΝΙΖΕΛΙΟ ΝΟΣΟΚΟΜΕΙΟ ΦΟΡΤΕΤΣΑ",
       "lat": 35.3058882,
@@ -138,6 +156,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ikarou-85": {
       "slug": "hkl-ikarou-85",
+      "apiCode": "0085",
       "name": "Ikarou 85",
       "nameEl": "ΙΚΑΡΟΥ 85",
       "lat": 35.3379924,
@@ -145,6 +164,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-papanastasiou-92": {
       "slug": "hkl-papanastasiou-92",
+      "apiCode": "0092",
       "name": "Papanastasiou 92",
       "nameEl": "ΠΑΠΑΝΑΣΤΑΣΙΟΥ 92",
       "lat": 35.3256912,
@@ -152,6 +172,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-prassa": {
       "slug": "hkl-prassa",
+      "apiCode": "0100",
       "name": "Prassa",
       "nameEl": "ΠΡΑΣΣΑ",
       "lat": 35.3147478,
@@ -159,6 +180,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-gournes": {
       "slug": "hkl-gournes",
+      "apiCode": "0101",
       "name": "Gournes",
       "nameEl": "ΓΟΥΡΝΕΣ",
       "lat": 35.2960181,
@@ -166,6 +188,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-ikarou-91": {
       "slug": "hkl-avenue-ikarou-91",
+      "apiCode": "0102",
       "name": "Avenue Ikarou 91",
       "nameEl": "ΛΕΩΦΟΡΟΣ ΙΚΑΡΟΥ 91",
       "lat": 35.3376025,
@@ -173,6 +196,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-nea-alikarnassos": {
       "slug": "hkl-nea-alikarnassos",
+      "apiCode": "0104",
       "name": "NEA Alikarnassos",
       "nameEl": "ΝΕΑ ΑΛΙΚΑΡΝΑΣΣΟΣ",
       "lat": 35.3385454,
@@ -180,6 +204,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-katsampas": {
       "slug": "hkl-katsampas",
+      "apiCode": "0105",
       "name": "Katsampas",
       "nameEl": "ΚΑΤΣΑΜΠΑΣ",
       "lat": 35.3393986,
@@ -187,6 +212,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ikarou-79-drakou": {
       "slug": "hkl-ikarou-79-drakou",
+      "apiCode": "0106",
       "name": "Ikarou 79 - Drakou.",
       "nameEl": "ΙΚΑΡΟΥ 79 - ΔΡΑΚΟΥ.",
       "lat": 35.3398555,
@@ -194,6 +220,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-poros": {
       "slug": "hkl-poros",
+      "apiCode": "0107",
       "name": "Poros",
       "nameEl": "ΠΟΡΟΣ",
       "lat": 35.3386272,
@@ -201,6 +228,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kalogeridi-leoforo-ikarou-17": {
       "slug": "hkl-kalogeridi-leoforo-ikarou-17",
+      "apiCode": "0108",
       "name": "Kalogeridi Leoforo Ikarou 17",
       "nameEl": "ΚΑΛΟΓΕΡΙΔΗ ΛΕΩΦΟΡΟ ΙΚΑΡΟΥ 17",
       "lat": 35.3388961,
@@ -208,6 +236,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-liana-avenue-ikarou-15": {
       "slug": "hkl-liana-avenue-ikarou-15",
+      "apiCode": "0109",
       "name": "Liana Avenue Ikarou 15",
       "nameEl": "ΛΙΑΝΑ ΛΕΩΦΟΡΟΣ ΙΚΑΡΟΥ 15",
       "lat": 35.338634,
@@ -215,6 +244,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-central-station-yperastikon-leoforeion": {
       "slug": "hkl-central-station-yperastikon-leoforeion",
+      "apiCode": "0110",
       "name": "Central Station Yperastikon Leoforeion",
       "nameEl": "ΚΕΝΤΡΙΚΟΣ ΣΤΑΘΜΟΣ ΥΠΕΡΑΣΤΙΚΩΝ ΛΕΩΦΟΡΕΙΩΝ",
       "lat": 35.3389921,
@@ -222,6 +252,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-square-eleutierias-astoria": {
       "slug": "hkl-square-eleutierias-astoria",
+      "apiCode": "0111",
       "name": "Square Eleutierias - Astoria",
       "nameEl": "ΠΛΑΤΕΙΑ ΕΛΕΥΘΕΡΙΑΣ - ΑΣΤΟΡΙΑ",
       "lat": 35.3384751,
@@ -229,6 +260,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kamaraki-avenue-kalo-rinou-166-hotel-iraklio": {
       "slug": "hkl-kamaraki-avenue-kalo-rinou-166-hotel-iraklio",
+      "apiCode": "0114",
       "name": "Kamaraki Avenue Kalo&rinou 166 - Hotel Iraklio",
       "nameEl": "ΚΑΜΑΡΑΚΙ Λ. ΚΑΛΟΚΑΙΡΙΝΟΥ 166 - ΞΕΝΟΔΟΧΕΙΟ ΗΡΑΚΛΕΙΟ",
       "lat": 35.3379766,
@@ -236,6 +268,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-kalo-rinou-236": {
       "slug": "hkl-avenue-kalo-rinou-236",
+      "apiCode": "0115",
       "name": "Avenue Kalo&rinou 236",
       "nameEl": "ΛΕΩΦΟΡΟΣ ΚΑΛΟΚΑΙΡΙΝΟΥ 236",
       "lat": 35.3376124,
@@ -243,6 +276,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-chanioporta": {
       "slug": "hkl-chanioporta",
+      "apiCode": "0116",
       "name": "Chanioporta",
       "nameEl": "ΧΑΝΙΟΠΟΡΤΑ",
       "lat": 35.3365615,
@@ -250,6 +284,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-62-martyron-36": {
       "slug": "hkl-avenue-62-martyron-36",
+      "apiCode": "0117",
       "name": "Avenue 62 Martyron 36",
       "nameEl": "ΛΕΩΦΟΡΟΣ 62 ΜΑΡΤΥΡΩΝ 36",
       "lat": 35.336272,
@@ -257,6 +292,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-minoos-avenue-62-martyron-78": {
       "slug": "hkl-minoos-avenue-62-martyron-78",
+      "apiCode": "0118",
       "name": "Minoos & Avenue 62 Martyron 78",
       "nameEl": "ΜΙΝΩΟΣ ΚΑΙ ΛΕΩΦΟΡΟΣ 62 ΜΑΡΤΥΡΩΝ 78",
       "lat": 35.3358298,
@@ -264,6 +300,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kaminia": {
       "slug": "hkl-kaminia",
+      "apiCode": "0119",
       "name": "Kaminia",
       "nameEl": "ΚΑΜΙΝΙΑ",
       "lat": 35.3353944,
@@ -271,6 +308,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-deilina": {
       "slug": "hkl-deilina",
+      "apiCode": "0120",
       "name": "Deilina",
       "nameEl": "ΔΕΙΛΙΝΑ",
       "lat": 35.3331161,
@@ -278,6 +316,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-62-martyron-182": {
       "slug": "hkl-avenue-62-martyron-182",
+      "apiCode": "0121",
       "name": "Avenue 62 Martyron 182",
       "nameEl": "ΛΕΩΦΟΡΟΣ 62 ΜΑΡΤΥΡΩΝ 182",
       "lat": 35.3312218,
@@ -285,6 +324,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-62-martyron-200-jumbo": {
       "slug": "hkl-62-martyron-200-jumbo",
+      "apiCode": "0122",
       "name": "62 Martyron 200 - Jumbo",
       "nameEl": "62 ΜΑΡΤΥΡΩΝ 200 - JAMBO",
       "lat": 35.3301472,
@@ -292,6 +332,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-mausolou-gefyra-ethnikis": {
       "slug": "hkl-mausolou-gefyra-ethnikis",
+      "apiCode": "0123",
       "name": "Mausolou Gefyra Ethnikis",
       "nameEl": "ΜΑΥΣΩΛΟΥ ΓΕΦΥΡΑ ΕΘΝΙΚΗΣ",
       "lat": 35.3325638,
@@ -299,6 +340,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-62-martyron-190-jumbo": {
       "slug": "hkl-avenue-62-martyron-190-jumbo",
+      "apiCode": "0124",
       "name": "Avenue 62 Martyron 190 - Jumbo",
       "nameEl": "ΛΕΩΦΟΡΟΣ 62 ΜΑΡΤΥΡΩΝ 190  - JAMBO",
       "lat": 35.3302001,
@@ -306,6 +348,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-62-martyron-180": {
       "slug": "hkl-avenue-62-martyron-180",
+      "apiCode": "0125",
       "name": "Avenue 62 Martyron 180",
       "nameEl": "ΛΕΩΦΟΡΟΣ 62 ΜΑΡΤΥΡΩΝ 180",
       "lat": 35.3310831,
@@ -313,6 +356,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-deilina-2": {
       "slug": "hkl-deilina-2",
+      "apiCode": "0126",
       "name": "Deilina",
       "nameEl": "ΔΕΙΛΙΝΑ",
       "lat": 35.3330233,
@@ -320,6 +364,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kaminia-2": {
       "slug": "hkl-kaminia-2",
+      "apiCode": "0127",
       "name": "Kaminia",
       "nameEl": "ΚΑΜΙΝΙΑ",
       "lat": 35.3354645,
@@ -327,6 +372,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-minoos-avenue-62-martyron-55": {
       "slug": "hkl-minoos-avenue-62-martyron-55",
+      "apiCode": "0128",
       "name": "Minoos & Avenue 62 Martyron 55",
       "nameEl": "ΜΙΝΩΟΣ ΚΑΙ ΛΕΩΦΟΡΟΣ 62 ΜΑΡΤΥΡΩΝ 55",
       "lat": 35.3358396,
@@ -334,6 +380,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-62-martyron-15": {
       "slug": "hkl-avenue-62-martyron-15",
+      "apiCode": "0129",
       "name": "Avenue 62 Martyron 15",
       "nameEl": "ΛΕΩΦΟΡΟΣ 62 ΜΑΡΤΥΡΩΝ 15",
       "lat": 35.336221,
@@ -341,6 +388,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-chanioporta-e": {
       "slug": "hkl-chanioporta-e",
+      "apiCode": "0130",
       "name": "Chanioporta (E)",
       "nameEl": "ΧΑΝΙΟΠΟΡΤΑ (Ε)",
       "lat": 35.3364267,
@@ -348,6 +396,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kalo-rinou-209": {
       "slug": "hkl-kalo-rinou-209",
+      "apiCode": "0131",
       "name": "Kalo&rinou 209",
       "nameEl": "ΚΑΛΟΚΑΙΡΙΝΟΥ 209",
       "lat": 35.3376061,
@@ -355,6 +404,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kalo-rinou-33": {
       "slug": "hkl-kalo-rinou-33",
+      "apiCode": "0132",
       "name": "Kalo&rinou 33",
       "nameEl": "ΚΑΛΟΚΑΙΡΙΝΟΥ 33",
       "lat": 35.3379535,
@@ -362,6 +412,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agiou-mina": {
       "slug": "hkl-agiou-mina",
+      "apiCode": "0133",
       "name": "Agiou Mina",
       "nameEl": "ΑΓΙΟΥ ΜΗΝΑ",
       "lat": 35.3372542,
@@ -369,6 +420,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-square-kornarou": {
       "slug": "hkl-square-kornarou",
+      "apiCode": "0134",
       "name": "Square Kornarou",
       "nameEl": "ΠΛΑΤΕΙΑ ΚΟΡΝΑΡΟΥ",
       "lat": 35.33624252564293,
@@ -376,6 +428,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-square-eleutierias": {
       "slug": "hkl-square-eleutierias",
+      "apiCode": "0135",
       "name": "Square Eleutierias",
       "nameEl": "ΠΛΑΤΕΙΑ ΕΛΕΥΘΕΡΙΑΣ",
       "lat": 35.338168182949055,
@@ -383,6 +436,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-central-station-yperastikon-leoforeion-2": {
       "slug": "hkl-central-station-yperastikon-leoforeion-2",
+      "apiCode": "0136",
       "name": "Central Station Yperastikon Leoforeion",
       "nameEl": "ΚΕΝΤΡΙΚΟΣ ΣΤΑΘΜΟΣ ΥΠΕΡΑΣΤΙΚΩΝ ΛΕΩΦΟΡΕΙΩΝ",
       "lat": 35.3387492,
@@ -390,6 +444,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ikarou-48": {
       "slug": "hkl-ikarou-48",
+      "apiCode": "0137",
       "name": "Ikarou 48",
       "nameEl": "ΙΚΑΡΟΥ 48",
       "lat": 35.3384873,
@@ -397,6 +452,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-poros-2": {
       "slug": "hkl-poros-2",
+      "apiCode": "0138",
       "name": "Poros",
       "nameEl": "ΠΟΡΟΣ",
       "lat": 35.3385867,
@@ -404,6 +460,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ikarou-132-drakou": {
       "slug": "hkl-ikarou-132-drakou",
+      "apiCode": "0139",
       "name": "Ikarou 132 - Drakou.",
       "nameEl": "ΙΚΑΡΟΥ 132 - ΔΡΑΚΟΥ.",
       "lat": 35.3398158,
@@ -411,6 +468,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-katsampas-2": {
       "slug": "hkl-katsampas-2",
+      "apiCode": "0140",
       "name": "Katsampas",
       "nameEl": "ΚΑΤΣΑΜΠΑΣ",
       "lat": 35.3392462,
@@ -418,6 +476,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-nea-alikarnassos-2": {
       "slug": "hkl-nea-alikarnassos-2",
+      "apiCode": "0141",
       "name": "NEA Alikarnassos",
       "nameEl": "ΝΕΑ ΑΛΙΚΑΡΝΑΣΣΟΣ",
       "lat": 35.3383801,
@@ -425,6 +484,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-mournies-ikarou-80": {
       "slug": "hkl-mournies-ikarou-80",
+      "apiCode": "0142",
       "name": "Mournies Ikarou 80",
       "nameEl": "ΜΟΥΡΝΙΕΣ ΙΚΑΡΟΥ 80",
       "lat": 35.3379975,
@@ -432,6 +492,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ikarou-106": {
       "slug": "hkl-ikarou-106",
+      "apiCode": "0143",
       "name": "Ikarou 106",
       "nameEl": "ΙΚΑΡΟΥ 106",
       "lat": 35.337534,
@@ -439,6 +500,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-megalou-alexandrou-147": {
       "slug": "hkl-megalou-alexandrou-147",
+      "apiCode": "0147",
       "name": "Megalou Alexandrou 147",
       "nameEl": "ΜΕΓΑΛΟΥ ΑΛΕΞΑΝΔΡΟΥ 147",
       "lat": 35.3217922,
@@ -446,6 +508,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-megalou-alexandrou-165": {
       "slug": "hkl-megalou-alexandrou-165",
+      "apiCode": "0165",
       "name": "Megalou Alexandrou 165",
       "nameEl": "ΜΕΓΑΛΟΥ ΑΛΕΞΑΝΔΡΟΥ 165",
       "lat": 35.3216875685549,
@@ -453,6 +516,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ikarou-19": {
       "slug": "hkl-ikarou-19",
+      "apiCode": "0171",
       "name": "Ikarou 19",
       "nameEl": "ΙΚΑΡΟΥ 19",
       "lat": 35.3391311,
@@ -460,6 +524,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ikarou-20": {
       "slug": "hkl-ikarou-20",
+      "apiCode": "0172",
       "name": "Ikarou 20",
       "nameEl": "ΙΚΑΡΟΥ 20",
       "lat": 35.3389785,
@@ -467,6 +532,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-estauromenou": {
       "slug": "hkl-estauromenou",
+      "apiCode": "0201",
       "name": "Estauromenou",
       "nameEl": "ΕΣΤΑΥΡΩΜΕΝΟΥ",
       "lat": 35.3235422,
@@ -474,6 +540,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-diomidi-i-k-a": {
       "slug": "hkl-diomidi-i-k-a",
+      "apiCode": "0202",
       "name": "Diomidi - I.k.a.",
       "nameEl": "ΔΙΟΜΗΔΗ - Ι.Κ.Α.",
       "lat": 35.3193009,
@@ -481,6 +548,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-panepistimiou-kefalogianni": {
       "slug": "hkl-avenue-panepistimiou-kefalogianni",
+      "apiCode": "0203",
       "name": "Avenue Panepistimiou & Kefalogianni",
       "nameEl": "ΛΕΟΦΩΡΟΣ ΠΑΝΕΠΙΣΤΙΜΙΟΥ & ΚΕΦΑΛΟΓΙΑΝΝΗ",
       "lat": 35.3207926,
@@ -488,6 +556,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-panepistimiou-parasyri-m": {
       "slug": "hkl-avenue-panepistimiou-parasyri-m",
+      "apiCode": "0204",
       "name": "Avenue Panepistimiou & Parasyri (M)",
       "nameEl": "ΛΕΩΦΟΡΟΣ ΠΑΝΕΠΙΣΤΙΜΙΟΥ & ΠΑΡΑΣΥΡΗ (Μ)",
       "lat": 35.3205267,
@@ -495,6 +564,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agioi-theodoroi": {
       "slug": "hkl-agioi-theodoroi",
+      "apiCode": "0205",
       "name": "Agioi Theodoroi",
       "nameEl": "ΑΓΙΟΙ ΘΕΟΔΩΡΟΙ",
       "lat": 35.3182586,
@@ -502,6 +572,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-aretousas": {
       "slug": "hkl-aretousas",
+      "apiCode": "0206",
       "name": "Aretousas",
       "nameEl": "ΑΡΕΤΟΥΣΑΣ",
       "lat": 35.3144087,
@@ -509,6 +580,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-university-of-crete": {
       "slug": "hkl-university-of-crete",
+      "apiCode": "0207",
       "name": "University OF Crete",
       "nameEl": "ΠΑΝΕΠΙΣΤΗΜΙΟ ΚΡΗΤΗΣ",
       "lat": 35.3057986,
@@ -516,6 +588,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-aretousas-2": {
       "slug": "hkl-aretousas-2",
+      "apiCode": "0208",
       "name": "Aretousas",
       "nameEl": "ΑΡΕΤΟΥΣΑΣ",
       "lat": 35.3141645,
@@ -523,6 +596,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agioi-theodoroi-2": {
       "slug": "hkl-agioi-theodoroi-2",
+      "apiCode": "0209",
       "name": "Agioi Theodoroi",
       "nameEl": "ΑΓΙΟΙ ΘΕΟΔΩΡΟΙ",
       "lat": 35.3182881,
@@ -530,6 +604,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-diomidi-ika": {
       "slug": "hkl-diomidi-ika",
+      "apiCode": "0210",
       "name": "Diomidi - IKA",
       "nameEl": "ΔΙΟΜΗΔΗ - ΙΚΑ",
       "lat": 35.3193662,
@@ -537,6 +612,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-estauromenou-2": {
       "slug": "hkl-estauromenou-2",
+      "apiCode": "0211",
       "name": "Estauromenou",
       "nameEl": "ΕΣΤΑΥΡΩΜΕΝΟΥ",
       "lat": 35.3235039,
@@ -544,6 +620,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agiou-mina-2": {
       "slug": "hkl-agiou-mina-2",
+      "apiCode": "0216",
       "name": "Agiou Mina",
       "nameEl": "ΑΓΙΟΥ ΜΗΝΑ",
       "lat": 35.3374924,
@@ -551,6 +628,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-sminarchia": {
       "slug": "hkl-sminarchia",
+      "apiCode": "0302",
       "name": "Sminarchia",
       "nameEl": "ΣΜΗΝΑΡΧΙΑ",
       "lat": 35.3291548,
@@ -558,6 +636,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-petroemporiki": {
       "slug": "hkl-petroemporiki",
+      "apiCode": "0303",
       "name": "Petroemporiki",
       "nameEl": "ΠΕΤΡΟΕΜΠΟΡΙΚΗ",
       "lat": 35.3328747,
@@ -565,6 +644,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agios-ioannis-amnissos": {
       "slug": "hkl-agios-ioannis-amnissos",
+      "apiCode": "0304",
       "name": "Agios Ioannis Amnissos",
       "nameEl": "ΑΓΙΟΣ ΙΩΑΝΝΗΣ ΑΜΝΙΣΣΟΣ",
       "lat": 35.3332021,
@@ -572,6 +652,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agiou-alexandrou": {
       "slug": "hkl-agiou-alexandrou",
+      "apiCode": "0305",
       "name": "Agiou Alexandrou",
       "nameEl": "ΑΓΙΟΥ ΑΛΕΞΑΝΔΡΟΥ",
       "lat": 35.3299464,
@@ -579,6 +660,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-riding-academy-crete": {
       "slug": "hkl-riding-academy-crete",
+      "apiCode": "0306",
       "name": "Riding Academy Crete",
       "nameEl": "Ιππική Ακαδημία Κρήτης / Riding Academy Crete (Μ)",
       "lat": 35.32784177945645,
@@ -586,6 +668,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-amnissos-paralia-karterou-karteros-beach-sports-center": {
       "slug": "hkl-amnissos-paralia-karterou-karteros-beach-sports-center",
+      "apiCode": "0307",
       "name": "Amnissos - Paralia Karterou - Karteros Beach Sports Center",
       "nameEl": "ΑΜΝΙΣΣΟΣ -ΠΑΡΑΛΙΑ ΚΑΡΤΕΡΟΥ-ΑΘΛΗΤΙΚΕΣ ΕΓΚΑΤΑΣΤΑΣΕΙΣ",
       "lat": 35.3277463,
@@ -593,6 +676,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-michail-archaggelou": {
       "slug": "hkl-michail-archaggelou",
+      "apiCode": "0308",
       "name": "Michail Archaggelou",
       "nameEl": "ΜΙΧΑΗΛ ΑΡΧΑΓΓΕΛΟΥ",
       "lat": 35.3288855,
@@ -600,6 +684,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-amnissos-paralia-amnissou": {
       "slug": "hkl-amnissos-paralia-amnissou",
+      "apiCode": "0309",
       "name": "Amnissos - Paralia Amnissou.",
       "nameEl": "ΑΜΝΙΣΣΟΣ - ΠΑΡΑΛΙΑ ΑΜΝΙΣΣΟΥ.",
       "lat": 35.3304237,
@@ -607,6 +692,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-amnissos-paralia-amnissou-2": {
       "slug": "hkl-amnissos-paralia-amnissou-2",
+      "apiCode": "0311",
       "name": "Amnissos - Paralia Amnissou.",
       "nameEl": "ΑΜΝΙΣΣΟΣ - ΠΑΡΑΛΙΑ ΑΜΝΙΣΣΟΥ.",
       "lat": 35.330603,
@@ -614,6 +700,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-michail-archaggelou-2": {
       "slug": "hkl-michail-archaggelou-2",
+      "apiCode": "0312",
       "name": "Michail Archaggelou",
       "nameEl": "ΜΙΧΑΗΛ ΑΡΧΑΓΓΕΛΟΥ",
       "lat": 35.3288765,
@@ -621,6 +708,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-amnissos-paralia-karterou": {
       "slug": "hkl-amnissos-paralia-karterou",
+      "apiCode": "0313",
       "name": "Amnissos - Paralia Karterou.",
       "nameEl": "ΑΜΝΙΣΣΟΣ - ΠΑΡΑΛΙΑ ΚΑΡΤΕΡΟΥ.",
       "lat": 35.3277856,
@@ -628,6 +716,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-riding-academy-crete-2": {
       "slug": "hkl-riding-academy-crete-2",
+      "apiCode": "0314",
       "name": "Riding Academy Crete",
       "nameEl": "Ιππική Ακαδημία Κρήτης / Riding Academy Crete (Ε)",
       "lat": 35.32792678016635,
@@ -635,6 +724,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agiou-alexandrou-2": {
       "slug": "hkl-agiou-alexandrou-2",
+      "apiCode": "0315",
       "name": "Agiou Alexandrou",
       "nameEl": "ΑΓΙΟΥ ΑΛΕΞΑΝΔΡΟΥ",
       "lat": 35.330031,
@@ -642,6 +732,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agios-ioannis-amnissos-2": {
       "slug": "hkl-agios-ioannis-amnissos-2",
+      "apiCode": "0316",
       "name": "Agios Ioannis Amnissos",
       "nameEl": "ΑΓΙΟΣ ΙΩΑΝΝΗΣ ΑΜΝΙΣΣΟΣ",
       "lat": 35.3333659,
@@ -649,6 +740,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-petroemporiki-2": {
       "slug": "hkl-petroemporiki-2",
+      "apiCode": "0317",
       "name": "Petroemporiki",
       "nameEl": "ΠΕΤΡΟΕΜΠΟΡΙΚΗ",
       "lat": 35.3332165,
@@ -656,6 +748,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-sminarchia-2": {
       "slug": "hkl-sminarchia-2",
+      "apiCode": "0318",
       "name": "Sminarchia",
       "nameEl": "ΣΜΗΝΑΡΧΙΑ",
       "lat": 35.3294277,
@@ -663,6 +756,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-anagenniseos": {
       "slug": "hkl-anagenniseos",
+      "apiCode": "0319",
       "name": "Anagenniseos",
       "nameEl": "ΑΝΑΓΕΝΝΗΣΕΩΣ ( Ε )",
       "lat": 35.335553,
@@ -670,6 +764,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-anagenniseos-2": {
       "slug": "hkl-anagenniseos-2",
+      "apiCode": "0320",
       "name": "Anagenniseos",
       "nameEl": "ΑΝΑΓΕΝΝΗΣΕΩΣ ( Μ)",
       "lat": 35.3353265,
@@ -677,6 +772,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-mausolou-161": {
       "slug": "hkl-mausolou-161",
+      "apiCode": "0503",
       "name": "Mausolou 161",
       "nameEl": "ΜΑΥΣΩΛΟΥ 161",
       "lat": 35.3304328,
@@ -684,6 +780,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-mausolou-200": {
       "slug": "hkl-mausolou-200",
+      "apiCode": "0504",
       "name": "Mausolou 200",
       "nameEl": "ΜΑΥΣΩΛΟΥ 200",
       "lat": 35.329288,
@@ -691,6 +788,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-mausolou-217": {
       "slug": "hkl-mausolou-217",
+      "apiCode": "0505",
       "name": "Mausolou 217",
       "nameEl": "ΜΑΥΣΩΛΟΥ 217",
       "lat": 35.3268174,
@@ -698,6 +796,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-mausolou-235": {
       "slug": "hkl-mausolou-235",
+      "apiCode": "0506",
       "name": "Mausolou 235",
       "nameEl": "ΜΑΥΣΩΛΟΥ 235",
       "lat": 35.3250011,
@@ -705,6 +804,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-street-gama-zita": {
       "slug": "hkl-street-gama-zita",
+      "apiCode": "0507",
       "name": "Street Gama & Zita",
       "nameEl": "ΟΔΟΣ ΓΑΜΑ ΚΑΙ ΖΗΤΑ",
       "lat": 35.3239513758623,
@@ -712,6 +812,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-street-gama-zita-2": {
       "slug": "hkl-street-gama-zita-2",
+      "apiCode": "0508",
       "name": "Street Gama & Zita",
       "nameEl": "ΟΔΟΣ ΓΑΜΑ ΚΑΙ ΖΗΤΑ",
       "lat": 35.3239430442826,
@@ -719,6 +820,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kallitiea": {
       "slug": "hkl-kallitiea",
+      "apiCode": "0510",
       "name": "Kallitiea",
       "nameEl": "ΚΑΛΛΙΘΕΑ",
       "lat": 35.3137088,
@@ -726,6 +828,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-dimopoulou-34": {
       "slug": "hkl-dimopoulou-34",
+      "apiCode": "0511",
       "name": "Dimopoulou 34",
       "nameEl": "ΔΗΜΟΠΟΥΛΟΥ 34",
       "lat": 35.3118714,
@@ -733,6 +836,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-dimopoulou-2": {
       "slug": "hkl-dimopoulou-2",
+      "apiCode": "0512",
       "name": "Dimopoulou 2",
       "nameEl": "ΔΗΜΟΠΟΥΛΟΥ 2",
       "lat": 35.3144882,
@@ -740,6 +844,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kazantzidi": {
       "slug": "hkl-kazantzidi",
+      "apiCode": "0516",
       "name": "Kazantzidi",
       "nameEl": "ΚΑΖΑΝΤΖΙΔΗ",
       "lat": 35.3311934,
@@ -747,6 +852,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-street-gama-thita": {
       "slug": "hkl-street-gama-thita",
+      "apiCode": "0518",
       "name": "Street Gama & Thita",
       "nameEl": "ΟΔΟΣ ΓΑΜΑ ΚΑΙ ΘΗΤΑ",
       "lat": 35.3239488,
@@ -754,6 +860,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-street-gama-giota": {
       "slug": "hkl-street-gama-giota",
+      "apiCode": "0519",
       "name": "Street Gama & Giota",
       "nameEl": "ΟΔΟΣ ΓΑΜΑ ΚΑΙ ΓΙΩΤΑ",
       "lat": 35.3239562885402,
@@ -761,6 +868,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-street-ro-lamda": {
       "slug": "hkl-street-ro-lamda",
+      "apiCode": "0520",
       "name": "Street RO & Lamda",
       "nameEl": "ΟΔΟΣ ΡΟ ΚΑΙ ΛΑΜΔΑ",
       "lat": 35.3219153,
@@ -768,6 +876,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-street-ro-vita": {
       "slug": "hkl-street-ro-vita",
+      "apiCode": "0521",
       "name": "Street RO & Vita",
       "nameEl": "ΟΔΟΣ ΡΟ ΚΑΙ ΒΗΤΑ",
       "lat": 35.31933605338507,
@@ -775,6 +884,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-street-alfa-ro": {
       "slug": "hkl-street-alfa-ro",
+      "apiCode": "0523",
       "name": "Street Alfa & RO",
       "nameEl": "ΟΔΟΣ ΑΛΦΑ ΚΑΙ ΡΟ",
       "lat": 35.3174719,
@@ -782,6 +892,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-giannari": {
       "slug": "hkl-giannari",
+      "apiCode": "0524",
       "name": "Giannari",
       "nameEl": "ΓΙΑΝΝΑΡΗ",
       "lat": 35.3107402,
@@ -789,6 +900,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-street-ro-vita-2": {
       "slug": "hkl-street-ro-vita-2",
+      "apiCode": "0550",
       "name": "Street RO & Vita",
       "nameEl": "ΟΔΟΣ ΡΟ ΚΑΙ ΒΗΤΑ",
       "lat": 35.3196119,
@@ -796,6 +908,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-florinis": {
       "slug": "hkl-florinis",
+      "apiCode": "0605",
       "name": "Florinis",
       "nameEl": "ΦΛΩΡΙΝΗΣ",
       "lat": 35.3375853,
@@ -803,6 +916,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-konitsis": {
       "slug": "hkl-konitsis",
+      "apiCode": "0606",
       "name": "Konitsis",
       "nameEl": "ΚΟΝΙΤΣΗΣ",
       "lat": 35.336668,
@@ -810,6 +924,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agios-georgios": {
       "slug": "hkl-agios-georgios",
+      "apiCode": "0607",
       "name": "Agios Georgios",
       "nameEl": "ΑΓΙΟΣ ΓΕΩΡΓΙΟΣ",
       "lat": 35.3363113,
@@ -817,6 +932,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-komninon": {
       "slug": "hkl-komninon",
+      "apiCode": "0608",
       "name": "Komninon",
       "nameEl": "ΚΟΜΝΗΝΩΝ",
       "lat": 35.3350377,
@@ -824,6 +940,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-miltiadou": {
       "slug": "hkl-miltiadou",
+      "apiCode": "0610",
       "name": "Miltiadou",
       "nameEl": "ΜΙΛΤΙΑΔΟΥ",
       "lat": 35.33294169421566,
@@ -831,6 +948,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-serron": {
       "slug": "hkl-serron",
+      "apiCode": "0612",
       "name": "Serron",
       "nameEl": "ΣΕΡΡΩΝ",
       "lat": 35.3310418,
@@ -838,6 +956,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-odysseos": {
       "slug": "hkl-odysseos",
+      "apiCode": "0613",
       "name": "Odysseos",
       "nameEl": "ΟΔΥΣΣΕΩΣ",
       "lat": 35.3299362,
@@ -845,6 +964,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agia-anna": {
       "slug": "hkl-agia-anna",
+      "apiCode": "0614",
       "name": "Agia Anna",
       "nameEl": "ΑΓΙΑ ΑΝΝΑ",
       "lat": 35.3303803,
@@ -852,6 +972,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-tierissou-16": {
       "slug": "hkl-tierissou-16",
+      "apiCode": "0618",
       "name": "Tierissou 16",
       "nameEl": "ΘΕΡΙΣΣΟΥ 16",
       "lat": 35.3351949,
@@ -859,6 +980,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-tierissou-38": {
       "slug": "hkl-tierissou-38",
+      "apiCode": "0619",
       "name": "Tierissou 38",
       "nameEl": "ΘΕΡΙΣΣΟΥ 38",
       "lat": 35.3339073,
@@ -866,6 +988,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-tierissou-84": {
       "slug": "hkl-tierissou-84",
+      "apiCode": "0620",
       "name": "Tierissou 84",
       "nameEl": "ΘΕΡΙΣΣΟΥ 84",
       "lat": 35.3321331,
@@ -873,6 +996,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-tierissou-110": {
       "slug": "hkl-tierissou-110",
+      "apiCode": "0621",
       "name": "Tierissou 110",
       "nameEl": "ΘΕΡΙΣΣΟΥ 110",
       "lat": 35.3309077,
@@ -880,6 +1004,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kondylaki-101": {
       "slug": "hkl-kondylaki-101",
+      "apiCode": "0623",
       "name": "Kondylaki 101",
       "nameEl": "ΚΟΝΔΥΛΑΚΗ 101",
       "lat": 35.3292913,
@@ -887,6 +1012,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kondylaki-77": {
       "slug": "hkl-kondylaki-77",
+      "apiCode": "0624",
       "name": "Kondylaki 77",
       "nameEl": "ΚΟΝΔΥΛΑΚΗ 77",
       "lat": 35.3298511,
@@ -894,6 +1020,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kondylaki-27": {
       "slug": "hkl-kondylaki-27",
+      "apiCode": "0625",
       "name": "Kondylaki 27",
       "nameEl": "ΚΟΝΔΥΛΑΚΗ 27",
       "lat": 35.3311239,
@@ -901,6 +1028,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-m-merkouri": {
       "slug": "hkl-m-merkouri",
+      "apiCode": "0626",
       "name": "M. Merkouri",
       "nameEl": "Μ. ΜΕΡΚΟΥΡΗ",
       "lat": 35.3322363,
@@ -908,6 +1036,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-pananeio": {
       "slug": "hkl-pananeio",
+      "apiCode": "0630",
       "name": "Pananeio",
       "nameEl": "ΠΑΝΑΝΕΙΟ",
       "lat": 35.3350348,
@@ -915,6 +1044,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-chanioporta-nik-plastira": {
       "slug": "hkl-chanioporta-nik-plastira",
+      "apiCode": "0631",
       "name": "Chanioporta - Nik. Plastira",
       "nameEl": "ΧΑΝΙΟΠΟΡΤΑ - ΝΙΚ. ΠΛΑΣΤΗΡΑ",
       "lat": 35.3368846,
@@ -922,6 +1052,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-dimokratias": {
       "slug": "hkl-dimokratias",
+      "apiCode": "0633",
       "name": "Dimokratias",
       "nameEl": "ΔΗΜΟΚΡΑΤΙΑΣ",
       "lat": 35.3370042,
@@ -929,6 +1060,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-analipsi-m": {
       "slug": "hkl-analipsi-m",
+      "apiCode": "0634",
       "name": "Analipsi M",
       "nameEl": "ΑΝΑΛΗΨΗ M",
       "lat": 35.3360232,
@@ -936,6 +1068,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ergatiko-kentro": {
       "slug": "hkl-ergatiko-kentro",
+      "apiCode": "0635",
       "name": "Ergatiko Kentro",
       "nameEl": "ΕΡΓΑΤΙΚΟ ΚΕΝΤΡΟ",
       "lat": 35.3329399,
@@ -943,6 +1076,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-georgiou-papandreou": {
       "slug": "hkl-georgiou-papandreou",
+      "apiCode": "0636",
       "name": "Georgiou Papandreou",
       "nameEl": "ΓΕΩΡΓΙΟΥ ΠΑΠΑΝΔΡΕΟΥ",
       "lat": 35.331656,
@@ -950,6 +1084,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agia-anna-2": {
       "slug": "hkl-agia-anna-2",
+      "apiCode": "0637",
       "name": "Agia Anna",
       "nameEl": "ΑΓΙΑ ΑΝΝΑ",
       "lat": 35.330679,
@@ -957,6 +1092,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-odysseos-2": {
       "slug": "hkl-odysseos-2",
+      "apiCode": "0638",
       "name": "Odysseos",
       "nameEl": "ΟΔΥΣΣΕΩΣ",
       "lat": 35.3299415,
@@ -964,6 +1100,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-emmanouil-mpantouva-57": {
       "slug": "hkl-emmanouil-mpantouva-57",
+      "apiCode": "0640",
       "name": "Emmanouil Mpantouva 57",
       "nameEl": "ΕΜΜΑΝΟΥΗΛ ΜΠΑΝΤΟΥΒΑ 57",
       "lat": 35.3317898,
@@ -971,6 +1108,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-geronomaki": {
       "slug": "hkl-geronomaki",
+      "apiCode": "0641",
       "name": "Geronomaki",
       "nameEl": "ΓΕΡΩΝΥΜΑΚΗ",
       "lat": 35.3319949,
@@ -978,6 +1116,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-komninon-73": {
       "slug": "hkl-komninon-73",
+      "apiCode": "0642",
       "name": "Komninon 73",
       "nameEl": "ΚΟΜΝΗΝΩΝ 73",
       "lat": 35.3335037,
@@ -985,6 +1124,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-komninon-29": {
       "slug": "hkl-komninon-29",
+      "apiCode": "0643",
       "name": "Komninon 29",
       "nameEl": "ΚΟΜΝΗΝΩΝ 29",
       "lat": 35.3350985,
@@ -992,6 +1132,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agios-georgios-2": {
       "slug": "hkl-agios-georgios-2",
+      "apiCode": "0644",
       "name": "Agios Georgios",
       "nameEl": "ΑΓΙΟΣ ΓΕΩΡΓΙΟΣ",
       "lat": 35.3363344,
@@ -999,6 +1140,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-konitsis-2": {
       "slug": "hkl-konitsis-2",
+      "apiCode": "0645",
       "name": "Konitsis",
       "nameEl": "ΚΟΝΙΤΣΗΣ",
       "lat": 35.3364546,
@@ -1006,6 +1148,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-lyktou": {
       "slug": "hkl-lyktou",
+      "apiCode": "0647",
       "name": "Lyktou",
       "nameEl": "ΛΥΚΤΟΥ",
       "lat": 35.3379438,
@@ -1013,6 +1156,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eleutheriou-venizelou-papandreou": {
       "slug": "hkl-eleutheriou-venizelou-papandreou",
+      "apiCode": "0701",
       "name": "Eleutheriou Venizelou & Papandreou",
       "nameEl": "ΕΛΕΥΘΕΡΙΟΥ ΒΕΝΙΖΕΛΟΥ ΚΑΙ ΠΑΠΑΝΔΡΕΟΥ",
       "lat": 35.333232,
@@ -1020,6 +1164,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-tsalikaki": {
       "slug": "hkl-tsalikaki",
+      "apiCode": "0702",
       "name": "Tsalikaki",
       "nameEl": "ΤΣΑΛΙΚΑΚΙ",
       "lat": 35.3285811,
@@ -1027,6 +1172,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-georgiou-gennimata-67": {
       "slug": "hkl-georgiou-gennimata-67",
+      "apiCode": "0703",
       "name": "Georgiou Gennimata 67",
       "nameEl": "ΓΕΩΡΓΙΟΥ ΓΕΝΝΗΜΑΤΑ 67",
       "lat": 35.3288957,
@@ -1034,6 +1180,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-georgiou-gennimata-21": {
       "slug": "hkl-georgiou-gennimata-21",
+      "apiCode": "0704",
       "name": "Georgiou Gennimata 21",
       "nameEl": "ΓΕΩΡΓΙΟΥ ΓΕΝΝΗΜΑΤΑ 21",
       "lat": 35.3294555,
@@ -1041,6 +1188,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-georgiou-gennimata-21-2": {
       "slug": "hkl-georgiou-gennimata-21-2",
+      "apiCode": "0706",
       "name": "Georgiou Gennimata 21",
       "nameEl": "ΓΕΩΡΓΙΟΥ ΓΕΝΝΗΜΑΤΑ 21",
       "lat": 35.3293667,
@@ -1048,6 +1196,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-georgiou-gennimata-36": {
       "slug": "hkl-georgiou-gennimata-36",
+      "apiCode": "0707",
       "name": "Georgiou Gennimata 36",
       "nameEl": "ΓΕΩΡΓΙΟΥ ΓΕΝΝΗΜΑΤΑ 36",
       "lat": 35.3288945,
@@ -1055,6 +1204,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-tsalikaki-2": {
       "slug": "hkl-tsalikaki-2",
+      "apiCode": "0708",
       "name": "Tsalikaki",
       "nameEl": "ΤΣΑΛΙΚΑΚΙ",
       "lat": 35.3284935,
@@ -1062,6 +1212,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eleutheriou-venizelou-papandreou-2": {
       "slug": "hkl-eleutheriou-venizelou-papandreou-2",
+      "apiCode": "0709",
       "name": "Eleutheriou Venizelou & Papandreou",
       "nameEl": "ΕΛΕΥΘΕΡΙΟΥ ΒΕΝΙΖΕΛΟΥ ΚΑΙ ΠΑΠΑΝΔΡΕΟΥ",
       "lat": 35.3330821,
@@ -1069,6 +1220,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-gennimata-venizelou": {
       "slug": "hkl-gennimata-venizelou",
+      "apiCode": "0710",
       "name": "Gennimata & Venizelou",
       "nameEl": "ΓΕΝΝΗΜΑΤΑ ΚΑΙ ΒΕΝΙΖΕΛΟΥ",
       "lat": 35.3299744,
@@ -1076,6 +1228,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-gennimata-venizelou-2": {
       "slug": "hkl-gennimata-venizelou-2",
+      "apiCode": "0711",
       "name": "Gennimata & Venizelou",
       "nameEl": "ΓΕΝΝΗΜΑΤΑ ΚΑΙ ΒΕΝΙΖΕΛΟΥ",
       "lat": 35.3300458,
@@ -1083,6 +1236,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eleutheriou-venizelou": {
       "slug": "hkl-eleutheriou-venizelou",
+      "apiCode": "0712",
       "name": "Eleutheriou Venizelou",
       "nameEl": "ΕΛΕΥΘΕΡΙΟΥ ΒΕΝΙΖΕΛΟΥ",
       "lat": 35.329344970272615,
@@ -1090,6 +1244,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eleutheriou-venizelou-2": {
       "slug": "hkl-eleutheriou-venizelou-2",
+      "apiCode": "0713",
       "name": "Eleutheriou Venizelou",
       "nameEl": "ΕΛΕΥΘΕΡΙΟΥ ΒΕΝΙΖΕΛΟΥ",
       "lat": 35.3291631,
@@ -1097,6 +1252,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eleutheriou-venizelou-aromatika": {
       "slug": "hkl-eleutheriou-venizelou-aromatika",
+      "apiCode": "0714",
       "name": "Eleutheriou Venizelou Aromatika",
       "nameEl": "ΕΛΕΥΘΕΡΙΟΥ ΒΕΝΙΖΕΛΟΥ ΑΡΩΜΑΤΙΚΑ",
       "lat": 35.3270878,
@@ -1104,6 +1260,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eleutheriou-venizelou-aromatika-2": {
       "slug": "hkl-eleutheriou-venizelou-aromatika-2",
+      "apiCode": "0715",
       "name": "Eleutheriou Venizelou Aromatika",
       "nameEl": "ΕΛΕΥΘΕΡΙΟΥ ΒΕΝΙΖΕΛΟΥ ΑΡΩΜΑΤΙΚΑ",
       "lat": 35.3269797,
@@ -1111,6 +1268,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eleutheriou-venizelou-3": {
       "slug": "hkl-eleutheriou-venizelou-3",
+      "apiCode": "0716",
       "name": "Eleutheriou Venizelou",
       "nameEl": "ΕΛΕΥΘΕΡΙΟΥ ΒΕΝΙΖΕΛΟΥ",
       "lat": 35.3268059,
@@ -1118,6 +1276,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eleutheriou-venizelou-196": {
       "slug": "hkl-eleutheriou-venizelou-196",
+      "apiCode": "0717",
       "name": "Eleutheriou Venizelou 196",
       "nameEl": "ΕΛΕΥΘΕΡΙΟΥ ΒΕΝΙΖΕΛΟΥ 196",
       "lat": 35.3262372,
@@ -1125,6 +1284,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eleutheriou-venizelou-164": {
       "slug": "hkl-eleutheriou-venizelou-164",
+      "apiCode": "0718",
       "name": "Eleutheriou Venizelou 164",
       "nameEl": "ΕΛΕΥΘΕΡΙΟΥ ΒΕΝΙΖΕΛΟΥ 164",
       "lat": 35.3263565,
@@ -1132,6 +1292,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eleutheriou-venizelou-4": {
       "slug": "hkl-eleutheriou-venizelou-4",
+      "apiCode": "0719",
       "name": "Eleutheriou Venizelou",
       "nameEl": "ΕΛΕΥΘΕΡΙΟΥ ΒΕΝΙΖΕΛΟΥ",
       "lat": 35.3257279,
@@ -1139,6 +1300,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-town-hall-gaziou": {
       "slug": "hkl-town-hall-gaziou",
+      "apiCode": "0720",
       "name": "Town Hall Gaziou",
       "nameEl": "ΔΗΜΑΡΧΕΙΟ ΓΑΖΙΟΥ",
       "lat": 35.32540563963474,
@@ -1146,6 +1308,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-town-hall-gaziou-2": {
       "slug": "hkl-town-hall-gaziou-2",
+      "apiCode": "0721",
       "name": "Town Hall Gaziou",
       "nameEl": "ΔΗΜΑΡΧΕΙΟ ΓΑΖΙΟΥ",
       "lat": 35.3252453,
@@ -1153,6 +1316,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eleutheriou-venizelou-260": {
       "slug": "hkl-eleutheriou-venizelou-260",
+      "apiCode": "0722",
       "name": "Eleutheriou Venizelou 260",
       "nameEl": "ΕΛΕΥΘΕΡΙΟΥ ΒΕΝΙΖΕΛΟΥ 260",
       "lat": 35.3247278,
@@ -1160,6 +1324,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eleutheriou-venizelou-249": {
       "slug": "hkl-eleutheriou-venizelou-249",
+      "apiCode": "0723",
       "name": "Eleutheriou Venizelou 249",
       "nameEl": "ΕΛΕΥΘΕΡΙΟΥ ΒΕΝΙΖΕΛΟΥ 249",
       "lat": 35.3244329,
@@ -1167,6 +1332,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agiou-spyridonos": {
       "slug": "hkl-agiou-spyridonos",
+      "apiCode": "0724",
       "name": "Agiou Spyridonos",
       "nameEl": "ΑΓΙΟΥ ΣΠΥΡΙΔΩΝΟΣ",
       "lat": 35.3222904,
@@ -1174,6 +1340,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agiou-spyridonos-2": {
       "slug": "hkl-agiou-spyridonos-2",
+      "apiCode": "0725",
       "name": "Agiou Spyridonos",
       "nameEl": "ΑΓΙΟΥ ΣΠΥΡΙΔΩΝΟΣ",
       "lat": 35.3222056,
@@ -1181,6 +1348,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-komvos-reddi": {
       "slug": "hkl-komvos-reddi",
+      "apiCode": "0726",
       "name": "Komvos Reddi",
       "nameEl": "ΚΟΜΒΟΣ ΚΟΚΚΙΝΙΔΗ (ΠΡΟΣ ΚΑΒΡΟΧΩΡΙ)",
       "lat": 35.3214286883767,
@@ -1188,6 +1356,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-komvos-reddi-2": {
       "slug": "hkl-komvos-reddi-2",
+      "apiCode": "0727",
       "name": "Komvos Reddi",
       "nameEl": "ΚΟΜΒΟΣ ΚΟΚΚΙΝΙΔΗ ΠΡΟΣ ΤΣ ΓΑΖΙ",
       "lat": 35.32218094588865,
@@ -1195,6 +1364,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agios-georgios-3": {
       "slug": "hkl-agios-georgios-3",
+      "apiCode": "0801",
       "name": "Agios Georgios",
       "nameEl": "ΑΓΙΟΣ ΓΕΩΡΓΙΟΣ",
       "lat": 35.3188436,
@@ -1202,6 +1372,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agios-georgios-4": {
       "slug": "hkl-agios-georgios-4",
+      "apiCode": "0802",
       "name": "Agios Georgios",
       "nameEl": "ΑΓΙΟΣ ΓΕΩΡΓΙΟΣ",
       "lat": 35.3192432,
@@ -1209,6 +1380,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-diakladosi-krousona": {
       "slug": "hkl-diakladosi-krousona",
+      "apiCode": "0804",
       "name": "Diakladosi Krousona",
       "nameEl": "ΔΙΑΚΛΑΔΩΣΗ ΚΡΟΥΣΩΝΑ 2 (Μ)",
       "lat": 35.3132561,
@@ -1216,6 +1388,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kavroxori-stasi-1": {
       "slug": "hkl-kavroxori-stasi-1",
+      "apiCode": "0805",
       "name": "Kavroxori Stasi 1",
       "nameEl": "ΚΑΒΡΟΧΩΡΙ ΣΤΑΣΗ 1",
       "lat": 35.31303,
@@ -1223,6 +1396,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kavroxori-stasi-2": {
       "slug": "hkl-kavroxori-stasi-2",
+      "apiCode": "0806",
       "name": "Kavroxori Stasi 2",
       "nameEl": "ΚΑΒΡΟΧΩΡΙ ΣΤΑΣΗ 2",
       "lat": 35.3114183,
@@ -1230,6 +1404,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kavroxori-stasi-2-2": {
       "slug": "hkl-kavroxori-stasi-2-2",
+      "apiCode": "0807",
       "name": "Kavroxori Stasi 2",
       "nameEl": "ΚΑΒΡΟΧΩΡΙ ΣΤΑΣΗ 2",
       "lat": 35.3113482,
@@ -1237,6 +1412,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kavroxori-stasi-3": {
       "slug": "hkl-kavroxori-stasi-3",
+      "apiCode": "0808",
       "name": "Kavroxori Stasi 3",
       "nameEl": "ΚΑΒΡΟΧΩΡΙ ΣΤΑΣΗ 3",
       "lat": 35.3094982,
@@ -1244,6 +1420,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kavroxori-stasi-3-2": {
       "slug": "hkl-kavroxori-stasi-3-2",
+      "apiCode": "0809",
       "name": "Kavroxori Stasi 3",
       "nameEl": "ΚΑΒΡΟΧΩΡΙ ΣΤΑΣΗ 3",
       "lat": 35.3095934,
@@ -1251,6 +1428,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kavroxori-stasi-4": {
       "slug": "hkl-kavroxori-stasi-4",
+      "apiCode": "0810",
       "name": "Kavroxori Stasi 4",
       "nameEl": "ΚΑΒΡΟΧΩΡΙ ΣΤΑΣΗ 4",
       "lat": 35.3067277,
@@ -1258,6 +1436,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-diakladosi-krousona-2": {
       "slug": "hkl-diakladosi-krousona-2",
+      "apiCode": "0812",
       "name": "Diakladosi Krousona",
       "nameEl": "ΠΑΛΙΑ ΔΙΑΚΛΑΔΩΣΗ ΚΡΟΥΣΩΝΑ 1 (Μ)",
       "lat": 35.3154702,
@@ -1265,6 +1444,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-athanasioy-moysi-ag-aik-e": {
       "slug": "hkl-athanasioy-moysi-ag-aik-e",
+      "apiCode": "0822",
       "name": "AThANASIOY Moysi - AG. AIK (E)",
       "nameEl": "ΑΘΑΝΑΣΙΟΥ ΜΟΥΣΗ - ΑΓ. ΑΙΚ (Ε)",
       "lat": 35.31847899394434,
@@ -1272,6 +1452,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agios-ioanni-xostos": {
       "slug": "hkl-agios-ioanni-xostos",
+      "apiCode": "0902",
       "name": "Agios Ioanni Xostos",
       "nameEl": "ΑΓΙΟΣ ΙΩΑΝΝΗ ΧΩΣΤΟΣ",
       "lat": 35.3205808,
@@ -1279,6 +1460,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eirinis-filias": {
       "slug": "hkl-eirinis-filias",
+      "apiCode": "0903",
       "name": "Eirinis & Filias",
       "nameEl": "ΕΙΡΗΝΗΣ ΚΑΙ ΦΙΛΙΑΣ",
       "lat": 35.3183762,
@@ -1286,6 +1468,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-pinelopis": {
       "slug": "hkl-pinelopis",
+      "apiCode": "0904",
       "name": "Pinelopis",
       "nameEl": "ΠΗΝΕΛΟΠΗΣ",
       "lat": 35.310521,
@@ -1293,6 +1476,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-manou-katraki-168": {
       "slug": "hkl-manou-katraki-168",
+      "apiCode": "0905",
       "name": "Manou Katraki 168",
       "nameEl": "ΜΑΝΟΥ ΚΑΤΡΑΚΗ 168",
       "lat": 35.2954254,
@@ -1300,6 +1484,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-church-agiou-ioanni-xostou": {
       "slug": "hkl-church-agiou-ioanni-xostou",
+      "apiCode": "0910",
       "name": "Church Agiou Ioanni Xostou",
       "nameEl": "ΕΚΚΛΗΣΙΑ ΑΓΙΟΥ ΙΩΑΝΝΗ ΧΩΣΤΟΥ",
       "lat": 35.3211588,
@@ -1307,6 +1492,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-christomichali-chylouri-103": {
       "slug": "hkl-christomichali-chylouri-103",
+      "apiCode": "0911",
       "name": "Christomichali Chylouri 103",
       "nameEl": "ΧΡΙΣΤΟΜΙΧΑΛΗ ΞΥΛΟΥΡΗ 103",
       "lat": 35.3249873,
@@ -1314,6 +1500,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-police-station-prassa": {
       "slug": "hkl-police-station-prassa",
+      "apiCode": "0912",
       "name": "Police Station Prassa",
       "nameEl": "ΑΣΤΥΝΑΜΙΚΟ ΜΕΓΑΡΟ ΠΡΑΣΣΑ",
       "lat": 35.3315961,
@@ -1321,6 +1508,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-prassa-2": {
       "slug": "hkl-prassa-2",
+      "apiCode": "0913",
       "name": "Prassa 2",
       "nameEl": "ΠΡΑΣΣΑ 2",
       "lat": 35.3213666,
@@ -1328,6 +1516,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ethnomartyron-antheon-mesampelis": {
       "slug": "hkl-ethnomartyron-antheon-mesampelis",
+      "apiCode": "0914",
       "name": "Ethnomartyron & Antheon Mesampelis",
       "nameEl": "ΕΘΝΟΜΑΡΤΥΡΩΝ ΚΑΙ ΑΝΘΕΩΝ ΜΕΣΑΜΠΕΛΙΣ",
       "lat": 35.315587,
@@ -1335,6 +1524,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-antieon-nefelis": {
       "slug": "hkl-antieon-nefelis",
+      "apiCode": "0915",
       "name": "Antieon & Nefelis",
       "nameEl": "ΑΝΘΕΩΝ ΚΑΙ ΝΕΦΕΛΗΣ",
       "lat": 35.3140771,
@@ -1342,6 +1532,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-sperxiou-oulaf-palme": {
       "slug": "hkl-sperxiou-oulaf-palme",
+      "apiCode": "0916",
       "name": "Sperxiou & Oulaf Palme",
       "nameEl": "ΣΠΕΡΧΙΟΥ ΚΑΙ ΟΥΛΩΦ ΠΑΛΜΕ",
       "lat": 35.3126406,
@@ -1349,6 +1540,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-manou-katraki-antistaseos-vasilies": {
       "slug": "hkl-manou-katraki-antistaseos-vasilies",
+      "apiCode": "0917",
       "name": "Manou Katraki - Antistaseos - Vasilies",
       "nameEl": "ΜΑΝΟΥ ΚΑΤΡΑΚΗ - ΑΝΤΙΣΤΑΣΕΩΣ - ΒΑΣΙΛΙΕΣ",
       "lat": 35.2678256,
@@ -1356,6 +1548,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-chatzaki-agiou-antoniou-diastaurosi-gournes": {
       "slug": "hkl-chatzaki-agiou-antoniou-diastaurosi-gournes",
+      "apiCode": "0918",
       "name": "Chatzaki - & Agiou Antoniou - Diastaurosi Gournes",
       "nameEl": "ΧΑΤΖΑΚΗ - & ΑΓΙΟΥ ΑΝΤΩΝΙΟΥ - ΔΙΑΣΤΑΥΡΟΣΗ ΓΟΥΡΝΕΣ",
       "lat": 35.2987137,
@@ -1363,6 +1556,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-dafermou-filikis-etairias-ag-aikaterini": {
       "slug": "hkl-dafermou-filikis-etairias-ag-aikaterini",
+      "apiCode": "0919",
       "name": "Dafermou - Filikis Etairias Ag.aikaterini",
       "nameEl": "ΔΑΦΕΡΜΟΥ - ΦΙΛΙΚΗΣ ΕΤΑΙΡΙΑΣ ΑΓ.ΑΙΚΑΤΕΡΙΝΗ",
       "lat": 35.332297945906,
@@ -1370,6 +1564,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-dafermou-agiou-nektariou-ag-aik": {
       "slug": "hkl-dafermou-agiou-nektariou-ag-aik",
+      "apiCode": "0920",
       "name": "Dafermou & Agiou Nektariou - AG. AIK",
       "nameEl": "ΔΑΦΕΡΜΟΥ ΚΑΙ ΑΓΙΟΥ ΝΕΚΤΑΡΙΟΥ - ΑΓ. ΑΙΚ",
       "lat": 35.3343769,
@@ -1377,6 +1572,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agiou-nektariou-filikis-etairias-ag-aik": {
       "slug": "hkl-agiou-nektariou-filikis-etairias-ag-aik",
+      "apiCode": "0921",
       "name": "Agiou Nektariou & Filikis Etairias AG. AIK",
       "nameEl": "ΑΓΙΟΥ ΝΕΚΤΑΡΙΟΥ ΚΑΙ ΦΙΛΙΚΗΣ ΕΤΑΙΡΙΑΣ ΑΓ. ΑΙΚ",
       "lat": 35.3318267,
@@ -1384,6 +1580,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-elmepa-epis": {
       "slug": "hkl-ts-elmepa-epis",
+      "apiCode": "0923",
       "name": "TS Elmepa Epis.",
       "nameEl": "ΤΣ ΕΛΜΕΠΑ ΑΝΑΧ/ΗΣ.",
       "lat": 35.3096174,
@@ -1391,6 +1588,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-62-martyron-360": {
       "slug": "hkl-avenue-62-martyron-360",
+      "apiCode": "1001",
       "name": "Avenue 62 Martyron 360",
       "nameEl": "ΛΕΩΦΟΡΟΣ 62 ΜΑΡΤΥΡΩΝ 360",
       "lat": 35.3317425,
@@ -1398,6 +1596,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-62-martyron-369-pagkritio-stadio": {
       "slug": "hkl-avenue-62-martyron-369-pagkritio-stadio",
+      "apiCode": "1002",
       "name": "Avenue 62 Martyron 369 - Pagkritio Stadio",
       "nameEl": "ΛΕΩΦΟΡΟΣ 62 ΜΑΡΤΥΡΩΝ 369 - ΠΑΓΚΡΗΤΙΟ ΣΤΑΔΙΟ",
       "lat": 35.3326717,
@@ -1405,6 +1604,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-62-martyron-377-xeropotamos": {
       "slug": "hkl-avenue-62-martyron-377-xeropotamos",
+      "apiCode": "1003",
       "name": "Avenue 62 Martyron 377 - Xeropotamos",
       "nameEl": "ΛΕΩΦΟΡΟΣ 62 ΜΑΡΤΥΡΩΝ 377 - ΞΕΡΟΠΟΤΑΜΟΣ",
       "lat": 35.3327886,
@@ -1412,6 +1612,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-hotel-vanisko": {
       "slug": "hkl-hotel-vanisko",
+      "apiCode": "1004",
       "name": "Hotel Vanisko",
       "nameEl": "ΞΕΝΟΔΟΧΕΙΟ VANISKO",
       "lat": 35.3339745,
@@ -1419,6 +1620,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-andrea-papandreou-56-vagia": {
       "slug": "hkl-andrea-papandreou-56-vagia",
+      "apiCode": "1006",
       "name": "Andrea Papandreou 56 Vagia",
       "nameEl": "ΑΝΔΡΕΑ ΠΑΠΑΝΔΡΕΟΥ 56 ΒΑΓΙΑ",
       "lat": 35.3354736,
@@ -1426,6 +1628,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-hotel-candia-maris": {
       "slug": "hkl-hotel-candia-maris",
+      "apiCode": "1007",
       "name": "Hotel Candia Maris",
       "nameEl": "ΞΕΝΟΔΟΧΕΙΟ  CANDIA MARIS",
       "lat": 35.3355985,
@@ -1433,6 +1636,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-hotel-creta-beach": {
       "slug": "hkl-hotel-creta-beach",
+      "apiCode": "1008",
       "name": "Hotel Creta Beach",
       "nameEl": "ΞΕΝΟΔΟΧΕΙΟ CRETA BEACH.",
       "lat": 35.3358169,
@@ -1440,6 +1644,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-hotel-agapi-beach-hotel-marilena": {
       "slug": "hkl-hotel-agapi-beach-hotel-marilena",
+      "apiCode": "1009",
       "name": "Hotel Agapi Beach - Hotel Marilena.",
       "nameEl": "ΞΕΝΟΔΟΧΕΙΟ AGAPI BEACH - ΞΕΝΟΔΟΧΕΙΟ MARILENA.",
       "lat": 35.3358567,
@@ -1447,6 +1652,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-hotel-santa-marina": {
       "slug": "hkl-hotel-santa-marina",
+      "apiCode": "1010",
       "name": "Hotel Santa Marina.",
       "nameEl": "ΞΕΝΟΔΟΧΕΙΟ SANTA MARINA.",
       "lat": 35.3360174,
@@ -1454,6 +1660,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-technopolis-hotel-marirena": {
       "slug": "hkl-technopolis-hotel-marirena",
+      "apiCode": "1011",
       "name": "Technopolis - Hotel Marirena",
       "nameEl": "ΤΕΧΝΟΠΟΛΙΣ -  ΞΕΝΟΔΟΧΕΙΟ MARIRENA",
       "lat": 35.3357179,
@@ -1461,6 +1668,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-petousis-hotel-roxani": {
       "slug": "hkl-petousis-hotel-roxani",
+      "apiCode": "1012",
       "name": "Petousis - Hotel Roxani",
       "nameEl": "ΠΕΤΟΥΣΗΣ - ΞΕΝΟΔΟΧΕΙΟ  ROXANI",
       "lat": 35.3354127,
@@ -1468,6 +1676,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-castro-hotel": {
       "slug": "hkl-castro-hotel",
+      "apiCode": "1013",
       "name": "Castro Hotel",
       "nameEl": "ΞΕΝΟΔΟΧΕΙΟ CASTRO",
       "lat": 35.3350639,
@@ -1475,6 +1684,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-police-station-hotel-dolphin-bay": {
       "slug": "hkl-police-station-hotel-dolphin-bay",
+      "apiCode": "1014",
       "name": "Police Station - Hotel Dolphin BAY",
       "nameEl": "ΑΣΤΥΝΟΜΙΚΟ ΤΜΗΜΑ - ΞΕΝΟΔΟΧΕΙΟ DOLPHIN BAY",
       "lat": 35.335129659763574,
@@ -1482,6 +1692,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-hotel-amounda-vay": {
       "slug": "hkl-hotel-amounda-vay",
+      "apiCode": "1015",
       "name": "Hotel Amounda VAY",
       "nameEl": "ΞΕΝΟΔΟΧΕΙΟ AMOUNDA BAY",
       "lat": 35.3352141,
@@ -1489,6 +1700,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-hotel-poseidon": {
       "slug": "hkl-hotel-poseidon",
+      "apiCode": "1016",
       "name": "Hotel Poseidon",
       "nameEl": "ΞΕΝΟΔΟΧΕΙΟ ΠΟΣΕΙΔΩΝ",
       "lat": 35.334712,
@@ -1496,6 +1708,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-hotel-apollonia": {
       "slug": "hkl-hotel-apollonia",
+      "apiCode": "1017",
       "name": "Hotel Apollonia",
       "nameEl": "ΞΕΝΟΔΟΧΕΙΟ ΑΠΟΛΛΩΝΙA",
       "lat": 35.3368751,
@@ -1503,6 +1716,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-hotel-akti-zeus": {
       "slug": "hkl-hotel-akti-zeus",
+      "apiCode": "1018",
       "name": "Hotel Akti Zeus",
       "nameEl": "ΞΕΝΟΔΟΧΕΙΟ ΑΚΤΗ ΖΕΥΣ",
       "lat": 35.3386646,
@@ -1510,6 +1724,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-oaed": {
       "slug": "hkl-oaed",
+      "apiCode": "1019",
       "name": "Oaed",
       "nameEl": "ΟΑΕΔ",
       "lat": 35.3254222,
@@ -1517,6 +1732,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-hotel-zeus": {
       "slug": "hkl-hotel-zeus",
+      "apiCode": "1020",
       "name": "Hotel Zeus",
       "nameEl": "ΞΕΝΟΔΟΧΕΙΟ ΖΕΥΣ",
       "lat": 35.3381677,
@@ -1524,6 +1740,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-hotel-apollonia-2": {
       "slug": "hkl-hotel-apollonia-2",
+      "apiCode": "1021",
       "name": "Hotel Apollonia",
       "nameEl": "ΞΕΝΟΔΟΧΕΙΟ ΑΠΟΛΛΩΝΙΑ",
       "lat": 35.3367887,
@@ -1531,6 +1748,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-hotel-poseidon-2": {
       "slug": "hkl-hotel-poseidon-2",
+      "apiCode": "1022",
       "name": "Hotel Poseidon",
       "nameEl": "ΞΕΝΟΔΟΧΕΙΟ ΠΟΣΕΙΔΩΝ",
       "lat": 35.3346272,
@@ -1538,6 +1756,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-hotel-amounda-vay-hotel-minoas": {
       "slug": "hkl-hotel-amounda-vay-hotel-minoas",
+      "apiCode": "1023",
       "name": "Hotel Amounda VAY - Hotel Minoas",
       "nameEl": "ΞΕΝΟΔΟΧΕΙΟ AMOUNDA BAY.",
       "lat": 35.3350803,
@@ -1545,6 +1764,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-andrea-papandreou-301": {
       "slug": "hkl-andrea-papandreou-301",
+      "apiCode": "1024",
       "name": "Andrea Papandreou 301",
       "nameEl": "ΑΝΔΡΕΑ ΠΑΠΑΝΔΡΕΟΥ 301",
       "lat": 35.3349685,
@@ -1552,6 +1772,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-petousis-hotel-roxani-2": {
       "slug": "hkl-petousis-hotel-roxani-2",
+      "apiCode": "1025",
       "name": "Petousis - Hotel Roxani",
       "nameEl": "ΠΕΤΟΥΣΗΣ - ΞΕΝΟΔΟΧΕΙΟ  ROXANI",
       "lat": 35.3352979,
@@ -1559,6 +1780,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-technopolis-hotel-marirena-2": {
       "slug": "hkl-technopolis-hotel-marirena-2",
+      "apiCode": "1026",
       "name": "Technopolis - Hotel Marirena",
       "nameEl": "ΤΕΧΝΟΠΟΛΙΣ -  ΞΕΝΟΔΟΧΕΙΟ MARIRENA",
       "lat": 35.3355769,
@@ -1566,6 +1788,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-andrea-papandreou-230": {
       "slug": "hkl-andrea-papandreou-230",
+      "apiCode": "1027",
       "name": "Andrea Papandreou 230",
       "nameEl": "ΑΝΔΡΕΑ ΠΑΠΑΝΔΡΕΟΥ 230",
       "lat": 35.335918,
@@ -1573,6 +1796,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-andrea-papandreou-hotel-marilena-hotel-agapi": {
       "slug": "hkl-andrea-papandreou-hotel-marilena-hotel-agapi",
+      "apiCode": "1028",
       "name": "Andrea Papandreou Hotel Marilena - Hotel Agapi",
       "nameEl": "ΑΝΔΡΕΑ ΠΑΠΑΝΔΡΕΟΥ HOTEL MARILENA - HOTEL AGAPI",
       "lat": 35.3357341,
@@ -1580,6 +1804,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-hotel-creta-beach-2": {
       "slug": "hkl-hotel-creta-beach-2",
+      "apiCode": "1029",
       "name": "Hotel Creta Beach",
       "nameEl": "ΞΕΝΟΔΟΧΕΙΟ CRETA BEACH.",
       "lat": 35.3356852,
@@ -1587,6 +1812,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-hotel-candia-maris-2": {
       "slug": "hkl-hotel-candia-maris-2",
+      "apiCode": "1030",
       "name": "Hotel Candia Maris",
       "nameEl": "ΞΕΝΟΔΟΧΕΙΟ  CANDIA MARIS",
       "lat": 35.3355377,
@@ -1594,6 +1820,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-andrea-papandreou-87": {
       "slug": "hkl-andrea-papandreou-87",
+      "apiCode": "1031",
       "name": "Andrea Papandreou 87",
       "nameEl": "ΑΝΔΡΕΑ ΠΑΠΑΝΔΡΕΟΥ 87",
       "lat": 35.3353791,
@@ -1601,6 +1828,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-andrea-papandreou-49": {
       "slug": "hkl-andrea-papandreou-49",
+      "apiCode": "1032",
       "name": "Andrea Papandreou 49",
       "nameEl": "ΑΝΔΡΕΑ ΠΑΠΑΝΔΡΕΟΥ 49",
       "lat": 35.3349552,
@@ -1608,6 +1836,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-hotel-malena-akti-corali": {
       "slug": "hkl-hotel-malena-akti-corali",
+      "apiCode": "1033",
       "name": "Hotel Malena. - Akti Corali.",
       "nameEl": "ΞΕΝΟΔΟΧΕΙΟ MALENA. - AKTI CORALI.",
       "lat": 35.3346485,
@@ -1615,6 +1844,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-hotel-vanisko-2": {
       "slug": "hkl-hotel-vanisko-2",
+      "apiCode": "1034",
       "name": "Hotel Vanisko",
       "nameEl": "ΞΕΝΟΔΟΧΕΙΟ VANISKO",
       "lat": 35.3340493,
@@ -1622,6 +1852,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-xeropotamos-vamvoukaki": {
       "slug": "hkl-xeropotamos-vamvoukaki",
+      "apiCode": "1035",
       "name": "Xeropotamos - Vamvoukaki",
       "nameEl": "ΞΕΡΟΠΟΤΑΜΟΣ - ΒΑΜΒΟΥΚΑΚΗ",
       "lat": 35.3326059,
@@ -1629,6 +1860,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-62-martyron-370-pagkritio-stadium": {
       "slug": "hkl-62-martyron-370-pagkritio-stadium",
+      "apiCode": "1036",
       "name": "62 Martyron 370 - Pagkritio Stadium",
       "nameEl": "62 ΜΑΡΤΥΡΩΝ 370 - ΠΑΓΚΡΗΤΙΟ ΣΤΑΔΙΟ",
       "lat": 35.3324737,
@@ -1636,6 +1868,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-62-martyron-366": {
       "slug": "hkl-62-martyron-366",
+      "apiCode": "1037",
       "name": "62 Martyron 366",
       "nameEl": "62 ΜΑΡΤΥΡΩΝ 366",
       "lat": 35.3318435,
@@ -1643,6 +1876,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-andrea-papandreou-175": {
       "slug": "hkl-andrea-papandreou-175",
+      "apiCode": "1038",
       "name": "Andrea Papandreou 175",
       "nameEl": "ΑΝΔΡΕΑ ΠΑΠΑΝΔΡΕΟΥ 175",
       "lat": 35.3358191,
@@ -1650,6 +1884,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-andrea-papandreou-86": {
       "slug": "hkl-andrea-papandreou-86",
+      "apiCode": "1039",
       "name": "Andrea Papandreou 86",
       "nameEl": "ΑΝΔΡΕΑ ΠΑΠΑΝΔΡΕΟΥ 86",
       "lat": 35.3359015,
@@ -1657,6 +1892,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-hotel-malena-akti-corali-2": {
       "slug": "hkl-hotel-malena-akti-corali-2",
+      "apiCode": "1040",
       "name": "Hotel Malena. - Akti Corali.",
       "nameEl": "ΞΕΝΟΔΟΧΕΙΟ MALENA. - AKTI CORALI.",
       "lat": 35.3349282,
@@ -1664,6 +1900,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-agion-panton": {
       "slug": "hkl-ts-agion-panton",
+      "apiCode": "1041",
       "name": "TS Agion Panton",
       "nameEl": "ΤΣ ΑΓΙΩΝ ΠΑΝΤΩΝ",
       "lat": 35.3108942,
@@ -1671,6 +1908,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-skalani": {
       "slug": "hkl-ts-skalani",
+      "apiCode": "1043",
       "name": "TS Skalani",
       "nameEl": "ΤΣ ΣΚΑΛΑΝΙ",
       "lat": 35.2830445,
@@ -1678,6 +1916,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-square-sinani": {
       "slug": "hkl-ts-square-sinani",
+      "apiCode": "1044",
       "name": "Ts_square Sinani",
       "nameEl": "ΤΣ ΠΛΑΤΕΙΑ ΣΙΝΑΝΗ",
       "lat": 35.3192917,
@@ -1685,6 +1924,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-mesampelies": {
       "slug": "hkl-ts-mesampelies",
+      "apiCode": "1047",
       "name": "Ts_mesampelies",
       "nameEl": "ΤΣ ΜΕΣΑΜΠΕΛΙΕΣ",
       "lat": 35.30416220830279,
@@ -1692,6 +1932,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-green-line": {
       "slug": "hkl-ts-green-line",
+      "apiCode": "1050",
       "name": "Ts_green Line",
       "nameEl": "ΤΣ ΠΡΑΣΙΝΗ ΓΡΑΜΜΗ",
       "lat": 35.3215149,
@@ -1699,6 +1940,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-l-plastira-pyli-vitileem": {
       "slug": "hkl-l-plastira-pyli-vitileem",
+      "apiCode": "1051",
       "name": "L. Plastira Pyli Vitileem",
       "nameEl": "Λ. ΠΛΑΣΤΗΡΑ ΠΥΛΗ ΒΗΘΛΕΕΜ",
       "lat": 35.3361425,
@@ -1706,6 +1948,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-l-plastira-stoa-makasi": {
       "slug": "hkl-l-plastira-stoa-makasi",
+      "apiCode": "1052",
       "name": "L. Plastira Stoa Makasi",
       "nameEl": "Λ. ΠΛΑΣΤΗΡΑ ΣΤΟΑ ΜΑΚΑΣΙ",
       "lat": 35.3334916,
@@ -1713,6 +1956,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-l-plastira-kipotheatro-xatzidaki": {
       "slug": "hkl-l-plastira-kipotheatro-xatzidaki",
+      "apiCode": "1053",
       "name": "L. Plastira Kipotheatro Xatzidaki",
       "nameEl": "Λ. ΠΛΑΣΤΗΡΑ ΚΗΠΟΘΕΑΤΡΟ ΧΑΤΖΗΔΑΚΗ",
       "lat": 35.3336087134609,
@@ -1720,6 +1964,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-manou-katraki-64": {
       "slug": "hkl-manou-katraki-64",
+      "apiCode": "1064",
       "name": "Manou Katraki 64",
       "nameEl": "ΜΑΝΟΥ ΚΑΤΡΑΚΗ 64",
       "lat": 35.3077531,
@@ -1727,6 +1972,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-charilaou-trikoupi": {
       "slug": "hkl-charilaou-trikoupi",
+      "apiCode": "1067",
       "name": "Charilaou Trikoupi",
       "nameEl": "ΧΑΡΙΛΑΟΥ ΤΡΙΚΟΥΠΗ",
       "lat": 35.333934,
@@ -1734,6 +1980,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-charilaou-trikoupi-2": {
       "slug": "hkl-charilaou-trikoupi-2",
+      "apiCode": "1068",
       "name": "Charilaou Trikoupi 2",
       "nameEl": "ΧΑΡΙΛΑΟΥ ΤΡΙΚΟΥΠΗ 2",
       "lat": 35.3345559,
@@ -1741,6 +1988,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-l-knossou-244": {
       "slug": "hkl-l-knossou-244",
+      "apiCode": "1077",
       "name": "L.knossou 244",
       "nameEl": "Λ.ΚΝΩΣΣΟΥ 244",
       "lat": 35.3123927,
@@ -1748,6 +1996,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-dimokratias-24": {
       "slug": "hkl-dimokratias-24",
+      "apiCode": "1079",
       "name": "Dimokratias 24",
       "nameEl": "ΔΗΜΟΚΡΑΤΙΑΣ 24",
       "lat": 35.3307472,
@@ -1755,6 +2004,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-megalou-alexandrou-85": {
       "slug": "hkl-megalou-alexandrou-85",
+      "apiCode": "1085",
       "name": "Megalou Alexandrou 85",
       "nameEl": "ΜΕΓΑΛΟΥ ΑΛΕΞΑΝΔΡΟΥ 85",
       "lat": 35.3219803,
@@ -1762,6 +2012,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-oulof-palme-52": {
       "slug": "hkl-oulof-palme-52",
+      "apiCode": "1086",
       "name": "Oulof Palme 52",
       "nameEl": "ΟΥΛΩΦ ΠΑΛΜΕ 52",
       "lat": 35.3152002,
@@ -1769,6 +2020,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-oulof-palme-158": {
       "slug": "hkl-oulof-palme-158",
+      "apiCode": "1089",
       "name": "Oulof Palme 158",
       "nameEl": "ΟΥΛΩΦ ΠΑΛΜΕ 158",
       "lat": 35.305849,
@@ -1776,6 +2028,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-antieon-nikis": {
       "slug": "hkl-antieon-nikis",
+      "apiCode": "1090",
       "name": "Antieon & Nikis",
       "nameEl": "ΑΝΘΕΩΝ ΚΑΙ ΝΙΚΗΣ",
       "lat": 35.3043175,
@@ -1783,6 +2036,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-zervou": {
       "slug": "hkl-zervou",
+      "apiCode": "1091",
       "name": "Zervou",
       "nameEl": "ΖΕΡΒΟΥ",
       "lat": 35.304374,
@@ -1790,6 +2044,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-markou-karanastasi": {
       "slug": "hkl-markou-karanastasi",
+      "apiCode": "1092",
       "name": "Markou Karanastasi",
       "nameEl": "ΜΑΡΚΟΥ ΚΑΡΑΝΑΣΤΑΣΗ",
       "lat": 35.3067449,
@@ -1797,6 +2052,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eam-papanastasiou-197": {
       "slug": "hkl-eam-papanastasiou-197",
+      "apiCode": "1094",
       "name": "EAM Papanastasiou 197",
       "nameEl": "ΕΑΜ ΠΑΠΑΝΑΣΤΑΣΙΟΥ 197",
       "lat": 35.3097953,
@@ -1804,6 +2060,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kampos-agiou-sylla": {
       "slug": "hkl-kampos-agiou-sylla",
+      "apiCode": "1100",
       "name": "Kampos Agiou Sylla",
       "nameEl": "ΚΑΜΠΟΣ ΑΓΙΟΥ ΣΥΛΛΑ",
       "lat": 35.2562669,
@@ -1811,6 +2068,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-menelaou-parlama-26": {
       "slug": "hkl-avenue-menelaou-parlama-26",
+      "apiCode": "1101",
       "name": "Avenue Menelaou Parlama 26",
       "nameEl": "ΛΕΩΦΟΡΟΣ  ΜΕΝΕΛΑΟΥ ΠΑΡΛΑΜΑ 26",
       "lat": 35.3273635,
@@ -1818,6 +2076,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-menelaou-parlama-58": {
       "slug": "hkl-avenue-menelaou-parlama-58",
+      "apiCode": "1102",
       "name": "Avenue Menelaou Parlama 58",
       "nameEl": "ΛΕΩΦΟΡΟΣ ΜΕΝΕΛΑΟΥ ΠΑΡΛΑΜΑ  58",
       "lat": 35.32373254111598,
@@ -1825,6 +2084,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-athitaki": {
       "slug": "hkl-athitaki",
+      "apiCode": "1103",
       "name": "Athitaki",
       "nameEl": "ΑΘΗΤΑΚΗ",
       "lat": 35.3214665,
@@ -1832,6 +2092,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-hellenic-mediterranean-university-m": {
       "slug": "hkl-hellenic-mediterranean-university-m",
+      "apiCode": "1104",
       "name": "Hellenic Mediterranean University (M)",
       "nameEl": "ΕΛΛΗΝΙΚΟ ΜΕΣΟΓΕΙΑΚΟ ΠΑΝΕΠΙΣΤΗΜΙΟ (ΕΛΜΕΠΑ (Μ)",
       "lat": 35.3196445,
@@ -1839,6 +2100,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-basketball-court-elmepa": {
       "slug": "hkl-basketball-court-elmepa",
+      "apiCode": "1105",
       "name": "Basketball Court Elmepa",
       "nameEl": "ΓΗΠΕΔΟ ΜΠΑΣΚΕΤ ΕΛΜΕΠΑ",
       "lat": 35.3161336,
@@ -1846,6 +2108,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-protypo-high-school-m": {
       "slug": "hkl-protypo-high-school-m",
+      "apiCode": "1106",
       "name": "Protypo High School (M)",
       "nameEl": "ΠΡΟΤΥΠΟ ΓΥΜΝΑΣΙΟ ΛΥΚΕΙΟ  (Μ)",
       "lat": 35.3114566,
@@ -1853,6 +2116,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-basketball-court-elmepa-2": {
       "slug": "hkl-basketball-court-elmepa-2",
+      "apiCode": "1107",
       "name": "Basketball Court Elmepa",
       "nameEl": "ΓΗΠΕΔΟ ΜΠΑΣΚΕΤ ΕΛΜΕΠΑ",
       "lat": 35.3159208,
@@ -1860,6 +2124,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-hellenic-mediterranean-university-e": {
       "slug": "hkl-hellenic-mediterranean-university-e",
+      "apiCode": "1108",
       "name": "Hellenic Mediterranean University (Ε)",
       "nameEl": "ΕΛΛΗΝΙΚΟ ΜΕΣΟΓΕΙΑΚΟ ΠΑΝΕΠΙΣΤΗΜΙΟ  (ΕΛΜΕΠΑ (Ε)",
       "lat": 35.3195065,
@@ -1867,6 +2132,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-athitaki-2": {
       "slug": "hkl-athitaki-2",
+      "apiCode": "1109",
       "name": "Athitaki",
       "nameEl": "ΑΘΗΤΑΚΗ",
       "lat": 35.3223776,
@@ -1874,6 +2140,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-athitaki-2-2": {
       "slug": "hkl-athitaki-2-2",
+      "apiCode": "1110",
       "name": "Athitaki 2",
       "nameEl": "ΑΘΗΤΑΚΗ 2",
       "lat": 35.3240282,
@@ -1881,6 +2148,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-menelaou-parlama-77": {
       "slug": "hkl-avenue-menelaou-parlama-77",
+      "apiCode": "1111",
       "name": "Avenue Menelaou Parlama 77",
       "nameEl": "ΛΕΩΦΟΡΟΣ ΜΕΝΕΛΑΟΥ ΠΑΡΛΑΜΑ  77",
       "lat": 35.3231258,
@@ -1888,6 +2156,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-menelaou-parlama-27": {
       "slug": "hkl-avenue-menelaou-parlama-27",
+      "apiCode": "1112",
       "name": "Avenue Menelaou Parlama 27",
       "nameEl": "ΛΕΩΦΟΡΟΣ ΜΕΝΕΛΑΟΥ ΠΑΡΛΑΜΑ  27",
       "lat": 35.3271665,
@@ -1895,6 +2164,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-student-residence-elmepa": {
       "slug": "hkl-student-residence-elmepa",
+      "apiCode": "1113",
       "name": "Student Residence Elmepa",
       "nameEl": "ΦΟΙΤΙΤΙΚΗ ΕΣΤΙΑ ΕΛΜΕΠΑ",
       "lat": 35.3138666,
@@ -1902,6 +2172,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-student-residence-elmepa-2": {
       "slug": "hkl-student-residence-elmepa-2",
+      "apiCode": "1114",
       "name": "Student Residence Elmepa",
       "nameEl": "ΦΟΙΤΙΤΙΚΗ ΕΣΤΙΑ ΕΛΜΕΠΑ",
       "lat": 35.3137502,
@@ -1909,6 +2180,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-protypo-high-school-e": {
       "slug": "hkl-protypo-high-school-e",
+      "apiCode": "1116",
       "name": "Protypo High School (E)",
       "nameEl": "ΠΡΟΤΥΠΟ ΓΥΜΝΑΣΙΟ ΛΥΚΕΙΟ  (Ε)",
       "lat": 35.3115259,
@@ -1916,6 +2188,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-panepistimio": {
       "slug": "hkl-ts-panepistimio",
+      "apiCode": "1119",
       "name": "TS Panepistimio",
       "nameEl": "ΤΣ ΠΑΝΕΠΙΣΤΗΜΙΟ",
       "lat": 35.30584571394926,
@@ -1923,6 +2196,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-megalou-alexandrou-120": {
       "slug": "hkl-megalou-alexandrou-120",
+      "apiCode": "1120",
       "name": "Megalou Alexandrou 120",
       "nameEl": "ΜΕΓΑΛΟΥ ΑΛΕΞΑΝΔΡΟΥ 120",
       "lat": 35.3221311,
@@ -1930,6 +2204,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-irodotou": {
       "slug": "hkl-irodotou",
+      "apiCode": "1123",
       "name": "Irodotou",
       "nameEl": "ΗΡΟΔΟΤΟΥ",
       "lat": 35.3381104,
@@ -1937,6 +2212,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-sofokli-venizelou": {
       "slug": "hkl-sofokli-venizelou",
+      "apiCode": "1129",
       "name": "Sofokli Venizelou",
       "nameEl": "ΣΟΦΟΚΛΗ ΒΕΝΙΖΕΛΟΥ",
       "lat": 35.33608277310879,
@@ -1944,6 +2220,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-talos": {
       "slug": "hkl-talos",
+      "apiCode": "1133",
       "name": "Talos",
       "nameEl": "ΤΑΛΩΣ",
       "lat": 35.3405894,
@@ -1951,6 +2228,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-sofokli-venizelou-arxiepiskopou-makariou": {
       "slug": "hkl-sofokli-venizelou-arxiepiskopou-makariou",
+      "apiCode": "1135",
       "name": "Sofokli Venizelou-arxiepiskopou Makariou",
       "nameEl": "ΣΟΦΟΚΛΗ ΒΕΝΙΖΕΛΟΥ-ΑΡΧΙΕΠΙΣΚΟΠΟΥ ΜΑΚΑΡΙΟΥ",
       "lat": 35.341449824865855,
@@ -1958,6 +2236,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-sofokli-venizelou-giamalaki": {
       "slug": "hkl-sofokli-venizelou-giamalaki",
+      "apiCode": "1137",
       "name": "Sofokli Venizelou-giamalaki",
       "nameEl": "ΣΟΦΟΚΛΗ ΒΕΝΙΖΕΛΟΥ-ΓΙΑΜΑΛΑΚΗ",
       "lat": 35.34115763946936,
@@ -1965,6 +2244,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-sofokli-venizelou-historical-museum": {
       "slug": "hkl-sofokli-venizelou-historical-museum",
+      "apiCode": "1138",
       "name": "Sofokli Venizelou-historical Museum",
       "nameEl": "ΣΟΦΟΚΛΗ ΒΕΝΙΖΕΛΟΥ-ΙΣΤΟΡΙΚΟ ΜΟΥΣΕΙΟ",
       "lat": 35.3419461,
@@ -1972,6 +2252,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-fort-koule-square-18": {
       "slug": "hkl-fort-koule-square-18",
+      "apiCode": "1139",
       "name": "Fort Koule Square 18",
       "nameEl": "ΦΡΟΥΡΕΙΟ ΚΟΥΛΕ ΠΛΑΤΕΙΑ 18 ΑΓΓΛΩΝ",
       "lat": 35.3427544,
@@ -1979,6 +2260,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-square-sinani": {
       "slug": "hkl-square-sinani",
+      "apiCode": "1144",
       "name": "Square Sinani",
       "nameEl": "ΠΛΑΤΕΙΑ ΣΙΝΑΝΗ",
       "lat": 35.3196714,
@@ -1986,6 +2268,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-papanastasiou-145": {
       "slug": "hkl-papanastasiou-145",
+      "apiCode": "1145",
       "name": "Papanastasiou 145",
       "nameEl": "ΠΑΠΑΝΑΣΤΑΣΙΟΥ 145",
       "lat": 35.3145743,
@@ -1993,6 +2276,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-talos-2": {
       "slug": "hkl-talos-2",
+      "apiCode": "1146",
       "name": "Talos",
       "nameEl": "ΤΑΛΩΣ",
       "lat": 35.3407065,
@@ -2000,6 +2284,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-arxiepiskopou-makariou-2": {
       "slug": "hkl-arxiepiskopou-makariou-2",
+      "apiCode": "1150",
       "name": "Arxiepiskopou Makariou 2",
       "nameEl": "ΑΡΧΙΕΠΙΣΚΟΠΟΥ ΜΑΚΑΡΙΟΥ 2",
       "lat": 35.3387271,
@@ -2007,6 +2292,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-mouseio-fysikis-istorias": {
       "slug": "hkl-mouseio-fysikis-istorias",
+      "apiCode": "1154",
       "name": "Mouseio Fysikis Istorias",
       "nameEl": "ΜΟΥΣΕΙΟ ΦΥΣΙΚΗΣ ΙΣΤΟΡΙΑΣ",
       "lat": 35.3417569,
@@ -2014,6 +2300,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-agia-aikaterini": {
       "slug": "hkl-ts-agia-aikaterini",
+      "apiCode": "1163",
       "name": "TS Agia Aikaterini",
       "nameEl": "ΤΣ ΑΓΙΑ ΑΙΚΑΤΕΡΙΝΗ",
       "lat": 35.30929967379131,
@@ -2021,6 +2308,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-metaxaki-2": {
       "slug": "hkl-metaxaki-2",
+      "apiCode": "1166",
       "name": "Metaxaki 2",
       "nameEl": "ΜΕΤΑΞΑΚΗ 2",
       "lat": 35.3278098,
@@ -2028,6 +2316,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-mitera": {
       "slug": "hkl-mitera",
+      "apiCode": "1167",
       "name": "Mitera",
       "nameEl": "ΜΗΤΕΡΑ",
       "lat": 35.3414103,
@@ -2035,6 +2324,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-epivatikos-statimos": {
       "slug": "hkl-ts-epivatikos-statimos",
+      "apiCode": "1172",
       "name": "TS Epivatikos Statimos",
       "nameEl": "ΤΣ ΕΠΙΒΑΤΙΚΟΣ ΣΤΑΘΜΟΣ",
       "lat": 35.3414914,
@@ -2042,6 +2332,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-police-station": {
       "slug": "hkl-police-station",
+      "apiCode": "1175",
       "name": "Police Station",
       "nameEl": "ΑΣΤΥΝΟΜΙΚΟ ΜΕΓΑΡΟ",
       "lat": 35.3330382,
@@ -2049,6 +2340,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-police-station-2": {
       "slug": "hkl-police-station-2",
+      "apiCode": "1176",
       "name": "Police Station",
       "nameEl": "ΑΣΤΥΝΟΜΙΚΟ ΜΕΓΑΡΟ",
       "lat": 35.3331127,
@@ -2056,6 +2348,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-limnis-kourna": {
       "slug": "hkl-limnis-kourna",
+      "apiCode": "1177",
       "name": "Limnis Kourna",
       "nameEl": "ΛΙΜΝΗΣ ΚΟΥΡΝΑ",
       "lat": 35.3269958,
@@ -2063,6 +2356,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-papanastasiou-179": {
       "slug": "hkl-papanastasiou-179",
+      "apiCode": "1179",
       "name": "Papanastasiou 179",
       "nameEl": "ΠΑΠΑΝΑΣΤΑΣΙΟΥ 179",
       "lat": 35.3114454,
@@ -2070,6 +2364,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-krasadaki-1": {
       "slug": "hkl-krasadaki-1",
+      "apiCode": "1184",
       "name": "Krasadaki 1",
       "nameEl": "ΚΡΑΣΑΔΑΚΗ 1",
       "lat": 35.3227086,
@@ -2077,6 +2372,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-krasadaki-4": {
       "slug": "hkl-krasadaki-4",
+      "apiCode": "1185",
       "name": "Krasadaki 4",
       "nameEl": "ΚΡΑΣΑΔΑΚΗ 4",
       "lat": 35.3226692,
@@ -2084,6 +2380,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-krasadaki-2": {
       "slug": "hkl-krasadaki-2",
+      "apiCode": "1186",
       "name": "Krasadaki 2",
       "nameEl": "ΚΡΑΣΑΔΑΚΗ 2",
       "lat": 35.318939,
@@ -2091,6 +2388,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-krasadaki-xatzaki": {
       "slug": "hkl-krasadaki-xatzaki",
+      "apiCode": "1188",
       "name": "Krasadaki Xatzaki",
       "nameEl": "ΚΡΑΣΑΔΑΚΗ ΧΑΤΖΑΚΗ",
       "lat": 35.3154197,
@@ -2098,6 +2396,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-chatzaki-ag-ioannis": {
       "slug": "hkl-chatzaki-ag-ioannis",
+      "apiCode": "1189",
       "name": "Chatzaki AG Ioannis",
       "nameEl": "ΧΑΤΖΑΚΗ ΑΓ ΙΩΑΝΝΗΣ",
       "lat": 35.3162414,
@@ -2105,6 +2404,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ermi-1": {
       "slug": "hkl-ermi-1",
+      "apiCode": "1190",
       "name": "Ermi 1",
       "nameEl": "ΕΡΜΗ 1",
       "lat": 35.315519,
@@ -2112,6 +2412,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ermi-5": {
       "slug": "hkl-ermi-5",
+      "apiCode": "1191",
       "name": "Ermi 5",
       "nameEl": "ΕΡΜΗ 5",
       "lat": 35.3155107,
@@ -2119,6 +2420,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-emm-voreadi": {
       "slug": "hkl-emm-voreadi",
+      "apiCode": "1192",
       "name": "EMM Voreadi",
       "nameEl": "ΕΜΜ ΒΟΡΕΑΔΗ",
       "lat": 35.3134724,
@@ -2126,6 +2428,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-emm-voreadi-2": {
       "slug": "hkl-emm-voreadi-2",
+      "apiCode": "1193",
       "name": "EMM Voreadi",
       "nameEl": "ΕΜΜ ΒΟΡΕΑΔΗ",
       "lat": 35.3135535,
@@ -2133,6 +2436,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ermi-2": {
       "slug": "hkl-ermi-2",
+      "apiCode": "1194",
       "name": "Ermi 2",
       "nameEl": "ΕΡΜΗ 2",
       "lat": 35.3122413,
@@ -2140,6 +2444,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ermi-4": {
       "slug": "hkl-ermi-4",
+      "apiCode": "1195",
       "name": "Ermi 4",
       "nameEl": "ΕΡΜΗ 4",
       "lat": 35.3123983,
@@ -2147,6 +2452,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ermi-3": {
       "slug": "hkl-ermi-3",
+      "apiCode": "1196",
       "name": "Ermi 3",
       "nameEl": "ΕΡΜΗ 3",
       "lat": 35.3102745,
@@ -2154,6 +2460,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-natiena": {
       "slug": "hkl-natiena",
+      "apiCode": "1197",
       "name": "Natiena",
       "nameEl": "ΝΑΘΕΝΑ",
       "lat": 35.309585361213074,
@@ -2161,6 +2468,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-pikrodafni": {
       "slug": "hkl-pikrodafni",
+      "apiCode": "1199",
       "name": "Pikrodafni",
       "nameEl": "ΠΙΚΡΟΔΑΦΝΗ",
       "lat": 35.3172549,
@@ -2168,6 +2476,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-square-kyprou": {
       "slug": "hkl-square-kyprou",
+      "apiCode": "1202",
       "name": "Square Kyprou",
       "nameEl": "ΠΛΑΤΕΙΑ ΚΥΠΡΟΥ",
       "lat": 35.3339667,
@@ -2175,6 +2484,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-katsoulogiorgi-l-knossou-6": {
       "slug": "hkl-katsoulogiorgi-l-knossou-6",
+      "apiCode": "1203",
       "name": "Katsoulogiorgi L.knossou 6",
       "nameEl": "ΚΑΤΣΟΥΛΟΓΙΩΡΓΗ Λ.ΚΝΩΣΣΟΥ 6",
       "lat": 35.3313206,
@@ -2182,6 +2492,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-tria-peuka-l-knossou-40": {
       "slug": "hkl-tria-peuka-l-knossou-40",
+      "apiCode": "1204",
       "name": "Tria Peuka L.knossou 40",
       "nameEl": "ΤΡΙΑ ΠΕΥΚΑ Λ.ΚΝΩΣΣΟΥ 40",
       "lat": 35.3299592,
@@ -2189,6 +2500,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agios-konstantinos": {
       "slug": "hkl-agios-konstantinos",
+      "apiCode": "1205",
       "name": "Agios Konstantinos",
       "nameEl": "ΑΓΙΟΣ ΚΩΝΣΤΑΝΤΙΝΟΣ",
       "lat": 35.3280012,
@@ -2196,6 +2508,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-pertselaki": {
       "slug": "hkl-pertselaki",
+      "apiCode": "1206",
       "name": "Pertselaki",
       "nameEl": "ΠΕΡΤΣΕΛΑΚΗ",
       "lat": 35.3256111,
@@ -2203,6 +2516,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-mpentevi": {
       "slug": "hkl-mpentevi",
+      "apiCode": "1207",
       "name": "Mpentevi",
       "nameEl": "ΜΠΕΝΤΕΒΗ",
       "lat": 35.3229126,
@@ -2210,6 +2524,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-varelatzi-l-knossou-158": {
       "slug": "hkl-varelatzi-l-knossou-158",
+      "apiCode": "1208",
       "name": "Varelatzi L.knossou 158",
       "nameEl": "ΒΑΡΕΛΑΤΖΗ Λ.ΚΝΩΣΣΟΥ 158",
       "lat": 35.3195873,
@@ -2217,6 +2532,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kefalogianni-l-knossou-178": {
       "slug": "hkl-kefalogianni-l-knossou-178",
+      "apiCode": "1209",
       "name": "Kefalogianni L.knossou 178",
       "nameEl": "ΚΕΦΑΛΟΓΙΑΝΝΗ Λ.ΚΝΩΣΣΟΥ 178",
       "lat": 35.3181884,
@@ -2224,6 +2540,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-knossou-zervonikola": {
       "slug": "hkl-avenue-knossou-zervonikola",
+      "apiCode": "1210",
       "name": "Avenue Knossou & Zervonikola",
       "nameEl": "ΛΕΩΦ. ΚΝΩΣΣΟΥ & ΖΕΡΒΟΝΙΚΟΛΑ",
       "lat": 35.3164661,
@@ -2231,6 +2548,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-l-knossou-226": {
       "slug": "hkl-l-knossou-226",
+      "apiCode": "1211",
       "name": "L.knossou 226",
       "nameEl": "Λ.ΚΝΩΣΣΟΥ 226",
       "lat": 35.3132598,
@@ -2238,6 +2556,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-l-knossou-270": {
       "slug": "hkl-l-knossou-270",
+      "apiCode": "1212",
       "name": "L.knossou 270",
       "nameEl": "Λ.ΚΝΩΣΣΟΥ 270",
       "lat": 35.3105135,
@@ -2245,6 +2564,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-euryalis": {
       "slug": "hkl-euryalis",
+      "apiCode": "1213",
       "name": "Euryalis",
       "nameEl": "ΕΥΡΥΑΛΗΣ",
       "lat": 35.3097968,
@@ -2252,6 +2572,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eforia-nea-alatsata": {
       "slug": "hkl-eforia-nea-alatsata",
+      "apiCode": "1214",
       "name": "Eforia NEA Alatsata",
       "nameEl": "ΕΦΟΡΙΑ ΝΕΑ ΑΛΑΤΣΑΤΑ",
       "lat": 35.3083208,
@@ -2259,6 +2580,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-venizelio-iospital": {
       "slug": "hkl-venizelio-iospital",
+      "apiCode": "1215",
       "name": "Venizelio Iospital",
       "nameEl": "ΒΕΝΙΖΕΛΙΟ ΝΟΣΟΚΟΜΕΙΟ",
       "lat": 35.3059139,
@@ -2266,6 +2588,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-knossos": {
       "slug": "hkl-knossos",
+      "apiCode": "1216",
       "name": "Knossos",
       "nameEl": "ΚΝΩΣΣΟΣ",
       "lat": 35.2990906,
@@ -2273,6 +2596,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-polyneikous": {
       "slug": "hkl-polyneikous",
+      "apiCode": "1218",
       "name": "Polyneikous",
       "nameEl": "ΠΟΛΥΝΕΙΚΟΥΣ",
       "lat": 35.304181,
@@ -2280,6 +2604,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ippokratous": {
       "slug": "hkl-ippokratous",
+      "apiCode": "1219",
       "name": "Ippokratous",
       "nameEl": "ΙΠΠΟΚΡΑΤΟΥΣ",
       "lat": 35.3046588,
@@ -2287,6 +2612,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-central-station-avenue-pros-limani": {
       "slug": "hkl-central-station-avenue-pros-limani",
+      "apiCode": "1220",
       "name": "Central Station Avenue Pros Limani",
       "nameEl": "ΚΕΝΤΡΙΚ. ΣΤΑΘΜΟΣ ΥΠΕΡ.ΛΕΩΦ. ΠΡΟΣ ΛΙΜΑΝΙ",
       "lat": 35.3391666,
@@ -2294,6 +2620,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-diakladosi-fortetsas": {
       "slug": "hkl-diakladosi-fortetsas",
+      "apiCode": "1221",
       "name": "Diakladosi Fortetsas",
       "nameEl": "ΔΙΑΚΛΑΔΩΣΗ ΦΟΡΤΕΤΣΑΣ",
       "lat": 35.3062912,
@@ -2301,6 +2628,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-knossou-235": {
       "slug": "hkl-knossou-235",
+      "apiCode": "1222",
       "name": "Knossou 235",
       "nameEl": "ΚΝΩΣΣΟΥ 235",
       "lat": 35.31143409890769,
@@ -2308,6 +2636,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-knossou-207": {
       "slug": "hkl-knossou-207",
+      "apiCode": "1223",
       "name": "Knossou 207",
       "nameEl": "ΚΝΩΣΣΟΥ 207",
       "lat": 35.314076,
@@ -2315,6 +2644,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-knossou-193-agios-ioannis": {
       "slug": "hkl-knossou-193-agios-ioannis",
+      "apiCode": "1226",
       "name": "Knossou 193 - Agios Ioannis",
       "nameEl": "ΚΝΩΣΣΟΥ 193 - ΑΓΙΟΣ ΙΩΑΝΝΗΣ",
       "lat": 35.3150152,
@@ -2322,6 +2652,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-knossou-169": {
       "slug": "hkl-avenue-knossou-169",
+      "apiCode": "1227",
       "name": "Avenue Knossou 169",
       "nameEl": "ΛΕΩΦΟΡΟΣ ΚΝΩΣΣΟΥ 169",
       "lat": 35.3165409,
@@ -2329,6 +2660,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-knossou-143": {
       "slug": "hkl-knossou-143",
+      "apiCode": "1228",
       "name": "Knossou 143",
       "nameEl": "ΚΝΩΣΣΟΥ 143",
       "lat": 35.3183785,
@@ -2336,6 +2668,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-knossou-125": {
       "slug": "hkl-knossou-125",
+      "apiCode": "1229",
       "name": "Knossou 125",
       "nameEl": "ΚΝΩΣΣΟΥ 125",
       "lat": 35.3197251,
@@ -2343,6 +2676,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-mpentevi-2": {
       "slug": "hkl-mpentevi-2",
+      "apiCode": "1230",
       "name": "Mpentevi",
       "nameEl": "ΜΠΕΝΤΕΒΗ",
       "lat": 35.3231907,
@@ -2350,6 +2684,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-pertselaki-2": {
       "slug": "hkl-pertselaki-2",
+      "apiCode": "1231",
       "name": "Pertselaki",
       "nameEl": "ΠΕΡΤΣΕΛΑΚΗ",
       "lat": 35.3247937,
@@ -2357,6 +2692,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agiou-konstantinou-avenue-knossou-95": {
       "slug": "hkl-agiou-konstantinou-avenue-knossou-95",
+      "apiCode": "1232",
       "name": "Agiou Konstantinou Avenue Knossou 95",
       "nameEl": "ΑΓΙΟΥ ΚΩΝΣΤΑΝΤΙΝΟΥ ΛΕΩΦΟΡΟΣ ΚΝΩΣΣΟΥ 95",
       "lat": 35.32885581514677,
@@ -2364,6 +2700,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-krintsas": {
       "slug": "hkl-krintsas",
+      "apiCode": "1233",
       "name": "Krintsas",
       "nameEl": "ΚΡΙΝΤΣΑΣ",
       "lat": 35.3320155,
@@ -2371,6 +2708,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ergatiko-kentro-2": {
       "slug": "hkl-ergatiko-kentro-2",
+      "apiCode": "1234",
       "name": "Ergatiko Kentro",
       "nameEl": "ΕΡΓΑΤΙΚΟ ΚΕΝΤΡΟ",
       "lat": 35.3337763,
@@ -2378,6 +2716,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-analipsi": {
       "slug": "hkl-analipsi",
+      "apiCode": "1235",
       "name": "Analipsi",
       "nameEl": "ΑΝΑΛΗΨΗ",
       "lat": 35.3360621,
@@ -2385,6 +2724,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-venizeleio-iospital": {
       "slug": "hkl-venizeleio-iospital",
+      "apiCode": "1238",
       "name": "Venizeleio Iospital",
       "nameEl": "ΒΕΝΙΖΕΛΕΙΟ ΝΟΣΟΚΟΜΕΙΟ",
       "lat": 35.3050521,
@@ -2392,6 +2732,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agios-rafail": {
       "slug": "hkl-agios-rafail",
+      "apiCode": "1244",
       "name": "Agios Rafail",
       "nameEl": "ΑΓΙΟΣ ΡΑΦΑΗΛ",
       "lat": 35.2856506,
@@ -2399,6 +2740,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-oulof-palme": {
       "slug": "hkl-oulof-palme",
+      "apiCode": "1245",
       "name": "Oulof Palme",
       "nameEl": "ΟΥΛΩΦ ΠΑΛΜΕ",
       "lat": 35.2823739,
@@ -2406,6 +2748,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-chatzidaki": {
       "slug": "hkl-chatzidaki",
+      "apiCode": "1246",
       "name": "Chatzidaki",
       "nameEl": "ΧΑΤΖΙΔΑΚΗ",
       "lat": 35.2789157,
@@ -2413,6 +2756,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-foka": {
       "slug": "hkl-foka",
+      "apiCode": "1247",
       "name": "Foka",
       "nameEl": "ΦΩΚΑ",
       "lat": 35.2754445,
@@ -2420,6 +2764,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-profiti-ilia": {
       "slug": "hkl-profiti-ilia",
+      "apiCode": "1248",
       "name": "Profiti Ilia",
       "nameEl": "ΠΡΟΦΗΤΗ ΗΛΙΑ",
       "lat": 35.2694021,
@@ -2427,6 +2772,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-katraki": {
       "slug": "hkl-katraki",
+      "apiCode": "1250",
       "name": "Katraki",
       "nameEl": "ΚΑΤΡΑΚΗ",
       "lat": 35.2675324,
@@ -2434,6 +2780,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agiou-panteleimona": {
       "slug": "hkl-agiou-panteleimona",
+      "apiCode": "1251",
       "name": "Agiou Panteleimona",
       "nameEl": "ΑΓΙΟΥ ΠΑΝΤΕΛΕΗΜΟΝΑ",
       "lat": 35.2583835,
@@ -2441,6 +2788,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agiou-vlassi": {
       "slug": "hkl-agiou-vlassi",
+      "apiCode": "1252",
       "name": "Agiou Vlassi",
       "nameEl": "ΑΓΙΟΥ ΒΛΑΣΣΗ",
       "lat": 35.2555272,
@@ -2448,6 +2796,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agiou-dimitriou": {
       "slug": "hkl-agiou-dimitriou",
+      "apiCode": "1254",
       "name": "Agiou Dimitriou",
       "nameEl": "ΑΓΙΟΥ ΔΗΜΗΤΡΙΟΥ",
       "lat": 35.2467389,
@@ -2455,6 +2804,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agiou-sylla-1": {
       "slug": "hkl-agiou-sylla-1",
+      "apiCode": "1255",
       "name": "Agiou Sylla 1",
       "nameEl": "ΑΓΙΟΥ ΣΥΛΛΑ 1",
       "lat": 35.243642,
@@ -2462,6 +2812,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agiou-dimitriou-2": {
       "slug": "hkl-agiou-dimitriou-2",
+      "apiCode": "1258",
       "name": "Agiou Dimitriou",
       "nameEl": "ΑΓΙΟΥ ΔΗΜΗΤΡΙΟΥ",
       "lat": 35.2467622,
@@ -2469,6 +2820,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agiou-nikolaou": {
       "slug": "hkl-agiou-nikolaou",
+      "apiCode": "1259",
       "name": "Agiou Nikolaou",
       "nameEl": "ΑΓΙΟΥ ΝΙΚΟΛΑΟΥ",
       "lat": 35.2542678,
@@ -2476,6 +2828,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agiou-vlassi-2": {
       "slug": "hkl-agiou-vlassi-2",
+      "apiCode": "1260",
       "name": "Agiou Vlassi",
       "nameEl": "ΑΓΙΟΥ ΒΛΑΣΣΗ",
       "lat": 35.2553642,
@@ -2483,6 +2836,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agios-panteleimonas": {
       "slug": "hkl-agios-panteleimonas",
+      "apiCode": "1261",
       "name": "Agios Panteleimonas",
       "nameEl": "ΑΓΙΟΣ ΠΑΝΤΕΛΕΗΜΟΝΑΣ",
       "lat": 35.258553,
@@ -2490,6 +2844,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-zoodoxou-pigis": {
       "slug": "hkl-zoodoxou-pigis",
+      "apiCode": "1264",
       "name": "Zoodoxou Pigis",
       "nameEl": "ΖΩΟΔΟΧΟΥ ΠΗΓΗΣ",
       "lat": 35.2720653,
@@ -2497,6 +2852,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-foka-2": {
       "slug": "hkl-foka-2",
+      "apiCode": "1265",
       "name": "Foka",
       "nameEl": "ΦΩΚΑ",
       "lat": 35.2753774,
@@ -2504,6 +2860,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-chatzidaki-2": {
       "slug": "hkl-chatzidaki-2",
+      "apiCode": "1266",
       "name": "Chatzidaki",
       "nameEl": "ΧΑΤΖΗΔΑΚΗ",
       "lat": 35.2791563,
@@ -2511,6 +2868,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-oulof-palme-2": {
       "slug": "hkl-oulof-palme-2",
+      "apiCode": "1267",
       "name": "Oulof Palme",
       "nameEl": "ΟΥΛΩΦ ΠΑΛΜΕ",
       "lat": 35.2828416881507,
@@ -2518,6 +2876,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-aglaopis": {
       "slug": "hkl-aglaopis",
+      "apiCode": "1269",
       "name": "Aglaopis",
       "nameEl": "ΑΓΛΑΟΠΗΣ",
       "lat": 35.287067,
@@ -2525,6 +2884,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kyparissias": {
       "slug": "hkl-kyparissias",
+      "apiCode": "1270",
       "name": "Kyparissias",
       "nameEl": "ΚΥΠΑΡΙΣΣΙΑΣ",
       "lat": 35.2890447,
@@ -2532,6 +2892,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-vasileies": {
       "slug": "hkl-vasileies",
+      "apiCode": "1273",
       "name": "Vasileies",
       "nameEl": "ΒΑΣΙΛΕΙΕΣ",
       "lat": 35.2706965,
@@ -2539,6 +2900,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-nefelis": {
       "slug": "hkl-nefelis",
+      "apiCode": "1274",
       "name": "Nefelis",
       "nameEl": "ΝΕΦΕΛΗΣ",
       "lat": 35.273338,
@@ -2546,6 +2908,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-viannou": {
       "slug": "hkl-viannou",
+      "apiCode": "1275",
       "name": "Viannou",
       "nameEl": "ΒΙΑΝΝΟΥ",
       "lat": 35.2737562,
@@ -2553,6 +2916,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-evans": {
       "slug": "hkl-evans",
+      "apiCode": "1303",
       "name": "Evans",
       "nameEl": "ΕΒΑΝΣ",
       "lat": 35.3357457,
@@ -2560,6 +2924,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ariadni": {
       "slug": "hkl-ariadni",
+      "apiCode": "1305",
       "name": "Ariadni",
       "nameEl": "ΑΡΙΑΔΝΗ",
       "lat": 35.3010647,
@@ -2567,6 +2932,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ariadni-2": {
       "slug": "hkl-ariadni-2",
+      "apiCode": "1306",
       "name": "Ariadni",
       "nameEl": "ΑΡΙΑΔΝΗ",
       "lat": 35.3012388,
@@ -2574,6 +2940,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-vlixia": {
       "slug": "hkl-vlixia",
+      "apiCode": "1307",
       "name": "Vlixia",
       "nameEl": "ΒΛΥΧΙΑ (Ε)",
       "lat": 35.2919038,
@@ -2581,6 +2948,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agia-eirini": {
       "slug": "hkl-agia-eirini",
+      "apiCode": "1308",
       "name": "Agia Eirini",
       "nameEl": "ΑΓΙΑ ΕΙΡΗΝΗ (Μ)",
       "lat": 35.2848579,
@@ -2588,6 +2956,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-spilia": {
       "slug": "hkl-spilia",
+      "apiCode": "1310",
       "name": "Spilia",
       "nameEl": "ΣΠΗΛΙΑ (Ε)",
       "lat": 35.2856528,
@@ -2595,6 +2964,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-spilia-2": {
       "slug": "hkl-spilia-2",
+      "apiCode": "1311",
       "name": "Spilia",
       "nameEl": "ΣΠΗΛΙΑ (Μ)",
       "lat": 35.2852842,
@@ -2602,6 +2972,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-diakladosi-skalaniou": {
       "slug": "hkl-diakladosi-skalaniou",
+      "apiCode": "1313",
       "name": "Diakladosi Skalaniou",
       "nameEl": "ΔΙΑΚΛΑΔΩΣΗ ΣΚΑΛΑΝΙΟΥ (Μ)",
       "lat": 35.2809416,
@@ -2609,6 +2980,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-skalani-1": {
       "slug": "hkl-skalani-1",
+      "apiCode": "1315",
       "name": "Skalani 1",
       "nameEl": "ΣΚΑΛΑΝΙ 1",
       "lat": 35.2835349,
@@ -2616,6 +2988,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-skalani-2": {
       "slug": "hkl-skalani-2",
+      "apiCode": "1316",
       "name": "Skalani 2",
       "nameEl": "ΣΚΑΛΑΝΙ 2",
       "lat": 35.282928,
@@ -2623,6 +2996,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-skalani-2-2": {
       "slug": "hkl-skalani-2-2",
+      "apiCode": "1317",
       "name": "Skalani 2",
       "nameEl": "ΣΚΑΛΑΝΙ 2",
       "lat": 35.282998,
@@ -2630,6 +3004,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-skalani-3": {
       "slug": "hkl-skalani-3",
+      "apiCode": "1318",
       "name": "Skalani 3",
       "nameEl": "ΣΚΑΛΑΝΙ 3",
       "lat": 35.2826165,
@@ -2637,6 +3012,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-skalani-3-2": {
       "slug": "hkl-skalani-3-2",
+      "apiCode": "1319",
       "name": "Skalani 3",
       "nameEl": "ΣΚΑΛΑΝΙ 3",
       "lat": 35.2825411,
@@ -2644,6 +3020,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-skalani-4": {
       "slug": "hkl-skalani-4",
+      "apiCode": "1320",
       "name": "Skalani 4",
       "nameEl": "ΣΚΑΛΑΝΙ 4",
       "lat": 35.2821998,
@@ -2651,6 +3028,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-skalani-strofi-kato": {
       "slug": "hkl-skalani-strofi-kato",
+      "apiCode": "1321",
       "name": "Skalani Strofi Kato",
       "nameEl": "ΣΚΑΛΑΝΙ 4 ΣΤΡΟΦΗ ΚΑΤΩ",
       "lat": 35.282063501454985,
@@ -2658,6 +3036,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-manou-katraki-106": {
       "slug": "hkl-manou-katraki-106",
+      "apiCode": "1333",
       "name": "Manou Katraki 106",
       "nameEl": "ΜΑΝΟΥ ΚΑΤΡΑΚΗ 106",
       "lat": 35.3022912,
@@ -2665,6 +3044,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-papanastasiou-34": {
       "slug": "hkl-papanastasiou-34",
+      "apiCode": "1334",
       "name": "Papanastasiou 34",
       "nameEl": "ΠΑΠΑΝΑΣΤΑΣΙΟΥ 34",
       "lat": 35.323592,
@@ -2672,6 +3052,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-tierissos": {
       "slug": "hkl-ts-tierissos",
+      "apiCode": "1338",
       "name": "TS Tierissos",
       "nameEl": "ΤΣ ΘΕΡΙΣΣΟΣ",
       "lat": 35.329362,
@@ -2679,6 +3060,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-andrea-papandreou-rolen": {
       "slug": "hkl-andrea-papandreou-rolen",
+      "apiCode": "1402",
       "name": "Andrea Papandreou & Rolen",
       "nameEl": "ΑΝΔΡΕΑ ΠΑΠΑΝΔΡΕΟΥ & ΡΟΛΕΝ",
       "lat": 35.3311627,
@@ -2686,6 +3068,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-gefyraki-andrea-papandreou-46": {
       "slug": "hkl-gefyraki-andrea-papandreou-46",
+      "apiCode": "1403",
       "name": "Gefyraki Andrea Papandreou 46",
       "nameEl": "ΓΕΦΥΡΑΚΙ ΑΝΔΡΕΑ ΠΑΠΑΝΔΡΕΟΥ 46",
       "lat": 35.3297804,
@@ -2693,6 +3076,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-romantiki-gonia": {
       "slug": "hkl-romantiki-gonia",
+      "apiCode": "1404",
       "name": "Romantiki Gonia",
       "nameEl": "ΡΟΜΑΝΤΙΚΗ ΓΩΝΙΑ",
       "lat": 35.3287441,
@@ -2700,6 +3084,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-square-ni-as": {
       "slug": "hkl-square-ni-as",
+      "apiCode": "1405",
       "name": "Square Ni&as",
       "nameEl": "ΠΛΑΤΕΙΑ ΝΙΚΑΙΑΣ",
       "lat": 35.3276089,
@@ -2707,6 +3092,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-andrea-papandreou-126": {
       "slug": "hkl-andrea-papandreou-126",
+      "apiCode": "1406",
       "name": "Andrea Papandreou 126",
       "nameEl": "ΑΝΔΡΕΑ ΠΑΠΑΝΔΡΕΟΥ 126",
       "lat": 35.3270773,
@@ -2714,6 +3100,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-atlantidos-45": {
       "slug": "hkl-atlantidos-45",
+      "apiCode": "1407",
       "name": "Atlantidos 45",
       "nameEl": "ΑΤΛΑΝΤΙΔΟΣ 45",
       "lat": 35.325872,
@@ -2721,6 +3108,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-atlantidos-33": {
       "slug": "hkl-atlantidos-33",
+      "apiCode": "1408",
       "name": "Atlantidos 33",
       "nameEl": "ΑΤΛΑΝΤΙΔΟΣ 33",
       "lat": 35.325501,
@@ -2728,6 +3116,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-panagitsa": {
       "slug": "hkl-panagitsa",
+      "apiCode": "1409",
       "name": "Panagitsa",
       "nameEl": "ΠΑΝΑΓΙΤΣΑ",
       "lat": 35.3246785,
@@ -2735,6 +3124,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ieroloxiton-76-daskalaki": {
       "slug": "hkl-ieroloxiton-76-daskalaki",
+      "apiCode": "1410",
       "name": "Ieroloxiton 76 Daskalaki",
       "nameEl": "ΙΕΡΟΛΟΧΙΤΩΝ 76 ΔΑΣΚΑΛΑΚΗ",
       "lat": 35.323155,
@@ -2742,6 +3132,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-errikou-ntynan-dexamenes": {
       "slug": "hkl-errikou-ntynan-dexamenes",
+      "apiCode": "1411",
       "name": "Errikou Ntynan Dexamenes",
       "nameEl": "ΕΡΡΙΚΟΥ ΝΤΥΝΑΝ ΔΕΞΑΜΕΝΕΣ",
       "lat": 35.3200689,
@@ -2749,6 +3140,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ionias-209": {
       "slug": "hkl-ionias-209",
+      "apiCode": "1413",
       "name": "Ionias 209",
       "nameEl": "ΙΩΝΙΑΣ 209",
       "lat": 35.3213891,
@@ -2756,6 +3148,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ionias-111-square-atsaleniou": {
       "slug": "hkl-ionias-111-square-atsaleniou",
+      "apiCode": "1414",
       "name": "Ionias 111 Square Atsaleniou",
       "nameEl": "ΙΩΝΙΑΣ 111 ΠΛΑΤΕΙΑ ΠΛΑΤΕΙΑ ΑΤΣΑΛΕΝΙΟΥ",
       "lat": 35.325643,
@@ -2763,6 +3156,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ionias-85-agia-sofia": {
       "slug": "hkl-ionias-85-agia-sofia",
+      "apiCode": "1415",
       "name": "Ionias 85 Agia Sofia",
       "nameEl": "ΙΩΝΙΑΣ 85 ΑΓΙΑ ΣΟΦΙΑ",
       "lat": 35.3269068,
@@ -2770,6 +3164,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ionias-35": {
       "slug": "hkl-ionias-35",
+      "apiCode": "1416",
       "name": "Ionias 35",
       "nameEl": "ΙΩΝΙΑΣ 35",
       "lat": 35.328378246078294,
@@ -2777,6 +3172,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-georgiou-papandreou-47": {
       "slug": "hkl-georgiou-papandreou-47",
+      "apiCode": "1417",
       "name": "Georgiou Papandreou 47",
       "nameEl": "ΓΕΩΡΓΙΟΥ ΠΑΠΑΝΔΡΕΟΥ 47",
       "lat": 35.3305657,
@@ -2784,6 +3180,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-chrysostomou-29": {
       "slug": "hkl-chrysostomou-29",
+      "apiCode": "1418",
       "name": "Chrysostomou 29",
       "nameEl": "ΧΡΥΣΟΣΤΟΜΟΥ 29",
       "lat": 35.3319973,
@@ -2791,6 +3188,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-square-kyprou-2": {
       "slug": "hkl-square-kyprou-2",
+      "apiCode": "1419",
       "name": "Square Kyprou",
       "nameEl": "ΠΛΑΤΕΙΑ ΚΥΠΡΟΥ",
       "lat": 35.3340414,
@@ -2798,6 +3196,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-evans-2": {
       "slug": "hkl-evans-2",
+      "apiCode": "1420",
       "name": "Evans",
       "nameEl": "ΕΒΑΝΣ",
       "lat": 35.3354922,
@@ -2805,6 +3204,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-dialinomixali": {
       "slug": "hkl-dialinomixali",
+      "apiCode": "1421",
       "name": "Dialinomixali",
       "nameEl": "ΔΙΑΛΙΝΟΜΙΧΑΛΗ",
       "lat": 35.3214688,
@@ -2812,6 +3212,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ionias-165-kavali": {
       "slug": "hkl-ionias-165-kavali",
+      "apiCode": "1422",
       "name": "Ionias 165 Kavali",
       "nameEl": "ΙΩΝΙΑΣ 165 ΚΑΒΑΛΗ",
       "lat": 35.3231229,
@@ -2819,6 +3220,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-amnissos-terminal-station": {
       "slug": "hkl-ts-amnissos-terminal-station",
+      "apiCode": "1440",
       "name": "TS Amnissos Terminal Station",
       "nameEl": "ΤΣ _ ΤΕΡΜΑΤΙΚΟΣ ΣΤΑΘΜΟΣ ΑΜΝΙΣΣΟΣ",
       "lat": 35.331439872962214,
@@ -2826,6 +3228,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-fortetsas": {
       "slug": "hkl-ts-fortetsas",
+      "apiCode": "1442",
       "name": "TS Fortetsas",
       "nameEl": "ΤΣ ΦΟΡΤΕΤΣΑΣ",
       "lat": 35.3021358,
@@ -2833,6 +3236,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-diakladosi-sakalaniou": {
       "slug": "hkl-diakladosi-sakalaniou",
+      "apiCode": "1446",
       "name": "Diakladosi Sakalaniou",
       "nameEl": "ΔΙΑΚΛΑΔΩΣΗ ΣΚΑΛΑΝΙΟΥ (Ε)",
       "lat": 35.2809273293863,
@@ -2840,6 +3244,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-oulof-palme-28": {
       "slug": "hkl-oulof-palme-28",
+      "apiCode": "1502",
       "name": "Oulof Palme 28",
       "nameEl": "ΟΥΛΩΦ ΠΑΛΜΕ 28",
       "lat": 35.3169049,
@@ -2847,6 +3252,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-chrysovalantou": {
       "slug": "hkl-chrysovalantou",
+      "apiCode": "1503",
       "name": "Chrysovalantou",
       "nameEl": "ΧΡΥΣΟΒΑΛΑΝΤΟΥ",
       "lat": 35.3138907,
@@ -2854,6 +3260,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-oulof-palme-102": {
       "slug": "hkl-oulof-palme-102",
+      "apiCode": "1504",
       "name": "Oulof Palme 102",
       "nameEl": "ΟΥΛΩΦ ΠΑΛΜΕ 102",
       "lat": 35.3113672,
@@ -2861,6 +3268,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-oulof-palme-134": {
       "slug": "hkl-oulof-palme-134",
+      "apiCode": "1505",
       "name": "Oulof Palme 134",
       "nameEl": "ΟΥΛΩΦ ΠΑΛΜΕ 134",
       "lat": 35.3083852,
@@ -2868,6 +3276,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-oulof-palme-alkyonos-terma": {
       "slug": "hkl-oulof-palme-alkyonos-terma",
+      "apiCode": "1506",
       "name": "Oulof Palme & Alkyonos (terma)",
       "nameEl": "ΟΥΛΩΦ ΠΑΛΜΕ ΚΑΙ ΑΛΚΥΩΝΟΣ (ΤΕΡΜΑ)",
       "lat": 35.30415825764521,
@@ -2875,6 +3284,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-alkmaionos-17": {
       "slug": "hkl-alkmaionos-17",
+      "apiCode": "1507",
       "name": "Alkmaionos 17",
       "nameEl": "ΑΛΚΜΑΙΟΝΟΣ 17",
       "lat": 35.3044538,
@@ -2882,6 +3292,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-alkmaionos-antieon": {
       "slug": "hkl-alkmaionos-antieon",
+      "apiCode": "1508",
       "name": "Alkmaionos & Antieon",
       "nameEl": "ΑΛΚΜΑΙΟΝΟΣ ΚΑΙ ΑΝΘΕΩΝ",
       "lat": 35.305243,
@@ -2889,6 +3300,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-papanastasiou-123": {
       "slug": "hkl-papanastasiou-123",
+      "apiCode": "1514",
       "name": "Papanastasiou 123",
       "nameEl": "ΠΑΠΑΝΑΣΤΑΣΙΟΥ 123",
       "lat": 35.3170597,
@@ -2896,6 +3308,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-papanastasiou-91": {
       "slug": "hkl-papanastasiou-91",
+      "apiCode": "1515",
       "name": "Papanastasiou 91",
       "nameEl": "ΠΑΠΑΝΑΣΤΑΣΙΟΥ 91",
       "lat": 35.3186303,
@@ -2903,6 +3316,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-metaxaki-1": {
       "slug": "hkl-metaxaki-1",
+      "apiCode": "1556",
       "name": "Metaxaki 1",
       "nameEl": "ΜΕΤΑΞΑΚΗ 1",
       "lat": 35.3309106,
@@ -2910,6 +3324,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eumatiiou": {
       "slug": "hkl-eumatiiou",
+      "apiCode": "1561",
       "name": "Eumatiiou",
       "nameEl": "ΕΥΜΑΘΙΟΥ",
       "lat": 35.308356,
@@ -2917,6 +3332,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-geronymaki-titou-georgiadou": {
       "slug": "hkl-geronymaki-titou-georgiadou",
+      "apiCode": "1801",
       "name": "Geronymaki & Titou Georgiadou",
       "nameEl": "ΓΕΡΟΝΥΜΑΚΗ & ΤΙΤΟΥ ΓΕΩΡΓΙΑΔΟΥ",
       "lat": 35.3342721,
@@ -2924,6 +3340,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-monis-gouvernetou": {
       "slug": "hkl-monis-gouvernetou",
+      "apiCode": "1802",
       "name": "Monis Gouvernetou",
       "nameEl": "ΜΟΝΗΣ ΓΟΥΒΕΡΝΕΤΟΥ",
       "lat": 35.3328074,
@@ -2931,6 +3348,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-emmanouil-mpantouva": {
       "slug": "hkl-emmanouil-mpantouva",
+      "apiCode": "1803",
       "name": "Emmanouil Mpantouva",
       "nameEl": "ΕΜΜΑΝΟΥΗΛ ΜΠΑΝΤΟΥΒΑ",
       "lat": 35.3323137,
@@ -2938,6 +3356,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kaxou": {
       "slug": "hkl-kaxou",
+      "apiCode": "1807",
       "name": "Kaxou",
       "nameEl": "ΚΑΧΟΥ",
       "lat": 35.3249345,
@@ -2945,6 +3364,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-chatzidaki-3": {
       "slug": "hkl-chatzidaki-3",
+      "apiCode": "1808",
       "name": "Chatzidaki",
       "nameEl": "ΧΑΤΖΗΔΑΚΗ",
       "lat": 35.3266693,
@@ -2952,6 +3372,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-square-agias-aikaterinis": {
       "slug": "hkl-square-agias-aikaterinis",
+      "apiCode": "1809",
       "name": "Square Agias Aikaterinis",
       "nameEl": "ΠΛΑΤΕΙΑ ΑΓΙΑΣ ΑΙΚΑΤΕΡΙΝΗΣ",
       "lat": 35.328788,
@@ -2959,6 +3380,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-markogiannaki": {
       "slug": "hkl-markogiannaki",
+      "apiCode": "1810",
       "name": "Markogiannaki",
       "nameEl": "ΜΑΡΚΟΓΙΑΝΝΑΚΗ",
       "lat": 35.32987810006809,
@@ -2966,6 +3388,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-proklou": {
       "slug": "hkl-proklou",
+      "apiCode": "1811",
       "name": "Proklou",
       "nameEl": "ΠΡΟΚΛΟΥ",
       "lat": 35.3312858,
@@ -2973,6 +3396,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-lagkada": {
       "slug": "hkl-lagkada",
+      "apiCode": "1816",
       "name": "Lagkada",
       "nameEl": "ΛΑΓΚΑΔΑ",
       "lat": 35.3311153,
@@ -2980,6 +3404,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-monis-gouvernetou-2": {
       "slug": "hkl-monis-gouvernetou-2",
+      "apiCode": "1817",
       "name": "Monis Gouvernetou",
       "nameEl": "ΜΟΝΗΣ ΓΟΥΒΕΡΝΕΤΟΥ",
       "lat": 35.33295,
@@ -2987,6 +3412,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-titou-georgiadou": {
       "slug": "hkl-titou-georgiadou",
+      "apiCode": "1818",
       "name": "Titou Georgiadou",
       "nameEl": "ΤΙΤΟΥ ΓΕΩΡΓΙΑΔΟΥ",
       "lat": 35.3344654,
@@ -2994,6 +3420,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-pitsoulaki": {
       "slug": "hkl-pitsoulaki",
+      "apiCode": "1820",
       "name": "Pitsoulaki",
       "nameEl": "ΠΙΤΣΟΥΛΑΚΗ",
       "lat": 35.3248311,
@@ -3001,6 +3428,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-emmanouil-mpantouva-2": {
       "slug": "hkl-emmanouil-mpantouva-2",
+      "apiCode": "1831",
       "name": "Emmanouil Mpantouva",
       "nameEl": "ΕΜΜΑΝΟΥΗΛ ΜΠΑΝΤΟΥΒΑ",
       "lat": 35.3323996,
@@ -3008,6 +3436,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-christomichali-chylouri-1": {
       "slug": "hkl-christomichali-chylouri-1",
+      "apiCode": "1888",
       "name": "Christomichali Chylouri 1",
       "nameEl": "ΧΡΙΣΤΟΜΙΧΑΛΗ ΞΥΛΟΥΡΗ 1",
       "lat": 35.3264115,
@@ -3015,6 +3444,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-dimokratias-79": {
       "slug": "hkl-avenue-dimokratias-79",
+      "apiCode": "1916",
       "name": "Avenue Dimokratias 79",
       "nameEl": "ΛΕΩΦΟΡΟΣ ΔΗΜΟΚΡΑΤΙΑΣ 79",
       "lat": 35.3304143,
@@ -3022,6 +3452,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-solonos-32": {
       "slug": "hkl-solonos-32",
+      "apiCode": "1918",
       "name": "Solonos 32",
       "nameEl": "ΣΟΛΩΝΟΣ 32",
       "lat": 35.3041109,
@@ -3029,6 +3460,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-solonos-57": {
       "slug": "hkl-solonos-57",
+      "apiCode": "1919",
       "name": "Solonos 57",
       "nameEl": "ΣΟΛΩΝΟΣ 57",
       "lat": 35.3045726,
@@ -3036,6 +3468,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-averof": {
       "slug": "hkl-averof",
+      "apiCode": "1928",
       "name": "Averof",
       "nameEl": "ΑΒΕΡΩΦ",
       "lat": 35.3372015,
@@ -3043,6 +3476,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-diakladosi-vouton": {
       "slug": "hkl-diakladosi-vouton",
+      "apiCode": "2012",
       "name": "Diakladosi Vouton",
       "nameEl": "ΔΙΑΚΛΑΔΩΣΗ ΒΟΥΤΩΝ",
       "lat": 35.3034512,
@@ -3050,6 +3484,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-oikismos-agias-paraskeuis": {
       "slug": "hkl-oikismos-agias-paraskeuis",
+      "apiCode": "2014",
       "name": "Oikismos Agias Paraskeuis",
       "nameEl": "ΟΙΚΙΣΜΟΣ ΑΓΙΑΣ ΠΑΡΑΣΚΕΥΗΣ",
       "lat": 35.3113532,
@@ -3057,6 +3492,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agiou-nektariou": {
       "slug": "hkl-agiou-nektariou",
+      "apiCode": "2015",
       "name": "Agiou Nektariou",
       "nameEl": "ΑΓΙΟΥ ΝΕΚΤΑΡΙΟΥ",
       "lat": 35.3120935,
@@ -3064,6 +3500,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-asklipeiou": {
       "slug": "hkl-asklipeiou",
+      "apiCode": "2016",
       "name": "Asklipeiou",
       "nameEl": "ΑΣΚΛΗΠΕΙΟΥ",
       "lat": 35.3098994,
@@ -3071,6 +3508,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-krimpa": {
       "slug": "hkl-krimpa",
+      "apiCode": "2017",
       "name": "Krimpa",
       "nameEl": "ΚΡΙΜΠΑ",
       "lat": 35.3080603,
@@ -3078,6 +3516,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-pagni-hospital": {
       "slug": "hkl-pagni-hospital",
+      "apiCode": "2018",
       "name": "Pagni - Hospital",
       "nameEl": "ΠΑΓΝΗ - ΝΟΣΟΚΟΜΕΙΟ",
       "lat": 35.303562008582574,
@@ -3085,6 +3524,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-diastaurosi-staurakia": {
       "slug": "hkl-diastaurosi-staurakia",
+      "apiCode": "2019",
       "name": "Diastaurosi Staurakia",
       "nameEl": "ΔΙΑΣΤΑΥΡΩΣΗ ΣΤΑΥΡΑΚΙΑ",
       "lat": 35.3020637,
@@ -3092,6 +3532,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-parasyri": {
       "slug": "hkl-parasyri",
+      "apiCode": "2020",
       "name": "Parasyri",
       "nameEl": "ΠΑΡΑΣΥΡΗ",
       "lat": 35.32041191889172,
@@ -3099,6 +3540,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-panepistimiou-kefalogianni-e": {
       "slug": "hkl-avenue-panepistimiou-kefalogianni-e",
+      "apiCode": "2021",
       "name": "Avenue Panepistimiou & Kefalogianni (E)",
       "nameEl": "ΛΕΟΦΩΡΟΣ ΠΑΝΕΠΙΣΤΙΜΙΟΥ & ΚΕΦΑΛΟΓΙΑΝΝΗ (Ε)",
       "lat": 35.3200169,
@@ -3106,6 +3548,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-seap": {
       "slug": "hkl-seap",
+      "apiCode": "2101",
       "name": "Seap",
       "nameEl": "ΣΕΑΠ",
       "lat": 35.33747670895456,
@@ -3113,6 +3556,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-megalou-alexandrou-105": {
       "slug": "hkl-megalou-alexandrou-105",
+      "apiCode": "2105",
       "name": "Megalou Alexandrou 105",
       "nameEl": "ΜΕΓΑΛΟΥ ΑΛΕΞΑΝΔΡΟΥ 105",
       "lat": 35.3221904,
@@ -3120,6 +3564,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-seap-2": {
       "slug": "hkl-seap-2",
+      "apiCode": "2144",
       "name": "Seap",
       "nameEl": "ΣΕΑΠ",
       "lat": 35.3374032,
@@ -3127,6 +3572,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ptolemaion-karditsi": {
       "slug": "hkl-ptolemaion-karditsi",
+      "apiCode": "2196",
       "name": "Ptolemaion & Karditsi",
       "nameEl": "ΠΤΟΛΕΜΑΙΩΝ & ΚΑΡΔΙΤΣΗ",
       "lat": 35.30842748181416,
@@ -3134,6 +3580,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-pagkritio-stadio": {
       "slug": "hkl-ts-pagkritio-stadio",
+      "apiCode": "2201",
       "name": "Ts_pagkritio Stadio",
       "nameEl": "ΤΣ ΠΑΓΚΡΗΤΙΟ ΣΤΑΔΙΟ",
       "lat": 35.33612570321385,
@@ -3141,6 +3588,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-yperastiko-ktel": {
       "slug": "hkl-yperastiko-ktel",
+      "apiCode": "2203",
       "name": "Yperastiko Ktel",
       "nameEl": "ΥΠΕΡΑΣΤΙΚΟ ΚΤΕΛ",
       "lat": 35.3412878,
@@ -3148,6 +3596,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-square-kornarou-m": {
       "slug": "hkl-square-kornarou-m",
+      "apiCode": "2215",
       "name": "Square Kornarou M",
       "nameEl": "ΠΛΑΤΕΙΑ ΚΟΡΝΑΡΟΥ Μ",
       "lat": 35.3362934,
@@ -3155,6 +3604,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-tmima-epistimis-ypologiston": {
       "slug": "hkl-tmima-epistimis-ypologiston",
+      "apiCode": "2222",
       "name": "Tmima Epistimis Ypologiston",
       "nameEl": "ΤΜΗΜΑ ΕΠΙΣΤΗΜΗΣ ΥΠΟΛΟΓΙΣΤΩΝ",
       "lat": 35.30863726035576,
@@ -3162,6 +3612,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-st-giamalaki-kazantzaki": {
       "slug": "hkl-st-giamalaki-kazantzaki",
+      "apiCode": "2266",
       "name": "ST. Giamalaki & Kazantzaki",
       "nameEl": "ΣΤ. ΓΙΑΜΑΛΑΚΗ ΚΑΙ ΚΑΖΑΝΤΖΑΚΗ",
       "lat": 35.339288,
@@ -3169,6 +3620,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-vritomartidos": {
       "slug": "hkl-vritomartidos",
+      "apiCode": "2302",
       "name": "Vritomartidos",
       "nameEl": "ΒΡΙΤΟΜΑΡΤΙΔΟΣ",
       "lat": 35.3233851,
@@ -3176,6 +3628,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-neofytou-oikonomou": {
       "slug": "hkl-neofytou-oikonomou",
+      "apiCode": "2303",
       "name": "Neofytou Oikonomou",
       "nameEl": "ΝΕΟΦΥΤΟΥ ΟΙΚΟΝΟΜΟΥ",
       "lat": 35.322523,
@@ -3183,6 +3636,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-vritomartidos-2": {
       "slug": "hkl-vritomartidos-2",
+      "apiCode": "2322",
       "name": "Vritomartidos",
       "nameEl": "ΒΡΙΤΟΜΑΡΤΙΔΟΣ",
       "lat": 35.3235006,
@@ -3190,6 +3644,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-neofytou-oikonomou-2": {
       "slug": "hkl-neofytou-oikonomou-2",
+      "apiCode": "2332",
       "name": "Neofytou Oikonomou",
       "nameEl": "ΝΕΟΦΥΤΟΥ ΟΙΚΟΝΟΜΟΥ",
       "lat": 35.3224606,
@@ -3197,6 +3652,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-pitsoulaki-sxoliko-peiramatiko": {
       "slug": "hkl-pitsoulaki-sxoliko-peiramatiko",
+      "apiCode": "3004",
       "name": "Pitsoulaki Sxoliko Peiramatiko",
       "nameEl": "ΠΙΤΣΟΥΛΑΚΗ ΣΧΟΛΙΚΟ ΠΕΙΡΑΜΑΤΙΚΟ",
       "lat": 35.323138423149125,
@@ -3204,6 +3660,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ika": {
       "slug": "hkl-ika",
+      "apiCode": "3101",
       "name": "IKA",
       "nameEl": "ΙΚΑ",
       "lat": 35.3178024,
@@ -3211,6 +3668,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kakridi-11": {
       "slug": "hkl-kakridi-11",
+      "apiCode": "4416",
       "name": "Kakridi 11",
       "nameEl": "ΚΑΚΡΙΔΗ 11",
       "lat": 35.3144113,
@@ -3218,6 +3676,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-fotaki": {
       "slug": "hkl-fotaki",
+      "apiCode": "4417",
       "name": "Fotaki",
       "nameEl": "ΦΩΤΑΚΗ",
       "lat": 35.3143982,
@@ -3225,6 +3684,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kakridi-11-2": {
       "slug": "hkl-kakridi-11-2",
+      "apiCode": "4418",
       "name": "Kakridi 11",
       "nameEl": "ΚΑKΡΙΔΗ 11",
       "lat": 35.3143615,
@@ -3232,6 +3692,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ethnomartyron-46": {
       "slug": "hkl-ethnomartyron-46",
+      "apiCode": "4419",
       "name": "Ethnomartyron 46",
       "nameEl": "ΕΘΝΟΜΑΡΤΥΡΩΝ 35",
       "lat": 35.3161965,
@@ -3239,6 +3700,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ethnomartyron-47": {
       "slug": "hkl-ethnomartyron-47",
+      "apiCode": "4420",
       "name": "Ethnomartyron 47",
       "nameEl": "ΕΘΝΟΜΑΡΤΥΡΩΝ 11",
       "lat": 35.3174123,
@@ -3246,6 +3708,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-mantineias": {
       "slug": "hkl-mantineias",
+      "apiCode": "4421",
       "name": "Mantineias",
       "nameEl": "ΜΑΝΤΙΝΕΙΑΣ",
       "lat": 35.3179666,
@@ -3253,6 +3716,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eok-11": {
       "slug": "hkl-eok-11",
+      "apiCode": "4422",
       "name": "EOK 11",
       "nameEl": "ΕΟΚ 11",
       "lat": 35.330361598146645,
@@ -3260,6 +3724,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-vasileiou-smpokou-60": {
       "slug": "hkl-vasileiou-smpokou-60",
+      "apiCode": "4423",
       "name": "Vasileiou Smpokou 60",
       "nameEl": "ΒΑΣΙΛΕΙΟΥ ΣΜΠΩΚΟΥ 60",
       "lat": 35.3268869,
@@ -3267,6 +3732,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-vasileiou-smpokou": {
       "slug": "hkl-vasileiou-smpokou",
+      "apiCode": "4424",
       "name": "Vasileiou Smpokou",
       "nameEl": "ΒΑΣΙΛΕΙΟΥ ΣΜΠΩΚΟΥ",
       "lat": 35.3271719,
@@ -3274,6 +3740,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eok-33": {
       "slug": "hkl-eok-33",
+      "apiCode": "4425",
       "name": "EOK 33",
       "nameEl": "ΕΟΚ 33",
       "lat": 35.3278656,
@@ -3281,6 +3748,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eok-25": {
       "slug": "hkl-eok-25",
+      "apiCode": "4426",
       "name": "EOK 25",
       "nameEl": "ΕΟΚ 25",
       "lat": 35.329324782678526,
@@ -3288,6 +3756,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-minoos": {
       "slug": "hkl-minoos",
+      "apiCode": "4427",
       "name": "Minoos",
       "nameEl": "ΜΙΝΩΟΣ",
       "lat": 35.3320255,
@@ -3295,6 +3764,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-minoos-79": {
       "slug": "hkl-minoos-79",
+      "apiCode": "4428",
       "name": "Minoos 79",
       "nameEl": "ΜΙΝΩΟΣ 79",
       "lat": 35.33397820149202,
@@ -3302,6 +3772,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eok-10": {
       "slug": "hkl-eok-10",
+      "apiCode": "4429",
       "name": "EOK 10",
       "nameEl": "ΕΟΚ 10",
       "lat": 35.330381950568324,
@@ -3309,6 +3780,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-minoos-90": {
       "slug": "hkl-minoos-90",
+      "apiCode": "4430",
       "name": "Minoos 90",
       "nameEl": "ΜΙΝΩΟΣ 90",
       "lat": 35.33396767974615,
@@ -3316,6 +3788,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-lasaias": {
       "slug": "hkl-lasaias",
+      "apiCode": "4431",
       "name": "Lasaias",
       "nameEl": "ΛΑΣΑΙΑΣ",
       "lat": 35.3320667,
@@ -3323,6 +3796,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eok-28": {
       "slug": "hkl-eok-28",
+      "apiCode": "4432",
       "name": "EOK 28",
       "nameEl": "ΕΟΚ 28",
       "lat": 35.329277452226165,
@@ -3330,6 +3804,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eok-44": {
       "slug": "hkl-eok-44",
+      "apiCode": "4433",
       "name": "EOK 44",
       "nameEl": "ΕΟΚ 44",
       "lat": 35.328003729402695,
@@ -3337,6 +3812,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-mantineias-2": {
       "slug": "hkl-mantineias-2",
+      "apiCode": "4435",
       "name": "Mantineias",
       "nameEl": "ΜΑΝΤΙΝΕΙΑΣ",
       "lat": 35.3178084,
@@ -3344,6 +3820,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ethnomartyron": {
       "slug": "hkl-ethnomartyron",
+      "apiCode": "4436",
       "name": "Ethnomartyron",
       "nameEl": "ΕΘΝΟΜΑΡΤΥΡΩΝ",
       "lat": 35.3174735,
@@ -3351,6 +3828,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-lindou": {
       "slug": "hkl-lindou",
+      "apiCode": "4437",
       "name": "Lindou",
       "nameEl": "ΛΙΝΔΟΥ",
       "lat": 35.3159935,
@@ -3358,6 +3836,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-antieon": {
       "slug": "hkl-antieon",
+      "apiCode": "4438",
       "name": "Antieon",
       "nameEl": "ΑΝΘΕΩΝ",
       "lat": 35.3152411,
@@ -3365,6 +3844,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agios-eugenios": {
       "slug": "hkl-agios-eugenios",
+      "apiCode": "4440",
       "name": "Agios Eugenios",
       "nameEl": "ΑΓΙΟΣ ΕΥΓΕΝΙΟΣ",
       "lat": 35.3129387,
@@ -3372,6 +3852,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-papanastasiou-217": {
       "slug": "hkl-papanastasiou-217",
+      "apiCode": "4442",
       "name": "Papanastasiou 217",
       "nameEl": "ΠΑΠΑΝΑΣΤΑΣΙΟΥ 217",
       "lat": 35.3082621,
@@ -3379,6 +3860,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-foinikia-4": {
       "slug": "hkl-foinikia-4",
+      "apiCode": "9047",
       "name": "Foinikia 4",
       "nameEl": "ΦΟΙΝΙΚΙΑ 4 - Επαρ.Οδ. Ηρακλείου - Πραιτωρίας",
       "lat": 35.258406625181685,
@@ -3386,6 +3868,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-foinikia-5": {
       "slug": "hkl-foinikia-5",
+      "apiCode": "9048",
       "name": "Foinikia 5",
       "nameEl": "ΦΟΙΝΙΚΙΑ 5 - Επαρ.Οδ. Ηρακλείου - Ζερβού Μετόχι",
       "lat": 35.263893571757905,
@@ -3393,6 +3876,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-foinikia-6": {
       "slug": "hkl-foinikia-6",
+      "apiCode": "9049",
       "name": "Foinikia 6",
       "nameEl": "ΦΟΙΝΙΚΙΑ 6 - Επαρ.Οδ. Ηρακλείου - ΜΑΛΑΔΕΣ",
       "lat": 35.27048575056667,
@@ -3400,6 +3884,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-foinikia-7": {
       "slug": "hkl-foinikia-7",
+      "apiCode": "9050",
       "name": "Foinikia 7",
       "nameEl": "ΦΟΙΝΙΚΙΑ 7 - Επαρ.Οδ. Ηρακλείου - ΜΑΛΑΔΕΣ 2",
       "lat": 35.27907990185466,
@@ -3407,6 +3892,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-foinikia-8": {
       "slug": "hkl-foinikia-8",
+      "apiCode": "9051",
       "name": "Foinikia 8",
       "nameEl": "ΦΟΙΝΙΚΙΑ 8 - ΕΙΡΗΝΗΣ ΚΑΙ ΦΙΛΙΑΣ - ΒΛΑΧΟΓΓΙΑΝΗ",
       "lat": 35.2947604230401,
@@ -3414,6 +3900,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-foinikia-9": {
       "slug": "hkl-foinikia-9",
+      "apiCode": "9052",
       "name": "Foinikia 9",
       "nameEl": "ΦΟΙΝΙΚΙΑ 9 - ΕΙΡΗΝΗΣ ΚΑΙ ΦΙΛΙΑΣ",
       "lat": 35.301616541376795,
@@ -3421,6 +3908,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-foinikia-11": {
       "slug": "hkl-foinikia-11",
+      "apiCode": "9054",
       "name": "Foinikia 11",
       "nameEl": "ΦΟΙΝΙΚΙΑ 11 - ΕΙΡΗΝΗΣ ΚΑΙ ΦΙΛΙΑΣ 50",
       "lat": 35.311493930482534,
@@ -3428,6 +3916,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-mausolou-gefyra-ethnikis-return": {
       "slug": "hkl-mausolou-gefyra-ethnikis-return",
+      "apiCode": "9122",
       "name": "Mausolou Gefyra Ethnikis Return",
       "nameEl": "ΜΑΥΣΩΛΟΥ ΓΕΦΥΡΑ ΕΘΝΙΚΗΣ ΕΠΙΣΤΡΟΦΗ",
       "lat": 35.3322049165378,
@@ -3435,6 +3924,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-airport-returns": {
       "slug": "hkl-ts-airport-returns",
+      "apiCode": "9311",
       "name": "TS Airport Returns",
       "nameEl": "ΤΣ ΑΕΡΟΔΡΟΜΙΟ ΕΠΙΣΤΡΟΦΗΣ",
       "lat": 35.3363817,
@@ -3442,6 +3932,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-amaxostasio": {
       "slug": "hkl-amaxostasio",
+      "apiCode": "9910",
       "name": "Amaxostasio",
       "nameEl": "ΤΣ ΑΜΑΞΟΣΤΑΣΙΟ",
       "lat": 35.331846771485196,
@@ -3449,6 +3940,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ts-airport": {
       "slug": "hkl-ts-airport",
+      "apiCode": "9911",
       "name": "TS Airport",
       "nameEl": "ΤΣ ΑΕΡΟΔΡΟΜΙΟ",
       "lat": 35.335864,
@@ -3456,6 +3948,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-irodotou-return-kallitheas": {
       "slug": "hkl-irodotou-return-kallitheas",
+      "apiCode": "9912",
       "name": "Irodotou Return Kallitheas",
       "nameEl": "ΗΡΟΔΟΤΟΥ ΕΠΙΣΤΡΟΦΗ ΚΑΛΛΙΘΕΑΣ",
       "lat": 35.3375311571209,
@@ -3463,6 +3956,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-oulaf-palme-kyparissias": {
       "slug": "hkl-oulaf-palme-kyparissias",
+      "apiCode": "9913",
       "name": "Oulaf Palme - Kyparissias",
       "nameEl": "ΟΥΛΩΦ ΠΑΛΜΕ - ΚΥΠΑΡΙΣΣΙΑΣ (Ε)",
       "lat": 35.29278728178307,
@@ -3470,6 +3964,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-entrance-limani-pili": {
       "slug": "hkl-entrance-limani-pili",
+      "apiCode": "9916",
       "name": "Entrance Limani - ( Pili )",
       "nameEl": "ΕΜΜΑΝΟΥΗΛ ΧΑΤΖΑΚΗ (Μ)",
       "lat": 35.303908915679635,
@@ -3477,6 +3972,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eo-irakleiou-faistou": {
       "slug": "hkl-eo-irakleiou-faistou",
+      "apiCode": "9917",
       "name": "EO. Irakleiou - Faistou",
       "nameEl": "ΕΟ. ΗΡΑΚΛΕΙΟΥ - ΦΑΙΣΤΟΥ",
       "lat": 35.3004585,
@@ -3484,6 +3980,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eo-irakleiou-faistou-2": {
       "slug": "hkl-eo-irakleiou-faistou-2",
+      "apiCode": "9918",
       "name": "EO Irakleiou Faistou 2",
       "nameEl": "ΕΟ ΗΡΑΚΛΕΙΟΥ ΦΑΙΣΤΟΥ 2",
       "lat": 35.2947818,
@@ -3491,6 +3988,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eo-irakleiou-faistou-3": {
       "slug": "hkl-eo-irakleiou-faistou-3",
+      "apiCode": "9919",
       "name": "EO Irakleiou Faistou 3",
       "nameEl": "ΕΟ ΗΡΑΚΛΕΙΟΥ ΦΑΙΣΤΟΥ 3",
       "lat": 35.2880431,
@@ -3498,6 +3996,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eo-irakleiou-faistou-4": {
       "slug": "hkl-eo-irakleiou-faistou-4",
+      "apiCode": "9920",
       "name": "EO Irakleiou Faistou 4",
       "nameEl": "ΕΟ ΗΡΑΚΛΕΙΟΥ ΦΑΙΣΤΟΥ 4",
       "lat": 35.2939715,
@@ -3505,6 +4004,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-eo-irakleiou-faistou-5": {
       "slug": "hkl-eo-irakleiou-faistou-5",
+      "apiCode": "9921",
       "name": "EO Irakleiou Faistou 5",
       "nameEl": "ΕΟ ΗΡΑΚΛΕΙΟΥ ΦΑΙΣΤΟΥ 5",
       "lat": 35.2994975,
@@ -3512,6 +4012,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agiou-antoniou-nikolaou-gelasiou-kalaitzaki": {
       "slug": "hkl-agiou-antoniou-nikolaou-gelasiou-kalaitzaki",
+      "apiCode": "9922",
       "name": "Agiou Antoniou & Nikolaou Gelasiou Kalaitzaki",
       "nameEl": "ΑΓΙΟΥ ΑΝΤΩΝΙΟΥ & ΝΙΚΟΛΑΟΥ ΓΕΛΑΣΙΟΥ ΚΑΛΑΙΤΖΑΚΗ",
       "lat": 35.3003861,
@@ -3519,6 +4020,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agiou-antoniou-nikolaou": {
       "slug": "hkl-agiou-antoniou-nikolaou",
+      "apiCode": "9923",
       "name": "Agiou Antoniou & Nikolaou",
       "nameEl": "ΑΓΙΟΥ ΑΝΤΩΝΙΟΥ & ΝΙΚΟΛΑΟΥ",
       "lat": 35.3009806,
@@ -3526,6 +4028,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agiou-antoniou-nikolaou-38": {
       "slug": "hkl-agiou-antoniou-nikolaou-38",
+      "apiCode": "9924",
       "name": "Agiou Antoniou & Nikolaou 38",
       "nameEl": "ΑΓΙΟΥ ΑΝΤΩΝΙΟΥ & ΝΙΚΟΛΑΟΥ 38",
       "lat": 35.304724,
@@ -3533,6 +4036,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-oulof-palme-191": {
       "slug": "hkl-oulof-palme-191",
+      "apiCode": "9925",
       "name": "Oulof Palme 191",
       "nameEl": "ΟΥΛΩΦ ΠΑΛΜΕ 191",
       "lat": 35.3013051,
@@ -3540,6 +4044,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-oulof-palme-219": {
       "slug": "hkl-oulof-palme-219",
+      "apiCode": "9926",
       "name": "Oulof Palme 219",
       "nameEl": "Ούλωφ Πάλμε 219",
       "lat": 35.2970856,
@@ -3547,6 +4052,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-eth-antistasis-99-zoodoxou-pigis": {
       "slug": "hkl-avenue-eth-antistasis-99-zoodoxou-pigis",
+      "apiCode": "9928",
       "name": "Avenue Eth. Antistasis 99 - Zoodoxou Pigis",
       "nameEl": "Λεωφ. Εθ. Αντίστασης 99 - Ζωοδόχου Πηγής",
       "lat": 35.2721157,
@@ -3554,6 +4060,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-eth-antistasis-giouxta": {
       "slug": "hkl-avenue-eth-antistasis-giouxta",
+      "apiCode": "9929",
       "name": "Avenue Eth. Antistasis & Giouxta",
       "nameEl": "Λεωφ. Εθ. Αντίστασης & Γιουχτα",
       "lat": 35.267664688960785,
@@ -3561,6 +4068,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-eth-antistasis-ag-vlasi-e": {
       "slug": "hkl-avenue-eth-antistasis-ag-vlasi-e",
+      "apiCode": "9930",
       "name": "Avenue Eth. Antistasis - Ag Vlasi (E)",
       "nameEl": "Λεωφ. Εθ. Αντίστασης - Αγ Βλαση (Ε)",
       "lat": 35.2595912,
@@ -3568,6 +4076,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-eth-antistasis-ag-vlasi-m": {
       "slug": "hkl-avenue-eth-antistasis-ag-vlasi-m",
+      "apiCode": "9931",
       "name": "Avenue Eth. Antistasis - Ag Vlasi (M)",
       "nameEl": "Λεωφ. Εθ. Αντίστασης - Αγ Βλαση (Μ)",
       "lat": 35.2597908,
@@ -3575,6 +4084,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ag-vlasis-2": {
       "slug": "hkl-ag-vlasis-2",
+      "apiCode": "9932",
       "name": "Ag Vlasis 2",
       "nameEl": "Αγ Βλασης  2",
       "lat": 35.2541313,
@@ -3582,6 +4092,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agia-eirini-spilia": {
       "slug": "hkl-agia-eirini-spilia",
+      "apiCode": "9933",
       "name": "Agia Eirini - Spilia",
       "nameEl": "ΑΓΙΑ ΕΙΡΗΝΗ - ΣΠΗΛΙΑ (Ε)",
       "lat": 35.2849424,
@@ -3589,6 +4100,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-skalani-kato": {
       "slug": "hkl-skalani-kato",
+      "apiCode": "9934",
       "name": "Skalani Kato",
       "nameEl": "ΣΚΑΛΑΝΙ ΚΑΤΩ",
       "lat": 35.2821232,
@@ -3596,6 +4108,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-vl-xia-m": {
       "slug": "hkl-vl-xia-m",
+      "apiCode": "9935",
       "name": "Vl?xia (M)",
       "nameEl": "ΒΛΥΧΙΑ (Μ)",
       "lat": 35.2920249,
@@ -3603,6 +4116,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-vlixia-1": {
       "slug": "hkl-vlixia-1",
+      "apiCode": "9936",
       "name": "Vlixia 1",
       "nameEl": "ΒΛΥΧΙΑ 0 (Μ)",
       "lat": 35.2960633,
@@ -3610,6 +4124,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-avenue-knossou-265-eforeia-e": {
       "slug": "hkl-avenue-knossou-265-eforeia-e",
+      "apiCode": "9938",
       "name": "Avenue Knossou 265 - Eforeia (E)",
       "nameEl": "ΛΕΩΦ. ΚΝΩΣΣΟΥ 265 - ΕΦΟΡΕΙΑ (Ε)",
       "lat": 35.307708,
@@ -3617,6 +4132,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-kallitiea-2": {
       "slug": "hkl-kallitiea-2",
+      "apiCode": "9939",
       "name": "Kallitiea 2",
       "nameEl": "ΚΑΛΛΙΘΕΑ 2",
       "lat": 35.3116432,
@@ -3624,6 +4140,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-ep-od-ag-sylla-298": {
       "slug": "hkl-ep-od-ag-sylla-298",
+      "apiCode": "9940",
       "name": "Ep.od.ag.sylla 298",
       "nameEl": "ΕΠ.ΟΔ.ΑΓ.ΣΥΛΛΑ 298",
       "lat": 35.246472,
@@ -3631,6 +4148,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agios-vlasis-4": {
       "slug": "hkl-agios-vlasis-4",
+      "apiCode": "9941",
       "name": "Agios Vlasis 4",
       "nameEl": "ΑΓΙΟΣ ΒΛΑΣΗΣ 4",
       "lat": 35.2507355,
@@ -3638,6 +4156,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-agios-vlasis-3": {
       "slug": "hkl-agios-vlasis-3",
+      "apiCode": "9942",
       "name": "Agios Vlasis 3",
       "nameEl": "ΑΓΙΟΣ ΒΛΑΣΗΣ 3",
       "lat": 35.2516708,
@@ -3645,6 +4164,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-foinikia-1": {
       "slug": "hkl-foinikia-1",
+      "apiCode": "9944",
       "name": "Foinikia 1",
       "nameEl": "ΦΟΙΝΙΚΙΑ 1",
       "lat": 35.2761291,
@@ -3652,6 +4172,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-foinikia-2": {
       "slug": "hkl-foinikia-2",
+      "apiCode": "9945",
       "name": "Foinikia 2",
       "nameEl": "ΦΟΙΝΙΚΙΑ 2",
       "lat": 35.2669254,
@@ -3659,6 +4180,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-foinikia-3": {
       "slug": "hkl-foinikia-3",
+      "apiCode": "9946",
       "name": "Foinikia 3",
       "nameEl": "ΦΟΙΝΙΚΙΑ 3",
       "lat": 35.2550782,
@@ -3666,6 +4188,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-entrance-limani-pili-2": {
       "slug": "hkl-entrance-limani-pili-2",
+      "apiCode": "9947",
       "name": "Entrance Limani - ( Pili )",
       "nameEl": "ΕΜΜΑΝΟΥΗΛ ΧΑΤΖΑΚΗ (ΕΠΙΣΤΡΟΦΗ)",
       "lat": 35.303716668833914,
@@ -3673,6 +4196,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-street-ro-vita-3": {
       "slug": "hkl-street-ro-vita-3",
+      "apiCode": "9957",
       "name": "Street RO & Vita",
       "nameEl": "ΟΔΟΣ ΡΟ ΚΑΙ ΒΗΤΑ Ι (Μ)",
       "lat": 35.31988180085718,
@@ -3680,6 +4204,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-street-ro-vita-4": {
       "slug": "hkl-street-ro-vita-4",
+      "apiCode": "9958",
       "name": "Street RO & Vita",
       "nameEl": "ΟΔΟΣ ΡΟ ΚΑΙ ΒΗΤΑ ΙΙ  (Μ)",
       "lat": 35.320305884920046,
@@ -3687,6 +4212,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-oulof-palme-255-kyparisias": {
       "slug": "hkl-oulof-palme-255-kyparisias",
+      "apiCode": "9979",
       "name": "Oulof Palme 255 - Kyparisias",
       "nameEl": "ΟΥΛΩΦ ΠΑΛΜΕ 255 -  ( Μ )",
       "lat": 35.29174742352629,
@@ -3694,6 +4220,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "hkl-oulof-palme-312": {
       "slug": "hkl-oulof-palme-312",
+      "apiCode": "9980",
       "name": "Oulof Palme 312",
       "nameEl": "ΟΥΛΩΦ ΠΑΛΜΕ 312 - (Μ)",
       "lat": 35.28752939628831,
