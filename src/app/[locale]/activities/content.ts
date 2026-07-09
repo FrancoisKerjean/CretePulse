@@ -711,7 +711,7 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     onRequestBadge: "按需预约",
     catalogTitle: "活动示例",
     catalogNote: "该地区实际提供的活动，仅作示例展示。确切价格和可用性来自供应商针对您团队的报价。",
-    catalogFrom: "约~{price}€ / 人起",
+    catalogFrom: "~{price}€ / 人起",
     catalogCta: "申请报价",
   },
   tr: {
@@ -941,7 +941,7 @@ export const STRINGS: Record<string, ActivityPageStrings> = {
     onRequestBadge: "pyynnöstä",
     catalogTitle: "Esimerkkiaktiviteetteja",
     catalogNote: "Alueella todella tarjottavia aktiviteetteja, esitelty esimerkkeinä. Tarkka hinta ja saatavuus tulevat toimijoiden tarjouksista ryhmällesi.",
-    catalogFrom: "noin ~{price}€ / henkilö alkaen",
+    catalogFrom: "~{price}€ / henkilö alkaen",
     catalogCta: "Pyydä tarjous",
   },
   cs: {
