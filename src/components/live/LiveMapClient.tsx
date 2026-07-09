@@ -8,6 +8,7 @@ import {
 import { athensNow } from "@/lib/athens-time";
 import { createBusEl, createGpsBusEl, setBusArrow, setBusSelected, setBusDimmed } from "./busMarker";
 import { BusSheet } from "./BusSheet";
+import { StopSheet, type StopSheetProps } from "./StopSheet";
 import { Link } from "@/i18n/navigation";
 
 type MaplibreMap = import("maplibre-gl").Map;
@@ -17,6 +18,13 @@ type Pose = { lat: number; lng: number; bearing: number };
 
 const SHEET_H = 240; // hauteur approx du bottom sheet, pour l'offset de recentrage
 const EMPTY = { type: "FeatureCollection" as const, features: [] };
+
+/** Déduit la ville ("her"|"cha") depuis le préfixe du code de ligne citybus. */
+function citybusCity(lineCode: string): "her" | "cha" | null {
+  if (lineCode.startsWith("HKL")) return "her";
+  if (lineCode.startsWith("CHA")) return "cha";
+  return null;
+}
 
 const T: Record<string, { estimated: string; circulating: string; planTrip: string; rentCar: string; gpsLive: string; legendKtel: string; legendUrban: string }> = {
   en: { estimated: "Estimated from the timetable", circulating: "buses running", planTrip: "Plan a trip", rentCar: "Rent a car", gpsLive: "live GPS (Agios Nikolaos)", legendKtel: "KTEL (intercity)", legendUrban: "City bus (urban networks)" },
@@ -75,6 +83,7 @@ export function LiveMapClient({ locale }: { locale: string }) {
   const [count, setCount] = useState(0);
   const [gpsCount, setGpsCount] = useState(0);
   const [sheetVM, setSheetVM] = useState<BusSheetVM | null>(null);
+  const [stopSheet, setStopSheet] = useState<Omit<StopSheetProps, "locale" | "onClose"> | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -131,6 +140,7 @@ export function LiveMapClient({ locale }: { locale: string }) {
       const selectBus = (id: string) => {
         const bus = targetsRef.current.get(id);
         if (!bus) return;
+        setStopSheet(null); // ferme le StopSheet si ouvert
         selectedRef.current = id;
         const line = netRef.current?.lines.get(bus.lineId) ?? null;
         applyHighlight(bus.lineId);
@@ -139,6 +149,34 @@ export function LiveMapClient({ locale }: { locale: string }) {
         setSheetVM(deriveBusSheet(bus, athensNow().minutes, locale));
         map.easeTo({ center: [bus.lng, bus.lat], offset: [0, -SHEET_H / 2], duration: reduceMotion() ? 0 : 400 });
       };
+
+      // Construit un GeoJSON dédupliqué des arrêts citybus (avec api_code) depuis le réseau chargé.
+      function citybusStopsGeoJSON(net: LiveNetwork) {
+        const seen = new Map<string, {
+          slug: string; name: string; lat: number; lng: number;
+          apiCode: string; city: "her" | "cha"; color: string | null;
+        }>();
+        for (const line of net.lines.values()) {
+          if (line.source !== "citybus") continue;
+          const city = citybusCity(line.code);
+          if (!city) continue;
+          for (const stop of line.stops) {
+            if (!stop.apiCode || seen.has(stop.slug)) continue;
+            seen.set(stop.slug, {
+              slug: stop.slug, name: stop.name, lat: stop.lat, lng: stop.lng,
+              apiCode: stop.apiCode, city, color: line.color ?? null,
+            });
+          }
+        }
+        return {
+          type: "FeatureCollection" as const,
+          features: [...seen.values()].map((s) => ({
+            type: "Feature" as const,
+            properties: { slug: s.slug, name: s.name, apiCode: s.apiCode, city: s.city, color: s.color },
+            geometry: { type: "Point" as const, coordinates: [s.lng, s.lat] },
+          })),
+        };
+      }
 
       map.on("load", () => {
         if (cancelled) return;
@@ -167,7 +205,40 @@ export function LiveMapClient({ locale }: { locale: string }) {
           paint: { "circle-radius": 8, "circle-color": "#FFC83D", "circle-stroke-width": 2, "circle-stroke-color": "#0B3954" },
         });
 
-        map.on("click", () => deselect()); // clic sur le fond = désélection
+        // Couche d'arrêts citybus : cercles cliquables visibles à partir du zoom 13
+        map.addSource("citybus-stops", { type: "geojson", data: citybusStopsGeoJSON(net) });
+        map.addLayer({
+          id: "citybus-stops-layer",
+          type: "circle",
+          source: "citybus-stops",
+          minzoom: 13,
+          paint: {
+            "circle-radius": ["interpolate", ["linear"], ["zoom"], 13, 4, 16, 7],
+            "circle-color": ["coalesce", ["get", "color"], "#0B5E78"],
+            "circle-stroke-width": 1.5,
+            "circle-stroke-color": "#fff",
+            "circle-opacity": 0.85,
+          },
+        });
+
+        // Clic sur un arrêt citybus → ouvre le StopSheet
+        map.on("click", "citybus-stops-layer", (e) => {
+          e.originalEvent.stopPropagation(); // empêche la désélection du fond
+          const feat = e.features?.[0];
+          if (!feat) return;
+          const p = feat.properties as { name: string; apiCode: string; city: "her" | "cha"; color: string | null };
+          if (!p.apiCode) return;
+          deselect(); // ferme un éventuel BusSheet ouvert
+          setSheetVM(null);
+          setStopSheet({ stopName: p.name, stopApiCode: p.apiCode, city: p.city, lineColor: p.color });
+          const coords = ((feat.geometry as unknown) as { coordinates: [number, number] }).coordinates;
+          map.easeTo({ center: coords, offset: [0, -SHEET_H / 2], duration: 300 });
+        });
+        // Curseur pointer sur les arrêts
+        map.on("mouseenter", "citybus-stops-layer", () => { map.getCanvas().style.cursor = "pointer"; });
+        map.on("mouseleave", "citybus-stops-layer", () => { map.getCanvas().style.cursor = ""; });
+
+        map.on("click", () => { deselect(); setStopSheet(null); }); // clic sur le fond = désélection
 
         const markers = markersRef.current;
         const tick = () => {
@@ -272,7 +343,7 @@ export function LiveMapClient({ locale }: { locale: string }) {
 
         onVis = () => { if (document.visibilityState === "visible") { tick(); gpsTick(); } };
         document.addEventListener("visibilitychange", onVis);
-        onKey = (e) => { if (e.key === "Escape") deselect(); };
+        onKey = (e) => { if (e.key === "Escape") { deselect(); setStopSheet(null); } };
         document.addEventListener("keydown", onKey);
       });
     });
@@ -350,6 +421,13 @@ export function LiveMapClient({ locale }: { locale: string }) {
       )}
 
       {sheetVM && <BusSheet vm={sheetVM} locale={locale} onClose={() => deselectRef.current()} />}
+      {stopSheet && !sheetVM && (
+        <StopSheet
+          {...stopSheet}
+          locale={locale}
+          onClose={() => setStopSheet(null)}
+        />
+      )}
     </div>
   );
 }

@@ -91,7 +91,7 @@ function build() {
     while (usedSlugs.has(slug)) slug = `${base}-${n++}`;
     usedSlugs.add(slug);
     slugByCode.set(code, slug);
-    stops[slug] = { slug, name: displayName(s.nameEn, s.name), nameEl: (s.name || '').trim(), lat: s.lat, lng: s.lng };
+    stops[slug] = { slug, apiCode: code, name: displayName(s.nameEn, s.name), nameEl: (s.name || '').trim(), lat: s.lat, lng: s.lng };
   }
 
   function routeStopsWithCumuls(rc) {
@@ -174,7 +174,7 @@ async function commitSupabase(model) {
 
   await upsert('bus_operators', [{ id: CITY.operatorId, name: CITY.operatorName, region: 'east', source_url: CITY.sourceUrl }], 'id');
 
-  const stopRows = Object.values(model.stops).map((u) => ({ slug: u.slug, name: u.name, name_el: u.nameEl, lat: u.lat, lng: u.lng, prefecture: CITY.prefecture, coords_source: SOURCE, coords_confidence: 'high', needs_review: false }));
+  const stopRows = Object.values(model.stops).map((u) => ({ slug: u.slug, api_code: u.apiCode ?? null, name: u.name, name_el: u.nameEl, lat: u.lat, lng: u.lng, prefecture: CITY.prefecture, coords_source: SOURCE, coords_confidence: 'high', needs_review: false }));
   await upsert('bus_stops', stopRows, 'slug');
   const stopIdRows = await selIn('bus_stops', 'slug', Object.keys(model.stops), 'id,slug');
   const idBySlug = new Map(stopIdRows.map((r) => [r.slug, r.id]));

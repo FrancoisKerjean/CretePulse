@@ -9,6 +9,7 @@ export interface LiveStop {
   name: string;
   lat: number;
   lng: number;
+  apiCode: string | null;  // code natif citybus.gr (null pour OSM/KTEL, présent pour citybus)
   cumKm: number;   // distance cumulée (km) depuis seq 0
   cumMin: number;  // minutes cumulées depuis seq 0
 }

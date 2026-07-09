@@ -12,6 +12,7 @@ export const CITYBUS_DATA: CitybusData = {
   "stops": {
     "cha-1866-square-city-center": {
       "slug": "cha-1866-square-city-center",
+      "apiCode": "74003",
       "name": "1866 Square - City Center",
       "nameEl": "ΤΣ ΠΛΑΤΕΙΑ 1866",
       "lat": 35.5128561,
@@ -19,6 +20,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ts-plateia-1866": {
       "slug": "cha-ts-plateia-1866",
+      "apiCode": "74004",
       "name": "Ts_plateia_1866",
       "nameEl": "ΤΣ ΠΛΑΤΕΙΑ-1866",
       "lat": 35.51281913311825,
@@ -26,6 +28,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ts-zymvrakakidon": {
       "slug": "cha-ts-zymvrakakidon",
+      "apiCode": "74005",
       "name": "Ts_zymvrakakidon",
       "nameEl": "ΤΣ ΖΥΜΒΡΑΚΑΚΗΔΩΝ",
       "lat": 35.5120332,
@@ -33,6 +36,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-nikolaou-skoula": {
       "slug": "cha-nikolaou-skoula",
+      "apiCode": "74006",
       "name": "Nikolaou Skoula",
       "nameEl": "ΝΙΚΟΛΑΟΥ ΣΚΟΥΛΑ",
       "lat": 35.5088612,
@@ -40,6 +44,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-papadaki": {
       "slug": "cha-papadaki",
+      "apiCode": "74007",
       "name": "Papadaki",
       "nameEl": "ΠΑΠΑΔΑΚΗ",
       "lat": 35.5071791,
@@ -47,6 +52,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-mournion": {
       "slug": "cha-mournion",
+      "apiCode": "74011",
       "name": "Mournion",
       "nameEl": "ΜΟΥΡΝΙΩΝ",
       "lat": 35.4969318,
@@ -54,6 +60,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-agias-marinas": {
       "slug": "cha-agias-marinas",
+      "apiCode": "74012",
       "name": "Agias Marinas",
       "nameEl": "ΑΓΙΑΣ ΜΑΡΙΝΑΣ",
       "lat": 35.4939193474316,
@@ -61,6 +68,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-naskri": {
       "slug": "cha-naskri",
+      "apiCode": "74013",
       "name": "Naskri",
       "nameEl": "ΝΑΣΚΡΗ",
       "lat": 35.4920936755153,
@@ -68,6 +76,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-national-road": {
       "slug": "cha-national-road",
+      "apiCode": "74014",
       "name": "National Road",
       "nameEl": "ΕΘΝΙΚΗ ΟΔΟΣ",
       "lat": 35.488477,
@@ -75,6 +84,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-konstantinoupoleos": {
       "slug": "cha-konstantinoupoleos",
+      "apiCode": "74015",
       "name": "Konstantinoupoleos",
       "nameEl": "ΚΩΝΣΤΑΝΤΙΝΟΥΠΟΛΕΩΣ",
       "lat": 35.4858759646095,
@@ -82,6 +92,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-mournies": {
       "slug": "cha-mournies",
+      "apiCode": "74016",
       "name": "Mournies",
       "nameEl": "ΜΟΥΡΝΙΕΣ",
       "lat": 35.48394064336417,
@@ -89,6 +100,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-zoodochou-pigis": {
       "slug": "cha-zoodochou-pigis",
+      "apiCode": "74017",
       "name": "Zoodochou Pigis",
       "nameEl": "ΖΩΟΔΟΧΟΥ ΠΗΓΗΣ",
       "lat": 35.48166834435197,
@@ -96,6 +108,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-agios-eleftherios": {
       "slug": "cha-agios-eleftherios",
+      "apiCode": "74018",
       "name": "Agios Eleftherios",
       "nameEl": "ΑΓΙΟΣ ΕΛΕΥΘΕΡΙΟΣ",
       "lat": 35.4807445,
@@ -103,6 +116,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-hospital": {
       "slug": "cha-hospital",
+      "apiCode": "74019",
       "name": "Hospital",
       "nameEl": "ΝΟΣΟΚΟΜΕΙΟ",
       "lat": 35.4788982,
@@ -110,6 +124,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-hospital-gate": {
       "slug": "cha-hospital-gate",
+      "apiCode": "74020",
       "name": "Hospital Gate",
       "nameEl": "ΠΥΛΗ ΝΟΣΟΚΟΜΕΙΟ",
       "lat": 35.480712,
@@ -117,6 +132,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-elpidas": {
       "slug": "cha-elpidas",
+      "apiCode": "74021",
       "name": "Elpidas",
       "nameEl": "ΕΛΠΙΔΑΣ",
       "lat": 35.4808400442457,
@@ -124,6 +140,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-megalou-alexandrou": {
       "slug": "cha-megalou-alexandrou",
+      "apiCode": "74022",
       "name": "Megalou Alexandrou",
       "nameEl": "ΜΕΓΑΛΟΥ ΑΛΕΞΑΝΔΡΟΥ",
       "lat": 35.4840507,
@@ -131,6 +148,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-chnara": {
       "slug": "cha-chnara",
+      "apiCode": "74023",
       "name": "Chnara",
       "nameEl": "ΧΝΑΡΑ",
       "lat": 35.4865918,
@@ -138,6 +156,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-sofokli-venizelou": {
       "slug": "cha-sofokli-venizelou",
+      "apiCode": "74024",
       "name": "Sofokli Venizelou",
       "nameEl": "ΣΟΦΟΚΛΗ ΒΕΝΙΖΕΛΟΥ",
       "lat": 35.48901815252652,
@@ -145,6 +164,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-karadimitri": {
       "slug": "cha-karadimitri",
+      "apiCode": "74025",
       "name": "Karadimitri",
       "nameEl": "ΚΑΡΑΔΗΜΗΤΡΗ",
       "lat": 35.49202467831112,
@@ -152,6 +172,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kokkino-metochi": {
       "slug": "cha-kokkino-metochi",
+      "apiCode": "74026",
       "name": "Kokkino Metochi",
       "nameEl": "ΚΟΚΚΙΝΟ ΜΕΤΟΧΙ",
       "lat": 35.4941223,
@@ -159,6 +180,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ergatikes-katoikies": {
       "slug": "cha-ergatikes-katoikies",
+      "apiCode": "74027",
       "name": "Ergatikes Katoikies",
       "nameEl": "ΕΡΓΑΤΙΚΕΣ ΚΑΤΟΙΚΙΕΣ",
       "lat": 35.4962092676503,
@@ -166,6 +188,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-agios-panteleimonas": {
       "slug": "cha-agios-panteleimonas",
+      "apiCode": "74028",
       "name": "Agios Panteleimonas",
       "nameEl": "ΑΓΙΟΣ ΠΑΝΤΕΛΕΗΜΟΝΑΣ",
       "lat": 35.4972334,
@@ -173,6 +196,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-dei": {
       "slug": "cha-dei",
+      "apiCode": "74029",
       "name": "DEI",
       "nameEl": "ΔΕΗ",
       "lat": 35.5014010003072,
@@ -180,6 +204,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-palia-ilektriki": {
       "slug": "cha-palia-ilektriki",
+      "apiCode": "74030",
       "name": "Palia Ilektriki",
       "nameEl": "ΠΑΛΙΑ ΗΛΕΚΤΡΙΚΗ",
       "lat": 35.5035395193396,
@@ -187,6 +212,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kornarou": {
       "slug": "cha-kornarou",
+      "apiCode": "74031",
       "name": "Kornarou",
       "nameEl": "ΚΟΡΝΑΡΟΥ",
       "lat": 35.505083744828084,
@@ -194,6 +220,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-agios-loukas": {
       "slug": "cha-agios-loukas",
+      "apiCode": "74032",
       "name": "Agios Loukas",
       "nameEl": "ΑΓΙΟΣ ΛΟΥΚΑΣ",
       "lat": 35.5077667,
@@ -201,6 +228,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-markou-botsari": {
       "slug": "cha-markou-botsari",
+      "apiCode": "74033",
       "name": "Markou Botsari",
       "nameEl": "ΜΑΡΚΟΥ ΜΠΟΤΣΑΡΗ",
       "lat": 35.5101271050475,
@@ -208,6 +236,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-peridou": {
       "slug": "cha-peridou",
+      "apiCode": "74034",
       "name": "Peridou",
       "nameEl": "ΠΕΡΙΔΟΥ",
       "lat": 35.5121183,
@@ -215,6 +244,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-chatzimichali-giannari": {
       "slug": "cha-chatzimichali-giannari",
+      "apiCode": "74036",
       "name": "Chatzimichali Giannari",
       "nameEl": "ΧΑΤΖΗΜΙΧΑΛΗ ΓΙΑΝΝΑΡΗ",
       "lat": 35.51395269162429,
@@ -222,6 +252,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-plastira": {
       "slug": "cha-plastira",
+      "apiCode": "74038",
       "name": "Plastira",
       "nameEl": "ΠΛΑΣΤΗΡΑ",
       "lat": 35.5037274,
@@ -229,6 +260,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-mikras-asias": {
       "slug": "cha-mikras-asias",
+      "apiCode": "74039",
       "name": "Mikras Asias",
       "nameEl": "ΜΙΚΡΑΣ ΑΣΙΑΣ",
       "lat": 35.501508180221194,
@@ -236,6 +268,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-parodos-plastira": {
       "slug": "cha-parodos-plastira",
+      "apiCode": "74040",
       "name": "Parodos Plastira",
       "nameEl": "ΠΑΡΟΔΟΣ ΠΛΑΣΤΗΡΑ",
       "lat": 35.49947541245311,
@@ -243,6 +276,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-sklavenitis": {
       "slug": "cha-sklavenitis",
+      "apiCode": "74041",
       "name": "Sklavenitis",
       "nameEl": "ΣΚΛΑΒΕΝΙΤΗΣ",
       "lat": 35.497015,
@@ -250,6 +284,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-sofokli-venizelou-ag-eleftheriou": {
       "slug": "cha-sofokli-venizelou-ag-eleftheriou",
+      "apiCode": "74042",
       "name": "Sofokli Venizelou & AG. Eleftheriou",
       "nameEl": "ΣΟΦΟΚΛΗ ΒΕΝΙΖΕΛΟΥ & ΑΓ. ΕΛΕΥΘΕΡΙΟΥ",
       "lat": 35.480693306945,
@@ -257,6 +292,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-aikaterinis": {
       "slug": "cha-ag-aikaterinis",
+      "apiCode": "74043",
       "name": "AG. Aikaterinis",
       "nameEl": "ΑΓ. ΑΙΚΑΤΕΡΙΝΗΣ",
       "lat": 35.4796324,
@@ -264,6 +300,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ikarou": {
       "slug": "cha-ikarou",
+      "apiCode": "74044",
       "name": "Ikarou",
       "nameEl": "ΙΚΑΡΟΥ",
       "lat": 35.4780765767562,
@@ -271,6 +308,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-nerokourou-ag-aikaterinis": {
       "slug": "cha-nerokourou-ag-aikaterinis",
+      "apiCode": "74045",
       "name": "Nerokourou & AG. Aikaterinis",
       "nameEl": "ΝΕΡΟΚΟΥΡΟΥ & ΑΓ. ΑΙΚΑΤΕΡΙΝΗΣ",
       "lat": 35.4759447,
@@ -278,6 +316,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-junction-nerokourou": {
       "slug": "cha-junction-nerokourou",
+      "apiCode": "74076",
       "name": "Junction Nerokourou",
       "nameEl": "ΔΙΑΣΤΑΥΡΩΣΗ ΝΕΡΟΚΟΥΡΟΥ",
       "lat": 35.47599954635098,
@@ -285,6 +324,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-nerokourou": {
       "slug": "cha-nerokourou",
+      "apiCode": "74077",
       "name": "Nerokourou",
       "nameEl": "ΤΣ ΝΕΡΟΚΟΥΡΟΥ",
       "lat": 35.47537443053649,
@@ -292,6 +332,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-junction-nerokourou-2": {
       "slug": "cha-junction-nerokourou-2",
+      "apiCode": "74078",
       "name": "Junction Nerokourou",
       "nameEl": "ΔΙΑΣΤΑΥΡΩΣΗ ΝΕΡΟΚΟΥΡΟΥ",
       "lat": 35.47633541296052,
@@ -299,6 +340,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-agioi-saranta": {
       "slug": "cha-agioi-saranta",
+      "apiCode": "74079",
       "name": "Agioi Saranta",
       "nameEl": "ΑΓΙΟΙ ΣΑΡΑΝΤΑ",
       "lat": 35.4816529,
@@ -306,6 +348,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-tompazi": {
       "slug": "cha-tompazi",
+      "apiCode": "74080",
       "name": "Tompazi",
       "nameEl": "ΤΟΜΠΑΖΗ",
       "lat": 35.4836731,
@@ -313,6 +356,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-katsifariana": {
       "slug": "cha-katsifariana",
+      "apiCode": "74081",
       "name": "Katsifariana",
       "nameEl": "ΚΑΤΣΙΦΑΡΙΑΝΑ",
       "lat": 35.48767390597991,
@@ -320,6 +364,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-xylokamara": {
       "slug": "cha-xylokamara",
+      "apiCode": "74082",
       "name": "Xylokamara",
       "nameEl": "ΞΥΛΟΚΑΜΑΡΑ",
       "lat": 35.4909948993806,
@@ -327,6 +372,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ethnarchou-venizelou": {
       "slug": "cha-ethnarchou-venizelou",
+      "apiCode": "74083",
       "name": "Ethnarchou Venizelou",
       "nameEl": "ΕΘΝΑΡΧΟΥ ΒΕΝΙΖΕΛΟΥ",
       "lat": 35.4918654,
@@ -334,6 +380,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-chrysopigi": {
       "slug": "cha-chrysopigi",
+      "apiCode": "74084",
       "name": "Chrysopigi",
       "nameEl": "ΧΡΥΣΟΠΗΓΗ",
       "lat": 35.492737,
@@ -341,6 +388,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-apostolon": {
       "slug": "cha-ag-apostolon",
+      "apiCode": "74085",
       "name": "AG. Apostolon",
       "nameEl": "ΑΓ. ΑΠΟΣΤΟΛΩΝ",
       "lat": 35.4940342,
@@ -348,6 +396,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ypsilantou": {
       "slug": "cha-ypsilantou",
+      "apiCode": "74086",
       "name": "Ypsilantou",
       "nameEl": "ΥΨΗΛΑΝΤΟΥ",
       "lat": 35.497519,
@@ -355,6 +404,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kolokotroni": {
       "slug": "cha-kolokotroni",
+      "apiCode": "74087",
       "name": "Kolokotroni",
       "nameEl": "ΚΟΛΟΚΟΤΡΩΝΗ",
       "lat": 35.50073390233412,
@@ -362,6 +412,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-agios-stefanos": {
       "slug": "cha-agios-stefanos",
+      "apiCode": "74088",
       "name": "Agios Stefanos",
       "nameEl": "ΑΓΙΟΣ ΣΤΕΦΑΝΟΣ",
       "lat": 35.502703,
@@ -369,6 +420,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-mavrokordatou": {
       "slug": "cha-mavrokordatou",
+      "apiCode": "74089",
       "name": "Mavrokordatou",
       "nameEl": "ΜΑΥΡΟΚΟΡΔΑΤΟΥ",
       "lat": 35.50386134640866,
@@ -376,6 +428,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-police-department": {
       "slug": "cha-police-department",
+      "apiCode": "74090",
       "name": "Police Department",
       "nameEl": "ΑΣΤΥΝΟΜΙΚΟ ΜΕΓΑΡΟ",
       "lat": 35.50533292543363,
@@ -383,6 +436,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-nearchou": {
       "slug": "cha-nearchou",
+      "apiCode": "74091",
       "name": "Nearchou",
       "nameEl": "ΝΕΑΡΧΟΥ",
       "lat": 35.50741412821392,
@@ -390,6 +444,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-war-museum": {
       "slug": "cha-war-museum",
+      "apiCode": "74092",
       "name": "WAR Museum",
       "nameEl": "ΠΟΛΕΜΙΚΟ ΜΟΥΣΕΙΟ",
       "lat": 35.5109422,
@@ -397,6 +452,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ktistaki": {
       "slug": "cha-ktistaki",
+      "apiCode": "74093",
       "name": "Ktistaki",
       "nameEl": "ΚΤΙΣΤΑΚΗ",
       "lat": 35.5129978,
@@ -404,6 +460,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ktistaki-2": {
       "slug": "cha-ktistaki-2",
+      "apiCode": "74094",
       "name": "Ktistaki",
       "nameEl": "ΚΤΙΣΤΑΚΗ",
       "lat": 35.5133515,
@@ -411,6 +468,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-roloi": {
       "slug": "cha-roloi",
+      "apiCode": "74095",
       "name": "Roloi",
       "nameEl": "ΡΟΛΟΙ",
       "lat": 35.5120859714983,
@@ -418,6 +476,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-olympia": {
       "slug": "cha-olympia",
+      "apiCode": "74096",
       "name": "Olympia",
       "nameEl": "ΟΛΥΜΠΙΑ",
       "lat": 35.5109563597665,
@@ -425,6 +484,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-dikastiria": {
       "slug": "cha-dikastiria",
+      "apiCode": "74097",
       "name": "Dikastiria",
       "nameEl": "ΔΙΚΑΣΤΗΡΙΑ",
       "lat": 35.5097969,
@@ -432,6 +492,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kamaraki": {
       "slug": "cha-kamaraki",
+      "apiCode": "74098",
       "name": "Kamaraki",
       "nameEl": "ΚΑΜΑΡΑΚΙ",
       "lat": 35.512364,
@@ -439,6 +500,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-iroon-polytechneiou": {
       "slug": "cha-iroon-polytechneiou",
+      "apiCode": "74099",
       "name": "Iroon Polytechneiou",
       "nameEl": "ΗΡΩΩΝ ΠΟΛΥΤΕΧΝΕΙΟΥ",
       "lat": 35.5144414107749,
@@ -446,6 +508,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-chonoloulou": {
       "slug": "cha-chonoloulou",
+      "apiCode": "74100",
       "name": "Chonoloulou",
       "nameEl": "8ης ΔΕΚΕΜΒΡΙΟΥ",
       "lat": 35.5158019879458,
@@ -453,6 +516,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-katsampa": {
       "slug": "cha-katsampa",
+      "apiCode": "74101",
       "name": "Katsampa",
       "nameEl": "ΚΑΤΣΑΜΠΑ",
       "lat": 35.5153444,
@@ -460,6 +524,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-meintani": {
       "slug": "cha-meintani",
+      "apiCode": "74102",
       "name": "Meintani",
       "nameEl": "ΜΕΙΝΤΑΝΙ",
       "lat": 35.514868,
@@ -467,6 +532,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-agia-foteini": {
       "slug": "cha-agia-foteini",
+      "apiCode": "74103",
       "name": "Agia Foteini",
       "nameEl": "ΑΓΙΑ ΦΩΤΕΙΝΗ",
       "lat": 35.514651,
@@ -474,6 +540,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ergatikes-katoikies-2": {
       "slug": "cha-ergatikes-katoikies-2",
+      "apiCode": "74104",
       "name": "Ergatikes Katoikies",
       "nameEl": "ΕΡΓΑΤΙΚΕΣ ΚΑΤΟΙΚΙΕΣ",
       "lat": 35.5136506,
@@ -481,6 +548,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-andrianaki": {
       "slug": "cha-andrianaki",
+      "apiCode": "74105",
       "name": "Andrianaki",
       "nameEl": "ΑΝΔΡΙΑΝΑΚΗ",
       "lat": 35.5148973,
@@ -488,6 +556,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-protomi-iliaki": {
       "slug": "cha-protomi-iliaki",
+      "apiCode": "74106",
       "name": "Protomi Iliaki",
       "nameEl": "ΠΡΟΤΟΜΗ ΗΛΙΑΚΗ",
       "lat": 35.5171291,
@@ -495,6 +564,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-venizelon-graves": {
       "slug": "cha-venizelon-graves",
+      "apiCode": "74107",
       "name": "Venizelon Graves",
       "nameEl": "ΤΑΦΟΙ ΒΕΝΙΖΕΛΩΝ",
       "lat": 35.5221161,
@@ -502,6 +572,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-entrance-university-of-crete": {
       "slug": "cha-entrance-university-of-crete",
+      "apiCode": "74108",
       "name": "Entrance University OF Crete",
       "nameEl": "ΕΙΣΟΔΟΣ ΠΟΛΥΤΕΧΝΕΙΟΥ",
       "lat": 35.5249704,
@@ -509,6 +580,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-venizelon-graves-2": {
       "slug": "cha-venizelon-graves-2",
+      "apiCode": "74116",
       "name": "Venizelon Graves",
       "nameEl": "ΣΧΟΛΕΙΑ ΚΟΥΝΟΥΠΙΔΙΑΝΩΝ",
       "lat": 35.5222024,
@@ -516,6 +588,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-andrianaki-2": {
       "slug": "cha-andrianaki-2",
+      "apiCode": "74117",
       "name": "Andrianaki",
       "nameEl": "ΑΝΔΡΙΑΝΑΚΗ",
       "lat": 35.5152903,
@@ -523,6 +596,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ergatikes-katoikies-3": {
       "slug": "cha-ergatikes-katoikies-3",
+      "apiCode": "74118",
       "name": "Ergatikes Katoikies",
       "nameEl": "ΕΡΓΑΤΙΚΕΣ ΚΑΤΟΙΚΙΕΣ",
       "lat": 35.5140944,
@@ -530,6 +604,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-agia-foteini-2": {
       "slug": "cha-agia-foteini-2",
+      "apiCode": "74119",
       "name": "Agia Foteini",
       "nameEl": "ΑΓΙΑ ΦΩΤΕΙΝΗ",
       "lat": 35.5148138,
@@ -537,6 +612,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-meintani-2": {
       "slug": "cha-meintani-2",
+      "apiCode": "74120",
       "name": "Meintani",
       "nameEl": "MEINTANI",
       "lat": 35.5149884,
@@ -544,6 +620,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-katsampa-2": {
       "slug": "cha-katsampa-2",
+      "apiCode": "74121",
       "name": "Katsampa",
       "nameEl": "ΚΑΤΣΑΜΠΑ",
       "lat": 35.515627,
@@ -551,6 +628,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-iroon-polytechneiou-2": {
       "slug": "cha-iroon-polytechneiou-2",
+      "apiCode": "74122",
       "name": "Iroon Polytechneiou",
       "nameEl": "ΗΡΩΩΝ ΠΟΛΥΤΕΧΝΕΙΟΥ",
       "lat": 35.5147494,
@@ -558,6 +636,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kamaraki-2": {
       "slug": "cha-kamaraki-2",
+      "apiCode": "74123",
       "name": "Kamaraki",
       "nameEl": "ΚΑΜΑΡΑΚΙ",
       "lat": 35.5127994,
@@ -565,6 +644,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-dikastiria-2": {
       "slug": "cha-dikastiria-2",
+      "apiCode": "74124",
       "name": "Dikastiria",
       "nameEl": "ΔΙΚΑΣΤΗΡΙΑ",
       "lat": 35.5103689,
@@ -572,6 +652,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-olympia-2": {
       "slug": "cha-olympia-2",
+      "apiCode": "74125",
       "name": "Olympia",
       "nameEl": "ΟΛΥΜΠΙΑ",
       "lat": 35.5115511,
@@ -579,6 +660,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-roloi-2": {
       "slug": "cha-roloi-2",
+      "apiCode": "74126",
       "name": "Roloi",
       "nameEl": "ΡΟΛΟΙ",
       "lat": 35.512586,
@@ -586,6 +668,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ktistaki-3": {
       "slug": "cha-ktistaki-3",
+      "apiCode": "74127",
       "name": "Ktistaki",
       "nameEl": "ΚΤΙΣΤΑΚΗ",
       "lat": 35.5136918,
@@ -593,6 +676,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-schools": {
       "slug": "cha-schools",
+      "apiCode": "74128",
       "name": "Schools",
       "nameEl": "ΣΧΟΛΕΙΑ",
       "lat": 35.5224194,
@@ -600,6 +684,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-venizelon-graves-3": {
       "slug": "cha-venizelon-graves-3",
+      "apiCode": "74129",
       "name": "Venizelon Graves",
       "nameEl": "ΤΑΦΟΙ ΒΕΝΙΖΕΛΩΝ",
       "lat": 35.5240881,
@@ -607,6 +692,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-koukouvagia": {
       "slug": "cha-koukouvagia",
+      "apiCode": "74130",
       "name": "Koukouvagia",
       "nameEl": "ΚΟΥΚΟΥΒΑΓΙΑ",
       "lat": 35.5256565,
@@ -614,6 +700,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-agorastaki": {
       "slug": "cha-agorastaki",
+      "apiCode": "74131",
       "name": "Agorastaki",
       "nameEl": "ΑΓΟΡΑΣΤΑΚΗ",
       "lat": 35.526712,
@@ -621,6 +708,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-adamantiou-aretaki": {
       "slug": "cha-adamantiou-aretaki",
+      "apiCode": "74132",
       "name": "Adamantiou Aretaki",
       "nameEl": "ΑΔΑΜΑΝΤΙΟΥ ΑΡΕΤΑΚΗ",
       "lat": 35.5283939,
@@ -628,6 +716,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-emmanouil-symvoulaki": {
       "slug": "cha-emmanouil-symvoulaki",
+      "apiCode": "74133",
       "name": "Emmanouil Symvoulaki",
       "nameEl": "ΕΜΜΑΝΟΥΗΛ ΣΥΜΒΟΥΛΑΚΗ",
       "lat": 35.5278298,
@@ -635,6 +724,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ioanni-kalogeri": {
       "slug": "cha-ioanni-kalogeri",
+      "apiCode": "74134",
       "name": "Ioanni Kalogeri",
       "nameEl": "ΙΩΑΝΝΗ ΚΑΛΟΓΕΡΗ",
       "lat": 35.5274751,
@@ -642,6 +732,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-koumpeli": {
       "slug": "cha-koumpeli",
+      "apiCode": "74135",
       "name": "Koumpeli",
       "nameEl": "ΚΟΥΜΠΕΛΗ",
       "lat": 35.52652313333014,
@@ -649,6 +740,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-megalou-alexandrou-2": {
       "slug": "cha-megalou-alexandrou-2",
+      "apiCode": "74136",
       "name": "Megalou Alexandrou",
       "nameEl": "ΜΕΓΑΛΟΥ ΑΛΕΞΑΝΔΡΟΥ",
       "lat": 35.5326976,
@@ -656,6 +748,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-aristofanous": {
       "slug": "cha-aristofanous",
+      "apiCode": "74139",
       "name": "Aristofanous",
       "nameEl": "ΑΡΙΣΤΟΦΑΝΟΥΣ",
       "lat": 35.53527356632366,
@@ -663,6 +756,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-solonos": {
       "slug": "cha-solonos",
+      "apiCode": "74140",
       "name": "Solonos",
       "nameEl": "ΣΟΛΩΝΟΣ",
       "lat": 35.5338165,
@@ -670,6 +764,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-nea-froudia": {
       "slug": "cha-nea-froudia",
+      "apiCode": "74143",
       "name": "NEA Froudia",
       "nameEl": "ΝΕΑ ΦΡΟΥΔΙΑ",
       "lat": 35.52098096794474,
@@ -677,6 +772,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-georgiou-papadaki": {
       "slug": "cha-georgiou-papadaki",
+      "apiCode": "74144",
       "name": "Georgiou Papadaki",
       "nameEl": "ΓΕΩΡΓΙΟΥ ΠΑΠΑΔΑΚΗ",
       "lat": 35.52013725244255,
@@ -684,6 +780,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-amfimaliou": {
       "slug": "cha-amfimaliou",
+      "apiCode": "74145",
       "name": "Amfimaliou",
       "nameEl": "ΑΜΦΙΜΑΛΙΟΥ",
       "lat": 35.519901,
@@ -691,6 +788,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-evangelistrias": {
       "slug": "cha-evangelistrias",
+      "apiCode": "74146",
       "name": "Evangelistrias",
       "nameEl": "ΕΥΑΓΓΕΛΙΣΤΡΙΑΣ",
       "lat": 35.5197252,
@@ -698,6 +796,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-treis-kamares": {
       "slug": "cha-treis-kamares",
+      "apiCode": "74147",
       "name": "Treis Kamares",
       "nameEl": "ΤΡΕΙΣ ΚΑΜΑΡΕΣ",
       "lat": 35.5186515,
@@ -705,6 +804,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-residence-of-el-venizelos": {
       "slug": "cha-residence-of-el-venizelos",
+      "apiCode": "74148",
       "name": "Residence of EL. Venizelos",
       "nameEl": "ΟΙΚΙΑ ΒΕΝΙΖΕΛΟΥ",
       "lat": 35.51827608434553,
@@ -712,6 +812,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-proxeneio": {
       "slug": "cha-proxeneio",
+      "apiCode": "74149",
       "name": "Proxeneio",
       "nameEl": "ΠΡΟΞΕΝΕΙΟ",
       "lat": 35.5182127,
@@ -719,6 +820,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-chonoloulou-2": {
       "slug": "cha-chonoloulou-2",
+      "apiCode": "74150",
       "name": "Chonoloulou",
       "nameEl": "ΧΟΝΟΛΟΥΛΟΥ",
       "lat": 35.5172341,
@@ -726,6 +828,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-hotel-akrotiri": {
       "slug": "cha-hotel-akrotiri",
+      "apiCode": "74151",
       "name": "Hotel Akrotiri",
       "nameEl": "ΞΕΝΟΔΟΧΕΙΟ ΑΚΡΩΤΗΡΙ",
       "lat": 35.5192662,
@@ -733,6 +836,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ts-plateia-machis-kritis": {
       "slug": "cha-ts-plateia-machis-kritis",
+      "apiCode": "74153",
       "name": "Ts_plateia Machis Kritis",
       "nameEl": "ΤΣ ΠΛΑΤΕΙΑ ΜΑΧΗΣ ΚΡΗΤΗΣ",
       "lat": 35.5135644,
@@ -740,6 +844,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-apokoronou": {
       "slug": "cha-apokoronou",
+      "apiCode": "74154",
       "name": "Apokoronou",
       "nameEl": "ΑΠΟΚΟΡΩΝΟΥ",
       "lat": 35.5121901637819,
@@ -747,6 +852,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-paparrigopoulou": {
       "slug": "cha-paparrigopoulou",
+      "apiCode": "74155",
       "name": "Paparrigopoulou",
       "nameEl": "ΠΑΠΑΡΡΗΓΟΠΟΥΛΟΥ",
       "lat": 35.5091722,
@@ -754,6 +860,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kritovoulidou": {
       "slug": "cha-kritovoulidou",
+      "apiCode": "74156",
       "name": "Kritovoulidou",
       "nameEl": "ΚΡΙΤΟΒΟΥΛΙΔΟΥ",
       "lat": 35.50783390731713,
@@ -761,6 +868,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-naos-petrou-kai-pavlou": {
       "slug": "cha-naos-petrou-kai-pavlou",
+      "apiCode": "74158",
       "name": "Naos Petrou KAI Pavlou",
       "nameEl": "ΝΑΟΣ ΠΕΤΡΟΥ ΚΑΙ ΠΑΥΛΟΥ",
       "lat": 35.50761213629074,
@@ -768,6 +876,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-dexameni": {
       "slug": "cha-dexameni",
+      "apiCode": "74160",
       "name": "Dexameni",
       "nameEl": "ΔΕΞΑΜΕΝΗ",
       "lat": 35.507045600619676,
@@ -775,6 +884,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-parko-ag-ioannou": {
       "slug": "cha-parko-ag-ioannou",
+      "apiCode": "74161",
       "name": "Parko AG. Ioannou",
       "nameEl": "ΠΑΡΚΟ ΑΓ. ΙΩΑΝΝΟΥ",
       "lat": 35.506784632884056,
@@ -782,6 +892,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-volani": {
       "slug": "cha-volani",
+      "apiCode": "74163",
       "name": "Volani",
       "nameEl": "ΒΟΛΑΝΗ",
       "lat": 35.50697781782464,
@@ -789,6 +900,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-terma-makedonomachon": {
       "slug": "cha-terma-makedonomachon",
+      "apiCode": "74165",
       "name": "Terma Makedonomachon",
       "nameEl": "ΤΕΡΜΑ ΜΑΚΕΔΟΝΟΜΑΧΩΝ",
       "lat": 35.5070849,
@@ -796,6 +908,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kontekaki": {
       "slug": "cha-kontekaki",
+      "apiCode": "74166",
       "name": "Kontekaki",
       "nameEl": "ΚΟΝΤΕΚΑΚΗ",
       "lat": 35.507616513466935,
@@ -803,6 +916,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-k-gerakaki": {
       "slug": "cha-k-gerakaki",
+      "apiCode": "74167",
       "name": "K. Gerakaki",
       "nameEl": "Κ. ΓΕΡΑΚΑΚΗ",
       "lat": 35.50769840727109,
@@ -810,6 +924,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-parko-ag-ioanni": {
       "slug": "cha-parko-ag-ioanni",
+      "apiCode": "74168",
       "name": "Parko AG. Ioanni",
       "nameEl": "ΠΑΡΚΟ ΑΓ. ΙΩΑΝΝΗ",
       "lat": 35.5069549412988,
@@ -817,6 +932,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-prevantorio": {
       "slug": "cha-prevantorio",
+      "apiCode": "74169",
       "name": "Prevantorio",
       "nameEl": "ΠΡΕΒΑΝΤΟΡΙΟ",
       "lat": 35.5055374,
@@ -824,6 +940,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-ioannis": {
       "slug": "cha-ag-ioannis",
+      "apiCode": "74170",
       "name": "AG. Ioannis",
       "nameEl": "ΑΓ. ΙΩΑΝΝΗΣ",
       "lat": 35.50665589796308,
@@ -831,6 +948,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-xanthoudidou": {
       "slug": "cha-xanthoudidou",
+      "apiCode": "74171",
       "name": "Xanthoudidou",
       "nameEl": "ΞΑΝΘΟΥΔΙΔΟΥ",
       "lat": 35.5067972318012,
@@ -838,6 +956,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-terma-malinou": {
       "slug": "cha-terma-malinou",
+      "apiCode": "74172",
       "name": "Terma Malinou",
       "nameEl": "ΤΕΡΜΑ ΜΑΛΙΝΟΥ",
       "lat": 35.5068523,
@@ -845,6 +964,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-apteron": {
       "slug": "cha-apteron",
+      "apiCode": "74173",
       "name": "Apteron",
       "nameEl": "ΑΠΤΕΡΩΝ",
       "lat": 35.50730821335214,
@@ -852,6 +972,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-police-department-2": {
       "slug": "cha-police-department-2",
+      "apiCode": "74174",
       "name": "Police Department",
       "nameEl": "ΑΣΤΥΝΟΜΙΚΟ ΜΕΓΑΡΟ",
       "lat": 35.50563235855373,
@@ -859,6 +980,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-agios-stefanos-2": {
       "slug": "cha-agios-stefanos-2",
+      "apiCode": "74175",
       "name": "Agios Stefanos",
       "nameEl": "ΑΓΙΟΣ ΣΤΕΦΑΝΟΣ",
       "lat": 35.50243723910393,
@@ -866,6 +988,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kalykas": {
       "slug": "cha-kalykas",
+      "apiCode": "74177",
       "name": "Kalykas",
       "nameEl": "ΚΑΛΥΚΑΣ",
       "lat": 35.5003978,
@@ -873,6 +996,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ika": {
       "slug": "cha-ika",
+      "apiCode": "74178",
       "name": "IKA",
       "nameEl": "ΙΚΑ",
       "lat": 35.4986489,
@@ -880,6 +1004,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kamini": {
       "slug": "cha-kamini",
+      "apiCode": "74179",
       "name": "Kamini",
       "nameEl": "KAMINI",
       "lat": 35.497119695818206,
@@ -887,6 +1012,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-grafeia-anek": {
       "slug": "cha-grafeia-anek",
+      "apiCode": "74180",
       "name": "Grafeia Anek",
       "nameEl": "ΓΡΑΦΕΙΑ ΑΝΕΚ",
       "lat": 35.49608681267652,
@@ -894,6 +1020,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-agrokipio": {
       "slug": "cha-agrokipio",
+      "apiCode": "74181",
       "name": "Agrokipio",
       "nameEl": "ΑΓΡΟΚΗΠΙΟ",
       "lat": 35.49389741342313,
@@ -901,6 +1028,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-maich": {
       "slug": "cha-maich",
+      "apiCode": "74182",
       "name": "MAICh",
       "nameEl": "ΜΑΙΧ",
       "lat": 35.491605517530225,
@@ -908,6 +1036,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-maich-2": {
       "slug": "cha-maich-2",
+      "apiCode": "74183",
       "name": "MAICh",
       "nameEl": "MAIX",
       "lat": 35.4911873,
@@ -915,6 +1044,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-tsikalaria": {
       "slug": "cha-tsikalaria",
+      "apiCode": "74184",
       "name": "Tsikalaria",
       "nameEl": "ΤΣΙΚΑΛΑΡΙΑ",
       "lat": 35.48989963036003,
@@ -922,6 +1052,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-tsikalaria-2": {
       "slug": "cha-tsikalaria-2",
+      "apiCode": "74185",
       "name": "Tsikalaria",
       "nameEl": "ΤΣΙΚΑΛΑΡΙΑ",
       "lat": 35.4902086,
@@ -929,6 +1060,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kokkinos-pyrgos": {
       "slug": "cha-kokkinos-pyrgos",
+      "apiCode": "74186",
       "name": "Kokkinos Pyrgos",
       "nameEl": "ΚΟΚΚΙΝΟΣ ΠΥΡΓΟΣ",
       "lat": 35.4890894,
@@ -936,6 +1068,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kokkinos-pyrgos-2": {
       "slug": "cha-kokkinos-pyrgos-2",
+      "apiCode": "74187",
       "name": "Kokkinos Pyrgos",
       "nameEl": "ΚΟΚΚΙΝΟΣ ΠΥΡΓΟΣ",
       "lat": 35.4891986,
@@ -943,6 +1076,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-avra": {
       "slug": "cha-avra",
+      "apiCode": "74188",
       "name": "Avra",
       "nameEl": "ΑΥΡΑ",
       "lat": 35.48846207215499,
@@ -950,6 +1084,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-avra-2": {
       "slug": "cha-avra-2",
+      "apiCode": "74189",
       "name": "Avra",
       "nameEl": "ΑΥΡΑ",
       "lat": 35.48826656242665,
@@ -957,6 +1092,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kato-souda": {
       "slug": "cha-kato-souda",
+      "apiCode": "74190",
       "name": "Kato Souda",
       "nameEl": "ΚΑΤΩ ΣΟΥΔΑ",
       "lat": 35.48921665530156,
@@ -964,6 +1100,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-maridaki": {
       "slug": "cha-maridaki",
+      "apiCode": "74191",
       "name": "Maridaki",
       "nameEl": "ΜΑΡΙΔΑΚΗ",
       "lat": 35.489474552507254,
@@ -971,6 +1108,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-maridaki-2": {
       "slug": "cha-maridaki-2",
+      "apiCode": "74192",
       "name": "Maridaki",
       "nameEl": "ΜΑΡΙΔΑΚΗ",
       "lat": 35.488639251243804,
@@ -978,6 +1116,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-soudas-schools": {
       "slug": "cha-soudas-schools",
+      "apiCode": "74193",
       "name": "Soudas Schools",
       "nameEl": "ΣΧΟΛΕΙΑ ΣΟΥΔΑΣ",
       "lat": 35.4888423,
@@ -985,6 +1124,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-myloi": {
       "slug": "cha-myloi",
+      "apiCode": "74194",
       "name": "Myloi",
       "nameEl": "ΜΥΛΟΙ",
       "lat": 35.4887469516713,
@@ -992,6 +1132,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-myloi-2": {
       "slug": "cha-myloi-2",
+      "apiCode": "74195",
       "name": "Myloi",
       "nameEl": "ΜΥΛΟΙ",
       "lat": 35.4888966,
@@ -999,6 +1140,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-agios-nikolaos": {
       "slug": "cha-agios-nikolaos",
+      "apiCode": "74197",
       "name": "Agios Nikolaos",
       "nameEl": "ΑΓΙΟΣ ΝΙΚΟΛΑΟΣ",
       "lat": 35.4881779449269,
@@ -1006,6 +1148,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-soudas-square": {
       "slug": "cha-soudas-square",
+      "apiCode": "74199",
       "name": "Soudas Square",
       "nameEl": "ΠΛΑΤΕΙΑ ΣΟΥΔΑΣ",
       "lat": 35.48752424178995,
@@ -1013,6 +1156,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-gipedo-nafstathmou": {
       "slug": "cha-gipedo-nafstathmou",
+      "apiCode": "74200",
       "name": "Gipedo Nafstathmou",
       "nameEl": "ΓΗΠΕΔΟ ΝΑΥΣΤΑΘΜΟΥ",
       "lat": 35.48613309795589,
@@ -1020,6 +1164,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-crete-naval-hospital": {
       "slug": "cha-crete-naval-hospital",
+      "apiCode": "74201",
       "name": "Crete Naval Hospital",
       "nameEl": "ΝΑΥΤΙΚΟ ΝΟΣΟΚΟΜΕΙΟ ΚΡΗΤΗΣ",
       "lat": 35.4847548,
@@ -1027,6 +1172,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-leschi-axiomatikon": {
       "slug": "cha-leschi-axiomatikon",
+      "apiCode": "74202",
       "name": "Leschi Axiomatikon",
       "nameEl": "ΛΕΣΧΗ ΑΞΙΩΜΑΤΙΚΩΝ",
       "lat": 35.4854598,
@@ -1034,6 +1180,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-junction-tsikalarion": {
       "slug": "cha-junction-tsikalarion",
+      "apiCode": "74203",
       "name": "Junction Tsikalarion",
       "nameEl": "ΔΙΑΚΛΑΔΩΣΗ ΤΣΙΚΑΛΑΡΙΩΝ",
       "lat": 35.4898124143471,
@@ -1041,6 +1188,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-junction-tsikalarion-2": {
       "slug": "cha-junction-tsikalarion-2",
+      "apiCode": "74204",
       "name": "Junction Tsikalarion",
       "nameEl": "ΔΙΑΚΛΑΔΩΣΗ ΤΣΙΚΑΛΑΡΙΩΝ",
       "lat": 35.48918233873744,
@@ -1048,6 +1196,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-tsikalarion": {
       "slug": "cha-tsikalarion",
+      "apiCode": "74205",
       "name": "Tsikalarion",
       "nameEl": "ΤΣΙΚΑΛΑΡΙΩΝ",
       "lat": 35.4852771,
@@ -1055,6 +1204,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-tsikalarion-2": {
       "slug": "cha-tsikalarion-2",
+      "apiCode": "74206",
       "name": "Tsikalarion",
       "nameEl": "ΤΣΙΚΑΛΑΡΙΩΝ",
       "lat": 35.4856112,
@@ -1062,6 +1212,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-nikolaou-skoula-2": {
       "slug": "cha-nikolaou-skoula-2",
+      "apiCode": "74207",
       "name": "Nikolaou Skoula",
       "nameEl": "ΝΙΚΟΛΑΟΥ ΣΚΟΥΛΑ",
       "lat": 35.4822955,
@@ -1069,6 +1220,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-nikolaou-skoula-3": {
       "slug": "cha-nikolaou-skoula-3",
+      "apiCode": "74208",
       "name": "Nikolaou Skoula",
       "nameEl": "ΝΙΚΟΛΑΟΥ ΣΚΟΥΛΑ",
       "lat": 35.482468,
@@ -1076,6 +1228,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-k-karyotaki": {
       "slug": "cha-k-karyotaki",
+      "apiCode": "74209",
       "name": "K. Karyotaki",
       "nameEl": "Κ. ΚΑΡΥΩΤΑΚΗ",
       "lat": 35.4789774,
@@ -1083,6 +1236,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ch-giannari": {
       "slug": "cha-ch-giannari",
+      "apiCode": "74210",
       "name": "Ch. Giannari",
       "nameEl": "Χ. ΓΙΑΝΝΑΡΗ",
       "lat": 35.47708182382139,
@@ -1090,6 +1244,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-primary-school": {
       "slug": "cha-primary-school",
+      "apiCode": "74211",
       "name": "Primary School",
       "nameEl": "ΔΗΜΟΤΙΚΟ ΣΧΟΛΕΙΟ",
       "lat": 35.4770347,
@@ -1097,6 +1252,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-parallilos-ethniki-odou": {
       "slug": "cha-parallilos-ethniki-odou",
+      "apiCode": "74216",
       "name": "Parallilos Ethniki Odou",
       "nameEl": "ΠΑΡΑΛΛΗΛΟΣ ΕΘΝΙΚΗ ΟΔΟΥ",
       "lat": 35.4802753,
@@ -1104,6 +1260,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-makedonias": {
       "slug": "cha-makedonias",
+      "apiCode": "74219",
       "name": "Makedonias",
       "nameEl": "ΜΑΚΕΔΟΝΙΑΣ",
       "lat": 35.49662642842577,
@@ -1111,6 +1268,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-makedonias-2": {
       "slug": "cha-makedonias-2",
+      "apiCode": "74220",
       "name": "Makedonias",
       "nameEl": "ΜΑΚΕΔΟΝΙΑΣ",
       "lat": 35.4960674,
@@ -1118,6 +1276,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-sofokli-venizelou-2": {
       "slug": "cha-sofokli-venizelou-2",
+      "apiCode": "74221",
       "name": "Sofokli Venizelou",
       "nameEl": "ΣΟΦΟΚΛΗ ΒΕΝΙΖΕΛΟΥ",
       "lat": 35.4980078688481,
@@ -1125,6 +1284,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-sofokli-venizelou-3": {
       "slug": "cha-sofokli-venizelou-3",
+      "apiCode": "74222",
       "name": "Sofokli Venizelou",
       "nameEl": "ΣΟΦΟΚΛΗ ΒΕΝΙΖΕΛΟΥ",
       "lat": 35.4981881,
@@ -1132,6 +1292,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-pefkakia": {
       "slug": "cha-pefkakia",
+      "apiCode": "74223",
       "name": "Pefkakia",
       "nameEl": "ΠΕΥΚΑΚΙΑ",
       "lat": 35.50333941126739,
@@ -1139,6 +1300,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-pefkakia-2": {
       "slug": "cha-pefkakia-2",
+      "apiCode": "74224",
       "name": "Pefkakia",
       "nameEl": "ΠΕΥΚΑΚΙΑ",
       "lat": 35.503219632388394,
@@ -1146,6 +1308,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-chatzisavva-square": {
       "slug": "cha-chatzisavva-square",
+      "apiCode": "74225",
       "name": "Chatzisavva Square",
       "nameEl": "ΠΛΑΤΕΙΑ ΧΑΤΖΗΣΑΒΒΑ",
       "lat": 35.50392117678801,
@@ -1153,6 +1316,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-chatzisavva-square-2": {
       "slug": "cha-chatzisavva-square-2",
+      "apiCode": "74226",
       "name": "Chatzisavva Square",
       "nameEl": "ΠΛΑΤΕΙΑ ΧΑΤΖΗΣΑΒΒΑ",
       "lat": 35.5039103016994,
@@ -1160,6 +1324,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-agrokipio-2": {
       "slug": "cha-agrokipio-2",
+      "apiCode": "74229",
       "name": "Agrokipio",
       "nameEl": "ΑΓΡΟΚΗΠΙΟ",
       "lat": 35.49384466204997,
@@ -1167,6 +1332,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-grafeia-anek-2": {
       "slug": "cha-grafeia-anek-2",
+      "apiCode": "74230",
       "name": "Grafeia Anek",
       "nameEl": "ΓΡΑΦΕΙΑ ΑΝΕΚ",
       "lat": 35.4963821,
@@ -1174,6 +1340,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kamini-2": {
       "slug": "cha-kamini-2",
+      "apiCode": "74231",
       "name": "Kamini",
       "nameEl": "ΚΑΜΙΝΙ",
       "lat": 35.4975622,
@@ -1181,6 +1348,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ika-2": {
       "slug": "cha-ika-2",
+      "apiCode": "74232",
       "name": "IKA",
       "nameEl": "ΙΚΑ",
       "lat": 35.4986304,
@@ -1188,6 +1356,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kalykas-2": {
       "slug": "cha-kalykas-2",
+      "apiCode": "74233",
       "name": "Kalykas",
       "nameEl": "ΚΑΛΥΚΑΣ",
       "lat": 35.50088700897072,
@@ -1195,6 +1364,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-maich-kege": {
       "slug": "cha-maich-kege",
+      "apiCode": "74235",
       "name": "MAICh - Kege",
       "nameEl": "ΜΑΙΧ - ΚΕΓΕ",
       "lat": 35.4927851297046,
@@ -1202,6 +1372,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-technical-university-of-crete": {
       "slug": "cha-technical-university-of-crete",
+      "apiCode": "74236",
       "name": "Technical University OF Crete",
       "nameEl": "ΠΟΛΥΤΕΧΝΕΙΟ",
       "lat": 35.5262476,
@@ -1209,6 +1380,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-technical-university-of-crete-2": {
       "slug": "cha-technical-university-of-crete-2",
+      "apiCode": "74237",
       "name": "Technical University OF Crete",
       "nameEl": "ΠΟΛΥΤΕΧΝΕΙΟ",
       "lat": 35.5263862,
@@ -1216,6 +1388,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-markou-botsari-2": {
       "slug": "cha-markou-botsari-2",
+      "apiCode": "74238",
       "name": "Markou Botsari",
       "nameEl": "ΜΑΡΚΟΥ ΜΠΟΤΣΑΡΗ",
       "lat": 35.5278356533631,
@@ -1223,6 +1396,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-markou-botsari-3": {
       "slug": "cha-markou-botsari-3",
+      "apiCode": "74239",
       "name": "Markou Botsari",
       "nameEl": "ΜΑΡΚΟΥ ΜΠΟΤΣΑΡΗ",
       "lat": 35.5278073,
@@ -1230,6 +1404,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kounoupidianon-square": {
       "slug": "cha-kounoupidianon-square",
+      "apiCode": "74240",
       "name": "Kounoupidianon Square",
       "nameEl": "ΠΛΑΤΕΙΑ ΚΟΥΝΟΥΠΙΔΙΑΝΩΝ",
       "lat": 35.53139362070831,
@@ -1237,6 +1412,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-omirou": {
       "slug": "cha-omirou",
+      "apiCode": "74241",
       "name": "Omirou",
       "nameEl": "ΟΜΗΡΟΥ",
       "lat": 35.5297653,
@@ -1244,6 +1420,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-parodos-akrotiriou": {
       "slug": "cha-parodos-akrotiriou",
+      "apiCode": "74243",
       "name": "Parodos Akrotiriou",
       "nameEl": "ΠΑΡΟΔΟΣ ΑΚΡΩΤΗΡΙΟΥ",
       "lat": 35.5323702,
@@ -1251,6 +1428,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-athinas-tzougkaris": {
       "slug": "cha-athinas-tzougkaris",
+      "apiCode": "74244",
       "name": "Athinas Tzougkaris",
       "nameEl": "ΑΘΗΝΑΣ ΤΖΟΥΓΚΑΡΗΣ",
       "lat": 35.5345177060068,
@@ -1258,6 +1436,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-plakoures": {
       "slug": "cha-plakoures",
+      "apiCode": "74245",
       "name": "Plakoures",
       "nameEl": "ΠΛΑΚΟΥΡΕΣ",
       "lat": 35.5357498,
@@ -1265,6 +1444,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kampani": {
       "slug": "cha-kampani",
+      "apiCode": "74247",
       "name": "Kampani",
       "nameEl": "ΚΑΜΠΑΝΙ",
       "lat": 35.5393522,
@@ -1272,6 +1452,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-filias-ton-laon": {
       "slug": "cha-filias-ton-laon",
+      "apiCode": "74248",
       "name": "Filias TON Laon",
       "nameEl": "ΦΙΛΙΑΣ ΤΩΝ ΛΑΩΝ",
       "lat": 35.5358771,
@@ -1279,6 +1460,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-primary-school-kounoupidianon": {
       "slug": "cha-primary-school-kounoupidianon",
+      "apiCode": "74249",
       "name": "Primary School Kounoupidianon",
       "nameEl": "ΔΗΜΟΤΙΚΟ ΣΧΟΛΕΙΟ ΚΟΥΝΟΥΠΙΔΙΑΝΩΝ",
       "lat": 35.535935654839,
@@ -1286,6 +1468,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ikarou-2": {
       "slug": "cha-ikarou-2",
+      "apiCode": "74250",
       "name": "Ikarou",
       "nameEl": "ΙΚΑΡΟΥ",
       "lat": 35.5346624904821,
@@ -1293,6 +1476,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-agion-panton": {
       "slug": "cha-agion-panton",
+      "apiCode": "74251",
       "name": "Agion Panton",
       "nameEl": "ΑΓΙΩΝ ΠΑΝΤΩΝ",
       "lat": 35.5325831,
@@ -1300,6 +1484,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kounoupidianon-square-2": {
       "slug": "cha-kounoupidianon-square-2",
+      "apiCode": "74252",
       "name": "Kounoupidianon Square",
       "nameEl": "ΠΛΑΤΕΙΑ ΚΟΥΝΟΥΠΙΔΙΑΝΩΝ",
       "lat": 35.5312224,
@@ -1307,6 +1492,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-knosou": {
       "slug": "cha-knosou",
+      "apiCode": "74253",
       "name": "Knosou",
       "nameEl": "ΚΝΩΣΟΥ",
       "lat": 35.5356273035092,
@@ -1314,6 +1500,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-knosou-2": {
       "slug": "cha-knosou-2",
+      "apiCode": "74254",
       "name": "Knosou",
       "nameEl": "ΚΝΩΣΟΥ",
       "lat": 35.5356556780717,
@@ -1321,6 +1508,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-n-kazantzaki": {
       "slug": "cha-n-kazantzaki",
+      "apiCode": "74255",
       "name": "N. Kazantzaki",
       "nameEl": "Ν. ΚΑΖΑΝΤΖΑΚΗ",
       "lat": 35.5402551,
@@ -1328,6 +1516,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-k-manou": {
       "slug": "cha-k-manou",
+      "apiCode": "74258",
       "name": "K. Manou",
       "nameEl": "Κ. ΜΑΝΟΥ",
       "lat": 35.5473827,
@@ -1335,6 +1524,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-aristotelous": {
       "slug": "cha-aristotelous",
+      "apiCode": "74261",
       "name": "Aristotelous",
       "nameEl": "ΑΡΙΣΤΟΤΕΛΟΥΣ",
       "lat": 35.5292236,
@@ -1342,6 +1532,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-evangelistrias-2": {
       "slug": "cha-evangelistrias-2",
+      "apiCode": "74262",
       "name": "Evangelistrias",
       "nameEl": "ΕΥΑΓΓΕΛΙΣΤΡΙΑΣ",
       "lat": 35.5267109,
@@ -1349,6 +1540,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-timiou-prodromou": {
       "slug": "cha-timiou-prodromou",
+      "apiCode": "74263",
       "name": "Timiou Prodromou",
       "nameEl": "ΤΙΜΙΟΥ ΠΡΟΔΡΟΜΟΥ",
       "lat": 35.5247300241579,
@@ -1356,6 +1548,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-olympion": {
       "slug": "cha-olympion",
+      "apiCode": "74264",
       "name": "Olympion",
       "nameEl": "ΟΛΥΜΠΙΟΝ",
       "lat": 35.519474507463,
@@ -1363,6 +1556,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-pithari": {
       "slug": "cha-pithari",
+      "apiCode": "74265",
       "name": "Pithari",
       "nameEl": "ΠΙΘΑΡΙ",
       "lat": 35.5182017376786,
@@ -1370,6 +1564,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-national-bank": {
       "slug": "cha-national-bank",
+      "apiCode": "74268",
       "name": "National Bank",
       "nameEl": "ΕΘΝΙΚΗ ΤΡΑΠΕΖΑ",
       "lat": 35.5138225522767,
@@ -1377,6 +1572,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-pyrgos": {
       "slug": "cha-pyrgos",
+      "apiCode": "74269",
       "name": "Pyrgos",
       "nameEl": "ΠΥΡΓΟΣ",
       "lat": 35.5143894,
@@ -1384,6 +1580,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-plastira-2": {
       "slug": "cha-plastira-2",
+      "apiCode": "74270",
       "name": "Plastira",
       "nameEl": "ΠΛΑΣΤΗΡΑ",
       "lat": 35.504168002180315,
@@ -1391,6 +1588,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kilikias": {
       "slug": "cha-kilikias",
+      "apiCode": "74271",
       "name": "Kilikias",
       "nameEl": "ΚΙΛΙΚΙΑΣ",
       "lat": 35.504014,
@@ -1398,6 +1596,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-eleftherias": {
       "slug": "cha-eleftherias",
+      "apiCode": "74272",
       "name": "Eleftherias",
       "nameEl": "ΕΛΕΥΘΕΡΙΑΣ",
       "lat": 35.50293422142972,
@@ -1405,6 +1604,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-pasakaki": {
       "slug": "cha-pasakaki",
+      "apiCode": "74273",
       "name": "Pasakaki",
       "nameEl": "ΠΑΣΑΚΑΚΙ",
       "lat": 35.5000934,
@@ -1412,6 +1612,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-vasileiou": {
       "slug": "cha-ag-vasileiou",
+      "apiCode": "74274",
       "name": "AG. Vasileiou",
       "nameEl": "ΑΓ. ΒΑΣΙΛΕΙΟΥ",
       "lat": 35.4987539,
@@ -1419,6 +1620,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-charakias": {
       "slug": "cha-charakias",
+      "apiCode": "74275",
       "name": "Charakias",
       "nameEl": "ΧΑΡΑΚΙΑΣ",
       "lat": 35.49723278523448,
@@ -1426,6 +1628,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-oasi": {
       "slug": "cha-oasi",
+      "apiCode": "74276",
       "name": "Oasi",
       "nameEl": "ΟΑΣΗ",
       "lat": 35.4938476255155,
@@ -1433,6 +1636,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-gipedo-perivolion": {
       "slug": "cha-gipedo-perivolion",
+      "apiCode": "74277",
       "name": "Gipedo Perivolion",
       "nameEl": "ΓΗΠΕΔΟ ΠΕΡΙΒΟΛΙΩΝ",
       "lat": 35.48710828642704,
@@ -1440,6 +1644,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-gkariana": {
       "slug": "cha-gkariana",
+      "apiCode": "74278",
       "name": "Gkariana",
       "nameEl": "ΓΚΑΡΙΑΝΑ",
       "lat": 35.48446494309446,
@@ -1447,6 +1652,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-profiti-ilia": {
       "slug": "cha-profiti-ilia",
+      "apiCode": "74279",
       "name": "Profiti Ilia",
       "nameEl": "ΠΡΟΦΗΤΗ ΗΛΙΑ",
       "lat": 35.4835421,
@@ -1454,6 +1660,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-orfanidi": {
       "slug": "cha-orfanidi",
+      "apiCode": "74280",
       "name": "Orfanidi",
       "nameEl": "ΟΡΦΑΝΙΔΗ",
       "lat": 35.4832855,
@@ -1461,6 +1668,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-pente-dromoi": {
       "slug": "cha-pente-dromoi",
+      "apiCode": "74282",
       "name": "Pente Dromoi",
       "nameEl": "ΠΕΝΤΕ ΔΡΟΜΟΙ",
       "lat": 35.48178610473912,
@@ -1468,6 +1676,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-war-heroes-1941": {
       "slug": "cha-war-heroes-1941",
+      "apiCode": "74283",
       "name": "WAR Heroes 1941",
       "nameEl": "ΗΡΩΩΝ ΠΟΛΕΜΟΥ 1941",
       "lat": 35.4822338,
@@ -1475,6 +1684,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-agios-ioannis": {
       "slug": "cha-agios-ioannis",
+      "apiCode": "74284",
       "name": "Agios Ioannis",
       "nameEl": "ΑΓΙΟΣ ΙΩΑΝΝΗΣ",
       "lat": 35.4829371,
@@ -1482,6 +1692,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-pyrgos-2": {
       "slug": "cha-pyrgos-2",
+      "apiCode": "74285",
       "name": "Pyrgos",
       "nameEl": "ΠΥΡΓΟΣ",
       "lat": 35.4840977,
@@ -1489,6 +1700,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ionias": {
       "slug": "cha-ionias",
+      "apiCode": "74286",
       "name": "Ionias",
       "nameEl": "ΙΩΝΙΑΣ",
       "lat": 35.485749771934515,
@@ -1496,6 +1708,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-petrou-kai-pavlou": {
       "slug": "cha-petrou-kai-pavlou",
+      "apiCode": "74287",
       "name": "Petrou KAI Pavlou",
       "nameEl": "ΠΕΤΡΟΥ ΚΑΙ ΠΑΥΛΟΥ",
       "lat": 35.48673370047058,
@@ -1503,6 +1716,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kastrochori": {
       "slug": "cha-kastrochori",
+      "apiCode": "74288",
       "name": "Kastrochori",
       "nameEl": "ΚΑΣΤΡΟΧΩΡΙ",
       "lat": 35.4879662,
@@ -1510,6 +1724,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-poulaka": {
       "slug": "cha-poulaka",
+      "apiCode": "74289",
       "name": "Poulaka",
       "nameEl": "ΠΟΥΛΑΚΑ",
       "lat": 35.49031258144352,
@@ -1517,6 +1732,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-menekleri": {
       "slug": "cha-menekleri",
+      "apiCode": "74290",
       "name": "Menekleri",
       "nameEl": "ΜΕΝΕΚΛΕΡΙ",
       "lat": 35.491954162029494,
@@ -1524,6 +1740,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-parallilos-ethnikis-odou": {
       "slug": "cha-parallilos-ethnikis-odou",
+      "apiCode": "74291",
       "name": "Parallilos Ethnikis Odou",
       "nameEl": "ΠΑΡΑΛΛΗΛΟΣ ΕΘΝΙΚΗΣ ΟΔΟΥ",
       "lat": 35.4942095,
@@ -1531,6 +1748,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-k-manoy": {
       "slug": "cha-k-manoy",
+      "apiCode": "74292",
       "name": "K. Manoy",
       "nameEl": "K. MANOY",
       "lat": 35.4959153,
@@ -1538,6 +1756,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-giampoudaki": {
       "slug": "cha-giampoudaki",
+      "apiCode": "74293",
       "name": "Giampoudaki",
       "nameEl": "ΓΙΑΜΠΟΥΔΑΚΗ",
       "lat": 35.497615293783824,
@@ -1545,6 +1764,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-lachanagora": {
       "slug": "cha-lachanagora",
+      "apiCode": "74294",
       "name": "Lachanagora",
       "nameEl": "ΛΑΧΑΝΑΓΟΡΑ",
       "lat": 35.50008360457714,
@@ -1552,6 +1772,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-osias-eirinis": {
       "slug": "cha-osias-eirinis",
+      "apiCode": "74295",
       "name": "Osias Eirinis",
       "nameEl": "ΟΣΙΑΣ ΕΙΡΗΝΗΣ",
       "lat": 35.5029301,
@@ -1559,6 +1780,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-atlas": {
       "slug": "cha-atlas",
+      "apiCode": "74296",
       "name": "Atlas",
       "nameEl": "ΑΤΛΑΣ",
       "lat": 35.5041289,
@@ -1566,6 +1788,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-foteinakis": {
       "slug": "cha-foteinakis",
+      "apiCode": "74297",
       "name": "Foteinakis",
       "nameEl": "ΦΩΤΕΙΝΑΚΗΣ",
       "lat": 35.50408190110314,
@@ -1573,6 +1796,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kilikias-2": {
       "slug": "cha-kilikias-2",
+      "apiCode": "74298",
       "name": "Kilikias",
       "nameEl": "ΚΙΛΙΚΙΑΣ",
       "lat": 35.503897,
@@ -1580,6 +1804,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-plastira-3": {
       "slug": "cha-plastira-3",
+      "apiCode": "74299",
       "name": "Plastira",
       "nameEl": "ΠΛΑΣΤΗΡΑ",
       "lat": 35.504016,
@@ -1587,6 +1812,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ts-lentariana": {
       "slug": "cha-ts-lentariana",
+      "apiCode": "74300",
       "name": "Ts_lentariana",
       "nameEl": "ΤΣ ΛΕΝΤΑΡΙΑΝΑ",
       "lat": 35.5085785,
@@ -1594,6 +1820,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ergatikes-katoikies-4": {
       "slug": "cha-ergatikes-katoikies-4",
+      "apiCode": "74301",
       "name": "Ergatikes Katoikies",
       "nameEl": "ΕΡΓΑΤΙΚΕΣ ΚΑΤΟΙΚΙΕΣ",
       "lat": 35.5086586,
@@ -1601,6 +1828,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kanteridon": {
       "slug": "cha-kanteridon",
+      "apiCode": "74302",
       "name": "Kanteridon",
       "nameEl": "ΚΑΝΤΕΡΗΔΩΝ",
       "lat": 35.50661438038577,
@@ -1608,6 +1836,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-proimou": {
       "slug": "cha-proimou",
+      "apiCode": "74303",
       "name": "Proimou",
       "nameEl": "ΠΡΩΙΜΟΥ",
       "lat": 35.50749711932552,
@@ -1615,6 +1844,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-doxogianni": {
       "slug": "cha-doxogianni",
+      "apiCode": "74304",
       "name": "Doxogianni",
       "nameEl": "ΔΟΞΟΓΙΑΝΝΗ",
       "lat": 35.508446754213004,
@@ -1622,6 +1852,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-gerogianni": {
       "slug": "cha-gerogianni",
+      "apiCode": "74305",
       "name": "Gerogianni",
       "nameEl": "ΓΕΡΟΓΙΑΝΝΗ",
       "lat": 35.5092455,
@@ -1629,6 +1860,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-vryson": {
       "slug": "cha-vryson",
+      "apiCode": "74306",
       "name": "Vryson",
       "nameEl": "ΒΡΥΣΩΝ",
       "lat": 35.5099671,
@@ -1636,6 +1868,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-charalampos": {
       "slug": "cha-ag-charalampos",
+      "apiCode": "74307",
       "name": "AG. Charalampos",
       "nameEl": "ΑΓ. ΧΑΡΑΛΑΜΠΟΣ",
       "lat": 35.5098077,
@@ -1643,6 +1876,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-vlastou": {
       "slug": "cha-vlastou",
+      "apiCode": "74308",
       "name": "Vlastou",
       "nameEl": "ΒΛΑΣΤΟΥ",
       "lat": 35.5100347,
@@ -1650,6 +1884,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-anna": {
       "slug": "cha-ag-anna",
+      "apiCode": "74309",
       "name": "AG. Anna",
       "nameEl": "ΑΓ. ΑΝΝΑ",
       "lat": 35.51068426888328,
@@ -1657,6 +1892,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-tsontou-varda": {
       "slug": "cha-tsontou-varda",
+      "apiCode": "74310",
       "name": "Tsontou Varda",
       "nameEl": "ΤΣΟΝΤΟΥ ΒΑΡΔΑ",
       "lat": 35.5111777,
@@ -1664,6 +1900,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-skalidi": {
       "slug": "cha-skalidi",
+      "apiCode": "74311",
       "name": "Skalidi",
       "nameEl": "ΣΚΑΛΙΔΗ",
       "lat": 35.5133815,
@@ -1671,6 +1908,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-eikonostasi": {
       "slug": "cha-eikonostasi",
+      "apiCode": "74312",
       "name": "Eikonostasi",
       "nameEl": "ΕΙΚΟΝΟΣΤΑΣΙ",
       "lat": 35.5118711,
@@ -1678,6 +1916,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-nektariou": {
       "slug": "cha-ag-nektariou",
+      "apiCode": "74313",
       "name": "AG. Nektariou",
       "nameEl": "ΑΓ. ΝΕΚΤΑΡΙΟΥ",
       "lat": 35.5095198,
@@ -1685,6 +1924,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-varousi": {
       "slug": "cha-varousi",
+      "apiCode": "74314",
       "name": "Varousi",
       "nameEl": "ΒΑΡΟΥΣΙ",
       "lat": 35.5078415,
@@ -1692,6 +1932,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-georgakakidon": {
       "slug": "cha-georgakakidon",
+      "apiCode": "74315",
       "name": "Georgakakidon",
       "nameEl": "ΓΕΩΡΓΑΚΑΚΗΔΩΝ",
       "lat": 35.5093901,
@@ -1699,6 +1940,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kydonias": {
       "slug": "cha-kydonias",
+      "apiCode": "74322",
       "name": "Kydonias",
       "nameEl": "ΚΥΔΩΝΙΑΣ",
       "lat": 35.5122801606675,
@@ -1706,6 +1948,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-anna-2": {
       "slug": "cha-ag-anna-2",
+      "apiCode": "74324",
       "name": "AG. Anna",
       "nameEl": "ΑΓ. ΑΝΝΑ",
       "lat": 35.5101614,
@@ -1713,6 +1956,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-vlastou-2": {
       "slug": "cha-vlastou-2",
+      "apiCode": "74325",
       "name": "Vlastou",
       "nameEl": "ΒΛΑΣΤΟΥ",
       "lat": 35.5098961,
@@ -1720,6 +1964,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-agios-charalampos": {
       "slug": "cha-agios-charalampos",
+      "apiCode": "74326",
       "name": "Agios Charalampos",
       "nameEl": "ΑΓΙΟΣ ΧΑΡΑΛΑΜΠΟΣ",
       "lat": 35.50938298542943,
@@ -1727,6 +1972,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kantanoleontos": {
       "slug": "cha-kantanoleontos",
+      "apiCode": "74327",
       "name": "Kantanoleontos",
       "nameEl": "ΚΑΝΤΑΝΟΛΕΟΝΤΟΣ",
       "lat": 35.5089877,
@@ -1734,6 +1980,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-gerogianni-2": {
       "slug": "cha-gerogianni-2",
+      "apiCode": "74328",
       "name": "Gerogianni",
       "nameEl": "ΓΕΡΟΓΙΑΝΝΗ",
       "lat": 35.509103617476676,
@@ -1741,6 +1988,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-doxogianni-2": {
       "slug": "cha-doxogianni-2",
+      "apiCode": "74329",
       "name": "Doxogianni",
       "nameEl": "ΔΟΞΟΓΙΑΝΝΗ",
       "lat": 35.508185840424375,
@@ -1748,6 +1996,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-proimou-2": {
       "slug": "cha-proimou-2",
+      "apiCode": "74330",
       "name": "Proimou",
       "nameEl": "ΠΡΩΙΜΟΥ",
       "lat": 35.50708573847128,
@@ -1755,6 +2004,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kanteridon-2": {
       "slug": "cha-kanteridon-2",
+      "apiCode": "74331",
       "name": "Kanteridon",
       "nameEl": "ΚΑΝΤΕΡΗΔΩΝ",
       "lat": 35.50611809769988,
@@ -1762,6 +2012,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-roumeliotaki": {
       "slug": "cha-roumeliotaki",
+      "apiCode": "74332",
       "name": "Roumeliotaki",
       "nameEl": "ΡΟΥΜΕΛΙΩΤΑΚΗ",
       "lat": 35.50613113686857,
@@ -1769,6 +2020,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-georgiou-sgourou": {
       "slug": "cha-georgiou-sgourou",
+      "apiCode": "74333",
       "name": "Georgiou Sgourou",
       "nameEl": "ΓΕΩΡΓΙΟΥ ΣΓΟΥΡΟΥ",
       "lat": 35.50718048889194,
@@ -1776,6 +2028,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-flamingko": {
       "slug": "cha-flamingko",
+      "apiCode": "74334",
       "name": "Flamingko",
       "nameEl": "ΦΛΑΜΙΝΓΚΟ",
       "lat": 35.5080691,
@@ -1783,6 +2036,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kladisos": {
       "slug": "cha-kladisos",
+      "apiCode": "74336",
       "name": "Kladisos",
       "nameEl": "ΚΛΑΔΙΣΟΣ",
       "lat": 35.505967,
@@ -1790,6 +2044,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kladisos-2": {
       "slug": "cha-kladisos-2",
+      "apiCode": "74337",
       "name": "Kladisos",
       "nameEl": "ΚΛΑΔΙΣΟΣ",
       "lat": 35.5059932,
@@ -1797,6 +2052,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-tourna": {
       "slug": "cha-tourna",
+      "apiCode": "74338",
       "name": "Tourna",
       "nameEl": "ΤΟΥΡΝΑ",
       "lat": 35.503528317737285,
@@ -1804,6 +2060,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-tourna-2": {
       "slug": "cha-tourna-2",
+      "apiCode": "74339",
       "name": "Tourna",
       "nameEl": "ΤΟΥΡΝΑ",
       "lat": 35.5040436,
@@ -1811,6 +2068,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-monachi-elia": {
       "slug": "cha-monachi-elia",
+      "apiCode": "74340",
       "name": "Monachi Elia",
       "nameEl": "ΜΟΝΑΧΗ ΕΛΙΑ",
       "lat": 35.50073234110333,
@@ -1818,6 +2076,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-monachi-elia-2": {
       "slug": "cha-monachi-elia-2",
+      "apiCode": "74341",
       "name": "Monachi Elia",
       "nameEl": "ΜΟΝΑΧΗ ΕΛΙΑ",
       "lat": 35.50088191557687,
@@ -1825,6 +2084,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-synka": {
       "slug": "cha-synka",
+      "apiCode": "74342",
       "name": "Synka",
       "nameEl": "ΣΥΝΚΑ",
       "lat": 35.49823598839453,
@@ -1832,6 +2092,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-synka-2": {
       "slug": "cha-synka-2",
+      "apiCode": "74343",
       "name": "Synka",
       "nameEl": "ΣΥΝΚΑ",
       "lat": 35.49793903985047,
@@ -1839,6 +2100,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-national-road-2": {
       "slug": "cha-national-road-2",
+      "apiCode": "74344",
       "name": "National Road",
       "nameEl": "ΕΘΝΙΚΗ ΟΔΟΣ",
       "lat": 35.497067,
@@ -1846,6 +2108,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-national-road-3": {
       "slug": "cha-national-road-3",
+      "apiCode": "74345",
       "name": "National Road",
       "nameEl": "ΕΘΝΙΚΗ ΟΔΟΣ",
       "lat": 35.4971522,
@@ -1853,6 +2116,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-vamvakopoulo": {
       "slug": "cha-vamvakopoulo",
+      "apiCode": "74346",
       "name": "Vamvakopoulo",
       "nameEl": "ΒΑΜΒΑΚΟΠΟΥΛΟ",
       "lat": 35.4953984,
@@ -1860,6 +2124,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-vamvakopoulo-2": {
       "slug": "cha-vamvakopoulo-2",
+      "apiCode": "74347",
       "name": "Vamvakopoulo",
       "nameEl": "ΒΑΜΒΑΚΟΠΟΥΛΟ",
       "lat": 35.4952641,
@@ -1867,6 +2132,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-neas-kydonias": {
       "slug": "cha-neas-kydonias",
+      "apiCode": "74348",
       "name": "Neas Kydonias",
       "nameEl": "ΝΕΑΣ ΚΥΔΩΝΙΑΣ",
       "lat": 35.4935906,
@@ -1874,6 +2140,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-neas-kydonias-2": {
       "slug": "cha-neas-kydonias-2",
+      "apiCode": "74349",
       "name": "Neas Kydonias",
       "nameEl": "ΝΕΑΣ ΚΥΔΩΝΙΑΣ",
       "lat": 35.4937216,
@@ -1881,6 +2148,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-antoniou": {
       "slug": "cha-ag-antoniou",
+      "apiCode": "74350",
       "name": "AG. Antoniou",
       "nameEl": "ΑΓ. ΑΝΤΩΝΙΟΥ",
       "lat": 35.49156133136022,
@@ -1888,6 +2156,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-antoniou-2": {
       "slug": "cha-ag-antoniou-2",
+      "apiCode": "74351",
       "name": "AG. Antoniou",
       "nameEl": "ΑΓ. ΑΝΤΩΝΙΟΥ",
       "lat": 35.49218699088321,
@@ -1895,6 +2164,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-vourkia": {
       "slug": "cha-vourkia",
+      "apiCode": "74352",
       "name": "Vourkia",
       "nameEl": "ΒΟΥΡΚΙΑ",
       "lat": 35.4911244,
@@ -1902,6 +2172,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-vourkia-2": {
       "slug": "cha-vourkia-2",
+      "apiCode": "74353",
       "name": "Vourkia",
       "nameEl": "ΒΟΥΡΚΙΑ",
       "lat": 35.4910937963895,
@@ -1909,6 +2180,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-city-bus-station": {
       "slug": "cha-city-bus-station",
+      "apiCode": "74354",
       "name": "City BUS Station",
       "nameEl": "ΣΤΑΘΜΟΣ ΑΣΤΙΚΟΥ ΚΤΕΛ",
       "lat": 35.4892585,
@@ -1916,6 +2188,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-city-bus-station-2": {
       "slug": "cha-city-bus-station-2",
+      "apiCode": "74355",
       "name": "City BUS Station",
       "nameEl": "ΣΤΑΘΜΟΣ ΑΣΤΙΚΟΥ ΚΤΕΛ",
       "lat": 35.48942116322312,
@@ -1923,6 +2196,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-konstantinou": {
       "slug": "cha-ag-konstantinou",
+      "apiCode": "74356",
       "name": "AG. Konstantinou",
       "nameEl": "ΑΓ. ΚΩΝΣΤΑΝΤΙΝΟΥ",
       "lat": 35.4880639,
@@ -1930,6 +2204,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-konstantinou-2": {
       "slug": "cha-ag-konstantinou-2",
+      "apiCode": "74357",
       "name": "AG. Konstantinou",
       "nameEl": "ΑΓ. ΚΩΝΣΤΑΝΤΙΝΟΥ",
       "lat": 35.4881164,
@@ -1937,6 +2212,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-sykolia": {
       "slug": "cha-sykolia",
+      "apiCode": "74358",
       "name": "Sykolia",
       "nameEl": "ΣΥΚΟΛΙA",
       "lat": 35.4872143,
@@ -1944,6 +2220,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-sykolia-2": {
       "slug": "cha-sykolia-2",
+      "apiCode": "74359",
       "name": "Sykolia",
       "nameEl": "ΣΥΚΟΛΙΑ",
       "lat": 35.4872198,
@@ -1951,6 +2228,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-junction-galata": {
       "slug": "cha-junction-galata",
+      "apiCode": "74360",
       "name": "Junction Galata",
       "nameEl": "ΔΙΑΚΛΑΔΩΣΗ ΓΑΛΑΤΑ",
       "lat": 35.4848184,
@@ -1958,6 +2236,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-junction-galata-2": {
       "slug": "cha-junction-galata-2",
+      "apiCode": "74361",
       "name": "Junction Galata",
       "nameEl": "ΔΙΑΚΛΑΔΩΣΗ ΓΑΛΑΤΑ",
       "lat": 35.4851602,
@@ -1965,6 +2244,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-fylakes-agias": {
       "slug": "cha-fylakes-agias",
+      "apiCode": "74362",
       "name": "Fylakes Agias",
       "nameEl": "ΦΥΛΑΚΕΣ ΑΓΙΑΣ",
       "lat": 35.4830258,
@@ -1972,6 +2252,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-fylakes-agias-2": {
       "slug": "cha-fylakes-agias-2",
+      "apiCode": "74363",
       "name": "Fylakes Agias",
       "nameEl": "ΦΥΛΑΚΕΣ ΑΓΙΑΣ",
       "lat": 35.4831831,
@@ -1979,6 +2260,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-varypetro": {
       "slug": "cha-varypetro",
+      "apiCode": "74364",
       "name": "Varypetro",
       "nameEl": "ΒΑΡΥΠΕΤΡΟ",
       "lat": 35.4816054615995,
@@ -1986,6 +2268,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-varypetro-2": {
       "slug": "cha-varypetro-2",
+      "apiCode": "74365",
       "name": "Varypetro",
       "nameEl": "ΒΑΡΥΠΕΤΡΟ",
       "lat": 35.4818369788255,
@@ -1993,6 +2276,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ts-oadyk": {
       "slug": "cha-ts-oadyk",
+      "apiCode": "74366",
       "name": "Ts_oadyk",
       "nameEl": "ΤΣ ΟΑΔΥΚ",
       "lat": 35.4809555,
@@ -2000,6 +2284,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-eikonostasi-2": {
       "slug": "cha-eikonostasi-2",
+      "apiCode": "74367",
       "name": "Eikonostasi",
       "nameEl": "ΕΙΚΟΝΟΣΤΑΣΙ",
       "lat": 35.5119674,
@@ -2007,6 +2292,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-nektariou-2": {
       "slug": "cha-ag-nektariou-2",
+      "apiCode": "74368",
       "name": "AG. Nektariou",
       "nameEl": "ΑΓ. ΝΕΚΤΑΡΙΟΥ",
       "lat": 35.509395,
@@ -2014,6 +2300,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-varousi-2": {
       "slug": "cha-varousi-2",
+      "apiCode": "74369",
       "name": "Varousi",
       "nameEl": "ΒΑΡΟΥΣΙ",
       "lat": 35.5075481709044,
@@ -2021,6 +2308,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-marmaras": {
       "slug": "cha-marmaras",
+      "apiCode": "74370",
       "name": "Marmaras",
       "nameEl": "ΜΑΡΜΑΡΑΣ",
       "lat": 35.479055129183784,
@@ -2028,6 +2316,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-potistiria": {
       "slug": "cha-potistiria",
+      "apiCode": "74371",
       "name": "Potistiria",
       "nameEl": "ΠΟΤΙΣΤΗΡΙΑ",
       "lat": 35.4768383,
@@ -2035,6 +2324,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ligides": {
       "slug": "cha-ligides",
+      "apiCode": "74372",
       "name": "Ligides",
       "nameEl": "ΛΙΓΙΔΕΣ",
       "lat": 35.4835691,
@@ -2042,6 +2332,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kladisos-3": {
       "slug": "cha-kladisos-3",
+      "apiCode": "74373",
       "name": "Kladisos",
       "nameEl": "ΚΛΑΔΙΣΟΣ",
       "lat": 35.506472,
@@ -2049,6 +2340,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kladisos-4": {
       "slug": "cha-kladisos-4",
+      "apiCode": "74374",
       "name": "Kladisos",
       "nameEl": "ΚΛΑΔΙΣΟΣ",
       "lat": 35.5063323,
@@ -2056,6 +2348,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-parigoria": {
       "slug": "cha-parigoria",
+      "apiCode": "74375",
       "name": "Parigoria",
       "nameEl": "ΠΑΡΗΓΟΡΙΑ",
       "lat": 35.5059812,
@@ -2063,6 +2356,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-parigoria-2": {
       "slug": "cha-parigoria-2",
+      "apiCode": "74376",
       "name": "Parigoria",
       "nameEl": "ΠΑΡΗΓΟΡΙΑ",
       "lat": 35.5057705,
@@ -2070,6 +2364,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-hotel-kedrissos": {
       "slug": "cha-hotel-kedrissos",
+      "apiCode": "74377",
       "name": "Hotel Kedrissos",
       "nameEl": "ΚΕΔΡΙΣΣΟΣ",
       "lat": 35.50631226324486,
@@ -2077,6 +2372,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-hotel-kedrissos-2": {
       "slug": "cha-hotel-kedrissos-2",
+      "apiCode": "74378",
       "name": "Hotel Kedrissos",
       "nameEl": "ΚΕΔΡΙΣΣΟΣ",
       "lat": 35.5062315,
@@ -2084,6 +2380,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-germaniko-pouli": {
       "slug": "cha-germaniko-pouli",
+      "apiCode": "74379",
       "name": "Germaniko Pouli",
       "nameEl": "ΓΕΡΜΑΝΙΚΟ ΠΟΥΛΙ",
       "lat": 35.507353762372276,
@@ -2091,6 +2388,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-germaniko-pouli-2": {
       "slug": "cha-germaniko-pouli-2",
+      "apiCode": "74380",
       "name": "Germaniko Pouli",
       "nameEl": "ΓΕΡΜΑΝΙΚΟ ΠΟΥΛΙ",
       "lat": 35.50698097263179,
@@ -2098,6 +2396,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-triton-hotel-jumbo": {
       "slug": "cha-triton-hotel-jumbo",
+      "apiCode": "74381",
       "name": "Triton Hotel - Jumbo",
       "nameEl": "ΤΡΙΤΩΝ - JUMBO",
       "lat": 35.5075511741123,
@@ -2105,6 +2404,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-triton-hotel": {
       "slug": "cha-triton-hotel",
+      "apiCode": "74382",
       "name": "Triton Hotel",
       "nameEl": "ΤΡΙΤΩΝ",
       "lat": 35.507680000516174,
@@ -2112,6 +2412,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-chrysi-akti-jumbo": {
       "slug": "cha-chrysi-akti-jumbo",
+      "apiCode": "74383",
       "name": "Chrysi Akti - Jumbo",
       "nameEl": "ΧΡΥΣΗ ΑΚΤΗ - JUMBO",
       "lat": 35.50713275976095,
@@ -2119,6 +2420,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-chrysi-akti-jumbo-2": {
       "slug": "cha-chrysi-akti-jumbo-2",
+      "apiCode": "74384",
       "name": "Chrysi Akti - Jumbo",
       "nameEl": "ΧΡΥΣΗ ΑΚΤΗ - JUMBO",
       "lat": 35.5071208,
@@ -2126,6 +2428,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-makrys-toichos": {
       "slug": "cha-makrys-toichos",
+      "apiCode": "74385",
       "name": "Makrys Toichos",
       "nameEl": "ΜΑΚΡΥΣ ΤΟΙΧΟΣ",
       "lat": 35.50687074457663,
@@ -2133,6 +2436,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-makrys-toichos-2": {
       "slug": "cha-makrys-toichos-2",
+      "apiCode": "74386",
       "name": "Makrys Toichos",
       "nameEl": "ΜΑΚΡΥΣ ΤΟΙΧΟΣ",
       "lat": 35.5068883,
@@ -2140,6 +2444,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-bmw": {
       "slug": "cha-bmw",
+      "apiCode": "74387",
       "name": "BMW",
       "nameEl": "BMW",
       "lat": 35.5074982,
@@ -2147,6 +2452,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-bmw-2": {
       "slug": "cha-bmw-2",
+      "apiCode": "74388",
       "name": "BMW",
       "nameEl": "BMW",
       "lat": 35.5074971,
@@ -2154,6 +2460,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-strati-pantelaki": {
       "slug": "cha-strati-pantelaki",
+      "apiCode": "74389",
       "name": "Strati Pantelaki",
       "nameEl": "ΣΤΡΑΤΗ ΠΑΝΤΕΛΑΚΗ",
       "lat": 35.50904206532308,
@@ -2161,6 +2468,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-strati-pantelaki-2": {
       "slug": "cha-strati-pantelaki-2",
+      "apiCode": "74390",
       "name": "Strati Pantelaki",
       "nameEl": "ΣΤΡΑΤΗ ΠΑΝΤΕΛΑΚΗ",
       "lat": 35.50875281114338,
@@ -2168,6 +2476,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-hotel-kalliston": {
       "slug": "cha-hotel-kalliston",
+      "apiCode": "74391",
       "name": "Hotel Kalliston",
       "nameEl": "ΚΑΛΛΙΣΤΟΝ",
       "lat": 35.5104872,
@@ -2175,6 +2484,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-hotel-kalliston-2": {
       "slug": "cha-hotel-kalliston-2",
+      "apiCode": "74392",
       "name": "Hotel Kalliston",
       "nameEl": "ΚΑΛΛΙΣΤΟΝ",
       "lat": 35.51042381694101,
@@ -2182,6 +2492,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-glaros": {
       "slug": "cha-glaros",
+      "apiCode": "74393",
       "name": "Glaros",
       "nameEl": "ΓΛΑΡΟΣ",
       "lat": 35.511525937465436,
@@ -2189,6 +2500,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-glaros-2": {
       "slug": "cha-glaros-2",
+      "apiCode": "74394",
       "name": "Glaros",
       "nameEl": "ΓΛΑΡΟΣ",
       "lat": 35.5110699,
@@ -2196,6 +2508,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kalamaki": {
       "slug": "cha-kalamaki",
+      "apiCode": "74395",
       "name": "Kalamaki",
       "nameEl": "ΚΑΛΑΜΑΚΙ",
       "lat": 35.51304868291386,
@@ -2203,6 +2516,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kalamaki-2": {
       "slug": "cha-kalamaki-2",
+      "apiCode": "74396",
       "name": "Kalamaki",
       "nameEl": "ΚΑΛΑΜΑΚΙ",
       "lat": 35.51299519826641,
@@ -2210,6 +2524,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-dimitrios": {
       "slug": "cha-ag-dimitrios",
+      "apiCode": "74397",
       "name": "AG. Dimitrios",
       "nameEl": "ΑΓ. ΔΗΜΗΤΡΙΟΣ",
       "lat": 35.51230105707115,
@@ -2217,6 +2532,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-dimitrios-2": {
       "slug": "cha-ag-dimitrios-2",
+      "apiCode": "74398",
       "name": "AG. Dimitrios",
       "nameEl": "ΑΓ. ΔΗΜΗΤΡΙΟΣ",
       "lat": 35.5121395,
@@ -2224,6 +2540,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-panorama": {
       "slug": "cha-panorama",
+      "apiCode": "74399",
       "name": "Panorama",
       "nameEl": "ΠΑΝΟΡΑΜΑ",
       "lat": 35.5126273582984,
@@ -2231,6 +2548,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-jumbo": {
       "slug": "cha-jumbo",
+      "apiCode": "74401",
       "name": "Jumbo",
       "nameEl": "ΤΖΑΜΠΟ",
       "lat": 35.5077255,
@@ -2238,6 +2556,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-hotel-anais": {
       "slug": "cha-hotel-anais",
+      "apiCode": "74402",
       "name": "Hotel Anais",
       "nameEl": "ΑΝΑΙΣ",
       "lat": 35.50954465531738,
@@ -2245,6 +2564,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-hotel-anais-2": {
       "slug": "cha-hotel-anais-2",
+      "apiCode": "74403",
       "name": "Hotel Anais",
       "nameEl": "ΑΝΑΙΣ",
       "lat": 35.5093628715194,
@@ -2252,6 +2572,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-golden-beach": {
       "slug": "cha-golden-beach",
+      "apiCode": "74404",
       "name": "Golden Beach",
       "nameEl": "ΠΑΡΑΛΙΑ ΧΡΥΣΗ ΑΚΤΗ",
       "lat": 35.5114398,
@@ -2259,6 +2580,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-golden-beach-2": {
       "slug": "cha-golden-beach-2",
+      "apiCode": "74405",
       "name": "Golden Beach",
       "nameEl": "ΠΑΡΑΛΙΑ ΧΡΥΣΗ ΑΚΤΗ",
       "lat": 35.511561,
@@ -2266,6 +2588,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-forum": {
       "slug": "cha-forum",
+      "apiCode": "74406",
       "name": "Forum",
       "nameEl": "ΦΟΡΟΥΜ",
       "lat": 35.51256640202708,
@@ -2273,6 +2596,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-forum-2": {
       "slug": "cha-forum-2",
+      "apiCode": "74407",
       "name": "Forum",
       "nameEl": "ΦΟΡΟΥΜ",
       "lat": 35.51254776886894,
@@ -2280,6 +2604,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-first-beach-of-ag-apostolon": {
       "slug": "cha-first-beach-of-ag-apostolon",
+      "apiCode": "74408",
       "name": "First Beach of AG. Apostolon",
       "nameEl": "ΠΑΡΚΟ ΑΓ. ΑΠΟΣΤΟΛΩΝ",
       "lat": 35.5136176,
@@ -2287,6 +2612,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-first-beach-of-ag-apostolon-2": {
       "slug": "cha-first-beach-of-ag-apostolon-2",
+      "apiCode": "74409",
       "name": "First Beach of AG. Apostolon",
       "nameEl": "ΠΑΡΚΟ ΑΓ. ΑΠΟΣΤΟΛΩΝ",
       "lat": 35.513491,
@@ -2294,6 +2620,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-apostolon-beach": {
       "slug": "cha-ag-apostolon-beach",
+      "apiCode": "74410",
       "name": "AG. Apostolon Beach",
       "nameEl": "ΠΑΡΑΛΙΕΣ ΑΓ. ΑΠΟΣΤΟΛΩΝ",
       "lat": 35.5131429,
@@ -2301,6 +2628,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-apostolon-beach-2": {
       "slug": "cha-ag-apostolon-beach-2",
+      "apiCode": "74411",
       "name": "AG. Apostolon Beach",
       "nameEl": "ΠΑΡΑΛΙΕΣ ΑΓ. ΑΠΟΣΤΟΛΩΝ",
       "lat": 35.5131407,
@@ -2308,6 +2636,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-drakonianou": {
       "slug": "cha-drakonianou",
+      "apiCode": "74412",
       "name": "Drakonianou",
       "nameEl": "ΔΡΑΚΟΝΙΑΝΟΥ",
       "lat": 35.51242906581289,
@@ -2315,6 +2644,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-drakonianou-2": {
       "slug": "cha-drakonianou-2",
+      "apiCode": "74413",
       "name": "Drakonianou",
       "nameEl": "ΔΡΑΚΟΝΙΑΝΟΥ",
       "lat": 35.5124542,
@@ -2322,6 +2652,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-nearchou-2": {
       "slug": "cha-nearchou-2",
+      "apiCode": "74414",
       "name": "Nearchou",
       "nameEl": "ΝΕΑΡΧΟΥ - ΚΑΜΠΙΝΓΚ",
       "lat": 35.5120088181532,
@@ -2329,6 +2660,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-nearchou-3": {
       "slug": "cha-nearchou-3",
+      "apiCode": "74415",
       "name": "Nearchou",
       "nameEl": "ΝΕΑΡΧΟΥ - ΚΑΜΠΙΝΓΚ",
       "lat": 35.511951,
@@ -2336,6 +2668,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-anoixis": {
       "slug": "cha-anoixis",
+      "apiCode": "74416",
       "name": "Anoixis",
       "nameEl": "ΑΝΟΙΞΗΣ",
       "lat": 35.5107476,
@@ -2343,6 +2676,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-anoixis-2": {
       "slug": "cha-anoixis-2",
+      "apiCode": "74417",
       "name": "Anoixis",
       "nameEl": "ΑΝΟΙΞΗΣ",
       "lat": 35.5107149,
@@ -2350,6 +2684,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-lidl": {
       "slug": "cha-lidl",
+      "apiCode": "74418",
       "name": "Lidl",
       "nameEl": "ΛΙΝΤΛ",
       "lat": 35.5084504,
@@ -2357,6 +2692,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-synka-3": {
       "slug": "cha-synka-3",
+      "apiCode": "74419",
       "name": "Synka",
       "nameEl": "ΣΥΝΚΑ",
       "lat": 35.5086141,
@@ -2364,6 +2700,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-althea": {
       "slug": "cha-althea",
+      "apiCode": "74420",
       "name": "Althea",
       "nameEl": "ΑΛΘΕΑ",
       "lat": 35.5066069,
@@ -2371,6 +2708,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-lamprinaki": {
       "slug": "cha-lamprinaki",
+      "apiCode": "74421",
       "name": "Lamprinaki",
       "nameEl": "ΛΑΜΠΡΙΝΑΚΗ",
       "lat": 35.5026617,
@@ -2378,6 +2716,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-daratsos": {
       "slug": "cha-daratsos",
+      "apiCode": "74422",
       "name": "Daratsos",
       "nameEl": "ΔΑΡΑΤΣΟΣ",
       "lat": 35.49991507651902,
@@ -2385,6 +2724,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-star-daratsos": {
       "slug": "cha-star-daratsos",
+      "apiCode": "74423",
       "name": "Star Daratsos",
       "nameEl": "ΣΤΑΡ ΔΑΡΑΤΣΟΣ",
       "lat": 35.500179,
@@ -2392,6 +2732,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-vechakidon": {
       "slug": "cha-vechakidon",
+      "apiCode": "74424",
       "name": "Vechakidon",
       "nameEl": "ΒΕΧΑΚΗΔΩΝ",
       "lat": 35.5005534,
@@ -2399,6 +2740,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-gipedo-galata": {
       "slug": "cha-gipedo-galata",
+      "apiCode": "74425",
       "name": "Gipedo Galata",
       "nameEl": "ΓΗΠΕΔΟ ΓΑΛΑΤΑ",
       "lat": 35.501866201898245,
@@ -2406,6 +2748,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-tourist-police": {
       "slug": "cha-tourist-police",
+      "apiCode": "74426",
       "name": "Tourist Police",
       "nameEl": "ΤΟΥΡΙΣΤΙΚΗ ΑΣΤΥΝΟΜΙΑ",
       "lat": 35.50126580090254,
@@ -2413,6 +2756,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-galatiano-perasma": {
       "slug": "cha-galatiano-perasma",
+      "apiCode": "74427",
       "name": "Galatiano Perasma",
       "nameEl": "ΓΑΛΑΤΙΑΝΟ ΠΕΡΑΣΜΑ",
       "lat": 35.50040436383306,
@@ -2420,6 +2764,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-galatas": {
       "slug": "cha-galatas",
+      "apiCode": "74428",
       "name": "Galatas",
       "nameEl": "ΓΑΛΑΤΑΣ",
       "lat": 35.4993072,
@@ -2427,6 +2772,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-bigkaza": {
       "slug": "cha-bigkaza",
+      "apiCode": "74429",
       "name": "Bigkaza",
       "nameEl": "ΜΠΙΓΚΑΖΑ",
       "lat": 35.497778044680935,
@@ -2434,6 +2780,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-antonios": {
       "slug": "cha-ag-antonios",
+      "apiCode": "74430",
       "name": "AG. Antonios",
       "nameEl": "ΑΓ. ΑΝΤΩΝΙΟΣ",
       "lat": 35.4979095081576,
@@ -2441,6 +2788,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-georgiou": {
       "slug": "cha-ag-georgiou",
+      "apiCode": "74431",
       "name": "AG. Georgiou",
       "nameEl": "ΑΓ. ΓΕΩΡΓΙΟΥ",
       "lat": 35.504330575586756,
@@ -2448,6 +2796,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-eirinis": {
       "slug": "cha-eirinis",
+      "apiCode": "74433",
       "name": "Eirinis",
       "nameEl": "ΕΙΡΗΝΗΣ",
       "lat": 35.50718306326891,
@@ -2455,6 +2804,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-fanouriou": {
       "slug": "cha-ag-fanouriou",
+      "apiCode": "74434",
       "name": "AG. Fanouriou",
       "nameEl": "ΑΓ. ΦΑΝΟΥΡΙΟΥ",
       "lat": 35.51119873342389,
@@ -2462,6 +2812,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-fanouriou-2": {
       "slug": "cha-ag-fanouriou-2",
+      "apiCode": "74437",
       "name": "AG. Fanouriou",
       "nameEl": "ΑΓ. ΦΑΝΟΥΡΙΟΥ",
       "lat": 35.51049791846824,
@@ -2469,6 +2820,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-eirinis-2": {
       "slug": "cha-eirinis-2",
+      "apiCode": "74438",
       "name": "Eirinis",
       "nameEl": "ΕΙΡΗΝΗΣ",
       "lat": 35.507905332562956,
@@ -2476,6 +2828,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-georgiou-2": {
       "slug": "cha-ag-georgiou-2",
+      "apiCode": "74441",
       "name": "AG. Georgiou",
       "nameEl": "ΑΓ. ΓΕΩΡΓΙΟΥ",
       "lat": 35.50420832992,
@@ -2483,6 +2836,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ts-limani-soudas": {
       "slug": "cha-ts-limani-soudas",
+      "apiCode": "74442",
       "name": "Ts_limani Soudas",
       "nameEl": "ΤΣ ΛΙΜΑΝΙ ΣΟΥΔΑΣ",
       "lat": 35.4890243,
@@ -2490,6 +2844,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-chamber-of-chania-old-market": {
       "slug": "cha-chamber-of-chania-old-market",
+      "apiCode": "74443",
       "name": "Chamber OF Chania - OLD Market",
       "nameEl": "ΕΠΙΜΕΛΗΤΗΡΙΟ - ΑΓΟΡΑ",
       "lat": 35.51405427557033,
@@ -2497,6 +2852,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-merarchia": {
       "slug": "cha-merarchia",
+      "apiCode": "74444",
       "name": "Merarchia",
       "nameEl": "ΜΕΡΑΡΧΙΑ",
       "lat": 35.50121642305979,
@@ -2504,6 +2860,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-dexamenis": {
       "slug": "cha-dexamenis",
+      "apiCode": "74445",
       "name": "Dexamenis",
       "nameEl": "ΔΕΞΑΜΕΝΗΣ",
       "lat": 35.54251933535287,
@@ -2511,6 +2868,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-merarchia-2": {
       "slug": "cha-merarchia-2",
+      "apiCode": "74446",
       "name": "Merarchia",
       "nameEl": "ΜΕΡΑΡΧΙΑ",
       "lat": 35.500387584077664,
@@ -2518,6 +2876,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-dimotaki": {
       "slug": "cha-dimotaki",
+      "apiCode": "74447",
       "name": "Dimotaki",
       "nameEl": "ΔΗΜΟΤΑΚΗ",
       "lat": 35.498530727566724,
@@ -2525,6 +2884,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-symmachon": {
       "slug": "cha-symmachon",
+      "apiCode": "74448",
       "name": "Symmachon",
       "nameEl": "ΣΥΜΜΑΧΩΝ",
       "lat": 35.49776021710347,
@@ -2532,6 +2892,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ts-tsikalaria": {
       "slug": "cha-ts-tsikalaria",
+      "apiCode": "74454",
       "name": "TS Tsikalaria",
       "nameEl": "ΤΣ ΤΣΙΚΑΛΑΡΙΑ",
       "lat": 35.4821850243806,
@@ -2539,6 +2900,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-dimotiko-scholeio-tsikalarion": {
       "slug": "cha-dimotiko-scholeio-tsikalarion",
+      "apiCode": "74455",
       "name": "Dimotiko Scholeio Tsikalarion",
       "nameEl": "ΔΗΜΟΤΙΚΟ ΣΧΟΛΕΙΟ ΤΣΙΚΑΛΑΡΙΩΝ",
       "lat": 35.477271154759656,
@@ -2546,6 +2908,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-deligiannaki": {
       "slug": "cha-deligiannaki",
+      "apiCode": "74456",
       "name": "Deligiannaki",
       "nameEl": "ΔΕΛΗΓΙΑΝΝΑΚΗ",
       "lat": 35.50079711808015,
@@ -2553,6 +2916,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-deligiannaki-2": {
       "slug": "cha-deligiannaki-2",
+      "apiCode": "74457",
       "name": "Deligiannaki",
       "nameEl": "ΔΕΛΗΓΙΑΝΝΑΚΗ",
       "lat": 35.50120763501796,
@@ -2560,6 +2924,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-antoniadou": {
       "slug": "cha-antoniadou",
+      "apiCode": "74458",
       "name": "Antoniadou",
       "nameEl": "ΑΝΤΩΝΙΑΔΟΥ",
       "lat": 35.50519258693279,
@@ -2567,6 +2932,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ts-nea-chora": {
       "slug": "cha-ts-nea-chora",
+      "apiCode": "74459",
       "name": "TS NEA Chora",
       "nameEl": "ΤΣ ΝΕΑ ΧΩΡΑ",
       "lat": 35.51205947222168,
@@ -2574,6 +2940,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-georgakakidon-kladisos": {
       "slug": "cha-georgakakidon-kladisos",
+      "apiCode": "74460",
       "name": "Georgakakidon & Kladisos",
       "nameEl": "ΓΕΩΡΓΑΚΑΚΗΔΩΝ & ΚΛΑΔΙΣΟΣ",
       "lat": 35.50725065740351,
@@ -2581,6 +2948,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-chonoloulou-3": {
       "slug": "cha-chonoloulou-3",
+      "apiCode": "74461",
       "name": "Chonoloulou",
       "nameEl": "ΧΟΝΟΛΟΥΛΟΥ",
       "lat": 35.51723583982017,
@@ -2588,6 +2956,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-archaeological-museum": {
       "slug": "cha-archaeological-museum",
+      "apiCode": "74462",
       "name": "Archaeological Museum",
       "nameEl": "ΑΡΧΑΙΟΛΟΓΙΚΟ ΜΟΥΣΕΙΟ",
       "lat": 35.5182407806917,
@@ -2595,6 +2964,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-treis-kamares-2": {
       "slug": "cha-treis-kamares-2",
+      "apiCode": "74463",
       "name": "Treis Kamares",
       "nameEl": "ΤΡΕΙΣ ΚΑΜΑΡΕΣ",
       "lat": 35.518249513219246,
@@ -2602,6 +2972,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-evangelistria": {
       "slug": "cha-evangelistria",
+      "apiCode": "74464",
       "name": "Evangelistria",
       "nameEl": "ΕΥΑΓΓΕΛΙΣΤΡΙΑ",
       "lat": 35.519586688097945,
@@ -2609,6 +2980,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-parko": {
       "slug": "cha-parko",
+      "apiCode": "74465",
       "name": "Parko",
       "nameEl": "ΠΑΡΚΟ",
       "lat": 35.520081731407544,
@@ -2616,6 +2988,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-profiti-ilia-2": {
       "slug": "cha-profiti-ilia-2",
+      "apiCode": "74466",
       "name": "Profiti Ilia",
       "nameEl": "ΠΡΟΦΗΤΗ ΗΛΙΑ",
       "lat": 35.52150487604885,
@@ -2623,6 +2996,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-mousiko-scholeio-chanion": {
       "slug": "cha-mousiko-scholeio-chanion",
+      "apiCode": "74467",
       "name": "Mousiko Scholeio Chanion",
       "nameEl": "ΜΟΥΣΙΚΟ ΣΧΟΛΕΙΟ ΧΑΝΙΩΝ",
       "lat": 35.52265628108866,
@@ -2630,6 +3004,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-profiti-ilia-3": {
       "slug": "cha-profiti-ilia-3",
+      "apiCode": "74468",
       "name": "Profiti Ilia",
       "nameEl": "ΠΡΟΦΗΤΗ ΗΛΙΑ",
       "lat": 35.52122384510861,
@@ -2637,6 +3012,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-gerasimou-pardali": {
       "slug": "cha-gerasimou-pardali",
+      "apiCode": "74469",
       "name": "Gerasimou Pardali",
       "nameEl": "ΓΕΡΑΣΙΜΟΥ ΠΑΡΔΑΛΗ",
       "lat": 35.51341389553125,
@@ -2644,6 +3020,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-koustogerakou": {
       "slug": "cha-koustogerakou",
+      "apiCode": "74470",
       "name": "Koustogerakou",
       "nameEl": "ΚΟΥΣΤΟΓΕΡΑΚΟΥ",
       "lat": 35.51285858765809,
@@ -2651,6 +3028,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-grigorios": {
       "slug": "cha-ag-grigorios",
+      "apiCode": "74471",
       "name": "AG. Grigorios",
       "nameEl": "ΑΓ. ΓΡΗΓΟΡΙΟΣ",
       "lat": 35.512411062599384,
@@ -2658,6 +3036,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-mousiko-scholeio-chanion-2": {
       "slug": "cha-mousiko-scholeio-chanion-2",
+      "apiCode": "74472",
       "name": "Mousiko Scholeio Chanion",
       "nameEl": "ΜΟΥΣΙΚΟ ΣΧΟΛΕΙΟ ΧΑΝΙΩΝ",
       "lat": 35.52304703926899,
@@ -2665,6 +3044,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-georgiou-seimeni": {
       "slug": "cha-georgiou-seimeni",
+      "apiCode": "74473",
       "name": "Georgiou Seimeni",
       "nameEl": "ΓΕΩΡΓΙΟΥ ΣΕΙΜΕΝΗ",
       "lat": 35.526727198300776,
@@ -2672,6 +3052,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-georgiou-seimeni-2": {
       "slug": "cha-georgiou-seimeni-2",
+      "apiCode": "74474",
       "name": "Georgiou Seimeni",
       "nameEl": "ΓΕΩΡΓΙΟΥ ΣΕΙΜΕΝΗ",
       "lat": 35.52719652068088,
@@ -2679,6 +3060,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-7o-gymnasio-chanion": {
       "slug": "cha-7o-gymnasio-chanion",
+      "apiCode": "74475",
       "name": "7o Gymnasio Chanion",
       "nameEl": "7ο ΓΥΜΝΑΣΙΟ ΧΑΝΙΩΝ",
       "lat": 35.53393498857518,
@@ -2686,6 +3068,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-omirou-2": {
       "slug": "cha-omirou-2",
+      "apiCode": "74476",
       "name": "Omirou",
       "nameEl": "ΟΜΗΡΟΥ",
       "lat": 35.53547746171292,
@@ -2693,6 +3076,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-papaflessa": {
       "slug": "cha-papaflessa",
+      "apiCode": "74477",
       "name": "Papaflessa",
       "nameEl": "ΠΑΠΑΦΛΕΣΣΑ",
       "lat": 35.51908819897363,
@@ -2700,6 +3084,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ts-kalamaki-panorama": {
       "slug": "cha-ts-kalamaki-panorama",
+      "apiCode": "74478",
       "name": "TS Kalamaki - Panorama",
       "nameEl": "ΤΣ ΚΑΛΑΜΑΚΙ - ΠΑΝΟΡΑΜΑ",
       "lat": 35.512624943443946,
@@ -2707,6 +3092,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kalafati": {
       "slug": "cha-kalafati",
+      "apiCode": "74480",
       "name": "Kalafati",
       "nameEl": "ΚΑΛΑΦΑΤΗ",
       "lat": 35.50606721229385,
@@ -2714,6 +3100,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-gianni-ritsou": {
       "slug": "cha-gianni-ritsou",
+      "apiCode": "74481",
       "name": "Gianni Ritsou",
       "nameEl": "ΓΙΑΝΝΗ ΡΙΤΣΟΥ",
       "lat": 35.50330409544612,
@@ -2721,6 +3108,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-irakleous": {
       "slug": "cha-irakleous",
+      "apiCode": "74482",
       "name": "Irakleous",
       "nameEl": "ΗΡΑΚΛΕΟΥΣ",
       "lat": 35.490297985722286,
@@ -2728,6 +3116,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-markou-botsari-4": {
       "slug": "cha-markou-botsari-4",
+      "apiCode": "74483",
       "name": "Markou Botsari",
       "nameEl": "ΜΑΡΚΟΥ ΜΠΟΤΣΑΡΗ",
       "lat": 35.51011706388158,
@@ -2735,6 +3124,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ts-plakoures": {
       "slug": "cha-ts-plakoures",
+      "apiCode": "74485",
       "name": "TS Plakoures",
       "nameEl": "ΤΣ ΠΛΑΚΟΥΡΕΣ",
       "lat": 35.53764093044944,
@@ -2742,6 +3132,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-agion-panton-2": {
       "slug": "cha-agion-panton-2",
+      "apiCode": "74487",
       "name": "Agion Panton",
       "nameEl": "ΑΓΙΩΝ ΠΑΝΤΩΝ",
       "lat": 35.53306747778515,
@@ -2749,6 +3140,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ikarou-3": {
       "slug": "cha-ikarou-3",
+      "apiCode": "74488",
       "name": "Ikarou",
       "nameEl": "ΙΚΑΡΟΥ",
       "lat": 35.53446197178518,
@@ -2756,6 +3148,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-dimotiko-scholeio-kounoupidianon": {
       "slug": "cha-dimotiko-scholeio-kounoupidianon",
+      "apiCode": "74489",
       "name": "Dimotiko Scholeio Kounoupidianon",
       "nameEl": "ΔΗΜΟΤΙΚΟ ΣΧΟΛΕΙΟ ΚΟΥΝΟΥΠΙΔΙΑΝΩΝ",
       "lat": 35.536090242560235,
@@ -2763,6 +3156,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-filias-ton-laon-2": {
       "slug": "cha-filias-ton-laon-2",
+      "apiCode": "74490",
       "name": "Filias TON Laon",
       "nameEl": "ΦΙΛΙΑΣ ΤΩΝ ΛΑΩΝ",
       "lat": 35.53544417660994,
@@ -2770,6 +3164,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-plakoures-2": {
       "slug": "cha-plakoures-2",
+      "apiCode": "74491",
       "name": "Plakoures",
       "nameEl": "ΠΛΑΚΟΥΡΕΣ",
       "lat": 35.53461238331974,
@@ -2777,6 +3172,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-saranta": {
       "slug": "cha-ag-saranta",
+      "apiCode": "74499",
       "name": "AG. Saranta",
       "nameEl": "ΑΓ. ΣΑΡΑΝΤΑ",
       "lat": 35.481035534622904,
@@ -2784,6 +3180,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-tompazi-2": {
       "slug": "cha-tompazi-2",
+      "apiCode": "74500",
       "name": "Tompazi",
       "nameEl": "ΤΟΜΠΑΖΗ",
       "lat": 35.484250529418325,
@@ -2791,6 +3188,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-katsifariana-2": {
       "slug": "cha-katsifariana-2",
+      "apiCode": "74501",
       "name": "Katsifariana",
       "nameEl": "ΚΑΤΣΙΦΑΡΙΑΝΑ",
       "lat": 35.487268497880905,
@@ -2798,6 +3196,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-xylokamara-2": {
       "slug": "cha-xylokamara-2",
+      "apiCode": "74502",
       "name": "Xylokamara",
       "nameEl": "ΞΥΛΟΚΑΜΑΡΑ",
       "lat": 35.49031180806512,
@@ -2805,6 +3204,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-in-panagias-gorgoupikoou": {
       "slug": "cha-in-panagias-gorgoupikoou",
+      "apiCode": "74503",
       "name": "IN Panagias Gorgoupikoou",
       "nameEl": "ΙΝ ΠΑΝΑΓΙΑΣ ΓΟΡΓΟΥΠΗΚΟΟΥ",
       "lat": 35.49323932191914,
@@ -2812,6 +3212,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-in-panagias-gorgoupikoou-2": {
       "slug": "cha-in-panagias-gorgoupikoou-2",
+      "apiCode": "74504",
       "name": "IN Panagias Gorgoupikoou",
       "nameEl": "ΙΝ ΠΑΝΑΓΙΑΣ ΓΟΡΓΟΥΠΗΚΟΟΥ",
       "lat": 35.49443385806857,
@@ -2819,6 +3220,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-chrysopigis": {
       "slug": "cha-chrysopigis",
+      "apiCode": "74505",
       "name": "Chrysopigis",
       "nameEl": "ΧΡΥΣΟΠΗΓΗΣ",
       "lat": 35.49764238623887,
@@ -2826,6 +3228,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-chrysopigis-2": {
       "slug": "cha-chrysopigis-2",
+      "apiCode": "74506",
       "name": "Chrysopigis",
       "nameEl": "ΧΡΥΣΟΠΗΓΗΣ",
       "lat": 35.498096592905725,
@@ -2833,6 +3236,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-stefanos": {
       "slug": "cha-ag-stefanos",
+      "apiCode": "74507",
       "name": "AG. Stefanos",
       "nameEl": "ΑΓ. ΣΤΕΦΑΝΟΣ",
       "lat": 35.50280078056671,
@@ -2840,6 +3244,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kerameion": {
       "slug": "cha-kerameion",
+      "apiCode": "74508",
       "name": "Kerameion",
       "nameEl": "ΚΕΡΑΜΕΙΩΝ",
       "lat": 35.47597901273963,
@@ -2847,6 +3252,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-dimotaki-2": {
       "slug": "cha-dimotaki-2",
+      "apiCode": "74509",
       "name": "Dimotaki",
       "nameEl": "ΔΗΜΟΤΑΚΗ",
       "lat": 35.498786216307465,
@@ -2854,6 +3260,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kourkoutaki": {
       "slug": "cha-kourkoutaki",
+      "apiCode": "74510",
       "name": "Kourkoutaki",
       "nameEl": "ΚΟΥΡΚΟΥΤΑΚΗ",
       "lat": 35.49777699039535,
@@ -2861,6 +3268,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-akrotiriou": {
       "slug": "cha-akrotiriou",
+      "apiCode": "74511",
       "name": "Akrotiriou",
       "nameEl": "ΑΚΡΩΤΗΡΙΟΥ",
       "lat": 35.494847095983125,
@@ -2868,6 +3276,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-akrotiriou-2": {
       "slug": "cha-akrotiriou-2",
+      "apiCode": "74512",
       "name": "Akrotiriou",
       "nameEl": "ΑΚΡΩΤΗΡΙΟΥ",
       "lat": 35.49504581863024,
@@ -2875,6 +3284,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kato-souda-2": {
       "slug": "cha-kato-souda-2",
+      "apiCode": "74513",
       "name": "Kato Souda",
       "nameEl": "ΚΑΤΩ ΣΟΥΔΑ",
       "lat": 35.4903764384777,
@@ -2882,6 +3292,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-varypetro-3": {
       "slug": "cha-varypetro-3",
+      "apiCode": "74514",
       "name": "Varypetro",
       "nameEl": "ΒΑΡΥΠΕΤΡΟ",
       "lat": 35.481168634828634,
@@ -2889,6 +3300,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-fanouriou-3": {
       "slug": "cha-ag-fanouriou-3",
+      "apiCode": "74515",
       "name": "AG. Fanouriou",
       "nameEl": "ΑΓ. ΦΑΝΟΥΡΙΟΥ",
       "lat": 35.48138463272772,
@@ -2896,6 +3308,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-diastavrosi-2-marmara": {
       "slug": "cha-diastavrosi-2-marmara",
+      "apiCode": "74516",
       "name": "Diastavrosi 2 Marmara",
       "nameEl": "ΔΙΑΣΤΑΥΡΩΣΗ 2 ΜΑΡΜΑΡΑ",
       "lat": 35.4759714901444,
@@ -2903,6 +3316,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-diastavrosi-oadyk": {
       "slug": "cha-diastavrosi-oadyk",
+      "apiCode": "74517",
       "name": "Diastavrosi Oadyk",
       "nameEl": "ΔΙΑΣΤΑΥΡΩΣΗ ΟΑΔΥΚ",
       "lat": 35.47166278782127,
@@ -2910,6 +3324,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-gipedo-varypetrou": {
       "slug": "cha-gipedo-varypetrou",
+      "apiCode": "74518",
       "name": "Gipedo Varypetrou",
       "nameEl": "ΓΗΠΕΔΟ ΒΑΡΥΠΕΤΡΟΥ",
       "lat": 35.47431991423991,
@@ -2917,6 +3332,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ligides-1i-stasi": {
       "slug": "cha-ligides-1i-stasi",
+      "apiCode": "74519",
       "name": "Ligides 1i Stasi",
       "nameEl": "ΛΙΓΙΔΕΣ 1η ΣΤΑΣΗ",
       "lat": 35.481477150387406,
@@ -2924,6 +3340,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-sykolia-3": {
       "slug": "cha-sykolia-3",
+      "apiCode": "74520",
       "name": "Sykolia",
       "nameEl": "ΣΥΚΟΛΙΑ",
       "lat": 35.48598687511637,
@@ -2931,6 +3348,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-sykolia-4": {
       "slug": "cha-sykolia-4",
+      "apiCode": "74521",
       "name": "Sykolia",
       "nameEl": "ΣΥΚΟΛΙΑ.",
       "lat": 35.48650885153864,
@@ -2938,6 +3356,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-plateia-ligide": {
       "slug": "cha-plateia-ligide",
+      "apiCode": "74522",
       "name": "Plateia Ligide",
       "nameEl": "ΠΛΑΤΕΙΑ ΛΙΓΙΔΕ",
       "lat": 35.48347991666305,
@@ -2945,6 +3364,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ligides-2i-stasi": {
       "slug": "cha-ligides-2i-stasi",
+      "apiCode": "74523",
       "name": "Ligides 2i Stasi",
       "nameEl": "ΛΙΓΙΔΕΣ 2η ΣΤΑΣΗ",
       "lat": 35.48099539484028,
@@ -2952,6 +3372,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-gipedo-varypetrou-2": {
       "slug": "cha-gipedo-varypetrou-2",
+      "apiCode": "74524",
       "name": "Gipedo Varypetrou",
       "nameEl": "ΓΗΠΕΔΟ ΒΑΡΥΠΕΤΡΟΥ",
       "lat": 35.47418011726284,
@@ -2959,6 +3380,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-diastavrosi-oadyk-2": {
       "slug": "cha-diastavrosi-oadyk-2",
+      "apiCode": "74525",
       "name": "Diastavrosi Oadyk",
       "nameEl": "ΔΙΑΣΤΑΥΡΩΣΗ ΟΑΔΥΚ",
       "lat": 35.472392373461105,
@@ -2966,6 +3388,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-diastavrosi-1-marmara": {
       "slug": "cha-diastavrosi-1-marmara",
+      "apiCode": "74526",
       "name": "Diastavrosi 1 Marmara",
       "nameEl": "ΔΙΑΣΤΑΥΡΩΣΗ 1 ΜΑΡΜΑΡΑ",
       "lat": 35.476727247817315,
@@ -2973,6 +3396,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ieros-naos-genniseos-tis-theotokou": {
       "slug": "cha-ieros-naos-genniseos-tis-theotokou",
+      "apiCode": "74527",
       "name": "Ieros Naos Genniseos TIS Theotokou",
       "nameEl": "ΙΕΡΟΣ ΝΑΟΣ ΓΕΝΝΗΣΕΩΣ ΤΗΣ ΘΕΟΤΟΚΟΥ",
       "lat": 35.48153315369706,
@@ -2980,6 +3404,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-marmaras-2": {
       "slug": "cha-marmaras-2",
+      "apiCode": "74528",
       "name": "Marmaras",
       "nameEl": "ΜΑΡΜΑΡΑΣ",
       "lat": 35.47934125850987,
@@ -2987,6 +3412,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-varypetro-4": {
       "slug": "cha-varypetro-4",
+      "apiCode": "74529",
       "name": "Varypetro",
       "nameEl": "ΒΑΡΥΠΕΤΡΟ",
       "lat": 35.48093274738531,
@@ -2994,6 +3420,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-potistiria-2": {
       "slug": "cha-potistiria-2",
+      "apiCode": "74530",
       "name": "Potistiria",
       "nameEl": "ΠΟΤΙΣΤΗΡΙΑ",
       "lat": 35.47634902484301,
@@ -3001,6 +3428,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-georgiladon": {
       "slug": "cha-georgiladon",
+      "apiCode": "74531",
       "name": "Georgiladon",
       "nameEl": "ΓΕΩΡΓΙΛΑΔΩΝ",
       "lat": 35.509691713245175,
@@ -3008,6 +3436,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-diktynis": {
       "slug": "cha-diktynis",
+      "apiCode": "74532",
       "name": "Diktynis",
       "nameEl": "ΔΙΚΤΥΝΗΣ",
       "lat": 35.507175252023686,
@@ -3015,6 +3444,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-palia-ilektriki-2": {
       "slug": "cha-palia-ilektriki-2",
+      "apiCode": "74533",
       "name": "Palia Ilektriki",
       "nameEl": "ΠΑΛΙΑ ΗΛΕΚΤΡΙΚΗ",
       "lat": 35.504769748204865,
@@ -3022,6 +3452,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-eleftheriou-venizelou": {
       "slug": "cha-eleftheriou-venizelou",
+      "apiCode": "74535",
       "name": "Eleftheriou Venizelou",
       "nameEl": "ΕΛΕΥΘΕΡΙΟΥ ΒΕΝΙΖΕΛΟΥ",
       "lat": 35.517761998801085,
@@ -3029,6 +3460,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-gipedo-basket": {
       "slug": "cha-gipedo-basket",
+      "apiCode": "74536",
       "name": "Gipedo Basket",
       "nameEl": "ΓΗΠΕΔΟ ΜΠΑΣΚΕΤ",
       "lat": 35.518222641079376,
@@ -3036,6 +3468,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-paidiki-chara": {
       "slug": "cha-paidiki-chara",
+      "apiCode": "74537",
       "name": "Paidiki Chara",
       "nameEl": "ΠΑΙΔΙΚΗ ΧΑΡΑ",
       "lat": 35.51966689697136,
@@ -3043,6 +3476,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-iera-moni-ag-prodromou": {
       "slug": "cha-iera-moni-ag-prodromou",
+      "apiCode": "74538",
       "name": "Iera Moni AG. Prodromou",
       "nameEl": "ΙΕΡΑ ΜΟΝΗ ΑΓ.ΙΩΑΝΝΗ ΠΡΟΔΡΟΜΟΥ",
       "lat": 35.521408986452265,
@@ -3050,6 +3484,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-timiou-prodromou-2": {
       "slug": "cha-timiou-prodromou-2",
+      "apiCode": "74539",
       "name": "Timiou Prodromou",
       "nameEl": "ΤΙΜΙΟΥ ΠΡΟΔΡΟΜΟΥ",
       "lat": 35.52380309088233,
@@ -3057,6 +3492,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-iridos": {
       "slug": "cha-iridos",
+      "apiCode": "74540",
       "name": "Iridos",
       "nameEl": "ΙΡΙΔΟΣ",
       "lat": 35.52695042337908,
@@ -3064,6 +3500,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-1i-andreadaki": {
       "slug": "cha-1i-andreadaki",
+      "apiCode": "74544",
       "name": "1i Andreadaki",
       "nameEl": "1η ΑΝΔΡΕΑΔΑΚΗ",
       "lat": 35.53852864986205,
@@ -3071,6 +3508,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-2i-andreadaki": {
       "slug": "cha-2i-andreadaki",
+      "apiCode": "74545",
       "name": "2i Andreadaki",
       "nameEl": "2η ΑΝΔΡΕΑΔΑΚΗ",
       "lat": 35.53711433445341,
@@ -3078,6 +3516,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-g-kalamaridi": {
       "slug": "cha-g-kalamaridi",
+      "apiCode": "74546",
       "name": "G. Kalamaridi",
       "nameEl": "Γ. ΚΑΛΑΜΑΡΙΔΗ",
       "lat": 35.537933636824825,
@@ -3085,6 +3524,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-plakoures-3": {
       "slug": "cha-plakoures-3",
+      "apiCode": "74576",
       "name": "Plakoures",
       "nameEl": "ΠΛΑΚΟΥΡΕΣ",
       "lat": 35.53490923537213,
@@ -3092,6 +3532,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-filias-ton-laon-3": {
       "slug": "cha-filias-ton-laon-3",
+      "apiCode": "74577",
       "name": "ΦΙΛΙΑΣ ΤΩΝ ΛΑΩΝ",
       "nameEl": "ΦΙΛΙΑΣ ΤΩΝ ΛΑΩΝ",
       "lat": 35.53538159924345,
@@ -3099,6 +3540,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-12-dimotiko-scholeio": {
       "slug": "cha-12-dimotiko-scholeio",
+      "apiCode": "74578",
       "name": "12 Dimotiko Scholeio",
       "nameEl": "12 ΔΗΜΟΤΙΚΟ ΣΧΟΛΕΙΟ",
       "lat": 35.53596684138185,
@@ -3106,6 +3548,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kazantzaki": {
       "slug": "cha-kazantzaki",
+      "apiCode": "74583",
       "name": "Kazantzaki",
       "nameEl": "ΚΑΖΑΝΤΖΑΚΗ",
       "lat": 35.54106993674096,
@@ -3113,6 +3556,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-fanouriou-4": {
       "slug": "cha-ag-fanouriou-4",
+      "apiCode": "74584",
       "name": "AG. Fanouriou",
       "nameEl": "ΑΓ. ΦΑΝΟΥΡΙΟΥ",
       "lat": 35.54266686130824,
@@ -3120,6 +3564,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kalergi": {
       "slug": "cha-kalergi",
+      "apiCode": "74585",
       "name": "Kalergi",
       "nameEl": "ΚΑΛΕΡΓΗ",
       "lat": 35.54483000657534,
@@ -3127,6 +3572,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-theotokopoulou": {
       "slug": "cha-theotokopoulou",
+      "apiCode": "74586",
       "name": "Theotokopoulou",
       "nameEl": "ΘΕΟΤΟΚΟΠΟΥΛΟΥ",
       "lat": 35.542483912037355,
@@ -3134,6 +3580,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-arkadiou": {
       "slug": "cha-arkadiou",
+      "apiCode": "74587",
       "name": "Arkadiou",
       "nameEl": "ΑΡΚΑΔΙΟΥ",
       "lat": 35.54331852058981,
@@ -3141,6 +3588,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-kounoupidianon-square-3": {
       "slug": "cha-kounoupidianon-square-3",
+      "apiCode": "74588",
       "name": "Kounoupidianon Square",
       "nameEl": "ΠΛ. ΚΟΥΝΟΥΠΙΔΙΑΝΩΝ",
       "lat": 35.53122780972949,
@@ -3148,6 +3596,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-agiou-antoniou": {
       "slug": "cha-agiou-antoniou",
+      "apiCode": "74590",
       "name": "Agiou Antoniou",
       "nameEl": "ΑΓΙΟΥ ΑΝΤΩΝΙΟΥ",
       "lat": 35.52151301701316,
@@ -3155,6 +3604,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-agion-panton-3": {
       "slug": "cha-agion-panton-3",
+      "apiCode": "74591",
       "name": "Agion Panton",
       "nameEl": "ΑΓΙΩΝ ΠΑΝΤΩΝ",
       "lat": 35.533075838155575,
@@ -3162,6 +3612,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ikarou-4": {
       "slug": "cha-ikarou-4",
+      "apiCode": "74592",
       "name": "Ikarou",
       "nameEl": "ΙΚΑΡΟΥ",
       "lat": 35.53445312799332,
@@ -3169,6 +3620,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-aristotelous-2": {
       "slug": "cha-aristotelous-2",
+      "apiCode": "74593",
       "name": "Aristotelous",
       "nameEl": "ΑΡΙΣΤΟΤΕΛΟΥΣ.",
       "lat": 35.52940738535018,
@@ -3176,6 +3628,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-n-katastimata": {
       "slug": "cha-n-katastimata",
+      "apiCode": "74594",
       "name": "N. Katastimata",
       "nameEl": "Ν. ΚΑΤΑΣΤΗΜΑΤΑ..",
       "lat": 35.51238953150633,
@@ -3183,6 +3636,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-m-metaxaki": {
       "slug": "cha-m-metaxaki",
+      "apiCode": "74595",
       "name": "M. Metaxaki",
       "nameEl": "Μ. ΜΕΤΑΞΑΚΗ",
       "lat": 35.51347096540854,
@@ -3190,6 +3644,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-nea-froudia-2": {
       "slug": "cha-nea-froudia-2",
+      "apiCode": "74596",
       "name": "NEA Froudia",
       "nameEl": "ΝΕΑ ΦΡΟΥΔΙΑ",
       "lat": 35.520699353036335,
@@ -3197,6 +3652,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-athanasiou-diakou": {
       "slug": "cha-athanasiou-diakou",
+      "apiCode": "74597",
       "name": "Athanasiou Diakou",
       "nameEl": "ΑΘ. ΔΙΑΚΟΥ",
       "lat": 35.51991124472461,
@@ -3204,6 +3660,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-v-psilaki": {
       "slug": "cha-v-psilaki",
+      "apiCode": "74598",
       "name": "V. Psilaki",
       "nameEl": "Β. ΨΙΛΑΚΗ",
       "lat": 35.50782299024137,
@@ -3211,6 +3668,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-g-chatzidaki": {
       "slug": "cha-g-chatzidaki",
+      "apiCode": "74599",
       "name": "G. Chatzidaki",
       "nameEl": "Γ. ΧΑΤΖΗΔΑΚΗ",
       "lat": 35.50771813164889,
@@ -3218,6 +3676,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-i-archontaki": {
       "slug": "cha-i-archontaki",
+      "apiCode": "74600",
       "name": "I. Archontaki",
       "nameEl": "Ι. ΑΡΧΟΝΤΑΚΗ",
       "lat": 35.506760615001646,
@@ -3225,6 +3684,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-p-vavoule": {
       "slug": "cha-p-vavoule",
+      "apiCode": "74601",
       "name": "P. Vavoule",
       "nameEl": "Π. ΒΑΒΟΥΛΕ",
       "lat": 35.50644721362272,
@@ -3232,6 +3692,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-vryson-2": {
       "slug": "cha-vryson-2",
+      "apiCode": "74602",
       "name": "Vryson",
       "nameEl": "ΒΡΥΣΩΝ",
       "lat": 35.509153636984266,
@@ -3239,6 +3700,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-m-papadaki": {
       "slug": "cha-m-papadaki",
+      "apiCode": "74603",
       "name": "M. Papadaki",
       "nameEl": "Μ. ΠΑΠΑΔΑΚΗ",
       "lat": 35.50942890342647,
@@ -3246,6 +3708,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-parodos-eleftherias": {
       "slug": "cha-parodos-eleftherias",
+      "apiCode": "74604",
       "name": "Parodos Eleftherias",
       "nameEl": "ΠΑΡΟΔΟΣ ΕΛΕΥΘΕΡΙΑΣ",
       "lat": 35.49022366558895,
@@ -3253,6 +3716,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-patriarchou-vartholomaiou": {
       "slug": "cha-patriarchou-vartholomaiou",
+      "apiCode": "74605",
       "name": "Patriarchou Vartholomaiou",
       "nameEl": "ΠΑΤΡΙΑΡΧΟΥ ΒΑΡΘΟΛΟΜΑΙΟΥ",
       "lat": 35.49204210283062,
@@ -3260,6 +3724,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-nerokourou-2": {
       "slug": "cha-nerokourou-2",
+      "apiCode": "74606",
       "name": "Nerokourou",
       "nameEl": "ΝΕΡΟΚΟΥΡΟΥ",
       "lat": 35.47607402889795,
@@ -3267,6 +3732,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-28is-oktovriou": {
       "slug": "cha-28is-oktovriou",
+      "apiCode": "74607",
       "name": "28is Oktovriou",
       "nameEl": "28ΗΣ ΟΚΤΩΒΡΙΟΥ",
       "lat": 35.529790417586305,
@@ -3274,6 +3740,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-vothonas": {
       "slug": "cha-vothonas",
+      "apiCode": "74608",
       "name": "Vothonas",
       "nameEl": "ΒΟΘΩΝΑΣ",
       "lat": 35.53609429839282,
@@ -3281,6 +3748,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-panteli-vavoule": {
       "slug": "cha-panteli-vavoule",
+      "apiCode": "74609",
       "name": "Panteli Vavoule",
       "nameEl": "ΠΑΝΤΕΛΗ ΒΑΒΟΥΛΕ",
       "lat": 35.506462513786666,
@@ -3288,6 +3756,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-konstantinou-manou": {
       "slug": "cha-konstantinou-manou",
+      "apiCode": "74610",
       "name": "Konstantinou Manou",
       "nameEl": "ΚΩΝΣΤΑΝΤΙΝΟΥ ΜΑΝΟΥ",
       "lat": 35.50731213015346,
@@ -3295,6 +3764,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-th-kolokotroni": {
       "slug": "cha-th-kolokotroni",
+      "apiCode": "74611",
       "name": "Th. Kolokotroni",
       "nameEl": "Θ. ΚΟΛΟΚΟΤΡΩΝΗ",
       "lat": 35.4989569035771,
@@ -3302,6 +3772,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-p-ilektriki": {
       "slug": "cha-p-ilektriki",
+      "apiCode": "74612",
       "name": "P. Ilektriki",
       "nameEl": "Π. ΗΛΕΚΤΡΙΚΗ",
       "lat": 35.50435920639728,
@@ -3309,6 +3780,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-fanourios": {
       "slug": "cha-ag-fanourios",
+      "apiCode": "74613",
       "name": "AG. Fanourios",
       "nameEl": "ΑΓ. ΦΑΝΟΥΡΙΟΣ",
       "lat": 35.48087783713817,
@@ -3316,6 +3788,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-ag-fanourios-2": {
       "slug": "cha-ag-fanourios-2",
+      "apiCode": "74614",
       "name": "AG. Fanourios",
       "nameEl": "ΑΓ. ΦΑΝΟΥΡΙΟΣ",
       "lat": 35.480468878509974,
@@ -3323,6 +3796,7 @@ export const CITYBUS_DATA: CitybusData = {
     },
     "cha-maridaki-3": {
       "slug": "cha-maridaki-3",
+      "apiCode": "74617",
       "name": "Maridaki",
       "nameEl": "ΜΑΡΙΔΑΚΗ",
       "lat": 35.48837529191744,
