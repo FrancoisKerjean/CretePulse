@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Star, X, MapPin, Search, ChevronLeft, ChevronRight, ChevronUp,
   SlidersHorizontal, Waves, Mountain, Home, Landmark, TreePine, Sparkles, Car,
-  Layers, Bus, Timer,
+  Layers, Bus, Timer, ArrowUpRight,
 } from "lucide-react";
 import { ImpressionTracker } from "@/components/ui/ImpressionTracker";
 import type { CbPlaceSlim, CbPlacesPacked, CbPlace } from "@/lib/cb-places";
@@ -20,6 +20,8 @@ import {
   circlePolygon as circleFeature,
 } from "@/components/map/mapUtils";
 import { cleanCbDescription } from "@/lib/cb-place-helpers";
+import { activityCtaFor } from "@/lib/activity-cta";
+import { categoryLabel, cityLabel } from "@/lib/activity-taxonomy";
 import { useGeoPosition } from "@/components/geo/useGeoPosition";
 import Image from "next/image";
 import Link from "next/link";
@@ -106,6 +108,7 @@ const T: Record<string, Record<string, string>> = {
     satellite: "Satellite", busLayer: "Bus stops", driveTime: "Drive time",
     driveLegend: "15 / 30 / 60 min drive (approx.)",
     noSearchResults: "No results", searchOnMap: "Press Enter to search the map",
+    activitiesCta: "Book an activity",
   },
   fr: {
     search: "Chercher un lieu...", results: "lieux", rating: "Note min.",
@@ -122,6 +125,7 @@ const T: Record<string, Record<string, string>> = {
     satellite: "Satellite", busLayer: "Arrêts de bus", driveTime: "Temps de route",
     driveLegend: "15 / 30 / 60 min de route (approx.)",
     noSearchResults: "Aucun résultat", searchOnMap: "Entrée pour chercher sur la carte",
+    activitiesCta: "Réserver une activité",
   },
   de: {
     search: "Ort suchen...", results: "Orte", rating: "Min. Bewertung",
@@ -138,6 +142,7 @@ const T: Record<string, Record<string, string>> = {
     satellite: "Satellit", busLayer: "Bushaltestellen", driveTime: "Fahrzeit",
     driveLegend: "15 / 30 / 60 Min. Fahrt (ca.)",
     noSearchResults: "Keine Ergebnisse", searchOnMap: "Enter: auf der Karte suchen",
+    activitiesCta: "Aktivität buchen",
   },
   el: {
     search: "Αναζήτηση τοποθεσίας...", results: "μέρη", rating: "Ελάχ. βαθμολογία",
@@ -154,6 +159,7 @@ const T: Record<string, Record<string, string>> = {
     satellite: "Δορυφόρος", busLayer: "Στάσεις λεωφορείων", driveTime: "Χρόνος οδήγησης",
     driveLegend: "15 / 30 / 60 λεπτά οδήγησης (περίπου)",
     noSearchResults: "Κανένα αποτέλεσμα", searchOnMap: "Enter: αναζήτηση στον χάρτη",
+    activitiesCta: "Κράτηση δραστηριότητας",
   },
 };
 
@@ -1557,6 +1563,33 @@ export function ExploreView({
                   locale={locale}
                   compact
                 />
+                {/* CTA contextuel vers la verticale /activities (wizard multi-devis) :
+                    plage/île → bateau, gorge/nature → rando, ville → food tour,
+                    ville de départ = la plus proche des 5 servies. Pas de mapping
+                    pertinent (culture, activity) = pas de CTA. */}
+                {(() => {
+                  const cta = activityCtaFor(selected.place_type, selected.latitude, selected.longitude);
+                  if (!cta) return null;
+                  return (
+                    <Link
+                      href={`/${locale}/activities/${cta.category}/${cta.city}#wizard`}
+                      onClick={() => {
+                        window.plausible?.("explore_activities_cta", {
+                          props: { category: cta.category, city: cta.city, place: selected.slug },
+                        });
+                      }}
+                      className="mt-2 flex items-center justify-between gap-2 rounded-xl border-[1.5px] border-sea/15 bg-surface px-3 py-2 no-underline hover:border-sea/50 transition-colors"
+                    >
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-sea">
+                        <Sparkles className="w-3.5 h-3.5" /> {t.activitiesCta}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-xs text-text-muted">
+                        {categoryLabel(cta.category, locale)} · {cityLabel(cta.city, locale)}
+                        <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
+                      </span>
+                    </Link>
+                  );
+                })()}
               </div>
             )}
 
