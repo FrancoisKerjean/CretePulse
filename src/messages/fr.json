@@ -183,5 +183,11 @@
     "cta": "Installer",
     "later": "Plus tard",
     "ios": "Touche Partager, puis « Sur l'écran d'accueil »."
+  },
+  "tabBar": {
+    "map": "Carte",
+    "buses": "Bus",
+    "beaches": "Plages",
+    "quote": "Devis"
   }
 }

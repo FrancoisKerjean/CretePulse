@@ -183,5 +183,11 @@
     "cta": "Telepítés",
     "later": "Most nem",
     "ios": "Koppints a Megosztásra, majd „Hozzáadás a kezdőképernyőhöz”."
+  },
+  "tabBar": {
+    "map": "Térkép",
+    "buses": "Buszok",
+    "beaches": "Strandok",
+    "quote": "Ajánlat"
   }
 }

@@ -183,5 +183,11 @@
     "cta": "Installieren",
     "later": "Später",
     "ios": "Tippe auf Teilen, dann „Zum Home-Bildschirm“."
+  },
+  "tabBar": {
+    "map": "Karte",
+    "buses": "Busse",
+    "beaches": "Strände",
+    "quote": "Angebot"
   }
 }

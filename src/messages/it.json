@@ -183,5 +183,11 @@
     "cta": "Installa",
     "later": "Non ora",
     "ios": "Tocca Condividi, poi “Aggiungi alla schermata Home”."
+  },
+  "tabBar": {
+    "map": "Mappa",
+    "buses": "Bus",
+    "beaches": "Spiagge",
+    "quote": "Preventivo"
   }
 }

@@ -1333,7 +1333,7 @@ export function ExploreView({
           <button
             onClick={toggleNearMe}
             aria-pressed={nearActive && Boolean(geo.pos)}
-            className={`md:hidden absolute right-3 bottom-[178px] z-20 flex items-center gap-1.5 text-xs font-bold py-2 px-3.5 rounded-full shadow-[0_8px_22px_rgba(11,94,120,0.3)] ${
+            className={`md:hidden absolute right-3 bottom-[234px] z-20 flex items-center gap-1.5 text-xs font-bold py-2 px-3.5 rounded-full shadow-[0_8px_22px_rgba(11,94,120,0.3)] ${
               nearActive && geo.pos ? "bg-sea text-white" : "bg-white text-sea"
             }`}
           >
@@ -1341,7 +1341,8 @@ export function ExploreView({
             {t.nearMe}
           </button>
 
-          <div className="md:hidden absolute bottom-0 left-0 right-0 z-20">
+          {/* bottom-14 : laisse la place à la MobileTabBar fixe (lot 2). */}
+          <div className="md:hidden absolute bottom-14 left-0 right-0 z-20">
             <button
               onClick={() => setListExpanded(true)}
               className="mx-auto mb-1.5 flex items-center gap-1.5 bg-white/95 text-sea text-xs font-bold px-4 py-1.5 rounded-full shadow-[0_4px_14px_rgba(11,94,120,0.25)]"

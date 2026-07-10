@@ -183,5 +183,11 @@
     "cta": "Nainstalovat",
     "later": "Teď ne",
     "ios": "Klepni na Sdílet a pak „Přidat na plochu“."
+  },
+  "tabBar": {
+    "map": "Mapa",
+    "buses": "Autobusy",
+    "beaches": "Pláže",
+    "quote": "Nabídka"
   }
 }

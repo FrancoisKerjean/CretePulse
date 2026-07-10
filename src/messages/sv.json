@@ -183,5 +183,11 @@
     "cta": "Installera",
     "later": "Inte nu",
     "ios": "Tryck på Dela och sedan “Lägg till på hemskärmen”."
+  },
+  "tabBar": {
+    "map": "Karta",
+    "buses": "Bussar",
+    "beaches": "Stränder",
+    "quote": "Offert"
   }
 }
