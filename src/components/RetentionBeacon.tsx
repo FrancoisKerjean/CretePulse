@@ -1,4 +1,4 @@
-// src/components/RetentionBeacon.tsx — lot 0 app compagnon.
+// src/components/RetentionBeacon.tsx : lot 0 app compagnon.
 // Envoie UNE FOIS par session l'event Plausible "retention" avec des props
 // catégorielles (aucun identifiant). État = localStorage du visiteur.
 // Remplace le RetentionTracker du 10/07 (convergence multi-terminal) : même

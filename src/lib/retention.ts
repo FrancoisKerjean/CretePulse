@@ -1,4 +1,4 @@
-// src/lib/retention.ts — calcul PUR des props de rétention (lot 0 app compagnon).
+// src/lib/retention.ts : calcul PUR des props de rétention (lot 0 app compagnon).
 // RGPD : aucune donnée personnelle ; l'état reste dans le localStorage du visiteur,
 // seules des props catégorielles plafonnées partent vers Plausible.
 

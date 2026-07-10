@@ -1,4 +1,4 @@
-// scripts/check-retention.mjs — tests purs du module de rétention (lot 0 app compagnon).
+// scripts/check-retention.mjs : tests purs du module de rétention (lot 0 app compagnon).
 import assert from "node:assert/strict";
 import { computeRetention, RETENTION_STORAGE_KEY } from "../src/lib/retention.ts";
 
