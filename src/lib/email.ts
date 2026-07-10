@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 import { buildCarWaMessage, waHref } from "./car-admin";
-import { inclusionLabels } from "@/lib/car-inclusions";
+import { inclusionLabels, insuranceSummary } from "@/lib/car-inclusions";
 import { CAR_CHILD_SEAT_LABELS_PARTNER, type CarChildSeatKey } from "@/lib/car-child-seats";
 import { sharedOfferCopy } from "@/lib/car-offer-copy";
 import { affiliateClass } from "@/lib/affiliate";
@@ -482,6 +482,9 @@ export interface CarQuoteInfo {
   partnerName: string;
   carModel?: string | null;
   inclusions?: string[];
+  insuranceType?: string | null;
+  excessEur?: number | null;
+  zeroExcessUpsellEurDay?: number | null;
   days: number;
 }
 
@@ -651,6 +654,9 @@ export async function sendConnectionEmails(opts: {
     `Phone / WhatsApp: ${customer.phone ?? "-"}`,
     ``,
     `Booking: ${quote.pickupLabel}, ${quote.dateFrom} → ${quote.dateTo}, ${quote.carTypeLabel}`,
+    ...(insuranceSummary(quote.insuranceType, quote.excessEur, quote.zeroExcessUpsellEurDay, "en").length
+      ? [`Insurance quoted: ${insuranceSummary(quote.insuranceType, quote.excessEur, quote.zeroExcessUpsellEurDay, "en").join(" · ")}`]
+      : []),
     `Our referral commission is 10%.`,
     ``,
     `Please contact the customer to confirm the details. Thanks!`,
@@ -667,6 +673,8 @@ export async function sendConnectionEmails(opts: {
   if (r1.error) throw new Error(`Resend: ${r1.error.message}`);
 
   // 2. Au client : coordonnées du loueur (HTML localisé).
+  const insHeading: Record<string, string> = { en: "Insurance", fr: "Assurance", de: "Versicherung", el: "Ασφάλιση" };
+  const insLines = insuranceSummary(quote.insuranceType, quote.excessEur, quote.zeroExcessUpsellEurDay, l);
   const inner = `
     <p style="margin:0 0 16px; color:${C.muted}; font-size:14px; line-height:1.6;">${customer.name ? `${customer.name}, ` : ""}${c.intro}</p>
     <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 18px;">
@@ -675,6 +683,7 @@ export async function sendConnectionEmails(opts: {
         ${partner.name}<br>${partner.whatsapp ?? partner.phone}<br>${partner.email}
       </p>
     </div>
+    ${insLines.length ? `<div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 18px;"><p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${insHeading[l] ?? insHeading.en}</p><p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">${insLines.map((x) => `• ${x}`).join("<br>")}</p></div>` : ""}
     <p style="margin:0; color:${C.faint}; font-size:12px; line-height:1.6;">${c.foot}</p>
   `;
   await resend.emails.send({
