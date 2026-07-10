@@ -123,15 +123,21 @@ export function createCitybusEngine(data: CitybusData): CitybusEngine {
     }
     for (const t of bestDirectByLine.values()) trips.push(t);
 
+    // Correspondance sur le même arrêt OU un arrêt jumeau (<=150 m, traverser la rue) :
+    // les réseaux citybus séparent les quais par sens, exiger le même slug raterait
+    // la plupart des changements de ligne entre sens opposés.
     const bestByPair = new Map<string, CitybusTrip>();
     for (const [x, leg1] of fromLegs) {
       if (x === toSlug || x === fromSlug) continue;
-      const leg2 = toLegs.get(x);
-      if (!leg2 || leg2.lineCode === leg1.lineCode) continue;
-      const total = leg1.minutes + WAIT_MIN + leg2.minutes;
-      const key = `${leg1.lineCode}>${leg2.lineCode}`;
-      const prev = bestByPair.get(key);
-      if (!prev || total < prev.totalMinutes) bestByPair.set(key, { legs: [leg1, leg2], totalMinutes: total, transfers: 1 });
+      for (const { slug: x2, walkMin } of [{ slug: x, walkMin: 0 }, ...neighborsOf(x)]) {
+        if (x2 === toSlug || x2 === fromSlug) continue;
+        const leg2 = toLegs.get(x2);
+        if (!leg2 || leg2.lineCode === leg1.lineCode) continue;
+        const total = leg1.minutes + WAIT_MIN + walkMin + leg2.minutes;
+        const key = `${leg1.lineCode}>${leg2.lineCode}`;
+        const prev = bestByPair.get(key);
+        if (!prev || total < prev.totalMinutes) bestByPair.set(key, { legs: [leg1, leg2], totalMinutes: total, transfers: 1 });
+      }
     }
     const bestDirect = Math.min(Infinity, ...trips.map((t) => t.totalMinutes));
     for (const t of bestByPair.values()) if (t.totalMinutes < bestDirect) trips.push(t);
