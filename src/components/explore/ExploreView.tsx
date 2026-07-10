@@ -10,6 +10,7 @@ import { ImpressionTracker } from "@/components/ui/ImpressionTracker";
 import type { CbPlaceSlim, CbPlacesPacked, CbPlace } from "@/lib/cb-places";
 import { WaterQualityBadge } from "@/components/WaterQualityBadge";
 import { getCbPlaceBySlug, unpackCbPlaces } from "@/lib/cb-places";
+import { NowPanel } from "@/components/explore/NowPanel";
 import { getSponsorCards, isSponsorSlug, sponsoredLabel, sponsorDescription } from "@/lib/sponsored-places";
 import { isAffiliateSlug, partnerLabel, affiliateDescription, type AffiliatePlace } from "@/lib/affiliate-places";
 import { typeLabel } from "@/lib/cb-type-labels";
@@ -1348,6 +1349,10 @@ export function ExploreView({
               <ChevronUp size={14} /> {filtered.length} {t.results}
             </button>
             <div className="flex gap-2.5 overflow-x-auto px-3 pb-3 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {/* Panneau temps reel en tete UNIQUEMENT quand l'utilisateur a active
+                  "Autour de moi" (intent utilitaire) : meilleure plage du moment +
+                  prochain bus live. Lot 2 app compagnon. */}
+              {nearActive && geo.pos && <NowPanel pos={geo.pos} locale={locale} />}
               {/* Carte voiture en tete du carrousel mobile : /explore = 1re landing
                   campagne FB (87% mobile) et le carrousel est la vue par defaut
                   (sans tap). Wizard interne, source tracee dans Plausible. */}

@@ -30,6 +30,10 @@ export async function GET(req: Request) {
         rating: s.rating,
         windSpeed: s.windSpeed,
         windCardinal: s.windCardinal,
+        // Coords exposées pour le tri par distance côté client (NowPanel /explore,
+        // lot 2 app compagnon) : les slugs beaches ≠ slugs cb_places, pas de jointure possible.
+        lat: s.beach.latitude,
+        lng: s.beach.longitude,
       })),
     }))
     .filter((r) => r.beaches.length > 0);
