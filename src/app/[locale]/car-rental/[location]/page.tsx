@@ -170,7 +170,14 @@ export default async function CarLocationPage(
 
         <p className="mb-3 text-[15px] font-semibold text-text">{ui.wizardLead}</p>
         <Suspense fallback={null}>
-          <CarRentalWizard locale={locale} servedZones={servedZones} initialPickup={loc.pickup} />
+          {/* initialSource : une visite organique de la landing est attribuée à la
+              landing elle-même ; un clic CTA interne arrive avec ?source= qui prime. */}
+          <CarRentalWizard
+            locale={locale}
+            servedZones={servedZones}
+            initialPickup={loc.pickup}
+            initialSource={`landing-${loc.slug}`}
+          />
         </Suspense>
 
         <section className="mt-12">

@@ -307,9 +307,11 @@ type CarRentalWizardProps = {
   locale: string;
   servedZones: string[];
   initialPickup?: string;
+  /** Source d'attribution par défaut de la page hôte (ex : landing-chania-airport), supplantée par ?source=. */
+  initialSource?: string;
 };
 
-export function CarRentalWizard({ locale, servedZones, initialPickup: initialPickupProp }: CarRentalWizardProps) {
+export function CarRentalWizard({ locale, servedZones, initialPickup: initialPickupProp, initialSource }: CarRentalWizardProps) {
   const t = T[locale] || T.en;
   const sp = useSearchParams();
 
@@ -403,7 +405,7 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
   const timesValid = timeFilled && (dateTo !== dateFrom || timeTo > timeFrom);
   const contactValid = name.trim().length > 0 && EMAIL_REGEX.test(email.trim());
 
-  const source = sp.get("source") ?? (initialPickup ? "promo" : "direct");
+  const source = sp.get("source") ?? initialSource ?? (initialPickup ? "promo" : "direct");
 
   async function submit() {
     if (!pickup || !carTypeDef || !contactValid || submitting) return;

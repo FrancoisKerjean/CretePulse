@@ -23,6 +23,13 @@ const CAR_PICKUP: Record<string, string> = {
   HER: "heraklion",
 };
 
+// Landing SEO explicite : le pickup heraklion est partagé par 2 landings
+// (airport/port), le contexte page aéroport lève l'ambiguïté.
+const CAR_LANDING: Record<string, string> = {
+  CHQ: "chania-airport",
+  HER: "heraklion-airport",
+};
+
 export const revalidate = 86400;
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
@@ -649,7 +656,7 @@ export default async function AirportPage(
         </section>
 
         {/* Encart partenaire location de voiture (wizard interne /car-rental) */}
-        <CarPromo locale={locale} pickup={CAR_PICKUP[airport.iata]} source="airport" />
+        <CarPromo locale={locale} pickup={CAR_PICKUP[airport.iata]} landing={CAR_LANDING[airport.iata]} source="airport" />
 
         {/* Staying nearby: airbnb data cross-links */}
         <section className="mb-10">

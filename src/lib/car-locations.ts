@@ -1,6 +1,10 @@
 // SEO location pages for /car-rental/[location].
-// Each entry maps to an existing pickup slug from CAR_ZONES, so the wizard can
-// start on the date step while keeping a clean canonical URL.
+// Les refs (slug, pickup, kind, code) vivent dans car-landings.ts (module léger
+// importé par les CTA client-side) ; ce fichier ne porte que les textes. Le
+// Record<CarLandingSlug, ...> force chaque ref à avoir son contenu (tsc échoue
+// si une landing est ajoutée dans car-landings.ts sans texte ici, et inversement).
+
+import { CAR_LANDINGS, type CarLandingRef, type CarLandingSlug } from "./car-landings";
 
 export type CarLocLocale = "en" | "fr" | "de";
 export const CAR_LOC_LOCALES: CarLocLocale[] = ["en", "fr", "de"];
@@ -15,22 +19,16 @@ export interface CarLocationContent {
   faq: Array<{ q: string; a: string }>;
 }
 
-export interface CarLocation {
-  slug: string;
-  pickup: string;
-  kind: "airport" | "port";
-  code?: string;
+export interface CarLocationCopy {
   hub: Record<CarLocLocale, string>;
   meta: Record<CarLocLocale, { title: string; desc: string }>;
   content: Record<CarLocLocale, CarLocationContent>;
 }
 
-export const CAR_LOCATIONS: CarLocation[] = [
-  {
-    slug: "chania-airport",
-    pickup: "chania-airport",
-    kind: "airport",
-    code: "CHQ",
+export type CarLocation = CarLandingRef & CarLocationCopy;
+
+const COPY: Record<CarLandingSlug, CarLocationCopy> = {
+  "chania-airport": {
     hub: { en: "Chania Airport (CHQ)", fr: "Aéroport de Chania (CHQ)", de: "Flughafen Chania (CHQ)" },
     meta: {
       en: {
@@ -97,11 +95,7 @@ export const CAR_LOCATIONS: CarLocation[] = [
       },
     },
   },
-  {
-    slug: "heraklion-airport",
-    pickup: "heraklion",
-    kind: "airport",
-    code: "HER",
+  "heraklion-airport": {
     hub: { en: "Heraklion Airport (HER)", fr: "Aéroport d'Héraklion (HER)", de: "Flughafen Heraklion (HER)" },
     meta: {
       en: {
@@ -168,10 +162,7 @@ export const CAR_LOCATIONS: CarLocation[] = [
       },
     },
   },
-  {
-    slug: "souda-port",
-    pickup: "chania",
-    kind: "port",
+  "souda-port": {
     hub: { en: "Souda Port (Chania)", fr: "Port de Souda (Chania)", de: "Hafen Souda (Chania)" },
     meta: {
       en: {
@@ -238,10 +229,7 @@ export const CAR_LOCATIONS: CarLocation[] = [
       },
     },
   },
-  {
-    slug: "heraklion-port",
-    pickup: "heraklion",
-    kind: "port",
+  "heraklion-port": {
     hub: { en: "Heraklion Port", fr: "Port d'Héraklion", de: "Hafen Heraklion" },
     meta: {
       en: {
@@ -308,7 +296,12 @@ export const CAR_LOCATIONS: CarLocation[] = [
       },
     },
   },
-];
+};
+
+export const CAR_LOCATIONS: CarLocation[] = CAR_LANDINGS.map((ref) => ({
+  ...ref,
+  ...COPY[ref.slug],
+}));
 
 export function getCarLocation(slug: string): CarLocation | null {
   return CAR_LOCATIONS.find((location) => location.slug === slug) ?? null;
