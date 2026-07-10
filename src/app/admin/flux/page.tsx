@@ -294,7 +294,7 @@ export default async function FluxAdminPage({
 
       <Section
         title={`Occupation Airbnb par zone${latestZoneDate ? ` (${fmtDay(latestZoneDate)})` : ""}`}
-        hint="Agrégat hebdo scrapper (18 zones). ⚠ Sémantique occupancy_rate à confirmer avant tout usage public."
+        hint="Agrégat hebdo scrapper (18 zones). ⚠ Biais sélection : Airbnb ne retourne que les logements avec dispo visible → listings 100 % complets invisibles. Taux ~10 % = occupation des logements encore disponibles, pas taux global (estimé ~85-95 % en juillet). NE PAS publier brut."
       >
         <table className="w-full text-xs">
           <thead>
