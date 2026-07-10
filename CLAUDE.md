@@ -22,7 +22,7 @@ Plusieurs terminaux Claude tournent en parallèle sur ce repo. Convention compl�
 - **`main` = prod** (Vercel déploie depuis main). On y arrive uniquement par merge depuis `master`. Déploiement = `git push origin master:main`, acte conscient.
 - **`git add -A` / `git add .` INTERDITS** (emballent artefacts + travail d'autres terminaux). Stage tes fichiers explicitement.
 - **Vert avant push** : `tsc` (+ `next build` si dispo) OK. Vercel ne sert jamais un build cassé (prod reste sur le dernier OK).
-- **Preview** : pousser une branche `feat/*` → Vercel génère une URL preview pour valider la page hors prod.
+- **Preview OPT-IN (10/07/2026)** : les previews `feat/*` ne se buildent QUE si le message de commit contient `[preview]` ; `master` n'est plus jamais buildé (politique `scripts/vercel-ignore.sh`, 1 slot Hobby partagé — les doublons bouchaient la file devant la prod).
 - **Dev server simultané** : prendre un `git worktree` dédié (dossier + `.next` + port isolés), seulement si besoin réel de dev live en parallèle.
 
 ## Règles NON NÉGOCIABLES

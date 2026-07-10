@@ -30,14 +30,23 @@ interdits** (ils emballent les artefacts non suivis : logs, `.next`, captures,
 
 ## Voir sa page live sans toucher la prod
 
-Pousse la branche → Vercel crée automatiquement un **déploiement preview** avec
-sa propre URL :
+Depuis le 10/07/2026, les previews sont **opt-in** (politique `scripts/vercel-ignore.sh`,
+câblée dans `vercel.json`). Raison : 1 seul slot de build Vercel Hobby partagé entre
+tous les terminaux ; chaque push déclenchait 3 builds (feat + master + main du même sha)
+et les doublons faisaient la queue devant la prod.
+
+- `main` → toujours buildé (prod)
+- `master` → jamais buildé (miroir, doublon)
+- `feat/*` → preview SEULEMENT si le message de commit contient `[preview]`
 
 ```bash
-git push -u origin feat/affiliation       # → Vercel preview URL dans le dashboard / commit GitHub
+git commit -m "feat(page): nouvelle section [preview]"   # → Vercel preview URL
+git push -u origin feat/affiliation
 ```
 
 Tu valides la page sur l'URL preview. La prod (`main`) n'est jamais affectée.
+Pas besoin de preview (changement backend, script VPS, admin) ? Commit normal,
+zéro build consommé.
 
 ## Intégrer et déployer
 
