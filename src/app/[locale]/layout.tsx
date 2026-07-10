@@ -7,6 +7,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ActivityNudge } from "@/components/nudge/ActivityNudge";
 import { RetentionBeacon } from "@/components/RetentionBeacon";
+import { InstallBanner } from "@/components/InstallBanner";
 import { baloo, geist, comfortaa } from "@/app/layout";
 import Script from "next/script";
 import { buildAlternates } from "@/lib/seo";
@@ -108,6 +109,7 @@ export default async function LocaleLayout({
           <Footer />
           <ActivityNudge />
           <RetentionBeacon />
+          <InstallBanner />
         </NextIntlClientProvider>
         <Script
           defer
