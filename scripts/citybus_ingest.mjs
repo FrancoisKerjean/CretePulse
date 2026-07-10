@@ -75,6 +75,24 @@ function build() {
   }]));
   const seqOf = (rc) => (dump.sequences[rc] || []).slice().sort((a, b) => a.sequence - b.sequence);
 
+  // Routes cachées (sens retour, cf citybus_fetch) : on les greffe sur leur ligne.
+  // direction = opposé de la direction majoritaire publiée ; hidden=true les exclut du primary.
+  const hiddenByLine = new Map();
+  for (const h of dump.hiddenRoutes || []) {
+    const arr = hiddenByLine.get(h.lineCode) ?? [];
+    arr.push(h);
+    hiddenByLine.set(h.lineCode, arr);
+  }
+  for (const l of dump.lines) {
+    const extras = (hiddenByLine.get(l.code) || []).filter((h) => !l.routes.some((r) => r.code === h.code));
+    if (!extras.length) continue;
+    const dirCounts = {};
+    for (const r of l.routes) if (r.direction != null) dirCounts[r.direction] = (dirCounts[r.direction] ?? 0) + 1;
+    const majority = Object.entries(dirCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+    const reverseDir = majority === '2' ? 1 : majority === '1' ? 2 : null;
+    for (const h of extras) l.routes.push({ code: h.code, name: h.name, direction: reverseDir, hidden: true });
+  }
+
   const activeLines = dump.lines.filter((l) => l.routes.some((r) => seqOf(r.code).length >= 2));
 
   const usedCodes = new Set();
@@ -111,7 +129,10 @@ function build() {
   const routesOut = [];
   for (const l of activeLines) {
     const routes = l.routes.filter((r) => seqOf(r.code).length >= 2);
-    const primary = routes.reduce((a, b) => (seqOf(b.code).length > seqOf(a.code).length ? b : a));
+    // primary = routes publiées uniquement : zéro churn bus_line_stops//live quand
+    // les routes cachées (sens retour) arrivent.
+    const published = routes.filter((r) => !r.hidden);
+    const primary = (published.length ? published : routes).reduce((a, b) => (seqOf(b.code).length > seqOf(a.code).length ? b : a));
     const primaryStops = routeStopsWithCumuls(primary.code);
     const polys = (dump.points[l.code] || [])
       .map((rp) => (rp.routePoints || []).slice().sort((a, b) => a.sequence - b.sequence).map((p) => [Number(p.latitude), Number(p.longitude)]))

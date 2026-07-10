@@ -124,14 +124,58 @@ async function main() {
     }
   }
 
+  // --- routes cachées (sens retour) : découverte via trips-by-stop ---
+  // L'API ne publie qu'un sens par ligne dans lines[].routes ; les routes retour ont
+  // leurs propres codes, visibles uniquement dans les départs par arrêt.
+  const knownRouteCodes = new Set(routeCodes);
+  const lineCodesSet = new Set(lines.map((l) => l.code));
+  const hiddenMeta = new Map(); // routeCode -> { code, lineCode, name }
+  const DAYS = [1, 6, 0]; // lundi / samedi / dimanche (API : 0-6, 0 = dimanche)
+  console.log(`hidden routes: scan trips (${stops.length} arrets x ${DAYS.length} jours)...`);
+  let scanned = 0;
+  for (const s of stops) {
+    for (const day of DAYS) {
+      await sleep(PACE_MS);
+      let trips;
+      try {
+        trips = await get(`/${LANG}/${AGENCY}/trips/stop/${s.code}/day/${day}`);
+      } catch (e) {
+        if (!/HTTP 404/.test(String(e.message))) console.log(`  trips ${s.code}/j${day}: ${e.message}`);
+        continue;
+      }
+      if (!Array.isArray(trips)) continue;
+      for (const t of trips) {
+        const rc = String(t.routeCode ?? '');
+        if (!rc || knownRouteCodes.has(rc) || hiddenMeta.has(rc)) continue;
+        hiddenMeta.set(rc, { code: rc, lineCode: String(t.lineCode ?? ''), name: t.routeName || rc });
+      }
+    }
+    scanned++;
+    if (scanned % 50 === 0) console.log(`  ${scanned}/${stops.length} arrets, ${hiddenMeta.size} routes cachées`);
+  }
+  const hiddenRoutes = [...hiddenMeta.values()].filter((h) => lineCodesSet.has(h.lineCode));
+  for (const h of hiddenMeta.values()) if (!lineCodesSet.has(h.lineCode)) console.log(`  route ${h.code}: ligne inconnue ${h.lineCode}, ignorée`);
+  console.log(`  ${hiddenRoutes.length} routes cachées rattachées à une ligne connue`);
+
+  console.log(`sequences cachées (${hiddenRoutes.length})...`);
+  for (const h of hiddenRoutes) {
+    await sleep(PACE_MS);
+    try {
+      sequences[h.code] = await get(`/${LANG}/${AGENCY}/routes/${h.code}/sequence`);
+    } catch (e) {
+      console.log(`  route ${h.code}: ${e.message}`);
+      sequences[h.code] = [];
+    }
+  }
+
   const dump = {
     fetchedAt: new Date().toISOString(),
     source: `${CITY.subdomain}.citybus.gr`,
-    api: API, agency: AGENCY, lines, stops, points, sequences,
+    api: API, agency: AGENCY, lines, stops, points, sequences, hiddenRoutes,
   };
   writeFileSync(OUT, JSON.stringify(dump));
   console.log(`\ndump -> ${OUT.replace(ROOT, '.')}`);
-  console.log(`  lines=${lines.length} stops=${stops.length} routes=${routeCodes.length}`);
+  console.log(`  lines=${lines.length} stops=${stops.length} routes=${routeCodes.length} hidden=${hiddenRoutes.length}`);
 }
 
 main().catch((e) => { console.error('ERREUR:', e.message || e); process.exit(1); });

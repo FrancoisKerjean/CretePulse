@@ -3,7 +3,7 @@
 // Routes LINÉAIRES et DIRECTIONNELLES (pas de wrap) : A->B seulement si A précède B sur une
 // même route. Pas d'horaire (cadence non uniforme) : on estime le temps de parcours.
 import type { CitybusData, CitybusRoute } from "./types";
-import { haversineKm } from "@/lib/geo";
+import { haversineKm } from "../geo.ts";
 
 const WAIT_MIN = 10; // attente nominale de correspondance (rang seulement)
 
@@ -47,6 +47,25 @@ export function createCitybusEngine(data: CitybusData): CitybusEngine {
     });
   }
 
+  const NEIGHBOR_KM = 0.15; // arrêts jumeaux : extension origine/destination à ~2 min de marche
+  let neighborCache: Map<string, { slug: string; walkMin: number }[]> | null = null;
+  function neighborsOf(slug: string): { slug: string; walkMin: number }[] {
+    if (!neighborCache) {
+      neighborCache = new Map();
+      const all = Object.values(STOPS);
+      for (const s of all) {
+        const near: { slug: string; walkMin: number }[] = [];
+        for (const o of all) {
+          if (o.slug === s.slug) continue;
+          const d = haversineKm([s.lat, s.lng], [o.lat, o.lng]);
+          if (d <= NEIGHBOR_KM) near.push({ slug: o.slug, walkMin: walkMinFromKm(d) });
+        }
+        if (near.length) neighborCache.set(s.slug, near);
+      }
+    }
+    return neighborCache.get(slug) ?? [];
+  }
+
   function makeLeg(route: CitybusRoute, i: number, j: number): CitybusLeg {
     const a = route.stops[i], b = route.stops[j];
     const line = lineByCode.get(route.lineCode);
@@ -85,7 +104,8 @@ export function createCitybusEngine(data: CitybusData): CitybusEngine {
     return best;
   }
 
-  function findTrips(fromSlug: string, toSlug: string): CitybusTrip[] {
+  // Recherche sur une paire d'arrêts EXACTE (l'utilisateur est sur ces quais précis).
+  function findTripsExact(fromSlug: string, toSlug: string): CitybusTrip[] {
     if (!fromSlug || !toSlug || fromSlug === toSlug) return [];
     const trips: CitybusTrip[] = [];
     const fromLegs = legsFrom(fromSlug);
@@ -103,15 +123,21 @@ export function createCitybusEngine(data: CitybusData): CitybusEngine {
     }
     for (const t of bestDirectByLine.values()) trips.push(t);
 
+    // Correspondance sur le même arrêt OU un arrêt jumeau (<=150 m, traverser la rue) :
+    // les réseaux citybus séparent les quais par sens, exiger le même slug raterait
+    // la plupart des changements de ligne entre sens opposés.
     const bestByPair = new Map<string, CitybusTrip>();
     for (const [x, leg1] of fromLegs) {
       if (x === toSlug || x === fromSlug) continue;
-      const leg2 = toLegs.get(x);
-      if (!leg2 || leg2.lineCode === leg1.lineCode) continue;
-      const total = leg1.minutes + WAIT_MIN + leg2.minutes;
-      const key = `${leg1.lineCode}>${leg2.lineCode}`;
-      const prev = bestByPair.get(key);
-      if (!prev || total < prev.totalMinutes) bestByPair.set(key, { legs: [leg1, leg2], totalMinutes: total, transfers: 1 });
+      for (const { slug: x2, walkMin } of [{ slug: x, walkMin: 0 }, ...neighborsOf(x)]) {
+        if (x2 === toSlug || x2 === fromSlug) continue;
+        const leg2 = toLegs.get(x2);
+        if (!leg2 || leg2.lineCode === leg1.lineCode) continue;
+        const total = leg1.minutes + WAIT_MIN + walkMin + leg2.minutes;
+        const key = `${leg1.lineCode}>${leg2.lineCode}`;
+        const prev = bestByPair.get(key);
+        if (!prev || total < prev.totalMinutes) bestByPair.set(key, { legs: [leg1, leg2], totalMinutes: total, transfers: 1 });
+      }
     }
     const bestDirect = Math.min(Infinity, ...trips.map((t) => t.totalMinutes));
     for (const t of bestByPair.values()) if (t.totalMinutes < bestDirect) trips.push(t);
@@ -121,6 +147,35 @@ export function createCitybusEngine(data: CitybusData): CitybusEngine {
     const out: CitybusTrip[] = [];
     for (const t of trips) {
       const sig = t.legs.map((l) => l.lineCode).join(">") + "|" + t.totalMinutes;
+      if (seen.has(sig)) continue;
+      seen.add(sig);
+      out.push(t);
+      if (out.length >= 4) break;
+    }
+    return out;
+  }
+
+  // Recherche publique : étend origine et destination aux arrêts jumeaux (<=150 m),
+  // pénalité de marche incluse dans totalMinutes ; les legs affichent l'arrêt réel utilisé.
+  function findTrips(fromSlug: string, toSlug: string): CitybusTrip[] {
+    if (!fromSlug || !toSlug || fromSlug === toSlug) return [];
+    const origins = [{ slug: fromSlug, walkMin: 0 }, ...neighborsOf(fromSlug)];
+    const dests = [{ slug: toSlug, walkMin: 0 }, ...neighborsOf(toSlug)];
+    const all: CitybusTrip[] = [];
+    for (const o of origins) {
+      for (const d of dests) {
+        if (o.slug === d.slug) continue;
+        for (const t of findTripsExact(o.slug, d.slug)) {
+          const walk = o.walkMin + d.walkMin;
+          all.push(walk ? { ...t, totalMinutes: t.totalMinutes + walk } : t);
+        }
+      }
+    }
+    all.sort((a, b) => a.transfers - b.transfers || a.totalMinutes - b.totalMinutes);
+    const seen = new Set<string>();
+    const out: CitybusTrip[] = [];
+    for (const t of all) {
+      const sig = t.legs.map((l) => l.lineCode).join(">");
       if (seen.has(sig)) continue;
       seen.add(sig);
       out.push(t);
