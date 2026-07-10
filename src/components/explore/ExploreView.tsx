@@ -1030,9 +1030,17 @@ export function ExploreView({
         lat: parseFloat(d.lat),
         lng: parseFloat(d.lon),
       }));
-      setSearchResults([...localSuggestions, ...remote]);
+      const merged = [...localSuggestions, ...remote];
+      setSearchResults(merged);
+      // Signal d'intention : recherche POI (agrégé quotidiennement dans flux_intent_daily)
+      window.plausible?.("explore_search", {
+        props: { query: q.toLowerCase().slice(0, 80), results: String(merged.length) },
+      });
     } catch {
       setSearchResults(localSuggestions);
+      window.plausible?.("explore_search", {
+        props: { query: q.toLowerCase().slice(0, 80), results: String(localSuggestions.length) },
+      });
     } finally {
       setSearching(false);
     }
