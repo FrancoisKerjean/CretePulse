@@ -1,5 +1,5 @@
 // AUTO-GENERE par scripts/citybus_ingest.mjs --city chania — NE PAS EDITER A LA MAIN.
-// Reseau bus urbain de Chania (plateforme citybus.gr), aspire le 2026-07-09.
+// Reseau bus urbain de Chania (plateforme citybus.gr), aspire le 2026-07-10.
 // Temps = estimations (vitesse urbaine 18 km/h), pas d'horaire officiel.
 import type { CitybusData } from "@/lib/citybus/types";
 
