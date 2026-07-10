@@ -1,7 +1,7 @@
 """Parsing pur des sources flux (testable sans reseau ni DB)."""
 import hashlib
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from bs4 import BeautifulSoup
 
@@ -51,12 +51,12 @@ def parse_service_date(html):
     return datetime.strptime(m.group(1), "%d %B %Y").date()
 
 
-def parse_arrivals(html):
+def _parse_flight_rows(html, number_sel, place_key, belt_sel):
     soup = BeautifulSoup(html, "html.parser")
     rows = []
     for tr in soup.select("tr.line"):
         time_el = tr.select_one(".ScheduledTime")
-        flight_el = tr.select_one(".flight_number_arr")
+        flight_el = tr.select_one(number_sel)
         if not time_el or not flight_el:
             continue
         airline = None
@@ -64,15 +64,45 @@ def parse_arrivals(html):
         if img and img.get("src"):
             m = re.search(r"/([A-Z0-9]{2,3})\.png$", img["src"])
             airline = m.group(1) if m else None
-        origin_el = tr.select_one(".DestinationNameEng")
-        belt_el = tr.select_one(".checkins_arr")
+        place_el = tr.select_one(".DestinationNameEng")
+        belt_el = tr.select_one(belt_sel)
         status_el = tr.select_one(".remtxt")
+        # departs : le numero est un lien prefixe d'un emoji info (non-ASCII) -> strip
+        flight_no = re.sub(r"^[^\x20-\x7E]+\s*", "", " ".join(flight_el.get_text(strip=True).split()))
+        status = status_el.get_text(strip=True) if status_el else None
         rows.append({
             "sched_time": time_el.get_text(strip=True),
-            "flight_no": " ".join(flight_el.get_text(strip=True).split()),
+            "flight_no": flight_no,
             "airline_code": airline,
-            "origin": origin_el.get_text(strip=True) if origin_el else None,
+            place_key: place_el.get_text(strip=True) if place_el else None,
             "belt": (belt_el.get_text(strip=True) or None) if belt_el else None,
-            "status": status_el.get_text(strip=True) if status_el else None,
+            "status": status or None,
         })
+    return rows
+
+
+def parse_arrivals(html):
+    return _parse_flight_rows(html, ".flight_number_arr", "origin", ".checkins_arr")
+
+
+def parse_departures(html):
+    return _parse_flight_rows(html, ".flight_number", "destination", ".checkins")
+
+
+def assign_service_dates(rows, board_date):
+    """Le tableau couvre ~24h glissantes : un recul horaire > 60 min entre deux
+    lignes (triees par heure) = passage de minuit -> jour suivant."""
+    day = board_date
+    prev = None
+    for row in rows:
+        try:
+            h, m = row["sched_time"].split(":")
+            minutes = int(h) * 60 + int(m)
+        except (AttributeError, ValueError):
+            minutes = None
+        if prev is not None and minutes is not None and prev - minutes > 60:
+            day = day + timedelta(days=1)
+        if minutes is not None:
+            prev = minutes
+        row["service_date"] = day
     return rows
