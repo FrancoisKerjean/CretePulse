@@ -31,6 +31,7 @@ export function NowPanel({ pos, locale }: { pos: Pos; locale: string }) {
   const [stop, setStop] = useState<NearestStop | null>(null);
   const [arrival, setArrival] = useState<Arrival | null>(null);
   const shownSent = useRef(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     let dead = false;
@@ -50,7 +51,10 @@ export function NowPanel({ pos, locale }: { pos: Pos; locale: string }) {
           }
         }
         all.sort((x, y) => weighted(y.score, y.km) - weighted(x.score, x.km));
-        setBeach(all[0] ?? null);
+        // « Près de toi » = ≤25 km ; au-delà la pondération plafonne et une
+        // plage à 40+ km gagnerait. Repli : la plus proche tout court.
+        const near = all.filter((b) => b.km <= 25);
+        setBeach(near[0] ?? all.sort((x, y) => x.km - y.km)[0] ?? null);
       }
       if (stopRes.status === "fulfilled" && stopRes.value) setStop(stopRes.value.stop ?? null);
     })();
@@ -92,12 +96,15 @@ export function NowPanel({ pos, locale }: { pos: Pos; locale: string }) {
     if (!shownSent.current && (beach || stop)) {
       shownSent.current = true;
       window.plausible?.("now_panel_shown", { props: { hasLiveBus: String(Boolean(stop?.liveCity)) } });
+      // Le panneau se monte après ses fetchs : le carrousel est déjà ancré sur
+      // la carte suivante. On se ramène en vue (scroll horizontal uniquement).
+      rootRef.current?.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
     }
   }, [beach, stop]);
 
   if (!beach && !stop) return null;
   return (
-    <div className="pointer-events-auto w-[15.5rem] shrink-0 snap-start rounded-2xl border-2 border-border bg-white p-3 shadow-[0_12px_32px_rgba(11,94,120,.10)]">
+    <div ref={rootRef} className="pointer-events-auto w-[15.5rem] shrink-0 snap-start rounded-2xl border-2 border-border bg-white p-3 shadow-[0_12px_32px_rgba(11,94,120,.10)]">
       <p className="m-0 mb-2 font-heading text-[13px] font-bold text-ink">{t.nowTitle}</p>
       {beach && (
         <Link
