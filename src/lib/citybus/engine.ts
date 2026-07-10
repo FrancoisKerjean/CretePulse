@@ -3,7 +3,7 @@
 // Routes LINÉAIRES et DIRECTIONNELLES (pas de wrap) : A->B seulement si A précède B sur une
 // même route. Pas d'horaire (cadence non uniforme) : on estime le temps de parcours.
 import type { CitybusData, CitybusRoute } from "./types";
-import { haversineKm } from "../geo";
+import { haversineKm } from "../geo.ts";
 
 const WAIT_MIN = 10; // attente nominale de correspondance (rang seulement)
 
