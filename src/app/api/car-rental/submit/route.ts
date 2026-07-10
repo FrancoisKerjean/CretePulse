@@ -87,6 +87,7 @@ export async function POST(request: NextRequest) {
     dateTo: row.date_to, timeTo: row.time_to ?? undefined, flightNo: row.flight_no ?? undefined,
     carTypeLabel: carTypeLabelWithExamples(carType, "en"), pax: row.pax ?? undefined,
     insurance: row.insurance ?? undefined, payment: row.payment_method ?? undefined,
+    gearbox: row.gearbox ?? undefined, childSeats: row.child_seats,
     customerName: row.customer_name, customerEmail: row.customer_email, customerPhone: row.customer_phone ?? undefined,
     note: row.note ?? undefined,
   };

@@ -6,8 +6,10 @@ import {
   type LiveNetwork, type LiveBus, type LiveLine, type LiveGpsBus, type BusSheetVM,
 } from "@/lib/bus-live";
 import { athensNow } from "@/lib/athens-time";
-import { createBusEl, createGpsBusEl, setBusArrow, setBusSelected, setBusDimmed } from "./busMarker";
+import { createBusEl, createGpsBusEl, createApproachingBusEl, setApproachingBusEta, setBusArrow, setBusSelected, setBusDimmed } from "./busMarker";
 import { BusSheet } from "./BusSheet";
+import { StopSheet, type StopSheetProps } from "./StopSheet";
+import type { CityBusArrival } from "@/app/api/buses/citybus-live/[stop]/route";
 import { Link } from "@/i18n/navigation";
 
 type MaplibreMap = import("maplibre-gl").Map;
@@ -18,13 +20,26 @@ type Pose = { lat: number; lng: number; bearing: number };
 const SHEET_H = 240; // hauteur approx du bottom sheet, pour l'offset de recentrage
 const EMPTY = { type: "FeatureCollection" as const, features: [] };
 
-const T: Record<string, { estimated: string; circulating: string; planTrip: string; rentCar: string; gpsLive: string; legendKtel: string; legendUrban: string }> = {
-  en: { estimated: "Estimated from the timetable", circulating: "buses running", planTrip: "Plan a trip", rentCar: "Rent a car", gpsLive: "live GPS (Agios Nikolaos)", legendKtel: "KTEL (intercity)", legendUrban: "Free city bus (Agios Nikolaos)" },
-  fr: { estimated: "Estimé selon l'horaire", circulating: "bus en circulation", planTrip: "Planifier un trajet", rentCar: "Louer une voiture", gpsLive: "en direct GPS (Agios Nikolaos)", legendKtel: "KTEL (interurbain)", legendUrban: "Bus urbain gratuit (Agios Nikolaos)" },
+/** Déduit la ville ("her"|"cha") depuis le préfixe du code de ligne citybus. */
+function citybusCity(lineCode: string): "her" | "cha" | null {
+  if (lineCode.startsWith("HKL")) return "her";
+  if (lineCode.startsWith("CHA")) return "cha";
+  return null;
+}
+
+const T: Record<string, { estimated: string; circulating: string; planTrip: string; rentCar: string; gpsLive: string; legendKtel: string; legendUrban: string; min: string; arriving: string }> = {
+  en: { estimated: "Estimated from the timetable", circulating: "buses running", planTrip: "Plan a trip", rentCar: "Rent a car", gpsLive: "live GPS (Agios Nikolaos)", legendKtel: "KTEL (intercity)", legendUrban: "City bus (urban networks)", min: "min", arriving: "now" },
+  fr: { estimated: "Estimé selon l'horaire", circulating: "bus en circulation", planTrip: "Planifier un trajet", rentCar: "Louer une voiture", gpsLive: "en direct GPS (Agios Nikolaos)", legendKtel: "KTEL (interurbain)", legendUrban: "Bus urbain (réseaux de ville)", min: "min", arriving: "maintenant" },
 };
 
+// Sources "urbaines" (réseaux municipaux) dont on colore le tracé par leur couleur propre.
+// Les interurbains ktel/osm restent en bleu unique.
+function isUrbanSource(source: string): boolean {
+  return source === "agncitybus" || source === "citybus";
+}
+
 // On affiche toute ligne ayant un tracé (>= 2 points), y compris les tracés OSRM
-// estimés (source ktel / partialGeo) et les lignes urbaines agncitybus. La page /live
+// estimés (source ktel / partialGeo) et les lignes urbaines. La page /live
 // indique déjà « estimé d'après l'horaire ».
 function hasTrace(l: { geometry: [number, number][] | null }): boolean {
   return Array.isArray(l.geometry) && l.geometry.length >= 2;
@@ -36,7 +51,7 @@ function linesGeoJSON(net: LiveNetwork) {
     features: [...net.lines.values()].filter(hasTrace).map((l) => ({
       type: "Feature" as const,
       // lineId pour le highlight de sélection ; color pour les lignes urbaines (null -> fallback)
-      properties: { code: l.code, lineId: l.id, color: l.source === "agncitybus" ? l.color : null },
+      properties: { code: l.code, lineId: l.id, color: isUrbanSource(l.source) ? l.color : null },
       geometry: { type: "LineString" as const, coordinates: l.geometry },
     })),
   };
@@ -66,9 +81,14 @@ export function LiveMapClient({ locale }: { locale: string }) {
   const gpsMarkersRef = useRef(new Map<string, { marker: MaplibreMarker; el: HTMLDivElement; cur: Pose }>());
   const gpsTargetsRef = useRef(new Map<string, LiveGpsBus>());
   const gpsCodesRef = useRef(new Set<string>());
+  // bus citybus approchant l'arrêt sélectionné (positions GPS de la réponse stops/live)
+  const mlRef = useRef<typeof import("maplibre-gl") | null>(null);
+  const approachingRef = useRef(new Map<string, { marker: MaplibreMarker; el: HTMLDivElement }>());
+  const [stopArrivals, setStopArrivals] = useState<CityBusArrival[]>([]);
   const [count, setCount] = useState(0);
   const [gpsCount, setGpsCount] = useState(0);
   const [sheetVM, setSheetVM] = useState<BusSheetVM | null>(null);
+  const [stopSheet, setStopSheet] = useState<Omit<StopSheetProps, "locale" | "onClose" | "onArrivals"> | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -83,6 +103,7 @@ export function LiveMapClient({ locale }: { locale: string }) {
 
     Promise.all([import("maplibre-gl"), loadLiveNetwork()]).then(([ml, net]) => {
       if (cancelled || !containerRef.current) return;
+      mlRef.current = ml;
       netRef.current = net;
       const map = new ml.Map({
         container: containerRef.current,
@@ -125,6 +146,7 @@ export function LiveMapClient({ locale }: { locale: string }) {
       const selectBus = (id: string) => {
         const bus = targetsRef.current.get(id);
         if (!bus) return;
+        setStopSheet(null); // ferme le StopSheet si ouvert
         selectedRef.current = id;
         const line = netRef.current?.lines.get(bus.lineId) ?? null;
         applyHighlight(bus.lineId);
@@ -133,6 +155,34 @@ export function LiveMapClient({ locale }: { locale: string }) {
         setSheetVM(deriveBusSheet(bus, athensNow().minutes, locale));
         map.easeTo({ center: [bus.lng, bus.lat], offset: [0, -SHEET_H / 2], duration: reduceMotion() ? 0 : 400 });
       };
+
+      // Construit un GeoJSON dédupliqué des arrêts citybus (avec api_code) depuis le réseau chargé.
+      function citybusStopsGeoJSON(net: LiveNetwork) {
+        const seen = new Map<string, {
+          slug: string; name: string; lat: number; lng: number;
+          apiCode: string; city: "her" | "cha"; color: string | null;
+        }>();
+        for (const line of net.lines.values()) {
+          if (line.source !== "citybus") continue;
+          const city = citybusCity(line.code);
+          if (!city) continue;
+          for (const stop of line.stops) {
+            if (!stop.apiCode || seen.has(stop.slug)) continue;
+            seen.set(stop.slug, {
+              slug: stop.slug, name: stop.name, lat: stop.lat, lng: stop.lng,
+              apiCode: stop.apiCode, city, color: line.color ?? null,
+            });
+          }
+        }
+        return {
+          type: "FeatureCollection" as const,
+          features: [...seen.values()].map((s) => ({
+            type: "Feature" as const,
+            properties: { slug: s.slug, name: s.name, apiCode: s.apiCode, city: s.city, color: s.color },
+            geometry: { type: "Point" as const, coordinates: [s.lng, s.lat] },
+          })),
+        };
+      }
 
       map.on("load", () => {
         if (cancelled) return;
@@ -161,7 +211,41 @@ export function LiveMapClient({ locale }: { locale: string }) {
           paint: { "circle-radius": 8, "circle-color": "#FFC83D", "circle-stroke-width": 2, "circle-stroke-color": "#0B3954" },
         });
 
-        map.on("click", () => deselect()); // clic sur le fond = désélection
+        // Couche d'arrêts citybus : cercles cliquables visibles à partir du zoom 13
+        map.addSource("citybus-stops", { type: "geojson", data: citybusStopsGeoJSON(net) });
+        map.addLayer({
+          id: "citybus-stops-layer",
+          type: "circle",
+          source: "citybus-stops",
+          minzoom: 13,
+          paint: {
+            "circle-radius": ["interpolate", ["linear"], ["zoom"], 13, 4, 16, 7],
+            "circle-color": ["coalesce", ["get", "color"], "#0B5E78"],
+            "circle-stroke-width": 1.5,
+            "circle-stroke-color": "#fff",
+            "circle-opacity": 0.85,
+          },
+        });
+
+        // Clic sur un arrêt citybus → ouvre le StopSheet
+        map.on("click", "citybus-stops-layer", (e) => {
+          e.originalEvent.stopPropagation(); // empêche la désélection du fond
+          const feat = e.features?.[0];
+          if (!feat) return;
+          const p = feat.properties as { name: string; apiCode: string; city: "her" | "cha"; color: string | null };
+          if (!p.apiCode) return;
+          deselect(); // ferme un éventuel BusSheet ouvert
+          setSheetVM(null);
+          setStopArrivals([]); // purge les bus approchants de l'arrêt précédent
+          setStopSheet({ stopName: p.name, stopApiCode: p.apiCode, city: p.city, lineColor: p.color });
+          const coords = ((feat.geometry as unknown) as { coordinates: [number, number] }).coordinates;
+          map.easeTo({ center: coords, offset: [0, -SHEET_H / 2], duration: 300 });
+        });
+        // Curseur pointer sur les arrêts
+        map.on("mouseenter", "citybus-stops-layer", () => { map.getCanvas().style.cursor = "pointer"; });
+        map.on("mouseleave", "citybus-stops-layer", () => { map.getCanvas().style.cursor = ""; });
+
+        map.on("click", () => { deselect(); setStopSheet(null); }); // clic sur le fond = désélection
 
         const markers = markersRef.current;
         const tick = () => {
@@ -175,7 +259,7 @@ export function LiveMapClient({ locale }: { locale: string }) {
           for (const bus of entering) {
             // marqueur coloré par ligne pour le réseau municipal (split KTEL / urbain)
             const line = n.lines.get(bus.lineId);
-            const el = createBusEl(bus, line?.source === "agncitybus" ? line.color : null);
+            const el = createBusEl(bus, line && isUrbanSource(line.source) ? line.color : null);
             el.addEventListener("click", (e) => { e.stopPropagation(); selectBus(bus.id); });
             el.addEventListener("keydown", (e) => {
               if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectBus(bus.id); }
@@ -266,7 +350,7 @@ export function LiveMapClient({ locale }: { locale: string }) {
 
         onVis = () => { if (document.visibilityState === "visible") { tick(); gpsTick(); } };
         document.addEventListener("visibilitychange", onVis);
-        onKey = (e) => { if (e.key === "Escape") deselect(); };
+        onKey = (e) => { if (e.key === "Escape") { deselect(); setStopSheet(null); } };
         document.addEventListener("keydown", onKey);
       });
     });
@@ -284,10 +368,52 @@ export function LiveMapClient({ locale }: { locale: string }) {
       gpsMarkersRef.current.clear();
       gpsTargetsRef.current.clear();
       gpsCodesRef.current = new Set();
+      for (const m of approachingRef.current.values()) m.marker.remove();
+      approachingRef.current.clear();
       mapRef.current?.remove();
       mapRef.current = null;
+      mlRef.current = null;
     };
   }, [locale]);
+
+  // Fermeture du StopSheet → retirer les bus approchants de la carte
+  useEffect(() => {
+    if (!stopSheet) setStopArrivals([]);
+  }, [stopSheet]);
+
+  // Marqueurs GPS des bus approchant l'arrêt sélectionné (tant que le StopSheet est ouvert).
+  // Positions réelles issues de la réponse stops/live, rafraîchies par le polling du StopSheet.
+  useEffect(() => {
+    const map = mapRef.current;
+    const ml = mlRef.current;
+    const markers = approachingRef.current;
+    if (!map || !ml) return;
+    const tt = T[locale] ?? T.en;
+    // dédup par véhicule ; la liste est triée par ETA → on garde le passage le plus proche
+    const next = new Map<string, CityBusArrival>();
+    for (const a of stopArrivals) {
+      if (a.lat == null || a.lng == null) continue;
+      const key = a.vehicleCode ?? `${a.lineCode}:${a.routeCode}`;
+      if (!next.has(key)) next.set(key, a);
+    }
+    for (const [key, a] of next) {
+      const label = a.etaMin === 0 ? tt.arriving : `${a.etaMin} ${tt.min}`;
+      const existing = markers.get(key);
+      if (existing) {
+        existing.marker.setLngLat([a.lng as number, a.lat as number]);
+        setApproachingBusEta(existing.el, label);
+      } else {
+        const el = createApproachingBusEl(a.lineCode, a.color, a.textColor, `${a.lineName} → ${a.routeName}`);
+        setApproachingBusEta(el, label);
+        const marker = new ml.Marker({ element: el, anchor: "center" })
+          .setLngLat([a.lng as number, a.lat as number]).addTo(map);
+        markers.set(key, { marker, el });
+      }
+    }
+    for (const [key, m] of markers) {
+      if (!next.has(key)) { m.marker.remove(); markers.delete(key); }
+    }
+  }, [stopArrivals, locale]);
 
   const t = T[locale] ?? T.en;
 
@@ -344,6 +470,15 @@ export function LiveMapClient({ locale }: { locale: string }) {
       )}
 
       {sheetVM && <BusSheet vm={sheetVM} locale={locale} onClose={() => deselectRef.current()} />}
+      {stopSheet && !sheetVM && (
+        <StopSheet
+          key={`${stopSheet.city}:${stopSheet.stopApiCode}`}
+          {...stopSheet}
+          locale={locale}
+          onClose={() => setStopSheet(null)}
+          onArrivals={setStopArrivals}
+        />
+      )}
     </div>
   );
 }

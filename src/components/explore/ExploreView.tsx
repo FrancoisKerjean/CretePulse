@@ -1,23 +1,43 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Star, X, MapPin, Search, ChevronLeft, ChevronRight, ChevronUp,
-  SlidersHorizontal, Waves, Mountain, Home, Landmark, TreePine, Sparkles,
+  SlidersHorizontal, Waves, Mountain, Home, Landmark, TreePine, Sparkles, Car,
+  Layers, Bus, Timer, ArrowUpRight,
 } from "lucide-react";
-import type { CbPlaceListItem, CbPlace } from "@/lib/cb-places";
+import { ImpressionTracker } from "@/components/ui/ImpressionTracker";
+import type { CbPlaceSlim, CbPlacesPacked, CbPlace } from "@/lib/cb-places";
 import { WaterQualityBadge } from "@/components/WaterQualityBadge";
-import { getCbPlaceBySlug } from "@/lib/cb-places";
+import { getCbPlaceBySlug, unpackCbPlaces } from "@/lib/cb-places";
 import { getSponsorCards, isSponsorSlug, sponsoredLabel, sponsorDescription } from "@/lib/sponsored-places";
 import { isAffiliateSlug, partnerLabel, affiliateDescription, type AffiliatePlace } from "@/lib/affiliate-places";
 import { typeLabel } from "@/lib/cb-type-labels";
 import { nearestBy, haversineKm, circlePolygon, isOnCrete } from "@/lib/geo";
+import {
+  normalizeForSearch,
+  driveMinutesToKm,
+  circlePolygon as circleFeature,
+} from "@/components/map/mapUtils";
 import { cleanCbDescription } from "@/lib/cb-place-helpers";
+import { activityCtaFor } from "@/lib/activity-cta";
+import { categoryLabel, cityLabel } from "@/lib/activity-taxonomy";
 import { useGeoPosition } from "@/components/geo/useGeoPosition";
 import Image from "next/image";
+import Link from "next/link";
 import { CiCompass } from "@/components/icons";
 import { CbPlaceActions } from "@/components/explore/CbPlaceActions";
+import { CarPromo } from "@/components/car-rental/CarPromo";
 import "maplibre-gl/dist/maplibre-gl.css";
+
+// Copy de la carte voiture du carrousel mobile (fallback en). Rejoindre
+// plages/gorges = voiture -> CTA contextuel vers le wizard interne.
+const CAR_CARD: Record<string, { title: string; cta: string }> = {
+  en: { title: "Need a car to get there?", cta: "Get a quote" },
+  fr: { title: "Besoin d'une voiture ?", cta: "Obtenir un devis" },
+  de: { title: "Mietwagen gesucht?", cta: "Angebot anfordern" },
+  el: { title: "Χρειάζεστε αυτοκίνητο;", cta: "Ζητήστε προσφορά" },
+};
 
 type MaplibreMap = import("maplibre-gl").Map;
 type MaplibreModule = typeof import("maplibre-gl");
@@ -85,6 +105,10 @@ const T: Record<string, Record<string, string>> = {
     sortRating: "Best rated", sortNear: "Nearest", fullList: "Full list",
     youAreHere: "You are here", dragToAdjust: "Drag the dot to your spot",
     notOnCrete: "You're not in Crete · drop the dot where you'll be.",
+    satellite: "Satellite", busLayer: "Bus stops", driveTime: "Drive time",
+    driveLegend: "15 / 30 / 60 min drive (approx.)",
+    noSearchResults: "No results", searchOnMap: "Press Enter to search the map",
+    activitiesCta: "Book an activity",
   },
   fr: {
     search: "Chercher un lieu...", results: "lieux", rating: "Note min.",
@@ -98,6 +122,10 @@ const T: Record<string, Record<string, string>> = {
     sortRating: "Mieux notés", sortNear: "Au plus près", fullList: "Liste complète",
     youAreHere: "Vous êtes ici", dragToAdjust: "Glisse le point sur ta position",
     notOnCrete: "Tu n'es pas en Crète, place ton point là où tu seras.",
+    satellite: "Satellite", busLayer: "Arrêts de bus", driveTime: "Temps de route",
+    driveLegend: "15 / 30 / 60 min de route (approx.)",
+    noSearchResults: "Aucun résultat", searchOnMap: "Entrée pour chercher sur la carte",
+    activitiesCta: "Réserver une activité",
   },
   de: {
     search: "Ort suchen...", results: "Orte", rating: "Min. Bewertung",
@@ -111,6 +139,10 @@ const T: Record<string, Record<string, string>> = {
     sortRating: "Bestbewertet", sortNear: "Am nächsten", fullList: "Ganze Liste",
     youAreHere: "Sie sind hier", dragToAdjust: "Punkt auf Ihren Standort ziehen",
     notOnCrete: "Sie sind nicht auf Kreta · setzen Sie den Punkt an Ihr Ziel.",
+    satellite: "Satellit", busLayer: "Bushaltestellen", driveTime: "Fahrzeit",
+    driveLegend: "15 / 30 / 60 Min. Fahrt (ca.)",
+    noSearchResults: "Keine Ergebnisse", searchOnMap: "Enter: auf der Karte suchen",
+    activitiesCta: "Aktivität buchen",
   },
   el: {
     search: "Αναζήτηση τοποθεσίας...", results: "μέρη", rating: "Ελάχ. βαθμολογία",
@@ -124,6 +156,10 @@ const T: Record<string, Record<string, string>> = {
     sortRating: "Κορυφαία", sortNear: "Πιο κοντά", fullList: "Πλήρης λίστα",
     youAreHere: "Είστε εδώ", dragToAdjust: "Σύρε το σημείο στη θέση σου",
     notOnCrete: "Δεν είσαι στην Κρήτη · βάλε το σημείο εκεί που θα είσαι.",
+    satellite: "Δορυφόρος", busLayer: "Στάσεις λεωφορείων", driveTime: "Χρόνος οδήγησης",
+    driveLegend: "15 / 30 / 60 λεπτά οδήγησης (περίπου)",
+    noSearchResults: "Κανένα αποτέλεσμα", searchOnMap: "Enter: αναζήτηση στον χάρτη",
+    activitiesCta: "Κράτηση δραστηριότητας",
   },
 };
 
@@ -141,7 +177,23 @@ const SPONSOR_MIN_ZOOM = 9;
 // Rayon du disque "autour de moi" (visuel uniquement, ne filtre pas la liste).
 const NEAR_RADIUS_KM = 10;
 
-function detectPrefecture(p: CbPlaceListItem): string | null {
+// Emprise Crète pour la recherche Nominatim (left,top,right,bottom).
+const CRETE_VIEWBOX = "23.3,35.9,26.5,34.6";
+
+interface SearchResult {
+  name: string;
+  detail: string;
+  lat: number;
+  lng: number;
+  slug?: string;
+}
+
+function readInitialParams() {
+  if (typeof window === "undefined") return null;
+  return new URLSearchParams(window.location.search);
+}
+
+function detectPrefecture(p: { prefecture: string | null }): string | null {
   const txt = p.prefecture || "";
   for (const pref of PREFECTURES) if (txt.includes(pref)) return pref;
   return null;
@@ -162,19 +214,23 @@ function RatingStars({ rating }: { rating: number | null }) {
 }
 
 export function ExploreView({
-  places,
+  places: packedPlaces,
   affiliatePlaces = [],
   locale,
 }: {
-  places: CbPlaceListItem[];
+  // Format packé (tuples + tables de dédup) : ~2300 lieux traversent la
+  // frontière RSC → le poids du flight compte. Déballé une fois au mount.
+  places: CbPlacesPacked;
   affiliatePlaces?: AffiliatePlace[];
   locale: string;
 }) {
+  const places = useMemo(() => unpackCbPlaces(packedPlaces), [packedPlaces]);
   const t = T[locale] || T.en;
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MaplibreMap | null>(null);
   const maplibreRef = useRef<MaplibreModule | null>(null);
   const photoMarkersRef = useRef<MaplibreMarker[]>([]);
+  const lastPinsKeyRef = useRef("");
   const userMarkerRef = useRef<MaplibreMarker | null>(null);
   const sponsorMarkersRef = useRef<MaplibreMarker[]>([]);
   const [mapReady, setMapReady] = useState(false);
@@ -196,6 +252,44 @@ export function ExploreView({
   const geo = useGeoPosition();
   const [nearActive, setNearActive] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
+
+  // URL partageable : lecture des params une seule fois au mount (pas de
+  // useSearchParams : évite le bailout Suspense sur une page ISR).
+  const initial = useMemo(readInitialParams, []);
+  // Couches toggleables héritées de l'ex-/map : satellite, arrêts de bus,
+  // anneaux temps-de-route. Restaurées depuis l'URL au mount.
+  const [satOn, setSatOn] = useState(() => initial?.get("sat") === "1");
+  const [busOn, setBusOn] = useState(() => initial?.get("bus") === "1");
+  const [ringsOn, setRingsOn] = useState(() => initial?.get("rings") === "1");
+  const busLoadedRef = useRef(false);
+  // Refs miroirs pour syncUrl (appelé depuis le listener moveend MapLibre).
+  const satRef = useRef(satOn);
+  satRef.current = satOn;
+  const busStateRef = useRef(busOn);
+  busStateRef.current = busOn;
+  const ringsRef = useRef(ringsOn);
+  ringsRef.current = ringsOn;
+  const selectedSlugRef = useRef<string | null>(null);
+  // Recherche : dropdown résultats locaux + Nominatim (Entrée).
+  const [searchResults, setSearchResults] = useState<SearchResult[] | null>(null);
+  const [searching, setSearching] = useState(false);
+
+  // URL partageable : reflète la vue courante (centre/zoom), les couches actives
+  // et la fiche ouverte. replaceState = pas de pollution de l'historique.
+  const syncUrl = useCallback(() => {
+    const map = mapRef.current;
+    if (!map || typeof window === "undefined") return;
+    const c = map.getCenter();
+    const sp = new URLSearchParams();
+    sp.set("lat", c.lat.toFixed(4));
+    sp.set("lng", c.lng.toFixed(4));
+    sp.set("z", map.getZoom().toFixed(2));
+    if (satRef.current) sp.set("sat", "1");
+    if (busStateRef.current) sp.set("bus", "1");
+    if (ringsRef.current) sp.set("rings", "1");
+    if (selectedSlugRef.current) sp.set("place", selectedSlugRef.current);
+    window.history.replaceState(null, "", `${window.location.pathname}?${sp.toString()}`);
+  }, []);
 
   // L'indice est instructif et transitoire : auto-effacement après 6 s pour qu'il
   // ne reste pas collé (ex. GPS refusé sans drag). Réinitialisé à chaque nouvel indice.
@@ -226,10 +320,11 @@ export function ExploreView({
   const crowdOptions = useMemo(() => uniqueValues(places, "crowds"), [places]);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    // normalizeForSearch : insensible aux accents ("chania" trouve "Chaniá").
+    const q = normalizeForSearch(query.trim());
     return places.filter((p) => {
       if (familyTypes && !familyTypes.has(p.place_type)) return false;
-      if (q && !p.name.toLowerCase().includes(q)) return false;
+      if (q && !normalizeForSearch(p.name).includes(q)) return false;
       if (prefecture && detectPrefecture(p) !== prefecture) return false;
       if (minRating > 0 && (p.rating == null || p.rating < minRating)) return false;
       if (sand && !(p.sand_type || "").includes(sand)) return false;
@@ -246,7 +341,7 @@ export function ExploreView({
   // Les affiliés DB sont fusionnés ici et réutilisent exactement le même marqueur ambre,
   // le même gating zoom ≥ 9 et le même drawer. Dédup : si un slug de base apparaît des
   // deux côtés, l'affilié DB gagne (filtre sur les slugs JSON).
-  const sponsorItems: Array<CbPlaceListItem & { __sponsorUrl: string }> = useMemo(() => {
+  const sponsorItems: Array<CbPlaceSlim & { __sponsorUrl: string }> = useMemo(() => {
     // Slugs de base des affiliés DB (ex. "jmp-chania-tours") → utilisés pour filtrer le JSON.
     // Invariant : affiliates.slug (sans préfixe) doit correspondre au sponsored-places.json `id`
     // pour que le dédup se déclenche ; en cas de match, l'affilié DB gagne.
@@ -268,11 +363,7 @@ export function ExploreView({
         prefecture: c.prefecture ?? null,
         water_color: null,
         sand_type: null,
-        depth: null,
-        sea_surface: null,
         crowds: null,
-        facilities: null,
-        accessibility: null,
         photos: [c.photo],
         photo_count: 1,
         water_quality: null,
@@ -282,7 +373,7 @@ export function ExploreView({
     return [...fromJson, ...affiliatePlaces];
   }, [affiliatePlaces]);
 
-  const base: Array<CbPlaceListItem & { km?: number }> = useMemo(
+  const base: Array<CbPlaceSlim & { km?: number }> = useMemo(
     () =>
       nearActive && geo.pos
         ? nearestBy(
@@ -294,7 +385,7 @@ export function ExploreView({
         : [...filtered].sort((a, b) => {
             // Note ponderee par le nombre de photos : un 4.8 bien documente
             // passe devant un 5.0 obscur a 1 photo.
-            const score = (p: CbPlaceListItem) =>
+            const score = (p: CbPlaceSlim) =>
               (p.rating ?? 0) + Math.min(p.photo_count ?? 0, 20) * 0.02;
             return score(b) - score(a);
           }),
@@ -319,12 +410,12 @@ export function ExploreView({
   // - Sponsors payants (JSON, slug "sponsor:") : gardent la priorité de tête (modèle payant).
   // - Affiliés DB (slug "affiliate:") : triés par distance avec le reste du contenu.
   //   Leur `km` est calculé ici pour s'intégrer dans le sort sans inventer de nouveau mécanisme.
-  const displayed: Array<CbPlaceListItem & { km?: number; __sponsorUrl?: string }> = useMemo(() => {
+  const displayed: Array<CbPlaceSlim & { km?: number; __sponsorUrl?: string }> = useMemo(() => {
     const visiblePaidSponsors = visibleSponsors.filter((s) => !isAffiliateSlug(s.slug));
     const visibleAffiliates = visibleSponsors.filter((s) => isAffiliateSlug(s.slug));
 
     // Calculer les km pour les affiliés (même logique que base en mode nearActive).
-    const affiliatesWithKm: Array<CbPlaceListItem & { km?: number; __sponsorUrl?: string }> =
+    const affiliatesWithKm: Array<CbPlaceSlim & { km?: number; __sponsorUrl?: string }> =
       visibleAffiliates.map((a) => {
         if (a.latitude != null && a.longitude != null && geo.pos) {
           return { ...a, km: haversineKm([a.latitude, a.longitude], [geo.pos.lat, geo.pos.lon]) };
@@ -335,7 +426,7 @@ export function ExploreView({
     // Fusionner affiliés et base, puis trier :
     //   - Geo/near mode : mélanger affiliés+base triés par distance (km croissant).
     //   - Non-geo mode : base d'abord (trié par score), affiliés APRÈS — jamais en tête.
-    const sorted: Array<CbPlaceListItem & { km?: number; __sponsorUrl?: string }> =
+    const sorted: Array<CbPlaceSlim & { km?: number; __sponsorUrl?: string }> =
       nearActive && geo.pos
         ? [...affiliatesWithKm, ...base].sort((a, b) => (a.km ?? Infinity) - (b.km ?? Infinity))
         : [...base, ...affiliatesWithKm];
@@ -362,17 +453,53 @@ export function ExploreView({
     import("maplibre-gl").then((maplibre) => {
       if (cancelled || !mapContainer.current) return;
       maplibreRef.current = maplibre;
+      // Vue initiale restaurée depuis l'URL partagée si présente.
+      const iLat = parseFloat(initial?.get("lat") || "");
+      const iLng = parseFloat(initial?.get("lng") || "");
+      const iZ = parseFloat(initial?.get("z") || "");
       const map = new maplibre.Map({
         container: mapContainer.current,
         style: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
-        center: [25.0, 35.25],
-        zoom: 8,
+        center: Number.isFinite(iLat) && Number.isFinite(iLng) ? [iLng, iLat] : [25.0, 35.25],
+        zoom: Number.isFinite(iZ) ? iZ : 8,
         minZoom: 7,
         maxZoom: 17,
       });
       mapRef.current = map;
       map.addControl(new maplibre.NavigationControl({ showCompass: false }), "bottom-right");
       map.on("load", () => {
+        // Fond satellite ESRI (raster, sans clé), sous tous les overlays.
+        map.addSource("satellite", {
+          type: "raster",
+          tiles: [
+            "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+          ],
+          tileSize: 256,
+          attribution: "Esri, Maxar, Earthstar Geographics",
+        });
+        map.addLayer({
+          id: "satellite-layer",
+          type: "raster",
+          source: "satellite",
+          layout: { visibility: satRef.current ? "visible" : "none" },
+        });
+        // Anneaux temps-de-route 15/30/60 min (45 km/h moyenne, indicatif).
+        map.addSource("drive-rings", {
+          type: "geojson",
+          data: { type: "FeatureCollection", features: [] },
+        });
+        map.addLayer({
+          id: "drive-rings-fill",
+          type: "fill",
+          source: "drive-rings",
+          paint: { "fill-color": "#0B5E78", "fill-opacity": 0.04 },
+        });
+        map.addLayer({
+          id: "drive-rings-line",
+          type: "line",
+          source: "drive-rings",
+          paint: { "line-color": "#0B5E78", "line-opacity": 0.5, "line-width": 1.5, "line-dasharray": [3, 3] },
+        });
         map.addSource("user-radius", {
           type: "geojson",
           data: { type: "FeatureCollection", features: [] },
@@ -449,7 +576,10 @@ export function ExploreView({
           map.on("mouseenter", layer, () => (map.getCanvas().style.cursor = "pointer"));
           map.on("mouseleave", layer, () => (map.getCanvas().style.cursor = ""));
         }
-        map.on("moveend", () => setMapViewport((v) => v + 1));
+        map.on("moveend", () => {
+          setMapViewport((v) => v + 1);
+          syncUrl();
+        });
         setMapReady(true);
       });
     });
@@ -482,6 +612,99 @@ export function ExploreView({
         })),
     });
   }, [filtered, mapReady]);
+
+  // Couche satellite : simple toggle de visibilité (source ajoutée au load).
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady || !map.getLayer("satellite-layer")) return;
+    map.setLayoutProperty("satellite-layer", "visibility", satOn ? "visible" : "none");
+    syncUrl();
+  }, [satOn, mapReady, syncUrl]);
+
+  // Couche bus (lignes + 517 arrêts KTEL/urbains) : données lazy-chargées au
+  // premier toggle seulement (~170 KB évités pour qui ne l'ouvre jamais).
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+    if (busOn && !busLoadedRef.current) {
+      busLoadedRef.current = true;
+      import("@/components/map/busLayerData")
+        .then(({ loadBusLayerData }) => loadBusLayerData())
+        .then((data) => {
+          const m = mapRef.current;
+          if (!m || m.getSource("bus-lines-src")) return;
+          m.addSource("bus-lines-src", { type: "geojson", data: data.lines });
+          m.addSource("bus-stops-src", { type: "geojson", data: data.stops });
+          m.addLayer(
+            {
+              id: "bus-lines-layer",
+              type: "line",
+              source: "bus-lines-src",
+              paint: { "line-color": ["get", "color"], "line-width": 2, "line-opacity": 0.65 },
+            },
+            "clusters",
+          );
+          m.addLayer(
+            {
+              id: "bus-stops-layer",
+              type: "circle",
+              source: "bus-stops-src",
+              minzoom: 9,
+              paint: {
+                "circle-color": "#ffffff",
+                "circle-radius": 3.5,
+                "circle-stroke-width": 2,
+                "circle-stroke-color": "#0B5E78",
+              },
+            },
+            "clusters",
+          );
+          m.on("click", "bus-stops-layer", (e) => {
+            const f = e.features?.[0];
+            const ml = maplibreRef.current;
+            if (!f || !ml || !mapRef.current) return;
+            new ml.Popup({ offset: 10, closeButton: false })
+              .setLngLat((f.geometry as GeoJSON.Point).coordinates as [number, number])
+              .setHTML(
+                `<div style="font-family:system-ui;padding:4px;font-size:12px;font-weight:600;color:#0B5E78">${(f.properties as { name: string }).name}</div>`,
+              )
+              .addTo(mapRef.current);
+          });
+          // Respecte l'état courant du toggle au moment où le fetch aboutit.
+          for (const id of ["bus-lines-layer", "bus-stops-layer"]) {
+            m.setLayoutProperty(id, "visibility", busStateRef.current ? "visible" : "none");
+          }
+        })
+        .catch(() => { busLoadedRef.current = false; });
+    } else if (busLoadedRef.current) {
+      for (const id of ["bus-lines-layer", "bus-stops-layer"]) {
+        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", busOn ? "visible" : "none");
+      }
+    }
+    syncUrl();
+  }, [busOn, mapReady, syncUrl]);
+
+  // Anneaux temps-de-route : centrés sur la position utilisateur si connue,
+  // sinon sur le centre de la vue courante.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+    const src = map.getSource("drive-rings") as import("maplibre-gl").GeoJSONSource | undefined;
+    if (!src) return;
+    if (!ringsOn) {
+      src.setData({ type: "FeatureCollection", features: [] });
+      syncUrl();
+      return;
+    }
+    const origin = geo.pos
+      ? { lat: geo.pos.lat, lng: geo.pos.lon }
+      : { lat: map.getCenter().lat, lng: map.getCenter().lng };
+    src.setData({
+      type: "FeatureCollection",
+      features: [15, 30, 60].map((min) => circleFeature(origin.lng, origin.lat, driveMinutesToKm(min))),
+    });
+    syncUrl();
+  }, [ringsOn, geo.pos, mapReady, syncUrl]);
 
   // Disque "autour de moi" : suit geo.pos quand le tri proximité est actif, vidé sinon.
   useEffect(() => {
@@ -666,9 +889,12 @@ export function ExploreView({
     const map = mapRef.current;
     const maplibre = maplibreRef.current;
     if (!map || !maplibre || !mapReady) return;
-    for (const m of photoMarkersRef.current) m.remove();
-    photoMarkersRef.current = [];
-    if (map.getZoom() < PHOTO_PIN_ZOOM) return;
+    if (map.getZoom() < PHOTO_PIN_ZOOM) {
+      for (const m of photoMarkersRef.current) m.remove();
+      photoMarkersRef.current = [];
+      lastPinsKeyRef.current = "";
+      return;
+    }
     const bounds = map.getBounds();
     const visible = filtered
       .filter((p) =>
@@ -676,6 +902,13 @@ export function ExploreView({
         bounds.contains([p.longitude, p.latitude]))
       .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
       .slice(0, PHOTO_PIN_MAX);
+    // Un pan léger garde souvent les mêmes pins visibles : ne pas détruire et
+    // recréer 12 DOM markers (+ recharger 12 images) si la sélection n'a pas changé.
+    const pinsKey = visible.map((p) => p.slug).join("|");
+    if (pinsKey === lastPinsKeyRef.current) return;
+    lastPinsKeyRef.current = pinsKey;
+    for (const m of photoMarkersRef.current) m.remove();
+    photoMarkersRef.current = [];
     for (const p of visible) {
       const el = document.createElement("button");
       el.className = "cd-photo-pin";
@@ -708,6 +941,8 @@ export function ExploreView({
     const base = places.find((p) => p.slug === slug);
     setPhotoIdx(0);
     setListExpanded(false);
+    selectedSlugRef.current = slug;
+    syncUrl();
     // Partenaire sponsorisé ou affilié : fiche synthétique (pas en base), aucun fetch DB.
     const spo = sponsorItems.find((s) => s.slug === slug);
     if (spo) {
@@ -728,6 +963,9 @@ export function ExploreView({
     setSelectedLoading(true);
     setSelected(base ? ({ ...base, description: null, meta_description: null, other_info: null, source_url: null } as CbPlace) : null);
     const full = await getCbPlaceBySlug(slug);
+    // L'utilisateur a pu changer de fiche pendant le fetch : une réponse
+    // périmée ne doit pas écraser la sélection courante.
+    if (selectedSlugRef.current !== slug) return;
     if (full) setSelected(full);
     setSelectedLoading(false);
     if (base?.latitude != null && base?.longitude != null) {
@@ -736,17 +974,78 @@ export function ExploreView({
   }
 
   // Deep-link ?place=slug : ouvre le drawer à l'arrivée (utilisé par /match).
+  // ?poi=slug accepté en compat (anciennes URL partagées de l'ex-/map).
   // Lecture window au mount plutôt que useSearchParams() : évite le bailout
   // Suspense de Next sur une page ISR.
   useEffect(() => {
-    const slug = new URLSearchParams(window.location.search).get("place");
+    const sp = new URLSearchParams(window.location.search);
+    const slug = sp.get("place") || sp.get("poi");
     if (slug && places.some((p) => p.slug === slug)) selectPlace(slug);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  function closeSelected() {
+    setSelected(null);
+    selectedSlugRef.current = null;
+    syncUrl();
+  }
+
   function clearFilters() {
     setQuery(""); setFamily(null); setPrefecture(""); setMinRating(0);
     setSand(""); setWater(""); setCrowdLevel("");
+    setSearchResults(null);
+  }
+
+  // Suggestions locales sous le champ (le filtre liste reste actif en parallèle).
+  const localSuggestions = useMemo<SearchResult[]>(() => {
+    const nq = normalizeForSearch(query.trim());
+    if (nq.length < 2) return [];
+    return places
+      .filter((p) => p.latitude != null && p.longitude != null && normalizeForSearch(p.name).includes(nq))
+      .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+      .slice(0, 6)
+      .map((p) => ({
+        name: p.name,
+        detail: typeLabel(p.place_type, locale),
+        lat: p.latitude!,
+        lng: p.longitude!,
+        slug: p.slug,
+      }));
+  }, [places, query, locale]);
+
+  // Entrée = recherche Nominatim bornée Crète (lieux hors base : hameaux, plages
+  // non répertoriées, hôtels...). Échec réseau silencieux : suggestions locales gardées.
+  const runRemoteSearch = useCallback(async () => {
+    const q = query.trim();
+    if (q.length < 2) return;
+    setSearching(true);
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&countrycodes=gr&viewbox=${CRETE_VIEWBOX}&bounded=1&q=${encodeURIComponent(q)}`;
+      const res = await fetch(url, { headers: { Accept: "application/json" } });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = (await res.json()) as Array<{ display_name: string; lat: string; lon: string }>;
+      const remote: SearchResult[] = data.map((d) => ({
+        name: d.display_name.split(",")[0],
+        detail: d.display_name.split(",").slice(1, 3).join(",").trim(),
+        lat: parseFloat(d.lat),
+        lng: parseFloat(d.lon),
+      }));
+      setSearchResults([...localSuggestions, ...remote]);
+    } catch {
+      setSearchResults(localSuggestions);
+    } finally {
+      setSearching(false);
+    }
+  }, [query, localSuggestions]);
+
+  function pickSearchResult(r: SearchResult) {
+    setSearchResults(null);
+    if (r.slug) {
+      selectPlace(r.slug);
+      return;
+    }
+    setQuery("");
+    mapRef.current?.easeTo({ center: [r.lng, r.lat], zoom: 13.5 });
   }
 
   const selectedPhotos = selected?.photos || [];
@@ -789,14 +1088,33 @@ export function ExploreView({
   );
 
   // Card riche partagee entre le panneau desktop et la liste mobile.
-  function PlaceRow({ p }: { p: CbPlaceListItem & { km?: number; __sponsorUrl?: string } }) {
+  // Utilise <Link> pour rendre le href crawlable par Google (Fix SEO #2),
+  // tout en preservant le comportement interactif existant (drawer + carte)
+  // via e.preventDefault() dans le onClick.
+  function PlaceRow({ p }: { p: CbPlaceSlim & { km?: number; __sponsorUrl?: string } }) {
     const spo = isSponsorSlug(p.slug);
     const aff = isAffiliateSlug(p.slug);
     const isCommercial = spo || aff;
     const commercialBadge = aff ? partnerLabel(locale) : spo ? sponsoredLabel(locale) : null;
+    // href canonique de la fiche (crawlable par les moteurs ; à éviter pour les fiches
+    // commerciales qui n'ont pas de page dédiée : on garde un href symbolique "#").
+    const href = isCommercial ? "#" : `/${locale}/explore/${p.slug}`;
     return (
-      <button
-        onClick={() => selectPlace(p.slug)}
+      <Link
+        href={href}
+        prefetch={false}
+        onClick={(e) => {
+          e.preventDefault();
+          selectPlace(p.slug);
+        }}
+        onKeyDown={(e) => {
+          // Sur <a>, Espace navigue vers href sans passer par onClick :
+          // on garde le comportement drawer du <button> d'origine.
+          if (e.key === " ") {
+            e.preventDefault();
+            selectPlace(p.slug);
+          }
+        }}
         className={`flex gap-3 p-2 rounded-xl bg-white shadow-soft text-left transition-all w-full ${
           isCommercial ? "border border-amber-300 ring-1 ring-amber-200" : "border border-sea/10 hover:border-sea/30"
         }`}
@@ -840,7 +1158,7 @@ export function ExploreView({
             </div>
           )}
         </div>
-      </button>
+      </Link>
     );
   }
 
@@ -873,10 +1191,31 @@ export function ExploreView({
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
             <input
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => { setQuery(e.target.value); setSearchResults(null); }}
+              onKeyDown={(e) => { if (e.key === "Enter") runRemoteSearch(); }}
               placeholder={t.search}
               className="w-full pl-9 pr-3 py-2.5 text-sm rounded-full border border-white/60 bg-white shadow-[0_6px_24px_rgba(11,94,120,0.18)] focus:outline-none focus:border-sea"
             />
+            {(searchResults !== null || localSuggestions.length > 0) && query.trim().length >= 2 && (
+              <div className="absolute top-full mt-1.5 left-0 right-0 bg-white rounded-2xl border border-sea/10 shadow-float overflow-hidden max-h-72 overflow-y-auto z-30">
+                {(searchResults ?? localSuggestions).map((r, i) => (
+                  <button
+                    key={`${r.slug ?? r.name}-${i}`}
+                    onClick={() => pickSearchResult(r)}
+                    className="w-full text-left px-3.5 py-2 hover:bg-surface border-b border-sea/5 last:border-b-0"
+                  >
+                    <div className="text-sm font-semibold text-text truncate">{r.name}</div>
+                    <div className="text-[11px] text-text-muted truncate">{r.detail}</div>
+                  </button>
+                ))}
+                {searchResults !== null && searchResults.length === 0 && !searching && (
+                  <div className="px-3.5 py-2 text-xs text-text-muted">{t.noSearchResults}</div>
+                )}
+                {searchResults === null && (
+                  <div className="px-3.5 py-1.5 text-[10px] text-text-muted bg-surface/60">{t.searchOnMap}</div>
+                )}
+              </div>
+            )}
           </div>
           <div className="relative">
             <button
@@ -935,6 +1274,35 @@ export function ExploreView({
         </div>
       </div>
 
+      {/* ===== Colonne couches (satellite / bus / temps de route) =====
+          Empilée à droite au-dessus des contrôles zoom ; au-dessus du bouton
+          Near me sur mobile. Icônes seules + title : compacte, ne mange pas la carte. */}
+      <div className="absolute right-3 bottom-[230px] md:bottom-28 z-20 flex flex-col items-end gap-1.5">
+        {ringsOn && (
+          <div className="bg-white/90 rounded-md border border-sea/10 px-2.5 py-1.5 text-[11px] text-text-muted shadow-soft pointer-events-none max-w-[200px] text-right">
+            {t.driveLegend}
+          </div>
+        )}
+        {([
+          { key: "sat", label: t.satellite, Icon: Layers, on: satOn, toggle: () => setSatOn((v) => !v) },
+          { key: "bus", label: t.busLayer, Icon: Bus, on: busOn, toggle: () => setBusOn((v) => !v) },
+          { key: "rings", label: t.driveTime, Icon: Timer, on: ringsOn, toggle: () => setRingsOn((v) => !v) },
+        ] as const).map(({ key, label, Icon, on, toggle }) => (
+          <button
+            key={key}
+            onClick={toggle}
+            title={label}
+            aria-label={label}
+            aria-pressed={on}
+            className={`flex items-center justify-center w-10 h-10 rounded-full shadow-[0_6px_20px_rgba(11,94,120,0.25)] transition-colors ${
+              on ? "bg-sea text-white" : "bg-white text-text hover:text-sea"
+            }`}
+          >
+            <Icon size={17} />
+          </button>
+        ))}
+      </div>
+
       {/* ===== Panneau liste flottant (desktop) ===== */}
       <div className="hidden md:flex absolute left-3 top-3 bottom-3 w-[336px] z-10 flex-col bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_14px_44px_rgba(11,94,120,0.22)] overflow-hidden">
         <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5">
@@ -946,6 +1314,11 @@ export function ExploreView({
           </span>
         </div>
         <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-2">
+          {/* Encart voiture en tete de liste : /explore est la 1re landing de la
+              campagne FB (rebond ~75 %) et n'avait aucun CTA voiture. Contexte
+              pertinent (rejoindre plages/gorges = voiture). source=explore trace
+              le CTR dans Plausible. */}
+          <CarPromo locale={locale} source="explore" />
           {displayed.length === 0 && (
             <p className="p-4 text-sm text-text-muted">{t.noResults}</p>
           )}
@@ -975,6 +1348,24 @@ export function ExploreView({
               <ChevronUp size={14} /> {filtered.length} {t.results}
             </button>
             <div className="flex gap-2.5 overflow-x-auto px-3 pb-3 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {/* Carte voiture en tete du carrousel mobile : /explore = 1re landing
+                  campagne FB (87% mobile) et le carrousel est la vue par defaut
+                  (sans tap). Wizard interne, source tracee dans Plausible. */}
+              <a
+                href={`/${locale}/car-rental?source=explore-carousel`}
+                className="snap-start shrink-0 w-[150px] rounded-2xl overflow-hidden shadow-[0_10px_30px_rgba(11,94,120,0.28)] bg-gradient-to-br from-[#0F2B4C] to-[#08263a] text-white flex flex-col justify-between p-3 no-underline"
+              >
+                <ImpressionTracker event="promo_impression" props={{ block: "car-promo", source: "explore-carousel" }} />
+                <Car size={22} className="text-sun" aria-hidden />
+                <div>
+                  <p className="m-0 font-heading font-extrabold text-[13.5px] leading-tight">
+                    {(CAR_CARD[locale] || CAR_CARD.en).title}
+                  </p>
+                  <p className="m-0 mt-1.5 text-[11px] font-semibold text-sun">
+                    {(CAR_CARD[locale] || CAR_CARD.en).cta} →
+                  </p>
+                </div>
+              </a>
               {displayed.slice(0, 30).map((p) => (
                 <button
                   key={p.slug}
@@ -1024,6 +1415,9 @@ export function ExploreView({
               className="bg-sea-faint text-sea rounded-full p-2"><X size={16} /></button>
           </div>
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            {/* Meme encart voiture en tete de la liste depliee mobile (FB = 87 %
+                mobile sur /explore). */}
+            <CarPromo locale={locale} source="explore" />
             {displayed.length === 0 && <p className="p-4 text-sm text-text-muted">{t.noResults}</p>}
             {displayed.slice(0, 200).map((p) => <PlaceRow key={p.slug} p={p} />)}
           </div>
@@ -1056,7 +1450,7 @@ export function ExploreView({
             ) : (
               <div className="h-20 bg-sea-faint" />
             )}
-            <button onClick={() => setSelected(null)}
+            <button onClick={closeSelected}
               className="absolute top-2 right-2 md:right-auto md:left-2 bg-black/40 text-white rounded-full p-1.5 hover:bg-black/60">
               <X size={16} />
             </button>
@@ -1172,6 +1566,33 @@ export function ExploreView({
                   locale={locale}
                   compact
                 />
+                {/* CTA contextuel vers la verticale /activities (wizard multi-devis) :
+                    plage/île → bateau, gorge/nature → rando, ville → food tour,
+                    ville de départ = la plus proche des 5 servies. Pas de mapping
+                    pertinent (culture, activity) = pas de CTA. */}
+                {(() => {
+                  const cta = activityCtaFor(selected.place_type, selected.latitude, selected.longitude);
+                  if (!cta) return null;
+                  return (
+                    <Link
+                      href={`/${locale}/activities/${cta.category}/${cta.city}#wizard`}
+                      onClick={() => {
+                        window.plausible?.("explore_activities_cta", {
+                          props: { category: cta.category, city: cta.city, place: selected.slug },
+                        });
+                      }}
+                      className="mt-2 flex items-center justify-between gap-2 rounded-xl border-[1.5px] border-sea/15 bg-surface px-3 py-2 no-underline hover:border-sea/50 transition-colors"
+                    >
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-sea">
+                        <Sparkles className="w-3.5 h-3.5" /> {t.activitiesCta}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-xs text-text-muted">
+                        {categoryLabel(cta.category, locale)} · {cityLabel(cta.city, locale)}
+                        <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
+                      </span>
+                    </Link>
+                  );
+                })()}
               </div>
             )}
 
@@ -1215,7 +1636,7 @@ export function ExploreView({
   );
 }
 
-function uniqueValues(places: CbPlaceListItem[], field: "sand_type" | "water_color" | "crowds"): string[] {
+function uniqueValues(places: CbPlaceSlim[], field: "sand_type" | "water_color" | "crowds"): string[] {
   const set = new Set<string>();
   for (const p of places) {
     for (const part of (p[field] || "").split(",")) {

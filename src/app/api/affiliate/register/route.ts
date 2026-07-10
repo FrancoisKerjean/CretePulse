@@ -10,6 +10,7 @@ import { slugExists, codeExists, emailExists, insertAffiliate } from "@/lib/affi
 import { notifyNewAffiliate } from "@/lib/affiliate-notify";
 import { sendAffiliateWelcome } from "@/lib/email";
 import { carPartnerEmailExists, insertCarRentalPartner, sendCarRentalDirectWelcome } from "@/lib/car-rental-signup";
+import { activityPartnerEmailExists, insertActivityPartner, sendActivitiesDirectWelcome } from "@/lib/activity-signup";
 import { enrichAffiliate } from "@/lib/affiliate-enrich";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
@@ -51,6 +52,30 @@ export async function POST(request: NextRequest) {
       console.error("[affiliate-register] car-rental welcome failed:", e);
     }
     return NextResponse.json({ ok: true, carRentalDirect: true });
+  }
+
+  // Activities Direct : les catégories affiliate 'activity' et 'tour' basculent
+  // dans le circuit devis (pattern car_rental). 'other'/absent => circuit /go/ classique.
+  if ((v.data.category === "activity" || v.data.category === "tour")
+      && v.data.sub_category && v.data.sub_category !== "other") {
+    const slug = ({ food_tours: "food-tours", boat_trips: "boat-trips", hiking: "hiking" } as Record<string, string>)[v.data.sub_category];
+    if (slug) {
+      if (await activityPartnerEmailExists(v.data.email)) {
+        return NextResponse.json({ error: "This email is already registered" }, { status: 409 });
+      }
+      const partner = await insertActivityPartner(v.data, slug);
+      if (!partner) return NextResponse.json({ error: "Could not register" }, { status: 500 });
+      await notifyNewAffiliate({
+        name: v.data.name, category: v.data.category, area: v.data.area,
+        email: v.data.email, link: `${SITE_URL}/activities`,
+      });
+      try {
+        await sendActivitiesDirectWelcome(v.data.name, v.data.email);
+      } catch (e) {
+        console.error("[affiliate-register] activities welcome failed:", e);
+      }
+      return NextResponse.json({ ok: true, activitiesDirect: true });
+    }
   }
 
   if (await emailExists(v.data.email)) {

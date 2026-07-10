@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import { buildCarWaMessage, waHref } from "./car-admin";
 import { inclusionLabels } from "@/lib/car-inclusions";
+import { CAR_CHILD_SEAT_LABELS_PARTNER, type CarChildSeatKey } from "@/lib/car-child-seats";
 import { sharedOfferCopy } from "@/lib/car-offer-copy";
 import { affiliateClass } from "@/lib/affiliate";
 
@@ -249,11 +250,13 @@ export interface CarLead {
   pickupLabel: string; dateFrom: string; timeFrom?: string; dateTo: string; timeTo?: string;
   flightNo?: string; carTypeLabel: string; pax?: number;
   insurance?: string; payment?: string; // 'full'|'basic' · 'cash'|'card'
+  gearbox?: string; childSeats?: string[]; // 'automatic'|'manual' · clés car-child-seats
   customerName: string; customerEmail: string; customerPhone?: string; note?: string;
 }
 
 const INSURANCE_LABEL: Record<string, string> = { full: "Full insurance (all-risk)", basic: "Basic insurance" };
 const PAYMENT_LABEL: Record<string, string> = { cash: "Cash", card: "Card" };
+const GEARBOX_LABEL: Record<string, string> = { automatic: "Automatic", manual: "Manual" };
 
 // Mode relais (par défaut tant que l'agence n'est pas prévenue du flux
 // automatique) : le lead arrive UNIQUEMENT chez Kami, avec un lien WhatsApp
@@ -274,6 +277,8 @@ function leadSummary(lead: CarLead, includeContact = true): string[] {
     `People: ${lead.pax ?? "-"}`,
     ...(lead.insurance && INSURANCE_LABEL[lead.insurance] ? [`Insurance: ${INSURANCE_LABEL[lead.insurance]}`] : []),
     ...(lead.payment && PAYMENT_LABEL[lead.payment] ? [`Payment: ${PAYMENT_LABEL[lead.payment]}`] : []),
+    ...(lead.gearbox && GEARBOX_LABEL[lead.gearbox] ? [`Gearbox: ${GEARBOX_LABEL[lead.gearbox]}`] : []),
+    ...(lead.childSeats && lead.childSeats.length ? [`Child seats: ${lead.childSeats.map((k) => CAR_CHILD_SEAT_LABELS_PARTNER[k as CarChildSeatKey] ?? k).join(", ")}`] : []),
     ...(includeContact
       ? [``, `Customer: ${lead.customerName}`, `Email: ${lead.customerEmail}`, `Phone / WhatsApp: ${lead.customerPhone ?? "-"}`]
       : []),
@@ -1097,4 +1102,539 @@ export async function sendProjetLeadEmail(lead: ProjetLead) {
   });
   if (error) throw new Error(`Resend: ${error.message}`);
   return data;
+}
+
+// ── Activities Direct ──────────────────────────────────────────────────────────
+
+export interface ActivityLead {
+  categoryLabel: string;   // EN pour les partenaires, localisé pour le client
+  cityLabel: string;
+  date: string;            // YYYY-MM-DD
+  timeslot?: string;       // clé brute morning|afternoon|evening|flexible
+  adults: number;
+  children: number;
+  preferredLanguage?: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  note?: string;
+}
+
+// Libellés de créneaux localisés : morning|afternoon|evening|flexible → string
+const TIMESLOT_EN: Record<string, string> = {
+  morning: "morning", afternoon: "afternoon", evening: "evening", flexible: "flexible",
+};
+const TIMESLOT_FR: Record<string, string> = {
+  morning: "matin", afternoon: "après-midi", evening: "soirée", flexible: "flexible",
+};
+const TIMESLOT_DE: Record<string, string> = {
+  morning: "morgens", afternoon: "nachmittags", evening: "abends", flexible: "flexibel",
+};
+const TIMESLOT_EL: Record<string, string> = {
+  morning: "πρωί", afternoon: "απόγευμα", evening: "βράδυ", flexible: "ευέλικτο",
+};
+
+function timeslotLabel(slot: string | undefined, lang: string): string {
+  if (!slot) return "";
+  const maps: Record<string, Record<string, string>> = {
+    en: TIMESLOT_EN, fr: TIMESLOT_FR, de: TIMESLOT_DE, el: TIMESLOT_EL,
+  };
+  return (maps[lang] ?? maps.en)[slot] ?? slot;
+}
+
+function groupLine(adults: number, children: number): string {
+  const parts: string[] = [];
+  if (adults > 0) parts.push(`${adults} adult${adults !== 1 ? "s" : ""}`);
+  if (children > 0) parts.push(`${children} child${children !== 1 ? "ren" : ""}`);
+  return parts.join(", ") || "1 adult";
+}
+
+/** Appel d'offres AVEUGLE au prestataire : catégorie/ville/date/créneau/groupe/langue/note.
+ *  Aucune donnée client (nom, email, téléphone). Propage l'erreur Resend. */
+export async function sendActivityQuoteRequest(
+  partner: { name: string; email: string },
+  lead: ActivityLead,
+  quoteUrl: string,
+): Promise<{ id: string } | null> {
+  const first = partner.name.split(" ")[0] || partner.name;
+  const subject = `New activity request · ${lead.categoryLabel} · ${lead.cityLabel} · ${lead.date}`;
+  const slot = timeslotLabel(lead.timeslot, "en");
+
+  const recapRows: Array<[string, string]> = [
+    ["Activity", lead.categoryLabel],
+    ["City", lead.cityLabel],
+    ["Date", lead.date],
+    ...(slot ? [["Time slot", slot] as [string, string]] : []),
+    ["Group", groupLine(lead.adults, lead.children)],
+    ...(lead.preferredLanguage ? [["Preferred language", lead.preferredLanguage] as [string, string]] : []),
+    ...(lead.note ? [["Note", lead.note] as [string, string]] : []),
+  ];
+  const recap = recapRows
+    .map(
+      ([label, value]) =>
+        `<p style="margin:0 0 8px; font-size:14px; line-height:1.5;"><strong style="color:${C.text};">${label}:</strong> <span style="color:${C.muted};">${value}</span></p>`,
+    )
+    .join("");
+
+  const html = kalimeraShell(`
+      <h2 style="margin:0 0 12px; color:${C.text}; font-size:20px;">New activity request</h2>
+      <p style="margin:0 0 18px; color:${C.muted}; line-height:1.6;">Hi ${first}, a traveller just requested an activity through crete.direct. Here is the request:</p>
+      <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:16px 18px; margin:0 0 18px;">
+        ${recap}
+      </div>
+      <p style="margin:0 0 20px; color:${C.text}; font-weight:700; font-size:15px;">Our referral commission is 15%, only on accepted quotes.</p>
+      <div style="text-align:center; margin:0 0 16px;">${pillButton(quoteUrl, "Send your price for the whole group", C.terracotta)}</div>
+      <p style="margin:0 0 22px; color:${C.faint}; font-size:12px; line-height:1.6; text-align:center;">No login needed. The traveller compares all offers and picks one. The traveller pays you directly on the day, no online prepayment.</p>
+      <p style="margin:0; color:${C.text}; line-height:1.5;"><strong>Kami</strong><br><span style="color:${C.faint}; font-size:13px;">crete.direct</span></p>
+  `);
+
+  const textLines = [
+    `Hi ${first},`,
+    ``,
+    `A traveller just requested an activity through crete.direct. Here is the request:`,
+    ``,
+    ...recapRows.map(([l, v]) => `${l}: ${v}`),
+    ``,
+    `Our referral commission is 15%, only on accepted quotes.`,
+    ``,
+    `Send your price for the whole group (no login):`,
+    quoteUrl,
+    ``,
+    `The traveller pays you directly on the day, no online prepayment.`,
+    ``,
+    `Kami`,
+    `crete.direct`,
+  ];
+
+  const { data, error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: partner.email,
+    replyTo: RELAY_EMAIL,
+    subject,
+    html,
+    text: textLines.join("\n"),
+  });
+  if (error) throw new Error(`Resend: ${error.message}`);
+  return data;
+}
+
+// ── Accusé de réception activités : client ────────────────────────────────────
+
+const ACT_ACK_SUBJECT: Record<string, string> = {
+  en: "Your activity request · Crete Direct",
+  fr: "Votre demande d'activité · Crete Direct",
+  de: "Ihre Aktivitätsanfrage · Crete Direct",
+  el: "Το αίτημα δραστηριότητάς σας · Crete Direct",
+};
+
+const ACT_ACK_COPY: Record<string, { details: string; bodyOk: string; bodyNoProvider: string }> = {
+  en: {
+    details: "Your request",
+    bodyOk: "We received your request and are looking for local providers for you. You'll get an offer shortly by email. If none reply, we'll let you know.",
+    bodyNoProvider: "We received your request, but no partner provider is available for these criteria right now. We'll get back to you.",
+  },
+  fr: {
+    details: "Votre demande",
+    bodyOk: "Nous avons bien reçu votre demande et nous cherchons un prestataire pour vous. Vous recevrez une offre très vite par email. Si aucun ne répond, nous vous préviendrons.",
+    bodyNoProvider: "Nous avons bien reçu votre demande, mais aucun prestataire partenaire n'est disponible pour ces critères pour le moment. Nous revenons vers vous.",
+  },
+  de: {
+    details: "Ihre Anfrage",
+    bodyOk: "Wir haben Ihre Anfrage erhalten und suchen einen lokalen Anbieter für Sie. Sie erhalten bald ein Angebot per E-Mail. Falls keiner antwortet, melden wir uns bei Ihnen.",
+    bodyNoProvider: "Wir haben Ihre Anfrage erhalten, aber momentan ist kein Partneranbieter für diese Kriterien verfügbar. Wir melden uns bei Ihnen.",
+  },
+  el: {
+    details: "Το αίτημά σας",
+    bodyOk: "Λάβαμε το αίτημά σας και αναζητούμε τοπικό πάροχο για εσάς. Σύντομα θα λάβετε μια προσφορά μέσω email. Αν κανείς δεν απαντήσει, θα σας ενημερώσουμε.",
+    bodyNoProvider: "Λάβαμε το αίτημά σας, αλλά αυτή τη στιγμή δεν υπάρχει διαθέσιμος συνεργαζόμενος πάροχος για αυτά τα κριτήρια. Θα επικοινωνήσουμε μαζί σας.",
+  },
+};
+
+/** Accusé de réception immédiat au client après soumission du formulaire activités.
+ *  noProvider=true quand aucun prestataire partenaire n'a pu être contacté. */
+export async function sendActivityCustomerRequestReceived(opts: {
+  email: string;
+  locale: string;
+  customerName?: string;
+  request: { categoryLabel: string; cityLabel: string; date: string };
+  noProvider: boolean;
+}): Promise<{ id: string } | null> {
+  const l = ACT_ACK_SUBJECT[opts.locale] ? opts.locale : "en";
+  const c = ACT_ACK_COPY[l];
+  const r = opts.request;
+  const inner = `
+  <p style="margin:0 0 16px; color:${C.muted}; font-size:14px; line-height:1.6;">${opts.customerName ? `${opts.customerName}, ` : ""}${opts.noProvider ? c.bodyNoProvider : c.bodyOk}</p>
+  <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 16px;">
+    <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${c.details}</p>
+    <p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">
+      ${r.categoryLabel}<br>${r.cityLabel}<br>${r.date}
+    </p>
+  </div>
+`;
+  const { data, error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: opts.email,
+    replyTo: RELAY_EMAIL,
+    subject: ACT_ACK_SUBJECT[l],
+    html: kalimeraShell(inner),
+  });
+  if (error) throw new Error(`Resend: ${error.message}`);
+  return data;
+}
+
+// ── Nouvelle offre activité disponible ────────────────────────────────────────
+
+const ACT_NEW_OFFER_SUBJECT: Record<string, string> = {
+  en: "A new offer for your Crete activity",
+  fr: "Une nouvelle offre pour votre activité en Crète",
+  de: "Ein neues Angebot für Ihre Aktivität auf Kreta",
+  el: "Μια νέα προσφορά για τη δραστηριότητά σας στην Κρήτη",
+};
+
+const ACT_NEW_OFFER_COPY: Record<string, { body: string; cta: string }> = {
+  en: {
+    body: "a new offer just arrived for your {categoryLabel} activity in {cityLabel}. More may follow. Compare and choose here:",
+    cta: "Compare offers",
+  },
+  fr: {
+    body: "une offre vient d'arriver pour votre activité {categoryLabel} à {cityLabel}. D'autres peuvent suivre. Comparez et choisissez ici :",
+    cta: "Comparer les offres",
+  },
+  de: {
+    body: "ein neues Angebot ist für Ihre {categoryLabel}-Aktivität in {cityLabel} eingegangen. Weitere können folgen. Vergleichen und wählen Sie hier:",
+    cta: "Angebote vergleichen",
+  },
+  el: {
+    body: "μια νέα προσφορά μόλις έφτασε για τη δραστηριότητα {categoryLabel} στο {cityLabel}. Ενδέχεται να ακολουθήσουν κι άλλες. Συγκρίνετε και επιλέξτε εδώ:",
+    cta: "Σύγκριση προσφορών",
+  },
+};
+
+/** Notifie le client qu'une nouvelle offre d'activité est disponible. */
+export async function sendActivityCustomerNewOffer(opts: {
+  email: string;
+  locale: string;
+  customerName: string;
+  offersUrl: string;
+  categoryLabel: string;
+  cityLabel: string;
+}): Promise<void> {
+  const l = ACT_NEW_OFFER_SUBJECT[opts.locale] ? opts.locale : "en";
+  const c = ACT_NEW_OFFER_COPY[l];
+  const body = c.body
+    .replace("{categoryLabel}", opts.categoryLabel)
+    .replace("{cityLabel}", opts.cityLabel);
+  const greeting = opts.customerName ? `${opts.customerName}, ` : "";
+  const inner = `
+  <p style="margin:0 0 20px; color:${C.muted}; font-size:14px; line-height:1.6;">${greeting}${body}</p>
+  <div style="text-align:center; margin:0 0 18px;">${pillButton(opts.offersUrl, c.cta, C.lagoonDeep)}</div>
+  <p style="margin:0; color:${C.faint}; font-size:12px; text-align:center; line-height:1.6;">Questions? Reply to this email, a real person reads it.</p>
+`;
+  const { error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: opts.email,
+    replyTo: RELAY_EMAIL,
+    subject: ACT_NEW_OFFER_SUBJECT[l],
+    html: kalimeraShell(inner),
+  });
+  if (error) throw new Error(`Resend: ${error.message}`);
+}
+
+// ── Relance client activités ───────────────────────────────────────────────────
+
+const ACT_RELANCE_SUBJECT: Record<string, string> = {
+  en: "Your Crete activity offers are waiting",
+  fr: "Vos offres d'activité en Crète vous attendent",
+  de: "Ihre Aktivitätsangebote auf Kreta warten auf Sie",
+  el: "Οι προσφορές δραστηριότητας στην Κρήτη σας περιμένουν",
+};
+
+const ACT_RELANCE_COPY: Record<string, { body: string; cta: string }> = {
+  en: {
+    body: "your activity offers are waiting. Choose the one that suits your group, or let us know if none of them fits:",
+    cta: "See my offers",
+  },
+  fr: {
+    body: "vos offres d'activité vous attendent. Choisissez celle qui convient à votre groupe, ou dites-nous qu'aucune ne convient :",
+    cta: "Voir mes offres",
+  },
+  de: {
+    body: "Ihre Aktivitätsangebote warten auf Sie. Wählen Sie das passende für Ihre Gruppe aus, oder sagen Sie uns, wenn keines passt:",
+    cta: "Meine Angebote ansehen",
+  },
+  el: {
+    body: "οι προσφορές δραστηριοτήτων σας περιμένουν. Επιλέξτε αυτή που ταιριάζει στην ομάδα σας, ή πείτε μας αν καμία δεν ταιριάζει:",
+    cta: "Δείτε τις προσφορές μου",
+  },
+};
+
+/** Relance client activités indécis avec ≥1 offre (max 2×). 4 langues, HTML brandé. */
+export async function sendActivityCustomerRelance(opts: {
+  email: string;
+  locale: string;
+  customerName?: string;
+  offersUrl: string;
+}): Promise<void> {
+  const l = ACT_RELANCE_SUBJECT[opts.locale] ? opts.locale : "en";
+  const c = ACT_RELANCE_COPY[l];
+  const greeting = opts.customerName ? `${opts.customerName}, ` : "";
+  const inner = `
+  <p style="margin:0 0 20px; color:${C.muted}; font-size:14px; line-height:1.6;">${greeting}${c.body}</p>
+  <div style="text-align:center; margin:0 0 18px;">${pillButton(opts.offersUrl, c.cta, C.lagoonDeep)}</div>
+  <p style="margin:0; color:${C.faint}; font-size:12px; text-align:center; line-height:1.6;">Questions? Reply to this email, a real person reads it.</p>
+`;
+  const { error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: opts.email,
+    replyTo: RELAY_EMAIL,
+    subject: ACT_RELANCE_SUBJECT[l],
+    html: kalimeraShell(inner),
+  });
+  if (error) throw new Error(`Resend: ${error.message}`);
+}
+
+// ── Cron silence >24h : aucun prestataire n'a encore soumis de prix ───────────
+
+const ACT_NO_QUOTE_SUBJECT: Record<string, string> = {
+  en: "Update on your activity request · Crete Direct",
+  fr: "Point sur votre demande d'activité · Crete Direct",
+  de: "Update zu Ihrer Aktivitätsanfrage · Crete Direct",
+  el: "Ενημέρωση για το αίτημα δραστηριότητάς σας · Crete Direct",
+};
+
+const ACT_NO_QUOTE_BODY: Record<string, string> = {
+  en: "No provider has sent a price yet for your activity request. We're still on it, we'll email you as soon as we have an offer.",
+  fr: "Aucun prestataire n'a encore envoyé de prix pour votre demande d'activité. Nous y travaillons toujours, nous vous écrirons dès que nous avons une offre.",
+  de: "Noch kein Anbieter hat einen Preis für Ihre Aktivitätsanfrage gesendet. Wir sind noch dran, wir schreiben Ihnen, sobald wir ein Angebot haben.",
+  el: "Κανένας πάροχος δεν έχει στείλει ακόμα τιμή για το αίτημα δραστηριότητάς σας. Συνεχίζουμε να εργαζόμαστε, θα σας στείλουμε email μόλις έχουμε μια προσφορά.",
+};
+
+const ACT_NO_QUOTE_FOOT: Record<string, string> = {
+  en: "Questions? Reply to this email, a real person reads it.",
+  fr: "Une question ? Répondez à cet email, une vraie personne le lit.",
+  de: "Fragen? Antworten Sie auf diese E-Mail, ein echter Mensch liest sie.",
+  el: "Ερωτήσεις; Απαντήστε σε αυτό το email, το διαβάζει πραγματικός άνθρωπος.",
+};
+
+export async function sendActivityCustomerNoQuoteYet(opts: {
+  email: string;
+  locale: string;
+  customerName?: string;
+}): Promise<{ id: string } | null> {
+  const l = ACT_NO_QUOTE_SUBJECT[opts.locale] ? opts.locale : "en";
+  const greeting = opts.customerName ? `${opts.customerName}, ` : "";
+  const inner = `
+  <p style="margin:0 0 16px; color:${C.muted}; font-size:14px; line-height:1.6;">${greeting}${ACT_NO_QUOTE_BODY[l]}</p>
+  <p style="margin:0; color:${C.faint}; font-size:12px; text-align:center; line-height:1.6;">${ACT_NO_QUOTE_FOOT[l]}</p>
+`;
+  const { data, error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: opts.email,
+    replyTo: RELAY_EMAIL,
+    subject: ACT_NO_QUOTE_SUBJECT[l],
+    html: kalimeraShell(inner),
+  });
+  if (error) throw new Error(`Resend: ${error.message}`);
+  return data;
+}
+
+// ── Relance prestataire activités silencieux ──────────────────────────────────
+
+/** Relance prestataire qui n'a pas encore chiffré (1× max). EN, best-effort. */
+export async function sendActivityPartnerRelance(
+  email: string,
+  partnerName: string,
+  quoteUrl: string,
+): Promise<void> {
+  const first = partnerName.split(" ")[0] || partnerName;
+  const { error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: email,
+    replyTo: RELAY_EMAIL,
+    subject: "Activities Direct - a traveller is still waiting for your quote",
+    text: [
+      `Hi ${first},`,
+      ``,
+      `A traveller is still waiting for your price on a crete.direct activity request.`,
+      `Send your quote here, or tell us you can't take it this time:`,
+      quoteUrl,
+      ``,
+      `Referral commission is 15%. No action closes the request for you.`,
+      ``,
+      `Kami`,
+      `crete.direct`,
+    ].join("\n"),
+  });
+  if (error) console.error("[sendActivityPartnerRelance] Resend error:", error.message);
+}
+
+// ── Prestataire non retenu ────────────────────────────────────────────────────
+
+/** Email court au prestataire non retenu. Best-effort : appelé depuis accept route. */
+export async function sendActivityPartnerNotChosen(
+  email: string,
+  partnerName: string,
+): Promise<void> {
+  const first = partnerName.split(" ")[0] || partnerName;
+  const { error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: email,
+    replyTo: RELAY_EMAIL,
+    subject: "Activities Direct - not selected this time",
+    text: [
+      `Hi ${first},`,
+      ``,
+      `The traveller chose another offer this time. Thanks for your quote, more requests will come. No action needed.`,
+      ``,
+      `Kami`,
+      `crete.direct`,
+    ].join("\n"),
+  });
+  if (error) console.error("[sendActivityPartnerNotChosen] Resend error:", error.message);
+}
+
+// ── Mise en relation activités ─────────────────────────────────────────────────
+
+export interface ActivityQuoteInfo {
+  categoryLabel: string;
+  cityLabel: string;
+  date: string;
+  adults: number;
+  children: number;
+  price: number;
+  currency: string;
+  partnerName: string;
+  details?: string | null;
+  inclusions?: string[];
+}
+
+const ACT_CONNECT_SUBJECT: Record<string, string> = {
+  en: "You're connected with your activity provider",
+  fr: "Vous êtes en relation avec votre prestataire d'activité",
+  de: "Sie sind mit Ihrem Aktivitätsanbieter verbunden",
+  el: "Συνδεθήκατε με τον πάροχο δραστηριότητάς σας",
+};
+
+const ACT_CONNECT_COPY: Record<string, { intro: string; provider: string; foot: string }> = {
+  en: {
+    intro: "You accepted the offer. Here are the provider's details, they will also reach out to finalise the booking.",
+    provider: "Activity provider",
+    foot: "You pay the provider directly on the day, no online prepayment.",
+  },
+  fr: {
+    intro: "Vous avez accepté l'offre. Voici les coordonnées du prestataire, il vous contactera aussi pour finaliser la réservation.",
+    provider: "Prestataire d'activité",
+    foot: "Vous réglez directement avec le prestataire le jour J, aucun prépaiement en ligne.",
+  },
+  de: {
+    intro: "Sie haben das Angebot angenommen. Hier sind die Kontaktdaten des Anbieters, er meldet sich ebenfalls bei Ihnen.",
+    provider: "Aktivitätsanbieter",
+    foot: "Sie zahlen direkt beim Anbieter am Tag der Aktivität, keine Online-Vorauszahlung.",
+  },
+  el: {
+    intro: "Αποδεχτήκατε την προσφορά. Ακολουθούν τα στοιχεία του παρόχου, θα επικοινωνήσει και εκείνος μαζί σας.",
+    provider: "Πάροχος δραστηριότητας",
+    foot: "Πληρώνετε απευθείας τον πάροχο την ημέρα της δραστηριότητας, χωρίς διαδικτυακή προπληρωμή.",
+  },
+};
+
+/** Après acceptation d'une offre d'activité : met prestataire et client en relation.
+ *  Prestataire = email texte EN (CC Kami) ; client = HTML localisé 4 langues. */
+export async function sendActivityConnectionEmails(opts: {
+  partner: { name: string; email: string; phone: string; whatsapp?: string };
+  customer: { name: string; email: string; phone?: string; locale: string };
+  quote: ActivityQuoteInfo;
+}): Promise<void> {
+  const { partner, customer, quote } = opts;
+  const l = ACT_CONNECT_SUBJECT[customer.locale] ? customer.locale : "en";
+  const c = ACT_CONNECT_COPY[l];
+
+  // 1. Au prestataire : coordonnées du client (la commande est confirmée côté client).
+  const agencyLines = [
+    `Hi ${partner.name.split(" ")[0]},`,
+    ``,
+    `Good news: the traveller accepted your ${money(quote.price, quote.currency)} quote for the whole group. Here are their details to finalise the booking:`,
+    ``,
+    `Customer: ${customer.name}`,
+    `Email: ${customer.email}`,
+    `Phone / WhatsApp: ${customer.phone ?? "-"}`,
+    ``,
+    `Activity: ${quote.categoryLabel}`,
+    `City: ${quote.cityLabel}`,
+    `Date: ${quote.date}`,
+    `Group: ${groupLine(quote.adults, quote.children)}`,
+    ...(quote.details ? [`Details: ${quote.details}`] : []),
+    `Our referral commission is 15%.`,
+    ``,
+    `Please contact the traveller to confirm the details. Thanks!`,
+    `Kami · crete.direct`,
+  ];
+  const r1 = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: partner.email,
+    cc: RELAY_EMAIL,
+    replyTo: customer.email,
+    subject: `Booking confirmed · ${quote.categoryLabel} · ${quote.cityLabel} · ${quote.date} (${money(quote.price, quote.currency)} for the whole group)`,
+    text: agencyLines.join("\n"),
+  });
+  if (r1.error) throw new Error(`Resend: ${r1.error.message}`);
+
+  // 2. Au client : coordonnées du prestataire (HTML localisé).
+  const inner = `
+    <p style="margin:0 0 16px; color:${C.muted}; font-size:14px; line-height:1.6;">${customer.name ? `${customer.name}, ` : ""}${c.intro}</p>
+    <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 18px;">
+      <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${c.provider}</p>
+      <p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">
+        ${partner.name}<br>${partner.whatsapp ?? partner.phone}<br>${partner.email}
+      </p>
+    </div>
+    <p style="margin:0; color:${C.faint}; font-size:12px; line-height:1.6;">${c.foot}</p>
+  `;
+  await resend.emails.send({
+    from: FROM_EMAIL,
+    to: customer.email,
+    replyTo: RELAY_EMAIL,
+    subject: ACT_CONNECT_SUBJECT[l],
+    html: kalimeraShell(inner),
+  });
+}
+
+// ── Synthèse lead activités à Kami ────────────────────────────────────────────
+
+/** Synthèse unique à Kami pour un lead activités diffusé en appel d'offres :
+ *  coordonnées client complètes + prestataires invités. Best-effort. */
+export async function sendActivityLeadKamiSummary(
+  lead: ActivityLead,
+  sentNames: string[],
+): Promise<void> {
+  const subject = `Nouvelle demande activité · ${lead.categoryLabel} · ${lead.cityLabel} · ${lead.date}`;
+  const slot = timeslotLabel(lead.timeslot, "fr");
+  const lines = [
+    `Lead activité diffusé à ${sentNames.length} prestataire(s) : ${sentNames.join(", ")}.`,
+    ``,
+    `Catégorie : ${lead.categoryLabel}`,
+    `Ville : ${lead.cityLabel}`,
+    `Date : ${lead.date}`,
+    ...(slot ? [`Créneau : ${slot}`] : []),
+    `Groupe : ${groupLine(lead.adults, lead.children)}`,
+    ...(lead.preferredLanguage ? [`Langue souhaitée : ${lead.preferredLanguage}`] : []),
+    ``,
+    `Client : ${lead.customerName}`,
+    `Email : ${lead.customerEmail}`,
+    `Téléphone : ${lead.customerPhone ?? "-"}`,
+    ...(lead.note ? [`Note : ${lead.note}`] : []),
+    ``,
+    `Premier qui soumet son prix gagne. Le client reçoit l'offre automatiquement ; tu es en copie à l'acceptation.`,
+  ];
+  try {
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: RELAY_EMAIL,
+      replyTo: lead.customerEmail,
+      subject: `[Lead activité · suivi] ${subject}`,
+      text: lines.join("\n"),
+    });
+  } catch (e) {
+    console.error("[sendActivityLeadKamiSummary] échec:", e);
+  }
 }

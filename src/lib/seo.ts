@@ -3,6 +3,23 @@ import { routing } from "@/i18n/routing";
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 /**
+ * Robots pour pages indexables. Nécessaire sur les pages qui définissent leur
+ * propre clé `robots` (même à undefined) : la clé enfant écrase l'héritage du
+ * layout, qui porte le max-image-preview:large requis par Google Discover.
+ */
+export const INDEXABLE_ROBOTS = {
+  index: true,
+  follow: true,
+  googleBot: {
+    index: true,
+    follow: true,
+    "max-image-preview": "large" as const,
+    "max-snippet": -1,
+    "max-video-preview": -1,
+  },
+};
+
+/**
  * Build alternates metadata for hreflang tags.
  * @param path - The path after locale, e.g. "/beaches/balos" or "" for home
  */

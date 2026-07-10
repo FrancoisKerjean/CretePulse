@@ -3,19 +3,15 @@ import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { ChevronLeft, Bus, Car, Ship, Plane, Clock, Euro, RefreshCw, Lightbulb, ArrowRight } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
-import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 import { JsonLd } from "@/components/JsonLd";
 import { CarPromo } from "@/components/car-rental/CarPromo";
 import { ShareBar } from "@/components/ShareBar";
 
-// Routes en zone couverte par le partenaire location (chania-west) : encart
-// wizard interne au lieu du placeholder affilié DiscoverCars. Ailleurs, le
-// placeholder DiscoverCars reste (rien à perdre hors zone).
-// Routes dont la destination est dans une zone servie par Auto Smart
-// (chania-ouest, rethymno, heraklion-centre) -> wizard interne. Agios Nikolaos
-// et Sitia (lasithi-est, non couvert) tombent volontairement sur le repli
-// affilié DiscoverCars. Étendu le 13/06 (audit Vague B) : Rethymno + Heraklion
-// centre étaient oubliés alors qu'Auto Smart les couvre.
+// Map slug de route -> slug de pickup pour pre-remplir le wizard interne quand
+// la destination est dans une zone servie par un loueur partenaire. Depuis le
+// 08/07 (decision Kami) on ne pousse QUE le wizard interne : hors de cette map,
+// le CTA s'affiche quand meme mais ouvre le wizard a l'etape 1 (Zorbas couvrant
+// toute la Crete, il y a toujours un loueur).
 const CAR_PARTNER_PICKUP: Record<string, string> = {
   "chania-airport-to-city": "chania-airport",
   "heraklion-to-chania": "chania",
@@ -492,13 +488,8 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
           </section>
         )}
 
-        {/* Car rental: encart partenaire local (zone ouest couverte) sinon
-            placeholder affilié DiscoverCars (real affiliate ID) */}
-        {CAR_PARTNER_PICKUP[slug] ? (
-          <CarPromo locale={locale} pickup={CAR_PARTNER_PICKUP[slug]} source="getting-around" />
-        ) : (
-          <AffiliateBanner type="carRental" locale={locale} placeName={route.to} />
-        )}
+        {/* Car rental : wizard interne uniquement. Pre-remplit le pickup si zone servie. */}
+        <CarPromo locale={locale} pickup={CAR_PARTNER_PICKUP[slug] ?? undefined} source="getting-around" />
 
         {/* FAQ */}
         <section>

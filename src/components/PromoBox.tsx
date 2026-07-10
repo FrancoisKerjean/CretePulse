@@ -1,5 +1,5 @@
 // L'unique pattern d'encart cross-sell/funnel du site (remplace le bandeau
-// noir/jaune Kairos, le style custom AffiliateBanner, l'encart "Stay in...").
+// noir/jaune Kairos, l'encart "Stay in...").
 // Spec : docs/superpowers/specs/2026-06-11-ui-live-data-redesign-design.md
 // 12/06 : variante photo plein bloc (Kami : la boîte claire est "très moche"
 // à côté des bandeaux photo affiliés ; même langage visuel que ceux-ci).

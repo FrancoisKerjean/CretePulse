@@ -7,7 +7,7 @@ import { MapPin, Clock, Ticket, ChevronLeft, ChevronRight, Landmark } from "luci
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
-import { AffiliateBanner } from "@/components/ui/affiliate-banner";
+import { CarPromo } from "@/components/car-rental/CarPromo";
 
 export const revalidate = 172800; // 03/07 optim couts Vercel (48h, ISR Writes)
 
@@ -374,8 +374,10 @@ export default async function ArchaeologyDetailPage({
           </div>
         </section>
 
-        {/* Skip-the-line tickets & guided tours partner banner (GetYourGuide) */}
-        <AffiliateBanner type="tours" locale={locale} placeName={site.name} className="mt-8" />
+        {/* Car Rental Direct */}
+        <div className="mt-8">
+          <CarPromo locale={locale} source="archaeology" />
+        </div>
 
         {/* Other sites */}
         <section className="mt-8 mb-8">

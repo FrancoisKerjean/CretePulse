@@ -9,7 +9,7 @@ const ok = (n, c) => { console.log(c ? `ok - ${n}` : `FAIL - ${n}`); if (!c) fai
 const valid = {
   pickup: "chania", carType: "compact", email: "Jane@Example.com ", name: "  Jane  ",
   dateFrom: "2026-07-01", dateTo: "2026-07-08", locale: "fr",
-  timeFrom: "10:00", flightNo: "A3 123", pax: 3, phone: "+30 555", note: "x", source: "airport",
+  timeFrom: "10:00", timeTo: "18:00", flightNo: "A3 123", pax: 3, phone: "+30 555", note: "x", source: "airport",
 };
 
 ok("honeypot rempli -> kind honeypot (avant toute validation)",
@@ -25,6 +25,18 @@ ok("carType inconnu -> 422", validateCarLead({ ...valid, carType: "spaceship" })
 
 ok("date mal formée -> 422 'Invalid dates'", (() => { const x = validateCarLead({ ...valid, dateFrom: "01/07/2026" }); return x.kind === "error" && x.error === "Invalid dates"; })());
 ok("dateTo < dateFrom -> 422 'Invalid dates'", validateCarLead({ ...valid, dateTo: "2026-06-01" }).error === "Invalid dates");
+ok("heure d'arrivée manquante -> 422 'Invalid times'", (() => {
+  const x = validateCarLead({ ...valid, timeFrom: undefined, timeTo: "17:00" });
+  return x.kind === "error" && x.error === "Invalid times";
+})());
+ok("heure de retour manquante -> 422 'Invalid times'", (() => {
+  const x = validateCarLead({ ...valid, timeFrom: "09:00", timeTo: undefined });
+  return x.kind === "error" && x.error === "Invalid times";
+})());
+ok("heure mal formée -> 422 'Invalid times'", (() => {
+  const x = validateCarLead({ ...valid, timeFrom: "9am", timeTo: "17:00" });
+  return x.kind === "error" && x.error === "Invalid times";
+})());
 ok("même jour avec retour avant prise en charge -> 422 'Invalid times'", (() => {
   const x = validateCarLead({ ...valid, dateFrom: "2026-09-25", dateTo: "2026-09-25", timeFrom: "17:40", timeTo: "02:40" });
   return x.kind === "error" && x.error === "Invalid times";
@@ -43,6 +55,16 @@ ok("status sent", good.kind === "ok" && good.row.status === "sent");
 ok("pax entier conservé", good.kind === "ok" && good.row.pax === 3);
 ok("champs str() nullables", good.kind === "ok" && good.row.flight_no === "A3 123" && good.row.note === "x");
 ok("source mappée", good.kind === "ok" && good.row.source === "airport");
+
+// gearbox + sièges enfants (retour loueur Lux Trans 08/07)
+ok("gearbox par défaut null (non fourni)", good.kind === "ok" && good.row.gearbox === null);
+ok("child_seats par défaut []", good.kind === "ok" && Array.isArray(good.row.child_seats) && good.row.child_seats.length === 0);
+ok("gearbox automatic accepté", (() => { const x = validateCarLead({ ...valid, gearbox: "automatic" }); return x.kind === "ok" && x.row.gearbox === "automatic"; })());
+ok("gearbox manual accepté", (() => { const x = validateCarLead({ ...valid, gearbox: "manual" }); return x.kind === "ok" && x.row.gearbox === "manual"; })());
+ok("gearbox invalide -> null (peu importe)", (() => { const x = validateCarLead({ ...valid, gearbox: "cvt" }); return x.kind === "ok" && x.row.gearbox === null; })());
+ok("child_seats clés valides conservées", (() => { const x = validateCarLead({ ...valid, childSeats: ["baby_cot", "booster"] }); return x.kind === "ok" && x.row.child_seats.length === 2 && x.row.child_seats[0] === "baby_cot"; })());
+ok("child_seats clés inconnues filtrées", (() => { const x = validateCarLead({ ...valid, childSeats: ["baby_seat", "spaceship_seat"] }); return x.kind === "ok" && x.row.child_seats.length === 1 && x.row.child_seats[0] === "baby_seat"; })());
+ok("child_seats non-array -> []", (() => { const x = validateCarLead({ ...valid, childSeats: "baby_cot" }); return x.kind === "ok" && x.row.child_seats.length === 0; })());
 
 ok("carPickupLabel", carPickupLabel("agios-nikolaos") === "Agios Nikolaos");
 

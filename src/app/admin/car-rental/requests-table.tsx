@@ -12,7 +12,8 @@ import {
 import { offerExpiresAt } from "@/lib/car-offer-expiry";
 import { carPickupLabel } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
-import { setOutcome, setCommissionPaid, saveNote } from "./actions";
+import { canCancelRequest } from "@/lib/car-quotes";
+import { setOutcome, setCommissionPaid, saveNote, cancelRequest } from "./actions";
 
 const PAGE_SIZE = 50;
 
@@ -26,6 +27,7 @@ function statusBadge(st: string) {
     accepted: "bg-ok text-white",
     email_failed: "bg-terracotta text-white",
     declined_by_client: "bg-text-light text-white",
+    cancelled: "bg-text-light text-white line-through",
   };
   return <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${cls[st] ?? "bg-border"}`}>{st}</span>;
 }
@@ -184,7 +186,7 @@ export function RequestsTable({
           GAGNÉ au moins un devis : avec 59 loueurs en base, lister tout le
           registre ici était un mur de pastilles (audit UI 05/07). */}
       <div className="flex flex-wrap gap-1.5 text-sm">
-        {["", "sent", "quoted", "silent", "awaiting", "accepted", "declined_by_client", "auto_closed", "client_silent", "rental_started", "email_failed", "rented", "lost"].map((f) => {
+        {["", "sent", "quoted", "silent", "awaiting", "accepted", "declined_by_client", "auto_closed", "client_silent", "rental_started", "cancelled", "email_failed", "rented", "lost"].map((f) => {
           const label = f === "" ? "tous"
             : f === "silent" ? "silencieux"
             : f === "awaiting" ? "attente choix"
@@ -192,6 +194,7 @@ export function RequestsTable({
             : f === "auto_closed" ? "auto clôturées"
             : f === "client_silent" ? "client silencieux"
             : f === "rental_started" ? "date atteinte"
+            : f === "cancelled" ? "hors flow"
             : f;
           return (
             <a key={f || "all"} href={qs({ status: f, page: "" })}
@@ -250,10 +253,12 @@ export function RequestsTable({
                   <br />
                   {r.status === "declined_by_client" ? (
                     <>Demande clôturée : <span className="font-bold">{closureReasonLabel(r.closure_reason) ?? "sans choix client"}</span></>
+                  ) : r.status === "accepted" && winner ? (
+                    <>Choisi par le client : <span className="font-bold">{winner.name}</span></>
+                  ) : roll.quoted > 0 ? (
+                    <><span className="font-bold">{roll.quoted} devis reçu{roll.quoted > 1 ? "s" : ""}</span> <span className="text-text-muted">· en attente du choix client</span></>
                   ) : winner ? (
-                    r.status === "accepted"
-                      ? <>Choisi par le client : <span className="font-bold">{winner.name}</span></>
-                      : <>Devis reçu de <span className="font-bold">{winner.name}</span> <span className="text-text-muted">· en attente du client</span></>
+                    <>Devis reçu de <span className="font-bold">{winner.name}</span> <span className="text-text-muted">· en attente du client</span></>
                   ) : <span className="text-text-muted">Pas encore de devis</span>}
                   {r.quoted_price != null ? <> · devis <span className="font-data font-bold">{r.quoted_price} €</span></> : null}
                   {r.final_amount_eur != null ? <> · final <span className="font-data font-bold">{r.final_amount_eur} €</span></> : null}
@@ -265,10 +270,15 @@ export function RequestsTable({
 
               {/* Relances + expiry (une ligne compacte). */}
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-muted">
-                <span>Loueurs : {roll.invited} invité(s) · {roll.relanced} relancé(s) · {roll.silent} silencieux</span>
+                <span>Loueurs : {roll.invited} invité(s) · {roll.quoted} chiffré(s) · {roll.silent} silencieux{roll.relanced > 0 ? ` · ${roll.relanced} relancé(s)` : ""}{roll.declined > 0 ? ` · ${roll.declined} décliné(s)` : ""}</span>
                 <span>
                   Client :{" "}
                   {r.status === "declined_by_client" ? (closureReasonLabel(r.closure_reason) ?? "clôturé") :
+                   roll.quoted > 0 ? `offre envoyée (lecture non suivie) · ${
+                     cRel.kind === "eligible" ? "relance éligible" :
+                     cRel.kind === "waiting" ? `prochaine relance dans ${hoursLabel(cRel.nextEligibleMs - now)}` :
+                     cRel.kind === "exhausted" ? "relances épuisées (2/2)" : "aucune"
+                   }` :
                    cRel.kind === "eligible" ? "relance éligible" :
                    cRel.kind === "waiting" ? `prochaine relance dans ${hoursLabel(cRel.nextEligibleMs - now)}` :
                    cRel.kind === "exhausted" ? "relances épuisées (2/2)" : "aucune"}
@@ -346,6 +356,21 @@ export function RequestsTable({
                          className="w-full flex-1 rounded-lg border border-border px-2 py-1 text-sm" />
                   <button className="rounded-full border border-border bg-white px-3 py-1 text-sm font-bold">OK</button>
                 </form>
+                {/* Sortie du flow : demande erronée/spam. Repliée pour éviter le
+                    clic accidentel (arrête relances loueur + client, coupe le
+                    lien client, refuse tout devis tardif). */}
+                {canCancelRequest(r.status) ? (
+                  <details className="text-sm">
+                    <summary className="cursor-pointer text-text-muted underline">sortir du flow</summary>
+                    <div className="mt-2">
+                      <form action={cancelRequest.bind(null, r.id)}>
+                        <button className="rounded-full border border-terracotta bg-white px-3 py-1 text-sm font-bold text-terracotta">
+                          Confirmer la sortie du flow
+                        </button>
+                      </form>
+                    </div>
+                  </details>
+                ) : null}
               </div>
             </li>
           );

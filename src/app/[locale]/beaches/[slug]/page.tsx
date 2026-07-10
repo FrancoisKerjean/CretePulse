@@ -1,4 +1,6 @@
-import { getBeachBySlug, getNearbyBeaches } from "@/lib/beaches";
+import { getBeachBySlug, getNearbyBeaches, getBeachesByRegion } from "@/lib/beaches";
+import { getCrowdScore, quieterAlternatives } from "@/lib/beach-crowd";
+import { CrowdBadge, QuieterAlternatives } from "@/components/beaches/BeachCrowd";
 import { getCbBeachNear } from "@/lib/cb-beach-match";
 import {
   SAND_LABELS, WATER_LABELS, DEPTH_LABELS, CROWD_LABELS, SEA_LABELS,
@@ -15,7 +17,6 @@ import { MapPin, Car, Waves, Fish, Sun, Wind, Baby, UtensilsCrossed, ChevronLeft
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 import { buildAlternates } from "@/lib/seo";
 import { CarPromo } from "@/components/car-rental/CarPromo";
 import { allPickups } from "@/lib/car-partners";
@@ -24,6 +25,8 @@ import { nearestBy } from "@/lib/geo";
 import { getBathingWaterQuality } from "@/lib/bathing-water";
 import { WaterQualityBadge, wqStatusLabel } from "@/components/WaterQualityBadge";
 import { ShareBar } from "@/components/ShareBar";
+import { BeachConditionsLive } from "@/components/beaches/BeachConditionsLive";
+import { BeachBusBlock } from "@/components/beaches/BeachBusBlock";
 
 export const revalidate = 172800; // 03/07 optim couts Vercel (48h, ISR Writes)
 
@@ -45,6 +48,7 @@ const BEACH_LABELS: Record<Locale, {
   taverna: string;
   snorkeling: string;
   openInMaps: string;
+  viewOnMap: string;
   nearbyBeaches: string;
   photo: string;
   crete: string;
@@ -65,6 +69,7 @@ const BEACH_LABELS: Record<Locale, {
     taverna: "Taverna",
     snorkeling: "Snorkeling",
     openInMaps: "Open in Google Maps",
+    viewOnMap: "View on the map",
     nearbyBeaches: "Nearby beaches",
     photo: "Photo",
     crete: "Crete",
@@ -85,6 +90,7 @@ const BEACH_LABELS: Record<Locale, {
     taverna: "Taverne",
     snorkeling: "Snorkeling",
     openInMaps: "Ouvrir dans Google Maps",
+    viewOnMap: "Voir sur la carte",
     nearbyBeaches: "Plages à proximité",
     photo: "Photo",
     crete: "Crète",
@@ -105,6 +111,7 @@ const BEACH_LABELS: Record<Locale, {
     taverna: "Taverne",
     snorkeling: "Schnorcheln",
     openInMaps: "In Google Maps öffnen",
+    viewOnMap: "Auf der Karte ansehen",
     nearbyBeaches: "Strände in der Nähe",
     photo: "Foto",
     crete: "Kreta",
@@ -125,6 +132,7 @@ const BEACH_LABELS: Record<Locale, {
     taverna: "Ταβέρνα",
     snorkeling: "Snorkeling",
     openInMaps: "Άνοιγμα στο Google Maps",
+    viewOnMap: "Δείτε στον χάρτη",
     nearbyBeaches: "Κοντινές παραλίες",
     photo: "Φωτογραφία",
     crete: "Κρήτη",
@@ -263,10 +271,13 @@ export default async function BeachDetailPage({
   const beach = await getBeachBySlug(slug);
   if (!beach) notFound();
 
-  const [nearby, cb] = await Promise.all([
+  const [nearby, cb, regionBeaches] = await Promise.all([
     getNearbyBeaches(beach.latitude, beach.longitude, beach.slug),
     getCbBeachNear(beach.latitude, beach.longitude),
+    getBeachesByRegion(beach.region),
   ]);
+  const crowd = getCrowdScore(beach.slug);
+  const quieter = quieterAlternatives(beach, regionBeaches);
   const name = getLocalizedField(beach, "name", loc);
   const description = getLocalizedField(beach, "description", loc);
 
@@ -488,6 +499,9 @@ export default async function BeachDetailPage({
           </div>
         </div>
 
+        {/* Conditions du jour (client, API cache CDN 30 min : la page reste ISR 48 h) */}
+        <BeachConditionsLive slug={beach.slug} locale={locale} />
+
         {/* Qualité de l'eau de baignade (UE, source AEE) */}
         {waterQuality && (
           <div className="mb-8 max-w-sm">
@@ -517,11 +531,13 @@ export default async function BeachDetailPage({
               <Waves className="w-4 h-4" /> {seaL}
             </span>
           )}
-          {crowdsL && (
+          {crowd ? (
+            <CrowdBadge crowd={crowd} locale={locale} />
+          ) : crowdsL ? (
             <span className="inline-flex items-center gap-1 text-sm bg-surface px-3 py-1 rounded-full">
               {crowdsL}
             </span>
-          )}
+          ) : null}
           {cb?.rating != null && cb.rating > 0 && (
             <span className="inline-flex items-center gap-1 text-sm bg-amber-50 text-amber-800 px-3 py-1 rounded-full font-medium">
               ★ {cb.rating.toFixed(1)}/5
@@ -537,15 +553,31 @@ export default async function BeachDetailPage({
           </div>
         )}
 
-        {/* Map link */}
-        <a
-          href={`https://www.google.com/maps?q=${beach.latitude},${beach.longitude}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-sea text-white rounded-lg text-sm font-medium hover:bg-sea-light transition-colors mb-12"
-        >
-          <MapPin className="w-4 h-4" /> {L.openInMaps}
-        </a>
+        {/* Map links : Google Maps externe + maillage interne vers /explore.
+            Le lieu cb_places équivalent (match GPS <= 1.5 km, 180/183 plages
+            couvertes) donne l'URL canonique /explore/[slug] ; sinon fallback
+            carte centrée via ?lat&lng&z (params supportés par ExploreView). */}
+        <div className="flex flex-wrap gap-3 mb-12">
+          <a
+            href={`https://www.google.com/maps?q=${beach.latitude},${beach.longitude}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-sea text-white rounded-lg text-sm font-medium hover:bg-sea-light transition-colors"
+          >
+            <MapPin className="w-4 h-4" /> {L.openInMaps}
+          </a>
+          <Link
+            href={cb
+              ? `/${locale}/explore/${cb.slug}`
+              : `/${locale}/explore?lat=${beach.latitude}&lng=${beach.longitude}&z=13`}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white text-sea border border-sea/30 rounded-lg text-sm font-medium hover:border-sea transition-colors"
+          >
+            <MapPin className="w-4 h-4" /> {L.viewOnMap}
+          </Link>
+        </div>
+
+        {/* Y aller en bus (arrêt physique + réseau urbain + pages horaires KTEL) */}
+        <BeachBusBlock lat={beach.latitude} lng={beach.longitude} locale={locale} />
 
         {/* FAQ */}
         <section className="mb-12">
@@ -560,12 +592,9 @@ export default async function BeachDetailPage({
           </div>
         </section>
 
-        {/* Car rental (audit 13/06, Vague B) : Auto Smart primaire partout où
-            il couvre réellement. On route vers le wizard quand le pickup le plus
-            proche de la plage est dans une zone servie (chania-ouest, rethymno,
-            heraklion-centre), sinon repli affilié DiscoverCars (lasithi-est non
-            couvert). Remplace l'ancien `region === "west"` qui envoyait à tort
-            les plages du centre/rethymno vers DiscoverCars. */}
+        {/* Car rental : wizard interne uniquement. On
+            pre-remplit le pickup le plus proche s'il est dans une zone servie,
+            sinon le wizard ouvre a l'etape 1. */}
         {(() => {
           const nearestPickup = nearestBy(
             allPickups(),
@@ -573,12 +602,18 @@ export default async function BeachDetailPage({
             { lat: beach.latitude, lon: beach.longitude },
             1,
           )[0];
-          return nearestPickup?.served ? (
-            <CarPromo locale={locale} pickup={nearestPickup.slug} source="beach" />
-          ) : (
-            <AffiliateBanner type="carRental" locale={locale} placeName={name} className="mb-4" />
+          return (
+            <CarPromo
+              locale={locale}
+              pickup={nearestPickup?.served ? nearestPickup.slug : undefined}
+              source="beach"
+            />
           );
         })()}
+
+        {/* Alternatives plus calmes (même région, score d'affluence bien inférieur) :
+            angle redistribution des flux, n'apparaît que sur les plages moderate/busy */}
+        <QuieterAlternatives alternatives={quieter} locale={locale} />
 
         {/* Nearby beaches */}
         {nearby.length > 0 && (

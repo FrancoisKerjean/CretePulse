@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { isCarAdmin } from "@/lib/car-admin-auth";
 import { OUTCOMES, commissionEur, validatePartnerUpdate, ZONE_IDS } from "@/lib/car-admin";
+import { canCancelRequest } from "@/lib/car-quotes";
 
 const PATH = "/admin/car-rental";
 
@@ -64,6 +65,24 @@ export async function setCommissionPaid(id: number, paid: boolean) {
   const { error } = await supabase.from("car_requests")
     .update({ commission_paid_at: paid ? new Date().toISOString() : null })
     .eq("id", id).eq("outcome", "rented");
+  if (error) throw new Error(error.message);
+  revalidatePath(PATH);
+}
+
+/** Sort une demande du flow (demande erronée/spam) : statut → 'cancelled'. Les
+ *  deux passes du cron car-relance l'ignorent alors, le lien client est coupé
+ *  (accept_token_hash null) et tout devis loueur tardif est refusé. Idempotent :
+ *  refuse une demande déjà terminale (accepted/declined_by_client/cancelled). */
+export async function cancelRequest(id: number) {
+  await guard();
+  const { data: req } = await supabase.from("car_requests").select("status").eq("id", id).maybeSingle();
+  if (!req) throw new Error("Request not found");
+  if (!canCancelRequest(req.status)) {
+    redirect(`${PATH}?error=${encodeURIComponent("Demande déjà close, rien à sortir du flow")}`);
+  }
+  const { error } = await supabase.from("car_requests")
+    .update({ status: "cancelled", accept_token_hash: null })
+    .eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath(PATH);
 }

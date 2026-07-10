@@ -4,7 +4,7 @@ import { getLocalizedField, type Locale, type Hike } from "@/lib/types";
 import { Footprints, Mountain, MapPin } from "lucide-react";
 import Link from "next/link";
 import { buildAlternates } from "@/lib/seo";
-import { AffiliateBanner } from "@/components/ui/affiliate-banner";
+import { CarPromo } from "@/components/car-rental/CarPromo";
 
 export const revalidate = 86400;
 
@@ -139,7 +139,9 @@ export default async function HikesPage({
         {/* Excursions GYG : l'index rando = forte intention activité. Tous les
             /hikes/[slug] ont déjà ce CTA (source mesurée des clics GYG, 24/06) ;
             on couvre ici le seul trou restant parmi les pages activité. */}
-        <AffiliateBanner type="tours" locale={locale} className="mb-8" />
+        <div className="mb-8">
+          <CarPromo locale={locale} source="hikes-index" />
+        </div>
 
         {filtered.length === 0 ? (
           <div className="text-center py-16 text-text-muted">

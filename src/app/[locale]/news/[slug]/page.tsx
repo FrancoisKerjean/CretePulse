@@ -5,7 +5,7 @@ import { getNewsBySlug, getLatestNews, isNewsTranslated } from "@/lib/news";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { newsSchema, breadcrumbSchema } from "@/lib/schema";
 import { ExternalLink, Clock, ArrowLeft, Calendar, Globe } from "lucide-react";
-import { buildAlternates } from "@/lib/seo";
+import { buildAlternates, INDEXABLE_ROBOTS } from "@/lib/seo";
 import Link from "next/link";
 import DiscoverCrete from "@/components/DiscoverCrete";
 import { BusInCreteBox } from "@/components/BusInCreteBox";
@@ -28,6 +28,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const title = `${headline} | Crete Direct`;
   const description = summary?.replace(/<[^>]*>/g, "").substring(0, 160) || `${headline} - Crete news.`;
   const url = `${BASE_URL}/${locale}/news/${slug}`;
+  // Discover exige une grande image sur CHAQUE article : fallback OG dynamique 1200x630.
+  const ogImage = item.image_url || `${BASE_URL}/api/og?title=${encodeURIComponent(headline)}`;
 
   return {
     title,
@@ -35,13 +37,15 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     alternates: buildAlternates(locale, `/news/${slug}`),
     // noindex locales that only have the EN fallback (news is translated to en/fr/de/el
     // only) so duplicate-content variants don't cannibalise the real article.
-    robots: isNewsTranslated(item, locale) ? undefined : { index: false, follow: true },
+    // INDEXABLE_ROBOTS (pas undefined) : une clé robots même undefined écrase
+    // le max-image-preview:large du layout, requis par Discover.
+    robots: isNewsTranslated(item, locale) ? INDEXABLE_ROBOTS : { index: false, follow: true },
     openGraph: {
       title,
       description,
       url,
       type: "article",
-      images: item.image_url ? [{ url: item.image_url, width: 1200, height: 630, alt: headline }] : [],
+      images: [{ url: ogImage, width: 1200, height: 630, alt: headline }],
       publishedTime: item.published_at,
       authors: ["Crete Direct"],
       section: item.category || undefined,
@@ -51,7 +55,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       card: "summary_large_image",
       title,
       description,
-      images: item.image_url ? [item.image_url] : [],
+      images: [ogImage],
       site: "@cretedirect",
     },
   };

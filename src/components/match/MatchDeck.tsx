@@ -16,7 +16,6 @@ import { PlacePicker } from "@/components/geo/PlacePicker";
 import { haversineKm, isOnCrete, type GeoPos } from "@/lib/geo";
 import { SLUG_COORDS } from "@/lib/taxi-fare";
 import { CarPromo } from "@/components/car-rental/CarPromo";
-import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 import {
   type MatchPlace,
   type TasteProfile,
@@ -228,12 +227,6 @@ const T: Record<string, Record<string, string>> = {
     synthSubPrep: "Ό,τι σου άρεσε, έτοιμο για το ταξίδι σου:",
   },
 };
-
-// Types « excursionnables » : déclenchent le bandeau GetYourGuide en synthèse.
-const TOURABLE_TYPES = new Set([
-  "gorge", "island", "beach", "cave", "natural-park", "waterfall",
-  "archaeological-site", "historical-site",
-]);
 
 // Libellé localisé d'un groupe d'intérêts (clé "beaches" → t.groupBeaches).
 const GROUP_LABEL_KEYS: Record<string, string> = {
@@ -676,7 +669,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
 
   // ── Écran synthèse : tout ce qui a été liké + itinéraires ──
   if (ready && screen === "synthesis") {
-    // Bloc email extrait : en mode préparation il remonte AVANT CarPromo/GYG
+    // Bloc email extrait : en mode préparation il remonte AVANT CarPromo
     // (la conversion logique quand on prépare son voyage).
     const emailBlock = (
       <div className="card-base mt-4 px-6 py-5 !rounded-[24px]">
@@ -757,7 +750,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
                   </p>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     <Link
-                      href={`/explore?place=${p.slug}`}
+                      href={`/explore/${p.slug}`}
                       onClick={() => track("synthesis_place_clicked", { slug: p.slug })}
                       className="rounded-full bg-surface px-3 py-1.5 font-heading text-[12px] font-bold text-sea no-underline"
                     >
@@ -793,15 +786,12 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
         )}
         {likedPlacesAll.length > 0 && (
           <>
-            {/* Mode préparation : l'email d'abord, puis voiture et tours.
-                Sur place : voiture (intention routière) puis tours puis email. */}
+            {/* Mode préparation : l'email d'abord, puis voiture.
+                Sur place : voiture (intention routière) puis email. */}
             {geoMode === "prep" && emailBlock}
             <div className={geoMode === "prep" ? "mt-4" : "mt-6"}>
               <CarPromo locale={locale} source="match-synthesis" />
             </div>
-            {likedPlacesAll.some((p) => TOURABLE_TYPES.has(p.place_type)) && (
-              <AffiliateBanner type="tours" locale={locale} className="mt-4" />
-            )}
             {geoMode !== "prep" && emailBlock}
           </>
         )}
@@ -976,7 +966,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
             {likedPlaces.map((p) => (
               <Link
                 key={p.slug}
-                href={`/explore?place=${p.slug}`}
+                href={`/explore/${p.slug}`}
                 className="block shrink-0 no-underline"
                 title={p.name}
               >
@@ -1031,7 +1021,7 @@ export function MatchDeck({ pool, locale }: { pool: MatchPlace[]; locale: string
                   {match.rating != null && match.rating > 0 ? ` · ${match.rating.toFixed(1)} ★` : ""}
                 </p>
                 <Link
-                  href={`/explore?place=${match.slug}`}
+                  href={`/explore/${match.slug}`}
                   onClick={() => {
                     track("match_clicked", { slug: match.slug });
                     // Marquer le lieu comme vu avant la navigation, sinon le slug

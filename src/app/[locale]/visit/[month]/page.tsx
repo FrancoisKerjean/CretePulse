@@ -6,7 +6,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
 import { CarPromo } from "@/components/car-rental/CarPromo";
-import { AffiliateBanner } from "@/components/ui/affiliate-banner";
 import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 172800; // 03/07 optim couts Vercel (48h, ISR Writes)
@@ -483,11 +482,9 @@ export default async function VisitMonthPage({ params }: { params: Promise<{ loc
           <p className="text-lg leading-relaxed text-ink">{verdict}</p>
         </section>
 
-        {/* Monétisation (audit 13/06/2026, A3) : le voyageur planifie son mois
-            → voiture (Auto Smart primaire) + excursions GetYourGuide. */}
+        {/* Monetisation: month planning to Car Rental Direct. */}
         <section className="mb-10 space-y-4">
           <CarPromo locale={locale} source="visit-month" />
-          <AffiliateBanner type="tours" locale={locale} />
         </section>
 
         {/* Weather links per city */}

@@ -3,9 +3,6 @@
 // (diacritiques, exactitude technique CDW/IDP/loi grecque, voix de marque honnête) le 15/06/2026.
 // Fichier ASSEMBLÉ par scripts/gen-car-content.mjs (jetable). NE PAS éditer une langue à la
 // main sans répercuter le même soin ; la source de vérité du contenu est désormais ce fichier.
-// ONLINE_FALLBACK = repli online secondaire DiscoverCars (affilié réel, audit 13/06 A4),
-// volontairement discret face au wizard Auto Smart primaire.
-
 export type PageStrings = {
   h1: string;
   intro: string;
@@ -106,31 +103,6 @@ export const META: Record<string, { title: string; desc: string }> = {
     "title": "استئجار سيارة في كريت · وكالة محلية، سعر عادل، بدون دفع مسبق",
     "desc": "اطلب سيارة للإيجار في كريت بأربع نقرات. تردّ وكالة محلية موثوقة مباشرةً بعرض سعر: تدفع للوكالة، والنقد مقبول، بلا دفع مسبق عبر الإنترنت، والاستلام من المطار ممكن."
   }
-};
-
-export const ONLINE_FALLBACK: Record<string, string> = {
-  "en": "Prefer to book online right now? Compare every rental company in Crete on DiscoverCars, with free cancellation.",
-  "fr": "Vous préférez réserver en ligne tout de suite ? Comparez tous les loueurs de Crète sur DiscoverCars, annulation gratuite.",
-  "de": "Lieber sofort online buchen? Vergleichen Sie alle Vermieter Kretas auf DiscoverCars, mit kostenloser Stornierung.",
-  "el": "Προτιμάτε κράτηση online τώρα; Συγκρίνετε όλες τις εταιρείες στην Κρήτη στο DiscoverCars, με δωρεάν ακύρωση.",
-  "it": "Preferisci prenotare online subito? Confronta tutte le compagnie di autonoleggio a Creta su DiscoverCars, con cancellazione gratuita.",
-  "nl": "Liever nu meteen online boeken? Vergelijk alle autoverhuurbedrijven op Kreta op DiscoverCars, met gratis annulering.",
-  "pl": "Wolisz od razu zarezerwować online? Porównaj wszystkie wypożyczalnie na Krecie w serwisie DiscoverCars, z bezpłatną anulacją.",
-  "es": "¿Prefieres reservar en línea ahora mismo? Compara todas las empresas de alquiler en Creta en DiscoverCars, con cancelación gratuita.",
-  "pt": "Prefere reservar online já? Compare todas as empresas de aluguer em Creta na DiscoverCars, com cancelamento gratuito.",
-  "ru": "Хотите забронировать онлайн прямо сейчас? Сравните все прокатные компании Крита на DiscoverCars с бесплатной отменой.",
-  "ja": "今すぐオンラインで予約したいですか？DiscoverCars でクレタ島のすべてのレンタカー会社を比較できます。キャンセル無料です。",
-  "ko": "지금 바로 온라인으로 예약하고 싶으신가요? DiscoverCars에서 크레타의 모든 렌터카 업체를 비교하고 무료 취소 조건으로 예약하세요.",
-  "zh": "想现在就在线预订？在 DiscoverCars 上比较克里特岛所有租车公司，可免费取消。",
-  "tr": "Şimdi çevrimiçi rezervasyon yapmayı mı tercih edersiniz? DiscoverCars üzerinden Girit'teki tüm kiralama şirketlerini ücretsiz iptal seçeneğiyle karşılaştırın.",
-  "sv": "Vill du boka online direkt? Jämför alla biluthyrningsföretag på Kreta hos DiscoverCars, med fri avbokning.",
-  "da": "Vil du hellere booke online med det samme? Sammenlign alle biludlejningsfirmaer på Kreta hos DiscoverCars, med gratis afbestilling.",
-  "no": "Vil du heller bestille på nett med en gang? Sammenlign alle utleiefirmaer på Kreta hos DiscoverCars, med gratis avbestilling.",
-  "fi": "Haluatko mieluummin varata verkossa heti? Vertaile kaikkia Kreetan vuokra-autofirmoja DiscoverCarsissa, ilmainen peruutus mukana.",
-  "cs": "Chcete si raději rezervovat online hned teď? Porovnejte všechny půjčovny aut na Krétě na DiscoverCars, se zrušením zdarma.",
-  "hu": "Inkább most foglalna online? Hasonlítsa össze az összes krétai autókölcsönzőt a DiscoverCars oldalán, ingyenes lemondással.",
-  "ro": "Preferi să rezervi online chiar acum? Compară toate companiile de închirieri din Creta pe DiscoverCars, cu anulare gratuită.",
-  "ar": "تفضّل الحجز عبر الإنترنت الآن؟ قارن بين كل شركات تأجير السيارات في كريت على DiscoverCars، مع إمكانية إلغاء مجاني."
 };
 
 export const L: Record<string, PageStrings> = {

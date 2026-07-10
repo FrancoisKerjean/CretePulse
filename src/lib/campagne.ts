@@ -55,7 +55,7 @@ const FR: CampagneCopy = {
   },
   hero: { kicker: "le parcours", title: "Coucou ! Moi, c'est <hl>Kriri</hl>.", sub: "Je prends le bus partout en Crète. Viens, je te montre." },
   beats: [
-    { id: "probleme", kicker: "au début", side: "left", title: "Avant, c'était un peu compliqué.", sub: "Les horaires sont sur de vieux papiers, souvent en grec. On ne sait pas toujours quand le bus arrive. Alors on attend, et on espère." },
+    { id: "probleme", kicker: "au début", side: "left", title: "Avant, c'était un peu compliqué.", sub: "Les horaires sont souvent répartis entre plusieurs sources. On ne sait pas toujours quelle information est la bonne. Alors on attend, et on espère." },
     { id: "carte", kicker: "l'idée", side: "right", title: "Alors, on a eu une idée.<br>Tout mettre sur <hl>une seule carte</hl>." },
     { id: "direct", kicker: "et hop", side: "left", title: "Et hop !<br>Les bus, <hl>en vrai, en direct</hl>.", sub: "Tous les horaires au même endroit, dans ta langue. Tu vois où est ton bus, tout de suite. Et c'est gratuit pour tout le monde." },
     { id: "marque", kicker: "le sommet", side: "center", title: "Ça, c'est <hl>crete.direct</hl>.", sub: "Une petite équipe, ici en Crète, qui veut juste rendre le bus plus simple. Pour les Crétois comme pour les voyageurs." },
@@ -84,7 +84,25 @@ const EN: CampagneCopy = {
   buttons: { instagram: "Follow on Instagram", facebook: "Follow on Facebook", share: "Share", help: "Help" },
 };
 
-const COPY: Record<string, CampagneCopy> = { fr: FR, en: EN };
+const EL: CampagneCopy = {
+  meta: {
+    title: "Το έργο μας · crete.direct",
+    description: "Η ιστορία του crete.direct: τα λεωφορεία της Κρήτης πιο απλά. Ένα ανεξάρτητο και δωρεάν έργο.",
+  },
+  hero: { kicker: "η διαδρομή", title: "Γεια! Είμαι ο <hl>Kriri</hl>.", sub: "Παίρνω λεωφορεία σε όλη την Κρήτη. Έλα, θα σου δείξω." },
+  beats: [
+    { id: "probleme", kicker: "στην αρχή", side: "left", title: "Στην αρχή ήταν λίγο μπερδεμένο.", sub: "Τα ωράρια είναι συχνά σκορπισμένα, με παλιές ανακοινώσεις και διαφορετικές πηγές. Δεν ξέρεις πάντα τι ισχύει. Περιμένεις και ελπίζεις." },
+    { id: "carte", kicker: "η ιδέα", side: "right", title: "Οπότε είχαμε μια ιδέα.<br>Να τα βάλουμε όλα σε <hl>έναν χάρτη</hl>." },
+    { id: "direct", kicker: "και έγινε", side: "left", title: "Τα λεωφορεία, <hl>πιο καθαρά</hl>.", sub: "Ωράρια, διαδρομές και χρήσιμες πληροφορίες σε ένα σημείο, στη γλώσσα σου. Δωρεάν για όλους." },
+    { id: "marque", kicker: "η κορυφή", side: "center", title: "Αυτό είναι το <hl>crete.direct</hl>.", sub: "Μια μικρή ομάδα στην Κρήτη που θέλει να κάνει τη μετακίνηση πιο απλή. Για Κρητικούς και ταξιδιώτες." },
+    { id: "demain", kicker: "και αύριο;", side: "right", sub: "Περισσότερα ζωντανά δεδομένα, περισσότερες περιοχές και μια εφαρμογή στην τσέπη σου." },
+    { id: "aide", kicker: "μεταξύ μας", side: "right", title: "Το χτίζουμε μόνοι μας.<br>Και χρειαζόμαστε <hl>βοήθεια</hl>.", sub: "Το crete.direct είναι δωρεάν και ανεξάρτητο. Όσο περισσότερο το μοιράζονται οι άνθρωποι, τόσο πιο χρήσιμο γίνεται." },
+  ],
+  cta: { title: "Θέλεις να βοηθήσεις;<br>Είναι <hl>απλό</hl>.", micro: "Ακολούθησέ μας και μοιράσου το. Μας βοηθάει πραγματικά. Ευχαριστούμε!" },
+  buttons: { instagram: "Instagram", facebook: "Facebook", share: "Κοινοποίηση", help: "Βοήθεια" },
+};
+
+const COPY: Record<string, CampagneCopy> = { fr: FR, en: EN, el: EL };
 export function getCampagneCopy(locale: string): CampagneCopy {
   return COPY[locale] ?? EN;
 }
@@ -92,6 +110,7 @@ export function getCampagneCopy(locale: string): CampagneCopy {
 export const SHARE: Record<string, { title: string; text: string }> = {
   fr: { title: "crete.direct · le bus en Crète, en clair", text: "Un projet indépendant et gratuit pour les bus crétois. Soutiens-le en suivant et en partageant." },
   en: { title: "crete.direct · Crete's buses, made simple", text: "A free, independent project for Crete's buses. Support it by following and sharing." },
+  el: { title: "crete.direct · τα λεωφορεία της Κρήτης πιο απλά", text: "Ένα δωρεάν και ανεξάρτητο έργο για τις μετακινήσεις στην Κρήτη. Βοήθησέ το με μια κοινοποίηση." },
 };
 export function getShare(locale: string): { title: string; text: string } { return SHARE[locale] ?? SHARE.en; }
 

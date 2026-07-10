@@ -7,7 +7,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
 import { cityThingsToDoSchema } from "@/lib/schema";
-import { AffiliateBanner } from "@/components/ui/affiliate-banner";
+import { CarPromo } from "@/components/car-rental/CarPromo";
 import { getBusRoutes } from "@/lib/buses";
 import { qualityPairSlugs, type SeoRoute } from "@/lib/bus-seo";
 import { eligiblePairs } from "@/lib/bus-pairs";
@@ -517,8 +517,8 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
           ))}
         </div>
 
-        {/* Tours & activities partner banner (GetYourGuide, real partner ID) */}
-        <AffiliateBanner type="tours" locale={locale} placeName={locale === "el" ? city.nameEl : city.name} />
+        {/* Car Rental Direct */}
+        <CarPromo locale={locale} source="things-to-do" />
 
         {/* FAQ */}
         <section>

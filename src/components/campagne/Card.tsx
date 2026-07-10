@@ -69,7 +69,7 @@ export default function Card({
       )}
       {sub && (
         <p
-          className="mt-[13px] text-[clamp(16px,2.6vw,20px)] font-semibold leading-[1.4] text-[var(--color-text)] opacity-[.92]"
+          className="mt-[13px] text-[clamp(16px,2.6vw,20px)] font-bold leading-[1.4] text-[var(--color-text)]"
           dangerouslySetInnerHTML={{ __html: renderCopy(sub) }}
         />
       )}

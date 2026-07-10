@@ -1,0 +1,921 @@
+{
+ "generated_at": "2026-07-09T17:46:42.427Z",
+ "method": "Estimated crowd pressure, not a visitor count. Airbnb listing density (31K listings, ~2.2 km grid) within 5 km, distance-weighted (exp(-d/1.5km)), percentile-ranked across all beaches, then adjusted by the field-observed cb_places crowds attribute (Crowded +15 / Normal +5 / Quiet -5 / None -15), clamped 0-100.",
+ "bands": {
+  "quiet": "score <= 35",
+  "moderate": "36-65",
+  "busy": "> 65"
+ },
+ "beaches": {
+  "sougia-beach": {
+   "score": 15,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "palm-beach-vai": {
+   "score": 38,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "trachilias-beach": {
+   "score": 20,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "diktina-beach": {
+   "score": 10,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "pahia-ammos-nudist-beach": {
+   "score": 56,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "finikas-beach": {
+   "score": 18,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "orthi-ammos-paralia": {
+   "score": 46,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "sougia-nude-beach": {
+   "score": 15,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "mikro-ammoudi-nudist-beach": {
+   "score": 90,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "katalyki": {
+   "score": 53,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "plakias-beach": {
+   "score": 61,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "ammoudi": {
+   "score": 97,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "kendrodasos": {
+   "score": 12,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "kakkos": {
+   "score": 52,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "kokkino-volakas": {
+   "score": 26,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "onerock-beach": {
+   "score": 90,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "paligremnos-beach-nudist": {
+   "score": 61,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "saradari-nude-beach": {
+   "score": 98,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "pink-beach": {
+   "score": 75,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "agia-pelagia-beach": {
+   "score": 99,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "filaki": {
+   "score": 17,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "voulolimni": {
+   "score": 20,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "keratokambos": {
+   "score": 52,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "vatalos-beach": {
+   "score": 22,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "kouremenos": {
+   "score": 49,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "sedoni-beach": {
+   "score": 10,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "paralia-vlichadia": {
+   "score": 14,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "gramm-no-beach": {
+   "score": 23,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "kommos-beach": {
+   "score": 37,
+   "band": "moderate",
+   "crowds": "quiet"
+  },
+  "star-beach": {
+   "score": 63,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "krios-beach": {
+   "score": 14,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "tiny-beach-pink-sand": {
+   "score": 64,
+   "band": "moderate",
+   "crowds": null
+  },
+  "white-beach": {
+   "score": 61,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "kouremenos-beach": {
+   "score": 49,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "sunset-beach": {
+   "score": 64,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "krassas-beach": {
+   "score": 22,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "damnoni-beach": {
+   "score": 57,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "agia-marina-beach": {
+   "score": 99,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "marathi-beach": {
+   "score": 50,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "seitan-limania-beach": {
+   "score": 71,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "argilos": {
+   "score": 19,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "finikidia-beach": {
+   "score": 50,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "fotinari-beach": {
+   "score": 56,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "skinaria-beach": {
+   "score": 87,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "hohlakas": {
+   "score": 18,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "elounda-beach": {
+   "score": 60,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "istro-beach": {
+   "score": 27,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "georgioupolis-beach": {
+   "score": 65,
+   "band": "moderate",
+   "crowds": null
+  },
+  "geropotamos-beach": {
+   "score": 47,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "gialopotama-beach": {
+   "score": 21,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "palm-bay-beach": {
+   "score": 53,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "trachoulas": {
+   "score": 14,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "mikri-triopetra-beach": {
+   "score": 25,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "malia-beach": {
+   "score": 94,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "atherina-beach": {
+   "score": 12,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "kefala-beach": {
+   "score": 17,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "eastern-gulf": {
+   "score": 99,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "golden-beach": {
+   "score": 100,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "kitroplatia": {
+   "score": 97,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "agiofarago-beach": {
+   "score": 12,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "fodele-beach": {
+   "score": 45,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "episkopi-beach": {
+   "score": 26,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "aelos-beach": {
+   "score": 95,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "kalivaki-beach": {
+   "score": 55,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "makrigialos-beach": {
+   "score": 93,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "agios-charalampos-beach": {
+   "score": 18,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "calypso": {
+   "score": 58,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "livadi-beach": {
+   "score": 92,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "karoumes": {
+   "score": 11,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "maridati-beach": {
+   "score": 21,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "afrathia": {
+   "score": 33,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "aghios-pavlos-beach": {
+   "score": 11,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "agia-fotia": {
+   "score": 54,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "klimata": {
+   "score": 18,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "karterou": {
+   "score": 51,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "krinakia-beach": {
+   "score": 15,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "triopetra-beach": {
+   "score": 24,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "agiofarango": {
+   "score": 38,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "agios-georgios": {
+   "score": 26,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "alatsolimni-beach": {
+   "score": 17,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "ammofolos-beach": {
+   "score": 25,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "vourlia-beach": {
+   "score": 19,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "stavri-beach": {
+   "score": 24,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "skinos-beach": {
+   "score": 60,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "pachia-ammos": {
+   "score": 24,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "ammoudi-beach": {
+   "score": 90,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "anatolika-beach": {
+   "score": 20,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "anidri-beach": {
+   "score": 21,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "skinias-beach": {
+   "score": 14,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "vlihi-nero-beach": {
+   "score": 91,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "falassarna": {
+   "score": 59,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "m-leme-beach": {
+   "score": 36,
+   "band": "moderate",
+   "crowds": "quiet"
+  },
+  "kiani-beach": {
+   "score": 74,
+   "band": "busy",
+   "crowds": null
+  },
+  "peninsula-private-beach": {
+   "score": 97,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "klima-beach": {
+   "score": 24,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "paralia-lagada": {
+   "score": 27,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "blue-coast": {
+   "score": 78,
+   "band": "busy",
+   "crowds": null
+  },
+  "rapaniana-beach": {
+   "score": 33,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "tavronitis": {
+   "score": 33,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "argilos-beach": {
+   "score": 20,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "avlaki": {
+   "score": 28,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "beach-of-telonio": {
+   "score": 38,
+   "band": "moderate",
+   "crowds": "quiet"
+  },
+  "botzalaki-beach": {
+   "score": 14,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "prasonisi-beach": {
+   "score": 22,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "boufos": {
+   "score": 54,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "katsouni-nudist-beach": {
+   "score": 23,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "chiona-beach": {
+   "score": 49,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "domata-beach": {
+   "score": 11,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "dynonissos-beach": {
+   "score": 16,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "mononaftis-beach": {
+   "score": 96,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "paralia-tersanas": {
+   "score": 94,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "eko-beach": {
+   "score": 47,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "eligias": {
+   "score": 17,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "timios-stavros-beach": {
+   "score": 16,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "falasarna-beach": {
+   "score": 60,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "skouros": {
+   "score": 50,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "sweet-water-beach": {
+   "score": 15,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "elafonisi-beach": {
+   "score": 75,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "matala-beach": {
+   "score": 89,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "stavros-beach": {
+   "score": 59,
+   "band": "moderate",
+   "crowds": null
+  },
+  "georgioupoli-beach": {
+   "score": 55,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "paleochora-beach": {
+   "score": 56,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "loutro-beach": {
+   "score": 44,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "stalis-beach": {
+   "score": 98,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "frangokastello-beach": {
+   "score": 48,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "xerokampos-beach": {
+   "score": 19,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "sitia-beach": {
+   "score": 57,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "almyrida-beach": {
+   "score": 61,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "kalathas-beach": {
+   "score": 61,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "balos-lagoon": {
+   "score": 70,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "preveli-beach": {
+   "score": 77,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "itanos-beach": {
+   "score": 37,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "lygaria-beach": {
+   "score": 99,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "psaromoura-beach": {
+   "score": 98,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "plaka": {
+   "score": 52,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "trachilos-beach": {
+   "score": 31,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "orthi-ammos": {
+   "score": 47,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "mazida-ammos-beach": {
+   "score": 44,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "polyrizos-beach": {
+   "score": 42,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "kum-kapisi": {
+   "score": 40,
+   "band": "moderate",
+   "crowds": "quiet"
+  },
+  "palaiokastro-beach": {
+   "score": 94,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "pera-galini": {
+   "score": 12,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "podare-beach": {
+   "score": 23,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "moni-kapsa-beach": {
+   "score": 12,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "maherida-nudist-beach": {
+   "score": 34,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "lycos-beach": {
+   "score": 18,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "plakaki": {
+   "score": 16,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "psili-ammos-beach": {
+   "score": 14,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "loutraki-beach": {
+   "score": 87,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "stena": {
+   "score": 41,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "stoney-beach": {
+   "score": 55,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "nea-chora-beach": {
+   "score": 100,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "lissos-beach": {
+   "score": 13,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "red-beach": {
+   "score": 51,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "schisma": {
+   "score": 60,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "tripiti": {
+   "score": 36,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "marmara-beach": {
+   "score": 15,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "kolokitha": {
+   "score": 85,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "vrisi": {
+   "score": 46,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "varkotopos-beach": {
+   "score": 93,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "mavros-molos": {
+   "score": 62,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "kera": {
+   "score": 38,
+   "band": "moderate",
+   "crowds": "quiet"
+  },
+  "tholos-beach": {
+   "score": 44,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "korakas-beach": {
+   "score": 43,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "ilingas-beach": {
+   "score": 18,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "kalamaki": {
+   "score": 99,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "ligres-beach": {
+   "score": 23,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "kalyves": {
+   "score": 61,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "kalami-beach": {
+   "score": 28,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "platanakia": {
+   "score": 21,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "koudouma": {
+   "score": 38,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "martsalo": {
+   "score": 12,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "tripiti-beach": {
+   "score": 11,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "pantanassa": {
+   "score": 58,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "koutalas-beach": {
+   "score": 32,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "karavostasi": {
+   "score": 29,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "listis": {
+   "score": 46,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "rethymnon-beach": {
+   "score": 64,
+   "band": "moderate",
+   "crowds": "normal"
+  },
+  "peristeres-beach": {
+   "score": 16,
+   "band": "quiet",
+   "crowds": "quiet"
+  },
+  "voulisma": {
+   "score": 91,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "potamos-municipal-beach": {
+   "score": 88,
+   "band": "busy",
+   "crowds": "crowded place"
+  },
+  "kedrodasos": {
+   "score": 13,
+   "band": "quiet",
+   "crowds": "quiet"
+  }
+ }
+}

@@ -4,10 +4,12 @@ import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { carPickupLabel, carTypeLabelWithExamples } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { hashToken } from "@/lib/car-quote";
+import { childSeatLabels } from "@/lib/car-child-seats";
 import { QuoteForm } from "./QuoteForm";
 
 const INSURANCE_LABEL: Record<string, string> = { full: "Full insurance (all-risk)", basic: "Basic insurance" };
 const PAYMENT_LABEL: Record<string, string> = { cash: "Cash", card: "Card" };
+const GEARBOX_LABEL: Record<string, string> = { automatic: "Automatic", manual: "Manual" };
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -27,7 +29,7 @@ export default async function CarQuotePage({ params }: { params: Promise<{ local
     .maybeSingle();
   const { data: row } = invite
     ? await supabase.from("car_requests")
-        .select("id, status, pickup_slug, date_from, time_from, date_to, time_to, car_type, pax, note, insurance, payment_method")
+        .select("id, status, pickup_slug, date_from, time_from, date_to, time_to, car_type, pax, note, insurance, payment_method, gearbox, child_seats")
         .eq("id", invite.request_id).maybeSingle()
     : { data: null };
 
@@ -64,6 +66,8 @@ export default async function CarQuotePage({ params }: { params: Promise<{ local
           <div><strong>People:</strong> {row.pax ?? "-"}</div>
           {row.insurance && INSURANCE_LABEL[row.insurance] ? <div><strong>Insurance:</strong> {INSURANCE_LABEL[row.insurance]}</div> : null}
           {row.payment_method && PAYMENT_LABEL[row.payment_method] ? <div><strong>Payment:</strong> {PAYMENT_LABEL[row.payment_method]}</div> : null}
+          {row.gearbox && GEARBOX_LABEL[row.gearbox] ? <div><strong>Gearbox:</strong> {GEARBOX_LABEL[row.gearbox]}</div> : null}
+          {Array.isArray(row.child_seats) && row.child_seats.length ? <div><strong>Child seats:</strong> {childSeatLabels(row.child_seats as string[], "en").join(", ")}</div> : null}
           {row.note ? <div><strong>Note:</strong> {row.note}</div> : null}
         </div>
 
@@ -71,12 +75,15 @@ export default async function CarQuotePage({ params }: { params: Promise<{ local
           <p style={{ margin: 0, padding: "16px 18px", borderRadius: 12, background: "#F1F5F9", color: "#334155", fontSize: 15, lineHeight: 1.6 }}>
             This request is now closed. Thank you.
           </p>
-        ) : invite?.status === "quoted" ? (
-          <p style={{ margin: 0, padding: "16px 18px", borderRadius: 12, background: "#ECFDF5", color: "#065F46", fontSize: 15, lineHeight: 1.6 }}>
-            Your price was submitted for this request. Thank you. We will connect you if the customer chooses your offer.
-          </p>
         ) : (
-          <QuoteForm token={token} locale={locale} />
+          <>
+            {invite?.status === "quoted" ? (
+              <p style={{ margin: "0 0 16px", padding: "12px 16px", borderRadius: 12, background: "#ECFDF5", color: "#065F46", fontSize: 14, lineHeight: 1.6 }}>
+                You already sent an offer for this request. You can send more options or update it below · your new submission replaces the previous one.
+              </p>
+            ) : null}
+            <QuoteForm token={token} locale={locale} />
+          </>
         )}
       </div>
     </main>

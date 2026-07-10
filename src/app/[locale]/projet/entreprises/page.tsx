@@ -23,9 +23,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     description: meta.description,
     alternates: buildAlternates(locale, "/projet/entreprises"),
     openGraph: { title: meta.title, description: meta.description, url: `${BASE_URL}/${locale}/projet/entreprises`, type: "website" },
-    // En veille jusqu'a la Gate A (audience prouvee) : page live pour le demarchage
-    // direct, mais non indexee tant que le volet financement n'est pas active.
-    robots: { index: false, follow: true },
   };
 }
 

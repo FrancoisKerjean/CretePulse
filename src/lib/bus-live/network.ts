@@ -6,14 +6,14 @@ import type { LiveLine, LiveNetwork, LiveStop } from "./types";
 
 interface LineRow {
   id: number; code: string; code_official: string | null;
-  source: "osm" | "ktel" | "agncitybus"; color: string | null; geometry: [number, number][] | null;
+  source: "osm" | "ktel" | "agncitybus" | "citybus"; color: string | null; geometry: [number, number][] | null;
   total_minutes: number | null; length_km: number | null; partial_geo: boolean | null;
 }
 interface LineStopRow {
   line_id: number; stop_id: number; seq: number;
   cumulative_km: number | null; cumulative_minutes: number | null;
 }
-interface StopRow { id: number; slug: string; name: string; lat: number; lng: number; }
+interface StopRow { id: number; slug: string; name: string; lat: number; lng: number; api_code: string | null; }
 
 /** Charge lignes + arrêts + routes appariées, assemble et filtre les lignes inexploitables. */
 export async function loadLiveNetwork(): Promise<LiveNetwork> {
@@ -24,7 +24,7 @@ export async function loadLiveNetwork(): Promise<LiveNetwork> {
     supabase.from("bus_line_stops")
       .select("line_id, stop_id, seq, cumulative_km, cumulative_minutes")
       .order("line_id", { ascending: true }).order("seq", { ascending: true }),
-    supabase.from("bus_stops").select("id, slug, name, lat, lng"),
+    supabase.from("bus_stops").select("id, slug, name, lat, lng, api_code"),
     supabase.from("bus_routes").select("*").not("line_id", "is", null),
   ]);
 
@@ -47,6 +47,7 @@ export async function loadLiveNetwork(): Promise<LiveNetwork> {
     const arr = stopsByLine.get(ls.line_id) ?? [];
     arr.push({
       seq: ls.seq, slug: s.slug, name: s.name, lat: s.lat, lng: s.lng,
+      apiCode: s.api_code ?? null,
       cumKm: ls.cumulative_km ?? 0, cumMin: ls.cumulative_minutes ?? 0,
     });
     stopsByLine.set(ls.line_id, arr);

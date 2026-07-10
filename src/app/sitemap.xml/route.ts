@@ -22,6 +22,7 @@ import { MONTHS, CITIES } from "@/lib/weather-monthly";
 import { CRETE_NEIGHBOURHOODS } from "@/lib/airbnb-mappings";
 import { CRETE_AIRPORTS } from "@/lib/airports";
 import { CAR_LOCATION_SLUGS } from "@/lib/car-locations";
+import { ACTIVITY_CATEGORIES, ACTIVITY_CITIES } from "@/lib/activity-taxonomy";
 
 export const revalidate = 86400;
 
@@ -47,13 +48,18 @@ const STATIC_PAGES = [
   "/about",
   "/buses",
   "/buses/agios-nikolaos",
+  "/buses/heraklion",
+  "/buses/chania",
   "/near-me",
   "/car-rental",
+  "/activities",
   "/fire-alerts",
   "/airbnb",
   "/airport",
   "/partners",
   "/projet",
+  "/projet/institutions",
+  "/projet/entreprises",
   "/enquete/paradoxe-tourisme-crete",
 ];
 
@@ -172,7 +178,6 @@ export async function GET() {
   // Highest-priority utility page · was missing entirely, the likely root cause
   // of it never getting indexed despite strong internal linking.
   push("/explore", "weekly", 0.9);
-  push("/map", "monthly", 0.6);
   push("/search", "monthly", 0.4);
   push("/match", "monthly", 0.6);
 
@@ -231,6 +236,12 @@ export async function GET() {
   // pages that feed the local quote wizard without query strings.
   for (const slug of CAR_LOCATION_SLUGS) push(`/car-rental/${slug}`, "monthly", 0.8);
 
+  // Activities verticale: catégorie hubs + hubs par ville.
+  for (const c of ACTIVITY_CATEGORIES) {
+    push(`/activities/${c.slug}`, "monthly", 0.8);
+    for (const city of ACTIVITY_CITIES) push(`/activities/${c.slug}/${city.slug}`, "monthly", 0.8);
+  }
+
   // Live utility: "where to swim today" (wind-aware daily pick, ISR 30 min).
   push("/beaches/today", "daily", 0.9);
 
@@ -257,6 +268,37 @@ export async function GET() {
   for (const s of hikes) push(`/hikes/${s}`, "monthly", 0.6);
   for (const n of news) push(`/news/${n.slug}`, "daily", 0.5, n.lastmod);
   for (const g of guides) push(`/articles/${g.slug}`, "weekly", 0.7, g.lastmod);
+
+  // /explore/[slug] : 2294+ fiches lieux (cb_places). Toutes les fiches sont
+  // indexables : pages dédiées avec bento, description, JSON-LD, CTAs. Priorité
+  // 0.6 (infra, comme /beaches/[slug]) ; changefreq mensuelle (données stables).
+  // Le sitemap ne filtre pas par locale (/en/* est la loc canonique dans urlEntry).
+  // PostgREST plafonne à 1000 lignes par requête : on pagine par tranches de 1000
+  // avec .range(offset, offset+999) + .order("slug") jusqu'à épuisement.
+  try {
+    const PAGE_SIZE = 1000;
+    let offset = 0;
+    let done = false;
+    while (!done) {
+      const { data: page, error } = await supabase
+        .from("cb_places")
+        .select("slug")
+        .order("slug")
+        .range(offset, offset + PAGE_SIZE - 1);
+      if (error) break;
+      const rows = (page || []) as Array<{ slug: string }>;
+      for (const row of rows) {
+        push(`/explore/${row.slug}`, "monthly", 0.6);
+      }
+      if (rows.length < PAGE_SIZE) {
+        done = true;
+      } else {
+        offset += PAGE_SIZE;
+      }
+    }
+  } catch {
+    // Silencieux : le sitemap reste valide sans les fiches /explore.
+  }
 
   const lastmod = new Date().toISOString();
   const xmlEntries = entries.map((e) => urlEntry(e, lastmod)).join("\n");

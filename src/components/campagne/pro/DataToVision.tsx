@@ -9,7 +9,7 @@ export default function DataToVision({ frise }: { frise: ProCopy["frise"] }) {
             {s.year}
           </span>
           <h3 className="font-[family-name:var(--font-heading)] text-[15px] font-bold text-[var(--color-text)]">{s.title}</h3>
-          <p className="mt-[5px] text-[13px] text-[var(--color-muted,#56707d)]">{s.text}</p>
+          <p className="mt-[5px] text-[13px] font-semibold leading-snug text-[var(--color-text)]">{s.text}</p>
         </div>
       ))}
     </div>

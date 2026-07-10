@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
-import { AffiliateBanner } from "@/components/ui/affiliate-banner";
+import { CarPromo } from "@/components/car-rental/CarPromo";
 import { JsonLd } from "@/components/JsonLd";
 import { beachFacing } from "@/lib/swim-today";
 import { getBathingWaterQuality } from "@/lib/bathing-water";
@@ -355,11 +355,8 @@ export default async function BestBeachesForPage({ params }: { params: Promise<{
           </div>
         )}
 
-        {/* Monétisation (audit 13/06/2026, trou résiduel comblé 17/06) :
-            l'intention « activité de plage » (snorkeling, baignade, sorties)
-            convertit vers les excursions et sorties bateau. GetYourGuide
-            tours (8%), bandeau générique Crète. */}
-        <AffiliateBanner type="tours" locale={locale} />
+        {/* Monetisation: beach activity intent to Car Rental Direct. */}
+        <CarPromo locale={locale} source="beaches-best-for" />
 
         {/* FAQ */}
         <section>

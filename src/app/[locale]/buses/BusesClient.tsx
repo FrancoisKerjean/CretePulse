@@ -15,7 +15,7 @@ import { RouteLine } from "@/components/RouteLine";
 import { originPlaces } from "@/lib/bus-departures";
 import { pairSlug } from "@/lib/bus-pairs";
 import { PushBell } from "@/components/PushBell";
-import { AffiliateBanner } from "@/components/ui/affiliate-banner";
+import { CarPromo } from "@/components/car-rental/CarPromo";
 
 // ---------------------------------------------------------------------------
 // Slugs valides des pages cibles (mirror des generateStaticParams cote serveur).
@@ -484,6 +484,52 @@ export function BusesClient({
           <ChevronDown className="h-4 w-4 -rotate-90 text-text-muted" />
         </Link>
 
+        {/* Bus urbain d'Heraklion : réseau Astiko KTEL, calculateur dédié */}
+        <Link
+          href={`/${locale}/buses/heraklion`}
+          className="mb-6 flex items-center gap-3 rounded-2xl border border-black/5 bg-white p-4 shadow-sm transition hover:shadow-md"
+        >
+          <span className="flex gap-1" aria-hidden>
+            <span className="h-6 w-2 rounded-full" style={{ background: "#ff4081" }} />
+            <span className="h-6 w-2 rounded-full" style={{ background: "#8d6e63" }} />
+            <span className="h-6 w-2 rounded-full" style={{ background: "#880e4f" }} />
+          </span>
+          <span className="flex-1">
+            <span className="block text-sm font-semibold text-text">
+              {locale === "fr" ? "Bus urbain d'Héraklion" : "Heraklion city bus"}
+            </span>
+            <span className="block text-xs text-text-muted">
+              {locale === "fr"
+                ? "23 lignes · calculez votre trajet en ville"
+                : "23 lines · plan your trip in town"}
+            </span>
+          </span>
+          <ChevronDown className="h-4 w-4 -rotate-90 text-text-muted" />
+        </Link>
+
+        {/* Bus urbain de Chania : réseau Astiko KTEL, calculateur dédié */}
+        <Link
+          href={`/${locale}/buses/chania`}
+          className="mb-6 flex items-center gap-3 rounded-2xl border border-black/5 bg-white p-4 shadow-sm transition hover:shadow-md"
+        >
+          <span className="flex gap-1" aria-hidden>
+            <span className="h-6 w-2 rounded-full" style={{ background: "#4a148c" }} />
+            <span className="h-6 w-2 rounded-full" style={{ background: "#00695c" }} />
+            <span className="h-6 w-2 rounded-full" style={{ background: "#e65100" }} />
+          </span>
+          <span className="flex-1">
+            <span className="block text-sm font-semibold text-text">
+              {locale === "fr" ? "Bus urbain de Chania" : "Chania city bus"}
+            </span>
+            <span className="block text-xs text-text-muted">
+              {locale === "fr"
+                ? "12 lignes · calculez votre trajet en ville"
+                : "12 lines · plan your trip in town"}
+            </span>
+          </span>
+          <ChevronDown className="h-4 w-4 -rotate-90 text-text-muted" />
+        </Link>
+
         {/* Plan réseau interactif · réagit aux sélecteurs + stations cliquables */}
         <BusNetworkMap
           locale={locale}
@@ -505,14 +551,9 @@ export function BusesClient({
                   {t("noRoute", locale)}
                 </div>
                 {/* Pas de bus direct = meilleur moment pour proposer la voiture.
-                    Signal mesuré (Plausible, 24/06) : /buses = ~74 % du trafic mais
-                    capture affiliée quasi nulle -> CTA contextuel sur l'intention. */}
-                <AffiliateBanner
-                  type="carRental"
-                  locale={locale}
-                  placeName={toPlace || fromPlace || undefined}
-                  placement="buses-noroute"
-                />
+                    Wizard interne uniquement. Signal Plausible 24/06 :
+                    /buses = ~74 % du trafic. */}
+                <CarPromo locale={locale} source="buses-noroute" />
               </div>
             ) : (
               <RouteList list={filtered} locale={locale} />
@@ -521,6 +562,13 @@ export function BusesClient({
         ) : (
           <>
             <PopularRoutes popular={popular} locale={locale} onPick={pick} />
+            {/* Levier expo (audit Plausible 08/07) : /buses = page n1 (2366 vis/30j)
+                mais le CTA voiture n'apparaissait qu'apres une recherche. Encart
+                statique sur le landing = expose le wizard a tout le trafic bus,
+                l'audience la plus intentionnee (se deplacer sans voiture). */}
+            <div className="mb-6">
+              <CarPromo locale={locale} source="buses-home" />
+            </div>
             {east.length > 0 && (
               <CollapsibleRegion title={t("regionEast", locale)} list={east} locale={locale} />
             )}
@@ -536,8 +584,10 @@ export function BusesClient({
                   ))}
                 </div>
                 {/* Ces destinations n'ont pas de bus direct -> la voiture est la
-                    réponse pratique. CTA voiture contextuel (cf signal Plausible 24/06). */}
-                <AffiliateBanner type="carRental" locale={locale} placement="buses-nodirect" className="mt-4" />
+                    réponse pratique. Wizard interne (cf signal Plausible 24/06). */}
+                <div className="mt-4">
+                  <CarPromo locale={locale} source="buses-nodirect" />
+                </div>
               </section>
             )}
           </>
