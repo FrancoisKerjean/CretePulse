@@ -5,6 +5,7 @@ import psycopg2
 from dotenv import load_dotenv
 
 load_dotenv("/opt/cretepulse/.env")
+load_dotenv("/opt/cretepulse-db/.env")  # POSTGRES_PASSWORD vit ici
 
 
 def connect():
