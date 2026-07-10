@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Cestování po Krétě autobusem",
     "connector": "do"
+  },
+  "installBanner": {
+    "title": "Kréta vždy po ruce",
+    "body": "Autobusy živě a pláže, i offline.",
+    "cta": "Nainstalovat",
+    "later": "Teď ne",
+    "ios": "Klepni na Sdílet a pak „Přidat na plochu“."
   }
 }

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>crete·direct — Mockups app compagnon de séjour</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --lagoon:#00C2D4; --lagoon-deep:#008C9E; --sky:#BDEDF5; --night:#07374A;
+    --sun:#FFC83D; --ok:#14B86B; --sea:#0B5E78; --sea-light:#2E7DB2; --sea-faint:#DFF7FA;
+    --terracotta:#ED7A5C; --terracotta-faint:#FDEEE9; --foam:#F6FBFC; --ink:#0B3954;
+    --muted:#5C7886; --border:#DCE9EE; --sand:#FFF3D6; --olive:#7C9A53;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--foam);color:var(--ink);padding:40px 24px 80px}
+  h1,h2,h3,.baloo{font-family:"Baloo 2",system-ui,sans-serif}
+  .wordmark{font-family:"Baloo 2";font-weight:800;font-size:28px;color:var(--ink)}
+  .wordmark .dot{color:var(--sun)}
+  header{max-width:1400px;margin:0 auto 8px}
+  header p.sub{color:var(--muted);margin-top:4px;font-size:15px}
+  .section{max-width:1400px;margin:48px auto 0}
+  .section > h2{font-size:26px;font-weight:800;margin-bottom:4px}
+  .section > p.lead{color:var(--muted);font-size:15px;max-width:760px;margin-bottom:24px}
+  .phones{display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start}
+  .phone-col{display:flex;flex-direction:column;gap:12px;width:310px}
+  .phone-label{text-align:center}
+  .phone-label b{font-family:"Baloo 2";font-size:16px}
+  .phone-label span{display:block;color:var(--muted);font-size:12.5px;margin-top:2px;line-height:1.45}
+  .phone{width:310px;height:648px;background:#fff;border:3px solid var(--ink);border-radius:44px;overflow:hidden;position:relative;box-shadow:0 18px 40px rgba(11,57,84,.14)}
+  .notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:110px;height:24px;background:var(--ink);border-radius:14px;z-index:50}
+  .screen{position:absolute;inset:0;display:flex;flex-direction:column}
+  /* ---------- pseudo map ---------- */
+  .map{position:relative;flex:1;background:linear-gradient(160deg,#8fe3ee 0%,#5ad4e3 40%,#28c3d6 100%);overflow:hidden}
+  .map svg.island{position:absolute;inset:0;width:100%;height:100%}
+  .chipbar{position:absolute;top:46px;left:0;right:0;display:flex;gap:8px;padding:0 14px;z-index:20}
+  .chip{font-family:"Baloo 2";font-weight:700;font-size:12.5px;background:#fff;border:2px solid var(--ink);border-radius:999px;padding:5px 12px;color:var(--ink);box-shadow:0 2px 0 rgba(11,57,84,.25)}
+  .chip.on{background:var(--ink);color:#fff}
+  .pin{position:absolute;z-index:15;display:flex;flex-direction:column;align-items:center}
+  .pin .bub{font-family:"Baloo 2";font-weight:700;font-size:11px;background:#fff;border:2px solid var(--ink);border-radius:10px;padding:3px 8px;white-space:nowrap;box-shadow:0 2px 0 rgba(11,57,84,.25)}
+  .pin .tip{width:2px;height:8px;background:var(--ink)}
+  .pin.beach .bub{background:var(--sand)}
+  .pin.busgps .bub{background:var(--ok);color:#fff;border-color:var(--ink)}
+  .me{position:absolute;width:18px;height:18px;background:var(--sea-light);border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 8px rgba(46,125,178,.25);z-index:16}
+  .gps-ring{position:absolute;width:34px;height:34px;border:3px solid var(--ok);border-radius:50%;opacity:.7;z-index:14}
+  /* ---------- bottom sheet ---------- */
+  .sheet{background:#fff;border-top:3px solid var(--ink);border-radius:26px 26px 0 0;padding:12px 16px 14px;position:relative;z-index:30}
+  .sheet .grab{width:44px;height:5px;border-radius:3px;background:var(--border);margin:0 auto 10px}
+  .sheet h3{font-size:16px;font-weight:800;margin-bottom:10px}
+  .card{border:2px solid var(--border);border-radius:16px;padding:10px 12px;display:flex;gap:10px;align-items:center}
+  .card + .card{margin-top:8px}
+  .card .ic{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+  .card .tx{flex:1;min-width:0}
+  .card .tx b{font-family:"Baloo 2";font-size:14px;display:block}
+  .card .tx span{font-size:12px;color:var(--muted)}
+  .badge{font-family:"Baloo 2";font-weight:700;font-size:11px;border-radius:999px;padding:3px 9px;white-space:nowrap}
+  .b-ok{background:#E7F8EF;color:#0E8A50}
+  .b-live{background:var(--ok);color:#fff}
+  .b-warn{background:var(--sand);color:#8a6d1f}
+  .b-busy{background:var(--terracotta-faint);color:#C4502F}
+  /* ---------- tab bar ---------- */
+  .tabs{display:flex;border-top:2px solid var(--border);background:#fff;padding:8px 6px 14px;z-index:40}
+  .tab{flex:1;text-align:center;font-family:"Baloo 2";font-weight:700;font-size:10.5px;color:var(--muted)}
+  .tab .g{font-size:19px;display:block;margin-bottom:1px}
+  .tab.on{color:var(--lagoon-deep)}
+  /* ---------- generic app screens ---------- */
+  .apphead{background:linear-gradient(120deg,#16cfe0,#00C2D4 46%,#009fb0);padding:48px 16px 14px;color:#fff}
+  .apphead h3{font-size:19px;font-weight:800;color:#fff}
+  .apphead p{font-size:12px;opacity:.9}
+  .body-pad{padding:12px 14px;overflow:hidden;flex:1;background:var(--foam)}
+  .row-eta{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--border);border-radius:14px;padding:10px 12px}
+  .row-eta + .row-eta{margin-top:8px}
+  .linecode{font-family:"Baloo 2";font-weight:800;color:#fff;border-radius:9px;min-width:36px;text-align:center;padding:5px 0;font-size:14px}
+  .eta{font-family:"Baloo 2";font-weight:800;font-size:17px;margin-left:auto;white-space:nowrap}
+  .eta small{font-size:10.5px;color:var(--muted);display:block;font-weight:600;text-align:right}
+  .cta{display:block;text-align:center;font-family:"Baloo 2";font-weight:800;font-size:14.5px;background:var(--sun);border:2.5px solid var(--ink);color:var(--ink);border-radius:14px;padding:11px;box-shadow:0 3px 0 var(--ink);margin-top:10px}
+  .cta.ghost{background:#fff}
+  .meter{height:8px;border-radius:5px;background:var(--sea-faint);overflow:hidden;margin-top:6px}
+  .meter i{display:block;height:100%;border-radius:5px}
+  .kv{display:flex;gap:8px;margin-top:10px}
+  .kv .k{flex:1;background:#fff;border:2px solid var(--border);border-radius:13px;padding:8px;text-align:center}
+  .kv .k b{font-family:"Baloo 2";font-size:16px;display:block}
+  .kv .k span{font-size:10.5px;color:var(--muted)}
+  /* ---------- home screen (install) ---------- */
+  .homescreen{flex:1;background:linear-gradient(160deg,#0B5E78,#07374A);padding:64px 22px 20px;display:flex;flex-direction:column}
+  .icons{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .appicon{display:flex;flex-direction:column;align-items:center;gap:5px}
+  .appicon .sq{width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.16)}
+  .appicon.cd .sq{background:linear-gradient(140deg,#16cfe0,#009fb0);border:2px solid rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 4px rgba(255,200,61,.55)}
+  .appicon span{font-size:9.5px;color:#cfe9f0}
+  .appicon.cd span{color:var(--sun);font-family:"Baloo 2";font-weight:700}
+  .notif{background:rgba(255,255,255,.97);border-radius:16px;padding:10px 12px;display:flex;gap:10px;align-items:center;margin-top:auto;border:2px solid var(--ink)}
+  .notif .mini{width:34px;height:34px;border-radius:10px;background:linear-gradient(140deg,#16cfe0,#009fb0);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .notif b{font-family:"Baloo 2";font-size:12.5px;display:block}
+  .notif span{font-size:11px;color:var(--muted)}
+  .install-banner{background:#fff;border:2.5px solid var(--ink);border-radius:16px;padding:10px 12px;display:flex;align-items:center;gap:10px;margin:12px 14px;box-shadow:0 3px 0 var(--ink)}
+  .install-banner b{font-family:"Baloo 2";font-size:13px;display:block}
+  .install-banner span{font-size:11px;color:var(--muted)}
+  .install-banner .btn{font-family:"Baloo 2";font-weight:800;font-size:12px;background:var(--sun);border:2px solid var(--ink);border-radius:10px;padding:6px 10px;white-space:nowrap}
+  /* ---------- build section ---------- */
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+  .step{background:#fff;border:2px solid var(--border);border-radius:18px;padding:18px}
+  .step .num{font-family:"Baloo 2";font-weight:800;width:34px;height:34px;border-radius:12px;background:var(--ink);color:var(--sun);display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px}
+  .step h3{font-size:16.5px;margin-bottom:6px}
+  .step p{font-size:13px;color:var(--muted);line-height:1.55}
+  .step .tag{display:inline-block;margin-top:10px}
+  .lots{width:100%;border-collapse:collapse;background:#fff;border:2px solid var(--border);border-radius:18px;overflow:hidden}
+  .lots th{font-family:"Baloo 2";text-align:left;background:var(--sea-faint);padding:11px 14px;font-size:13.5px}
+  .lots td{padding:11px 14px;border-top:1px solid var(--border);font-size:13.5px;vertical-align:top}
+  .lots td:first-child{font-family:"Baloo 2";font-weight:700;white-space:nowrap}
+  .note{background:var(--sand);border:2px solid var(--ink);border-radius:16px;padding:14px 18px;font-size:13.5px;margin-top:20px;max-width:900px}
+  .note b{font-family:"Baloo 2"}
+  .goat-corner{position:fixed;right:18px;bottom:10px;width:86px;opacity:.95;pointer-events:none}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <g id="goat">
+    <g stroke="#0B3954" stroke-width="3">
+      <rect x="44" y="106" width="12" height="36" rx="6" fill="#D8BE96"/>
+      <rect x="74" y="106" width="12" height="36" rx="6" fill="#D8BE96"/>
+      <rect x="44" y="136" width="12" height="9" rx="3" fill="#0B3954"/>
+      <rect x="74" y="136" width="12" height="9" rx="3" fill="#0B3954"/>
+    </g>
+    <path d="M99 96 q14 -3 12 -17 q-3 10 -12 8 Z" fill="#E8D2AE" stroke="#0B3954" stroke-width="2.5" stroke-linejoin="round"/>
+    <ellipse cx="64" cy="98" rx="41" ry="31" fill="#F5E9D2" stroke="#0B3954" stroke-width="3.2"/>
+    <g stroke="#0B3954" stroke-width="3">
+      <rect x="50" y="116" width="12" height="30" rx="6" fill="#E8D2AE"/>
+      <rect x="68" y="116" width="12" height="30" rx="6" fill="#E8D2AE"/>
+      <rect x="50" y="140" width="12" height="9" rx="3" fill="#0B3954"/>
+      <rect x="68" y="140" width="12" height="9" rx="3" fill="#0B3954"/>
+    </g>
+    <path d="M48 92 q16 15 32 0 q-4 17 -16 17 q-12 0 -16 -17 Z" fill="#FFF9EC" opacity=".75"/>
+    <ellipse cx="32" cy="54" rx="13" ry="7" transform="rotate(-24 32 54)" fill="#D8BE96" stroke="#0B3954" stroke-width="3"/>
+    <ellipse cx="96" cy="54" rx="13" ry="7" transform="rotate(24 96 54)" fill="#D8BE96" stroke="#0B3954" stroke-width="3"/>
+    <g fill="#CBA96B" stroke="#0B3954" stroke-width="3" stroke-linejoin="round">
+      <path d="M52 38 C42 24 36 13 33 5 C44 11 54 24 60 35 Z"/>
+      <path d="M76 38 C86 24 92 13 95 5 C84 11 74 24 68 35 Z"/>
+    </g>
+    <path d="M64 32 C42 32 36 50 38 64 C40 82 52 92 64 92 C76 92 88 82 90 64 C92 50 86 32 64 32 Z" fill="#F5E9D2" stroke="#0B3954" stroke-width="3.2"/>
+    <ellipse cx="64" cy="74" rx="16" ry="12" fill="#FFF9EC"/>
+    <circle cx="59" cy="73" r="1.7" fill="#0B3954"/>
+    <circle cx="69" cy="73" r="1.7" fill="#0B3954"/>
+    <path d="M57 80 q7 5 14 0" stroke="#0B3954" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+    <path d="M59 88 q5 13 5 17 q0 -4 5 -17 Z" fill="#E8D2AE" stroke="#0B3954" stroke-width="2.4" stroke-linejoin="round"/>
+    <circle cx="47" cy="68" r="5" fill="#ED7A5C" opacity=".3"/>
+    <circle cx="81" cy="68" r="5" fill="#ED7A5C" opacity=".3"/>
+    <circle cx="54" cy="58" r="5" fill="#0B3954"/>
+    <circle cx="56" cy="56" r="1.9" fill="#fff"/>
+    <circle cx="74" cy="58" r="5" fill="#0B3954"/>
+    <circle cx="76" cy="56" r="1.9" fill="#fff"/>
+    <path d="M58 33 q6 -7 12 0 q-6 -3 -12 0 Z" fill="#E8D2AE" stroke="#0B3954" stroke-width="2"/>
+  </g>
+</defs></svg>
+
+<header>
+  <div class="wordmark">crete<span class="dot">·</span>direct</div>
+  <h1 style="font-size:32px;font-weight:800;margin-top:10px">L'app compagnon de séjour</h1>
+  <p class="sub">Mockups v1 du 10/07/2026. Un seul produit : le site devient l'app. 4 écrans clés, puis la méthode de construction.</p>
+</header>
+
+<!-- ================= ECRANS ================= -->
+<div class="section">
+  <h2>Les 4 écrans</h2>
+  <p class="lead">Tout existe déjà en prod (GPS bus, conditions plages, affluence, planner). L'app les assemble en une boucle quotidienne : j'ouvre, je sais où me baigner et comment y aller, je reviens demain.</p>
+
+  <div class="phones">
+
+    <!-- ============ ECRAN 1 : MAINTENANT (carte shell) ============ -->
+    <div class="phone-col">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="map">
+            <svg class="island" viewBox="0 0 310 420" preserveAspectRatio="xMidYMid slice">
+              <path d="M-20 210 C40 170 90 195 140 180 C200 160 250 185 330 165 L330 430 L-20 430 Z" fill="#F2E7CE"/>
+              <path d="M30 260 C80 235 150 255 210 240 C260 228 300 245 330 235 L330 430 L-20 430 L-20 290 Z" fill="#E8DCBB" opacity=".8"/>
+              <ellipse cx="90" cy="300" rx="40" ry="18" fill="#7C9A53" opacity=".35"/>
+              <ellipse cx="230" cy="330" rx="55" ry="22" fill="#7C9A53" opacity=".3"/>
+              <path d="M20 235 Q120 245 180 232 T310 225" stroke="#fff" stroke-width="4" fill="none" opacity=".85"/>
+              <path d="M150 240 Q160 300 130 360" stroke="#fff" stroke-width="3" fill="none" opacity=".7"/>
+            </svg>
+            <div class="chipbar">
+              <div class="chip on">🏖️ Plages</div><div class="chip">🚌 Bus</div><div class="chip">🍽️ Manger</div><div class="chip">👁️ Voir</div>
+            </div>
+            <div class="pin beach" style="left:26px;top:150px"><div class="bub">Voulisma · calme 84</div><div class="tip"></div></div>
+            <div class="pin busgps" style="left:168px;top:118px"><div class="bub">🚌 06 · 7 min</div><div class="tip"></div></div>
+            <div class="pin beach" style="left:196px;top:196px"><div class="bub">Almyros · 78</div><div class="tip"></div></div>
+            <div class="gps-ring" style="left:160px;top:148px"></div>
+            <div class="me" style="left:140px;top:250px"></div>
+          </div>
+          <div class="sheet">
+            <div class="grab"></div>
+            <h3>Maintenant, près de toi</h3>
+            <div class="card">
+              <div class="ic" style="background:var(--sea-faint)">🏖️</div>
+              <div class="tx"><b>Voulisma Beach</b><span>Mer 26° · vent faible · 23 min en bus</span></div>
+              <div class="badge b-ok">Calme · 84</div>
+            </div>
+            <div class="card">
+              <div class="ic" style="background:#E7F8EF">🚌</div>
+              <div class="tx"><b>Ligne 06 · arrêt Plateia</b><span>direction Ammoudara</span></div>
+              <div class="badge b-live">● 7 min GPS</div>
+            </div>
+          </div>
+          <div class="tabs">
+            <div class="tab on"><span class="g">🗺️</span>Carte</div>
+            <div class="tab"><span class="g">🚌</span>Bus</div>
+            <div class="tab"><span class="g">🏖️</span>Plages</div>
+            <div class="tab"><span class="g">🚗</span>Devis</div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label"><b>1 · Maintenant</b><span>/explore devient l'écran d'accueil : géoloc, plages notées en direct, bus GPS. Le panneau répond à « je fais quoi là, tout de suite ? »</span></div>
+    </div>
+
+    <!-- ============ ECRAN 2 : BUS LIVE ============ -->
+    <div class="phone-col">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="map" style="flex:0 0 216px">
+            <svg class="island" viewBox="0 0 310 216" preserveAspectRatio="xMidYMid slice">
+              <rect width="310" height="216" fill="#DFF7FA"/>
+              <path d="M0 60 H310 M0 120 H310 M0 180 H310 M60 0 V216 M150 0 V216 M240 0 V216" stroke="#fff" stroke-width="7"/>
+              <path d="M0 120 Q120 118 190 90 T310 40" stroke="#FFC83D" stroke-width="6" fill="none"/>
+            </svg>
+            <div class="gps-ring" style="left:96px;top:82px"></div>
+            <div class="pin busgps" style="left:74px;top:52px"><div class="bub">🚌 06 · en approche</div><div class="tip"></div></div>
+            <div class="me" style="left:196px;top:106px"></div>
+          </div>
+          <div class="apphead" style="padding:12px 16px 12px">
+            <h3>Arrêt Plateia Eleftherias</h3>
+            <p>Heraklion · <b style="color:var(--sun)">● positions GPS réelles</b></p>
+          </div>
+          <div class="body-pad">
+            <div class="row-eta">
+              <div class="linecode" style="background:#1D9BF0">06</div>
+              <div class="tx"><b style="font-family:'Baloo 2';font-size:13.5px">Ammoudara</b><br><span style="font-size:11px;color:var(--muted)">bus suivi GPS</span></div>
+              <div class="eta" style="color:var(--ok)">7 min<small>en direct</small></div>
+            </div>
+            <div class="row-eta">
+              <div class="linecode" style="background:#8E44AD">12</div>
+              <div class="tx"><b style="font-family:'Baloo 2';font-size:13.5px">Aéroport</b><br><span style="font-size:11px;color:var(--muted)">horaire théorique</span></div>
+              <div class="eta">18 min<small>planifié</small></div>
+            </div>
+            <div class="row-eta">
+              <div class="linecode" style="background:#E67E22">01</div>
+              <div class="tx"><b style="font-family:'Baloo 2';font-size:13.5px">Knossos</b><br><span style="font-size:11px;color:var(--muted)">bus suivi GPS</span></div>
+              <div class="eta" style="color:var(--ok)">24 min<small>en direct</small></div>
+            </div>
+            <a class="cta">Où veux-tu aller ? · Planner</a>
+            <a class="cta ghost">⬇ Horaires hors-ligne</a>
+          </div>
+          <div class="tabs">
+            <div class="tab"><span class="g">🗺️</span>Carte</div>
+            <div class="tab on"><span class="g">🚌</span>Bus</div>
+            <div class="tab"><span class="g">🏖️</span>Plages</div>
+            <div class="tab"><span class="g">🚗</span>Devis</div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label"><b>2 · Bus en direct</b><span>Le GPS live déjà en prod (HER, CHA, Ag.Nik) devient l'écran signature : ETA réels, planner porte-à-porte, horaires consultables sans réseau.</span></div>
+    </div>
+
+    <!-- ============ ECRAN 3 : PLAGE DU JOUR ============ -->
+    <div class="phone-col">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div style="flex:0 0 190px;background:linear-gradient(160deg,#16cfe0,#009fb0);position:relative">
+            <svg viewBox="0 0 310 190" style="position:absolute;inset:0;width:100%;height:100%">
+              <circle cx="252" cy="44" r="26" fill="#FFD766"/>
+              <path d="M0 150 Q78 130 155 150 T310 150 L310 190 L0 190 Z" fill="#F2E7CE"/>
+              <path d="M0 132 Q78 116 155 134 T310 130" stroke="#fff" stroke-width="4" fill="none" opacity=".8"/>
+            </svg>
+            <div style="position:absolute;left:16px;bottom:14px;color:#fff">
+              <div class="baloo" style="font-weight:800;font-size:22px">Voulisma Beach</div>
+              <div style="font-size:12px;opacity:.92">Istron · Lasithi · sable fin</div>
+            </div>
+            <div class="badge b-ok" style="position:absolute;right:14px;bottom:16px;font-size:13px;border:2px solid var(--ink)">Baignade calme · 84</div>
+          </div>
+          <div class="body-pad">
+            <div class="kv">
+              <div class="k"><b>26,4°</b><span>mer</span></div>
+              <div class="k"><b>12 km/h</b><span>vent NO</span></div>
+              <div class="k"><b>0,2 m</b><span>vagues</span></div>
+            </div>
+            <div style="background:#fff;border:2px solid var(--border);border-radius:14px;padding:10px 12px;margin-top:10px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <b class="baloo" style="font-size:13.5px">Affluence maintenant</b>
+                <span class="badge b-warn">Modérée</span>
+              </div>
+              <div class="meter"><i style="width:55%;background:var(--sun)"></i></div>
+              <span style="font-size:11px;color:var(--muted)">pic attendu vers 14h · viens avant 11h</span>
+            </div>
+            <div style="background:#fff;border:2px solid var(--border);border-radius:14px;padding:10px 12px;margin-top:8px">
+              <b class="baloo" style="font-size:13.5px">Plus calme à côté</b>
+              <div style="font-size:12px;color:var(--muted);margin-top:3px">Karavostasi · à 6 km · score 31 <span class="badge b-ok" style="margin-left:6px">Tranquille</span></div>
+            </div>
+            <a class="cta">🚌 Y aller · ligne 06 · 23 min</a>
+            <a class="cta ghost">🚗 Louer une voiture · devis gratuit</a>
+          </div>
+          <div class="tabs">
+            <div class="tab"><span class="g">🗺️</span>Carte</div>
+            <div class="tab"><span class="g">🚌</span>Bus</div>
+            <div class="tab on"><span class="g">🏖️</span>Plages</div>
+            <div class="tab"><span class="g">🚗</span>Devis</div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label"><b>3 · La plage, en vrai</b><span>Conditions live + affluence + alternative calme (déjà en prod sur 182 plages) et les deux monétisations branchées : bus et devis voiture.</span></div>
+    </div>
+
+    <!-- ============ ECRAN 4 : INSTALL + PUSH ============ -->
+    <div class="phone-col">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="install-banner" style="margin-top:48px">
+            <svg viewBox="16 2 96 96" style="width:38px;height:38px;flex-shrink:0"><use href="#goat"/></svg>
+            <div style="flex:1"><b>Garde la Crète dans ta poche</b><span>bus en direct et plages, même sans réseau</span></div>
+            <div class="btn">Installer</div>
+          </div>
+          <div class="homescreen" style="border-radius:20px;margin:4px 14px 14px;flex:1">
+            <div class="icons">
+              <div class="appicon"><div class="sq"></div><span>Photos</span></div>
+              <div class="appicon"><div class="sq"></div><span>Maps</span></div>
+              <div class="appicon cd">
+                <div class="sq"><svg viewBox="16 2 96 96" style="width:36px;height:36px"><use href="#goat"/></svg></div>
+                <span>Crete Direct</span>
+              </div>
+              <div class="appicon"><div class="sq"></div><span>Camera</span></div>
+            </div>
+            <div class="notif">
+              <div class="mini"><svg viewBox="16 2 96 96" style="width:26px;height:26px"><use href="#goat"/></svg></div>
+              <div><b>Ton bus passe dans 12 min 🚌</b><span>Ligne 06 · arrêt Plateia · suivi GPS</span></div>
+            </div>
+            <div class="notif" style="margin-top:8px">
+              <div class="mini"><svg viewBox="16 2 96 96" style="width:26px;height:26px"><use href="#goat"/></svg></div>
+              <div><b>Mer calme à Voulisma ce matin 🏖️</b><span>26° · score 84 · affluence faible avant 11h</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label"><b>4 · Installée + push</b><span>La bannière se montre APRÈS une recherche réussie (pas à l'arrivée). L'icône chèvre sur l'écran d'accueil et le push = le moteur du retour quotidien.</span></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= COMMENT ================= -->
+<div class="section">
+  <h2>Comment on le construit</h2>
+  <p class="lead">Zéro réécriture. Le codebase Next.js actuel EST l'app : on ajoute une couche d'installation et on réorganise les surfaces existantes.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="num">1</div>
+      <h3>Un seul codebase</h3>
+      <p>Le site crete.direct (Next.js, Vercel) reste l'unique source. Chaque deploy met à jour le site ET l'app instantanément. Rien à re-soumettre aux stores.</p>
+      <span class="tag badge b-ok">existant</span>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <h3>Couche PWA</h3>
+      <p>Manifest + service worker : le site devient installable, les horaires bus restent consultables hors-ligne, le prompt « Installer » apparaît au bon moment.</p>
+      <span class="tag badge b-warn">~3-4 jours</span>
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <h3>Shell « Maintenant »</h3>
+      <p>/explore passe en écran d'accueil app : géoloc, panneau « près de toi » (plage notée, prochain bus GPS), tab bar Carte / Bus / Plages / Devis.</p>
+      <span class="tag badge b-warn">~1 semaine</span>
+    </div>
+    <div class="step">
+      <div class="num">4</div>
+      <h3>Stores</h3>
+      <p>Play Store en TWA (coquille officielle autour de la PWA, 25$ une fois, ~1 jour). App Store ensuite via Capacitor, seulement si les installs Android le justifient.</p>
+      <span class="tag badge b-busy">conditionnel</span>
+    </div>
+  </div>
+
+  <h2 style="margin-top:44px">Le plan en lots</h2>
+  <p class="lead">Le lot 0 tourne pendant qu'on développe : c'est lui qui valide (ou tue) les lots 3+.</p>
+  <table class="lots">
+    <tr><th>Lot</th><th>Contenu</th><th>Effort</th><th>Ce qu'on apprend / gagne</th></tr>
+    <tr><td>0 · Mesure</td><td>Compteur rétention localStorage (props Plausible) + events bannière install</td><td>1,5 j</td><td>Taux de retour J+1/J+7 réel des touristes, désir d'app mesuré</td></tr>
+    <tr><td>1 · PWA socle</td><td>Manifest, service worker, offline horaires bus, prompt install contextuel</td><td>3-4 j</td><td>Le site devient installable, socle des 3 plateformes</td></tr>
+    <tr><td>2 · Shell Maintenant</td><td>/explore app-shell : géoloc, panneau near-me temps réel, tab bar mobile</td><td>~1 sem</td><td>La boucle quotidienne : rouvrir chaque matin devient naturel</td></tr>
+    <tr><td>3 · Play Store</td><td>TWA via PWABuilder, fiche store, assetlinks</td><td>1 j + 25$</td><td>Présence store, recherche « crete bus », crédibilité</td></tr>
+    <tr><td>4 · Push</td><td>Web push (Android + iOS 16.4+) : bus proche, mer calme le matin</td><td>3-4 j</td><td>Le levier de rétention le plus fort</td></tr>
+    <tr><td>5 · App Store iOS</td><td>Wrapper Capacitor + ponts natifs, review Apple</td><td>~1 sem + 99$/an</td><td>Uniquement si lots 0-4 prouvent l'usage</td></tr>
+  </table>
+
+  <div class="note">
+    <b>Garde-fou acté le 10/07 :</b> les lots 0-1-2 servent le site actuel même si l'app ne décolle pas (mesure, offline, meilleure UX mobile pour 3 000 mobinautes/mois sur /explore). La décision stores (lots 3-5) se prend sur les chiffres du lot 0 après 3 semaines de pleine saison : retour J+1 ≥ 8% des mobiles features outils, ou clic bannière ≥ 3%.
+  </div>
+</div>
+
+<svg class="goat-corner" viewBox="0 0 130 150"><use href="#goat"/></svg>
+
+</body>
+</html>

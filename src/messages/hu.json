@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Közlekedés Krétán busszal",
     "connector": "ide:"
+  },
+  "installBanner": {
+    "title": "Kréta mindig nálad",
+    "body": "Élő buszok és strandok, offline is.",
+    "cta": "Telepítés",
+    "later": "Most nem",
+    "ios": "Koppints a Megosztásra, majd „Hozzáadás a kezdőképernyőhöz”."
   }
 }

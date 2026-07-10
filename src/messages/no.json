@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Slik kommer du deg rundt på Kreta med buss",
     "connector": "til"
+  },
+  "installBanner": {
+    "title": "Kreta i lomma",
+    "body": "Busser i sanntid og strender, også uten nett.",
+    "cta": "Installer",
+    "later": "Ikke nå",
+    "ios": "Trykk på Del og deretter “Legg til på Hjem-skjermen”."
   }
 }

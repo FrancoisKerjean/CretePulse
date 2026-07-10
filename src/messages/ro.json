@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Cum te deplasezi în Creta cu autobuzul",
     "connector": "spre"
+  },
+  "installBanner": {
+    "title": "Creta mereu în buzunar",
+    "body": "Autobuze live și plaje, chiar și offline.",
+    "cta": "Instalează",
+    "later": "Nu acum",
+    "ios": "Atinge Distribuie, apoi „Adaugă la ecranul principal”."
   }
 }

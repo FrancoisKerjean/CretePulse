@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "在克里特乘巴士出行",
     "connector": "至"
+  },
+  "installBanner": {
+    "title": "把克里特装进口袋",
+    "body": "实时公交和海滩信息，离线也能用。",
+    "cta": "安装",
+    "later": "以后再说",
+    "ios": "点按分享，然后选择“添加到主屏幕”。"
   }
 }

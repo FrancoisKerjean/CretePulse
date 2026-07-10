@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Jak poruszać się po Krecie autobusem",
     "connector": "do"
+  },
+  "installBanner": {
+    "title": "Kreta zawsze pod ręką",
+    "body": "Autobusy na żywo i plaże, także offline.",
+    "cta": "Zainstaluj",
+    "later": "Nie teraz",
+    "ios": "Stuknij Udostępnij, potem „Do ekranu początkowego”."
   }
 }

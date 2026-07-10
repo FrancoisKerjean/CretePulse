@@ -1,6 +1,50 @@
-// public/sw.js — service worker minimal pour le web push.
-// Ne fait QUE le push (pas de cache offline).
+// public/sw.js — service worker : web push + offline bus (lot 1 app compagnon).
 
+// ---- Offline bus ----
+// Network-first sur les navigations /buses* : en ligne on sert le réseau et on
+// met en cache ; hors ligne on ressert la dernière version vue. Rien d'autre
+// n'est caché (pages ISR 22 locales + contenu éditorial restent réseau pur).
+const PAGE_CACHE = "cd-bus-pages-v1";
+const BUS_PATH = /\/(buses)(\/|$)/;
+
+self.addEventListener("install", () => {
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(keys.filter((k) => k.startsWith("cd-") && k !== PAGE_CACHE).map((k) => caches.delete(k)));
+      await self.clients.claim();
+    })(),
+  );
+});
+
+self.addEventListener("fetch", (event) => {
+  const req = event.request;
+  if (req.method !== "GET" || req.mode !== "navigate") return;
+  const url = new URL(req.url);
+  if (url.origin !== self.location.origin || !BUS_PATH.test(url.pathname)) return;
+  event.respondWith(
+    (async () => {
+      try {
+        const fresh = await fetch(req);
+        if (fresh.ok) {
+          const cache = await caches.open(PAGE_CACHE);
+          cache.put(req, fresh.clone());
+        }
+        return fresh;
+      } catch {
+        const cached = await caches.match(req);
+        if (cached) return cached;
+        throw new Error("offline and not cached");
+      }
+    })(),
+  );
+});
+
+// ---- Web push ----
 self.addEventListener("push", (event) => {
   let data = {};
   try { data = event.data ? event.data.json() : {}; } catch (_e) { data = {}; }
