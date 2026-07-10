@@ -89,6 +89,38 @@ def parse_departures(html):
     return _parse_flight_rows(html, ".flight_number", "destination", ".checkins")
 
 
+def parse_chq(payload, direction):
+    """JSON officiel Fraport CHQ (_jcr_content.arrivals/departures.json) -> lignes upsert.
+
+    sched est un datetime complet : service_date fiable, pas de fenetre 24h glissante.
+    lu = heure reelle d'atterrissage ; sentinelle '-0001-11-30 ...' = pas encore.
+    """
+    place_key = "origin" if direction == "arrival" else "destination"
+    rows = []
+    for f in (payload or {}).get("data", []):
+        flight_no = (f.get("fnr") or "").strip()
+        if not flight_no:
+            continue
+        try:
+            sched = datetime.strptime(f.get("sched") or "", "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            continue
+        status = (f.get("status") or "").replace("&nbsp;", "").strip() or None
+        lu = f.get("lu") or ""
+        landed_at = lu if not lu.startswith("-") and lu.strip() else None
+        rows.append({
+            "service_date": sched.date(),
+            "sched_time": sched.strftime("%H:%M"),
+            "flight_no": flight_no,
+            "airline_code": (f.get("al") or "").strip() or None,
+            place_key: (f.get("apname") or "").strip() or None,
+            "belt": (f.get("gate") or "").strip() or None,
+            "status": status,
+            "landed_at": landed_at,
+        })
+    return rows
+
+
 def assign_service_dates(rows, board_date):
     """Le tableau couvre ~24h glissantes : un recul horaire > 60 min entre deux
     lignes (triees par heure) = passage de minuit -> jour suivant."""

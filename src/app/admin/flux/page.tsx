@@ -143,7 +143,7 @@ export default async function FluxAdminPage({
     <main className="mx-auto max-w-5xl px-4 py-8">
       <h1 className="text-lg font-bold">Flux touristiques — cockpit</h1>
       <p className="mt-1 text-xs text-text-muted">
-        Capteurs : intentions site (Plausible), arrivées HER, GPS bus urbains, croisières Héraklion,
+        Capteurs : intentions site (Plausible), vols HER+CHQ, GPS bus urbains, croisières Héraklion,
         Wikipedia, occupation Airbnb. Historisation VPS, plan du 10/07/2026.
       </p>
 
@@ -163,7 +163,7 @@ export default async function FluxAdminPage({
 
       <Section
         title="Touristes présents (estimation)"
-        hint="Vols HER comptés /10 min, convertis en passagers via calibration officielle HCAA (ypa.gr) ; séjour moyen 7,5 à 8,2 nuits (INSETE 2024). Toujours une fourchette, jamais un chiffre sec."
+        hint="Vols HER+CHQ comptés /10 min, convertis en passagers via calibration officielle HCAA (ypa.gr) ; séjour moyen 7,5 à 8,2 nuits (INSETE 2024). Jours non mesurés comblés par la moyenne HCAA du mois. Toujours une fourchette, jamais un chiffre sec."
       >
         {lastStock && lastStock.stock_low != null ? (
           <>
@@ -172,7 +172,7 @@ export default async function FluxAdminPage({
                 {fmtRange(lastStock.stock_low, lastStock.stock_high)}
               </span>
               <span className="text-xs text-text-muted">
-                personnes entrées par HER encore sur l&apos;île, au {fmtDay(lastStock.day)}
+                personnes entrées par avion (HER+CHQ) encore sur l&apos;île, au {fmtDay(lastStock.day)}
               </span>
             </div>
             <p className="mt-1 text-[11px] text-text-muted">
@@ -197,7 +197,7 @@ export default async function FluxAdminPage({
           </p>
         )}
         <ul className="mt-3 list-disc pl-4 text-[11px] text-text-muted">
-          <li>Non comptés : aéroport de Chania et ferries. L&apos;estimation couvre les entrées et sorties via HER uniquement.</li>
+          <li>Non comptés : ferries (branchement en cours) et Sitia JSH (~0,5 % du trafic). L&apos;estimation couvre HER + CHQ, soit ~97 % du trafic aérien crétois.</li>
           <li>Croisiéristes : transitoires comptés à part (calendrier officiel du port, section Croisières).</li>
           <li>Méthode primaire : fenêtre séjour-moyen 7 à 8 jours glissants sur les arrivées estimées ; croisée au bilan cumulé.</li>
           <li>Montée en charge : la fourchette devient fiable après 8 jours de comptage continu des deux directions.</li>
@@ -335,7 +335,7 @@ export default async function FluxAdminPage({
 
         <Section title="Notes capteurs">
           <ul className="list-disc pl-4 text-xs text-text-muted">
-            <li>Chania aéroport : pas de source publique (backlog OpenSky).</li>
+            <li>Chania aéroport : JSON officiel Fraport branché (arrivées + départs /10 min).</li>
             <li>Popular Times Google : abandonné (voie fermée côté Google).</li>
             <li>Ferries : hors scope v1.</li>
             <li>Crons : bus /1 min (AgNik) et /5 min (HER+CHA) 7h-22h Athens, vols /10 min, wiki+intentions quotidiens, croisières mensuel.</li>
