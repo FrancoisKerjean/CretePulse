@@ -46,6 +46,7 @@ const STATIC_PAGES = [
   "/articles",
   "/daily",
   "/about",
+  "/updates",
   "/buses",
   "/buses/agios-nikolaos",
   "/buses/heraklion",

@@ -53,6 +53,7 @@ const LINKS: Record<string, NavLink> = {
   events: { href: "/events", label: { en: "Events", fr: "Événements", de: "Events", el: "Εκδηλώσεις", it: "Eventi", nl: "Evenementen", pl: "Wydarzenia", es: "Eventos", pt: "Eventos", ru: "События", ja: "イベント", ko: "이벤트", zh: "活动", tr: "Etkinlikler", sv: "Evenemang", da: "Begivenheder", no: "Arrangementer", fi: "Tapahtumat", cs: "Události", hu: "Események", ro: "Evenimente", ar: "فعاليات" } },
   daily: { href: "/daily", label: { en: "Daily", fr: "Quotidien", de: "Täglich", el: "Καθημερινά", it: "Quotidiano", nl: "Dagelijks", pl: "Codziennie", es: "Diario", pt: "Diário", ru: "Ежедневно", ja: "デイリー", ko: "데일리", zh: "每日", tr: "Günlük", sv: "Dagligen", da: "Dagligt", no: "Daglig", fi: "Päivittäin", cs: "Denně", hu: "Napi", ro: "Zilnic", ar: "يومي" } },
   guides: { href: "/articles", label: { en: "Guides", fr: "Guides", de: "Guides", el: "Οδηγοί", it: "Guide", nl: "Gidsen", pl: "Przewodniki", es: "Guías", pt: "Guias", ru: "Гиды", ja: "ガイド", ko: "가이드", zh: "指南", tr: "Rehber", sv: "Guider", da: "Guides", no: "Guider", fi: "Oppaat", cs: "Průvodce", hu: "Útmutatók", ro: "Ghiduri", ar: "أدلة" } },
+  updates: { href: "/updates", label: { en: "Updates", fr: "Nouveautés", de: "Updates", el: "Νέα προϊόντος", it: "Novità", nl: "Updates", pl: "Nowości", es: "Novedades", pt: "Novidades", ru: "Обновления", ja: "更新", ko: "업데이트", zh: "更新", tr: "Yenilikler", sv: "Nyheter", da: "Nyheder", no: "Oppdateringer", fi: "Uutuudet", cs: "Novinky", hu: "Újdonságok", ro: "Noutăți", ar: "تحديثات" } },
 };
 
 const NAV_GROUPS: Array<{ key: string; label: NavLabel; items: NavLink[] }> = [
@@ -69,7 +70,7 @@ const NAV_GROUPS: Array<{ key: string; label: NavLabel; items: NavLink[] }> = [
   {
     key: "today",
     label: { en: "Today", fr: "Aujourd'hui", de: "Heute", el: "Σήμερα", it: "Oggi", nl: "Vandaag", pl: "Dzisiaj", es: "Hoy", pt: "Hoje", ru: "Сегодня", ja: "今日", ko: "오늘", zh: "今天", tr: "Bugün", sv: "Idag", da: "I dag", no: "I dag", fi: "Tänään", cs: "Dnes", hu: "Ma", ro: "Azi", ar: "اليوم" },
-    items: [LINKS.news, LINKS.events, LINKS.daily, LINKS.guides],
+    items: [LINKS.news, LINKS.events, LINKS.daily, LINKS.guides, LINKS.updates],
   },
 ];
 

@@ -129,6 +129,9 @@ export function Footer() {
 
           <Col title={t("info")}>
             <Link href="/about" className={linkCls}>{t("about_link")}</Link>
+            <Link href="/updates" className={linkCls}>
+              {locale === "fr" ? "Nouveautés" : "Updates"}
+            </Link>
             <Link href="/projet" className={linkCls}>{t("ourProject")}</Link>
             <Link href="/privacy" className={linkCls}>{t("privacy")}</Link>
             <a href="mailto:hello@crete.direct" className={linkCls}>{t("contact")}</a>
