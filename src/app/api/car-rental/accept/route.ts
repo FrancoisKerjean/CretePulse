@@ -6,6 +6,7 @@ import { partnerById } from "@/lib/car-partners-db";
 import { isOfferExpired } from "@/lib/car-offer-expiry";
 import { requestByClientToken } from "@/lib/car-quotes-db";
 import { findChosenInvite } from "@/lib/car-quotes";
+import { notifyClosedCarQuoteRespondersWithReason } from "@/lib/car-closure-notifications";
 
 // Le client choisit une offre (page /car-offer/{token}). Il désigne l'invite
 // (invite_id) qu'il retient ; on snapshot son devis sur car_requests
@@ -26,14 +27,15 @@ export async function POST(request: NextRequest) {
   if (row.status === "declined_by_client") return NextResponse.json({ ok: true, declined: true });
 
   // Désistement client : « aucune de ces offres ne me convient ». La demande se
-  // ferme, les relances client s'arrêtent, les devis passent 'not_chosen' — mais
-  // PAS d'email « pas retenu » aux loueurs (on n'ennuie pas sur un décline global).
+  // ferme, les relances client s'arrêtent, et les loueurs qui ont répondu sont
+  // remerciés automatiquement pour préserver leur engagement.
   if (decline) {
     await supabase.from("car_requests").update({
-      status: "declined_by_client", accept_token_hash: null,
+      status: "declined_by_client", accept_token_hash: null, closure_reason: "client_declined_all",
     }).eq("id", row.id);
     await supabase.from("car_quote_invites").update({ status: "not_chosen" })
       .eq("request_id", row.id).eq("status", "quoted");
+    await notifyClosedCarQuoteRespondersWithReason(row.id as number, "client_declined_all");
     return NextResponse.json({ ok: true, declined: true });
   }
 
@@ -49,6 +51,7 @@ export async function POST(request: NextRequest) {
   const partner = await partnerById(chosen.partner_id);
   await supabase.from("car_requests").update({
     status: "accepted", accepted_at: new Date().toISOString(), accept_token_hash: null,
+    closure_reason: null,
     quoted_price: chosen.quote_price, quoted_currency: chosen.quote_currency ?? "EUR",
     quoted_car_model: chosen.quote_car_model ?? null, quoted_inclusions: chosen.quote_inclusions ?? [],
     quoted_at: chosen.quoted_at, quoted_by_partner_id: chosen.partner_id,
@@ -65,7 +68,7 @@ export async function POST(request: NextRequest) {
   const partnerName = partner?.name ?? chosen.partner_name;
 
   try {
-    const { sendConnectionEmails, sendPartnerNotChosen } = await import("@/lib/email");
+    const { sendConnectionEmails } = await import("@/lib/email");
     await sendConnectionEmails({
       partner: { name: partnerName, email: partner?.email ?? "", phone: partner?.phone ?? "", whatsapp: partner?.whatsapp ?? undefined },
       customer: { name: row.customer_name as string, email: row.customer_email as string, phone: (row.customer_phone as string | null) ?? undefined, locale },
@@ -76,11 +79,7 @@ export async function POST(request: NextRequest) {
         inclusions: Array.isArray(chosen.quote_inclusions) ? chosen.quote_inclusions : [], days,
       },
     });
-    const losers = quotes.filter((qq) => qq.id !== inviteId && qq.quote_price != null);
-    for (const l of losers) {
-      const p = await partnerById(l.partner_id);
-      if (p?.email) await sendPartnerNotChosen(p.email, p.name);
-    }
+    await notifyClosedCarQuoteRespondersWithReason(row.id as number, "not_chosen");
   } catch (e) {
     console.error("[car-rental/accept] email error:", e);
     return NextResponse.json({ ok: true, emailFailed: true });

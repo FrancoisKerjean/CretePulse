@@ -2,13 +2,15 @@
 // Relances par demande, deux côtés (multi-devis) :
 //  - loueur invité qui n'a pas chiffré (>24h, 1× max) ;
 //  - client avec ≥1 offre qui n'a pas tranché (>24h, 2× max).
+//  - clôture auto si client silencieux après 2 relances +24h ou date de début atteinte.
 // Un loueur 'declined' ou une demande 'declined_by_client'/'accepted' n'est plus
 // relancé (gardes partnerNeedsRelance/clientNeedsRelance). Idempotent.
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
-import { partnerNeedsRelance, clientNeedsRelance } from "@/lib/car-quotes";
+import { partnerNeedsRelance, clientNeedsRelance, clientAutoCloseReason } from "@/lib/car-quotes";
 import { newToken, hashToken, siteBase } from "@/lib/car-quote";
 import { partnerById } from "@/lib/car-partners-db";
+import { notifyClosedCarQuoteResponders, notifyClosedCarQuoteRespondersWithReason } from "@/lib/car-closure-notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +24,7 @@ export async function GET(request: NextRequest) {
     dateFrom ? new Date(dateFrom + "T00:00:00").getTime() > now : true;
 
   const { sendPartnerRelance, sendCustomerRelance } = await import("@/lib/email");
+  const closedRespondersNotified = await notifyClosedCarQuoteResponders();
 
   // ── Passe loueur ───────────────────────────────────────────────────────────
   let partnersRelanced = 0;
@@ -56,10 +59,40 @@ export async function GET(request: NextRequest) {
 
   // ── Passe client ─────────────────────────────────────────────────────────────
   let clientsRelanced = 0;
+  let clientsAutoClosed = 0;
+  let closedByRentalStart = 0;
+  let closedByClientSilence = 0;
   const { data: reqs } = await supabase.from("car_requests")
     .select("id, status, locale, customer_email, customer_name, date_from, client_relanced_at, client_relance_count")
     .eq("status", "quoted");
   for (const r of reqs ?? []) {
+    // Si la location commence aujourd'hui/est passée, ou si le client a ignoré
+    // les 2 relances pendant 24h, on clôture et on remercie les loueurs ayant
+    // répondu. Aucun autre email client.
+    const autoCloseReason = clientAutoCloseReason(
+      { status: r.status, date_from: r.date_from, client_relanced_at: r.client_relanced_at, client_relance_count: r.client_relance_count ?? 0 },
+      now,
+    );
+    if (autoCloseReason) {
+      const { count: pricedCount } = await supabase.from("car_quote_invites")
+        .select("id", { count: "exact", head: true })
+        .eq("request_id", r.id).not("quote_price", "is", null);
+      if (pricedCount) {
+        await supabase.from("car_requests").update({
+          status: "declined_by_client",
+          accept_token_hash: null,
+          closure_reason: autoCloseReason,
+        }).eq("id", r.id);
+        await supabase.from("car_quote_invites").update({ status: "not_chosen" })
+          .eq("request_id", r.id).eq("status", "quoted");
+        await notifyClosedCarQuoteRespondersWithReason(r.id, autoCloseReason);
+        clientsAutoClosed++;
+        if (autoCloseReason === "rental_started") closedByRentalStart++;
+        if (autoCloseReason === "client_silent") closedByClientSilence++;
+      }
+      continue;
+    }
+
     if (!startInFuture(r.date_from)) continue;
     if (!clientNeedsRelance(
       { status: r.status, client_relanced_at: r.client_relanced_at, client_relance_count: r.client_relance_count ?? 0 },
@@ -90,5 +123,13 @@ export async function GET(request: NextRequest) {
     } catch (e) { console.error("[cron/car-relance] client relance failed", r.id, e); }
   }
 
-  return NextResponse.json({ ok: true, partnersRelanced, clientsRelanced });
+  return NextResponse.json({
+    ok: true,
+    partnersRelanced,
+    clientsRelanced,
+    closedRespondersNotified,
+    clientsAutoClosed,
+    closedByRentalStart,
+    closedByClientSilence,
+  });
 }

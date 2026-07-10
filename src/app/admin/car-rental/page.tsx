@@ -42,7 +42,7 @@ export default async function CarAdminPage({
   let invitesFull: {
     id: number; request_id: number; partner_id: number; status: string;
     quote_price: number | null; quote_currency: string | null; quote_car_model: string | null;
-    created_at: string; quoted_at: string | null; declined_at: string | null; relanced_at: string | null;
+    created_at: string; quoted_at: string | null; declined_at: string | null; relanced_at: string | null; closed_notified_at: string | null;
     car_partners?: { name?: string };
   }[] = [];
   let loadError: string | null = null;
@@ -52,7 +52,7 @@ export default async function CarAdminPage({
       supabase.from("car_partners").select("*").order("id"),
       supabase.from("car_quote_invites").select("request_id, partner_id"),
       supabase.from("car_quote_invites").select(
-        "id, request_id, partner_id, status, quote_price, quote_currency, quote_car_model, created_at, quoted_at, declined_at, relanced_at, car_partners(name)"
+        "id, request_id, partner_id, status, quote_price, quote_currency, quote_car_model, created_at, quoted_at, declined_at, relanced_at, closed_notified_at, car_partners(name)"
       ),
     ]);
     loadError = reqRes.error?.message ?? partRes.error?.message ?? invRes.error?.message ?? invFullRes.error?.message ?? null;
@@ -80,7 +80,7 @@ export default async function CarAdminPage({
       partner_name: r.car_partners?.name ?? "Agency",
       status: r.status, quote_price: r.quote_price, quote_currency: r.quote_currency,
       quote_car_model: r.quote_car_model, created_at: r.created_at,
-      quoted_at: r.quoted_at, declined_at: r.declined_at, relanced_at: r.relanced_at,
+      quoted_at: r.quoted_at, declined_at: r.declined_at, relanced_at: r.relanced_at, closed_notified_at: r.closed_notified_at,
     });
     monitorByRequest.set(r.request_id, list);
   }
@@ -148,7 +148,7 @@ export default async function CarAdminPage({
         </div>
         <div className="flex flex-wrap content-center items-center gap-1.5 text-sm">
           {([["sent", s.byStatus.sent ?? 0], ["quoted", s.byStatus.quoted ?? 0], ["accepted", s.byStatus.accepted ?? 0],
-             ["email_failed", s.byStatus.email_failed ?? 0], ["rented", s.rented], ["lost", s.lost]] as const).map(([st, n]) => (
+             ["declined_by_client", s.byStatus.declined_by_client ?? 0], ["email_failed", s.byStatus.email_failed ?? 0], ["rented", s.rented], ["lost", s.lost]] as const).map(([st, n]) => (
             <a key={st} href={`/admin/car-rental?status=${st}`}
                className={`rounded-full border px-2.5 py-0.5 no-underline ${st === "email_failed" && n > 0 ? "border-terracotta bg-terracotta-faint font-bold" : "border-border bg-white text-text-muted"}`}>
               {st} <span className="font-data font-bold text-text">{n}</span>

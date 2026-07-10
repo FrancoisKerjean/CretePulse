@@ -30,6 +30,27 @@ function statusBadge(st: string) {
   return <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${cls[st] ?? "bg-border"}`}>{st}</span>;
 }
 
+function closureReasonLabel(reason?: string | null): string | null {
+  const labels: Record<string, string> = {
+    not_chosen: "autre offre choisie",
+    client_declined_all: "client a décliné",
+    client_silent: "clôture auto · client silencieux",
+    rental_started: "clôture auto · date atteinte",
+  };
+  return reason ? labels[reason] ?? reason : null;
+}
+
+function closureReasonBadge(reason?: string | null) {
+  const label = closureReasonLabel(reason);
+  if (!label) return null;
+  const auto = reason === "client_silent" || reason === "rental_started";
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${auto ? "bg-sun text-night" : "bg-border text-text-muted"}`}>
+      {label}
+    </span>
+  );
+}
+
 function outcomeBadge(o?: string | null) {
   if (!o) return null;
   return (
@@ -82,6 +103,8 @@ function InviteRoster({ invites, requestStatus, now, startPassed }: {
           {q.quoted_at ? <span className="text-text-light">· {fmtDate(q.quoted_at)}</span> : null}
           {q.status === "chosen" && <span className="rounded-full bg-ok px-2 py-0.5 text-xs font-bold text-white">choisi par le client</span>}
           {q.status === "not_chosen" && <span className="rounded-full bg-border px-2 py-0.5 text-xs text-text-muted">non retenu</span>}
+          {q.status === "not_chosen" && q.closed_notified_at ? <span className="rounded-full bg-lagoon/15 px-2 py-0.5 text-xs font-bold text-sea">prévenu</span> : null}
+          {q.status === "not_chosen" && !q.closed_notified_at ? <span className="rounded-full bg-sun/40 px-2 py-0.5 text-xs text-night">à prévenir</span> : null}
         </li>
       ))}
       {silent.map((s) => {
@@ -131,6 +154,10 @@ export function RequestsTable({
       rows = rows.filter((r) => isSilentRequest({ status: r.status, created_at: r.created_at }, monitorByRequest.get(r.id) ?? [], now));
     } else if (statusFilter === "awaiting") {
       rows = rows.filter((r) => isAwaitingChoice({ status: r.status }, monitorByRequest.get(r.id) ?? []));
+    } else if (statusFilter === "auto_closed") {
+      rows = rows.filter((r) => r.closure_reason === "client_silent" || r.closure_reason === "rental_started");
+    } else if (statusFilter === "client_silent" || statusFilter === "rental_started" || statusFilter === "client_declined_all") {
+      rows = rows.filter((r) => r.closure_reason === statusFilter);
     } else {
       rows = rows.filter((r) => r.status === statusFilter);
     }
@@ -157,8 +184,15 @@ export function RequestsTable({
           GAGNÉ au moins un devis : avec 59 loueurs en base, lister tout le
           registre ici était un mur de pastilles (audit UI 05/07). */}
       <div className="flex flex-wrap gap-1.5 text-sm">
-        {["", "sent", "quoted", "silent", "awaiting", "accepted", "declined_by_client", "email_failed", "rented", "lost"].map((f) => {
-          const label = f === "" ? "tous" : f === "silent" ? "silencieux" : f === "awaiting" ? "attente choix" : f === "declined_by_client" ? "décliné client" : f;
+        {["", "sent", "quoted", "silent", "awaiting", "accepted", "declined_by_client", "auto_closed", "client_silent", "rental_started", "email_failed", "rented", "lost"].map((f) => {
+          const label = f === "" ? "tous"
+            : f === "silent" ? "silencieux"
+            : f === "awaiting" ? "attente choix"
+            : f === "declined_by_client" ? "clôturées"
+            : f === "auto_closed" ? "auto clôturées"
+            : f === "client_silent" ? "client silencieux"
+            : f === "rental_started" ? "date atteinte"
+            : f;
           return (
             <a key={f || "all"} href={qs({ status: f, page: "" })}
                className={`rounded-full border px-3 py-1 no-underline ${statusFilter === f ? "border-sea bg-sea text-white" : "border-border bg-white text-text"}`}>
@@ -195,6 +229,7 @@ export function RequestsTable({
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-data text-xs text-text-light">#{r.id} · {fmtDate(r.created_at)}</span>
                 {statusBadge(r.status)}
+                {closureReasonBadge(r.closure_reason)}
                 {outcomeBadge(r.outcome)}
                 {r.commission_paid_at ? <span className="rounded-full bg-ok px-2 py-0.5 text-xs font-bold text-white">commission encaissée</span> : null}
                 <span className="ml-auto text-xs text-text-muted">{invitesByRequest.get(r.id) ?? 0} loueur(s) invité(s)</span>
@@ -213,7 +248,9 @@ export function RequestsTable({
                   {r.customer_name} · <a href={`mailto:${r.customer_email}`} className="text-sea">{r.customer_email}</a>
                   {r.customer_phone ? <> · {r.customer_phone}</> : null}
                   <br />
-                  {winner ? (
+                  {r.status === "declined_by_client" ? (
+                    <>Demande clôturée : <span className="font-bold">{closureReasonLabel(r.closure_reason) ?? "sans choix client"}</span></>
+                  ) : winner ? (
                     r.status === "accepted"
                       ? <>Choisi par le client : <span className="font-bold">{winner.name}</span></>
                       : <>Devis reçu de <span className="font-bold">{winner.name}</span> <span className="text-text-muted">· en attente du client</span></>
@@ -231,7 +268,8 @@ export function RequestsTable({
                 <span>Loueurs : {roll.invited} invité(s) · {roll.relanced} relancé(s) · {roll.silent} silencieux</span>
                 <span>
                   Client :{" "}
-                  {cRel.kind === "eligible" ? "relance éligible" :
+                  {r.status === "declined_by_client" ? (closureReasonLabel(r.closure_reason) ?? "clôturé") :
+                   cRel.kind === "eligible" ? "relance éligible" :
                    cRel.kind === "waiting" ? `prochaine relance dans ${hoursLabel(cRel.nextEligibleMs - now)}` :
                    cRel.kind === "exhausted" ? "relances épuisées (2/2)" : "aucune"}
                   {" "}({r.client_relance_count ?? 0}/2)
@@ -250,7 +288,7 @@ export function RequestsTable({
                   <summary className="cursor-pointer text-text-muted underline">timeline</summary>
                   <ol className="mt-1 space-y-0.5 border-l border-border pl-3">
                     {buildTimeline(
-                      { created_at: r.created_at, accepted_at: r.accepted_at, client_relanced_at: r.client_relanced_at ?? null, outcome: r.outcome, outcome_at: r.outcome_at },
+                      { created_at: r.created_at, accepted_at: r.accepted_at, client_relanced_at: r.client_relanced_at ?? null, outcome: r.outcome, outcome_at: r.outcome_at, closure_reason: r.closure_reason ?? null },
                       invites,
                     ).map((e, i) => (
                       <li key={i}><span className="font-data text-text-light">{fmtDate(e.at)}</span> · {e.label}</li>

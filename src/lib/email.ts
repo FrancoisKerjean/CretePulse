@@ -889,7 +889,7 @@ export async function sendCustomerNewOffer(opts: {
   if (error) throw new Error(`Resend: ${error.message}`);
 }
 
-/** Email court au loueur non retenu. Best-effort : appelé depuis accept route. */
+/** Email court au loueur non retenu. Best-effort legacy : conservé pour compat. */
 export async function sendPartnerNotChosen(email: string, partnerName: string): Promise<void> {
   const first = partnerName.split(" ")[0] || partnerName;
   const { error } = await resend.emails.send({
@@ -907,6 +907,83 @@ export async function sendPartnerNotChosen(email: string, partnerName: string): 
     ].join("\n"),
   });
   if (error) console.error("[sendPartnerNotChosen] Resend error:", error.message);
+}
+
+export async function sendPartnerClosureUpdate(opts: {
+  email: string;
+  partnerName: string;
+  reason: "not_chosen" | "client_declined_all" | "client_silent" | "rental_started";
+  pickupLabel: string;
+  dateFrom: string;
+  dateTo: string;
+  price: number | null;
+  currency: string;
+}): Promise<void> {
+  const first = opts.partnerName.split(" ")[0] || opts.partnerName;
+  const subject = opts.reason === "not_chosen"
+    ? "Car Rental Direct - another offer was selected"
+    : "Car Rental Direct - request closed, thanks for your quote";
+  const outcomeByReason: Record<typeof opts.reason, string> = {
+    not_chosen: "The customer selected another offer this time.",
+    client_declined_all: "The customer closed the request without choosing any offer this time.",
+    client_silent: "The customer did not answer after our follow-ups, so we closed the request.",
+    rental_started: "The rental start date has arrived, so we closed the request.",
+  };
+  const titleByReason: Record<typeof opts.reason, string> = {
+    not_chosen: "Another offer was selected",
+    client_declined_all: "Request closed by the customer",
+    client_silent: "Request closed after follow-up",
+    rental_started: "Request closed at start date",
+  };
+  const outcome = outcomeByReason[opts.reason];
+  const priceLine = opts.price != null ? `Your quote: ${money(opts.price, opts.currency)}` : null;
+  const priceHtml = opts.price != null
+    ? `<p style="margin:0; color:${C.text}; font-size:14px; line-height:1.6;"><strong>Your quote:</strong> ${money(opts.price, opts.currency)}</p>`
+    : "";
+  const html = kalimeraShell(`
+    <p style="margin:0 0 8px; color:${C.lagoonDeep}; font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.08em;">Car Rental Direct</p>
+    <h2 style="margin:0 0 14px; color:${C.text}; font-size:22px; line-height:1.2;">${titleByReason[opts.reason]}</h2>
+    <p style="margin:0 0 18px; color:${C.muted}; font-size:14px; line-height:1.65;">Hi ${first}, ${outcome} Thank you for taking the time to answer this request.</p>
+
+    <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:16px; padding:16px 18px; margin:0 0 18px;">
+      <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.06em;">Request</p>
+      <p style="margin:0 0 4px; color:${C.text}; font-size:14px; line-height:1.6;"><strong>Pickup / drop-off:</strong> ${opts.pickupLabel}</p>
+      <p style="margin:0 0 4px; color:${C.text}; font-size:14px; line-height:1.6;"><strong>Dates:</strong> ${opts.dateFrom} → ${opts.dateTo}</p>
+      ${priceHtml}
+    </div>
+
+    <div style="border-left:4px solid ${C.lagoon}; padding:2px 0 2px 14px; margin:0 0 18px;">
+      <p style="margin:0; color:${C.muted}; font-size:14px; line-height:1.65;">You stay active in the crete.direct rotation. We will keep sending you matching requests in your zones, and we track response activity so reliable partners stay visible in the system.</p>
+    </div>
+
+    <p style="margin:0 0 18px; color:${C.muted}; font-size:14px; line-height:1.65;">No action needed. If you want to adjust your zones, availability, or preferred car categories, just reply to this email.</p>
+    <p style="margin:0; color:${C.faint}; font-size:12px; text-align:center;">Kami · crete.direct</p>
+  `);
+
+  const { error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: opts.email,
+    replyTo: RELAY_EMAIL,
+    subject,
+    html,
+    text: [
+      `Hi ${first},`,
+      ``,
+      outcome,
+      `Thank you for taking the time to answer the request.`,
+      ``,
+      `Request: ${opts.pickupLabel}, ${opts.dateFrom} → ${opts.dateTo}`,
+      priceLine,
+      ``,
+      `You stay active in the crete.direct rotation. We will keep sending you matching requests in your zones, and we track response activity so reliable partners stay visible in the system.`,
+      ``,
+      `No action needed. If you want to adjust your zones, availability, or preferred car categories, just reply to this email.`,
+      ``,
+      `Kami`,
+      `crete.direct`,
+    ].filter((line): line is string => line != null).join("\n"),
+  });
+  if (error) throw new Error(`Resend: ${error.message}`);
 }
 
 // ── Relances (cron car-relance) : loueur silencieux + client indécis ────────

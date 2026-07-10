@@ -20,6 +20,7 @@ export interface MonitorInvite {
   quoted_at: string | null;
   declined_at: string | null;
   relanced_at: string | null;
+  closed_notified_at?: string | null;
 }
 
 const isPriced = (i: MonitorInvite): boolean =>
@@ -146,7 +147,7 @@ export interface TimelineEvent { at: string; label: string; }
 /** Fil chronologique d'une demande : uniquement des événements réels (timestamps non nuls). */
 export function buildTimeline(
   req: { created_at: string; accepted_at: string | null; client_relanced_at: string | null;
-         outcome?: string | null; outcome_at?: string | null },
+         outcome?: string | null; outcome_at?: string | null; closure_reason?: string | null },
   invites: MonitorInvite[],
 ): TimelineEvent[] {
   const ev: TimelineEvent[] = [{ at: req.created_at, label: "Demande créée" }];
@@ -171,6 +172,16 @@ export function buildTimeline(
   if (req.accepted_at) {
     const chosen = invites.find((i) => i.status === "chosen" && i.quote_price != null) ?? null;
     ev.push({ at: req.accepted_at, label: `Client a choisi${chosen ? ` (${chosen.partner_name})` : ""}` });
+  }
+  if (req.closure_reason && !req.accepted_at) {
+    const firstClosure = invites
+      .map((i) => i.closed_notified_at)
+      .filter((x): x is string => x != null)
+      .sort()[0];
+    if (firstClosure) ev.push({ at: firstClosure, label: `Clôture : ${req.closure_reason}` });
+  }
+  for (const i of invites) {
+    if (i.closed_notified_at) ev.push({ at: i.closed_notified_at, label: `Email clôture loueur (${i.partner_name})` });
   }
   if (req.outcome && req.outcome_at) ev.push({ at: req.outcome_at, label: `Issue : ${req.outcome}` });
 

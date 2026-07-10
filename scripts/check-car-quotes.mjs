@@ -1,5 +1,5 @@
 // node --experimental-strip-types scripts/check-car-quotes.mjs
-import { sortQuotesByPrice, canPartnerQuote, findChosenInvite, partnerNeedsRelance, clientNeedsRelance } from "../src/lib/car-quotes.ts";
+import { sortQuotesByPrice, canPartnerQuote, findChosenInvite, partnerNeedsRelance, clientNeedsRelance, clientAutoCloseReason, closedResponderNeedsNotification } from "../src/lib/car-quotes.ts";
 
 let fail = 0;
 const ok = (n, c) => { console.log(c ? `ok - ${n}` : `FAIL - ${n}`); if (!c) fail++; };
@@ -29,6 +29,17 @@ ok("relance client due (jamais relance)", clientNeedsRelance({ status: "quoted",
 ok("pas de relance client si count>=2", !clientNeedsRelance({ status: "quoted", client_relanced_at: null, client_relance_count: 2 }, 1751961600000));
 ok("pas de relance client si <24h depuis derniere", !clientNeedsRelance({ status: "quoted", client_relanced_at: new Date(1751961600000 - 5 * H).toISOString(), client_relance_count: 1 }, 1751961600000));
 ok("pas de relance client si pas d'offre", !clientNeedsRelance({ status: "sent", client_relanced_at: null, client_relance_count: 0 }, 1751961600000));
+
+ok("cloture auto si date debut atteinte", clientAutoCloseReason({ status: "quoted", date_from: "2025-07-08", client_relanced_at: null, client_relance_count: 0 }, 1751961600000) === "rental_started");
+ok("cloture auto si client silencieux apres 2 relances +24h", clientAutoCloseReason({ status: "quoted", date_from: "2026-07-20", client_relanced_at: new Date(1751961600000 - 25 * H).toISOString(), client_relance_count: 2 }, 1751961600000) === "client_silent");
+ok("pas de cloture auto si derniere relance <24h", clientAutoCloseReason({ status: "quoted", date_from: "2026-07-20", client_relanced_at: new Date(1751961600000 - 5 * H).toISOString(), client_relance_count: 2 }, 1751961600000) === null);
+ok("pas de cloture auto si demande non quoted", clientAutoCloseReason({ status: "sent", date_from: "2026-07-20", client_relanced_at: null, client_relance_count: 0 }, 1751961600000) === null);
+
+ok("notification cloture loueur due si devis non retenu", closedResponderNeedsNotification({ status: "not_chosen", quote_price: 240, closed_notified_at: null }, "accepted"));
+ok("notification cloture loueur due si client decline tout", closedResponderNeedsNotification({ status: "not_chosen", quote_price: 240, closed_notified_at: null }, "declined_by_client"));
+ok("pas de notification cloture si loueur choisi", !closedResponderNeedsNotification({ status: "chosen", quote_price: 240, closed_notified_at: null }, "accepted"));
+ok("pas de notification cloture si deja notifie", !closedResponderNeedsNotification({ status: "not_chosen", quote_price: 240, closed_notified_at: "2026-07-10T08:00:00Z" }, "accepted"));
+ok("pas de notification cloture si pas de devis", !closedResponderNeedsNotification({ status: "not_chosen", quote_price: null, closed_notified_at: null }, "accepted"));
 
 console.log(fail ? `\n${fail} FAIL` : "\nAll passed");
 process.exit(fail ? 1 : 0);
