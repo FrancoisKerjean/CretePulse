@@ -32,7 +32,7 @@ select make_date(h.year, h.month, 1), h.airport_iata, d.direction,
        'hcaa-movements', h.source_xlsx_url
 from public.hcaa_crete_monthly h
 cross join (values ('arrival'), ('departure')) as d(direction)
-where h.airport_iata = 'HER' and h.aircraft_total > 0
+where h.airport_iata in ('HER', 'CHQ') and h.aircraft_total > 0
 on conflict (month, airport, direction) do update set
   pax_official = excluded.pax_official,
   flights_official = excluded.flights_official,

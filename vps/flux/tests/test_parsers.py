@@ -1,7 +1,7 @@
 from datetime import date
 from pathlib import Path
 
-from flux.parsers import (assign_service_dates, normalize_agn,
+from flux.parsers import (assign_service_dates, normalize_agn, parse_chq,
                           normalize_citybus_vehicles, parse_arrivals,
                           parse_departures, parse_service_date)
 
@@ -82,3 +82,54 @@ def test_normalize_citybus_vehicles():
     assert lat > 35.0 and "V42" not in vkey
     assert normalize_citybus_vehicles({}, "citybus-her") == []
     assert normalize_citybus_vehicles(None, "citybus-her") == []
+
+
+def test_parse_chq_arrivals():
+    payload = {"data": [
+        {"fnr": "FR9848", "esti": "2026-07-10 17:11:00", "lu": "-0001-11-30 00:00:00",
+         "sched": "2026-07-10 17:25:00", "apname": "Pisa", "terminal": "1", "ausgang": "",
+         "status": "Expected 17:11", "al": "RYR", "id": 1, "alname": "Ryanair"},
+        {"fnr": "BA654", "esti": "2026-07-10 17:16:00", "lu": "2026-07-10 17:08:00",
+         "sched": "2026-07-10 17:40:00", "apname": "London LHR", "terminal": "1", "ausgang": "",
+         "status": "Landed 17:08", "al": "BAW", "id": 2, "alname": "British Airways"},
+        {"fnr": "A3484", "esti": "-0001-11-30 00:00:00", "lu": "-0001-11-30 00:00:00",
+         "sched": "2026-07-10 23:50:00", "apname": "Rhodes", "terminal": "1", "ausgang": "",
+         "status": "&nbsp;", "al": "AEE", "id": 3, "alname": "Aegean"},
+    ]}
+    rows = parse_chq(payload, "arrival")
+    assert len(rows) == 3
+    assert rows[0]["service_date"] == date(2026, 7, 10)  # datetime complet, pas de bug minuit
+    assert rows[0]["sched_time"] == "17:25"
+    assert rows[0]["flight_no"] == "FR9848"
+    assert rows[0]["airline_code"] == "RYR"
+    assert rows[0]["origin"] == "Pisa"
+    assert rows[0]["status"] == "Expected 17:11"
+    assert rows[0]["landed_at"] is None       # sentinelle -0001 -> None
+    assert rows[0]["belt"] is None
+    assert rows[1]["landed_at"] == "2026-07-10 17:08:00"
+    assert rows[2]["status"] is None          # &nbsp; -> None
+
+
+def test_parse_chq_departures():
+    payload = {"data": [
+        {"fnr": "FR9849", "esti": "-0001-11-30 00:00:00", "lu": "-0001-11-30 00:00:00",
+         "sched": "2026-07-10 17:50:00", "apname": "Pisa", "terminal": "1", "gate": "07",
+         "status": "Gate Open", "al": "RYR", "schalter": "04-06", "id": 4, "alname": "Ryanair"},
+    ]}
+    rows = parse_chq(payload, "departure")
+    assert rows[0]["destination"] == "Pisa"
+    assert rows[0]["belt"] == "07"            # gate stockee dans belt (meme colonne que HER)
+    assert rows[0]["landed_at"] is None
+
+
+def test_parse_chq_skips_malformed():
+    payload = {"data": [
+        {"fnr": "", "sched": "2026-07-10 17:50:00"},           # sans numero -> drop
+        {"fnr": "XX1", "sched": "not-a-date"},                 # date invalide -> drop
+        {"fnr": "FR1", "sched": "2026-07-10 18:00:00", "apname": "Pisa", "status": "", "al": "RYR"},
+    ]}
+    rows = parse_chq(payload, "arrival")
+    assert len(rows) == 1
+    assert rows[0]["flight_no"] == "FR1"
+    assert parse_chq({}, "arrival") == []
+    assert parse_chq(None, "arrival") == []
