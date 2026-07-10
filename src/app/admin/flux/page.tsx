@@ -17,6 +17,14 @@ type ZoneRow = {
   zone: string; snapshot_date: string; listings_count: number;
   occupancy_rate_30: number | null; occupancy_rate_90: number | null;
 };
+type StockDay = {
+  day: string; flights_in: number; flights_out: number;
+  pax_in_low: number | null; pax_in_high: number | null;
+  pax_out_low: number | null; pax_out_high: number | null;
+  coef_samples: number | null; coef_measured: boolean | null;
+  stock_low: number | null; stock_high: number | null;
+  net_cum_low: number | null; net_cum_high: number | null;
+};
 
 function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
@@ -71,24 +79,27 @@ export default async function FluxAdminPage({
   let intents: IntentRow[] = [];
   let wiki: WikiRow[] = [];
   let zones: ZoneRow[] = [];
+  let stock: StockDay[] = [];
   let loadError: string | null = null;
   try {
-    const [fRes, bRes, cRes, iRes, wRes, zRes] = await Promise.all([
+    const [fRes, bRes, cRes, iRes, wRes, zRes, sRes] = await Promise.all([
       supabase.from("v_flux_flights_daily").select("*").order("service_date", { ascending: false }).limit(14),
       supabase.from("v_flux_bus_daily").select("*").order("day", { ascending: false }).limit(21),
       supabase.from("v_flux_cruise_daily").select("*").gte("call_date", today).lte("call_date", in14).order("call_date"),
       supabase.from("v_flux_intent_top").select("event_name, prop_key, prop_value, total"),
       supabase.from("v_flux_wiki_top").select("*").order("avg_views_7d", { ascending: false }).limit(12),
       supabase.from("flux_zone_occupancy").select("*").order("snapshot_date", { ascending: false }).limit(36),
+      supabase.from("v_flux_stock_daily").select("*").order("day", { ascending: false }).limit(30),
     ]);
     loadError = fRes.error?.message ?? bRes.error?.message ?? cRes.error?.message
-      ?? iRes.error?.message ?? wRes.error?.message ?? zRes.error?.message ?? null;
+      ?? iRes.error?.message ?? wRes.error?.message ?? zRes.error?.message ?? sRes.error?.message ?? null;
     flights = (fRes.data ?? []) as FlightDay[];
     bus = (bRes.data ?? []) as BusDay[];
     cruises = (cRes.data ?? []) as CruiseDay[];
     intents = (iRes.data ?? []) as IntentRow[];
     wiki = (wRes.data ?? []) as WikiRow[];
     zones = (zRes.data ?? []) as ZoneRow[];
+    stock = ((sRes.data ?? []) as StockDay[]).sort((a, b) => a.day.localeCompare(b.day));
   } catch (e) {
     loadError = e instanceof Error ? e.message : String(e);
   }
@@ -120,6 +131,14 @@ export default async function FluxAdminPage({
     busBySource.set(b.source, [...(busBySource.get(b.source) ?? []), b]);
   }
 
+  const lastStock = stock.length ? stock[stock.length - 1] : undefined;
+  const round100 = (v: number) => Math.round(v / 100) * 100;
+  const fmtRange = (low: number | null, high: number | null) =>
+    low == null || high == null
+      ? "n/d"
+      : `${round100(low).toLocaleString("fr-FR")} à ${round100(high).toLocaleString("fr-FR")}`;
+  const maxStockHigh = Math.max(1, ...stock.map((s) => s.stock_high ?? 0));
+
   return (
     <main className="mx-auto max-w-5xl px-4 py-8">
       <h1 className="text-lg font-bold">Flux touristiques — cockpit</h1>
@@ -141,6 +160,49 @@ export default async function FluxAdminPage({
         <Cell label="recherches bus 30 j" v={intentTotal30 ? String(intentTotal30) : "n/d"} />
         <Cell label="dont NON desservies" v={intentTotal30 ? String(zeroTotal30) : "n/d"} />
       </section>
+
+      <Section
+        title="Touristes présents (estimation)"
+        hint="Vols HER comptés /10 min, convertis en passagers via calibration officielle HCAA (ypa.gr) ; séjour moyen 7,5 à 8,2 nuits (INSETE 2024). Toujours une fourchette, jamais un chiffre sec."
+      >
+        {lastStock && lastStock.stock_low != null ? (
+          <>
+            <div className="flex flex-wrap items-baseline gap-x-2">
+              <span className="font-data text-2xl font-bold">
+                {fmtRange(lastStock.stock_low, lastStock.stock_high)}
+              </span>
+              <span className="text-xs text-text-muted">
+                personnes entrées par HER encore sur l&apos;île, au {fmtDay(lastStock.day)}
+              </span>
+            </div>
+            <p className="mt-1 text-[11px] text-text-muted">
+              Bilan cumulé arrivées moins départs depuis le début du comptage :{" "}
+              {fmtRange(lastStock.net_cum_low, lastStock.net_cum_high)}. Calibration{" "}
+              {lastStock.coef_measured ? "mesurée (mois complet compté)" : "HCAA mouvements officiels"}
+              {lastStock.coef_samples ? `, ${lastStock.coef_samples} mois de référence` : ""}.
+            </p>
+            <div className="mt-3 flex flex-col gap-1">
+              {stock.map((s) => (
+                <div key={s.day} className="flex items-center gap-2 text-xs">
+                  <span className="w-20 shrink-0 text-text-muted">{fmtDay(s.day)}</span>
+                  <Bar value={s.stock_high ?? 0} max={maxStockHigh} />
+                  <span className="w-36 shrink-0 text-right font-data">{fmtRange(s.stock_low, s.stock_high)}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className="text-xs text-text-muted">
+            Pas encore de fourchette : comptage départs ou calibration en cours d&apos;amorçage.
+          </p>
+        )}
+        <ul className="mt-3 list-disc pl-4 text-[11px] text-text-muted">
+          <li>Non comptés : aéroport de Chania et ferries. L&apos;estimation couvre les entrées et sorties via HER uniquement.</li>
+          <li>Croisiéristes : transitoires comptés à part (calendrier officiel du port, section Croisières).</li>
+          <li>Méthode primaire : fenêtre séjour-moyen 7 à 8 jours glissants sur les arrivées estimées ; croisée au bilan cumulé.</li>
+          <li>Montée en charge : la fourchette devient fiable après 8 jours de comptage continu des deux directions.</li>
+        </ul>
+      </Section>
 
       <div className="grid gap-x-4 sm:grid-cols-2">
         <Section title="Paires bus demandées (30 j)" hint="Événement bus_search, trajets avec résultats">
