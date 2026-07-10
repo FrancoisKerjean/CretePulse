@@ -98,7 +98,7 @@ export function InstallBanner() {
 
   if (!visible) return null;
   return (
-    <div className="fixed inset-x-3 bottom-3 z-50 rounded-2xl border-2 border-ink bg-white p-3 shadow-[0_12px_32px_rgba(11,94,120,.10)] md:hidden">
+    <div className="fixed inset-x-3 bottom-16 z-50 rounded-2xl border-2 border-ink bg-white p-3 shadow-[0_12px_32px_rgba(11,94,120,.10)] md:hidden">
       <div className="flex items-center gap-3">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/icon-192.png" alt="" width={40} height={40} className="rounded-xl shrink-0" />

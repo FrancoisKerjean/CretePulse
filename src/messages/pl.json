@@ -183,5 +183,11 @@
     "cta": "Zainstaluj",
     "later": "Nie teraz",
     "ios": "Stuknij Udostępnij, potem „Do ekranu początkowego”."
+  },
+  "tabBar": {
+    "map": "Mapa",
+    "buses": "Autobusy",
+    "beaches": "Plaże",
+    "quote": "Wycena"
   }
 }

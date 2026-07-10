@@ -183,5 +183,11 @@
     "cta": "Yükle",
     "later": "Şimdi değil",
     "ios": "Paylaş'a dokun, sonra “Ana Ekrana Ekle”yi seç."
+  },
+  "tabBar": {
+    "map": "Harita",
+    "buses": "Otobüsler",
+    "beaches": "Plajlar",
+    "quote": "Teklif"
   }
 }

@@ -183,5 +183,11 @@
     "cta": "Instalează",
     "later": "Nu acum",
     "ios": "Atinge Distribuie, apoi „Adaugă la ecranul principal”."
+  },
+  "tabBar": {
+    "map": "Hartă",
+    "buses": "Autobuze",
+    "beaches": "Plaje",
+    "quote": "Ofertă"
   }
 }

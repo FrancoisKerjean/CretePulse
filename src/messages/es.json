@@ -183,5 +183,11 @@
     "cta": "Instalar",
     "later": "Ahora no",
     "ios": "Toca Compartir y luego “Añadir a pantalla de inicio”."
+  },
+  "tabBar": {
+    "map": "Mapa",
+    "buses": "Buses",
+    "beaches": "Playas",
+    "quote": "Presupuesto"
   }
 }

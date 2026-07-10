@@ -183,5 +183,11 @@
     "cta": "Install",
     "later": "Not now",
     "ios": "Tap Share, then “Add to Home Screen”."
+  },
+  "tabBar": {
+    "map": "Map",
+    "buses": "Buses",
+    "beaches": "Beaches",
+    "quote": "Car quote"
   }
 }

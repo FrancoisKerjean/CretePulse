@@ -10,6 +10,7 @@ import { ImpressionTracker } from "@/components/ui/ImpressionTracker";
 import type { CbPlaceSlim, CbPlacesPacked, CbPlace } from "@/lib/cb-places";
 import { WaterQualityBadge } from "@/components/WaterQualityBadge";
 import { getCbPlaceBySlug, unpackCbPlaces } from "@/lib/cb-places";
+import { NowPanel } from "@/components/explore/NowPanel";
 import { getSponsorCards, isSponsorSlug, sponsoredLabel, sponsorDescription } from "@/lib/sponsored-places";
 import { isAffiliateSlug, partnerLabel, affiliateDescription, type AffiliatePlace } from "@/lib/affiliate-places";
 import { typeLabel } from "@/lib/cb-type-labels";
@@ -1340,7 +1341,7 @@ export function ExploreView({
           <button
             onClick={toggleNearMe}
             aria-pressed={nearActive && Boolean(geo.pos)}
-            className={`md:hidden absolute right-3 bottom-[178px] z-20 flex items-center gap-1.5 text-xs font-bold py-2 px-3.5 rounded-full shadow-[0_8px_22px_rgba(11,94,120,0.3)] ${
+            className={`md:hidden absolute right-3 bottom-[234px] z-20 flex items-center gap-1.5 text-xs font-bold py-2 px-3.5 rounded-full shadow-[0_8px_22px_rgba(11,94,120,0.3)] ${
               nearActive && geo.pos ? "bg-sea text-white" : "bg-white text-sea"
             }`}
           >
@@ -1348,7 +1349,8 @@ export function ExploreView({
             {t.nearMe}
           </button>
 
-          <div className="md:hidden absolute bottom-0 left-0 right-0 z-20">
+          {/* bottom-14 : laisse la place à la MobileTabBar fixe (lot 2). */}
+          <div className="md:hidden absolute bottom-14 left-0 right-0 z-20">
             <button
               onClick={() => setListExpanded(true)}
               className="mx-auto mb-1.5 flex items-center gap-1.5 bg-white/95 text-sea text-xs font-bold px-4 py-1.5 rounded-full shadow-[0_4px_14px_rgba(11,94,120,0.25)]"
@@ -1356,6 +1358,10 @@ export function ExploreView({
               <ChevronUp size={14} /> {filtered.length} {t.results}
             </button>
             <div className="flex gap-2.5 overflow-x-auto px-3 pb-3 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {/* Panneau temps reel en tete UNIQUEMENT quand l'utilisateur a active
+                  "Autour de moi" (intent utilitaire) : meilleure plage du moment +
+                  prochain bus live. Lot 2 app compagnon. */}
+              {nearActive && geo.pos && <NowPanel pos={geo.pos} locale={locale} />}
               {/* Carte voiture en tete du carrousel mobile : /explore = 1re landing
                   campagne FB (87% mobile) et le carrousel est la vue par defaut
                   (sans tap). Wizard interne, source tracee dans Plausible. */}

@@ -183,5 +183,11 @@
     "cta": "Installer",
     "later": "Ikke nå",
     "ios": "Trykk på Del og deretter “Legg til på Hjem-skjermen”."
+  },
+  "tabBar": {
+    "map": "Kart",
+    "buses": "Busser",
+    "beaches": "Strender",
+    "quote": "Tilbud"
   }
 }

@@ -183,5 +183,11 @@
     "cta": "Asenna",
     "later": "Ei nyt",
     "ios": "Napauta Jaa ja sitten ”Lisää Koti-valikkoon”."
+  },
+  "tabBar": {
+    "map": "Kartta",
+    "buses": "Bussit",
+    "beaches": "Rannat",
+    "quote": "Tarjous"
   }
 }

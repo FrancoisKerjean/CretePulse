@@ -183,5 +183,11 @@
     "cta": "Instalar",
     "later": "Agora não",
     "ios": "Toca em Partilhar e depois “Adicionar ao ecrã principal”."
+  },
+  "tabBar": {
+    "map": "Mapa",
+    "buses": "Autocarros",
+    "beaches": "Praias",
+    "quote": "Orçamento"
   }
 }
