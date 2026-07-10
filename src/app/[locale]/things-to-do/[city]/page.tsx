@@ -517,8 +517,9 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
           ))}
         </div>
 
-        {/* Car Rental Direct */}
-        <CarPromo locale={locale} source="things-to-do" />
+        {/* Car Rental Direct. Les slugs ACTIVITY_CITIES sont aussi des pickups
+            CAR_ZONES : le CTA route vers la landing /car-rental/<ville>. */}
+        <CarPromo locale={locale} pickup={city.slug} source="things-to-do" />
 
         {/* FAQ */}
         <section>

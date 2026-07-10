@@ -68,6 +68,7 @@ export const SLUG_COORDS: Record<string, [number, number]> = {
   "avgeniki": [35.2106, 25.0806],
   // Ouest (ektel)
   "chania": [35.5138, 24.018],
+  "platanias": [35.5167, 23.9089],
   "rethymno": [35.3644, 24.4821],
   "chania-airport": [35.5317, 24.1497],
   "kissamos": [35.4944, 23.6558],

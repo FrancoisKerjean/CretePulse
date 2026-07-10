@@ -10,6 +10,9 @@ import { buildAlternates, buildVillageTitle, buildVillageDescription } from "@/l
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CarPromo } from "@/components/car-rental/CarPromo";
+import { allPickups } from "@/lib/car-partners";
+import { SLUG_COORDS } from "@/lib/taxi-fare";
+import { nearestBy } from "@/lib/geo";
 import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 172800; // 03/07 optim couts Vercel (48h, ISR Writes)
@@ -221,7 +224,23 @@ export default async function VillageDetailPage({
 
         {/* Monetisation: village intent to Car Rental Direct. */}
         <div className="mb-12">
-          <CarPromo locale={locale} source="village" />
+          {/* Pickup le plus proche s'il est servi (pattern beaches) : le CTA
+              route alors vers la landing /car-rental/<location> du lieu. */}
+          {(() => {
+            const nearestPickup = nearestBy(
+              allPickups(),
+              (p) => SLUG_COORDS[p.slug] ?? null,
+              { lat: village.latitude, lon: village.longitude },
+              1,
+            )[0];
+            return (
+              <CarPromo
+                locale={locale}
+                pickup={nearestPickup?.served ? nearestPickup.slug : undefined}
+                source="village"
+              />
+            );
+          })()}
         </div>
 
         {/* Nearby villages */}

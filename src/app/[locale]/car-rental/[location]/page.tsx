@@ -41,6 +41,12 @@ const UI: Record<CarLocLocale, { home: string; carRental: string; back: string; 
     back: "Mietwagen auf Kreta",
     wizardLead: "Fragen Sie diesen Abholpunkt an. Eine lokale Agentur antwortet mit einem Angebot.",
   },
+  el: {
+    home: "Αρχική",
+    carRental: "Ενοικίαση αυτοκινήτου",
+    back: "Όλη η ενοικίαση αυτοκινήτου στην Κρήτη",
+    wizardLead: "Ζητήστε αυτό το σημείο παραλαβής. Ένα τοπικό γραφείο ενοικίασης απαντά με προσφορά.",
+  },
 };
 
 function pickLocale(locale: string): CarLocLocale {

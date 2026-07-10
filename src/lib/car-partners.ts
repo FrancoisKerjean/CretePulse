@@ -23,7 +23,7 @@ export interface CarPartner {
 
 // Slugs = clés existantes de SLUG_COORDS (taxi-fare.ts), vérifiés par check-car-partners.mjs.
 export const CAR_ZONES: CarZone[] = [
-  { id: "chania-west", label: "Chania & the west", pickups: ["chania-airport", "chania", "kissamos", "paleochora", "kalyves", "georgioupolis"] },
+  { id: "chania-west", label: "Chania & the west", pickups: ["chania-airport", "chania", "platanias", "kissamos", "paleochora", "kalyves", "georgioupolis"] },
   { id: "rethymno", label: "Rethymno", pickups: ["rethymno", "plakias", "panormo", "bali"] },
   { id: "heraklion-center", label: "Heraklion & central", pickups: ["heraklion", "hersonissos", "malia", "matala", "agia-galini", "gouves"] },
   { id: "lasithi-east", label: "Lasithi & the east", pickups: ["agios-nikolaos", "elounda", "sitia", "ierapetra", "makry-gyalos", "sisi"] },

@@ -22,27 +22,38 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 // zones historiques d'Auto Smart si la DB est momentanément indisponible.
 const STATIC_SERVED = ["chania-west", "rethymno", "heraklion-center"];
 
-const LOCATION_LINKS_COPY: Record<CarLocLocale, { title: string; intro: string; cta: string; airport: string; port: string }> = {
+const LOCATION_LINKS_COPY: Record<CarLocLocale, { title: string; intro: string; cta: string; airport: string; port: string; city: string }> = {
   en: {
-    title: "Popular airport and port pick-up points",
-    intro: "Open a dedicated page for the main arrival points in Crete. The quote form starts directly on dates with the right pick-up point selected.",
+    title: "Popular pick-up points in Crete",
+    intro: "Open a dedicated page for the main arrival points and towns in Crete. The quote form starts directly on dates with the right pick-up point selected.",
     cta: "Open",
     airport: "Airport",
     port: "Port",
+    city: "Town",
   },
   fr: {
-    title: "Points de prise en charge populaires aux aéroports et ports",
-    intro: "Ouvrez une page dédiée aux principales arrivées en Crète. Le formulaire démarre directement sur les dates avec le bon point sélectionné.",
+    title: "Points de prise en charge populaires en Crète",
+    intro: "Ouvrez une page dédiée aux principales arrivées et villes de Crète. Le formulaire démarre directement sur les dates avec le bon point sélectionné.",
     cta: "Ouvrir",
     airport: "Aéroport",
     port: "Port",
+    city: "Ville",
   },
   de: {
-    title: "Beliebte Abholpunkte an Flughäfen und Häfen",
-    intro: "Öffnen Sie eine eigene Seite für die wichtigsten Ankunftspunkte auf Kreta. Das Formular startet direkt bei den Daten mit dem passenden Abholpunkt.",
+    title: "Beliebte Abholpunkte auf Kreta",
+    intro: "Öffnen Sie eine eigene Seite für die wichtigsten Ankunftspunkte und Orte auf Kreta. Das Formular startet direkt bei den Daten mit dem passenden Abholpunkt.",
     cta: "Öffnen",
     airport: "Flughafen",
     port: "Hafen",
+    city: "Ort",
+  },
+  el: {
+    title: "Δημοφιλή σημεία παραλαβής στην Κρήτη",
+    intro: "Ανοίξτε μια ειδική σελίδα για τα κύρια σημεία άφιξης και τις πόλεις της Κρήτης. Η φόρμα προσφοράς ξεκινά απευθείας στις ημερομηνίες με επιλεγμένο το σωστό σημείο παραλαβής.",
+    cta: "Άνοιγμα",
+    airport: "Αεροδρόμιο",
+    port: "Λιμάνι",
+    city: "Πόλη",
   },
 };
 
