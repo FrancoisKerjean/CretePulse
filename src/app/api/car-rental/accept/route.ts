@@ -63,6 +63,8 @@ export async function POST(request: NextRequest) {
     closure_reason: null,
     quoted_price: chosen.price, quoted_currency: chosen.currency ?? "EUR",
     quoted_car_model: carModelSnapshot, quoted_inclusions: chosen.inclusions ?? [],
+    quoted_insurance_type: chosen.insurance_type, quoted_excess_eur: chosen.excess_eur,
+    quoted_zero_excess_upsell_eur_day: chosen.zero_excess_upsell_eur_day,
     quoted_at: chosen.created_at, quoted_by_partner_id: chosen.partner_id,
     partner_name: partner?.name ?? chosen.partner_name, partner_email: partner?.email ?? null,
   }).eq("id", row.id);
@@ -85,7 +87,9 @@ export async function POST(request: NextRequest) {
         pickupLabel: carPickupLabel(row.pickup_slug as string), dateFrom: row.date_from as string, dateTo: row.date_to as string,
         carTypeLabel, price: chosen.price, currency: chosen.currency ?? "EUR",
         partnerName, carModel: carModelSnapshot,
-        inclusions: Array.isArray(chosen.inclusions) ? chosen.inclusions : [], days,
+        inclusions: Array.isArray(chosen.inclusions) ? chosen.inclusions : [],
+        insuranceType: chosen.insurance_type, excessEur: chosen.excess_eur, zeroExcessUpsellEurDay: chosen.zero_excess_upsell_eur_day,
+        days,
       },
     });
     await notifyClosedCarQuoteRespondersWithReason(row.id as number, "not_chosen");

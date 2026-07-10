@@ -1,7 +1,7 @@
 // Logique PURE du modèle multi-devis (pattern car-lead.ts / car-admin.ts) :
 // tri, sélection du choix, éligibilité des relances, transitions de statut.
 // Zéro I/O. Importable par scripts/check-car-quotes.mjs.
-import { isInclusionKey } from "./car-inclusions.ts";
+import { isInclusionKey, isInsuranceType } from "./car-inclusions.ts";
 
 export type InviteStatus = "invited" | "quoted" | "declined" | "chosen" | "not_chosen";
 export type ClosedRequestStatus = "accepted" | "declined_by_client";
@@ -67,6 +67,9 @@ export interface QuoteOption {
   car_model: string | null;
   gearbox: string | null;       // 'automatic' | 'manual' | null
   inclusions: string[] | null;
+  insurance_type: string | null;            // 'all_risk_zero' | 'cdw_excess' | null
+  excess_eur: number | null;                // franchise si cdw_excess
+  zero_excess_upsell_eur_day: number | null; // surcoût /jour pour passer à zéro franchise
   created_at: string | null;    // horodatage de l'option (pour l'expiry)
 }
 
@@ -76,19 +79,29 @@ export interface NormalizedOption {
   car_model: string | null;
   gearbox: string | null;
   inclusions: string[];
+  insurance_type: string | null;
+  excess_eur: number | null;
+  zero_excess_upsell_eur_day: number | null;
 }
 
 /** Valide/normalise une option brute soumise par le loueur. null si le prix est
  *  invalide (hors 1..100000). Les autres champs sont nettoyés silencieusement. */
 export function normalizeQuoteOption(raw: {
   price?: unknown; carModel?: unknown; gearbox?: unknown; inclusions?: unknown;
+  insuranceType?: unknown; excessEur?: unknown; zeroExcessUpsellEurDay?: unknown;
 }): NormalizedOption | null {
   const price = typeof raw.price === "number" ? raw.price : Number(raw.price);
   if (!Number.isFinite(price) || price <= 0 || price > 100000) return null;
   const car_model = typeof raw.carModel === "string" && raw.carModel.trim() ? raw.carModel.trim().slice(0, 120) : null;
   const gearbox = raw.gearbox === "automatic" || raw.gearbox === "manual" ? raw.gearbox : null;
   const inclusions = Array.isArray(raw.inclusions) ? raw.inclusions.filter(isInclusionKey) : [];
-  return { price, car_model, gearbox, inclusions };
+  // Assurance : type validé sur l'enum, franchise/upsell = nombres >= 0 (sinon null).
+  const insurance_type = isInsuranceType(raw.insuranceType) ? raw.insuranceType : null;
+  const excessRaw = typeof raw.excessEur === "number" ? raw.excessEur : Number(raw.excessEur);
+  const excess_eur = insurance_type === "cdw_excess" && Number.isFinite(excessRaw) && excessRaw >= 0 && excessRaw <= 100000 ? excessRaw : null;
+  const upsellRaw = typeof raw.zeroExcessUpsellEurDay === "number" ? raw.zeroExcessUpsellEurDay : Number(raw.zeroExcessUpsellEurDay);
+  const zero_excess_upsell_eur_day = Number.isFinite(upsellRaw) && upsellRaw > 0 && upsellRaw <= 10000 ? upsellRaw : null;
+  return { price, car_model, gearbox, inclusions, insurance_type, excess_eur, zero_excess_upsell_eur_day };
 }
 
 /** Normalise une liste d'options ; ignore les invalides. Max 6 options gardées. */

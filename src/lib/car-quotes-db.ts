@@ -33,12 +33,13 @@ export async function quotesForRequest(requestId: number): Promise<QuoteInvite[]
  *  Source des offres présentées au client dans la page /car-offer. */
 export async function optionsForRequest(requestId: number): Promise<QuoteOption[]> {
   const { data } = await supabase.from("car_quote_options")
-    .select("id, invite_id, partner_id, price, currency, car_model, gearbox, inclusions, created_at, car_partners(name)")
+    .select("id, invite_id, partner_id, price, currency, car_model, gearbox, inclusions, insurance_type, excess_eur, zero_excess_upsell_eur_day, created_at, car_partners(name)")
     .eq("request_id", requestId);
   type Row = {
     id: number; invite_id: number; partner_id: number;
     price: number; currency: string | null;
     car_model: string | null; gearbox: string | null; inclusions: string[] | null;
+    insurance_type: string | null; excess_eur: number | null; zero_excess_upsell_eur_day: number | null;
     created_at: string | null; car_partners?: { name?: string } | null;
   };
   return ((data ?? []) as Row[]).map((r) => ({
@@ -46,6 +47,7 @@ export async function optionsForRequest(requestId: number): Promise<QuoteOption[
     partner_name: r.car_partners?.name ?? "Agency",
     price: r.price, currency: r.currency ?? "EUR",
     car_model: r.car_model, gearbox: r.gearbox, inclusions: r.inclusions,
+    insurance_type: r.insurance_type, excess_eur: r.excess_eur, zero_excess_upsell_eur_day: r.zero_excess_upsell_eur_day,
     created_at: r.created_at,
   }));
 }

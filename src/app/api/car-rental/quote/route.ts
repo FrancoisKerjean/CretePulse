@@ -63,6 +63,7 @@ export async function POST(request: NextRequest) {
     options.map((o) => ({
       invite_id: inviteRow.id, request_id: req.id, partner_id: invite.partner_id,
       price: o.price, currency: "EUR", car_model: o.car_model, gearbox: o.gearbox, inclusions: o.inclusions,
+      insurance_type: o.insurance_type, excess_eur: o.excess_eur, zero_excess_upsell_eur_day: o.zero_excess_upsell_eur_day,
     })),
   );
   if (optErr) {
@@ -76,6 +77,8 @@ export async function POST(request: NextRequest) {
   const { error: upErr } = await supabase.from("car_quote_invites").update({
     status: "quoted", quote_price: best.price, quote_currency: "EUR",
     quote_car_model: best.car_model, quote_inclusions: best.inclusions,
+    quote_insurance_type: best.insurance_type, quote_excess_eur: best.excess_eur,
+    quote_zero_excess_upsell_eur_day: best.zero_excess_upsell_eur_day,
     quoted_at: new Date().toISOString(),
   }).eq("request_id", req.id).eq("partner_id", invite.partner_id);
   if (upErr) {
