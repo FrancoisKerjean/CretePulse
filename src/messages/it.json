@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Muoversi a Creta in bus",
     "connector": "a"
+  },
+  "installBanner": {
+    "title": "Creta sempre in tasca",
+    "body": "Bus in diretta e spiagge, anche offline.",
+    "cta": "Installa",
+    "later": "Non ora",
+    "ios": "Tocca Condividi, poi “Aggiungi alla schermata Home”."
   }
 }

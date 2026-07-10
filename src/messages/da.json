@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Rundt på Kreta med bus",
     "connector": "til"
+  },
+  "installBanner": {
+    "title": "Kreta i lommen",
+    "body": "Busser live og strande, også offline.",
+    "cta": "Installér",
+    "later": "Ikke nu",
+    "ios": "Tryk på Del og derefter “Føj til hjemmeskærm”."
   }
 }

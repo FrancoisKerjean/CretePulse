@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Mit dem Bus durch Kreta",
     "connector": "nach"
+  },
+  "installBanner": {
+    "title": "Kreta immer dabei",
+    "body": "Live-Busse und Strände, auch offline.",
+    "cta": "Installieren",
+    "later": "Später",
+    "ios": "Tippe auf Teilen, dann „Zum Home-Bildschirm“."
   }
 }

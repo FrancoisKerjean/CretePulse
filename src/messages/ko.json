@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "크레타 버스로 이동하기",
     "connector": "→"
+  },
+  "installBanner": {
+    "title": "크레타를 주머니 속에",
+    "body": "실시간 버스와 해변 정보, 오프라인에서도.",
+    "cta": "설치",
+    "later": "나중에",
+    "ios": "공유를 누른 뒤 “홈 화면에 추가”를 선택하세요."
   }
 }
