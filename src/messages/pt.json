@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Deslocar-se em Creta de autocarro",
     "connector": "a"
+  },
+  "installBanner": {
+    "title": "Creta sempre no bolso",
+    "body": "Autocarros ao vivo e praias, mesmo offline.",
+    "cta": "Instalar",
+    "later": "Agora não",
+    "ios": "Toca em Partilhar e depois “Adicionar ao ecrã principal”."
   }
 }

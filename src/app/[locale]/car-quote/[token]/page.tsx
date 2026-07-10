@@ -24,13 +24,21 @@ export default async function CarQuotePage({ params }: { params: Promise<{ local
 
   // Le jeton pointe une invitation (un par loueur) → on charge la demande.
   const { data: invite } = await supabase.from("car_quote_invites")
-    .select("request_id, status")
+    .select("request_id, status, partner_id")
     .eq("quote_token_hash", hashToken(token))
     .maybeSingle();
   const { data: row } = invite
     ? await supabase.from("car_requests")
         .select("id, status, pickup_slug, date_from, time_from, date_to, time_to, car_type, pax, note, insurance, payment_method, gearbox, child_seats")
         .eq("id", invite.request_id).maybeSingle()
+    : { data: null };
+
+  // Défauts d'assurance du loueur → pré-remplissage du formulaire (ex. Panagoula :
+  // cdw_excess / 500 €). Il envoie alors son prix en un clic sans re-saisir.
+  const { data: partnerDefaults } = invite
+    ? await supabase.from("car_partners")
+        .select("default_insurance_type, default_excess_eur, default_zero_excess_upsell_eur_day")
+        .eq("id", invite.partner_id).maybeSingle()
     : { data: null };
 
   if (!row) {
@@ -82,7 +90,11 @@ export default async function CarQuotePage({ params }: { params: Promise<{ local
                 You already sent an offer for this request. You can send more options or update it below · your new submission replaces the previous one.
               </p>
             ) : null}
-            <QuoteForm token={token} locale={locale} />
+            <QuoteForm token={token} locale={locale}
+              defaultInsuranceType={partnerDefaults?.default_insurance_type ?? null}
+              defaultExcessEur={partnerDefaults?.default_excess_eur ?? null}
+              defaultZeroExcessUpsellEurDay={partnerDefaults?.default_zero_excess_upsell_eur_day ?? null}
+            />
           </>
         )}
       </div>

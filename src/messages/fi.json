@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Kreetalla liikkuminen bussilla",
     "connector": "–"
+  },
+  "installBanner": {
+    "title": "Kreeta taskussasi",
+    "body": "Bussit reaaliajassa ja rannat, myös offline.",
+    "cta": "Asenna",
+    "later": "Ei nyt",
+    "ios": "Napauta Jaa ja sitten ”Lisää Koti-valikkoon”."
   }
 }

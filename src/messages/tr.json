@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Girit'te otobüsle ulaşım",
     "connector": "→"
+  },
+  "installBanner": {
+    "title": "Girit hep cebinde",
+    "body": "Canlı otobüsler ve plajlar, çevrimdışı bile.",
+    "cta": "Yükle",
+    "later": "Şimdi değil",
+    "ios": "Paylaş'a dokun, sonra “Ana Ekrana Ekle”yi seç."
   }
 }

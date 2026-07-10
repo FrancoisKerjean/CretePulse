@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Se déplacer en Crète en bus",
     "connector": "à"
+  },
+  "installBanner": {
+    "title": "Garde la Crète dans ta poche",
+    "body": "Bus en direct et plages, même hors connexion.",
+    "cta": "Installer",
+    "later": "Plus tard",
+    "ios": "Touche Partager, puis « Sur l'écran d'accueil »."
   }
 }

@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Att ta sig runt på Kreta med buss",
     "connector": "till"
+  },
+  "installBanner": {
+    "title": "Kreta i fickan",
+    "body": "Bussar i realtid och stränder, även offline.",
+    "cta": "Installera",
+    "later": "Inte nu",
+    "ios": "Tryck på Dela och sedan “Lägg till på hemskärmen”."
   }
 }

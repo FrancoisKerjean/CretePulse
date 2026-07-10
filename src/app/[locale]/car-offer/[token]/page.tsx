@@ -5,7 +5,7 @@ import { carPickupLabel } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { AcceptButton } from "./AcceptButton";
 import { DeclineButton } from "./DeclineButton";
-import { inclusionLabels } from "@/lib/car-inclusions";
+import { inclusionLabels, insuranceSummary } from "@/lib/car-inclusions";
 import { isOfferExpired } from "@/lib/car-offer-expiry";
 import { sharedOfferCopy } from "@/lib/car-offer-copy";
 import { requestByClientToken } from "@/lib/car-quotes-db";
@@ -13,6 +13,7 @@ import { sortOptionsByPrice } from "@/lib/car-quotes";
 import type { QuoteOption } from "@/lib/car-quotes";
 
 const GEARBOX_LABEL: Record<string, string> = { automatic: "Automatic", manual: "Manual" };
+const INSURANCE_HEADING: Record<string, string> = { en: "Insurance", fr: "Assurance", de: "Versicherung", el: "Ασφάλιση" };
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -57,6 +58,7 @@ function OfferCard({
   const carTypeLabel = ct?.labels[locale] ?? ct?.labels.en ?? (request.car_type as string);
   const priceStr = money(offer.price, offer.currency ?? "EUR");
   const incl = inclusionLabels(offer.inclusions ?? null, locale);
+  const insLines = insuranceSummary(offer.insurance_type, offer.excess_eur, offer.zero_excess_upsell_eur_day, locale);
   const days = Math.max(1, Math.round((new Date(request.date_to as string).getTime() - new Date(request.date_from as string).getTime()) / 86400000));
   const perDay = money(Math.round(offer.price / days), offer.currency ?? "EUR");
   const carLine = [offer.car_model, offer.gearbox ? GEARBOX_LABEL[offer.gearbox] : null].filter(Boolean).join(" · ");
@@ -81,6 +83,13 @@ function OfferCard({
         <div style={{ marginBottom: 16, fontSize: 14, color: "#0B3954", lineHeight: 1.8 }}>
           <p style={{ margin: "0 0 4px", color: "#94A3B8", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em" }}>{c.included}</p>
           {incl.map((x) => <div key={x}>&#10003; {x}</div>)}
+        </div>
+      ) : null}
+
+      {insLines.length ? (
+        <div style={{ marginBottom: 16, fontSize: 14, color: "#0B3954", lineHeight: 1.8 }}>
+          <p style={{ margin: "0 0 4px", color: "#94A3B8", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em" }}>{INSURANCE_HEADING[locale] ?? INSURANCE_HEADING.en}</p>
+          {insLines.map((x) => <div key={x}>• {x}</div>)}
         </div>
       ) : null}
 

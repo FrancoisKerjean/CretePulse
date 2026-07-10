@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Moverse por Creta en bus",
     "connector": "a"
+  },
+  "installBanner": {
+    "title": "Creta siempre en tu bolsillo",
+    "body": "Buses en directo y playas, incluso sin conexión.",
+    "cta": "Instalar",
+    "later": "Ahora no",
+    "ios": "Toca Compartir y luego “Añadir a pantalla de inicio”."
   }
 }

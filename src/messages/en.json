@@ -176,5 +176,12 @@
   "busInCreteBox": {
     "heading": "Getting around Crete by bus",
     "connector": "to"
+  },
+  "installBanner": {
+    "title": "Keep Crete in your pocket",
+    "body": "Live buses and beaches, even offline.",
+    "cta": "Install",
+    "later": "Not now",
+    "ios": "Tap Share, then “Add to Home Screen”."
   }
 }
