@@ -130,7 +130,7 @@ async function main() {
   const knownRouteCodes = new Set(routeCodes);
   const lineCodesSet = new Set(lines.map((l) => l.code));
   const hiddenMeta = new Map(); // routeCode -> { code, lineCode, name }
-  const DAYS = [1, 6, 7]; // lundi / samedi / dimanche = les 3 régimes horaires
+  const DAYS = [1, 6, 0]; // lundi / samedi / dimanche (API : 0-6, 0 = dimanche)
   console.log(`hidden routes: scan trips (${stops.length} arrets x ${DAYS.length} jours)...`);
   let scanned = 0;
   for (const s of stops) {
