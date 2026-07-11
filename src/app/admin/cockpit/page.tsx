@@ -72,6 +72,17 @@ type AffiliateProspect = {
   updated_at: string | null;
 };
 
+function errorMessage(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  if (e && typeof e === "object") {
+    const obj = e as { message?: unknown; details?: unknown; hint?: unknown; code?: unknown };
+    return [obj.message, obj.details, obj.hint, obj.code]
+      .filter((v): v is string => typeof v === "string" && v.trim().length > 0)
+      .join(" · ") || "Erreur inconnue";
+  }
+  return String(e);
+}
+
 const STATUS_ORDER = [
   "new",
   "queued",
@@ -136,7 +147,7 @@ async function loadPartnerPanel(opts: {
       href: opts.href,
       total: null,
       statuses: [],
-      error: e instanceof Error ? e.message : String(e),
+      error: errorMessage(e),
     };
   }
 }
@@ -175,14 +186,15 @@ async function loadAffiliatePanel(): Promise<{ panel: OutboundPanel; recent: Aff
       recent: rows.slice(0, 5),
     };
   } catch (e) {
+    const detail = errorMessage(e);
     return {
       panel: {
         title: "Affiliés vitrine",
-        sub: "affiliate_prospects · cold auto",
+        sub: "VPS / Resend · hors table cockpit",
         href: "https://resend.com/emails",
-        total: null,
+        total: 0,
         statuses: [],
-        error: e instanceof Error ? e.message : String(e),
+        note: `Cold affiliés non exposé dans PostgREST cockpit. Suivi côté VPS/Resend. (${detail})`,
       },
       recent: [],
     };
@@ -339,7 +351,7 @@ export default async function CockpitPage({
             <b>Launcher + radar.</b> Un clic = la vraie page de l&apos;outil.
           </p>
           <p>
-            Cookie posé pour 30 j : les liens <code>/admin/*</code> s&apos;ouvrent sans ré-auth.
+            Cookie posé pour 30 j : les liens <code>/admin/*</code>{" "}s&apos;ouvrent sans ré-auth.
             Modifier les raccourcis = éditer <code>ZONES</code> dans <code>page.tsx</code>.
           </p>
         </div>
