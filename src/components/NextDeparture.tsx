@@ -47,7 +47,7 @@ export function NextDeparture({ route, trackSurface }: { route: BusRoute; locale
       const inMin = next.m - minutes;
       setState({ time: next.t, inMin });
       if (trackSurface === "pair" && inBoardingWindow(inMin)) {
-        void emitBoardingProxy("pair", route.id, { pair: route.id, in_bucket: bucketInMin(inMin) });
+        void emitBoardingProxy("pair", String(route.id), { pair: String(route.id), in_bucket: bucketInMin(inMin) });
       }
       return;
     }
