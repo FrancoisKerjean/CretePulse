@@ -55,6 +55,12 @@ const T: Record<string, Record<Locale, string>> = {
     de: "Senden nicht möglich. Bitte später erneut versuchen.",
     el: "Αδυναμία αποστολής. Δοκιμάστε αργότερα.",
   },
+  bookDirect: {
+    en: "Or pick a route with seats already forming →",
+    fr: "Ou choisissez un trajet avec des places déjà en formation →",
+    de: "Oder wählen Sie eine Strecke mit Gruppen in Bildung →",
+    el: "Ή επιλέξτε διαδρομή με ομάδες σε σχηματισμό →",
+  },
   privacy: {
     en: "Email only, no phone required. Never shared.",
     fr: "Email uniquement, aucun téléphone. Jamais partagé.",
@@ -139,7 +145,23 @@ export function VanInterest({
     return (
       <div className="mt-4 rounded-3xl border border-lagoon/30 bg-lagoon/5 p-4 flex items-start gap-3">
         <Check className="w-5 h-5 text-lagoon-deep shrink-0 mt-0.5" />
-        <p className="text-sm text-text m-0">{t("ok", locale)}</p>
+        <div className="space-y-2">
+          <p className="text-sm text-text m-0">{t("ok", locale)}</p>
+          <a
+            href={`https://van.crete.direct/${locale}?from=${encodeURIComponent(fromSlug)}&to=${encodeURIComponent(toSlug)}&date=${encodeURIComponent(travelDate)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => {
+              const plausible = (window as unknown as {
+                plausible?: (e: string, o?: { props?: Record<string, string | number> }) => void;
+              }).plausible;
+              plausible?.("van_offer_click", { props: { from: fromSlug, to: toSlug, source } });
+            }}
+            className="block text-xs font-bold text-lagoon-deep hover:underline"
+          >
+            {t("bookDirect", locale)}
+          </a>
+        </div>
       </div>
     );
   }
@@ -215,6 +237,21 @@ export function VanInterest({
         </button>
         <span className="text-[11px] text-text-muted">{t("privacy", locale)}</span>
       </div>
+
+      <a
+        href={`https://van.crete.direct/${locale}?from=${encodeURIComponent(fromSlug)}&to=${encodeURIComponent(toSlug)}&date=${encodeURIComponent(travelDate)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => {
+          const plausible = (window as unknown as {
+            plausible?: (e: string, o?: { props?: Record<string, string | number> }) => void;
+          }).plausible;
+          plausible?.("van_offer_click", { props: { from: fromSlug, to: toSlug, source } });
+        }}
+        className="block text-xs font-bold text-lagoon-deep hover:underline"
+      >
+        {t("bookDirect", locale)}
+      </a>
 
       {status === "err" && (
         <p className="text-xs text-red-600 m-0">{t("err", locale)}</p>
