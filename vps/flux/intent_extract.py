@@ -16,10 +16,17 @@ SITE_ID = 1  # crete.direct
 # (event_name stocke, prop_key stocke, expression valeur, filtre supplementaire)
 PROP = "arrayElement(meta.value, indexOf(meta.key, '{k}'))"
 SPECS = [
-    ("bus_search",      "od",      f"concat({PROP.format(k='from')}, '→', {PROP.format(k='to')})",
+    ("bus_search",          "od",  f"concat({PROP.format(k='from')}, '→', {PROP.format(k='to')})",
      f"{PROP.format(k='results')} != '0'"),
-    ("bus_search_zero", "od",      f"concat({PROP.format(k='from')}, '→', {PROP.format(k='to')})",
+    ("bus_search_zero",     "od",  f"concat({PROP.format(k='from')}, '→', {PROP.format(k='to')})",
      f"{PROP.format(k='results')} = '0'"),
+    # Correspondance uniquement (aucun bus direct) : cible van partage lot 2.
+    # La prop `changes` est emise par JourneyPlanner.tsx (11/07/2026) : 0 =
+    # direct, >=1 = uniquement en correspondance, -1 = aucun trajet. Retro-
+    # compat : les recherches d'avant le patch n'ont pas la prop `changes`
+    # (arrayElement renvoie '' -> toInt32OrZero -> 0), donc >= 1 les ignore.
+    ("bus_search_indirect", "od",  f"concat({PROP.format(k='from')}, '→', {PROP.format(k='to')})",
+     f"toInt32OrZero({PROP.format(k='changes')}) >= 1"),
     ("ticket_intent",   "od",      f"concat({PROP.format(k='from')}, '→', {PROP.format(k='to')})", None),
     ("search_query",    "query",   PROP.format(k="query"), None),
     ("explore_search",  "query",   PROP.format(k="query"), None),
@@ -48,7 +55,8 @@ def ch(query):
 def extract_day(day):
     rows = []
     for stored_name, prop_key, value_expr, extra in SPECS:
-        event = stored_name.replace("_zero", "")  # bus_search_zero lit l'event bus_search
+        # bus_search_zero / bus_search_indirect lisent l'event bus_search
+        event = stored_name.replace("_zero", "").replace("_indirect", "")
         where = (f"name = '{event}' AND toDate(timestamp) = '{day.isoformat()}'"
                  f" AND site_id = {SITE_ID}")
         if extra:

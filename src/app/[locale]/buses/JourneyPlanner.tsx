@@ -25,6 +25,7 @@ import { TaxiCompare } from "@/components/TaxiCompare";
 import { NextDeparture } from "@/components/NextDeparture";
 import partnersData from "@/data/taxi-partners.json";
 import { PlaceCombobox } from "@/components/PlaceCombobox";
+import { VanInterest } from "./VanInterest";
 
 const TP = {
   searchTitle: {
@@ -464,10 +465,20 @@ export function JourneyPlanner({
     if (toPlace && reachable && !reachable.includes(toPlace)) onToChange("");
   }, [toPlace, reachable, onToChange]);
 
+  const journeyCount = journeys.length;
+  // Cross-sell voiture quand un trajet existe MAIS impose au moins une
+  // correspondance (aucun bus direct) : avec des bagages, l'attente à la
+  // correspondance rend la voiture une vraie alternative. On ne montre rien
+  // sur les lignes directes (la force du planner). `source` distinct =
+  // mesurable séparément du cas 0 résultat (Plausible promo_impression).
+  const bestChanges =
+    journeys.length > 0 ? Math.min(...journeys.map((j) => j.legs.length - 1)) : 0;
+  const indirectOnly = journeys.length > 0 && bestChanges >= 1;
+
   // Instrumentation `bus_search` (signal #1 du site, spec docs/instrumentation) :
   // quel trajet on cherche. Emis APRES un clic "Voir l'itineraire" (searched),
   // puis suit les changements de date/arrivee. results=0 = trou de couverture.
-  const journeyCount = journeys.length;
+  // `changes` distingue direct / correspondance / pas de trajet (cible van).
   useEffect(() => {
     if (!searched || !fromPlace || !toPlace) return;
     const id = setTimeout(() => {
@@ -481,11 +492,15 @@ export function JourneyPlanner({
           to: slugifyPlace(toPlace) || toPlace.toLowerCase(),
           date: dateChoice,
           results: journeyCount,
+          // 0 = direct disponible ; >=1 = uniquement en correspondance ;
+          // -1 = aucun trajet (paire non desservie). Extrait par
+          // intent_extract.py (spec bus_search_indirect).
+          changes: journeyCount > 0 ? bestChanges : -1,
         },
       });
     }, 400);
     return () => clearTimeout(id);
-  }, [searched, fromPlace, toPlace, date, journeyCount]);
+  }, [searched, fromPlace, toPlace, date, journeyCount, bestChanges]);
 
   const westOnly = useMemo(() => {
     const east = new Set(
@@ -508,15 +523,6 @@ export function JourneyPlanner({
     (taxiSlugA && zoneForPickup(taxiSlugA) ? taxiSlugA : null) ??
     (taxiSlugB && zoneForPickup(taxiSlugB) ? taxiSlugB : null) ??
     undefined;
-
-  // Cross-sell voiture quand un trajet existe MAIS impose au moins une
-  // correspondance (aucun bus direct) : avec des bagages, l'attente à la
-  // correspondance rend la voiture une vraie alternative. On ne montre rien
-  // sur les lignes directes (la force du planner). `source` distinct =
-  // mesurable séparément du cas 0 résultat (Plausible promo_impression).
-  const bestChanges =
-    journeys.length > 0 ? Math.min(...journeys.map((j) => j.legs.length - 1)) : 0;
-  const indirectOnly = journeys.length > 0 && bestChanges >= 1;
 
   return (
     <div className="rounded-[28px] bg-white p-6 mb-6 shadow-[0_12px_32px_rgba(11,94,120,.10)]">
@@ -619,7 +625,21 @@ export function JourneyPlanner({
             {tp("priceMethodo", locale)}
           </p>
           {indirectOnly && (
-            <CarPromo locale={locale} pickup={carPickup} source="journey-indirect" />
+            <>
+              <CarPromo locale={locale} pickup={carPickup} source="journey-indirect" />
+              {taxiSlugA && taxiSlugB && (
+                <VanInterest
+                  locale={locale}
+                  fromSlug={taxiSlugA}
+                  toSlug={taxiSlugB}
+                  fromPlace={fromPlace}
+                  toPlace={toPlace}
+                  travelDate={date}
+                  bestChanges={bestChanges}
+                  source="journey-indirect"
+                />
+              )}
+            </>
           )}
         </>
       )}
@@ -634,6 +654,18 @@ export function JourneyPlanner({
             </div>
           </div>
           <CarPromo locale={locale} pickup={carPickup} source="journey-planner" />
+          {taxiSlugA && taxiSlugB && (
+            <VanInterest
+              locale={locale}
+              fromSlug={taxiSlugA}
+              toSlug={taxiSlugB}
+              fromPlace={fromPlace}
+              toPlace={toPlace}
+              travelDate={date}
+              bestChanges={0}
+              source="journey-no-route"
+            />
+          )}
         </>
       )}
 
