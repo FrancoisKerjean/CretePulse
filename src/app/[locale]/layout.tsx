@@ -121,9 +121,18 @@ export default async function LocaleLayout({
           src="https://analytics.crete.direct/js/script.outbound-links.js"
           strategy="afterInteractive"
         />
-        <Script id="plausible-init" strategy="afterInteractive">
-          {`window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments); }`}
-        </Script>
+        {/* Stub de queue en inline BRUT (exécuté au parse HTML, avant l'hydratation) :
+            avec strategy=afterInteractive, les events émis au mount (retention,
+            bus_boarding_proxy) partaient dans le vide — window.plausible n'existait
+            pas encore et le guard sessionStorage empêchait toute retentative.
+            Constat ClickHouse 11/07 : retention = 0 event depuis le 10/07.
+            Aucune écriture DOM ici, pas de risque hydratation (#418). */}
+        <script
+          id="plausible-init"
+          dangerouslySetInnerHTML={{
+            __html: `window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments); }`,
+          }}
+        />
       </body>
     </html>
   );
