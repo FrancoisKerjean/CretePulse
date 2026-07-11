@@ -199,7 +199,7 @@ export function FluxMap({ data }: { data: FluxMapData }) {
         map.on("click", "flux-od", (e) => {
           const p = e.features?.[0]?.properties;
           if (!p) return;
-          show(e.lngLat, `<b>${p.label}</b><br/>${p.total} recherche(s) 30 j${p.zero ? " — <b>non desservie</b>" : ""}`);
+          show(e.lngLat, `<b>${p.label}</b><br/>${p.total} recherche(s) 30 j${p.zero ? " · <b>non desservie</b>" : ""}`);
         });
         map.on("click", "flux-entries", (e) => {
           const p = e.features?.[0]?.properties;
@@ -246,7 +246,7 @@ export function FluxMap({ data }: { data: FluxMapData }) {
   return (
     <div className="relative mt-4 overflow-hidden rounded-xl border border-border">
       <div ref={containerRef} className="h-[520px] w-full" />
-      <div className="absolute left-2 top-2 rounded-lg border border-border bg-white/95 px-3 py-2 shadow-sm">
+      <div className="absolute left-2 top-2 rounded-lg border border-border bg-white/95 px-3 py-2 shadow-soft">
         {TOGGLES.map((t) => (
           <label key={t.key} className="flex cursor-pointer items-center gap-1.5 py-0.5 text-[11px]">
             <input
@@ -258,7 +258,7 @@ export function FluxMap({ data }: { data: FluxMapData }) {
           </label>
         ))}
       </div>
-      <div className="absolute bottom-6 left-2 rounded-lg border border-border bg-white/95 px-3 py-2 text-[10px] leading-4 shadow-sm">
+      <div className="absolute bottom-6 left-2 rounded-lg border border-border bg-white/95 px-3 py-2 text-[10px] leading-4 shadow-soft">
         <div><span className="inline-block h-1 w-4 align-middle" style={{ background: "#0B5E78" }} /> trajet demandé (desservi)</div>
         <div><span className="inline-block h-1 w-4 align-middle" style={{ background: "#ED7A5C" }} /> demandé <b>non desservi</b></div>
         <div><span className="inline-block h-2.5 w-2.5 rounded-full align-middle" style={{ background: "#0B5E78" }} /> aéroport · <span className="inline-block h-2.5 w-2.5 rounded-full align-middle" style={{ background: "#7C9A53" }} /> port croisières</div>
