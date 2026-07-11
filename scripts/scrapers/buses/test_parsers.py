@@ -288,6 +288,56 @@ def test_clean_route_name_truncates_trailing_frequency():
     assert "09:30" in by[("Chania", "Heraklion")]["departures"]
 
 
+def test_ektel_aliases_fix_rerhymno_and_old_road():
+    # Typos du PDF RETHYMNO (audit 11/07/2026) : RERHYMNO et HRAKLEIO/OLD ROAD
+    # devenaient des lieux en DB -> 18 recherches/mois a 0 resultat.
+    from parsers import parse_ektel_pdf
+    text = "\n".join([
+        "ΡΕΘΥΜΝΟ-ΠΕΡΑΜΑ/RERHYMNO-ERFI-PRINOS-RETHYMNO",
+        "ΚΑΘΕ ΜΕΡΑ/EVERY DAY",
+        "07:00 14:00",
+        "ΡΕΘΥΜΝΟ-ΗΡΑΚΛΕΙΟ/RETHYMNO-PERAMA-HRAKLEIO OLD ROAD",
+        "ΚΑΘΕ ΜΕΡΑ/EVERY DAY",
+        "08:00 16:00",
+    ])
+    routes = parse_ektel_pdf(text, source_url="x")
+    by = _pairs(routes)
+    # Boucle villages : self-loop Rethymno->Rethymno CONSERVEE (les via_stops
+    # donnent les edges Rethymno->villages au planner), plus de lieu 'Rerhymno'.
+    assert ("Rethymno", "Rethymno") in by
+    assert "Erfi" in (by[("Rethymno", "Rethymno")]["via_stops"] or [])
+    # Variante old road : canonisee vers Heraklion (pas de lieu 'Hrakleio Old Road')
+    assert ("Rethymno", "Heraklion") in by
+    names = {p for pair in by for p in pair}
+    assert not any("Rerhymno" in n or "Hrakleio" in n or "Old Road" in n for n in names)
+
+
+def test_herlas_detail_drops_hotel_shuttles_and_footnotes():
+    # Le HTML herlas n'appliquait aucun filtre endpoint : 16 routes navettes
+    # hotels + 1 footnote 'Return 09:40 From Ampelos' etaient des lieux en prod.
+    from parsers import parse_herlas_detail
+    def box(title):
+        return (
+            '<div class="timetable_box__x1">'
+            f'<div class="timetable_title__x1">{title}</div>'
+            '<div class="timetable_valuesWrapper__x1">'
+            '<div class="timetable_daysWrapper__x1">Mon-Fri</div>'
+            '<span class="timetable_time__x1">08:00</span>'
+            "</div></div>"
+        )
+    html = "<html><body>" + "".join([
+        box("Heraklion - Malia Palace"),
+        box("Heraklion - Annabelle-(Anissaras Hotels)"),
+        box("Heraklion - Α14 Panorama Village"),
+        box("Return 09:40 From Ampelos (Potamos) - Heraklion"),
+        box("Heraklion - Vasia Hotel-Supermarket"),
+        box("Heraklion - Ano Viannos"),
+    ]) + "</body></html>"
+    routes = parse_herlas_detail(html)
+    names = {(r["from_place"], r["to_place"]) for r in routes}
+    assert names == {("Heraklion", "Ano Viannos")}
+
+
 def test_pdf_seg_regex_captures_parenthesized_name():
     # Suffixe entre parentheses ne doit plus jeter la route (fix lookahead '(').
     from parsers import parse_ektel_pdf
