@@ -11,6 +11,7 @@ import { BusSheet } from "./BusSheet";
 import { StopSheet, type StopSheetProps } from "./StopSheet";
 import type { CityBusArrival } from "@/app/api/buses/citybus-live/[stop]/route";
 import { Link } from "@/i18n/navigation";
+import { emitBoardingProxy } from "@/lib/boarding-beacon";
 
 type MaplibreMap = import("maplibre-gl").Map;
 type MaplibreMarker = import("maplibre-gl").Marker;
@@ -89,6 +90,24 @@ export function LiveMapClient({ locale }: { locale: string }) {
   const [gpsCount, setGpsCount] = useState(0);
   const [sheetVM, setSheetVM] = useState<BusSheetVM | null>(null);
   const [stopSheet, setStopSheet] = useState<Omit<StopSheetProps, "locale" | "onClose" | "onArrivals"> | null>(null);
+
+  // Proxy embarquement : session live "engagée" = 30 s cumulées onglet visible
+  // (filtre les rebonds). source=gps si au moins une ligne GPS réelle affichée
+  // au moment de l'émission. Dédup session dans boarding-beacon.
+  useEffect(() => {
+    let acc = 0;
+    const iv = setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      acc += 1;
+      if (acc >= 30) {
+        clearInterval(iv);
+        void emitBoardingProxy("live", "live", {
+          source: gpsCodesRef.current.size > 0 ? "gps" : "estimated",
+        });
+      }
+    }, 1000);
+    return () => clearInterval(iv);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
