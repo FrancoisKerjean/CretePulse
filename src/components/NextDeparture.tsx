@@ -30,7 +30,7 @@ const toMin = (hhmm: string): number => {
 };
 
 // trackSurface="pair" : émet le proxy embarquement (bus_boarding_proxy) quand le
-// prochain départ tombe dans la fenêtre. Passé UNIQUEMENT par buses/[pair]/page.tsx —
+// prochain départ tombe dans la fenêtre. Passé UNIQUEMENT par buses/[pair]/page.tsx :
 // JourneyPlanner rend aussi ce composant et ne doit PAS tracker (gate anti-réutilisation).
 export function NextDeparture({ route, trackSurface }: { route: BusRoute; locale: string; trackSurface?: "pair" }) {
   const t = useTranslations("nextDeparture");

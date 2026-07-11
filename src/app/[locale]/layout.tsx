@@ -123,7 +123,7 @@ export default async function LocaleLayout({
         />
         {/* Stub de queue en inline BRUT (exécuté au parse HTML, avant l'hydratation) :
             avec strategy=afterInteractive, les events émis au mount (retention,
-            bus_boarding_proxy) partaient dans le vide — window.plausible n'existait
+            bus_boarding_proxy) partaient dans le vide : window.plausible n'existait
             pas encore et le guard sessionStorage empêchait toute retentative.
             Constat ClickHouse 11/07 : retention = 0 event depuis le 10/07.
             Aucune écriture DOM ici, pas de risque hydratation (#418). */}
