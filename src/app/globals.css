@@ -219,6 +219,18 @@
   }
 }
 
+/* iOS Safari auto-zooms when a focused field has font-size < 16px, and the page
+   stays zoomed after blur — every page then looks cropped on both edges.
+   Force 16px on real text-entry fields, touch devices only (!important beats
+   Tailwind utilities like text-sm / text-[13.5px]). */
+@media (hover: none) and (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 /* Card hover lift effect */
 .card-hover {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
