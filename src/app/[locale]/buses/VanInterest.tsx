@@ -148,7 +148,7 @@ export function VanInterest({
         <div className="space-y-2">
           <p className="text-sm text-text m-0">{t("ok", locale)}</p>
           <a
-            href={`https://van.crete.direct/${locale}?from=${encodeURIComponent(fromSlug)}&to=${encodeURIComponent(toSlug)}&date=${encodeURIComponent(travelDate)}`}
+            href={`https://van.crete.direct/${locale}?from=${encodeURIComponent(fromSlug)}&to=${encodeURIComponent(toSlug)}&date=${encodeURIComponent(date)}`}
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => {
@@ -239,7 +239,7 @@ export function VanInterest({
       </div>
 
       <a
-        href={`https://van.crete.direct/${locale}?from=${encodeURIComponent(fromSlug)}&to=${encodeURIComponent(toSlug)}&date=${encodeURIComponent(travelDate)}`}
+        href={`https://van.crete.direct/${locale}?from=${encodeURIComponent(fromSlug)}&to=${encodeURIComponent(toSlug)}&date=${encodeURIComponent(date)}`}
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => {
