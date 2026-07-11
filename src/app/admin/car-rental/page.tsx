@@ -9,7 +9,7 @@ import {
 } from "@/lib/car-admin";
 import { kpis, reconcileWinnerSnapshot } from "@/lib/car-monitoring";
 import type { MonitorInvite } from "@/lib/car-monitoring";
-import { RequestsTable } from "./requests-table";
+import { RequestsTable, type AdminQuoteOption } from "./requests-table";
 import { PartnersTable } from "./partners-table";
 import { KpiBand } from "./kpi-band";
 
@@ -45,21 +45,26 @@ export default async function CarAdminPage({
     created_at: string; quoted_at: string | null; declined_at: string | null; relanced_at: string | null; closed_notified_at: string | null;
     car_partners?: { name?: string };
   }[] = [];
+  let options: (AdminQuoteOption & { car_partners?: { name?: string } })[] = [];
   let loadError: string | null = null;
   try {
-    const [reqRes, partRes, invRes, invFullRes] = await Promise.all([
+    const [reqRes, partRes, invRes, invFullRes, optRes] = await Promise.all([
       supabase.from("car_requests").select("*").order("created_at", { ascending: false }).limit(1000),
       supabase.from("car_partners").select("*").order("id"),
       supabase.from("car_quote_invites").select("request_id, partner_id"),
       supabase.from("car_quote_invites").select(
         "id, request_id, partner_id, status, quote_price, quote_currency, quote_car_model, created_at, quoted_at, declined_at, relanced_at, closed_notified_at, car_partners(name)"
       ),
+      supabase.from("car_quote_options").select(
+        "id, request_id, invite_id, partner_id, price, currency, car_model, gearbox, inclusions, insurance_type, excess_eur, zero_excess_upsell_eur_day, created_at, car_partners(name)"
+      ).order("price"),
     ]);
-    loadError = reqRes.error?.message ?? partRes.error?.message ?? invRes.error?.message ?? invFullRes.error?.message ?? null;
+    loadError = reqRes.error?.message ?? partRes.error?.message ?? invRes.error?.message ?? invFullRes.error?.message ?? optRes.error?.message ?? null;
     requests = (reqRes.data ?? []) as AdminRequest[];
     partners = (partRes.data ?? []) as AdminPartner[];
     invites = (invRes.data ?? []) as { request_id: number; partner_id: number }[];
     invitesFull = (invFullRes.data ?? []) as typeof invitesFull;
+    options = (optRes.data ?? []) as typeof options;
   } catch (e) {
     loadError = e instanceof Error ? e.message : String(e);
   }
@@ -83,6 +88,13 @@ export default async function CarAdminPage({
       quoted_at: r.quoted_at, declined_at: r.declined_at, relanced_at: r.relanced_at, closed_notified_at: r.closed_notified_at,
     });
     monitorByRequest.set(r.request_id, list);
+  }
+
+  const optionsByRequest = new Map<number, AdminQuoteOption[]>();
+  for (const o of options) {
+    const list = optionsByRequest.get(o.request_id) ?? [];
+    list.push({ ...o, partner_name: o.car_partners?.name ?? "Agency" });
+    optionsByRequest.set(o.request_id, list);
   }
 
   // Réconcilie le snapshot gagnant first-come (car_requests.quoted_*) sur l'invite du loueur :
@@ -176,6 +188,7 @@ export default async function CarAdminPage({
           partnersById={partnersById}
           invitesByRequest={invitesByRequest}
           monitorByRequest={monitorByRequest}
+          optionsByRequest={optionsByRequest}
           statusFilter={sp.status ?? ""}
           partnerFilter={sp.partner ?? ""}
           page={Math.max(1, Number(sp.page) || 1)}

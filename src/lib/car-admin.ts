@@ -30,6 +30,7 @@ export interface AdminRequest {
   quoted_at: string | null;
   accepted_at: string | null;
   quoted_by_partner_id: number | null;
+  quoted_insurance_type?: string | null;
   closure_reason?: string | null;
   // Colonnes admin (migration 20260705_car_admin.sql) : optionnelles pour
   // tolérer une prod pas encore migrée (select * sans crash).

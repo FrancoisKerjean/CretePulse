@@ -13,9 +13,28 @@ import { offerExpiresAt } from "@/lib/car-offer-expiry";
 import { carPickupLabel } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { canCancelRequest } from "@/lib/car-quotes";
+import { insuranceSummary, inclusionLabels } from "@/lib/car-inclusions";
 import { setOutcome, setCommissionPaid, saveNote, cancelRequest } from "./actions";
 
 const PAGE_SIZE = 50;
+
+/** Option de devis (variante) telle que lue par la page admin. */
+export type AdminQuoteOption = {
+  id: number;
+  request_id: number;
+  invite_id: number;
+  partner_id: number;
+  partner_name?: string;
+  price: number;
+  currency: string | null;
+  car_model: string | null;
+  gearbox: string | null;
+  inclusions: string[] | null;
+  insurance_type: string | null;
+  excess_eur: number | null;
+  zero_excess_upsell_eur_day: number | null;
+  created_at: string | null;
+};
 
 const carTypeLabel = (id: string): string =>
   CAR_TYPES_DATA.find((c) => c.id === id)?.labels.en ?? id;
@@ -105,8 +124,9 @@ function InviteRoster({ invites, requestStatus, now, startPassed }: {
           {q.quoted_at ? <span className="text-text-light">· {fmtDate(q.quoted_at)}</span> : null}
           {q.status === "chosen" && <span className="rounded-full bg-ok px-2 py-0.5 text-xs font-bold text-white">choisi par le client</span>}
           {q.status === "not_chosen" && <span className="rounded-full bg-border px-2 py-0.5 text-xs text-text-muted">non retenu</span>}
+          {/* Emails de clôture loueur supprimés le 11/07/2026 : « prévenu » ne
+              reste que sur l'historique, plus de « à prévenir ». */}
           {q.status === "not_chosen" && q.closed_notified_at ? <span className="rounded-full bg-lagoon/15 px-2 py-0.5 text-xs font-bold text-sea">prévenu</span> : null}
-          {q.status === "not_chosen" && !q.closed_notified_at ? <span className="rounded-full bg-sun/40 px-2 py-0.5 text-xs text-night">à prévenir</span> : null}
         </li>
       ))}
       {silent.map((s) => {
@@ -136,13 +156,69 @@ function InviteRoster({ invites, requestStatus, now, startPassed }: {
   );
 }
 
+/** Détail des offres envoyées par les agences : chaque option (variante) d'un
+ *  devis, groupée par agence, avec assurance/franchise/inclusions. Le client ne
+ *  voit que ces options ; l'admin voyait seulement le prix agrégé de l'invite. */
+function OptionsDetail({ options, request }: { options: AdminQuoteOption[]; request: AdminRequest }) {
+  if (options.length === 0) return null;
+  const byPartner = new Map<number, AdminQuoteOption[]>();
+  for (const o of options) {
+    const list = byPartner.get(o.partner_id) ?? [];
+    list.push(o);
+    byPartner.set(o.partner_id, list);
+  }
+  const isChosen = (o: AdminQuoteOption) =>
+    request.status === "accepted" &&
+    request.quoted_by_partner_id === o.partner_id &&
+    request.quoted_price === o.price &&
+    (request.quoted_insurance_type == null || request.quoted_insurance_type === o.insurance_type);
+  return (
+    <details className="mt-2 text-sm" open={request.status === "quoted"}>
+      <summary className="cursor-pointer text-text-muted underline">
+        détail des offres ({options.length} option{options.length > 1 ? "s" : ""}, {byPartner.size} agence{byPartner.size > 1 ? "s" : ""})
+      </summary>
+      <div className="mt-2 space-y-2">
+        {[...byPartner.values()].map((list) => (
+          <div key={list[0].partner_id} className="rounded-xl border border-border bg-sand/30 p-3">
+            <div className="font-bold">{list[0].partner_name ?? "Agency"}</div>
+            <ul className="mt-1 space-y-1.5">
+              {list.map((o) => {
+                const insurance = insuranceSummary(o.insurance_type, o.excess_eur, o.zero_excess_upsell_eur_day, "fr");
+                const incl = inclusionLabels(o.inclusions, "fr");
+                return (
+                  <li key={o.id} className={`rounded-lg border px-3 py-1.5 ${isChosen(o) ? "border-ok bg-ok/10" : "border-border bg-white"}`}>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-data font-bold">{o.price} {o.currency ?? "EUR"}</span>
+                      {o.car_model ? <span>{o.car_model}</span> : <span className="text-text-light">modèle non précisé</span>}
+                      {o.gearbox ? <span className="rounded-full bg-border px-2 py-0.5 text-xs">{o.gearbox === "automatic" ? "auto" : "manuelle"}</span> : null}
+                      {isChosen(o) ? <span className="rounded-full bg-ok px-2 py-0.5 text-xs font-bold text-white">choisie par le client</span> : null}
+                      {o.created_at ? <span className="ml-auto text-xs text-text-light">{fmtDate(o.created_at)}</span> : null}
+                    </div>
+                    {insurance.length > 0 ? (
+                      <div className="mt-0.5 text-xs text-text-muted">{insurance.join(" · ")}</div>
+                    ) : (
+                      <div className="mt-0.5 text-xs italic text-text-light">assurance non déclarée (ancien devis)</div>
+                    )}
+                    {incl.length > 0 ? <div className="mt-0.5 text-xs text-text-muted">{incl.join(" · ")}</div> : null}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </details>
+  );
+}
+
 export function RequestsTable({
-  requests, partnersById, invitesByRequest, monitorByRequest, statusFilter, partnerFilter, page,
+  requests, partnersById, invitesByRequest, monitorByRequest, optionsByRequest, statusFilter, partnerFilter, page,
 }: {
   requests: AdminRequest[];
   partnersById: Map<number, AdminPartner>;
   invitesByRequest: Map<number, number>;
   monitorByRequest: Map<number, MonitorInvite[]>;
+  optionsByRequest: Map<number, AdminQuoteOption[]>;
   statusFilter: string;
   partnerFilter: string;
   page: number;
@@ -267,6 +343,8 @@ export function RequestsTable({
               </div>
 
               <InviteRoster invites={invites} requestStatus={r.status} now={now} startPassed={startPassed} />
+
+              <OptionsDetail options={optionsByRequest.get(r.id) ?? []} request={r} />
 
               {/* Relances + expiry (une ligne compacte). */}
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-muted">
