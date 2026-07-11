@@ -41,6 +41,76 @@ a.icon:focus { background: #000080; border: 1px dotted #ffff00; outline: none; }
 .lbl b { display: block; font-size: 11px; }
 .lbl span { font-size: 9.5px; color: #d8f0f0; }
 
+/* radar outbounds */
+.radar {
+  background: #c0c0c0; padding: 3px; max-width: 1100px; margin: 30px auto 0 auto;
+  border: 1px solid #000; border-top-color: #dfdfdf; border-left-color: #dfdfdf;
+  box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #808080, 3px 3px 0 rgba(0, 0, 0, .35);
+}
+.radar-titlebar {
+  background: linear-gradient(90deg, #000080, #1084d0);
+  color: #fff; font-weight: bold; padding: 3px 6px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.radar-titlebar span { font-size: 9px; color: #d8f0f0; }
+.radar-body { padding: 10px; }
+.radar-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.panel {
+  min-width: 0;
+  background: #dfdfdf;
+  border-top: 1px solid #fff; border-left: 1px solid #fff;
+  border-right: 1px solid #808080; border-bottom: 1px solid #808080;
+  padding: 8px;
+}
+.panel-head { display: flex; flex-direction: column; gap: 2px; min-height: 32px; }
+.panel-head a { color: #000080; font-weight: bold; font-size: 12px; }
+.panel-head span { color: #404040; font-size: 9.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.total { margin-top: 8px; display: flex; align-items: baseline; gap: 6px; }
+.total b { font-family: "Courier New", monospace; font-size: 24px; line-height: 1; }
+.total span { color: #404040; font-size: 10px; }
+.badges { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
+.badge {
+  display: inline-flex; gap: 4px; align-items: center;
+  background: #c0c0c0; color: #000; text-decoration: none;
+  padding: 2px 5px; min-height: 18px;
+  border-top: 1px solid #fff; border-left: 1px solid #fff;
+  border-right: 1px solid #808080; border-bottom: 1px solid #808080;
+}
+.badge.alert { background: #800000; color: #fff; }
+.badge b { font-family: "Courier New", monospace; }
+.err {
+  margin-top: 8px; color: #800000; line-height: 1.35;
+  background: #fff; padding: 5px; border: 1px solid #808080;
+}
+.note { margin-top: 7px; color: #404040; line-height: 1.35; }
+.recent {
+  margin-top: 10px; background: #fff; border: 1px inset #808080; padding: 8px;
+}
+.recent h3 { font-size: 11px; margin-bottom: 6px; }
+.recent table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.recent td {
+  border-top: 1px solid #dfdfdf; padding: 4px 3px; font-size: 10px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.recent td:nth-child(1) { width: 44%; }
+.recent td:nth-child(2) { width: 20%; }
+.recent td:nth-child(3) { width: 20%; }
+.recent td:nth-child(4) { width: 16%; text-align: right; font-family: "Courier New", monospace; }
+.ops {
+  margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  color: #404040;
+}
+.ops a {
+  color: #000080; background: #dfdfdf; padding: 3px 7px; text-decoration: none;
+  border-top: 1px solid #fff; border-left: 1px solid #fff;
+  border-right: 1px solid #808080; border-bottom: 1px solid #808080;
+}
+.ops span { font-size: 10px; }
+
 /* fenêtre "À propos" */
 .win {
   background: #c0c0c0; padding: 3px; max-width: 460px; margin: 34px auto 0 auto;
@@ -84,4 +154,11 @@ a.icon:focus { background: #000080; border: 1px dotted #ffff00; outline: none; }
   margin-left: auto; padding: 3px 10px; font-size: 10px;
   border-top: 1px solid #808080; border-left: 1px solid #808080;
   border-right: 1px solid #fff; border-bottom: 1px solid #fff;
+}
+
+@media (max-width: 760px) {
+  body { padding: 16px 12px 56px 12px; }
+  .desktop { gap: 24px; }
+  .radar-grid { grid-template-columns: 1fr; }
+  .recent td { font-size: 9.5px; }
 }
