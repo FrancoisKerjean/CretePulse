@@ -8,6 +8,8 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Clock } from "lucide-react";
 import { timesForDate } from "@/lib/bus-journey";
+import { inBoardingWindow, bucketInMin } from "@/lib/boarding-proxy";
+import { emitBoardingProxy } from "@/lib/boarding-beacon";
 import type { BusRoute } from "@/lib/buses";
 
 function athensParts(d: Date): { iso: string; minutes: number } {
@@ -27,7 +29,10 @@ const toMin = (hhmm: string): number => {
   return (h || 0) * 60 + (m || 0);
 };
 
-export function NextDeparture({ route }: { route: BusRoute; locale: string }) {
+// trackSurface="pair" : émet le proxy embarquement (bus_boarding_proxy) quand le
+// prochain départ tombe dans la fenêtre. Passé UNIQUEMENT par buses/[pair]/page.tsx —
+// JourneyPlanner rend aussi ce composant et ne doit PAS tracker (gate anti-réutilisation).
+export function NextDeparture({ route, trackSurface }: { route: BusRoute; locale: string; trackSurface?: "pair" }) {
   const t = useTranslations("nextDeparture");
   const [state, setState] = useState<{ time: string; inMin: number } | { tomorrow: string } | null>(null);
 
@@ -39,13 +44,17 @@ export function NextDeparture({ route }: { route: BusRoute; locale: string }) {
       .sort((a, b) => a.m - b.m)
       .find((x) => x.m >= minutes);
     if (next) {
-      setState({ time: next.t, inMin: next.m - minutes });
+      const inMin = next.m - minutes;
+      setState({ time: next.t, inMin });
+      if (trackSurface === "pair" && inBoardingWindow(inMin)) {
+        void emitBoardingProxy("pair", route.id, { pair: route.id, in_bucket: bucketInMin(inMin) });
+      }
       return;
     }
     const { iso: tomorrowIso } = athensParts(new Date(now.getTime() + 86400000));
     const first = timesForDate(route, tomorrowIso).sort((a, b) => toMin(a) - toMin(b))[0];
     setState(first ? { tomorrow: first } : null);
-  }, [route]);
+  }, [route, trackSurface]);
 
   if (!state) return null;
   return (

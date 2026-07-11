@@ -323,7 +323,7 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
           )}
           {ref && (
             <div className="mt-4">
-              <NextDeparture route={ref} locale={ui} />
+              <NextDeparture route={ref} locale={ui} trackSurface="pair" />
             </div>
           )}
           <div className="flex flex-wrap gap-2.5 mt-4 font-data">
