@@ -508,6 +508,10 @@ def parse_ektel_pdf(text: str, source_url: str = "") -> list[dict]:
                 # Nouvelle route : flush + ouvre
                 flush()
                 stops = _route_stops(_clean_route_name(seg))
+                # Terminus non publiable (footnote 'Return 09:40 From Ampelos'
+                # du PDF GAVDOS, navette hotel) : jeter la route entiere.
+                if stops and not (_is_public_endpoint(stops[0]) and _is_public_endpoint(stops[-1])):
+                    stops = None
                 if stops:
                     current = {
                         "from_place": stops[0],
