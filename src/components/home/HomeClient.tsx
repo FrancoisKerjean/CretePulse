@@ -86,7 +86,7 @@ function NewsletterFormCompact({ locale }: { locale: string }) {
         onChange={(e) => setEmail(e.target.value)}
         placeholder={t("emailPlaceholder")}
         required
-        className="flex-1 px-5 py-3 rounded-full border-none bg-white text-[13.5px] text-text placeholder:text-text-light focus:outline-none focus:ring-2 focus:ring-lagoon/40"
+        className="flex-1 min-w-0 px-5 py-3 rounded-full border-none bg-white text-[13.5px] text-text placeholder:text-text-light focus:outline-none focus:ring-2 focus:ring-lagoon/40"
       />
       <button
         type="submit"
