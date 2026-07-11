@@ -305,6 +305,13 @@ def _clean_route_name(raw: str) -> str:
         parts.pop(0)
     while parts and parts[-1] in _NAME_NOISE:
         parts.pop()
+    # Tronque au premier mot de fréquence : le box EXPRESS du PDF CHANIA colle
+    # 'CHANIA-HERAKLION EVERY DAY' sur une ligne -> sans coupe, 'Heraklion Every
+    # Day' devenait un LIEU en DB (pollution combobox, constat prod 11/07/2026).
+    for i, p in enumerate(parts):
+        if p in _FREQ_HEAD:
+            parts = parts[:i]
+            break
     s = " ".join(parts)
     # Normalise tirets / espaces multiples
     s = re.sub(r"\s*-\s*", "-", s)
@@ -504,7 +511,12 @@ def fetch_ektel_pdfs(html_index: str) -> list[tuple[str, str]]:
         href = unescape(a["href"])
         if ".pdf" not in href.lower():
             continue
-        if "/images/pdfs/" not in href:
+        # e-ktel publie les horaires sous DEUX chemins : /images/pdfs/ (Rethymno,
+        # Sougia, Choria, Airport, Gavdos) et /images/announcements/ (les PDF
+        # "departures from Chania" récents). Filtrer sur pdfs/ seul faisait
+        # perdre TOUT le PDF Chania -> Almyrida/Kalyves absents du graphe
+        # (30 recherches/mois à 0 résultat, constat flux_intent 11/07/2026).
+        if "/images/pdfs/" not in href and "/images/announcements/" not in href:
             continue
         full = urljoin(EKTEL_BASE, href)
         label = a.get_text(" ", strip=True)

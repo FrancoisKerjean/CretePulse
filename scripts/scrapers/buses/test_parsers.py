@@ -253,6 +253,41 @@ def test_columnize_airport_recovers_chania_airport_times():
     assert ("Chania Airport", "Chania") in by
 
 
+def test_fetch_ektel_pdfs_accepts_announcements_path():
+    # Les PDF "departures from Chania" recents vivent sous /images/announcements/
+    # (pas /images/pdfs/). Les filtrer = perdre Almyrida/Kalyves/Vamos du graphe
+    # (30 recherches/mois a 0 resultat, constat flux_intent 11/07/2026).
+    from parsers import fetch_ektel_pdfs
+    html = """
+    <table class="table-striped"><tr><td>
+      <a href="/images/announcements/CHANIA_FROM_11-07-2026.pdf">CHANIA VALID FROM 11-07-2026</a>
+      <a href="/images/pdfs/2026/JUN_2026/RETHYMNO_FROM_23-06-2026.pdf">RETHYMNO VALID FROM 23-06-2026</a>
+      <a href="/images/banners/promo.pdf">PROMO</a>
+      <a href="/images/announcements/news.html">NEWS</a>
+    </td></tr></table>
+    """
+    urls = [u for _, u in fetch_ektel_pdfs(html)]
+    assert any("/images/announcements/CHANIA_FROM_11-07-2026.pdf" in u for u in urls)
+    assert any("/images/pdfs/2026/JUN_2026/RETHYMNO_FROM_23-06-2026.pdf" in u for u in urls)
+    assert not any("banners" in u for u in urls)      # autre chemin = toujours exclu
+    assert not any(u.endswith(".html") for u in urls)  # pas un PDF
+
+
+def test_clean_route_name_truncates_trailing_frequency():
+    # Box EXPRESS du PDF CHANIA : 'CHANIA-HERAKLION EVERY DAY' sur une ligne ->
+    # sans coupe au premier mot de frequence, 'Heraklion Every Day' devenait un
+    # LIEU en DB (pollution combobox planner, constat prod 11/07/2026).
+    from parsers import parse_ektel_pdf
+    text = "\n".join([
+        "ΧΑΝΙΑ-ΗΡΑΚΛΕΙΟ ΚΑΘΕ ΜΕΡΑ/CHANIA-HERAKLION EVERY DAY",
+        "09:30 12:45 15:30 18:45",
+    ])
+    by = _pairs(parse_ektel_pdf(text, source_url="x"))
+    assert ("Chania", "Heraklion") in by
+    assert not any("Every" in f or "Every" in t or "Day" in f or "Day" in t for f, t in by)
+    assert "09:30" in by[("Chania", "Heraklion")]["departures"]
+
+
 def test_pdf_seg_regex_captures_parenthesized_name():
     # Suffixe entre parentheses ne doit plus jeter la route (fix lookahead '(').
     from parsers import parse_ektel_pdf

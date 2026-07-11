@@ -128,31 +128,84 @@ def _fetch_pdf_bytes(url: str) -> bytes | None:
     return None
 
 
+def _columnize_text(doc) -> str:
+    """Dé-entrelacement 2 colonnes par coordonnées des mots (aller à gauche,
+    retour à droite) au lieu d'extract_text() qui mélange les horaires
+    des paires côte à côte (Elafonisi/Chora Sfakion/Airport)."""
+    return "\n".join(
+        columnize_words(
+            [{"text": w["text"], "x0": w["x0"], "x1": w["x1"], "top": w["top"]}
+             for w in page.extract_words(use_text_flow=False, keep_blank_chars=False)],
+            page.width,
+        )
+        for page in doc.pages
+    )
+
+
+def _cells_text(doc) -> str:
+    """Extraction par cellules de grille : les PDF e-ktel sont des tableaux
+    bordés (find_tables) dont chaque cellule contient un box route complet.
+    On émet colonne par colonne sur chaque run de lignes de même largeur ->
+    chaque box reste contigu, y compris quand les DEUX directions d'une paire
+    sont côte à côte sur plusieurs lignes de grille (cas ALMIRIDA/KALIVES du
+    PDF CHANIA, où columnize_words fusionnait les horaires aller+retour et
+    laissait ALMIRIDA-CHANIA sans horaires). Page sans table = extract_text."""
+    chunks: list[str] = []
+    for page in doc.pages:
+        tables = sorted(page.find_tables(), key=lambda t: t.bbox[1])
+        if not tables:
+            chunks.append(page.extract_text() or "")
+            continue
+        for t in tables:
+            runs: list[dict] = []
+            for row in t.rows:
+                cells = [c for c in row.cells if c]
+                if not cells:
+                    continue
+                n = len(cells)
+                if runs and runs[-1]["n"] == n:
+                    runs[-1]["rows"].append(cells)
+                else:
+                    runs.append({"n": n, "rows": [cells]})
+            for run in runs:
+                for col in range(run["n"]):
+                    x0 = min(r[col][0] for r in run["rows"])
+                    top = min(r[col][1] for r in run["rows"])
+                    x1 = max(r[col][2] for r in run["rows"])
+                    bot = max(r[col][3] for r in run["rows"])
+                    chunks.append(page.crop((x0, top, x1, bot)).extract_text() or "")
+    return "\n".join(chunks)
+
+
 def _parse_pdf(content: bytes, source_url: str) -> list[dict]:
-    """Extrait le texte du PDF via pdfplumber puis appelle parse_ektel_pdf."""
+    """Extrait le texte du PDF via pdfplumber puis appelle parse_ektel_pdf.
+
+    Deux stratégies d'extraction concurrentes, on garde la meilleure PAR PDF
+    (score : nb de routes, puis moins de routes sans horaire) — mesuré 11/07/2026 :
+    cells gagne CHANIA (44 vs 42, directions correctes) / RETHYMNO (65 vs 63) /
+    CHORIA (35 vs 34), columnize gagne SOUGIA (16 vs 9). Aucune ne domine."""
     try:
         import io
         import pdfplumber  # type: ignore
     except ImportError:
         log("pdfplumber not installed (pip install pdfplumber) - skip PDF parse")
         return []
-    try:
-        with pdfplumber.open(io.BytesIO(content)) as doc:
-            # Dé-entrelacement 2 colonnes par coordonnées des mots (aller à gauche,
-            # retour à droite) au lieu d'extract_text() qui mélange les horaires
-            # des paires côte à côte (Elafonisi/Chora Sfakion/Airport).
-            text = "\n".join(
-                columnize_words(
-                    [{"text": w["text"], "x0": w["x0"], "x1": w["x1"], "top": w["top"]}
-                     for w in page.extract_words(use_text_flow=False, keep_blank_chars=False)],
-                    page.width,
-                )
-                for page in doc.pages
-            )
-    except Exception as e:
-        log(f"pdfplumber error on {source_url}: {e}")
+    candidates: list[list[dict]] = []
+    for extractor in (_cells_text, _columnize_text):
+        try:
+            with pdfplumber.open(io.BytesIO(content)) as doc:
+                text = extractor(doc)
+            candidates.append(parse_ektel_pdf(text, source_url=source_url))
+        except Exception as e:
+            log(f"pdfplumber {extractor.__name__} error on {source_url}: {e}")
+    if not candidates:
         return []
-    return parse_ektel_pdf(text, source_url=source_url)
+
+    def score(routes: list[dict]) -> tuple[int, int]:
+        zero = sum(1 for r in routes if not r.get("departures"))
+        return (len(routes), -zero)
+
+    return max(candidates, key=score)
 
 
 def scrape_ektel() -> list:
