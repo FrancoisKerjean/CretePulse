@@ -1,0 +1,78 @@
+name: daily-deploy
+
+# Promotion prod UNIQUE par jour. Chaque push sur main invalide le cache ISR et
+# re-genere ~24K pages x 22 langues (ecritures ISR facturees Vercel). Les
+# terminaux mergent dans master toute la journee (0 build) ; ce job promeut
+# master -> main une seule fois le soir.
+# Cf docs/WORKFLOW-MULTI-TERMINAL.md et scripts/vercel-ignore.sh.
+
+on:
+  schedule:
+    # 17:00 UTC = 20:00 Athens (ete, UTC+3). Glisse a 19:00 Athens en hiver (UTC+2).
+    - cron: "0 17 * * *"
+  workflow_dispatch: {}      # bouton "Run workflow" = promotion manuelle immediate
+
+concurrency:
+  group: daily-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: write            # necessaire pour push origin master:main
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0     # historique complet master + main
+          ref: master
+
+      - name: Compter les commits a promouvoir
+        id: delta
+        run: |
+          git fetch origin main master --quiet
+          COUNT=$(git rev-list --count origin/main..origin/master)
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          {
+            echo "commits<<COMMITS_EOF"
+            git log --oneline --no-decorate origin/main..origin/master | head -50
+            echo "COMMITS_EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "$COUNT commit(s) master en avance sur main"
+
+      - name: Promouvoir master -> main
+        id: promote
+        if: steps.delta.outputs.count != '0'
+        run: |
+          if git push origin origin/master:main; then
+            echo "status=ok" >> "$GITHUB_OUTPUT"
+          else
+            echo "status=fail" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+      - name: Notifier Telegram
+        if: always()
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+          COUNT: ${{ steps.delta.outputs.count }}
+          COMMITS: ${{ steps.delta.outputs.commits }}
+          PROMOTE: ${{ steps.promote.outputs.status }}
+        run: |
+          if [ -z "$TG_TOKEN" ] || [ -z "$TG_CHAT" ]; then
+            echo "Secret Telegram absent, notif skippee (job OK quand meme)."
+            exit 0
+          fi
+          if [ "$COUNT" = "0" ]; then
+            MSG="crete.direct - deploy quotidien : rien a promouvoir (master == main)."
+          elif [ "$PROMOTE" = "ok" ]; then
+            MSG=$(printf 'crete.direct - deploy quotidien OK\n%s commit(s) promus master -> main :\n%s\n\nBuild Vercel en cours (~15 min).' "$COUNT" "$COMMITS")
+          else
+            MSG="crete.direct - DEPLOY QUOTIDIEN ECHOUE (push master:main). main a peut-etre diverge -> intervention manuelle requise."
+          fi
+          curl -s -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TG_CHAT}" \
+            --data-urlencode "text=${MSG}" \
+            -o /dev/null -w "Telegram HTTP %{http_code}\n"

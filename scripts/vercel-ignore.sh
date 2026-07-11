@@ -8,8 +8,17 @@
 # Convention exit code Vercel : 0 = skip le build, 1 = build.
 
 if [ "$VERCEL_GIT_COMMIT_REF" = "main" ]; then
-  if git diff --quiet HEAD^ HEAD -- . ':(exclude)docs'; then
-    exit 0
+  # main est promu 1x/jour et embarque TOUTE une journee de commits (daily-deploy).
+  # Comparer HEAD^..HEAD (dernier commit seulement) skiperait a tort une journee
+  # de code si le dernier commit est docs-only. On compare donc la plage complete
+  # depuis le dernier deploy prod reussi (VERCEL_GIT_PREVIOUS_SHA, expose car un
+  # Ignored Build Step est present). Base inconnue (1er deploy / clone shallow)
+  # -> on build par securite (jamais de faux skip).
+  BASE="$VERCEL_GIT_PREVIOUS_SHA"
+  if [ -n "$BASE" ] && git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
+    if git diff --quiet "$BASE" HEAD -- . ':(exclude)docs'; then
+      exit 0
+    fi
   fi
   exit 1
 fi

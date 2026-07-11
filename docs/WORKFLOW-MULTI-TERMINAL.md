@@ -53,13 +53,33 @@ zéro build consommé.
 ```bash
 # quand la branche est verte (tsc + next build OK) et validée en preview :
 git switch master && git merge feat/affiliation   # intégration
-git push origin master                            # sauvegarde (ne déploie pas)
-git push origin master:main                       # → DÉPLOIE en prod
+git push origin master                            # → ton geste s'arrête ICI (0 build)
 git branch -d feat/affiliation                     # nettoyage
 ```
 
-`master` ne déploie pas (filet : on intègre sans mettre en prod). Le push vers
-`main` est l'acte de déploiement, conscient et choisi.
+**Tu ne pousses JAMAIS `main` toi-même.** `master` ne déploie pas : c'est la zone
+d'intégration où tous les terminaux déposent leur travail vert au fil de la journée.
+
+### Promotion prod : 1×/jour, automatique (13/07/2026)
+
+La promotion `master → main` est faite **une seule fois par jour, à 20h Athens**,
+par la GitHub Action `daily-deploy` (`.github/workflows/daily-deploy.yml`). Elle
+fait un simple `git push origin origin/master:main` fast-forward : **tout ce qui
+a atterri sur `master` dans la journée part dans un seul build prod**, puis une
+notif Telegram récapitule les commits embarqués.
+
+**Pourquoi.** Chaque push sur `main` invalide le cache ISR → Vercel re-génère
+~24K pages × 22 langues = autant d'écritures ISR facturées. Cinq promotions/jour
+= cinq vagues. Une seule promotion/jour divise ce poste d'autant, sans rien
+changer au code (`master` était déjà l'intégration non-buildée).
+
+**Hotfix urgent** (exception assumée, pas la règle) : deux échappatoires
+- `git push origin master:main` manuel — déploie tout de suite ;
+- bouton **Run workflow** sur l'Action `daily-deploy` (onglet Actions GitHub).
+
+Le check `scripts/vercel-ignore.sh` compare la plage complète depuis le dernier
+deploy prod (`VERCEL_GIT_PREVIOUS_SHA`) : une journée 100 % docs ne consomme
+aucun build ; dès qu'il y a du code, le build part.
 
 ## Dev server en parallèle : worktree (optionnel, à la demande)
 
