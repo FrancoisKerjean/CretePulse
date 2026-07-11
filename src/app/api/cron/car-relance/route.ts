@@ -10,7 +10,6 @@ import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { partnerNeedsRelance, clientNeedsRelance, clientAutoCloseReason } from "@/lib/car-quotes";
 import { newToken, hashToken, siteBase } from "@/lib/car-quote";
 import { partnerById } from "@/lib/car-partners-db";
-import { notifyClosedCarQuoteResponders, notifyClosedCarQuoteRespondersWithReason } from "@/lib/car-closure-notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +23,6 @@ export async function GET(request: NextRequest) {
     dateFrom ? new Date(dateFrom + "T00:00:00").getTime() > now : true;
 
   const { sendPartnerRelance, sendCustomerRelance } = await import("@/lib/email");
-  const closedRespondersNotified = await notifyClosedCarQuoteResponders();
 
   // ── Passe loueur ───────────────────────────────────────────────────────────
   let partnersRelanced = 0;
@@ -67,8 +65,8 @@ export async function GET(request: NextRequest) {
     .eq("status", "quoted");
   for (const r of reqs ?? []) {
     // Si la location commence aujourd'hui/est passée, ou si le client a ignoré
-    // les 2 relances pendant 24h, on clôture et on remercie les loueurs ayant
-    // répondu. Aucun autre email client.
+    // les 2 relances pendant 24h, on clôture en silence (aucun email loueur ni
+    // client : décision 11/07/2026, notifications actionnables uniquement).
     const autoCloseReason = clientAutoCloseReason(
       { status: r.status, date_from: r.date_from, client_relanced_at: r.client_relanced_at, client_relance_count: r.client_relance_count ?? 0 },
       now,
@@ -85,7 +83,6 @@ export async function GET(request: NextRequest) {
         }).eq("id", r.id);
         await supabase.from("car_quote_invites").update({ status: "not_chosen" })
           .eq("request_id", r.id).eq("status", "quoted");
-        await notifyClosedCarQuoteRespondersWithReason(r.id, autoCloseReason);
         clientsAutoClosed++;
         if (autoCloseReason === "rental_started") closedByRentalStart++;
         if (autoCloseReason === "client_silent") closedByClientSilence++;
@@ -127,7 +124,6 @@ export async function GET(request: NextRequest) {
     ok: true,
     partnersRelanced,
     clientsRelanced,
-    closedRespondersNotified,
     clientsAutoClosed,
     closedByRentalStart,
     closedByClientSilence,

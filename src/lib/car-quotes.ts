@@ -4,7 +4,6 @@
 import { isInclusionKey, isInsuranceType } from "./car-inclusions.ts";
 
 export type InviteStatus = "invited" | "quoted" | "declined" | "chosen" | "not_chosen";
-export type ClosedRequestStatus = "accepted" | "declined_by_client";
 export type AutoCloseReason = "client_silent" | "rental_started";
 
 export interface QuoteInvite {
@@ -162,16 +161,4 @@ export function clientAutoCloseReason(
   if (!req.client_relanced_at) return null;
   if (nowMs - new Date(req.client_relanced_at).getTime() < 24 * HOUR) return null;
   return "client_silent";
-}
-
-/** Notification de clôture loueur : uniquement les loueurs qui ont répondu et n'ont pas été choisis. */
-export function closedResponderNeedsNotification(
-  invite: { status: string; quote_price: number | null; closed_notified_at?: string | null },
-  requestStatus: string,
-): requestStatus is ClosedRequestStatus {
-  if (requestStatus !== "accepted" && requestStatus !== "declined_by_client") return false;
-  if (invite.status !== "not_chosen") return false;
-  if (invite.quote_price == null) return false;
-  if (invite.closed_notified_at) return false;
-  return true;
 }

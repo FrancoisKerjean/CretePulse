@@ -5,7 +5,6 @@ import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { partnerById } from "@/lib/car-partners-db";
 import { isOfferExpired } from "@/lib/car-offer-expiry";
 import { requestByClientToken } from "@/lib/car-quotes-db";
-import { notifyClosedCarQuoteRespondersWithReason } from "@/lib/car-closure-notifications";
 import { findChosenOption, sortOptionsByPrice } from "@/lib/car-quotes";
 
 const GEARBOX_LABEL: Record<string, string> = { automatic: "Automatic", manual: "Manual" };
@@ -29,15 +28,14 @@ export async function POST(request: NextRequest) {
   if (row.status === "declined_by_client") return NextResponse.json({ ok: true, declined: true });
 
   // Désistement client : « aucune de ces offres ne me convient ». La demande se
-  // ferme, les relances client s'arrêtent, et les loueurs qui ont répondu sont
-  // remerciés automatiquement pour préserver leur engagement.
+  // ferme et les relances client s'arrêtent. Pas d'email aux loueurs non retenus
+  // (décision 11/07/2026 : notifications actionnables uniquement).
   if (decline) {
     await supabase.from("car_requests").update({
       status: "declined_by_client", accept_token_hash: null, closure_reason: "client_declined_all",
     }).eq("id", row.id);
     await supabase.from("car_quote_invites").update({ status: "not_chosen" })
       .eq("request_id", row.id).eq("status", "quoted");
-    await notifyClosedCarQuoteRespondersWithReason(row.id as number, "client_declined_all");
     return NextResponse.json({ ok: true, declined: true });
   }
 
@@ -92,7 +90,6 @@ export async function POST(request: NextRequest) {
         days,
       },
     });
-    await notifyClosedCarQuoteRespondersWithReason(row.id as number, "not_chosen");
   } catch (e) {
     console.error("[car-rental/accept] email error:", e);
     return NextResponse.json({ ok: true, emailFailed: true });

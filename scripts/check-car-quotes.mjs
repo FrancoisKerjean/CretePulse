@@ -1,6 +1,6 @@
 // node --experimental-strip-types scripts/check-car-quotes.mjs
 import { sortQuotesByPrice, canPartnerQuote, canCancelRequest, findChosenInvite, partnerNeedsRelance, clientNeedsRelance,
-  clientAutoCloseReason, closedResponderNeedsNotification,
+  clientAutoCloseReason,
   normalizeQuoteOption, normalizeQuoteOptions, bestOption, sortOptionsByPrice, findChosenOption } from "../src/lib/car-quotes.ts";
 
 let fail = 0;
@@ -42,11 +42,8 @@ ok("cloture auto si client silencieux apres 2 relances +24h", clientAutoCloseRea
 ok("pas de cloture auto si derniere relance <24h", clientAutoCloseReason({ status: "quoted", date_from: "2026-07-20", client_relanced_at: new Date(1751961600000 - 5 * H).toISOString(), client_relance_count: 2 }, 1751961600000) === null);
 ok("pas de cloture auto si demande non quoted", clientAutoCloseReason({ status: "sent", date_from: "2026-07-20", client_relanced_at: null, client_relance_count: 0 }, 1751961600000) === null);
 
-ok("notification cloture loueur due si devis non retenu", closedResponderNeedsNotification({ status: "not_chosen", quote_price: 240, closed_notified_at: null }, "accepted"));
-ok("notification cloture loueur due si client decline tout", closedResponderNeedsNotification({ status: "not_chosen", quote_price: 240, closed_notified_at: null }, "declined_by_client"));
-ok("pas de notification cloture si loueur choisi", !closedResponderNeedsNotification({ status: "chosen", quote_price: 240, closed_notified_at: null }, "accepted"));
-ok("pas de notification cloture si deja notifie", !closedResponderNeedsNotification({ status: "not_chosen", quote_price: 240, closed_notified_at: "2026-07-10T08:00:00Z" }, "accepted"));
-ok("pas de notification cloture si pas de devis", !closedResponderNeedsNotification({ status: "not_chosen", quote_price: null, closed_notified_at: null }, "accepted"));
+// (Tests closedResponderNeedsNotification retirés le 11/07/2026 : emails de
+// clôture loueur supprimés, retour terrain Lux Trans.)
 
 // ── Multi-offres (retour Lux Trans « only one option to send ») ──────────────
 ok("normalise une option valide", (() => { const o = normalizeQuoteOption({ price: 30, carModel: " VW Polo ", gearbox: "manual", inclusions: ["gps", "unlimited_km"] }); return o && o.price === 30 && o.car_model === "VW Polo" && o.gearbox === "manual" && o.inclusions.join() === "unlimited_km"; })());
