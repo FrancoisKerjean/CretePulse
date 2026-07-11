@@ -50,15 +50,27 @@ zéro build consommé.
 
 ## Intégrer et déployer
 
+Quand ton chantier est vert et validé, **un seul geste** l'envoie dans la file
+du deploy du soir :
+
 ```bash
-# quand la branche est verte (tsc + next build OK) et validée en preview :
-git switch master && git merge feat/affiliation   # intégration
-git push origin master                            # → ton geste s'arrête ICI (0 build)
-git branch -d feat/affiliation                     # nettoyage
+npm run ship            # depuis ta branche feat/* — c'est TOUT
+git branch -d feat/affiliation   # nettoyage (optionnel)
 ```
+
+`ship` (`scripts/ship.sh`) : garde-fous (pas sur master/main, working tree
+propre) → `npm run check` → intègre `origin/master` dans ta branche → push
+fast-forward `HEAD:master` (avec retry si un autre terminal a poussé entre-temps).
+Il marche en **worktree** (où `master` est checkout ailleurs) et **ne touche
+jamais `main`**. Équivalent manuel si besoin : `git fetch origin master &&
+git merge origin/master && git push origin HEAD:master`.
 
 **Tu ne pousses JAMAIS `main` toi-même.** `master` ne déploie pas : c'est la zone
 d'intégration où tous les terminaux déposent leur travail vert au fil de la journée.
+
+Un **récap Telegram à 19h Athens** (Action `predeploy-recap`) liste, 1h avant le
+deploy, ce qui va partir + les branches `feat/*` actives (<7j) pas encore
+intégrées — ta dernière chance de rattraper un chantier oublié.
 
 ### Promotion prod : 1×/jour, automatique (13/07/2026)
 

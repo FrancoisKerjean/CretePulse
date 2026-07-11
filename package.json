@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
+    "ship": "bash scripts/ship.sh",
     "gen:car-partners-json": "node --experimental-strip-types scripts/gen-car-partners-json.mjs",
     "check:geo": "node --experimental-strip-types scripts/check-geo.mjs",
     "check:car-partners": "node --experimental-strip-types scripts/check-car-partners.mjs",
