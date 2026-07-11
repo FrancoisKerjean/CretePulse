@@ -613,7 +613,7 @@ export default async function BeachDetailPage({
 
         {/* Alternatives plus calmes (même région, score d'affluence bien inférieur) :
             angle redistribution des flux, n'apparaît que sur les plages moderate/busy */}
-        <QuieterAlternatives alternatives={quieter} locale={locale} />
+        <QuieterAlternatives alternatives={quieter} locale={locale} fromSlug={beach.slug} />
 
         {/* Nearby beaches */}
         {nearby.length > 0 && (
