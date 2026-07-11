@@ -65,6 +65,17 @@ _STOP_ALIASES = {
     # "Elafonissi" (2 s) -> sans alias, la ligne scrapee (horaires) et la curee
     # (prix) restent 2 routes distinctes dont une vide (constat prod 13/06).
     "ELAFONISI": "ELAFONISSI",
+    # Typos du PDF RETHYMNO (audit bus_search_zero 11/07/2026) : 'RERHYMNO'
+    # (boucle villages) et 'HRAKLEIO' devenaient des LIEUX en DB (4+14
+    # recherches/mois a 0 resultat). 'OLD ROAD' = variante d'itineraire de la
+    # ligne Rethymno-Heraklion, pas une destination : canonise vers la ville
+    # (la variante dedup ensuite contre la ligne principale, perte assumee —
+    # memes terminus, seuls les horaires varient).
+    "RERHYMNO": "RETHYMNO",
+    "HRAKLEIO": "HERAKLION",
+    "HRAKLEIO OLD ROAD": "HERAKLION",
+    "RETHYMNO OLD ROAD": "RETHYMNO",
+    "HERAKLION OLD ROAD": "HERAKLION",
 }
 
 # Un arrêt contenant un de ces mots est un point hôtel/POI de navette,
@@ -77,6 +88,28 @@ _HOTEL_STOP_WORDS = {"HOTEL", "HOTELS", "VILLA", "PALACE", "PARADISE", "RESORT",
 # Constaté en prod 10/06/2026 : "DEPARTURE AFTER THE ARRIVAL OF THE FERRY
 # BOAT FROM BALOS - GRAMVOUSA", "THROUGH MILONIANA", "PASSES THROUGH MYRTHIOS".
 _FOOTNOTE_WORDS = {"THROUGH", "DEPARTURE", "ARRIVAL", "PASSES", "FERRY", "VIA"}
+
+# Validation d'endpoint herlas (audit 11/07/2026) : le HTML herlas n'appliquait
+# AUCUN des filtres du chemin ektel -> 16 routes navettes hotels ('Malia Palace',
+# 'Annabelle-(Anissaras Hotels)', 'Α14 Panorama Village'…) et une footnote
+# ('Return 09:40 From Ampelos (Potamos)') etaient des LIEUX selectionnables en
+# prod. VILLAGE ne vaut que pour les complexes hoteliers ('Zorbas Village') :
+# les villages reels herlas n'utilisent jamais le mot anglais dans leur nom.
+_HOTEL_ENDPOINT_WORDS = _HOTEL_STOP_WORDS | {"VILLAGE"}
+_ENDPOINT_NOISE_WORDS = _FOOTNOTE_WORDS | {"RETURN", "FROM"}
+
+
+def _is_public_endpoint(name: str) -> bool:
+    """False si le nom est une navette hotel, une footnote ou contient un horaire
+    (donc pas un lieu publiable comme terminus de route)."""
+    if _HHMM_RE.search(name):
+        return False
+    tokens = set(re.sub(r"[^0-9A-Za-zΆ-ώ]+", " ", name).upper().split())
+    if tokens & _HOTEL_ENDPOINT_WORDS:
+        return False
+    if tokens & _ENDPOINT_NOISE_WORDS:
+        return False
+    return True
 
 
 def _price(text):
@@ -170,6 +203,8 @@ def parse_herlas_detail(html: str) -> list[dict]:
         from_place, to_place = rt
         if not is_crete_route(from_place, to_place):
             continue  # exclut les liaisons continent (data Crete only)
+        if not (_is_public_endpoint(from_place) and _is_public_endpoint(to_place)):
+            continue  # navettes hotels / footnotes : pas des lieux publiables
 
         # Itere chaque sous-grille (valuesWrapper = days + times).
         # ATTENTION : `timetable_time__<hash>` = un horaire ; `timetable_times__<hash>`
@@ -337,10 +372,15 @@ def _route_stops(name: str) -> list[str] | None:
     """De 'CHANIA-GEORGIOUPOLIS-KAVROS-RETHYMNO-BALI-HERAKLION' renvoie la
     séquence complète ['Chania', 'Georgioupolis', ..., 'Heraklion'].
     Les arrêts hôtels/bruit sont filtrés ; None si < 2 arrêts valides."""
-    stops = [s for p in name.split("-") if (s := _clean_stop(p)) is not None]
+    cleaned = [s for p in name.split("-") if (s := _clean_stop(p)) is not None]
     # dédoublonne en préservant l'ordre (PDF répète parfois un arrêt)
     seen: set[str] = set()
-    stops = [s for s in stops if not (s in seen or seen.add(s))]
+    stops = [s for s in cleaned if not (s in seen or seen.add(s))]
+    # Ligne en BOUCLE ('RETHYMNO-ERFI-...-RETHYMNO', villages autour d'un hub) :
+    # le dédup ne doit pas transformer la boucle en 'hub -> dernier village',
+    # on re-pose le terminus identique au départ (self-loop, via_stops intacts).
+    if len(cleaned) >= 2 and cleaned[-1] == cleaned[0] and stops and stops[-1] != cleaned[-1]:
+        stops.append(cleaned[-1])
     if len(stops) < 2:
         return None
     return stops
@@ -468,6 +508,10 @@ def parse_ektel_pdf(text: str, source_url: str = "") -> list[dict]:
                 # Nouvelle route : flush + ouvre
                 flush()
                 stops = _route_stops(_clean_route_name(seg))
+                # Terminus non publiable (footnote 'Return 09:40 From Ampelos'
+                # du PDF GAVDOS, navette hotel) : jeter la route entiere.
+                if stops and not (_is_public_endpoint(stops[0]) and _is_public_endpoint(stops[-1])):
+                    stops = None
                 if stops:
                     current = {
                         "from_place": stops[0],
