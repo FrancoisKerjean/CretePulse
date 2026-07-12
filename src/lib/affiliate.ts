@@ -111,6 +111,53 @@ function isHttpUrl(s: string): boolean {
   }
 }
 
+/**
+ * SSRF / open-redirect guard for affiliate `redirect_url`.
+ *
+ * The same value is (a) served as a 302 target on /go/<slug> and (b) fetched
+ * server-side by enrichAffiliate(). It must therefore never point at an
+ * internal host, a raw IP literal, or a cloud-metadata endpoint. Booking sites
+ * always use a public domain name, so rejecting bare IPs and internal TLDs
+ * closes the SSRF surface without blocking any legitimate partner.
+ *
+ * Residual (accepted): DNS rebinding of a public hostname to an internal IP.
+ * The enrich fetch pairs this check with `redirect: "error"` for defence.
+ */
+export function isSafeRedirectHost(s: string): boolean {
+  let u: URL;
+  try {
+    u = new URL(s);
+  } catch {
+    return false;
+  }
+  if (u.protocol !== "http:" && u.protocol !== "https:") return false;
+
+  const host = u.hostname.toLowerCase();
+  if (!host) return false;
+
+  // IPv6 literal (URL keeps the brackets in .hostname for some runtimes, strips
+  // them in others) → reject any literal address.
+  if (host.includes(":") || u.hostname.startsWith("[")) return false;
+
+  // IPv4 literal (public or private) — partners use domains, not IPs.
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return false;
+
+  // Loopback / internal / link-local names.
+  if (host === "localhost") return false;
+  if (
+    host.endsWith(".local") ||
+    host.endsWith(".internal") ||
+    host.endsWith(".lan") ||
+    host.endsWith(".home") ||
+    host.endsWith(".corp") ||
+    host === "metadata.google.internal"
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
 export function validateRegisterPayload(body: Record<string, unknown>): ValidationResult {
   const name = typeof body.name === "string" ? body.name.trim().slice(0, 120) : "";
   const category = String(body.category ?? "");
@@ -138,6 +185,7 @@ export function validateRegisterPayload(body: Record<string, unknown>): Validati
   if (!(AREAS as readonly string[]).includes(area)) return { ok: false, error: "Invalid area" };
   if (!EMAIL_REGEX.test(email)) return { ok: false, error: "Invalid email" };
   if (!isHttpUrl(redirect_url)) return { ok: false, error: "Invalid booking URL" };
+  if (!isSafeRedirectHost(redirect_url)) return { ok: false, error: "Invalid booking URL" };
 
   return {
     ok: true,
