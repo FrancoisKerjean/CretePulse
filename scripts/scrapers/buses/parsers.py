@@ -35,6 +35,12 @@ _HHMM_RE = re.compile(r"\b(\d{1,2}:\d{2})\b")
 # ('CHANIA-KASTELI (KISSAMOS)') empechait le segment de matcher (la lookahead
 # exigeait /, une heure ou la fin de ligne) -> ligne Kissamos jetee (fix 13/06).
 _PDF_SEG_RE = re.compile(r"/\s*([A-Z][A-Z0-9 .\-]+?)(?=\s*[/(]|\s*\d{1,2}:\d{2}|\s*$)")
+# Annotation "THROUGH X-Y" ou "PASSES THROUGH X-Y" dans les PDFs ektel.
+# Utilisée pour enrichir via_stops des routes qui n'ont pas d'intermédiaires dans
+# leur nom (ex: RETHYMNO-PLAKIAS + *PASSES THROUGH MYRTHIOS-MARIOU).
+_THROUGH_RE = re.compile(
+    r"(?:PASSES?\s+)?THROUGH\s+([A-Z][A-Z0-9 .\-]+)", re.IGNORECASE
+)
 
 _FREQ_HEAD = (
     "EVERY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY",
@@ -357,6 +363,24 @@ def _clean_route_name(raw: str) -> str:
     return s
 
 
+def _parse_through_stops(text: str) -> list[str] | None:
+    """Parse les arrêts depuis une annotation THROUGH.
+
+    'MYRTHIOS-MARIOU' -> ['Myrthios', 'Mariou']
+    'KALI SIKIA'      -> ['Kali Sikia']
+    'VRISSES'         -> ['Vrisses']
+    Applique les aliases standards (XANIA→Chania, etc.).
+    """
+    parts = [p.strip() for p in re.split(r"\s*-\s*", text) if p.strip()]
+    stops = []
+    for p in parts:
+        key = re.sub(r"\s+", " ", p.upper()).strip()
+        cleaned = _STOP_ALIASES.get(key, p.title())
+        if cleaned and len(cleaned) > 1:
+            stops.append(cleaned)
+    return stops or None
+
+
 def _clean_stop(raw: str) -> str | None:
     """Normalise un segment d'arrêt : retire '*' (renvoi footnote), applique
     les alias (XANIA->CHANIA, AG. MARINA->AGIA MARINA), filtre bruit et
@@ -545,6 +569,16 @@ def parse_ektel_pdf(text: str, source_url: str = "") -> list[dict]:
                 current_grid = {"days": "Daily", "times": []}
                 current["departures_by_day"].append(current_grid)
             current_grid["times"].extend(times)
+
+        # Annotation "THROUGH X-Y" / "PASSES THROUGH X-Y" : enrichit via_stops
+        # de la route courante si elle n'en a pas (certains horaires passent par
+        # ces arrêts -> info utile pour le planner même si partielle).
+        # Ignorée si via_stops déjà défini (le nom de route fait autorité).
+        through_m = _THROUGH_RE.search(line)
+        if through_m and current is not None and current.get("via_stops") is None:
+            through_stops = _parse_through_stops(through_m.group(1))
+            if through_stops:
+                current["via_stops"] = through_stops
 
     flush()
     return routes

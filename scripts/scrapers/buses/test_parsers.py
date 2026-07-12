@@ -338,6 +338,67 @@ def test_herlas_detail_drops_hotel_shuttles_and_footnotes():
     assert names == {("Heraklion", "Ano Viannos")}
 
 
+# --- Lot 2 : enrichissement via_stops depuis annotations THROUGH ---
+
+def test_through_annotation_enriches_route_without_via():
+    """PASSES THROUGH X-Y enrichit via_stops si la route n'en a pas."""
+    from parsers import parse_ektel_pdf
+    text = "\n".join([
+        "ΡΕΘΥΜΝΟ-ΠΛΑΚΙΑΣ/RETHYMNO-PLAKIAS",
+        "ΚΑΘΕ ΜΕΡΑ/EVERY DAY",
+        "06:00 08:30 11:30",
+        "*PASSES THROUGH MYRTHIOS-MARIOU",
+        "ΡΕΘΥΜΝΟ-ΠΡΕΒΕΛΗ/RETHYMNO-PREVELI",
+        "ΚΑΘΕ ΜΕΡΑ/EVERY DAY",
+        "07:00 14:00",
+    ])
+    by = _pairs(parse_ektel_pdf(text, source_url="x"))
+    # Rethymno->Plakias n'a pas de via dans son nom -> annotation THROUGH enrichit
+    assert ("Rethymno", "Plakias") in by
+    via = by[("Rethymno", "Plakias")]["via_stops"]
+    assert via is not None, "via_stops doit être enrichi par THROUGH"
+    assert "Myrthios" in via and "Mariou" in via
+
+
+def test_through_annotation_does_not_overwrite_existing_via():
+    """Si via_stops est déjà défini (nom de route complet), THROUGH ne l'écrase pas."""
+    from parsers import parse_ektel_pdf
+    text = "\n".join([
+        "ΡΕΘΥΜΝΟ-KAVROS-GEORGIOUPOLIS-CHANIA/RETHYMNO-KAVROS-GEORGIOUPOLIS-CHANIA",
+        "ΚΑΘΕ ΜΕΡΑ/EVERY DAY",
+        "06:00 07:00",
+        "*THROUGH VRISSES",
+        "ΧΑΝΙΑ-ΡΕΘΥΜΝΟ/CHANIA-RETHYMNO",
+        "ΚΑΘΕ ΜΕΡΑ/EVERY DAY",
+        "05:15 07:30",
+    ])
+    by = _pairs(parse_ektel_pdf(text, source_url="x"))
+    via = by[("Rethymno", "Chania")]["via_stops"]
+    # via_stops initial (Kavros, Georgioupolis) doit être conservé, pas remplacé par [Vrisses]
+    assert via is not None
+    assert "Kavros" in via and "Georgioupolis" in via
+    assert "Vrisses" not in via  # THROUGH Vrisses ignoré car via déjà défini
+
+
+def test_through_annotation_single_stop():
+    """THROUGH X (un seul stop) enrichit via_stops avec [X]."""
+    from parsers import parse_ektel_pdf
+    text = "\n".join([
+        "ΡΕΘΥΜΝΟ-ΡΟΔΑΚΙΝΟ/RETHYMNO-RODAKINO",
+        "ΤΡΙΤΗ/TUESDAY",
+        "05:45 14:30",
+        "THROUGH KALI SIKIA",
+        "ΡΕΘΥΜΝΟ-ΚΕΡΑΜΕ/RETHYMNO-KERAME",
+        "ΠΕΜΠΤΗ/THURSDAY",
+        "06:00 13:30",
+    ])
+    by = _pairs(parse_ektel_pdf(text, source_url="x"))
+    via = by[("Rethymno", "Rodakino")]["via_stops"]
+    assert via is not None
+    assert len(via) == 1
+    assert "Kali Sikia" in via
+
+
 def test_pdf_seg_regex_captures_parenthesized_name():
     # Suffixe entre parentheses ne doit plus jeter la route (fix lookahead '(').
     from parsers import parse_ektel_pdf
