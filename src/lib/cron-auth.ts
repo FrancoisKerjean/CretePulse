@@ -12,7 +12,7 @@ import { timingSafeEqual } from "node:crypto";
  * Why this exists: the previous inline check compared the incoming header to the
  * template literal `Bearer ${process.env.CRON_SECRET}`. If CRON_SECRET is absent
  * from the environment, that literal becomes `"Bearer undefined"` and any caller
- * sending `Authorization: Bearer undefined` passes — a fail-OPEN bypass on routes
+ * sending `Authorization: Bearer undefined` passes: a fail-OPEN bypass on routes
  * that delete rows and send bulk email. This helper fails CLOSED when the secret
  * is missing and compares in constant time.
  *

@@ -379,7 +379,7 @@ export async function enrichAffiliate(opts: {
   // Description is NOT generated here — it is left NULL for the VPS Haiku worker.
   let photo_url: string | null = null;
 
-  // SSRF guard (defence in depth — registration already validates this): never
+  // SSRF guard (defence in depth, registration already validates this): never
   // fetch an internal host / IP literal / metadata endpoint.
   if (!isSafeRedirectHost(redirectUrl)) {
     console.error("[affiliate-enrich] refused unsafe redirect host:", redirectUrl);

@@ -139,7 +139,7 @@ export function isSafeRedirectHost(s: string): boolean {
   // them in others) → reject any literal address.
   if (host.includes(":") || u.hostname.startsWith("[")) return false;
 
-  // IPv4 literal (public or private) — partners use domains, not IPs.
+  // IPv4 literal (public or private): partners use domains, not IPs.
   if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return false;
 
   // Loopback / internal / link-local names.
