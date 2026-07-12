@@ -1,13 +1,13 @@
 // src/app/api/cron/activity-no-quote/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
+import { assertCron } from "@/lib/cron-auth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  if (req.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const denied = assertCron(req);
+  if (denied) return denied;
 
   const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const { data: rows } = await supabase

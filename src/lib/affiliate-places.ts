@@ -2,7 +2,11 @@
 // Lit la table `affiliates` côté serveur (Next.js RSC / page ISR 24h).
 // Exclut : status ≠ 'active', latitude/longitude null, category = 'car_rental'
 // (les loueurs de voitures passent par le rail Car Rental Direct, pas par la carte).
-import { supabase } from "./supabase";
+// Server-only (RSC / ISR). Uses the service client because the `affiliates`
+// table is not readable by the public anon role (RLS + REVOKE, migration
+// 20260712_secure_affiliates_newsletter.sql). Column selection stays explicit
+// so no PII (email, redirect_url, commission) is ever shaped into the response.
+import { supabaseAdmin as supabase } from "./supabase-admin";
 import type { CbPlaceListItem } from "./cb-places";
 
 /** Descriptif court localisé de l'affilié (en/fr/de/el). */

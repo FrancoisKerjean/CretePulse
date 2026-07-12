@@ -1,11 +1,11 @@
 // src/app/api/cron/reviews-cleanup/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
+import { assertCron } from "@/lib/cron-auth";
 
 export async function GET(req: NextRequest) {
-  if (req.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const denied = assertCron(req);
+  if (denied) return denied;
   const now = Date.now();
   const d7  = new Date(now - 7  * 86400_000).toISOString();
   const d30 = new Date(now - 30 * 86400_000).toISOString();

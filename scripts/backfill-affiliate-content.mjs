@@ -61,13 +61,16 @@ function loadEnv() {
 const ENV = loadEnv();
 // Supabase: always use the self-hosted cretepulse DB (not kairos-n8n's project URL)
 const SUPABASE_URL = "https://kairos-n8n.duckdns.org/cretepulse-db";
-// Service key for the self-hosted PostgREST (from VPS /opt/cretepulse/.env)
-const SUPABASE_KEY =
-  ENV.CRETEPULSE_SERVICE_ROLE_KEY ||
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic3VwYWJhc2UiLCJpYXQiOjE3NzU2MzczOTEsImV4cCI6MjA5MDk5NzM5MX0.lpMH59cKthLrOA3aPPnxOUf3SJfZMJJgZlciHOAKX0c";
+// Service key for the self-hosted PostgREST — MUST come from the environment
+// (VPS /opt/cretepulse/.env → CRETEPULSE_SERVICE_ROLE_KEY, or ~/.kairos-keys).
+// NEVER hardcode a service_role JWT here: this file is git-tracked and a
+// committed key = full RLS-bypassing DB access for anyone who reads the repo.
+const SUPABASE_KEY = ENV.CRETEPULSE_SERVICE_ROLE_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
-  console.error("ABORT: SUPABASE_URL or SUPABASE_KEY missing.");
+  console.error(
+    "ABORT: CRETEPULSE_SERVICE_ROLE_KEY missing from env. Set it in the VPS .env or ~/.kairos-keys; no fallback is baked in.",
+  );
   process.exit(1);
 }
 
