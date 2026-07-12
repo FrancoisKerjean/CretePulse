@@ -21,6 +21,13 @@ type IntentRow = { event_name: string; prop_key: string; prop_value: string; tot
 type WikiRow = { entity: string; avg_views_7d: number };
 type DayRow = { day: string };
 type UpdatedAtRow = { updated_at: string };
+type PortQuarterRow = {
+  quarter: string; port: string; direction: "embarked" | "disembarked";
+  passengers: number; updated_at: string;
+};
+type EconomyRow = {
+  year: number; metric: string; value: number; unit: string; updated_at: string;
+};
 type ZoneRow = {
   zone: string; snapshot_date: string; listings_count: number;
   occupancy_rate_30: number | null; occupancy_rate_90: number | null;
@@ -132,9 +139,11 @@ export default async function FluxAdminPage({
   let airportDays: AirportDay[] = [];
   let latestWikiDay: string | undefined;
   let latestCruiseUpdate: string | undefined;
+  let portQuarterly: PortQuarterRow[] = [];
+  let economyAnnual: EconomyRow[] = [];
   let loadError: string | null = null;
   try {
-    const [fRes, bRes, cRes, iRes, wRes, zRes, sRes, oRes, hRes, aRes, wdRes, cuRes] = await Promise.all([
+    const [fRes, bRes, cRes, iRes, wRes, zRes, sRes, oRes, hRes, aRes, wdRes, cuRes, pRes, eRes] = await Promise.all([
       supabase.from("v_flux_flights_daily").select("*").order("service_date", { ascending: false }).limit(14),
       supabase.from("v_flux_bus_daily").select("*").order("day", { ascending: false }).limit(21),
       supabase.from("v_flux_cruise_daily").select("*").gte("call_date", today).lte("call_date", in14).order("call_date"),
@@ -147,11 +156,13 @@ export default async function FluxAdminPage({
       supabase.from("v_flux_flights_airport").select("*").order("service_date", { ascending: false }).limit(10),
       supabase.from("flux_interest_daily").select("day").order("day", { ascending: false }).limit(1),
       supabase.from("flux_cruise_calls").select("updated_at").order("updated_at", { ascending: false }).limit(1),
+      supabase.from("flux_port_quarterly").select("quarter, port, direction, passengers, updated_at").order("quarter", { ascending: false }).limit(60),
+      supabase.from("flux_economy_annual").select("year, metric, value, unit, updated_at").order("year", { ascending: false }).limit(80),
     ]);
     loadError = fRes.error?.message ?? bRes.error?.message ?? cRes.error?.message
       ?? iRes.error?.message ?? wRes.error?.message ?? zRes.error?.message ?? sRes.error?.message
       ?? oRes.error?.message ?? hRes.error?.message ?? aRes.error?.message
-      ?? wdRes.error?.message ?? cuRes.error?.message ?? null;
+      ?? wdRes.error?.message ?? cuRes.error?.message ?? pRes.error?.message ?? eRes.error?.message ?? null;
     flights = (fRes.data ?? []) as FlightDay[];
     bus = (bRes.data ?? []) as BusDay[];
     cruises = (cRes.data ?? []) as CruiseDay[];
@@ -164,6 +175,8 @@ export default async function FluxAdminPage({
     airportDays = (aRes.data ?? []) as AirportDay[];
     latestWikiDay = ((wdRes.data ?? []) as DayRow[])[0]?.day;
     latestCruiseUpdate = ((cuRes.data ?? []) as UpdatedAtRow[])[0]?.updated_at?.slice(0, 10);
+    portQuarterly = (pRes.data ?? []) as PortQuarterRow[];
+    economyAnnual = (eRes.data ?? []) as EconomyRow[];
   } catch (e) {
     loadError = e instanceof Error ? e.message : String(e);
   }
@@ -256,6 +269,16 @@ export default async function FluxAdminPage({
     (latest, row) => !latest || row.last_day > latest ? row.last_day : latest,
     undefined,
   );
+  const latestPortQuarter = portQuarterly[0]?.quarter;
+  const latestEconomyYear = economyAnnual.reduce((max, row) => Math.max(max, row.year), 0);
+  const economyValue = (year: number, metric: string) =>
+    economyAnnual.find((row) => row.year === year && row.metric === metric)?.value;
+  const yoy = (metric: string) => {
+    const current = economyValue(latestEconomyYear, metric);
+    const previous = economyValue(latestEconomyYear - 1, metric);
+    return current == null || previous == null || previous === 0 ? null : ((current - previous) / previous) * 100;
+  };
+  const fmtPct = (value: number | null) => value == null ? "n/d" : `${value >= 0 ? "+" : ""}${value.toFixed(1)} %`;
 
   const qualityItems: FluxQualityItem[] = [
     {
@@ -309,10 +332,10 @@ export default async function FluxAdminPage({
     },
     {
       id: "ferries", decision: "Combien entrent par la mer ?", source: "Ferries Héraklion, Souda et Sitia",
-      evidence: "absent", coverage: "absente", status: "angle mort", cadence: "non branché",
-      confidence: 0,
-      limit: "Stock touristique aérien incomplet et biais possible sur les corridors maritimes.",
-      next: "Horaires OpenSeas ou AIS, puis calibration ELSTAT par port.",
+      evidence: "observé", coverage: "partielle", status: "à consolider", cadence: "trimestriel",
+      latestDay: latestPortQuarter, confidence: 3,
+      limit: "Historique officiel acquis ; aucun comptage journalier ni horaire temps réel.",
+      next: "Brancher les traversées quotidiennes puis calibrer avec ELSTAT par port.",
     },
     {
       id: "road", decision: "Où circulent les touristes en voiture ?", source: "Comptages routiers et flottes de location",
@@ -330,10 +353,10 @@ export default async function FluxAdminPage({
     },
     {
       id: "economy", decision: "La redistribution crée-t-elle de la valeur locale ?", source: "Dépenses locales, package et visiteurs indépendants",
-      evidence: "absent", coverage: "absente", status: "angle mort", cadence: "non branché",
-      confidence: 0,
-      limit: "Impossible de relier les flux à la rétention économique locale.",
-      next: "Extraire Banque de Grèce package/individuel, puis instrumenter les leads locaux.",
+      evidence: "estimé", coverage: "forte", status: "à consolider", cadence: "annuel",
+      latestDay: latestEconomyYear ? `${latestEconomyYear}-12-31` : undefined, confidence: 3,
+      limit: "Socle régional officiel acquis ; attribution locale crete.direct et package/individuel restent absents.",
+      next: "Instrumenter les transactions partenaires et compléter package versus individuel.",
     },
   ];
 
@@ -397,6 +420,41 @@ export default async function FluxAdminPage({
         </div>
         <p className="mt-3 text-[11px] text-text-muted">
           Règle de lecture : une recherche sans résultat ne devient une « liaison absente » qu&apos;après vérification de la fraîcheur des horaires. Almyrida → Chania est un signal historique antérieur au correctif KTEL du 11/07, pas une carence actuelle démontrée.
+        </p>
+      </Section>
+
+      <Section
+        title="Socle officiel acquis"
+        hint="Historique ELSTAT par port et séries régionales Banque de Grèce. Ces données calibrent les capteurs quotidiens ; elles ne sont pas du temps réel."
+      >
+        <div className="grid gap-2 sm:grid-cols-4">
+          <Cell
+            label={`visites Crète ${latestEconomyYear}`}
+            v={economyValue(latestEconomyYear, "visits") == null
+              ? "n/d"
+              : `${(economyValue(latestEconomyYear, "visits")! / 1000).toFixed(2)} M (${fmtPct(yoy("visits"))})`}
+          />
+          <Cell
+            label={`recettes ${latestEconomyYear}`}
+            v={economyValue(latestEconomyYear, "receipts") == null
+              ? "n/d"
+              : `${(economyValue(latestEconomyYear, "receipts")! / 1000).toFixed(2)} Md€ (${fmtPct(yoy("receipts"))})`}
+          />
+          <Cell
+            label={`dépense / visite ${latestEconomyYear}`}
+            v={economyValue(latestEconomyYear, "expenditure_per_visit") == null
+              ? "n/d"
+              : `${Math.round(economyValue(latestEconomyYear, "expenditure_per_visit")!)} € (${fmtPct(yoy("expenditure_per_visit"))})`}
+          />
+          <Cell
+            label="mouvements ferries 2024-2025"
+            v={portQuarterly.length
+              ? portQuarterly.reduce((sum, row) => sum + row.passengers, 0).toLocaleString("fr-FR")
+              : "n/d"}
+          />
+        </div>
+        <p className="mt-2 text-[11px] text-text-muted">
+          Lecture : les visites progressent tandis que les recettes et la dépense par visite reculent. C&apos;est un signal régional officiel à analyser, pas encore une preuve causale du rôle des packages ou de la redistribution.
         </p>
       </Section>
 
