@@ -154,10 +154,18 @@ export async function generateMetadata({ params }: { params: Promise<Params> }) 
   const description = T.metaDesc[ui](pr.pair.placeA, pr.pair.placeB);
   const url = `${BASE_URL}/${locale}/buses/${pair}`;
   const indexable = pairHasTimetable(routes as SeoRoute[], pair);
+  const ogImage = `${BASE_URL}/api/og?type=transport&title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent(description.slice(0, 120))}`;
   return {
     title, description,
     alternates: buildAlternates(locale, `/buses/${pair}`),
-    openGraph: { title, description, url, type: "website" },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: "website",
+      images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
+    },
+    twitter: { card: "summary_large_image", title, description, images: [ogImage] },
     robots: indexable ? undefined : { index: false, follow: true },
   };
 }

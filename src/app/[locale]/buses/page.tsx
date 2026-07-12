@@ -27,11 +27,24 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   setRequestLocale(locale);
   const m = META[locale] || META.en;
   const url = `${BASE_URL}/${locale}/buses`;
+  const ogImage = `${BASE_URL}/api/og?type=transport&title=${encodeURIComponent(m.title)}&subtitle=${encodeURIComponent(m.desc.slice(0, 120))}`;
   return {
     title: m.title,
     description: m.desc,
     alternates: buildAlternates(locale, "/buses"),
-    openGraph: { title: m.title, description: m.desc, url, type: "website" },
+    openGraph: {
+      title: m.title,
+      description: m.desc,
+      url,
+      type: "website",
+      images: [{ url: ogImage, width: 1200, height: 630, alt: m.title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: m.title,
+      description: m.desc,
+      images: [ogImage],
+    },
   };
 }
 
