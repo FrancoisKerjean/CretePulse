@@ -158,11 +158,21 @@ function seaState(c: CityWeather): { key: "calm" | "ok" | "rough"; warn: boolean
 const WTILE_CITIES = ["Heraklion", "Chania", "Ierapetra", "Sitia"];
 const TOOL_TINTS = ["bg-[#CFF3F7]", "bg-[#FFE9CF]", "bg-[#E4F0D5]", "bg-[#DCEBFF]", "bg-[#FFE0D6]", "bg-[#FFF1BF]"];
 
+// Defense-in-depth : si un locale invalide arrive malgre le garde du layout,
+// Intl.DateTimeFormat throw RangeError et fait 500 la home. On retombe sur "en".
+function safeIntlLocale(locale: string): string {
+  try {
+    return Intl.DateTimeFormat.supportedLocalesOf([locale]).length ? locale : "en";
+  } catch {
+    return "en";
+  }
+}
+
 export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, swimPick, swimSides, boardRoutes, locale }: HomeClientProps) {
   const loc = locale as Locale;
   const t = useTranslations("home");
 
-  const dateLabel = new Intl.DateTimeFormat(locale, {
+  const dateLabel = new Intl.DateTimeFormat(safeIntlLocale(locale), {
     weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Athens",
   }).format(new Date());
 
