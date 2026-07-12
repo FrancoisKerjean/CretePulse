@@ -113,3 +113,51 @@ def test_preserve_fails_open_when_select_raises():
             {"from_place": "A", "to_place": "D", "departures": ["3"]}]
     replace_operator_routes(sb, "herlas", "http://src", rows)  # ne leve pas
     assert len(sb.store["inserted"]) == 3  # comportement historique preserve
+
+
+# --- Preservation de via_stops depuis le run précédent (enrichissement API) ---
+
+def test_preserve_via_stops_when_route_was_enriched():
+    """via_stops enrichis (herlas API) sont portés sur le nouveau payload.
+
+    Le scrape hebdo supprime + recrée les routes (via_stops = None après le
+    HTML parse). Sans preservation, l'enrichissement serait perdu chaque semaine.
+    """
+    existing = [
+        {"from_place": "Heraklion", "to_place": "Matala", "season": "all",
+         "departures": ["07:30"], "scraped_at": OLD,
+         "via_stops": ["Benerato", "Avgeniki", "Faistos"]},
+        {"from_place": "Heraklion", "to_place": "Rethymno", "season": "all",
+         "departures": ["06:00"], "scraped_at": OLD,
+         "via_stops": None},
+    ]
+    rows = [
+        {"from_place": "Heraklion", "to_place": "Matala", "departures": ["07:30"]},
+        {"from_place": "Heraklion", "to_place": "Rethymno", "departures": ["06:00"]},
+        {"from_place": "Heraklion", "to_place": "Chania", "departures": ["06:00"]},
+    ]
+    out = _run(existing, rows)
+    # via_stops enrichi -> préservé
+    assert out[("Heraklion", "Matala")]["via_stops"] == ["Benerato", "Avgeniki", "Faistos"]
+    # via_stops null dans l'ancien -> reste null (pas d'invention)
+    assert out[("Heraklion", "Rethymno")]["via_stops"] is None
+    # route nouvelle -> via_stops null
+    assert out[("Heraklion", "Chania")]["via_stops"] is None
+
+
+def test_preserve_via_stops_does_not_overwrite_freshly_parsed():
+    """Si le scrape PDF ektel produit déjà via_stops, il ne faut pas l'écraser."""
+    existing = [
+        {"from_place": "Chania", "to_place": "Heraklion", "season": "all",
+         "departures": ["06:00"], "scraped_at": OLD,
+         "via_stops": ["Kavros", "Rethymno"]},  # ancien enrichissement
+    ]
+    rows = [
+        {"from_place": "Chania", "to_place": "Heraklion", "departures": ["06:00"],
+         "via_stops": ["Georgioupolis", "Kavros", "Rethymno", "Bali"]},  # PDF frais, plus complet
+        {"from_place": "Chania", "to_place": "Rethymno", "departures": ["07:00"]},
+        {"from_place": "Rethymno", "to_place": "Heraklion", "departures": ["08:00"]},
+    ]
+    out = _run(existing, rows)
+    # Le nouveau via_stops (plus complet) l'emporte sur l'ancien
+    assert out[("Chania", "Heraklion")]["via_stops"] == ["Georgioupolis", "Kavros", "Rethymno", "Bali"]

@@ -73,6 +73,9 @@ _STOP_ALIASES = {
     # memes terminus, seuls les horaires varient).
     "RERHYMNO": "RETHYMNO",
     "HRAKLEIO": "HERAKLION",
+    # Translittération herlas API backoffice (booking/search nameEN) :
+    # l'API utilise "IRAKLEIO" là où le HTML et la DB canonisent "HERAKLION".
+    "IRAKLEIO": "HERAKLION",
     "HRAKLEIO OLD ROAD": "HERAKLION",
     "RETHYMNO OLD ROAD": "RETHYMNO",
     "HERAKLION OLD ROAD": "HERAKLION",
