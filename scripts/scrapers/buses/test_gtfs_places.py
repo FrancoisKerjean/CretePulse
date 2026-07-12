@@ -31,3 +31,29 @@ def test_none_input_is_dropped_safely():
     # données sales (via_stops null) : pas de crash, traité comme drop
     assert status_of(None) == "drop"
     assert canonical_slug(None) is None
+
+
+# --- Lot 3 : Homographes --- Platanias CHA vs RET ---
+
+def test_platanias_maps_to_platanias_chania():
+    """Platanias (sans suffixe) = Platanias Chania (ouest Chania, le plus fréquent)."""
+    assert canonical_slug("Platanias") == "platanias-chania"
+
+
+def test_platanias_rethymno_maps_to_platanias_rethymno():
+    """Platanias Rethymno (suffixe explicite) = commune RET distincte."""
+    assert canonical_slug("Platanias Rethymno") == "platanias-rethymno"
+
+
+def test_platanias_chania_coords_in_prices():
+    """prices.py doit connaître platanias-chania (clé renommée, CHA coords)."""
+    from prices import PLACE_COORDS
+    assert "platanias-chania" in PLACE_COORDS
+    lat, lon = PLACE_COORDS["platanias-chania"]
+    assert 35.4 < lat < 35.6 and 23.8 < lon < 24.1  # ouest Chania
+
+
+def test_platanias_ambiguous_slug_removed_from_prices():
+    """La clé ambiguë 'platanias' ne doit plus exister dans prices.py."""
+    from prices import PLACE_COORDS
+    assert "platanias" not in PLACE_COORDS
