@@ -187,6 +187,63 @@ def test_get_od_pairs_returns_empty_on_error():
     assert pairs == []
 
 
+# ─── CURATED_HERLAS_VIA_STOPS ────────────────────────────────────────────────
+
+def test_curated_heraklion_ierapetra_has_pachia_ammos():
+    """HER→Ierapetra doit inclure Pachia Ammos (confirmé par ID 10276)."""
+    from ktel_api import CURATED_HERLAS_VIA_STOPS
+    stops = CURATED_HERLAS_VIA_STOPS.get(("heraklion", "ierapetra"))
+    assert stops is not None
+    assert "Pachia Ammos" in stops
+
+
+def test_curated_heraklion_siteia_has_kavoysi_and_lastros():
+    """HER→Siteia doit inclure Kavoysi et Lastros (confirmés par IDs 10275/10291)."""
+    from ktel_api import CURATED_HERLAS_VIA_STOPS
+    stops = CURATED_HERLAS_VIA_STOPS.get(("heraklion", "siteia"))
+    assert stops is not None
+    assert "Kavoysi" in stops
+    assert "Lastros" in stops
+
+
+def test_curated_routes_are_symmetric():
+    """Chaque route curatée doit avoir sa version retour."""
+    from ktel_api import CURATED_HERLAS_VIA_STOPS
+    for (f, t), stops in list(CURATED_HERLAS_VIA_STOPS.items()):
+        reverse = CURATED_HERLAS_VIA_STOPS.get((t, f))
+        assert reverse is not None, f"Pas de retour pour ({f!r}, {t!r})"
+        assert list(reversed(reverse)) == stops, f"Retour non-inversé pour ({f!r}, {t!r})"
+
+
+def test_enrich_uses_curated_for_null_via_stops():
+    """enrich_herlas_via_stops utilise CURATED pour les routes encore à None après l'API."""
+    from ktel_api import enrich_herlas_via_stops, CURATED_HERLAS_VIA_STOPS
+
+    mock_sb = MagicMock()
+    # Route HER→Ierapetra sans via_stops
+    mock_sb.table.return_value.select.return_value.eq.return_value.execute.return_value.data = [
+        {"id": 42, "from_place": "Heraklion", "to_place": "Ierapetra", "via_stops": None}
+    ]
+    # L'API ne retourne aucune paire pour cette date
+    mock_token = MagicMock()
+    mock_token.status_code = 200
+    mock_token.json.return_value = {"access_token": "tok"}
+    mock_links = MagicMock()
+    mock_links.status_code = 200
+    mock_links.json.return_value = []  # pas de paires API
+
+    with patch("ktel_api.requests.post", return_value=mock_token), \
+         patch("ktel_api.requests.get", return_value=mock_links):
+        stats = enrich_herlas_via_stops(mock_sb, "id", "secret", "2026-07-14")
+
+    # La route doit avoir été enrichie depuis la curation
+    update_calls = mock_sb.table.return_value.update.call_args_list
+    assert len(update_calls) == 1
+    updated_via = update_calls[0][0][0]["via_stops"]
+    assert "Pachia Ammos" in updated_via
+    assert stats["enriched"] == 1
+
+
 # ─── get_name_en ─────────────────────────────────────────────────────────────
 
 def test_get_name_en_returns_first_route_name():

@@ -18,6 +18,32 @@ import requests
 
 from parsers import _route_stops
 
+# Arrêts intermédiaires curatés pour les routes express herlas est-Crète.
+# Source : brute-force IDs API backoffice (12/07/2026) — chaque arrêt confirmé
+# par un booking/search HER→{destId} qui répond 200.
+# Clés en (from_place.lower(), to_place.lower()) — miroir de route_index.
+# Retour = inverse exact de l'aller (géographie linéaire est-ouest confirmée).
+_HER_IER = ["Agios Nikolaos", "Pachia Ammos", "Vasiliki", "Episkopi Ierapetras", "Kato Chorio", "Xeropigado"]
+_HER_SIT = ["Neapoli", "Agios Nikolaos", "Kavoysi", "Mochlos", "Sfaka", "Lastros"]
+_AN_IER  = ["Pachia Ammos", "Vasiliki", "Episkopi Ierapetras", "Kato Chorio", "Xeropigado"]
+_AN_SIT  = ["Kavoysi", "Mochlos", "Sfaka", "Lastros"]
+_HER_SIT_via_HER = ["Agios Nikolaos", "Kavoysi", "Mochlos", "Sfaka", "Lastros"]  # HRS→SIT
+
+CURATED_HERLAS_VIA_STOPS: dict[tuple[str, str], list[str]] = {
+    ("heraklion", "ierapetra"):     _HER_IER,
+    ("ierapetra", "heraklion"):     list(reversed(_HER_IER)),
+    ("heraklion", "siteia"):        _HER_SIT,
+    ("siteia", "heraklion"):        list(reversed(_HER_SIT)),
+    ("agios nikolaos", "ierapetra"): _AN_IER,
+    ("ierapetra", "agios nikolaos"): list(reversed(_AN_IER)),
+    ("agios nikolaos", "siteia"):   _AN_SIT,
+    ("siteia", "agios nikolaos"):   list(reversed(_AN_SIT)),
+    ("hersonisos", "siteia"):       _HER_SIT_via_HER,
+    ("siteia", "hersonisos"):       list(reversed(_HER_SIT_via_HER)),
+    ("hersonisos", "ierapetra"):    ["Agios Nikolaos"] + _AN_IER,
+    ("ierapetra", "hersonisos"):    list(reversed(["Agios Nikolaos"] + _AN_IER)),
+}
+
 _BASE = "https://backoffice.ktelherlas.gr"
 _UA = "crete.direct-bot/1.0 (+https://crete.direct)"
 _TIMEOUT_FAST = (10, 30)
@@ -165,6 +191,21 @@ def enrich_herlas_via_stops(sb, client_id: str, client_secret: str, date: str) -
             stats["enriched"] += 1
         except Exception as e:
             log.error("enrich update error route %s: %s", route["id"], e)
+            stats["errors"] += 1
+
+    # Second pass : curation manuelle pour les routes express encore à None
+    for route in routes:
+        if route.get("via_stops") is not None:
+            continue
+        key = (route["from_place"].lower(), route["to_place"].lower())
+        curated = CURATED_HERLAS_VIA_STOPS.get(key)
+        if curated is None:
+            continue
+        try:
+            sb.table("bus_routes").update({"via_stops": curated}).eq("id", route["id"]).execute()
+            stats["enriched"] += 1
+        except Exception as e:
+            log.error("curated update error route %s: %s", route["id"], e)
             stats["errors"] += 1
 
     return stats
