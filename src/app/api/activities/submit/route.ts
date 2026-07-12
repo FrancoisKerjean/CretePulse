@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
 
   const clientToken = newToken();
   const { data: inserted, error } = await supabase.from("activity_requests")
-    .insert({ ...row, ip_hash: ipHash, accept_token_hash: hashToken(clientToken) })
+    .insert({ ...row, ip_hash: ipHash, accept_token_hash: hashToken(clientToken), client_token: clientToken })
     .select("id").single();
   if (error || !inserted) {
     console.error("[activities/submit] insert error:", error?.message);

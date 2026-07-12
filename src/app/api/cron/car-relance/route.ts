@@ -8,7 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { partnerNeedsRelance, clientNeedsRelance, clientAutoCloseReason } from "@/lib/car-quotes";
-import { newToken, hashToken, siteBase } from "@/lib/car-quote";
+import { newToken, hashToken, siteBase, resolveClientToken } from "@/lib/car-quote";
 import { partnerById } from "@/lib/car-partners-db";
 
 export const dynamic = "force-dynamic";
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
   let closedByRentalStart = 0;
   let closedByClientSilence = 0;
   const { data: reqs } = await supabase.from("car_requests")
-    .select("id, status, locale, customer_email, customer_name, date_from, client_relanced_at, client_relance_count")
+    .select("id, status, locale, customer_email, customer_name, date_from, client_relanced_at, client_relance_count, client_token")
     .eq("status", "quoted");
   for (const r of reqs ?? []) {
     // Si la location commence aujourd'hui/est passée, ou si le client a ignoré
@@ -105,9 +105,12 @@ export async function GET(request: NextRequest) {
     if (!pricedCount) continue;
 
     const locale = r.locale ?? "en";
-    const clientToken = newToken();
+    // Lien d'offres STABLE : on réutilise le token client persisté (submit) au
+    // lieu de le rotationner. Rétro-compat : demande legacy sans client_token →
+    // token neuf persisté (clair + hash) pour stabiliser les emails suivants.
+    const { token: clientToken, isNew } = resolveClientToken(r.client_token);
     await supabase.from("car_requests").update({
-      accept_token_hash: hashToken(clientToken),
+      ...(isNew ? { accept_token_hash: hashToken(clientToken), client_token: clientToken } : {}),
       client_relanced_at: new Date().toISOString(),
       client_relance_count: (r.client_relance_count ?? 0) + 1,
     }).eq("id", r.id);

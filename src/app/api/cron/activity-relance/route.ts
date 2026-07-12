@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { partnerNeedsRelance, clientNeedsRelance } from "@/lib/activity-quotes";
-import { newToken, hashToken, siteBase } from "@/lib/car-quote";
+import { newToken, hashToken, siteBase, resolveClientToken } from "@/lib/car-quote";
 import { partnerById } from "@/lib/activity-partners-db";
 
 export const dynamic = "force-dynamic";
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
   // ── Passe client ─────────────────────────────────────────────────────────────
   let clientsRelanced = 0;
   const { data: reqs } = await supabase.from("activity_requests")
-    .select("id, status, locale, customer_email, customer_name, activity_date, client_relanced_at, client_relance_count")
+    .select("id, status, locale, customer_email, customer_name, activity_date, client_relanced_at, client_relance_count, client_token")
     .eq("status", "quoted");
   for (const r of reqs ?? []) {
     if (!startInFuture(r.activity_date)) continue;
@@ -75,9 +75,12 @@ export async function GET(request: NextRequest) {
     if (!pricedCount) continue;
 
     const locale = r.locale ?? "en";
-    const clientToken = newToken();
+    // Lien d'offres STABLE : réutilise le token client persisté (submit) au lieu
+    // de le rotationner. Rétro-compat : legacy sans client_token → token neuf
+    // persisté (clair + hash) pour stabiliser les emails suivants.
+    const { token: clientToken, isNew } = resolveClientToken(r.client_token);
     await supabase.from("activity_requests").update({
-      accept_token_hash: hashToken(clientToken),
+      ...(isNew ? { accept_token_hash: hashToken(clientToken), client_token: clientToken } : {}),
       client_relanced_at: new Date().toISOString(),
       client_relance_count: (r.client_relance_count ?? 0) + 1,
     }).eq("id", r.id);

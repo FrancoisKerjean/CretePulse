@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { categoryLabel, cityLabel } from "@/lib/activity-taxonomy";
-import { newToken, hashToken, siteBase } from "@/lib/car-quote";
+import { hashToken, siteBase, resolveClientToken } from "@/lib/car-quote";
 import { partnerById } from "@/lib/activity-partners-db";
 import { isActivityInclusionKey } from "@/lib/activity-inclusions";
 import { canPartnerQuote } from "@/lib/activity-quotes";
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
   if (!invite) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const { data: req } = await supabase.from("activity_requests")
-    .select("id, status, locale, category_slug, city, activity_date, customer_name, customer_email")
+    .select("id, status, locale, category_slug, city, activity_date, customer_name, customer_email, client_token")
     .eq("id", invite.request_id).maybeSingle();
   if (!req) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (!canPartnerQuote(req.status)) return NextResponse.json({ ok: true, already: true });
@@ -64,11 +64,15 @@ export async function POST(request: NextRequest) {
     await supabase.from("activity_requests").update({ status: "quoted" }).eq("id", req.id).eq("status", "sent");
   }
 
-  // Notifie le client. Le token client est rotationné (le clair n'est pas
-  // récupérable depuis le hash stocké) : nouveau token -> hash en base, clair
-  // dans l'email. Seul le dernier email « nouvelle offre » porte le lien valide.
-  const clientToken = newToken();
-  await supabase.from("activity_requests").update({ accept_token_hash: hashToken(clientToken) }).eq("id", req.id);
+  // Notifie le client. Le lien d'offres est STABLE : on réutilise le token
+  // client persisté au submit (activity_requests.client_token). Rétro-compat :
+  // demande legacy sans client_token → token neuf persisté (clair + hash).
+  const { token: clientToken, isNew } = resolveClientToken(req.client_token);
+  if (isNew) {
+    await supabase.from("activity_requests")
+      .update({ accept_token_hash: hashToken(clientToken), client_token: clientToken })
+      .eq("id", req.id);
+  }
 
   const locale = req.locale || "en";
   try {

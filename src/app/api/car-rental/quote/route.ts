@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { carPickupLabel } from "@/lib/car-lead";
-import { newToken, hashToken, siteBase } from "@/lib/car-quote";
+import { hashToken, siteBase, resolveClientToken } from "@/lib/car-quote";
 import { partnerById } from "@/lib/car-partners-db";
 import { canPartnerQuote, normalizeQuoteOptions, normalizeQuoteOption, bestOption } from "@/lib/car-quotes";
 
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
   if (!invite) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const { data: req } = await supabase.from("car_requests")
-    .select("id, status, locale, pickup_slug, date_from, date_to, car_type, customer_name, customer_email")
+    .select("id, status, locale, pickup_slug, date_from, date_to, car_type, customer_name, customer_email, client_token")
     .eq("id", invite.request_id).maybeSingle();
   if (!req) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (!canPartnerQuote(req.status)) return NextResponse.json({ ok: true, already: true });
@@ -91,11 +91,17 @@ export async function POST(request: NextRequest) {
     await supabase.from("car_requests").update({ status: "quoted" }).eq("id", req.id).eq("status", "sent");
   }
 
-  // Notifie le client. Le token client est rotationné (le clair n'est pas
-  // récupérable depuis le hash stocké) : nouveau token -> hash en base, clair
-  // dans l'email. Seul le dernier email « nouvelle offre » porte le lien valide.
-  const clientToken = newToken();
-  await supabase.from("car_requests").update({ accept_token_hash: hashToken(clientToken) }).eq("id", req.id);
+  // Notifie le client. Le lien d'offres est STABLE : on réutilise le token
+  // client persisté au submit (car_requests.client_token) pour que chaque email
+  // (chaque nouveau devis) pointe la même page. Rétro-compat : une demande
+  // legacy sans client_token frappe un token neuf, qu'on persiste alors (clair +
+  // hash) pour stabiliser les emails suivants.
+  const { token: clientToken, isNew } = resolveClientToken(req.client_token);
+  if (isNew) {
+    await supabase.from("car_requests")
+      .update({ accept_token_hash: hashToken(clientToken), client_token: clientToken })
+      .eq("id", req.id);
+  }
 
   const locale = req.locale || "en";
   try {

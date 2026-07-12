@@ -11,3 +11,14 @@ export const hashToken = (token: string): string =>
 
 export const siteBase = (): string =>
   process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
+
+/** Token client STABLE pour le lien d'offres (page /car-offer/{token}).
+ *  Généré une seule fois au submit puis réutilisé dans chaque email (nouveau
+ *  devis, relance). Le clair n'étant pas récupérable depuis le hash, on le
+ *  persiste en clair (colonne car_requests.client_token). Rétro-compat : une
+ *  demande d'avant cette colonne (existing vide/null) frappe un token neuf, que
+ *  l'appelant persiste alors pour stabiliser les emails suivants. */
+export const resolveClientToken = (
+  existing: string | null | undefined,
+): { token: string; isNew: boolean } =>
+  existing ? { token: existing, isNew: false } : { token: newToken(), isNew: true };
