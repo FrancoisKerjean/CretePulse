@@ -73,14 +73,19 @@ def get_od_pairs(token: str, date: str) -> list[tuple[int, int]]:
     if resp.status_code != 200:
         log.warning("get_od_pairs HTTP %s", resp.status_code)
         return []
+    data = resp.json()
+    # L'API retourne soit un dict {"pairs": [...]} (spike ancien),
+    # soit une liste de groupes [{title, startDate, pairs}, ...] (format réel 2026).
+    groups = data if isinstance(data, list) else [data]
     pairs = []
-    for raw in resp.json().get("pairs", []):
-        parts = raw.split(",")
-        if len(parts) == 2:
-            try:
-                pairs.append((int(parts[0]), int(parts[1])))
-            except ValueError:
-                pass
+    for group in groups:
+        for raw in (group.get("pairs", []) if isinstance(group, dict) else []):
+            parts = raw.split(",")
+            if len(parts) == 2:
+                try:
+                    pairs.append((int(parts[0]), int(parts[1])))
+                except ValueError:
+                    pass
     return pairs
 
 

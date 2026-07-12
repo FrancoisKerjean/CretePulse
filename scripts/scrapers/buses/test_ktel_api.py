@@ -154,6 +154,28 @@ def test_get_od_pairs_parses_pairs_field():
     assert len(pairs) == 3
 
 
+def test_get_od_pairs_parses_list_of_groups():
+    """L'API réelle retourne une liste de groupes {title, startDate, pairs}.
+    get_od_pairs doit aplatir les paires de tous les groupes."""
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = [
+        {"title": "BUS ROUTES TO Agia Marina", "startDate": "2026-07-15",
+         "pairs": ["10097,10149", "10149,10097"]},
+        {"title": "HER to Matala", "startDate": "2026-07-12",
+         "pairs": ["10097,10020", "10020,10097"]},
+    ]
+
+    with patch("ktel_api.requests.get", return_value=mock_resp):
+        pairs = get_od_pairs("token", "2026-07-12")
+
+    assert (10097, 10149) in pairs
+    assert (10149, 10097) in pairs
+    assert (10097, 10020) in pairs
+    assert (10020, 10097) in pairs
+    assert len(pairs) == 4
+
+
 def test_get_od_pairs_returns_empty_on_error():
     """get_od_pairs retourne [] si l'API répond 500 (fail-safe)."""
     mock_resp = MagicMock()
