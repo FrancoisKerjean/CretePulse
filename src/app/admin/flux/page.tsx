@@ -5,6 +5,7 @@
 import { notFound, redirect } from "next/navigation";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { isCarAdmin } from "@/lib/car-admin-auth";
+import { FluxMap, type FluxMapData } from "./FluxMap";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,12 @@ type ZoneRow = {
   zone: string; snapshot_date: string; listings_count: number;
   occupancy_rate_30: number | null; occupancy_rate_90: number | null;
 };
+type OdGeoRow = {
+  event_name: string; f: string; t: string; total: number;
+  f_lat: number; f_lng: number; t_lat: number; t_lng: number;
+};
+type HeatRow = { lat: number; lng: number; n: number };
+type AirportDay = { airport: string; service_date: string; flights: number; landed: number };
 type StockDay = {
   day: string; flights_in: number; flights_out: number;
   pax_in_low: number | null; pax_in_high: number | null;
@@ -57,6 +64,34 @@ function Bar({ value, max }: { value: number; max: number }) {
 const fmtDay = (iso: string) =>
   new Date(`${iso}T12:00:00Z`).toLocaleDateString("fr-FR", { weekday: "short", day: "2-digit", month: "2-digit" });
 
+// Centroïdes des zones du scrapper Airbnb (18 zones, noms = flux_zone_occupancy.zone).
+const ZONE_COORDS: Record<string, [number, number]> = {
+  agios_nikolaos: [35.19, 25.716], analipsi: [35.333, 25.351], apokoronas: [35.41, 24.23],
+  chania: [35.514, 24.018], elounda: [35.263, 25.722], gouves: [35.328, 25.293],
+  heraklion: [35.339, 25.134], hersonissos: [35.318, 25.393], ierapetra: [35.01, 25.741],
+  lasithi_plateau: [35.198, 25.48], makrigialos: [35.038, 25.973], mochlos: [35.185, 25.906],
+  pachia_ammos: [35.103, 25.815], rethymno: [35.365, 24.482], sfaka: [35.115, 25.995],
+  sitia: [35.208, 26.101], xerokambos: [35.037, 26.23], zakros: [35.108, 26.217],
+};
+
+// Coordonnées des POI suivis par wiki_interest.py ("Crete" = île entière, exclu).
+const WIKI_COORDS: Record<string, [number, number]> = {
+  Knossos: [35.298, 25.163], Elafonisi: [35.271, 23.541], Balos: [35.582, 23.588],
+  "Samariá_Gorge": [35.301, 23.962], Heraklion: [35.339, 25.134], Chania: [35.514, 24.018],
+  Rethymno: [35.365, 24.482], "Agios_Nikolaos,_Crete": [35.19, 25.716], Ierapetra: [35.01, 25.741],
+  Sitia: [35.208, 26.101], Spinalonga: [35.297, 25.744], "Matala,_Crete": [34.995, 24.749],
+  Phaistos: [35.051, 24.814], Preveli: [35.156, 24.47], Arkadi_Monastery: [35.31, 24.629],
+  Falasarna: [35.494, 23.577], Loutro: [35.199, 24.081], Elounda: [35.263, 25.722],
+  "Malia,_Crete": [35.284, 25.462], Hersonissos: [35.318, 25.393], "Vai_(Crete)": [35.254, 26.265],
+};
+
+const AIRPORT_COORDS: Record<string, [number, number]> = {
+  HER: [35.3397, 25.1803], CHQ: [35.5317, 24.1497],
+};
+const PORT_HERAKLION: [number, number] = [35.3446, 25.1355];
+
+const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+
 export default async function FluxAdminPage({
   searchParams,
 }: {
@@ -80,9 +115,12 @@ export default async function FluxAdminPage({
   let wiki: WikiRow[] = [];
   let zones: ZoneRow[] = [];
   let stock: StockDay[] = [];
+  let odGeo: OdGeoRow[] = [];
+  let heat: HeatRow[] = [];
+  let airportDays: AirportDay[] = [];
   let loadError: string | null = null;
   try {
-    const [fRes, bRes, cRes, iRes, wRes, zRes, sRes] = await Promise.all([
+    const [fRes, bRes, cRes, iRes, wRes, zRes, sRes, oRes, hRes, aRes] = await Promise.all([
       supabase.from("v_flux_flights_daily").select("*").order("service_date", { ascending: false }).limit(14),
       supabase.from("v_flux_bus_daily").select("*").order("day", { ascending: false }).limit(21),
       supabase.from("v_flux_cruise_daily").select("*").gte("call_date", today).lte("call_date", in14).order("call_date"),
@@ -90,9 +128,13 @@ export default async function FluxAdminPage({
       supabase.from("v_flux_wiki_top").select("*").order("avg_views_7d", { ascending: false }).limit(12),
       supabase.from("flux_zone_occupancy").select("*").order("snapshot_date", { ascending: false }).limit(36),
       supabase.from("v_flux_stock_daily").select("*").order("day", { ascending: false }).limit(30),
+      supabase.from("v_flux_od_geo").select("*").order("total", { ascending: false }).limit(400),
+      supabase.from("v_flux_bus_heat").select("*").order("n", { ascending: false }).limit(1500),
+      supabase.from("v_flux_flights_airport").select("*").order("service_date", { ascending: false }).limit(10),
     ]);
     loadError = fRes.error?.message ?? bRes.error?.message ?? cRes.error?.message
-      ?? iRes.error?.message ?? wRes.error?.message ?? zRes.error?.message ?? sRes.error?.message ?? null;
+      ?? iRes.error?.message ?? wRes.error?.message ?? zRes.error?.message ?? sRes.error?.message
+      ?? oRes.error?.message ?? hRes.error?.message ?? aRes.error?.message ?? null;
     flights = (fRes.data ?? []) as FlightDay[];
     bus = (bRes.data ?? []) as BusDay[];
     cruises = (cRes.data ?? []) as CruiseDay[];
@@ -100,6 +142,9 @@ export default async function FluxAdminPage({
     wiki = (wRes.data ?? []) as WikiRow[];
     zones = (zRes.data ?? []) as ZoneRow[];
     stock = ((sRes.data ?? []) as StockDay[]).sort((a, b) => a.day.localeCompare(b.day));
+    odGeo = (oRes.data ?? []) as OdGeoRow[];
+    heat = (hRes.data ?? []) as HeatRow[];
+    airportDays = (aRes.data ?? []) as AirportDay[];
   } catch (e) {
     loadError = e instanceof Error ? e.message : String(e);
   }
@@ -131,6 +176,48 @@ export default async function FluxAdminPage({
     busBySource.set(b.source, [...(busBySource.get(b.source) ?? []), b]);
   }
 
+  // Payload carte : arcs OD, densité GPS, points d'entrée dimensionnés sur le
+  // dernier jour connu par aéroport, zones Airbnb + POI wiki géocodés en dur.
+  const latestByAirport = new Map<string, AirportDay>();
+  for (const a of airportDays) {
+    if (!latestByAirport.has(a.airport)) latestByAirport.set(a.airport, a);
+  }
+  const mapData: FluxMapData = {
+    od: odGeo.map((r) => ({
+      f: r.f, t: r.t, total: r.total, zero: r.event_name === "bus_search_zero",
+      fLat: r.f_lat, fLng: r.f_lng, tLat: r.t_lat, tLng: r.t_lng,
+    })),
+    heat,
+    entries: [
+      ...[...latestByAirport.values()].map((a) => ({
+        name: `Aéroport ${a.airport}`, kind: "airport" as const,
+        lat: AIRPORT_COORDS[a.airport]?.[0] ?? 0, lng: AIRPORT_COORDS[a.airport]?.[1] ?? 0,
+        detail: `${a.flights} vols le ${fmtDay(a.service_date)} (${a.landed} posés)`,
+        size: clamp(6 + a.flights * 0.12, 8, 24),
+      })).filter((a) => a.lat !== 0),
+      ...(cruises.length ? [{
+        name: "Port Héraklion (croisières)", kind: "port" as const,
+        lat: PORT_HERAKLION[0], lng: PORT_HERAKLION[1],
+        detail: `${pax7.toLocaleString("fr-FR")} passagers attendus sous 7 j`,
+        size: clamp(6 + pax7 / 1500, 8, 24),
+      }] : []),
+    ],
+    zones: latestZones.flatMap((z) => {
+      const c = ZONE_COORDS[z.zone];
+      return c ? [{
+        zone: z.zone, lat: c[0], lng: c[1], listings: z.listings_count,
+        occ30: z.occupancy_rate_30, size: clamp(4 + Math.sqrt(z.listings_count) * 0.9, 5, 20),
+      }] : [];
+    }),
+    wiki: wiki.flatMap((w) => {
+      const c = WIKI_COORDS[w.entity];
+      return c ? [{
+        entity: w.entity, lat: c[0], lng: c[1], views: w.avg_views_7d,
+        size: clamp(3 + Math.sqrt(w.avg_views_7d) * 0.3, 4, 18),
+      }] : [];
+    }),
+  };
+
   const lastStock = stock.length ? stock[stock.length - 1] : undefined;
   const round100 = (v: number) => Math.round(v / 100) * 100;
   const fmtRange = (low: number | null, high: number | null) =>
@@ -160,6 +247,12 @@ export default async function FluxAdminPage({
         <Cell label="recherches bus 30 j" v={intentTotal30 ? String(intentTotal30) : "n/d"} />
         <Cell label="dont NON desservies" v={intentTotal30 ? String(zeroTotal30) : "n/d"} />
       </section>
+
+      <FluxMap data={mapData} />
+      <p className="mt-1 text-[10px] text-text-muted">
+        Arcs = paires origine→destination recherchées dans le planner bus (30 j), courbés selon le sens.
+        Géocodage : bus_destinations, villages, beaches, bus_stops + alias curés (~83 % du volume couvert).
+      </p>
 
       <Section
         title="Touristes présents (estimation)"

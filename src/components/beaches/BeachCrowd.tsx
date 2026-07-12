@@ -2,8 +2,8 @@
 // (redistribution des flux) sur les pages plages. Composants purs : les
 // données viennent de lib/beach-crowd (JSON précalculé), passées en props.
 // Spec : docs/SPEC-BEACHES-DATA.md (lot 2)
-import Link from "next/link";
 import { Users } from "lucide-react";
+import { QuieterAltLink } from "./QuieterAltLink";
 import type { CrowdBand, CrowdScore, QuieterAlternative } from "@/lib/beach-crowd";
 import { getLocalizedField, type Locale } from "@/lib/types";
 
@@ -62,9 +62,11 @@ export function CrowdBadge({ crowd, locale }: { crowd: CrowdScore; locale: strin
 export function QuieterAlternatives({
   alternatives,
   locale,
+  fromSlug,
 }: {
   alternatives: QuieterAlternative[];
   locale: string;
+  fromSlug: string;
 }) {
   if (alternatives.length === 0) return null;
   const L = LABELS[locale] ?? LABELS.en;
@@ -74,9 +76,12 @@ export function QuieterAlternatives({
       <p className="text-sm text-text-muted mb-4">{L.quieterIntro}</p>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {alternatives.map((a) => (
-          <Link
+          <QuieterAltLink
             key={a.beach.slug}
             href={`/${locale}/beaches/${a.beach.slug}`}
+            from={fromSlug}
+            to={a.beach.slug}
+            band={a.crowd.band}
             className="rounded-xl border border-border bg-white p-3 hover:border-sea/30 transition-all"
           >
             <p className="font-semibold text-sm">{getLocalizedField(a.beach, "name", locale as Locale)}</p>
@@ -84,7 +89,7 @@ export function QuieterAlternatives({
             <span className={`inline-block text-[10px] px-2 py-0.5 rounded-full mt-1 ${BAND_STYLES[a.crowd.band]}`}>
               {L.band[a.crowd.band]}
             </span>
-          </Link>
+          </QuieterAltLink>
         ))}
       </div>
     </section>
