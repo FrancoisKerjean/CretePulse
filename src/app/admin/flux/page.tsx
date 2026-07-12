@@ -6,14 +6,21 @@ import { notFound, redirect } from "next/navigation";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { isCarAdmin } from "@/lib/car-admin-auth";
 import { FluxMap, type FluxMapData } from "./FluxMap";
+import {
+  confidenceLabel,
+  freshnessLabel,
+  type FluxQualityItem,
+} from "@/lib/flux-data-quality";
 
 export const dynamic = "force-dynamic";
 
 type FlightDay = { service_date: string; flights: number; landed: number };
 type BusDay = { source: string; day: string; positions: number; vehicles: number };
 type CruiseDay = { call_date: string; ships: number; pax: number; ships_label: string | null };
-type IntentRow = { event_name: string; prop_key: string; prop_value: string; total: number };
+type IntentRow = { event_name: string; prop_key: string; prop_value: string; total: number; last_day: string };
 type WikiRow = { entity: string; avg_views_7d: number };
+type DayRow = { day: string };
+type UpdatedAtRow = { updated_at: string };
 type ZoneRow = {
   zone: string; snapshot_date: string; listings_count: number;
   occupancy_rate_30: number | null; occupancy_rate_90: number | null;
@@ -63,6 +70,11 @@ function Bar({ value, max }: { value: number; max: number }) {
 
 const fmtDay = (iso: string) =>
   new Date(`${iso}T12:00:00Z`).toLocaleDateString("fr-FR", { weekday: "short", day: "2-digit", month: "2-digit" });
+const addDaysIso = (iso: string, days: number) => {
+  const date = new Date(`${iso}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+};
 
 // Centroïdes des zones du scrapper Airbnb (18 zones, noms = flux_zone_occupancy.zone).
 const ZONE_COORDS: Record<string, [number, number]> = {
@@ -106,7 +118,7 @@ export default async function FluxAdminPage({
   if (!(await isCarAdmin())) notFound();
 
   const today = new Date().toISOString().slice(0, 10);
-  const in14 = new Date(Date.now() + 14 * 86400_000).toISOString().slice(0, 10);
+  const in14 = addDaysIso(today, 14);
 
   let flights: FlightDay[] = [];
   let bus: BusDay[] = [];
@@ -118,23 +130,28 @@ export default async function FluxAdminPage({
   let odGeo: OdGeoRow[] = [];
   let heat: HeatRow[] = [];
   let airportDays: AirportDay[] = [];
+  let latestWikiDay: string | undefined;
+  let latestCruiseUpdate: string | undefined;
   let loadError: string | null = null;
   try {
-    const [fRes, bRes, cRes, iRes, wRes, zRes, sRes, oRes, hRes, aRes] = await Promise.all([
+    const [fRes, bRes, cRes, iRes, wRes, zRes, sRes, oRes, hRes, aRes, wdRes, cuRes] = await Promise.all([
       supabase.from("v_flux_flights_daily").select("*").order("service_date", { ascending: false }).limit(14),
       supabase.from("v_flux_bus_daily").select("*").order("day", { ascending: false }).limit(21),
       supabase.from("v_flux_cruise_daily").select("*").gte("call_date", today).lte("call_date", in14).order("call_date"),
-      supabase.from("v_flux_intent_top").select("event_name, prop_key, prop_value, total"),
+      supabase.from("v_flux_intent_top").select("event_name, prop_key, prop_value, total, last_day"),
       supabase.from("v_flux_wiki_top").select("*").order("avg_views_7d", { ascending: false }).limit(12),
       supabase.from("flux_zone_occupancy").select("*").order("snapshot_date", { ascending: false }).limit(36),
       supabase.from("v_flux_stock_daily").select("*").order("day", { ascending: false }).limit(30),
       supabase.from("v_flux_od_geo").select("*").order("total", { ascending: false }).limit(400),
       supabase.from("v_flux_bus_heat").select("*").order("n", { ascending: false }).limit(1500),
       supabase.from("v_flux_flights_airport").select("*").order("service_date", { ascending: false }).limit(10),
+      supabase.from("flux_interest_daily").select("day").order("day", { ascending: false }).limit(1),
+      supabase.from("flux_cruise_calls").select("updated_at").order("updated_at", { ascending: false }).limit(1),
     ]);
     loadError = fRes.error?.message ?? bRes.error?.message ?? cRes.error?.message
       ?? iRes.error?.message ?? wRes.error?.message ?? zRes.error?.message ?? sRes.error?.message
-      ?? oRes.error?.message ?? hRes.error?.message ?? aRes.error?.message ?? null;
+      ?? oRes.error?.message ?? hRes.error?.message ?? aRes.error?.message
+      ?? wdRes.error?.message ?? cuRes.error?.message ?? null;
     flights = (fRes.data ?? []) as FlightDay[];
     bus = (bRes.data ?? []) as BusDay[];
     cruises = (cRes.data ?? []) as CruiseDay[];
@@ -145,6 +162,8 @@ export default async function FluxAdminPage({
     odGeo = (oRes.data ?? []) as OdGeoRow[];
     heat = (hRes.data ?? []) as HeatRow[];
     airportDays = (aRes.data ?? []) as AirportDay[];
+    latestWikiDay = ((wdRes.data ?? []) as DayRow[])[0]?.day;
+    latestCruiseUpdate = ((cuRes.data ?? []) as UpdatedAtRow[])[0]?.updated_at?.slice(0, 10);
   } catch (e) {
     loadError = e instanceof Error ? e.message : String(e);
   }
@@ -158,7 +177,7 @@ export default async function FluxAdminPage({
 
   const todayFlights = flights.find((f) => f.service_date === today);
   const busToday = bus.filter((b) => b.day === today);
-  const pax7 = cruises.filter((c) => c.call_date <= new Date(Date.now() + 7 * 86400_000).toISOString().slice(0, 10))
+  const pax7 = cruises.filter((c) => c.call_date <= addDaysIso(today, 7))
     .reduce((s, c) => s + c.pax, 0);
   const intentTotal30 = intents.filter((r) => r.event_name === "bus_search" || r.event_name === "bus_search_zero")
     .reduce((s, r) => s + r.total, 0);
@@ -225,6 +244,98 @@ export default async function FluxAdminPage({
       ? "n/d"
       : `${round100(low).toLocaleString("fr-FR")} à ${round100(high).toLocaleString("fr-FR")}`;
   const maxStockHigh = Math.max(1, ...stock.map((s) => s.stock_high ?? 0));
+  const latestFlightDay = flights.reduce<string | undefined>(
+    (latest, row) => !latest || row.service_date > latest ? row.service_date : latest,
+    undefined,
+  );
+  const latestBusDay = bus.reduce<string | undefined>(
+    (latest, row) => !latest || row.day > latest ? row.day : latest,
+    undefined,
+  );
+  const latestIntentDay = intents.reduce<string | undefined>(
+    (latest, row) => !latest || row.last_day > latest ? row.last_day : latest,
+    undefined,
+  );
+
+  const qualityItems: FluxQualityItem[] = [
+    {
+      id: "air", decision: "Combien de touristes entrent ?", source: "Vols HER + CHQ et calibration HCAA",
+      evidence: "estimé", coverage: "forte", status: "opérationnel", cadence: "10 min",
+      latestDay: latestFlightDay, confidence: 3,
+      limit: "Passagers estimés par vol ; ferries et JSH exclus.",
+      next: "Recalibrer après un mois civil complet de comptage.",
+    },
+    {
+      id: "intent", decision: "Où veulent-ils aller ?", source: "Recherches bus et Explore crete.direct",
+      evidence: "observé", coverage: "partielle", status: "opérationnel", cadence: "quotidien",
+      latestDay: latestIntentDay, confidence: 2,
+      limit: "Audience crete.direct uniquement ; intention, pas déplacement réalisé.",
+      next: "Comparer uniquement à une offre KTEL fraîche ; recalculer les zéros après chaque ingest.",
+    },
+    {
+      id: "urban-bus", decision: "Où circulent les bus urbains ?", source: "GPS Agios Nikolaos, Héraklion et Chania",
+      evidence: "observé", coverage: "partielle", status: "opérationnel", cadence: "1 à 5 min",
+      latestDay: latestBusDay, confidence: 3,
+      limit: "Véhicules observés, sans charge passagers ; interurbain KTEL absent.",
+      next: "Obtenir capacité, validation billettique ou comptages terrain.",
+    },
+    {
+      id: "airbnb", decision: "Quelles zones sont sous pression ?", source: "Calendriers Airbnb par zone",
+      evidence: "proxy", coverage: "partielle", status: "à consolider", cadence: "hebdomadaire",
+      latestDay: latestZoneDate, confidence: 1,
+      limit: "Jour fermé = réservé ou bloqué par l'hôte ; ce n'est pas un taux de réservation.",
+      next: "Calibrer sur un échantillon terrain ou une source d'occupation officielle.",
+    },
+    {
+      id: "wiki", decision: "Quels lieux attirent l'attention ?", source: "Vues Wikipedia de 22 POI",
+      evidence: "proxy", coverage: "faible", status: "à consolider", cadence: "quotidien",
+      latestDay: latestWikiDay, confidence: 1,
+      limit: "Intérêt informationnel mondial, sans preuve de présence ni origine visiteur.",
+      next: "Croiser avec recherches locales, clics itinéraire et observations terrain.",
+    },
+    {
+      id: "cruise", decision: "Quand arrivent les pics croisière ?", source: "Calendrier du port d'Héraklion",
+      evidence: "estimé", coverage: "faible", status: "à consolider", cadence: "mensuel",
+      latestDay: latestCruiseUpdate, confidence: 2,
+      limit: "Capacité annoncée, pas passagers réellement débarqués ; Souda et Agios Nikolaos absents.",
+      next: "Ajouter les ports secondaires et calibrer sur les débarquements réalisés.",
+    },
+    {
+      id: "impact", decision: "Nos recommandations changent-elles les flux ?", source: "Proxy embarquement et clics plages calmes",
+      evidence: "proxy", coverage: "faible", status: "à consolider", cadence: "hebdomadaire",
+      latestDay: "2026-07-12", confidence: 1,
+      limit: "Instrumentation récente ; clic ou consultation ne prouve pas le déplacement.",
+      next: "Premier relevé significatif le 20/07, puis calibration terrain.",
+    },
+    {
+      id: "ferries", decision: "Combien entrent par la mer ?", source: "Ferries Héraklion, Souda et Sitia",
+      evidence: "absent", coverage: "absente", status: "angle mort", cadence: "non branché",
+      confidence: 0,
+      limit: "Stock touristique aérien incomplet et biais possible sur les corridors maritimes.",
+      next: "Horaires OpenSeas ou AIS, puis calibration ELSTAT par port.",
+    },
+    {
+      id: "road", decision: "Où circulent les touristes en voiture ?", source: "Comptages routiers et flottes de location",
+      evidence: "absent", coverage: "absente", status: "angle mort", cadence: "non branché",
+      confidence: 0,
+      limit: "Mode de déplacement touristique majeur non observé.",
+      next: "Chercher les comptages publics avant un pilote agrégé avec un loueur.",
+    },
+    {
+      id: "capacity", decision: "Une zone peut-elle accueillir plus de visiteurs ?", source: "Parking, transport, eau, déchets, fragilité",
+      evidence: "absent", coverage: "absente", status: "angle mort", cadence: "non défini",
+      confidence: 0,
+      limit: "Une zone calme n'est pas nécessairement accessible ni apte à absorber un report.",
+      next: "Définir un indice de capacité avec sources publiques et terrain.",
+    },
+    {
+      id: "economy", decision: "La redistribution crée-t-elle de la valeur locale ?", source: "Dépenses locales, package et visiteurs indépendants",
+      evidence: "absent", coverage: "absente", status: "angle mort", cadence: "non branché",
+      confidence: 0,
+      limit: "Impossible de relier les flux à la rétention économique locale.",
+      next: "Extraire Banque de Grèce package/individuel, puis instrumenter les leads locaux.",
+    },
+  ];
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8">
@@ -247,6 +358,47 @@ export default async function FluxAdminPage({
         <Cell label="recherches bus 30 j" v={intentTotal30 ? String(intentTotal30) : "n/d"} />
         <Cell label="dont NON desservies" v={intentTotal30 ? String(zeroTotal30) : "n/d"} />
       </section>
+
+      <Section
+        title="Qualité et couverture des données"
+        hint="Un capteur frais peut rester un proxy faible. Confiance = qualité de la preuve ; couverture = part du phénomène observée. Ce registre empêche de transformer une estimation en fait."
+      >
+        <div className="overflow-x-auto">
+          <table className="min-w-[920px] w-full text-xs">
+            <thead>
+              <tr className="text-left text-[11px] text-text-muted">
+                <th className="pb-2 pr-3">décision</th>
+                <th className="pb-2 pr-3">source</th>
+                <th className="pb-2 pr-3">preuve</th>
+                <th className="pb-2 pr-3">confiance</th>
+                <th className="pb-2 pr-3">fraîcheur</th>
+                <th className="pb-2">limite / prochain contrôle</th>
+              </tr>
+            </thead>
+            <tbody>
+              {qualityItems.map((item) => (
+                <tr key={item.id} className="border-t border-border/60 align-top">
+                  <td className="py-2 pr-3 font-bold">{item.decision}</td>
+                  <td className="py-2 pr-3">
+                    {item.source}
+                    <div className="text-[10px] text-text-muted">couverture {item.coverage} · {item.cadence}</div>
+                  </td>
+                  <td className="py-2 pr-3">{item.evidence}</td>
+                  <td className="py-2 pr-3 font-data">{confidenceLabel(item.confidence)}</td>
+                  <td className="py-2 pr-3">{freshnessLabel(item)}</td>
+                  <td className="py-2">
+                    <div>{item.limit}</div>
+                    <div className="mt-0.5 text-[10px] text-text-muted">Contrôle : {item.next}</div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-3 text-[11px] text-text-muted">
+          Règle de lecture : une recherche sans résultat ne devient une « liaison absente » qu&apos;après vérification de la fraîcheur des horaires. Almyrida → Chania est un signal historique antérieur au correctif KTEL du 11/07, pas une carence actuelle démontrée.
+        </p>
+      </Section>
 
       <FluxMap data={mapData} />
       <p className="mt-1 text-[10px] text-text-muted">
