@@ -26,15 +26,31 @@ OTHER_LANGS = ["it", "nl", "pl", "es", "pt", "ru", "ja", "ko", "zh", "tr", "sv",
 
 
 def claude(prompt, model="haiku"):
+    """Renvoie la reponse texte, ou None si le CLI a echoue.
+    None = panne transitoire (OAuth expire, rate limit, timeout, crash) qu'il
+    NE FAUT PAS confondre avec une reponse vide/nulle : sinon on interprete une
+    panne comme "score 0 / non pertinent" et on brule tout le backlog en
+    'filtered' (le gel silencieux du contenu que le watchdog surveille)."""
     try:
         r = subprocess.run(
             ["claude", "-p", prompt, "--model", model],
             capture_output=True, text=True, timeout=180
         )
-        return r.stdout.strip()
     except Exception as e:
         print(f"    claude error: {e}")
-        return ""
+        return None
+    if r.returncode != 0:
+        err = (r.stderr or "").strip().replace("\n", " ")[:200]
+        print(f"    claude exit {r.returncode}: {err}")
+        return None
+    out = r.stdout.strip()
+    return out or None
+
+
+def claude_alive():
+    """Preflight : un appel trivial pour verifier que le CLI repond avant de
+    toucher la moindre ligne. Coupe court a la panne qui gelait le contenu."""
+    return claude("Reply with exactly: OK", "haiku") is not None
 
 
 def extract_json(raw):
@@ -69,8 +85,10 @@ Article: {text[:500]}
 Return ONLY a single number 0-10."""
 
     raw = claude(prompt, "haiku")
+    if raw is None:
+        return None  # claude injoignable -> score inconnu, surtout ne pas filtrer
     try:
-        return min(max(int(re.search(r'\d+', raw or "0").group()), 0), 10)
+        return min(max(int(re.search(r'\d+', raw).group()), 0), 10)
     except (AttributeError, ValueError):
         return 0
 
@@ -173,6 +191,10 @@ def process_article(cur, article):
 
     # 1. Relevance filter
     score = score_relevance(title, summary)
+    if score is None:
+        # Panne claude : on laisse rewritten=false pour re-tenter au prochain run.
+        print(f"  [{slug[:40]}] claude injoignable (score) -> reporte")
+        return "claude_down"
     print(f"  [{slug[:40]}] score={score}", end="", flush=True)
     time.sleep(1)
 
@@ -183,7 +205,11 @@ def process_article(cur, article):
 
     # 2. Rewrite EN
     summary_en = rewrite_en(title, summary, source_lang)
-    if not summary_en or len(summary_en) < 30:
+    if summary_en is None:
+        # Panne claude (pas un contenu court legitime) -> reporter, ne pas bruler.
+        print(" -> claude injoignable (rewrite) -> reporte")
+        return "claude_down"
+    if len(summary_en) < 30:
         cur.execute("UPDATE news SET rewritten = true, category = 'filtered' WHERE id = %s", (aid,))
         print(" -> rewrite failed")
         return "rewrite_fail"
@@ -262,6 +288,16 @@ def main():
     conn.autocommit = True
     cur = conn.cursor()
 
+    # Preflight : si claude est injoignable on sort SANS toucher une ligne.
+    # Le backlog reste rewritten=false (re-tente au prochain run), le cron log
+    # montre l'echec, et on ne gele/brule rien en silence.
+    if not claude_alive():
+        print("[palantir] ABORT: claude CLI injoignable (OAuth expire / rate limit ?). "
+              "Backlog preserve, 0 ligne touchee.")
+        cur.close()
+        conn.close()
+        sys.exit(1)
+
     cur.execute("""
         SELECT id, slug, title_en, title_fr, title_de, title_el,
                summary_en, summary_fr, summary_de, summary_el, source_lang
@@ -284,11 +320,23 @@ def main():
         conn.close()
         return
 
-    stats = {"ok": 0, "filtered": 0, "skip_empty": 0, "rewrite_fail": 0}
+    stats = {"ok": 0, "filtered": 0, "skip_empty": 0, "rewrite_fail": 0, "claude_down": 0}
+    consec_down = 0
+    aborted = False
     for article in articles:
         try:
             result = process_article(cur, article)
             stats[result] = stats.get(result, 0) + 1
+            if result == "claude_down":
+                consec_down += 1
+                if consec_down >= 3:
+                    # claude tombe en cours de run : on arrete pour preserver le
+                    # reste du backlog (rewritten=false) et signaler l'echec.
+                    print("[palantir] ABORT: 3 echecs claude consecutifs, arret.")
+                    aborted = True
+                    break
+            else:
+                consec_down = 0
         except Exception as e:
             print(f"  ERROR {article['slug'][:40]}: {e}")
 
@@ -296,6 +344,8 @@ def main():
     print(f"[palantir] Done {elapsed:.0f}s: {stats}")
     cur.close()
     conn.close()
+    if aborted:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
