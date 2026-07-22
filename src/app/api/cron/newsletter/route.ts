@@ -1,5 +1,5 @@
 // src/app/api/cron/newsletter/route.ts
-// Weekly "Crete briefing" — Monday morning digest to confirmed subscribers.
+// Weekly "Crete briefing": Monday morning digest to confirmed subscribers.
 // Builds the live swim/weather + events data once, renders the digest per
 // language, and sends to each recipient. Idempotent: a subscriber sent within
 // the last 3 days is skipped (guards against at-least-once cron retries).

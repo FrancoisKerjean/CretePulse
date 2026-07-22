@@ -2,7 +2,7 @@ import type { Beach, Event } from "./types";
 import type { ScoredBeach, SwimToday } from "./swim-today";
 import type { CityWeather } from "./weather";
 
-// Weekly "Crete briefing" digest — pure selection/shaping logic, no I/O.
+// Weekly "Crete briefing" digest: pure selection/shaping logic, no I/O.
 // The subscriber was promised (welcome email): this week's weather across the
 // monitored cities, upcoming events, and one hand-picked pointer. This module
 // turns the live swim/weather engine + events feed into that digest.

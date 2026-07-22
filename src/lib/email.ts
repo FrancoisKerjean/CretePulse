@@ -179,14 +179,14 @@ export async function sendWelcomeEmail(email: string, locale: string) {
 }
 
 // =============================================================================
-// Weekly "Crete briefing" digest — the Monday newsletter promised at signup.
+// Weekly "Crete briefing" digest: the Monday newsletter promised at signup.
 // =============================================================================
 
 const DIGEST_SUBJECTS: Record<string, string> = {
-  en: "Your Crete week — where to swim, and what's on",
-  fr: "Votre semaine en Crète — où se baigner, et quoi faire",
-  de: "Ihre Woche auf Kreta — wo schwimmen und was los ist",
-  el: "Η εβδομάδα σας στην Κρήτη — πού να κολυμπήσετε και τι γίνεται",
+  en: "Your Crete week · where to swim, and what's on",
+  fr: "Votre semaine en Crète · où se baigner, et quoi faire",
+  de: "Ihre Woche auf Kreta · wo schwimmen und was los ist",
+  el: "Η εβδομάδα σας στην Κρήτη · πού να κολυμπήσετε και τι γίνεται",
 };
 
 const DIGEST_COPY: Record<string, {
@@ -204,7 +204,7 @@ const DIGEST_COPY: Record<string, {
     sea: (n, t) => `Warmest water: ${n}, ${t}°C`,
     ratings: { calm: "calm", fair: "fair", exposed: "exposed" },
     beachesCta: "See all beaches", eventsTitle: "On this week", eventsCta: "All events",
-    noEvents: "No confirmed events this week — check back on the site.",
+    noEvents: "No confirmed events this week. Check back on the site.",
     unsub: "Unsubscribe", locale: "en-GB",
   },
   fr: {
@@ -215,7 +215,7 @@ const DIGEST_COPY: Record<string, {
     sea: (n, t) => `Eau la plus chaude : ${n}, ${t}°C`,
     ratings: { calm: "calme", fair: "correct", exposed: "exposé" },
     beachesCta: "Voir toutes les plages", eventsTitle: "Cette semaine", eventsCta: "Tous les événements",
-    noEvents: "Aucun événement confirmé cette semaine — revenez sur le site.",
+    noEvents: "Aucun événement confirmé cette semaine. Revenez sur le site.",
     unsub: "Se désinscrire", locale: "fr-FR",
   },
   de: {
@@ -226,7 +226,7 @@ const DIGEST_COPY: Record<string, {
     sea: (n, t) => `Wärmstes Wasser: ${n}, ${t}°C`,
     ratings: { calm: "ruhig", fair: "mäßig", exposed: "windig" },
     beachesCta: "Alle Strände ansehen", eventsTitle: "Diese Woche", eventsCta: "Alle Events",
-    noEvents: "Keine bestätigten Events diese Woche — schauen Sie auf der Seite vorbei.",
+    noEvents: "Keine bestätigten Events diese Woche. Schauen Sie auf der Seite vorbei.",
     unsub: "Abmelden", locale: "de-DE",
   },
   el: {
@@ -237,7 +237,7 @@ const DIGEST_COPY: Record<string, {
     sea: (n, t) => `Πιο ζεστά νερά: ${n}, ${t}°C`,
     ratings: { calm: "ήρεμα", fair: "μέτρια", exposed: "εκτεθειμένα" },
     beachesCta: "Δείτε όλες τις παραλίες", eventsTitle: "Αυτή την εβδομάδα", eventsCta: "Όλες οι εκδηλώσεις",
-    noEvents: "Καμία επιβεβαιωμένη εκδήλωση αυτή την εβδομάδα — δείτε ξανά στον ιστότοπο.",
+    noEvents: "Καμία επιβεβαιωμένη εκδήλωση αυτή την εβδομάδα. Δείτε ξανά στον ιστότοπο.",
     unsub: "Διαγραφή", locale: "el-GR",
   },
 };
@@ -326,7 +326,7 @@ export function newsletterDigestBody(
       <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:16px; padding:16px 18px;">
         <p style="margin:0; font-size:18px; font-weight:800; color:${C.text};">
           <a href="${site}/${lang}/beaches/${p.slug}" style="color:${C.text}; text-decoration:none;">${p.name}</a>
-          <span style="font-size:13px; font-weight:700; color:${C.lagoonDeep};"> — ${c.ratings[p.rating] ?? p.rating}${p.seaTemp != null ? `, ${Math.round(p.seaTemp)}°C` : ""}</span>
+          <span style="font-size:13px; font-weight:700; color:${C.lagoonDeep};"> · ${c.ratings[p.rating] ?? p.rating}${p.seaTemp != null ? `, ${Math.round(p.seaTemp)}°C` : ""}</span>
         </p>
         ${also}
         ${meta.length ? `<p style="margin:12px 0 0; color:${C.faint}; font-size:12px;">${meta.join(" · ")}</p>` : ""}
