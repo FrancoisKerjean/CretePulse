@@ -16,6 +16,8 @@ import { TimeChips } from "@/components/TimeChips";
 import { taxiFareRange } from "@/lib/taxi-fare";
 import { zoneForPickup } from "@/lib/car-partners";
 import { CarPromo } from "@/components/car-rental/CarPromo";
+import { VanPromo } from "@/components/VanPromo";
+import { vanCorridorsForPair } from "@/lib/van-corridors";
 import partnersData from "@/data/taxi-partners.json";
 import type { Locale } from "@/lib/types";
 import { JsonLd } from "@/components/JsonLd";
@@ -274,6 +276,7 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
     })
   );
   const taxiFare = taxiFareRange(sa, sb);
+  const vanCorridors = vanCorridorsForPair(sa, sb);
   if (taxiFare) {
     const busP = ref?.price_eur != null ? `${ref.price_eur.toFixed(2)} €` : null;
     faq.push(T.faqTaxi[ui](placeA, placeB, taxiFare.low, taxiFare.high, busP) as [string, string]);
@@ -388,6 +391,11 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
             compact={false}
           />
         )}
+
+        {/* Paire couverte par un corridor van.crete.direct : encart van partagé
+            (3e option transport après bus et taxi, avant le CTA voiture). */}
+        <VanPromo locale={ui} corridors={vanCorridors} source="bus-pair" />
+
 
         {/* Trajet bus complet : le CTA voiture existe mais était masqué sur ces
             pages (les plus fréquentées). Affiché APRÈS le comparatif (le bus

@@ -98,6 +98,40 @@ test("validateRegisterPayload keeps category_other when category=other", () => {
   if (r.ok) assert.equal(r.data.category_other, "Diving school");
 });
 
+// ── isSafeRedirectHost (SSRF / open-redirect guard) ─────────────────────────
+
+import { isSafeRedirectHost } from "./affiliate.ts";
+
+test("isSafeRedirectHost accepts a normal public https URL", () => {
+  assert.equal(isSafeRedirectHost("https://sunset.gr/book"), true);
+  assert.equal(isSafeRedirectHost("http://partner.example.com/x?y=1"), true);
+});
+
+test("isSafeRedirectHost rejects non-http schemes", () => {
+  assert.equal(isSafeRedirectHost("ftp://x/y"), false);
+  assert.equal(isSafeRedirectHost("file:///etc/passwd"), false);
+  assert.equal(isSafeRedirectHost("not a url"), false);
+});
+
+test("isSafeRedirectHost rejects IP literals and metadata endpoints (SSRF)", () => {
+  assert.equal(isSafeRedirectHost("http://169.254.169.254/latest/meta-data/"), false);
+  assert.equal(isSafeRedirectHost("http://127.0.0.1:8080/"), false);
+  assert.equal(isSafeRedirectHost("http://10.0.0.5/"), false);
+  assert.equal(isSafeRedirectHost("http://[::1]/"), false);
+  assert.equal(isSafeRedirectHost("http://metadata.google.internal/"), false);
+});
+
+test("isSafeRedirectHost rejects internal hostnames", () => {
+  assert.equal(isSafeRedirectHost("http://localhost/"), false);
+  assert.equal(isSafeRedirectHost("http://db.internal/"), false);
+  assert.equal(isSafeRedirectHost("http://printer.local/"), false);
+});
+
+test("validateRegisterPayload rejects an IP-literal redirect_url", () => {
+  assert.equal(validateRegisterPayload({ ...good, redirect_url: "http://169.254.169.254/" }).ok, false);
+  assert.equal(validateRegisterPayload({ ...good, redirect_url: "http://localhost:3000/" }).ok, false);
+});
+
 // ── affiliateClass segmentation ─────────────────────────────────────────────
 
 import { affiliateClass } from "./affiliate.ts";

@@ -156,7 +156,8 @@ PLACE_COORDS: dict[str, tuple[float, float]] = {
     "kavros": (35.3681, 24.2767),
     "bali": (35.4106, 24.7831),
     "plakias": (35.1894, 24.3992),
-    "platanias": (35.5158, 23.9075),
+    "platanias-chania": (35.5158, 23.9075),
+    "platanias-rethymno": (35.3947, 24.3200),   # commune RET, ~12 km ouest de Rethymno
     "agia marina": (35.5161, 23.9219),
     "kolymbari": (35.5394, 23.7800),
     "almyrida": (35.4569, 24.1614),

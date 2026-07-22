@@ -15,6 +15,8 @@
  * the backfill script and tests, but MUST NOT be called on signup.
  */
 
+import { isSafeRedirectHost } from "./affiliate";
+
 // ─── OG image extraction ────────────────────────────────────────────────────
 
 /**
@@ -377,10 +379,19 @@ export async function enrichAffiliate(opts: {
   // Description is NOT generated here — it is left NULL for the VPS Haiku worker.
   let photo_url: string | null = null;
 
+  // SSRF guard (defence in depth, registration already validates this): never
+  // fetch an internal host / IP literal / metadata endpoint.
+  if (!isSafeRedirectHost(redirectUrl)) {
+    console.error("[affiliate-enrich] refused unsafe redirect host:", redirectUrl);
+    return { photo_url: null };
+  }
+
   try {
     const resp = await fetch(redirectUrl, {
       headers: { "User-Agent": "Mozilla/5.0 (compatible; CreteDirect/1.0)" },
       signal: AbortSignal.timeout(8000),
+      // Do NOT follow a redirect that could hop to an internal target.
+      redirect: "error",
     });
     if (resp.ok) {
       const html = await resp.text();

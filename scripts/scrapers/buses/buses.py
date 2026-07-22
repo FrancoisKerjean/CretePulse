@@ -33,6 +33,7 @@ from parsers import (
 from durations import enrich_durations
 from prices import enrich_prices
 from store import replace_operator_routes, should_commit
+from ktel_api import enrich_herlas_via_stops
 
 try:
     from dotenv import load_dotenv
@@ -42,6 +43,12 @@ except Exception:
 
 SB_URL = os.environ.get("SUPABASE_URL") or os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "")
 SB_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
+# Credentials API backoffice KTEL (enrichissement via_stops herlas).
+# Requis dans .env : HERLAS_API_CLIENT_ID / HERLAS_API_CLIENT_SECRET.
+# Si absents : enrichissement sauté silencieusement (via_stops = NULL).
+# Valeurs connues (spike 18/06/2026) : ktelhlmw / khlmw!1908.
+HERLAS_API_ID = os.environ.get("HERLAS_API_CLIENT_ID", "")
+HERLAS_API_SECRET = os.environ.get("HERLAS_API_CLIENT_SECRET", "")
 UA = "crete.direct-bot/1.0 (+https://crete.direct)"
 HERLAS_INDEX = HERLAS_BASE + "/en/timetables"
 EKTEL_INDEX = EKTEL_BASE + "/en/services/dromologia"
@@ -280,6 +287,15 @@ def main():
             continue
         n = replace_operator_routes(sb, op_id, src, rows)
         log(f"OK {op_id}: {n} routes written")
+        if op_id == "herlas" and HERLAS_API_ID and HERLAS_API_SECRET:
+            try:
+                from datetime import date as _dt
+                stats = enrich_herlas_via_stops(sb, HERLAS_API_ID, HERLAS_API_SECRET,
+                                                date=_dt.today().isoformat())
+                log(f"herlas via_stops enriched: {stats['enriched']}/{stats['total']} "
+                    f"(skipped {stats['skipped']}, errors {stats['errors']})")
+            except Exception as e:
+                log(f"herlas via_stops enrichment failed (non-bloquant): {e}")
     # Référentiel GTFS (étape B) : dérive gtfs_stops + stops.txt depuis bus_routes.
     # Non bloquant : un échec ici ne doit jamais compromettre le scrape des routes.
     try:

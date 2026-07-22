@@ -10,13 +10,13 @@ import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { partnerNeedsRelance, clientNeedsRelance, clientAutoCloseReason } from "@/lib/car-quotes";
 import { newToken, hashToken, siteBase, resolveClientToken } from "@/lib/car-quote";
 import { partnerById } from "@/lib/car-partners-db";
+import { assertCron } from "@/lib/cron-auth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
-  if (request.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const denied = assertCron(request);
+  if (denied) return denied;
   const now = Date.now();
   // On ne relance pas une location déjà commencée (demande morte de fait).
   const startInFuture = (dateFrom: string | null | undefined): boolean =>

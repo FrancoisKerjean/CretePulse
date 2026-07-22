@@ -54,12 +54,15 @@ def _preserve_scraped_at(sb, operator_id: str, payload: list) -> None:
     """Fraicheur honnete : si une route a exactement les memes horaires que la
     derniere fois, on garde son `scraped_at` d'origine. Le `lastmod` du sitemap
     ne bouge alors que sur un VRAI changement, pas a chaque scrape quotidien
-    (sinon Google apprend a ignorer un site qui "crie au loup"). Fail-open :
-    si la lecture echoue, on garde le now() deja pose (comportement historique)."""
+    (sinon Google apprend a ignorer un site qui "crie au loup").
+    Aussi : preserve via_stops enrichis (API herlas) pour eviter de les perdre
+    a chaque scrape hebdo qui repart de HTML seul (via_stops=None). Si le
+    scrape frais produit deja via_stops (ektel PDF), il n'est pas ecrase.
+    Fail-open : si la lecture echoue, on garde le now() deja pose."""
     try:
         existing = (
             sb.table("bus_routes")
-            .select("from_place,to_place,season,departures,scraped_at")
+            .select("from_place,to_place,season,departures,scraped_at,via_stops")
             .eq("operator_id", operator_id)
             .execute()
             .data
@@ -69,8 +72,11 @@ def _preserve_scraped_at(sb, operator_id: str, payload: list) -> None:
     prev = {_route_key(e): e for e in existing}
     for p in payload:
         old = prev.get(_route_key(p))
-        if old and old.get("scraped_at") and _same_timetable(old, p):
-            p["scraped_at"] = old["scraped_at"]
+        if old:
+            if old.get("scraped_at") and _same_timetable(old, p):
+                p["scraped_at"] = old["scraped_at"]
+            if old.get("via_stops") is not None and p.get("via_stops") is None:
+                p["via_stops"] = old["via_stops"]
 
 
 def replace_operator_routes(sb, operator_id: str, source_url: str, rows: list) -> int:

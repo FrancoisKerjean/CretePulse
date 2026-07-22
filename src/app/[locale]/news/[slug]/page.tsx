@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { setRequestLocale } from "next-intl/server";
-import { getNewsBySlug, getLatestNews, isNewsTranslated } from "@/lib/news";
+import { getNewsBySlug, getLatestNews, isNewsTranslated, isNewsStale } from "@/lib/news";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { newsSchema, breadcrumbSchema } from "@/lib/schema";
 import { ExternalLink, Clock, ArrowLeft, Calendar, Globe } from "lucide-react";
@@ -39,7 +39,12 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     // only) so duplicate-content variants don't cannibalise the real article.
     // INDEXABLE_ROBOTS (pas undefined) : une clé robots même undefined écrase
     // le max-image-preview:large du layout, requis par Discover.
-    robots: isNewsTranslated(item, locale) ? INDEXABLE_ROBOTS : { index: false, follow: true },
+    // Plan B 22/07/2026 : news > 30 j = noindex (fenêtre indexable glissante, réévaluée
+    // à chaque revalidation ISR 48 h). 87 % du stock news n'a jamais eu d'impression
+    // GSC en 90 j ; on borne l'empreinte « scaled content » sans casser le maillage.
+    robots: isNewsStale(item.published_at) || !isNewsTranslated(item, locale)
+      ? { index: false, follow: true }
+      : INDEXABLE_ROBOTS,
     openGraph: {
       title,
       description,
