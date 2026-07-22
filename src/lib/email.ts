@@ -4,6 +4,7 @@ import { inclusionLabels, insuranceSummary } from "@/lib/car-inclusions";
 import { CAR_CHILD_SEAT_LABELS_PARTNER, type CarChildSeatKey } from "@/lib/car-child-seats";
 import { sharedOfferCopy } from "@/lib/car-offer-copy";
 import { affiliateClass } from "@/lib/affiliate";
+import type { NewsletterDigest, NewsletterLang } from "./newsletter";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -175,6 +176,216 @@ export async function sendWelcomeEmail(email: string, locale: string) {
     subject: WELCOME_SUBJECTS[lang] || WELCOME_SUBJECTS.en,
     html: welcomeBody(lang),
   });
+}
+
+// =============================================================================
+// Weekly "Crete briefing" digest — the Monday newsletter promised at signup.
+// =============================================================================
+
+const DIGEST_SUBJECTS: Record<string, string> = {
+  en: "Your Crete week — where to swim, and what's on",
+  fr: "Votre semaine en Crète — où se baigner, et quoi faire",
+  de: "Ihre Woche auf Kreta — wo schwimmen und was los ist",
+  el: "Η εβδομάδα σας στην Κρήτη — πού να κολυμπήσετε και τι γίνεται",
+};
+
+const DIGEST_COPY: Record<string, {
+  greeting: string; intro: string; weekTitle: string; rain: string;
+  swimTitle: string; alsoCalm: string; wind: (c: string, a: number, b: number) => string;
+  sea: (n: string, t: number) => string; ratings: Record<string, string>;
+  beachesCta: string; eventsTitle: string; eventsCta: string; noEvents: string;
+  unsub: string; locale: string;
+}> = {
+  en: {
+    greeting: "Your week in Crete", intro: "A quick read on where the water is calm and what's happening across the island over the next 7 days.",
+    weekTitle: "The week ahead", rain: "rain",
+    swimTitle: "Where to swim this week", alsoCalm: "Also calm right now",
+    wind: (c, a, b) => `Dominant wind ${c}, ${a}–${b} km/h`,
+    sea: (n, t) => `Warmest water: ${n}, ${t}°C`,
+    ratings: { calm: "calm", fair: "fair", exposed: "exposed" },
+    beachesCta: "See all beaches", eventsTitle: "On this week", eventsCta: "All events",
+    noEvents: "No confirmed events this week — check back on the site.",
+    unsub: "Unsubscribe", locale: "en-GB",
+  },
+  fr: {
+    greeting: "Votre semaine en Crète", intro: "Un point rapide sur les plages où l'eau est calme et ce qui se passe sur l'île dans les 7 prochains jours.",
+    weekTitle: "La météo de la semaine", rain: "pluie",
+    swimTitle: "Où se baigner cette semaine", alsoCalm: "Aussi au calme",
+    wind: (c, a, b) => `Vent dominant ${c}, ${a}–${b} km/h`,
+    sea: (n, t) => `Eau la plus chaude : ${n}, ${t}°C`,
+    ratings: { calm: "calme", fair: "correct", exposed: "exposé" },
+    beachesCta: "Voir toutes les plages", eventsTitle: "Cette semaine", eventsCta: "Tous les événements",
+    noEvents: "Aucun événement confirmé cette semaine — revenez sur le site.",
+    unsub: "Se désinscrire", locale: "fr-FR",
+  },
+  de: {
+    greeting: "Ihre Woche auf Kreta", intro: "Ein kurzer Überblick, wo das Wasser ruhig ist und was in den nächsten 7 Tagen auf der Insel los ist.",
+    weekTitle: "Das Wetter der Woche", rain: "Regen",
+    swimTitle: "Wo diese Woche schwimmen", alsoCalm: "Ebenfalls ruhig",
+    wind: (c, a, b) => `Vorherrschender Wind ${c}, ${a}–${b} km/h`,
+    sea: (n, t) => `Wärmstes Wasser: ${n}, ${t}°C`,
+    ratings: { calm: "ruhig", fair: "mäßig", exposed: "windig" },
+    beachesCta: "Alle Strände ansehen", eventsTitle: "Diese Woche", eventsCta: "Alle Events",
+    noEvents: "Keine bestätigten Events diese Woche — schauen Sie auf der Seite vorbei.",
+    unsub: "Abmelden", locale: "de-DE",
+  },
+  el: {
+    greeting: "Η εβδομάδα σας στην Κρήτη", intro: "Μια γρήγορη ματιά στο πού είναι ήρεμα τα νερά και τι συμβαίνει στο νησί τις επόμενες 7 ημέρες.",
+    weekTitle: "Ο καιρός της εβδομάδας", rain: "βροχή",
+    swimTitle: "Πού να κολυμπήσετε αυτή την εβδομάδα", alsoCalm: "Επίσης ήρεμα τώρα",
+    wind: (c, a, b) => `Επικρατέστερος άνεμος ${c}, ${a}–${b} χλμ/ώρα`,
+    sea: (n, t) => `Πιο ζεστά νερά: ${n}, ${t}°C`,
+    ratings: { calm: "ήρεμα", fair: "μέτρια", exposed: "εκτεθειμένα" },
+    beachesCta: "Δείτε όλες τις παραλίες", eventsTitle: "Αυτή την εβδομάδα", eventsCta: "Όλες οι εκδηλώσεις",
+    noEvents: "Καμία επιβεβαιωμένη εκδήλωση αυτή την εβδομάδα — δείτε ξανά στον ιστότοπο.",
+    unsub: "Διαγραφή", locale: "el-GR",
+  },
+};
+
+function eventDateLabel(iso: string, locale: string): string {
+  try {
+    return new Intl.DateTimeFormat(locale, { weekday: "short", day: "numeric", month: "short" })
+      .format(new Date(`${iso}T00:00:00`));
+  } catch {
+    return iso;
+  }
+}
+
+function weekdayLabel(iso: string, locale: string): string {
+  try {
+    return new Intl.DateTimeFormat(locale, { weekday: "short" }).format(new Date(`${iso}T00:00:00`));
+  } catch {
+    return iso.slice(5);
+  }
+}
+
+/** WMO weather code → emoji, for the at-a-glance week strip. */
+function weatherEmoji(code: number): string {
+  if (code === 0) return "☀️";
+  if (code <= 2) return "🌤️";
+  if (code === 3) return "☁️";
+  if (code === 45 || code === 48) return "🌫️";
+  if (code >= 51 && code <= 57) return "🌦️";
+  if (code >= 61 && code <= 67) return "🌧️";
+  if (code >= 71 && code <= 77) return "🌨️";
+  if (code >= 80 && code <= 82) return "🌧️";
+  if (code >= 95) return "⛈️";
+  return "🌡️";
+}
+
+/**
+ * Pure HTML body for the weekly digest. Exported so a sample can be rendered
+ * (and the layout reviewed) without hitting Resend or Supabase.
+ */
+export function newsletterDigestBody(
+  digest: NewsletterDigest,
+  lang: NewsletterLang,
+  unsubscribeUrl: string,
+): string {
+  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
+  const c = DIGEST_COPY[lang] || DIGEST_COPY.en;
+
+  let weekSection = "";
+  if (digest.week.length) {
+    const cells = digest.week
+      .map((d) => {
+        const rain = d.precipProb >= 30
+          ? `<div style="color:${C.lagoonDeep}; font-size:10px; font-weight:700;">${d.precipProb}% ${c.rain}</div>`
+          : "";
+        return `
+        <td style="text-align:center; padding:8px 4px; vertical-align:top;">
+          <div style="color:${C.muted}; font-size:11px; font-weight:700; text-transform:capitalize;">${weekdayLabel(d.date, c.locale)}</div>
+          <div style="font-size:24px; line-height:1.5;">${weatherEmoji(d.weatherCode)}</div>
+          <div style="color:${C.text}; font-size:14px; font-weight:800;">${d.tempMax}°</div>
+          <div style="color:${C.faint}; font-size:11px;">${d.tempMin}°</div>
+          ${rain}
+        </td>`;
+      })
+      .join("");
+    weekSection = `
+      <h3 style="margin:0 0 10px; color:${C.sea}; font-size:16px;">🌤️ ${c.weekTitle}</h3>
+      <div style="background:${C.night}; border-radius:16px; padding:6px 4px; margin-bottom:26px;">
+        <table style="width:100%; border-collapse:collapse; background:#ffffff; border-radius:12px;"><tr>${cells}</tr></table>
+      </div>`;
+  }
+
+  let swimSection = "";
+  if (digest.swimPick) {
+    const p = digest.swimPick;
+    const also = digest.calmBeaches.length
+      ? `<p style="margin:14px 0 0; color:${C.muted}; font-size:14px; line-height:1.6;">
+           <strong style="color:${C.text};">${c.alsoCalm}:</strong> ${digest.calmBeaches
+             .map((b) => `<a href="${site}/${lang}/beaches/${b.slug}" style="color:${C.lagoonDeep}; text-decoration:none;">${b.name}</a>`)
+             .join(" · ")}</p>`
+      : "";
+    const meta: string[] = [];
+    if (digest.wind) meta.push(c.wind(digest.wind.cardinal, digest.wind.minSpeed, digest.wind.maxSpeed));
+    if (digest.warmestSea) meta.push(c.sea(digest.warmestSea.name, Math.round(digest.warmestSea.seaTemp)));
+    swimSection = `
+      <h3 style="margin:0 0 10px; color:${C.sea}; font-size:16px;">🏖️ ${c.swimTitle}</h3>
+      <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:16px; padding:16px 18px;">
+        <p style="margin:0; font-size:18px; font-weight:800; color:${C.text};">
+          <a href="${site}/${lang}/beaches/${p.slug}" style="color:${C.text}; text-decoration:none;">${p.name}</a>
+          <span style="font-size:13px; font-weight:700; color:${C.lagoonDeep};"> — ${c.ratings[p.rating] ?? p.rating}${p.seaTemp != null ? `, ${Math.round(p.seaTemp)}°C` : ""}</span>
+        </p>
+        ${also}
+        ${meta.length ? `<p style="margin:12px 0 0; color:${C.faint}; font-size:12px;">${meta.join(" · ")}</p>` : ""}
+      </div>
+      <div style="text-align:center; margin:16px 0 26px;">${pillButton(`${site}/${lang}/beaches`, c.beachesCta, C.sea)}</div>`;
+  }
+
+  let eventsSection = "";
+  if (digest.events.length) {
+    const rows = digest.events
+      .map(
+        (e) => `
+        <tr>
+          <td style="padding:8px 0; vertical-align:top; white-space:nowrap; color:${C.terracotta}; font-weight:700; font-size:13px; width:88px;">${eventDateLabel(e.dateStart, c.locale)}</td>
+          <td style="padding:8px 0; vertical-align:top;">
+            <a href="${site}/${lang}/events/${e.slug}" style="color:${C.text}; text-decoration:none; font-weight:700; font-size:14px;">${e.title}</a>
+            ${e.location ? `<div style="color:${C.faint}; font-size:12px;">${e.location}</div>` : ""}
+          </td>
+        </tr>`,
+      )
+      .join("");
+    eventsSection = `
+      <h3 style="margin:0 0 6px; color:${C.sea}; font-size:16px;">📅 ${c.eventsTitle}</h3>
+      <table style="width:100%; border-collapse:collapse;">${rows}</table>
+      <div style="text-align:center; margin:16px 0 8px;">${pillButton(`${site}/${lang}/events`, c.eventsCta, C.terracotta)}</div>`;
+  }
+
+  const inner = `
+    <h2 style="margin:0 0 8px; color:${C.text}; font-size:20px;">${c.greeting}</h2>
+    <p style="margin:0 0 22px; color:${C.muted}; line-height:1.6; font-size:14px;">${c.intro}</p>
+    ${weekSection}
+    ${swimSection}
+    ${eventsSection || `<p style="margin:0; color:${C.faint}; font-size:13px;">${c.noEvents}</p>`}
+    <p style="margin:26px 0 0; padding-top:16px; border-top:1px solid ${C.border}; text-align:center; color:${C.faint}; font-size:11px;">
+      <a href="${unsubscribeUrl}" style="color:${C.faint}; text-decoration:underline;">${c.unsub}</a>
+    </p>`;
+
+  return kalimeraShell(inner);
+}
+
+/** Send the weekly digest to one confirmed subscriber. */
+export async function sendNewsletterDigest(
+  email: string,
+  digest: NewsletterDigest,
+  locale: string,
+): Promise<void> {
+  const lang = (["en", "fr", "de", "el"].includes(locale) ? locale : "en") as NewsletterLang;
+  const site = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
+  const token = Buffer.from(email).toString("base64");
+  const unsubscribeUrl = `${site}/api/newsletter/unsubscribe?token=${encodeURIComponent(token)}`;
+
+  const { error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: email,
+    subject: DIGEST_SUBJECTS[lang] || DIGEST_SUBJECTS.en,
+    html: newsletterDigestBody(digest, lang, unsubscribeUrl),
+    headers: { "List-Unsubscribe": `<${unsubscribeUrl}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
+  });
+  if (error) throw new Error(`Resend: ${error.message}`);
 }
 
 // =============================================================================
