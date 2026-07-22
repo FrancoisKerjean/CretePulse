@@ -12,6 +12,17 @@ export function isNewsTranslated(item: NewsItem, locale: string): boolean {
   return typeof t === "string" && t.trim().length > 0 && t.trim() !== (item.title_en || "").trim();
 }
 
+// Plan B 22/07/2026 : fenêtre indexable news bornée. Une news sans date connue est
+// traitée comme périmée (prudence : ne jamais indexer de l'indatable).
+export const NEWS_INDEXABLE_MAX_AGE_DAYS = 30;
+
+export function isNewsStale(publishedAt: string | null | undefined, now: Date = new Date()): boolean {
+  if (!publishedAt) return true;
+  const ts = Date.parse(publishedAt);
+  if (Number.isNaN(ts)) return true;
+  return now.getTime() - ts > NEWS_INDEXABLE_MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
+}
+
 // Greek Unicode range check
 function hasGreek(text: string): boolean {
   return /[\u0370-\u03FF\u1F00-\u1FFF]/.test(text);
