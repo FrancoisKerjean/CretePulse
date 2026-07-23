@@ -11,6 +11,7 @@ import {
   freshnessLabel,
   type FluxQualityItem,
 } from "@/lib/flux-data-quality";
+import { buildFluxRecommendations } from "@/lib/flux-recommendations";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,7 @@ type StockDay = {
   coef_samples: number | null; coef_measured: boolean | null;
   stock_low: number | null; stock_high: number | null;
   net_cum_low: number | null; net_cum_high: number | null;
+  measured_days_window: number | null;
 };
 
 function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
@@ -359,6 +361,17 @@ export default async function FluxAdminPage({
       next: "Instrumenter les transactions partenaires et compléter package versus individuel.",
     },
   ];
+  const recommendations = buildFluxRecommendations({
+    cruisePax7: pax7,
+    busSearches30: intentTotal30,
+    busSearchesZero30: zeroTotal30,
+    topZeroRoute: odZero[0]?.prop_value?.replace("→", " → "),
+    latestIntentDay,
+    latestBusDay,
+    stockMeasuredDays: lastStock?.measured_days_window,
+    stockLow: lastStock?.stock_low,
+    stockHigh: lastStock?.stock_high,
+  }, today);
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8">
@@ -381,6 +394,43 @@ export default async function FluxAdminPage({
         <Cell label="recherches bus 30 j" v={intentTotal30 ? String(intentTotal30) : "n/d"} />
         <Cell label="dont NON desservies" v={intentTotal30 ? String(zeroTotal30) : "n/d"} />
       </section>
+
+      <Section
+        title="Décisions recommandées"
+        hint="Moteur explicable : chaque proposition indique la preuve, l'action, le responsable et le garde-fou. Les décisions restent soumises à validation humaine."
+      >
+        <div className="grid gap-3">
+          {recommendations.map((recommendation) => (
+            <article
+              key={recommendation.id}
+              className="rounded-lg border border-border bg-foam px-4 py-3"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="text-sm font-bold">{recommendation.title}</h3>
+                <span className="rounded-full border border-border bg-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide">
+                  {recommendation.priority}
+                </span>
+              </div>
+              <p className="mt-2 text-xs">{recommendation.observation}</p>
+              <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-text-muted">Action suivante</div>
+                  <p className="mt-0.5">{recommendation.action}</p>
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-text-muted">Validation</div>
+                  <p className="mt-0.5">{recommendation.owner}</p>
+                  <p className="text-[10px] text-text-muted">Confiance {recommendation.confidence}</p>
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-text-muted">Garde-fou</div>
+                  <p className="mt-0.5">{recommendation.guardrail}</p>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </Section>
 
       <Section
         title="Qualité et couverture des données"
