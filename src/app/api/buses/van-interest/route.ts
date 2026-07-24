@@ -9,7 +9,7 @@ import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 const RL_MAX_PER_HOUR = 4;
 const RL_MAX_PER_DAY = 12;
 
-const VALID_SOURCES = new Set(["journey-no-route", "journey-indirect"]);
+const VALID_SOURCES = new Set(["journey-no-route", "journey-indirect", "route-page"]);
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SLUG_RE = /^[a-z0-9-]{2,64}$/;

@@ -21,6 +21,12 @@ const T: Record<string, Record<Locale, string>> = {
     de: "Ohne Umstieg: geteilter Van für diese Strecke",
     el: "Χωρίς αλλαγή: κοινόχρηστο βαν για αυτή τη διαδρομή",
   },
+  titleRoute: {
+    en: "Travelling as a group? Share a private van on this route",
+    fr: "Vous voyagez à plusieurs ? Partagez un van privé sur ce trajet",
+    de: "Als Gruppe unterwegs? Teilen Sie einen privaten Van auf dieser Strecke",
+    el: "Ταξιδεύετε παρέα; Μοιραστείτε ιδιωτικό βαν σε αυτή τη διαδρομή",
+  },
   lead: {
     en: "We regroup travellers on the same route to share a licensed minivan. Leave your email, we come back only when a group is forming.",
     fr: "Nous regroupons les voyageurs sur le même trajet pour partager un minibus licencié. Laissez votre email, nous vous recontactons uniquement quand un groupe se forme.",
@@ -88,13 +94,13 @@ export function VanInterest({
   toSlug: string;
   fromPlace: string;
   toPlace: string;
-  travelDate: string;
+  travelDate?: string;
   /** 0 = paire non desservie ; >=1 = uniquement en correspondance. */
   bestChanges: number;
-  source: "journey-no-route" | "journey-indirect";
+  source: "journey-no-route" | "journey-indirect" | "route-page";
 }) {
   const [email, setEmail] = useState("");
-  const [date, setDate] = useState(travelDate);
+  const [date, setDate] = useState(travelDate ?? "");
   const [pax, setPax] = useState(1);
   const [hp, setHp] = useState(""); // honeypot
   const [status, setStatus] = useState<"idle" | "sending" | "ok" | "err">("idle");
@@ -139,7 +145,10 @@ export function VanInterest({
     }
   }
 
-  const titleKey: keyof typeof T = source === "journey-indirect" ? "titleIndirect" : "title";
+  const titleKey: keyof typeof T =
+    source === "journey-indirect" ? "titleIndirect"
+    : source === "route-page" ? "titleRoute"
+    : "title";
 
   if (status === "ok") {
     return (
