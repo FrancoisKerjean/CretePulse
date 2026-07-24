@@ -49,7 +49,9 @@ describe("POST /api/stays/request", () => {
   });
 
   it("honeypot -> silent ok, no request created", async () => {
-    getListingBySlug.mockResolvedValueOnce({ id: 9, status: "published", owner_id: 1 });
+    // honeypot short-circuits BEFORE any DB lookup — do NOT queue getListingBySlug here,
+    // a leftover mockResolvedValueOnce would leak into the next test (Vitest clearAllMocks
+    // does not drain once-queues).
     const res = await POST(req({ ...good, website: "bot" }) as never);
     expect(res.status).toBe(200);
     expect(createStayRequest).not.toHaveBeenCalled();

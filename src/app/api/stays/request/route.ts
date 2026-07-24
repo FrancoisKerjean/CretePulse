@@ -14,13 +14,11 @@ import { newToken, hashToken, siteBase } from "@/lib/stays/tokens";
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const body = await request.json().catch(() => ({}));
   const v = validateStayRequest(body);
+  if (v.kind === "honeypot") return NextResponse.json({ ok: true });
   if (v.kind === "error") return NextResponse.json({ ok: false, error: v.error }, { status: v.status });
 
   const slug = typeof body.slug === "string" ? body.slug.trim() : "";
   const listing = await getListingBySlug(slug);
-
-  if (v.kind === "honeypot") return NextResponse.json({ ok: true });
-
   if (!listing || listing.status !== "published") {
     return NextResponse.json({ ok: false, error: "Not bookable" }, { status: 404 });
   }
