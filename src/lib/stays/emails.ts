@@ -26,7 +26,7 @@ export function ownerRequestBody(o: {
 }
 
 export function guestApprovedSubject(listingTitle: string): string {
-  return `Séjour accepté — ${listingTitle}, payez pour confirmer`;
+  return `Séjour accepté : ${listingTitle}, payez pour confirmer`;
 }
 
 export function guestApprovedBody(o: {
@@ -76,7 +76,7 @@ export async function sendGuestConfirmed(
 ): Promise<void> {
   await send(
     guestEmail,
-    `Réservation confirmée — ${listingTitle}`,
+    `Réservation confirmée : ${listingTitle}`,
     `<div style="font-family:Inter,Arial,sans-serif">Votre acompte est reçu, votre séjour est confirmé. Vous recevrez la demande de solde 14 jours avant l'arrivée.</div>`,
   );
 }

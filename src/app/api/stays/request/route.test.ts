@@ -49,7 +49,7 @@ describe("POST /api/stays/request", () => {
   });
 
   it("honeypot -> silent ok, no request created", async () => {
-    // honeypot short-circuits BEFORE any DB lookup — do NOT queue getListingBySlug here,
+    // honeypot short-circuits BEFORE any DB lookup, do NOT queue getListingBySlug here,
     // a leftover mockResolvedValueOnce would leak into the next test (Vitest clearAllMocks
     // does not drain once-queues).
     const res = await POST(req({ ...good, website: "bot" }) as never);

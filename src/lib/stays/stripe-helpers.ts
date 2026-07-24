@@ -26,7 +26,7 @@ export function buildCheckoutParams(
         price_data: {
           currency: "eur",
           product_data: {
-            name: `${input.listingTitle} — acompte 30%`,
+            name: `${input.listingTitle} · acompte 30%`,
             description: `${input.dateFrom} → ${input.dateTo}`,
           },
           unit_amount: Math.round(input.depositEur * 100),
