@@ -75,7 +75,9 @@ export interface StayRequest {
 /** Quote shown to the traveller. All amounts in EUR. */
 export interface StayQuote {
   nights: number;
+  /** Prix net proprietaire A LA NUIT. Le total sejour est ownerNetEur. */
   basePriceEur: number;
+  /** Frais de menage, une fois par sejour. */
   cleaningFeeEur: number;
   ownerNetEur: number;
   commissionEur: number;

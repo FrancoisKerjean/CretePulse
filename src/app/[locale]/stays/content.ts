@@ -30,7 +30,7 @@ export type StaysStrings = {
     empty: string;
     emptyOwner: string;
     feeSuffix: string;
-    perStay: string;
+    perNight: string;
   };
   listing: {
     priceLabel: string;
@@ -219,10 +219,10 @@ export const L: Record<StaysLocale, StaysStrings> = {
       empty: "No listing published yet.",
       emptyOwner: "The first listings are being onboarded.",
       feeSuffix: "plus 5 % payment fees",
-      perStay: "per stay",
+      perNight: "per night",
     },
     listing: {
-      priceLabel: "Indicative price",
+      priceLabel: "Indicative price per night",
       priceNote: "The owner confirms the final price when accepting your dates.",
       feeNote: "You pay the price shown plus 5 % payment fees.",
       requestTitle: "Request these dates",
@@ -251,8 +251,8 @@ export const L: Record<StaysLocale, StaysStrings> = {
       urlLabel: "Airbnb link",
       urlPlaceholder: "https://www.airbnb.com/rooms/...",
       emailLabel: "Your email",
-      priceLabel: "Your net price per stay",
-      priceHelp: "In euros. This is the amount you receive, before the traveller fee.",
+      priceLabel: "Your net price per night",
+      priceHelp: "In euros, per night. This is the amount you receive, before the traveller fee.",
       submit: "Create my listing",
       importing: "Importing",
       draftCreated: "Draft created. Add your private Airbnb iCal to publish.",
@@ -273,8 +273,8 @@ export const L: Record<StaysLocale, StaysStrings> = {
       h1: "A stay request",
       intro:
         "Confirm or adjust your price. crete.direct collects the payment on your behalf and pays you out through Stripe, with a 5 % commission.",
-      priceLabel: "Your net price for this stay",
-      priceHelp: "In euros. The traveller pays this amount plus 5 % payment fees.",
+      priceLabel: "Your net price per night",
+      priceHelp: "In euros, per night. The traveller pays the nights booked plus 5 % payment fees.",
       accept: "Accept and send the payment link",
       decline: "Decline",
       working: "Working",
@@ -326,10 +326,10 @@ export const L: Record<StaysLocale, StaysStrings> = {
       empty: "Aucune annonce publiée pour le moment.",
       emptyOwner: "Les premiers logements sont en cours d'intégration.",
       feeSuffix: "plus 5 % de frais de paiement",
-      perStay: "par séjour",
+      perNight: "par nuit",
     },
     listing: {
-      priceLabel: "Prix indicatif",
+      priceLabel: "Prix indicatif par nuit",
       priceNote: "Le propriétaire confirme le prix définitif en acceptant vos dates.",
       feeNote: "Vous payez le prix affiché plus 5 % de frais de paiement.",
       requestTitle: "Demander ces dates",
@@ -358,8 +358,8 @@ export const L: Record<StaysLocale, StaysStrings> = {
       urlLabel: "Lien Airbnb",
       urlPlaceholder: "https://www.airbnb.com/rooms/...",
       emailLabel: "Votre email",
-      priceLabel: "Votre prix net par séjour",
-      priceHelp: "En euros. C'est le montant que vous percevez, avant frais voyageur.",
+      priceLabel: "Votre prix net par nuit",
+      priceHelp: "En euros, par nuit. C'est le montant que vous percevez, avant frais voyageur.",
       submit: "Créer mon annonce",
       importing: "Import en cours",
       draftCreated: "Brouillon créé. Ajoutez votre iCal privé Airbnb pour publier.",
@@ -380,8 +380,8 @@ export const L: Record<StaysLocale, StaysStrings> = {
       h1: "Une demande de séjour",
       intro:
         "Confirmez ou ajustez votre prix. crete.direct encaisse pour votre compte et vous reverse via Stripe, avec une commission de 5 %.",
-      priceLabel: "Votre prix net pour ce séjour",
-      priceHelp: "En euros. Le voyageur règle ce montant plus 5 % de frais de paiement.",
+      priceLabel: "Votre prix net par nuit",
+      priceHelp: "En euros, par nuit. Le voyageur règle les nuits réservées plus 5 % de frais de paiement.",
       accept: "Accepter et envoyer le lien de paiement",
       decline: "Refuser",
       working: "Traitement en cours",
@@ -433,10 +433,10 @@ export const L: Record<StaysLocale, StaysStrings> = {
       empty: "Noch keine Unterkunft veröffentlicht.",
       emptyOwner: "Die ersten Unterkünfte werden gerade aufgenommen.",
       feeSuffix: "zuzüglich 5 % Zahlungsgebühren",
-      perStay: "pro Aufenthalt",
+      perNight: "pro Nacht",
     },
     listing: {
-      priceLabel: "Richtpreis",
+      priceLabel: "Richtpreis pro Nacht",
       priceNote: "Der Eigentümer bestätigt den Endpreis, wenn er Ihre Daten annimmt.",
       feeNote: "Sie zahlen den angezeigten Preis zuzüglich 5 % Zahlungsgebühren.",
       requestTitle: "Diese Daten anfragen",
@@ -465,8 +465,8 @@ export const L: Record<StaysLocale, StaysStrings> = {
       urlLabel: "Airbnb-Link",
       urlPlaceholder: "https://www.airbnb.com/rooms/...",
       emailLabel: "Ihre E-Mail",
-      priceLabel: "Ihr Nettopreis pro Aufenthalt",
-      priceHelp: "In Euro. Das ist der Betrag, den Sie erhalten, vor der Reisendengebühr.",
+      priceLabel: "Ihr Nettopreis pro Nacht",
+      priceHelp: "In Euro, pro Nacht. Das ist der Betrag, den Sie erhalten, vor der Reisendengebühr.",
       submit: "Inserat erstellen",
       importing: "Wird importiert",
       draftCreated:
@@ -488,7 +488,7 @@ export const L: Record<StaysLocale, StaysStrings> = {
       h1: "Eine Aufenthaltsanfrage",
       intro:
         "Bestätigen oder passen Sie Ihren Preis an. crete.direct zieht den Betrag für Sie ein und zahlt ihn über Stripe aus, mit 5 % Provision.",
-      priceLabel: "Ihr Nettopreis für diesen Aufenthalt",
+      priceLabel: "Ihr Nettopreis pro Nacht",
       priceHelp:
         "In Euro. Der Reisende zahlt diesen Betrag zuzüglich 5 % Zahlungsgebühren.",
       accept: "Annehmen und Zahlungslink senden",
@@ -542,10 +542,10 @@ export const L: Record<StaysLocale, StaysStrings> = {
       empty: "Δεν έχει δημοσιευτεί ακόμη κατάλυμα.",
       emptyOwner: "Τα πρώτα καταλύματα εντάσσονται αυτή τη στιγμή.",
       feeSuffix: "συν 5 % έξοδα πληρωμής",
-      perStay: "ανά διαμονή",
+      perNight: "ανά διανυκτέρευση",
     },
     listing: {
-      priceLabel: "Ενδεικτική τιμή",
+      priceLabel: "Ενδεικτική τιμή ανά διανυκτέρευση",
       priceNote: "Ο ιδιοκτήτης επιβεβαιώνει την τελική τιμή όταν δεχτεί τις ημερομηνίες σας.",
       feeNote: "Πληρώνετε την τιμή που εμφανίζεται συν 5 % έξοδα πληρωμής.",
       requestTitle: "Αίτημα για αυτές τις ημερομηνίες",
@@ -574,8 +574,8 @@ export const L: Record<StaysLocale, StaysStrings> = {
       urlLabel: "Σύνδεσμος Airbnb",
       urlPlaceholder: "https://www.airbnb.com/rooms/...",
       emailLabel: "Το email σας",
-      priceLabel: "Η καθαρή σας τιμή ανά διαμονή",
-      priceHelp: "Σε ευρώ. Είναι το ποσό που λαμβάνετε, πριν από τα έξοδα του ταξιδιώτη.",
+      priceLabel: "Η καθαρή σας τιμή ανά διανυκτέρευση",
+      priceHelp: "Σε ευρώ, ανά διανυκτέρευση. Είναι το ποσό που λαμβάνετε, πριν από τα έξοδα του ταξιδιώτη.",
       submit: "Δημιουργία αγγελίας",
       importing: "Γίνεται εισαγωγή",
       draftCreated:
@@ -597,7 +597,7 @@ export const L: Record<StaysLocale, StaysStrings> = {
       h1: "Ένα αίτημα διαμονής",
       intro:
         "Επιβεβαιώστε ή προσαρμόστε την τιμή σας. Το crete.direct εισπράττει για λογαριασμό σας και σας αποδίδει μέσω Stripe, με προμήθεια 5 %.",
-      priceLabel: "Η καθαρή σας τιμή για αυτή τη διαμονή",
+      priceLabel: "Η καθαρή σας τιμή ανά διανυκτέρευση",
       priceHelp: "Σε ευρώ. Ο ταξιδιώτης πληρώνει αυτό το ποσό συν 5 % έξοδα πληρωμής.",
       accept: "Αποδοχή και αποστολή συνδέσμου πληρωμής",
       decline: "Απόρριψη",

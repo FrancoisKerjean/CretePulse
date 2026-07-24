@@ -87,7 +87,7 @@ export default async function StaysIndex({ params }: { params: Promise<{ locale:
                   </h2>
                   <p className="m-0 font-data text-[15px] text-text">
                     {l.base_price_eur} €{" "}
-                    <span className="text-text-muted text-[13px]">{t.index.perStay}</span>
+                    <span className="text-text-muted text-[13px]">{t.index.perNight}</span>
                   </p>
                   <p className="m-0 text-[12.5px] text-text-muted">{t.index.feeSuffix}</p>
                 </div>

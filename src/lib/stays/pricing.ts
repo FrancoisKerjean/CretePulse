@@ -15,7 +15,13 @@ export function nightsBetween(dateFrom: string, dateTo: string): number {
 export const DEPOSIT_PCT = 0.3;
 
 export interface QuoteInput {
+  /**
+   * Prix net proprietaire A LA NUIT, en euros (colonne DB stay_listings.base_price_eur
+   * et stay_requests.quoted_price_eur). Decision Kami 25/07/2026 : le proprietaire
+   * saisit et confirme un tarif par nuit, jamais un forfait sejour.
+   */
   basePriceEur: number;
+  /** Frais de menage, factures UNE fois par sejour, jamais par nuit. */
   cleaningFeeEur: number;
   commissionRate: number;
   dateFrom: string;
@@ -24,7 +30,7 @@ export interface QuoteInput {
 
 export function computeQuote(input: QuoteInput): StayQuote {
   const nights = nightsBetween(input.dateFrom, input.dateTo);
-  const ownerNetEur = round2(input.basePriceEur + input.cleaningFeeEur);
+  const ownerNetEur = round2(input.basePriceEur * nights + input.cleaningFeeEur);
   const commissionEur = round2(ownerNetEur * (input.commissionRate / 100));
   const guestTotalEur = round2(ownerNetEur + commissionEur);
   const depositEur = round2(guestTotalEur * DEPOSIT_PCT);

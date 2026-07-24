@@ -13,7 +13,7 @@ describe("nightsBetween", () => {
 describe("computeQuote", () => {
   it("adds 5% commission on top of owner net (100 EUR/night x7)", () => {
     const q = computeQuote({
-      basePriceEur: 700,
+      basePriceEur: 100,
       cleaningFeeEur: 0,
       commissionRate: 5,
       dateFrom: "2026-07-01",
@@ -28,14 +28,38 @@ describe("computeQuote", () => {
     expect(q.applicationFeeCents).toBe(1050);
   });
 
-  it("includes cleaning fee in owner net and commission base", () => {
+  it("multiplies the nightly price by the number of nights", () => {
+    const short = computeQuote({
+      basePriceEur: 90,
+      cleaningFeeEur: 0,
+      commissionRate: 5,
+      dateFrom: "2026-09-01",
+      dateTo: "2026-09-03",
+    });
+    const long = computeQuote({
+      basePriceEur: 90,
+      cleaningFeeEur: 0,
+      commissionRate: 5,
+      dateFrom: "2026-09-01",
+      dateTo: "2026-09-05",
+    });
+    expect(short.nights).toBe(2);
+    expect(short.ownerNetEur).toBe(180);
+    expect(long.nights).toBe(4);
+    expect(long.ownerNetEur).toBe(360);
+    // Le prix a la nuit est fixe : doubler les nuits double le net proprietaire.
+    expect(long.ownerNetEur).toBe(short.ownerNetEur * 2);
+  });
+
+  it("adds the cleaning fee once per stay, not per night", () => {
     const q = computeQuote({
-      basePriceEur: 300,
+      basePriceEur: 100,
       cleaningFeeEur: 50,
       commissionRate: 5,
       dateFrom: "2026-08-01",
       dateTo: "2026-08-04",
     });
+    expect(q.nights).toBe(3);
     expect(q.ownerNetEur).toBe(350);
     expect(q.commissionEur).toBe(17.5);
     expect(q.guestTotalEur).toBe(367.5);
