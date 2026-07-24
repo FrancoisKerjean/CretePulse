@@ -20,10 +20,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const { data: owner } = await supabaseAdmin
     .from("stay_owners")
-    .select("stripe_connect_account_id")
+    .select("stripe_connect_account_id, kyc_status")
     .eq("id", listing.owner_id)
     .maybeSingle();
-  if (!owner?.stripe_connect_account_id) {
+  if (!owner?.stripe_connect_account_id || owner.kyc_status !== "complete") {
     return NextResponse.json({ ok: false, error: "Owner payout not ready" }, { status: 409 });
   }
 

@@ -32,7 +32,7 @@ describe("POST /api/stays/pay", () => {
   it("creates a destination-charge checkout session for an approved request", async () => {
     getRequestByPayHash.mockResolvedValueOnce({ id: 5, listing_id: 9, status: "approved", quoted_price_eur: 700, guest_email: "j@x.com", date_from: "2026-07-01", date_to: "2026-07-08" });
     getListingById.mockResolvedValueOnce({ id: 9, owner_id: 1, title: "Villa", cleaning_fee_eur: 0, commission_rate: 5 });
-    from.mockImplementationOnce(() => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { stripe_connect_account_id: "acct_1" } }) }) }) }));
+    from.mockImplementationOnce(() => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { stripe_connect_account_id: "acct_1", kyc_status: "complete" } }) }) }) }));
     const res = await POST(req({ token: "pay-plain", locale: "fr" }) as never);
     expect(res.status).toBe(200);
     const json = await res.json();
@@ -50,5 +50,13 @@ describe("POST /api/stays/pay", () => {
     getRequestByPayHash.mockResolvedValueOnce(null);
     const res = await POST(req({ token: "x" }) as never);
     expect(res.status).toBe(404);
+  });
+
+  it("409 when the owner KYC is not complete", async () => {
+    getRequestByPayHash.mockResolvedValueOnce({ id: 5, listing_id: 9, status: "approved", quoted_price_eur: 700, guest_email: "j@x.com", date_from: "2026-07-01", date_to: "2026-07-08" });
+    getListingById.mockResolvedValueOnce({ id: 9, owner_id: 1, title: "Villa", cleaning_fee_eur: 0, commission_rate: 5 });
+    from.mockImplementationOnce(() => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { stripe_connect_account_id: "acct_1", kyc_status: "pending" } }) }) }) }));
+    const res = await POST(req({ token: "pay-plain", locale: "fr" }) as never);
+    expect(res.status).toBe(409);
   });
 });
