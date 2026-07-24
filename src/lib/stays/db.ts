@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import type { StayListing, StayOwner, StayRequest } from "./types";
+import type { DateRange } from "./ical";
 
 export function slugify(input: string, suffix?: string): string {
   const base = input
@@ -135,4 +136,29 @@ export async function ipRateLimited(ipHashVal: string): Promise<boolean> {
   if ((await countSince(60 * 60 * 1000)) >= 4) return true;
   if ((await countSince(24 * 60 * 60 * 1000)) >= 12) return true;
   return false;
+}
+
+export async function bookedRangesForListing(listingId: number): Promise<DateRange[]> {
+  const { data } = await supabaseAdmin
+    .from("stay_availability")
+    .select("date")
+    .eq("listing_id", listingId)
+    .in("status", ["booked", "blocked_ota", "hold"])
+    .order("date", { ascending: true });
+  const dates = (data ?? []).map((r: { date: string }) => r.date).sort();
+  const ranges: DateRange[] = [];
+  for (const d of dates) {
+    const last = ranges[ranges.length - 1];
+    if (last && addDay(last.dateTo) === d) {
+      last.dateTo = addDay(d);
+    } else {
+      ranges.push({ dateFrom: d, dateTo: addDay(d) });
+    }
+  }
+  return ranges;
+}
+
+function addDay(iso: string): string {
+  const t = new Date(iso + "T00:00:00Z").getTime() + 86_400_000;
+  return new Date(t).toISOString().slice(0, 10);
 }
