@@ -6,8 +6,8 @@ const { constructEvent, insert, rpc, maybeSingle } = vi.hoisted(() => ({
   rpc: vi.fn(async () => ({ data: [{ id: 5, guest_email: "j@x.com", listing_id: 9 }], error: null })),
   maybeSingle: vi.fn(async () => ({ data: { title: "Villa" } })),
 }));
-vi.mock("@/lib/stays/stripe-helpers", async (orig) => {
-  const mod = await (orig as () => Promise<Record<string, unknown>>)();
+vi.mock("@/lib/stays/stripe-helpers", async (orig: () => Promise<Record<string, unknown>>) => {
+  const mod = await orig();
   return { ...mod, stripeClient: () => ({ webhooks: { constructEvent } }) };
 });
 vi.mock("@/lib/supabase-admin", () => ({

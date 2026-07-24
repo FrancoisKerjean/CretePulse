@@ -7,8 +7,8 @@ vi.mock("@/lib/stays/db", () => ({
   getListingById: (...a: unknown[]) => getListingById(...a),
 }));
 const sessionsCreate = vi.fn(async () => ({ id: "cs_1", url: "https://checkout/x" }));
-vi.mock("@/lib/stays/stripe-helpers", async (orig) => {
-  const mod = await (orig as () => Promise<Record<string, unknown>>)();
+vi.mock("@/lib/stays/stripe-helpers", async (orig: () => Promise<Record<string, unknown>>) => {
+  const mod = await orig();
   return {
     ...mod,
     stripeClient: () => ({ checkout: { sessions: { create: sessionsCreate } } }),
