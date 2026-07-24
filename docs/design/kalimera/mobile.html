@@ -1,0 +1,137 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Geist+Mono:wght@400;500;600&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --lagoon:#00C2D4; --lagoon-deep:#008C9E; --sea:#0B5E78; --sky:#BDEDF5; --night:#07374A;
+    --sun:#FFC83D; --terracotta:#ED7A5C; --foam:#F6FBFC; --sand:#FFF3D6; --ink:#0B3954; --muted:#5C7886;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--foam); color: var(--ink); font-family: Geist, sans-serif; margin: 0; }
+  .mono { font-family: "Geist Mono", monospace; }
+  .pad { padding: 0 18px; }
+
+  .topbar { position: sticky; top: 0; z-index: 50; background: rgba(246,251,252,.9); backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; }
+  .live { background: var(--sun); font-weight: 800; font-size: 11px; padding: 7px 12px; border-radius: 999px; }
+  .burger { width: 38px; height: 38px; border-radius: 14px; background: #fff; box-shadow: 0 6px 16px rgba(11,94,120,.12); display: flex; align-items: center; justify-content: center; font-size: 17px; }
+
+  .hero { background: linear-gradient(175deg, var(--sky), #8FE0EC 50%, var(--lagoon)); padding: 18px 18px 64px; position: relative; overflow: hidden; margin-top: -62px; padding-top: 80px; }
+  .sunball { position: absolute; top: 66px; right: -18px; width: 86px; height: 86px; border-radius: 50%; background: radial-gradient(circle at 38% 35%, #FFE08F, var(--sun) 70%); box-shadow: 0 0 50px 14px rgba(255,200,61,.42); }
+  .greet { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,.72); border-radius: 999px; padding: 7px 13px; font-size: 11.5px; font-weight: 700; color: var(--sea); }
+  .greet .pulse { width: 7px; height: 7px; border-radius: 50%; background: #14B86B; box-shadow: 0 0 0 3px rgba(20,184,107,.25); }
+  h1 { font-family: "Baloo 2"; font-weight: 800; font-size: 34px; line-height: 1.06; margin: 14px 0 8px; }
+  h1 .hl { color: #fff; text-shadow: 0 2px 14px rgba(11,94,120,.35); }
+  .sub { font-size: 14px; color: rgba(11,57,84,.78); line-height: 1.5; margin: 0 0 14px; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { background: #fff; border-radius: 14px; padding: 9px 13px; font-size: 12px; font-weight: 700; box-shadow: 0 8px 20px rgba(11,94,120,.16); }
+  .chip.cta { background: var(--ink); color: #fff; }
+  .wave-sep { display: block; width: 100%; margin: -50px 0 -2px; }
+
+  .dep-card { background: var(--night); color: #EAF7FA; border-radius: 26px; padding: 18px 20px 10px; margin: -36px 18px 0; position: relative; z-index: 5; box-shadow: 0 18px 44px rgba(7,55,74,.4); }
+  .dep-head { display: flex; justify-content: space-between; font-family: "Baloo 2"; font-weight: 700; font-size: 16px; margin-bottom: 8px; }
+  .dep-head a { color: var(--lagoon); font-size: 12px; font-family: Geist; font-weight: 700; }
+  .drow { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 11px 0; border-top: 1px solid rgba(234,247,250,.12); font-size: 12.5px; }
+  .drow .route { font-weight: 600; flex: 1; min-width: 0; }
+  .drow .route .arr { color: var(--lagoon); }
+  .drow .time { font-size: 19px; font-weight: 700; }
+  .drow .st { font-size: 10.5px; font-weight: 700; border-radius: 999px; padding: 5px 9px; white-space: nowrap; }
+  .drow .st.ok { background: rgba(20,184,107,.18); color: #43E89D; }
+  .drow .st.warn { background: rgba(255,200,61,.16); color: var(--sun); }
+
+  h2.sec { font-family: "Baloo 2"; font-weight: 800; font-size: 21px; margin: 26px 0 12px; }
+  .wrow { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; }
+  .wtile { min-width: 132px; border-radius: 20px; padding: 14px 16px; background: linear-gradient(160deg, #FFF6DE, #FFE9AE); }
+  .wtile:nth-child(2n) { background: linear-gradient(160deg, #DFF7FA, #B8EDF4); }
+  .wtile .c { font-size: 10.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--sea); }
+  .wtile .d { font-size: 34px; font-weight: 800; font-family: "Baloo 2"; }
+  .wtile .m { font-size: 11px; color: var(--muted); }
+
+  .tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .tool { border-radius: 18px; padding: 13px 12px; }
+  .tool .e { font-size: 19px; }
+  .tool .t { font-weight: 800; font-size: 12.5px; margin-top: 6px; }
+  .tool:nth-child(1) { background: #CFF3F7; } .tool:nth-child(2) { background: #FFE9CF; } .tool:nth-child(3) { background: #E4F0D5; }
+  .tool:nth-child(4) { background: #DCEBFF; } .tool:nth-child(5) { background: #FFE0D6; } .tool:nth-child(6) { background: #FFF1BF; }
+
+  .news-card { background: #fff; border-radius: 20px; padding: 4px 16px; box-shadow: 0 10px 26px rgba(11,94,120,.08); margin-bottom: 40px; }
+  .news-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(11,57,84,.07); align-items: baseline; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item .hh { font-size: 11px; color: var(--lagoon-deep); font-weight: 700; min-width: 36px; }
+  .news-item h3 { font-size: 13.5px; font-weight: 700; margin: 0; line-height: 1.35; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <svg width="104" height="17" viewBox="0 0 460 74" fill="none" stroke="#0B3954" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M38 18 a16 16 0 1 0 14 24 M38 26 a8.5 8.5 0 1 0 6 14" stroke="#00919E"/>
+    <path d="M64 52 V30 M64 38 q4 -9 13 -9"/><path d="M88 41 h22 a11.5 11.5 0 1 0 -3.4 8"/>
+    <path d="M126 14 V44 a8 8 0 0 0 8 8 M118 28 h16"/><path d="M148 41 h22 a11.5 11.5 0 1 0 -3.4 8"/>
+    <path d="M210 12 V52 M210 41 a11.5 11.5 0 1 1 -11.5 -11.5"/><path d="M228 30 V52"/>
+    <circle cx="228" cy="15.5" r="6" fill="#FFC83D" stroke="none"/>
+    <path d="M228 5.5 v3 M228 22.5 v3 M218 15.5 h3 M235 15.5 h3" stroke="#FFC83D" stroke-width="2.6"/>
+    <path d="M246 52 V30 M246 38 q4 -9 13 -9"/><path d="M270 41 h22 a11.5 11.5 0 1 0 -3.4 8"/>
+    <path d="M324 32 a11.5 11.5 0 1 0 0 17"/><path d="M340 14 V44 a8 8 0 0 0 8 8 M332 28 h16"/>
+    <path d="M196 66 q9 -7 18 0 t18 0 t18 0 t18 0 t18 0 t18 0 t18 0" stroke="#00C2D4" stroke-width="4.5"/>
+  </svg>
+  <span class="live mono">LIVE 14:20</span>
+  <span class="burger">☰</span>
+</div>
+
+<section class="hero">
+  <div class="sunball"></div>
+  <span class="greet"><span class="pulse"></span> Καλημέρα — jeu 11 juin</span>
+  <h1>La mer est <span class="hl">calme</span> à Agiofarago.</h1>
+  <p class="sub">Meltemi NW 6 km/h — la côte sud est à l'abri. Eau à 25°.</p>
+  <div class="chips mono">
+    <span class="chip cta">→ La plage du jour</span>
+    <span class="chip">☼ 27°</span>
+    <span class="chip">≈ 25° mer</span>
+  </div>
+</section>
+<svg class="wave-sep" viewBox="0 0 390 40" preserveAspectRatio="none" style="height:40px">
+  <path d="M0 22 C70 2 120 38 200 24 C280 10 330 32 390 18 L390 40 L0 40 Z" fill="#F6FBFC"/>
+</svg>
+
+<div class="dep-card">
+  <div class="dep-head">🚌 Prochains bus <a>tout →</a></div>
+  <div class="mono">
+    <div class="drow"><span class="route">Heraklion <span class="arr">→</span> Chania</span><span class="time">15:30</span><span class="st ok">70 min</span></div>
+    <div class="drow"><span class="route">Heraklion <span class="arr">→</span> Ierapetra</span><span class="time">16:45</span><span class="st ok">145 min</span></div>
+    <div class="drow"><span class="route">Chania <span class="arr">→</span> Paleochora</span><span class="time">16:00</span><span class="st warn">dernier</span></div>
+  </div>
+</div>
+
+<div class="pad">
+  <h2 class="sec">L'île, maintenant</h2>
+  <div class="wrow">
+    <div class="wtile"><div class="c">Heraklion</div><div class="d">27°</div><div class="m mono">↗ 6 km/h · mer 24°</div></div>
+    <div class="wtile"><div class="c">Chania</div><div class="d">27°</div><div class="m mono">↗ 5 km/h · mer 24°</div></div>
+    <div class="wtile"><div class="c">Ierapetra</div><div class="d">27°</div><div class="m mono">→ 2 km/h · mer 24°</div></div>
+    <div class="wtile"><div class="c">Sitia</div><div class="d">26°</div><div class="m mono">↗ 17 km/h</div></div>
+  </div>
+
+  <h2 class="sec">Les outils</h2>
+  <div class="tools">
+    <div class="tool"><div class="e">🚌</div><div class="t">Bus</div></div>
+    <div class="tool"><div class="e">🌊</div><div class="t">Baignade</div></div>
+    <div class="tool"><div class="e">🧭</div><div class="t">Explorer</div></div>
+    <div class="tool"><div class="e">✈️</div><div class="t">Aéroports</div></div>
+    <div class="tool"><div class="e">📊</div><div class="t">Airbnb</div></div>
+    <div class="tool"><div class="e">☀️</div><div class="t">Météo</div></div>
+  </div>
+
+  <h2 class="sec">Les nouvelles</h2>
+  <div class="news-card mono">
+    <div class="news-item"><span class="hh">12:40</span><h3 style="font-family:Geist">Chania Harbour: When Venetian Heritage Meets Mediterranean Charm</h3></div>
+    <div class="news-item"><span class="hh">10:15</span><h3 style="font-family:Geist">Crete Approves Funding for Rethymno Tourism Campaign</h3></div>
+    <div class="news-item"><span class="hh">08:30</span><h3 style="font-family:Geist">Greek Tourism Workers Strike June 24</h3></div>
+  </div>
+</div>
+
+</body>
+</html>

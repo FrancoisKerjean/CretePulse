@@ -1,9 +1,16 @@
-import { fetchAllCitiesWeather } from "@/lib/weather";
+import { fetchAllCitiesWeather, type CityWeather } from "@/lib/weather";
+import { setRequestLocale } from "next-intl/server";
 import { getLatestNews } from "@/lib/news";
 import { getUpcomingEvents } from "@/lib/events";
-import { HomeClient } from "@/components/home/HomeClient";
+import { getEditorialGuides, type Guide } from "@/lib/guides";
+import { buildSwimToday } from "@/lib/swim-today";
+import { getBusRoutes, type BusRoute } from "@/lib/buses";
+import { pairSlug } from "@/lib/bus-pairs";
+import { HomeClient, type SwimPickLite, type SwimSideLite } from "@/components/home/HomeClient";
 import type { NewsItem, Event, Locale } from "@/lib/types";
+import { getLocalizedField } from "@/lib/types";
 import { buildAlternates } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 7200; // 2h - reduce Supabase egress
 
@@ -30,25 +37,11 @@ const HOME_META: Record<string, { title: string; desc: string }> = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = HOME_META[locale] || HOME_META.en;
   const url = `${BASE_URL}/${locale}`;
-
-  const websiteSchema = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "Crete Direct",
-    url: BASE_URL,
-    description: m.desc,
-    inLanguage: locale,
-    potentialAction: {
-      "@type": "SearchAction",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate: `${BASE_URL}/${locale}/beaches?q={search_term_string}`,
-      },
-      "query-input": "required name=search_term_string",
-    },
-  };
+  // Aperçu social = screenshot du hero, localisé (titre FR vs EN). Voir scripts/capture-og-home.mjs.
+  const ogImage = `${BASE_URL}${locale === "fr" ? "/og-home-fr.jpg" : "/og-home.jpg"}`;
 
   return {
     title: m.title,
@@ -59,28 +52,119 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       description: m.desc,
       url,
       type: "website",
+      // Vrai screenshot du hero (cf scripts/capture-og-home.mjs), localisé.
+      // Override le défaut /api/og du layout pour le lien partagé crete.direct.
+      images: [{ url: ogImage, width: 1200, height: 630, alt: m.title }],
     },
-    other: {
-      "script:ld+json": JSON.stringify(websiteSchema),
+    twitter: {
+      card: "summary_large_image",
+      title: m.title,
+      description: m.desc,
+      images: [ogImage],
+    },
+    // WebSite + SearchAction JSON-LD is rendered as a real <script> in HomePage below
+    // (Next renders `other` as <meta>, which Google does not read as structured data).
+  };
+}
+
+function buildWebsiteSchema(locale: string, desc: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Crete Direct",
+    url: BASE_URL,
+    description: desc,
+    inLanguage: locale,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${BASE_URL}/${locale}/search?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
     },
   };
 }
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
+  const m = HOME_META[locale] || HOME_META.en;
+  const websiteSchema = buildWebsiteSchema(locale, m.desc);
 
-  const [cities, latestNews, upcomingEvents] = await Promise.all([
-    fetchAllCitiesWeather(),
+  const [cities, latestNews, upcomingEvents, latestGuides, swim, busRoutes] = await Promise.all([
+    fetchAllCitiesWeather().catch((): CityWeather[] => []),
     getLatestNews(8, locale).catch((): NewsItem[] => []),
     getUpcomingEvents(5).catch((): Event[] => []),
+    getEditorialGuides(12).catch((): Guide[] => []),
+    buildSwimToday().catch(() => null),
+    getBusRoutes().catch((): BusRoute[] => []),
   ]);
 
+  // Routes des liaisons principales pour le board nuit (DepBoard trie/dedup).
+  const boardPairs = new Set(
+    [
+      ["Heraklion", "Chania"],
+      ["Heraklion", "Ierapetra"],
+      ["Chania", "Paleochora"],
+      ["Heraklion", "Agios Nikolaos"],
+      ["Heraklion", "Siteia"],
+      ["Ierapetra", "Makry Gyalos"],
+    ]
+      .map(([a, b]) => pairSlug(a, b))
+      .filter((s): s is string => s !== null),
+  );
+  const boardRoutes = busRoutes.filter((r) => {
+    const p = pairSlug(r.from_place, r.to_place);
+    return p !== null && boardPairs.has(p);
+  });
+
+  // Extrait serialisable de la preco baignade du jour (le SwimToday complet
+  // est lourd : cities + scored ~500 plages, inutile cote client).
+  const uiLoc = (["en", "fr", "de", "el"].includes(locale) ? locale : "en") as Locale;
+  const swimPick: SwimPickLite | null = swim
+    ? {
+        name: getLocalizedField(swim.pick.beach, "name", uiLoc),
+        slug: swim.pick.beach.slug,
+        imageUrl: swim.pick.imageUrl,
+        rating: swim.pick.rating,
+        windSpeed: swim.pick.windSpeed,
+        windCardinal: swim.pick.windCardinal,
+        windDir: swim.pick.city.windDir,
+        seaTemp: swim.pick.seaTemp,
+        region: swim.pick.beach.region ?? null,
+        cityName: swim.pick.city.name,
+        lat: swim.pick.beach.latitude,
+        lng: swim.pick.beach.longitude,
+      }
+    : null;
+
+  // 2 alternatives pour les cartes laterales du bloc baignade.
+  const swimSides: SwimSideLite[] = swim
+    ? swim.scored
+        .filter((s) => s.beach.slug !== swim.pick.beach.slug)
+        .slice(0, 2)
+        .map((s) => ({
+          name: getLocalizedField(s.beach, "name", uiLoc),
+          slug: s.beach.slug,
+          imageUrl: s.imageUrl,
+          rating: s.rating,
+        }))
+    : [];
+
   return (
-    <HomeClient
-      cities={cities}
-      latestNews={latestNews}
-      upcomingEvents={upcomingEvents}
-      locale={locale}
-    />
+    <>
+      <JsonLd data={websiteSchema} />
+      <HomeClient
+        cities={cities}
+        latestNews={latestNews}
+        upcomingEvents={upcomingEvents}
+        latestGuides={latestGuides}
+        swimPick={swimPick}
+        swimSides={swimSides}
+        boardRoutes={boardRoutes}
+        locale={locale}
+      />
+    </>
   );
 }

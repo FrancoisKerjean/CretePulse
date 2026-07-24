@@ -1,4 +1,11 @@
 {
+  "activityNudge": {
+    "close": "Bezárás",
+    "title": "Még bizonytalan vagy?",
+    "subtitle": "Lapozd át Kréta legjobb helyeit, és találd meg a hozzád illőt.",
+    "dismiss": "Később",
+    "cta": "Kezdődhet a lapozás"
+  },
   "meta": {
     "title": "Crete Direct - Mi történik Krétán",
     "description": "Időjárás, események, strandok, helyi hírek. Minden Krétáról, óránként frissítve. Ingyenes, többnyelvű."
@@ -47,7 +54,63 @@
     "updatedAt": "Frissítve {time} helyi idő szerint",
     "noEvents": "Nincs közelgő esemény.",
     "submitEvent": "Küld be egyet?",
-    "newsFeedLoading": "Hírek betöltése. 3 óránként frissül."
+    "newsFeedLoading": "Hírek betöltése. 3 óránként frissül.",
+    "guidesSectionTitle": "Útikalauzok",
+    "guidesSectionSubtitle": "Strandok, túrák, étel, élet Krétán. Helyszínen ellenőrizve.",
+    "allGuides": "Összes útikalauz",
+    "editorialGuides": "Szerkesztői útmutatók",
+    "heroTitle": "Kréta, ma",
+    "carRentalKicker": "Autóbérlés",
+    "carRentalTitle": "A te autód Kréta felfedezéséhez",
+    "carRentalSub": "Helyi iroda, tisztességes ár, előlegfizetés nélkül. Ajánlat 4 koppintással, reptéri átvétel lehetséges.",
+    "carRentalCta": "Kérj ajánlatot",
+    "heroMain": {
+      "pre": "Strandok, buszok, időjárás.",
+      "hl": "Kréta, élőben."
+    },
+    "heroToday": "Ma a tenger {rating} itt: {name}. Figyeljük a szelet, a tengert és a buszokat helyetted, egész nap.",
+    "liveFromIsland": "élőben a szigetről",
+    "heroSub": "Élőben számolva · 10 időjárás-állomás × 500 strand tájolása.",
+    "ctaBeach": "Mutasd a mai strandot",
+    "air": "levegő",
+    "sea": "tenger",
+    "islandNow": "A sziget, most",
+    "allStations": "Összes állomás",
+    "swimToday": "Hol fürödj ma",
+    "allBeaches": "Mind az 500 strand",
+    "todaysPick": "a mai tipp",
+    "toolsTitle": "Az eszközök",
+    "ratings": {
+      "calm": "nyugodt",
+      "fair": "elfogadható",
+      "exposed": "kitett"
+    },
+    "seaStates": {
+      "calm": "nyugodt",
+      "ok": "fürdés oké",
+      "rough": "hullámos"
+    },
+    "regions": {
+      "south": "Déli part",
+      "west": "Nyugati part",
+      "east": "Keleti part",
+      "central": "Középső part"
+    },
+    "tools": {
+      "buses": "Buszok",
+      "busesLine": "Menetrend & árak",
+      "swim": "Fürdés",
+      "swimLine": "500 strand élőben",
+      "explore": "Felfedezés",
+      "exploreLine": "2 296 hely",
+      "airports": "Repterek",
+      "airportsLine": "Forgalom & szezonok",
+      "airbnb": "Airbnb adatok",
+      "airbnbLine": "Árak régiónként",
+      "weather": "Időjárás",
+      "weatherLine": "10 állomás + tenger"
+    },
+    "nextEvents": "Közelgő események"
   },
   "footer": {
     "about": "Ingyenes, független Kréta-útmutató. Élő adatok. Nincs reklám (egyelőre). Nincs nyomon követés.",
@@ -66,11 +129,65 @@
     "weather": "Időjárás",
     "rights": "Minden jog fenntartva.",
     "madeIn": "Krétán készült",
-    "propertyManagement": "Ingatlankezelés"
+    "airports": "Repülőterek",
+    "ourProject": "A projektünk",
+    "taglineLong": "Gyakorlati útitársad Krétán. Élő adatok, ingyenes, független. A szigeten készült.",
+    "plan": "Tervezés",
+    "discover": "Felfedezés",
+    "info": "Infó"
   },
   "common": {
     "readMore": "Tovább olvasom",
     "seeAll": "Összes megtekintése",
     "back": "Vissza"
+  },
+  "nextDeparture": {
+    "next": "Következő járat",
+    "inMin": "{m} perc múlva",
+    "tomorrow": "Első busz holnap"
+  },
+  "depBoard": {
+    "title": "Következő buszok",
+    "plan": "Útvonal tervezése",
+    "inMin": "{m} perc múlva",
+    "last": "ma az utolsó",
+    "tomorrow": "holnap",
+    "routeAria": "Menetrend: {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "Indulások",
+    "nearMe": "A közelemben",
+    "tomorrow": "holnap",
+    "later": "Későbbi indulások mutatása",
+    "none": "Itt nincs találat indulásra.",
+    "in": "múlva:",
+    "min": "perc",
+    "hr": "ó"
+  },
+  "pushBell": {
+    "cta": "Busz- és sürgős Kréta-értesítések kérése",
+    "on": "Értesítések bekapcsolva",
+    "blocked": "Az értesítések le vannak tiltva a böngésződben.",
+    "iosInstall": "Buszértesítések: add hozzá az oldalt a kezdőképernyődhöz (Megosztás, majd Hozzáadás a kezdőképernyőhöz) az engedélyezéshez."
+  },
+  "timeChips": {
+    "legend": "következő indulás · a múltbeli időpontok halványítva"
+  },
+  "busInCreteBox": {
+    "heading": "Közlekedés Krétán busszal",
+    "connector": "ide:"
+  },
+  "installBanner": {
+    "title": "Kréta mindig nálad",
+    "body": "Élő buszok és strandok, offline is.",
+    "cta": "Telepítés",
+    "later": "Most nem",
+    "ios": "Koppints a Megosztásra, majd „Hozzáadás a kezdőképernyőhöz”."
+  },
+  "tabBar": {
+    "map": "Térkép",
+    "buses": "Buszok",
+    "beaches": "Strandok",
+    "quote": "Ajánlat"
   }
 }

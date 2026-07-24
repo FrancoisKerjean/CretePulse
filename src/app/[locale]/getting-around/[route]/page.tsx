@@ -1,9 +1,25 @@
 import Link from "next/link";
+import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { ChevronLeft, Bus, Car, Ship, Plane, Clock, Euro, RefreshCw, Lightbulb, ArrowRight } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
+import { CarPromo } from "@/components/car-rental/CarPromo";
+import { ShareBar } from "@/components/ShareBar";
 
-export const revalidate = 86400;
+// Map slug de route -> slug de pickup pour pre-remplir le wizard interne quand
+// la destination est dans une zone servie par un loueur partenaire. Depuis le
+// 08/07 (decision Kami) on ne pousse QUE le wizard interne : hors de cette map,
+// le CTA s'affiche quand meme mais ouvre le wizard a l'etape 1 (Zorbas couvrant
+// toute la Crete, il y a toujours un loueur).
+const CAR_PARTNER_PICKUP: Record<string, string> = {
+  "chania-airport-to-city": "chania-airport",
+  "heraklion-to-chania": "chania",
+  "heraklion-to-rethymno": "rethymno",
+  "heraklion-airport-to-city": "heraklion",
+};
+
+export const revalidate = 172800; // 03/07 optim couts Vercel (48h, ISR Writes)
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
@@ -35,7 +51,7 @@ const ROUTES: Route[] = [
       { mode: "car", duration: "2h", price: "\u20ac30-50/day rental", frequency: "Anytime", notes: { en: "Scenic drive along the E75/A90 highway. Well-maintained road.", fr: "Route panoramique le long de l\u2019autoroute E75/A90.", de: "Malerische Fahrt entlang der E75/A90.", el: "\u0393\u03c1\u03b1\u03c6\u03b9\u03ba\u03ae \u03b4\u03b9\u03b1\u03b4\u03c1\u03bf\u03bc\u03ae \u03ba\u03b1\u03c4\u03ac \u03bc\u03ae\u03ba\u03bf\u03c2 \u03c4\u03b7\u03c2 \u039595/\u039190." } },
       { mode: "taxi", duration: "2h", price: "\u20ac150-180", frequency: "On demand", notes: { en: "Private transfer. Book in advance for fixed price.", fr: "Transfert priv\u00e9. R\u00e9servez \u00e0 l\u2019avance.", de: "Privattransfer. Im Voraus buchen.", el: "\u0399\u03b4\u03b9\u03c9\u03c4\u03b9\u03ba\u03ae \u03bc\u03b5\u03c4\u03b1\u03c6\u03bf\u03c1\u03ac. \u039a\u03bb\u03b5\u03af\u03c3\u03c4\u03b5 \u03b5\u03ba \u03c4\u03c9\u03bd \u03c0\u03c1\u03bf\u03c4\u03ad\u03c1\u03c9\u03bd." } },
     ],
-    tips: { en: ["Book KTEL tickets online at e-ktel.com", "The bus stops in Rethymno (15 min break)", "Car rental is the most flexible option", "Drive time is shorter than the bus"], fr: ["R\u00e9servez les billets KTEL en ligne sur e-ktel.com", "Le bus s\u2019arr\u00eate \u00e0 R\u00e9thymnon (15 min pause)", "La location de voiture est la plus flexible"], de: ["Buchen Sie KTEL-Tickets online auf e-ktel.com", "Der Bus h\u00e4lt in Rethymno (15 Min Pause)", "Mietwagen ist am flexibelsten"], el: ["\u039a\u03bb\u03b5\u03af\u03c3\u03c4\u03b5 \u03b5\u03b9\u03c3\u03b9\u03c4\u03ae\u03c1\u03b9\u03b1 \u039a\u03a4\u0395\u039b online", "\u03a4\u03bf \u03bb\u03b5\u03c9\u03c6\u03bf\u03c1\u03b5\u03af\u03bf \u03c3\u03c4\u03b1\u03bc\u03b1\u03c4\u03ac \u03c3\u03c4\u03bf \u03a1\u03ad\u03b8\u03c5\u03bc\u03bd\u03bf", "\u0395\u03bd\u03bf\u03b9\u03ba\u03af\u03b1\u03c3\u03b7 \u03b1\u03c5\u03c4\u03bf\u03ba\u03b9\u03bd\u03ae\u03c4\u03bf\u03c5 \u03c0\u03b9\u03bf \u03b5\u03c5\u03ad\u03bb\u03b9\u03ba\u03c4\u03b7"] },
+    tips: { en: ["Book KTEL tickets in advance", "The bus stops in Rethymno (15 min break)", "Car rental is the most flexible option", "Drive time is shorter than the bus"], fr: ["R\u00e9servez les billets KTEL à l’avance", "Le bus s\u2019arr\u00eate \u00e0 R\u00e9thymnon (15 min pause)", "La location de voiture est la plus flexible"], de: ["Buchen Sie KTEL-Tickets im Voraus", "Der Bus h\u00e4lt in Rethymno (15 Min Pause)", "Mietwagen ist am flexibelsten"], el: ["\u039a\u03bb\u03b5\u03af\u03c3\u03c4\u03b5 \u03b5\u03b9\u03c3\u03b9\u03c4\u03ae\u03c1\u03b9\u03b1 \u039a\u03a4\u0395\u039b \u03b5\u03ba \u03c4\u03c9\u03bd \u03c0\u03c1\u03bf\u03c4\u03ad\u03c1\u03c9\u03bd", "\u03a4\u03bf \u03bb\u03b5\u03c9\u03c6\u03bf\u03c1\u03b5\u03af\u03bf \u03c3\u03c4\u03b1\u03bc\u03b1\u03c4\u03ac \u03c3\u03c4\u03bf \u03a1\u03ad\u03b8\u03c5\u03bc\u03bd\u03bf", "\u0395\u03bd\u03bf\u03b9\u03ba\u03af\u03b1\u03c3\u03b7 \u03b1\u03c5\u03c4\u03bf\u03ba\u03b9\u03bd\u03ae\u03c4\u03bf\u03c5 \u03c0\u03b9\u03bf \u03b5\u03c5\u03ad\u03bb\u03b9\u03ba\u03c4\u03b7"] },
   },
   {
     slug: "heraklion-to-rethymno",
@@ -115,6 +131,31 @@ const RELATED: Record<string, string[]> = {
   "athens-to-crete": ["heraklion-airport-to-city", "chania-airport-to-city", "crete-to-santorini"],
   "crete-to-santorini": ["athens-to-crete", "heraklion-airport-to-city", "heraklion-to-chania"],
   "heraklion-to-sitia": ["heraklion-to-agios-nikolaos", "heraklion-to-chania", "heraklion-airport-to-city"],
+};
+
+/* ------------------------------------------------------------------ */
+/*  Airport data pages (contextual interlinking to /airport/[slug])    */
+/* ------------------------------------------------------------------ */
+
+const AIRPORT_DATA_LINK: Record<string, { airportSlug: string; labels: Record<string, string> }> = {
+  "heraklion-airport-to-city": {
+    airportSlug: "heraklion",
+    labels: {
+      en: "Heraklion Airport in numbers: monthly passenger data",
+      fr: "L’aéroport d’Héraklion en chiffres : données passagers mensuelles",
+      de: "Flughafen Heraklion in Zahlen: monatliche Passagierdaten",
+      el: "Το αεροδρόμιο Ηρακλείου σε αριθμούς: μηνιαία στοιχεία επιβατών",
+    },
+  },
+  "chania-airport-to-city": {
+    airportSlug: "chania",
+    labels: {
+      en: "Chania Airport in numbers: monthly passenger data",
+      fr: "L’aéroport de La Canée en chiffres : données passagers mensuelles",
+      de: "Flughafen Chania in Zahlen: monatliche Passagierdaten",
+      el: "Το αεροδρόμιο Χανίων σε αριθμούς: μηνιαία στοιχεία επιβατών",
+    },
+  },
 };
 
 /* ------------------------------------------------------------------ */
@@ -221,7 +262,7 @@ function getModeBg(mode: string): string {
     case "ferry": return "bg-cyan-50 text-cyan-700 border-cyan-200";
     case "flight": return "bg-violet-50 text-violet-700 border-violet-200";
     case "taxi": return "bg-amber-50 text-amber-700 border-amber-200";
-    default: return "bg-gray-50 text-gray-700 border-gray-200";
+    default: return "bg-surface text-ink border-border";
   }
 }
 
@@ -243,6 +284,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; route: string }> }) {
   const { locale, route: slug } = await params;
+  setRequestLocale(locale);
   const route = getRoute(slug);
   if (!route) return { title: "Not found" };
 
@@ -262,10 +304,18 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
   const url = `${BASE_URL}/${locale}/getting-around/${slug}`;
 
+  // Les pages multimodales (aéroport, ferry/vol Athènes↔Crète, Crète↔Santorin) répondent
+  // à la plus forte demande transport mesurée en GSC (~170 impr Athènes↔Crète, ~60 aéroport)
+  // et portent un vrai contenu (compagnies, prix, fréquences) → INDEXABLES (en/fr/de/el).
+  // Les inter-city doublonnent /buses/[pair] (301 en amont, next.config) → restent noindex.
+  const INDEX_LOCALES = new Set(["en", "fr", "de", "el"]);
+  const indexable = route.type !== "inter-city" && INDEX_LOCALES.has(locale);
+
   return {
     title: titles[locale] || titles.en,
     description: descs[locale] || descs.en,
     alternates: buildAlternates(locale, `/getting-around/${slug}`),
+    robots: indexable ? undefined : { index: false, follow: true },
     openGraph: { title: titles[locale] || titles.en, description: descs[locale] || descs.en, url, type: "website" },
   };
 }
@@ -276,6 +326,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function RoutePage({ params }: { params: Promise<{ locale: string; route: string }> }) {
   const { locale, route: slug } = await params;
+  setRequestLocale(locale);
   const route = getRoute(slug);
   if (!route) notFound();
 
@@ -343,21 +394,24 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
 
   return (
     <main className="min-h-screen bg-surface">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <JsonLd data={faqSchema} />
 
       {/* Hero */}
-      <section className="bg-aegean text-white py-12 md:py-20 px-4">
+      <section className="relative overflow-hidden bg-sea text-white py-12 md:py-20 px-4">
         <div className="max-w-4xl mx-auto">
           <Link href={`/${locale}/buses`} className="inline-flex items-center gap-1 text-white/50 text-sm hover:text-white/80 mb-4">
             <ChevronLeft className="w-4 h-4" /> {L.back}
           </Link>
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight" style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}>
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight" style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}>
             {route.from} <ArrowRight className="inline w-8 h-8 md:w-10 md:h-10 mx-2 opacity-60" /> {route.to}
           </h1>
           <p className="text-white/70 text-lg mt-4 max-w-2xl">
             {L.heroPrefix} {route.from} {L.heroTo} {route.to}
           </p>
         </div>
+        <svg className="absolute bottom-0 left-0 w-full h-[56px]" viewBox="0 0 1440 70" preserveAspectRatio="none" aria-hidden>
+          <path d="M0 40 C180 0 320 70 540 42 C760 14 900 66 1130 40 C1290 22 1380 36 1440 28 L1440 70 L0 70 Z" fill="#F6FBFC" />
+        </svg>
       </section>
 
       <div className="max-w-4xl mx-auto px-4 py-10 space-y-12">
@@ -403,6 +457,20 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
           </div>
         </section>
 
+        {/* Airport passenger data (contextual link to /airport/[slug]) */}
+        {AIRPORT_DATA_LINK[slug] && (
+          <Link
+            href={`/${locale}/airport/${AIRPORT_DATA_LINK[slug].airportSlug}`}
+            className="flex items-center gap-3 px-5 py-4 bg-white border border-border rounded-xl hover:border-sea hover:shadow-soft transition-all"
+          >
+            <Plane className="w-5 h-5 text-sea flex-shrink-0" />
+            <span className="text-sm font-medium text-text">
+              {AIRPORT_DATA_LINK[slug].labels[locale] || AIRPORT_DATA_LINK[slug].labels.en}
+            </span>
+            <ArrowRight className="w-4 h-4 text-sea ml-auto flex-shrink-0" />
+          </Link>
+        )}
+
         {/* Tips */}
         {tips.length > 0 && (
           <section>
@@ -420,13 +488,16 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
           </section>
         )}
 
+        {/* Car rental : wizard interne uniquement. Pre-remplit le pickup si zone servie. */}
+        <CarPromo locale={locale} pickup={CAR_PARTNER_PICKUP[slug] ?? undefined} source="getting-around" />
+
         {/* FAQ */}
         <section>
           <h2 className="text-sm font-bold text-text-muted uppercase tracking-wider mb-4">{L.faq}</h2>
           <div className="space-y-4">
             {faqItems.map((faq, i) => (
               <details key={i} className="group bg-white border border-border rounded-xl overflow-hidden">
-                <summary className="px-5 py-4 cursor-pointer font-semibold text-text hover:bg-gray-50 transition-colors">
+                <summary className="px-5 py-4 cursor-pointer font-semibold text-text hover:bg-surface transition-colors">
                   {faq.q}
                 </summary>
                 <div className="px-5 pb-4 text-sm text-text-muted leading-relaxed">
@@ -446,21 +517,23 @@ export default async function RoutePage({ params }: { params: Promise<{ locale: 
                 <Link
                   key={r.slug}
                   href={`/${locale}/getting-around/${r.slug}`}
-                  className="flex items-center gap-2 px-4 py-3 bg-white border border-border rounded-xl hover:border-aegean hover:shadow-sm transition-all text-sm font-medium text-text"
+                  className="flex items-center gap-2 px-4 py-3 bg-white border border-border rounded-xl hover:border-sea hover:shadow-soft transition-all text-sm font-medium text-text"
                 >
-                  <ArrowRight className="w-4 h-4 text-aegean flex-shrink-0" />
-                  {r.from} → {r.to}
+                  <ArrowRight className="w-4 h-4 text-sea flex-shrink-0" />
+                  {r.from} · {r.to}
                 </Link>
               ))}
             </div>
           </section>
         )}
 
+        <ShareBar url={`${BASE_URL}/${locale}/getting-around/${slug}`} title={`${route.from} - ${route.to}`} locale={locale} className="justify-center pt-4" />
+
         {/* Link to buses page */}
         <div className="text-center pt-4">
           <Link
             href={`/${locale}/buses`}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-aegean text-white rounded-xl font-semibold hover:bg-aegean/90 transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-sea text-white rounded-xl font-semibold hover:bg-sea/90 transition-colors"
           >
             <Bus className="w-5 h-5" />
             {L.busSchedules}

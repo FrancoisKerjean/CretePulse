@@ -6,6 +6,7 @@
 // reach. This is rendered server-side so Google sees the links.
 
 import { supabase } from "./supabase";
+import { sanitizeImageUrl } from "./beaches";
 import type { Locale } from "./types";
 
 export type RelatedEntity = {
@@ -31,68 +32,80 @@ function pickLocale(locale: string): Locale {
 }
 
 async function fetchBeaches(loc: Locale, limit: number): Promise<RelatedEntity[]> {
-  const { data } = await supabase
-    .from("beaches")
-    .select(`slug, name_en, name_${loc}, region, image_url`)
-    .neq(`name_${loc}`, "")
-    .not("image_url", "is", null)
-    .limit(limit * 3);
+  try {
+    const { data } = await supabase
+      .from("beaches")
+      .select(`slug, name_en, name_${loc}, region, image_url`)
+      .neq(`name_${loc}`, "")
+      .not("image_url", "is", null)
+      .limit(limit * 3);
 
-  type Row = { slug: string; name_en: string | null; image_url: string | null; region: string | null } & Record<string, string | null>;
-  const rows: Row[] = (data as Row[]) || [];
-  return rows
-    .sort(() => Math.random() - 0.5)
-    .slice(0, limit)
-    .map((r) => ({
-      href: `/${loc}/beaches/${r.slug}`,
-      title: (r[`name_${loc}`] as string) || r.name_en || r.slug,
-      region: r.region || undefined,
-      type: "beach" as const,
-      imageUrl: r.image_url || undefined,
-    }));
+    type Row = { slug: string; name_en: string | null; image_url: string | null; region: string | null } & Record<string, string | null>;
+    const rows: Row[] = (data as Row[]) || [];
+    return rows
+      .sort(() => Math.random() - 0.5)
+      .slice(0, limit)
+      .map((r) => ({
+        href: `/${loc}/beaches/${r.slug}`,
+        title: (r[`name_${loc}`] as string) || r.name_en || r.slug,
+        region: r.region || undefined,
+        type: "beach" as const,
+        imageUrl: sanitizeImageUrl(r.image_url) || undefined,
+      }));
+  } catch {
+    return [];
+  }
 }
 
 async function fetchVillages(loc: Locale, limit: number): Promise<RelatedEntity[]> {
-  const { data } = await supabase
-    .from("villages")
-    .select(`slug, name_en, name_${loc}, region, image_url`)
-    .neq(`name_${loc}`, "")
-    .not("image_url", "is", null)
-    .limit(limit * 3);
+  try {
+    const { data } = await supabase
+      .from("villages")
+      .select(`slug, name_en, name_${loc}, region, image_url`)
+      .neq(`name_${loc}`, "")
+      .not("image_url", "is", null)
+      .limit(limit * 3);
 
-  type Row = { slug: string; name_en: string | null; image_url: string | null; region: string | null } & Record<string, string | null>;
-  const rows: Row[] = (data as Row[]) || [];
-  return rows
-    .sort(() => Math.random() - 0.5)
-    .slice(0, limit)
-    .map((r) => ({
-      href: `/${loc}/villages/${r.slug}`,
-      title: (r[`name_${loc}`] as string) || r.name_en || r.slug,
-      region: r.region || undefined,
-      type: "village" as const,
-      imageUrl: r.image_url || undefined,
-    }));
+    type Row = { slug: string; name_en: string | null; image_url: string | null; region: string | null } & Record<string, string | null>;
+    const rows: Row[] = (data as Row[]) || [];
+    return rows
+      .sort(() => Math.random() - 0.5)
+      .slice(0, limit)
+      .map((r) => ({
+        href: `/${loc}/villages/${r.slug}`,
+        title: (r[`name_${loc}`] as string) || r.name_en || r.slug,
+        region: r.region || undefined,
+        type: "village" as const,
+        imageUrl: sanitizeImageUrl(r.image_url) || undefined,
+      }));
+  } catch {
+    return [];
+  }
 }
 
 async function fetchFoodPlaces(loc: Locale, limit: number): Promise<RelatedEntity[]> {
-  const { data } = await supabase
-    .from("food_places")
-    .select("slug, name, region, cuisine, village")
-    .neq("description_en", "")
-    .limit(limit * 3);
+  try {
+    const { data } = await supabase
+      .from("food_places")
+      .select("slug, name, region, cuisine, village")
+      .neq("description_en", "")
+      .limit(limit * 3);
 
-  type Row = { slug: string; name: string; region: string | null; cuisine: string | null; village: string | null };
-  const rows: Row[] = (data as Row[]) || [];
-  return rows
-    .sort(() => Math.random() - 0.5)
-    .slice(0, limit)
-    .map((r) => ({
-      href: `/${loc}/food/${r.slug}`,
-      title: r.name,
-      subtitle: r.cuisine || undefined,
-      region: r.region || r.village || undefined,
-      type: "food" as const,
-    }));
+    type Row = { slug: string; name: string; region: string | null; cuisine: string | null; village: string | null };
+    const rows: Row[] = (data as Row[]) || [];
+    return rows
+      .sort(() => Math.random() - 0.5)
+      .slice(0, limit)
+      .map((r) => ({
+        href: `/${loc}/food/${r.slug}`,
+        title: r.name,
+        subtitle: r.cuisine || undefined,
+        region: r.region || r.village || undefined,
+        type: "food" as const,
+      }));
+  } catch {
+    return [];
+  }
 }
 
 const NAME_COL_USED = NAME_COL; // suppress unused warning if framework prunes
@@ -133,9 +146,9 @@ export async function getRelatedEntities(
   }
 
   const [beaches, villages, food] = await Promise.all([
-    fetchBeaches(loc, beachQuota),
-    fetchVillages(loc, villageQuota),
-    fetchFoodPlaces(loc, foodQuota),
+    fetchBeaches(loc, beachQuota).catch(() => []),
+    fetchVillages(loc, villageQuota).catch(() => []),
+    fetchFoodPlaces(loc, foodQuota).catch(() => []),
   ]);
 
   return [...beaches, ...villages, ...food];

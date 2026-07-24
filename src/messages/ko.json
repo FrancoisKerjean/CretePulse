@@ -1,4 +1,11 @@
 {
+  "activityNudge": {
+    "close": "닫기",
+    "title": "아직 못 정했어요?",
+    "subtitle": "크레타 최고의 스폿을 스와이프하며 딱 맞는 곳을 찾아보세요.",
+    "dismiss": "나중에",
+    "cta": "스와이프 시작"
+  },
   "meta": {
     "title": "Crete Direct - 크레타에서 무슨 일이 일어나고 있나요",
     "description": "날씨, 이벤트, 해변, 지역 뉴스. 크레타의 모든 것, 매시간 업데이트. 무료, 다국어 지원."
@@ -47,7 +54,63 @@
     "updatedAt": "현지 시간 {time}에 업데이트됨",
     "noEvents": "예정된 이벤트가 없습니다.",
     "submitEvent": "이벤트를 제출하시겠습니까?",
-    "newsFeedLoading": "뉴스 피드 로딩 중. 3시간마다 업데이트됩니다."
+    "newsFeedLoading": "뉴스 피드 로딩 중. 3시간마다 업데이트됩니다.",
+    "guidesSectionTitle": "여행 가이드",
+    "guidesSectionSubtitle": "크레타의 해변, 하이킹, 음식, 생활. 현지에서 검증.",
+    "allGuides": "모든 가이드",
+    "editorialGuides": "에디토리얼 가이드",
+    "heroTitle": "오늘의 크레타",
+    "carRentalKicker": "렌터카",
+    "carRentalTitle": "크레타를 탐험할 당신의 차",
+    "carRentalSub": "현지 업체, 공정한 가격, 선결제 없음. 4번의 탭으로 견적, 공항 픽업 가능.",
+    "carRentalCta": "견적 요청",
+    "heroMain": {
+      "pre": "해변, 버스, 날씨.",
+      "hl": "크레타, 실시간."
+    },
+    "heroToday": "오늘 {name}의 바다는 {rating}. 바람, 바다, 버스를 하루 종일 대신 지켜봐 드려요.",
+    "liveFromIsland": "섬에서 실시간",
+    "heroSub": "실시간 계산 · 기상 관측소 10곳 × 해변 500곳의 방향.",
+    "ctaBeach": "오늘의 해변 보기",
+    "air": "기온",
+    "sea": "바다",
+    "islandNow": "지금 이 순간의 섬",
+    "allStations": "관측소 전체",
+    "swimToday": "오늘 어디서 수영할까",
+    "allBeaches": "해변 500곳",
+    "todaysPick": "오늘의 추천",
+    "toolsTitle": "도구",
+    "ratings": {
+      "calm": "잔잔함",
+      "fair": "양호함",
+      "exposed": "노출됨"
+    },
+    "seaStates": {
+      "calm": "잔잔함",
+      "ok": "수영 가능",
+      "rough": "거침"
+    },
+    "regions": {
+      "south": "남부 해안",
+      "west": "서부 해안",
+      "east": "동부 해안",
+      "central": "중부 해안"
+    },
+    "tools": {
+      "buses": "버스",
+      "busesLine": "시간표 & 요금",
+      "swim": "수영",
+      "swimLine": "해변 500곳 실시간",
+      "explore": "둘러보기",
+      "exploreLine": "2,296곳",
+      "airports": "공항",
+      "airportsLine": "운항량 & 시즌",
+      "airbnb": "에어비앤비 데이터",
+      "airbnbLine": "지역별 요금",
+      "weather": "날씨",
+      "weatherLine": "관측소 10곳 + 바다"
+    },
+    "nextEvents": "다가오는 이벤트"
   },
   "footer": {
     "about": "크레타의 무료 독립 가이드. 실시간 데이터. 광고 없음(아직은). 추적 없음.",
@@ -66,11 +129,65 @@
     "weather": "날씨",
     "rights": "모든 권리 보유.",
     "madeIn": "크레타에서 제작",
-    "propertyManagement": "부동산 관리"
+    "airports": "공항",
+    "ourProject": "프로젝트 소개",
+    "taglineLong": "크레타를 위한 실용 가이드. 실시간 정보, 무료, 독립적. 섬에서 만들었습니다.",
+    "plan": "계획하기",
+    "discover": "둘러보기",
+    "info": "정보"
   },
   "common": {
     "readMore": "더 읽기",
     "seeAll": "모두 보기",
     "back": "뒤로"
+  },
+  "nextDeparture": {
+    "next": "다음 버스",
+    "inMin": "{m}분 후",
+    "tomorrow": "내일 첫차"
+  },
+  "depBoard": {
+    "title": "다음 버스",
+    "plan": "경로 검색",
+    "inMin": "{m}분 후",
+    "last": "오늘 막차",
+    "tomorrow": "내일",
+    "routeAria": "시간표 {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "출발",
+    "nearMe": "내 주변",
+    "tomorrow": "내일",
+    "later": "이후 출발 더 보기",
+    "none": "여기에서 출발 정보가 없습니다.",
+    "in": "",
+    "min": "분 후",
+    "hr": "시간 후"
+  },
+  "pushBell": {
+    "cta": "버스 및 크레타 긴급 알림 받기",
+    "on": "알림 켜짐",
+    "blocked": "브라우저에서 알림이 차단되었습니다.",
+    "iosInstall": "버스 알림: 이 사이트를 홈 화면에 추가하면(공유 후 홈 화면에 추가) 알림을 켤 수 있습니다."
+  },
+  "timeChips": {
+    "legend": "다음 출발 · 지난 시간은 흐리게 표시됩니다"
+  },
+  "busInCreteBox": {
+    "heading": "크레타 버스로 이동하기",
+    "connector": "→"
+  },
+  "installBanner": {
+    "title": "크레타를 주머니 속에",
+    "body": "실시간 버스와 해변 정보, 오프라인에서도.",
+    "cta": "설치",
+    "later": "나중에",
+    "ios": "공유를 누른 뒤 “홈 화면에 추가”를 선택하세요."
+  },
+  "tabBar": {
+    "map": "지도",
+    "buses": "버스",
+    "beaches": "해변",
+    "quote": "견적"
   }
 }

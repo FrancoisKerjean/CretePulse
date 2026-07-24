@@ -1,0 +1,265 @@
+﻿<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Configurateur DA Kalimera</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --lagoon:#00C2D4; --lagoon-deep:#008C9E; --sea:#0B5E78; --sky:#BDEDF5; --night:#07374A;
+    --sun:#FFC83D; --terracotta:#ED7A5C; --olive:#7C9A53;
+    --foam:#F6FBFC; --sand:#FFF3D6; --ink:#0B3954; --muted:#5C7886; --ok:#14B86B;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--foam); color: var(--ink); font-family: "Baloo 2", sans-serif; margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+  .geist { font-family: Geist, sans-serif; }
+  header { padding: 22px 36px 0; display: flex; justify-content: space-between; align-items: center; }
+  .prog { font-size: 13px; color: var(--muted); font-weight: 700; }
+  .bar { height: 8px; background: #E2EEF1; border-radius: 999px; margin: 12px 36px 0; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--lagoon); border-radius: 999px; transition: width .3s; }
+  main { flex: 1; padding: 26px 36px 30px; max-width: 1180px; margin: 0 auto; width: 100%; }
+  h1 { font-size: 30px; font-weight: 800; margin: 0 0 6px; }
+  p.note { font-family: Geist; font-size: 14px; color: var(--muted); margin: 0 0 22px; max-width: 720px; line-height: 1.5; }
+  .opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+  .opt { background: #fff; border: 3px solid transparent; border-radius: 24px; overflow: hidden; cursor: pointer; box-shadow: 0 10px 28px rgba(11,94,120,.10); transition: transform .12s, border-color .12s; }
+  .opt:hover { transform: translateY(-3px); }
+  .opt.sel { border-color: var(--lagoon); box-shadow: 0 14px 36px rgba(0,194,212,.3); }
+  .opt .pv { height: 200px; overflow: hidden; position: relative; }
+  .opt .meta { padding: 13px 18px 15px; display: flex; gap: 10px; align-items: baseline; }
+  .opt .k { background: var(--ink); color: #fff; border-radius: 8px; font-size: 12px; font-weight: 800; padding: 2px 8px; }
+  .opt.sel .k { background: var(--lagoon); color: var(--night); }
+  .opt .t { font-weight: 700; font-size: 16px; }
+  .opt .d { font-family: Geist; font-size: 12px; color: var(--muted); display: block; margin-top: 2px; }
+  footer { padding: 18px 36px 26px; display: flex; justify-content: space-between; align-items: center; }
+  button { font-family: "Baloo 2"; font-weight: 700; font-size: 15px; border: none; border-radius: 999px; padding: 13px 26px; cursor: pointer; }
+  .next { background: var(--ink); color: #fff; }
+  .next:disabled { opacity: .35; cursor: default; }
+  .prev { background: #fff; color: var(--muted); box-shadow: 0 6px 16px rgba(11,94,120,.10); }
+  .skip { background: transparent; color: var(--muted); font-size: 13px; }
+
+  /* écran final */
+  .final { background: #fff; border-radius: 26px; padding: 28px 32px; box-shadow: 0 14px 36px rgba(11,94,120,.12); }
+  .final h2 { margin: 0 0 14px; font-size: 24px; }
+  textarea { width: 100%; height: 280px; font-family: Geist Mono, monospace; font-size: 13px; border: 2px solid #E2EEF1; border-radius: 16px; padding: 16px; resize: vertical; }
+  .copy { background: var(--lagoon); color: var(--night); margin-top: 12px; }
+  .copy.done { background: var(--ok); color: #fff; }
+
+  /* ── previews ── */
+  .pv-pad { padding: 16px; height: 100%; }
+  .pv .mini-h1 { font-weight: 800; font-size: 22px; line-height: 1.1; }
+  .pv .hl { color: #fff; text-shadow: 0 1px 8px rgba(11,94,120,.35); }
+  .pv-grad { background: linear-gradient(175deg, var(--sky), #8FE0EC 45%, var(--lagoon)); }
+  .pv-foam { background: var(--foam); }
+  .pv .chip { display: inline-block; background: #fff; border-radius: 11px; padding: 6px 10px; font-size: 11px; font-weight: 700; box-shadow: 0 5px 13px rgba(11,94,120,.15); margin: 8px 6px 0 0; }
+  .pv .chip.ink { background: var(--ink); color: #fff; }
+  .pv .blob { position: absolute; border-radius: 50%; }
+  .pv .greet { display: inline-flex; gap: 6px; align-items: center; background: rgba(255,255,255,.75); border-radius: 999px; padding: 5px 10px; font-size: 10px; font-weight: 700; color: var(--sea); margin-bottom: 8px; }
+  .pv .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); }
+  .pv .btn { display: inline-block; border-radius: 999px; padding: 9px 18px; font-size: 13px; font-weight: 800; }
+  .pv table { font-size: 11px; border-collapse: collapse; width: 100%; }
+  .pv .brd { background: var(--night); color: #EAF7FA; border-radius: 16px; padding: 11px 14px; font-size: 11.5px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .pv .brd b { font-size: 17px; }
+  .pv .st { font-size: 9.5px; font-weight: 800; border-radius: 999px; padding: 4px 8px; background: rgba(20,184,107,.18); color: #43E89D; white-space: nowrap; }
+  .pv .wt { border-radius: 16px; padding: 10px 12px; display: inline-block; width: 46%; margin-right: 3%; vertical-align: top; }
+  .pv .wt .c { font-size: 9px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--sea); }
+  .pv .wt .dg { font-size: 26px; font-weight: 800; }
+  .pv .nl { border-radius: 16px; padding: 12px 14px; font-size: 12px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+  .pv .nl .inp { background: #fff; border-radius: 999px; padding: 7px 12px; font-size: 10px; color: var(--muted); font-family: Geist; }
+</style>
+</head>
+<body>
+<header>
+  <svg width="118" height="19" viewBox="0 0 460 74" fill="none" stroke="#0B3954" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M38 18 a16 16 0 1 0 14 24 M38 26 a8.5 8.5 0 1 0 6 14" stroke="#00919E"/>
+    <path d="M64 52 V30 M64 38 q4 -9 13 -9"/><path d="M88 41 h22 a11.5 11.5 0 1 0 -3.4 8"/>
+    <path d="M126 14 V44 a8 8 0 0 0 8 8 M118 28 h16"/><path d="M148 41 h22 a11.5 11.5 0 1 0 -3.4 8"/>
+    <path d="M210 12 V52 M210 41 a11.5 11.5 0 1 1 -11.5 -11.5"/><path d="M228 30 V52"/>
+    <circle cx="228" cy="15.5" r="6" fill="#FFC83D" stroke="none"/>
+    <path d="M228 5.5 v3 M228 22.5 v3 M218 15.5 h3 M235 15.5 h3" stroke="#FFC83D" stroke-width="2.6"/>
+    <path d="M246 52 V30 M246 38 q4 -9 13 -9"/><path d="M270 41 h22 a11.5 11.5 0 1 0 -3.4 8"/>
+    <path d="M324 32 a11.5 11.5 0 1 0 0 17"/><path d="M340 14 V44 a8 8 0 0 0 8 8 M332 28 h16"/>
+    <path d="M196 66 q9 -7 18 0 t18 0 t18 0 t18 0 t18 0 t18 0 t18 0" stroke="#00C2D4" stroke-width="4.5"/>
+  </svg>
+  <span class="prog" id="prog">1 / 9</span>
+</header>
+<div class="bar"><i id="bar" style="width:11%"></i></div>
+<main id="main"></main>
+<footer>
+  <button class="prev" id="prev">← Précédent</button>
+  <div>
+    <button class="skip" id="skip">passer (à décider plus tard)</button>
+    <button class="next" id="next" disabled>Suivant →</button>
+  </div>
+</footer>
+
+<script>
+const QUESTIONS = [
+  {
+    id: "intensite",
+    titre: "1. L'intensité globale",
+    note: "Le grand réglage d'ensemble : combien de couleur sur la page entière ? (les aperçus grandeur nature sont dans ui-kalimera-v7-solaire.html)",
+    options: [
+      { k: "A", t: "Solaire", d: "Heros en gradient plein ciel→lagon, sections colorées, le site baigne dans la couleur",
+        pv: `<div class="pv-pad pv-grad" style="position:relative"><div class="blob" style="top:10px;right:14px;width:44px;height:44px;background:radial-gradient(circle at 38% 35%, #FFE08F, #FFC83D)"></div><span class="greet"><span class="pulse"></span> Καλημέρα !</span><div class="mini-h1">La mer est <span class="hl">calme</span><br>à Agiofarago.</div><span class="chip ink">→ La plage du jour</span><span class="chip">☼ 27°</span><span class="chip">≈ 25°</span></div>` },
+      { k: "B", t: "Écume", d: "Fond clair partout, la couleur ne vient que par les accents : pills, pins, board nuit",
+        pv: `<div class="pv-pad pv-foam" style="position:relative"><div class="blob" style="top:10px;right:14px;width:40px;height:40px;background:#FFC83D;opacity:.25"></div><span class="greet" style="background:#fff"><span class="pulse"></span> Καλημέρα !</span><div class="mini-h1">La mer est <span style="color:var(--lagoon-deep)">calme</span><br>à Agiofarago.</div><span class="chip" style="background:var(--lagoon);color:var(--night)">→ La plage du jour</span><span class="chip">☼ 27°</span><span class="chip">≈ 25°</span></div>` },
+    ],
+  },
+  {
+    id: "hero-droite",
+    titre: "2. À droite du hero de la home",
+    note: "Le titre-réponse est à gauche. Qu'est-ce qui l'accompagne à droite ?",
+    options: [
+      { k: "A", t: "L'île en carte live", d: "La silhouette de la Crète avec les pins météo + plage du jour (réf immédiate « vous êtes ici »)",
+        pv: `<div class="pv-pad pv-grad"><div style="background:rgba(255,255,255,.6);border-radius:18px;padding:12px;height:100%"><div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--sea)">Vous êtes ici</div><svg viewBox="0 0 460 150" style="width:100%"><path d="M14 84 C18 70 30 62 38 56 C40 44 46 30 54 30 C60 30 60 44 64 50 C70 44 76 32 84 32 C92 32 90 46 96 52 C104 44 112 36 122 38 C132 40 130 50 138 54 C160 48 184 50 204 56 C224 62 244 64 264 60 C272 50 282 44 290 48 C296 51 294 58 300 60 C320 56 342 58 360 64 C380 70 404 72 422 80 C436 86 446 92 444 100 C440 110 420 106 404 108 C380 112 356 118 332 114 C306 110 282 116 258 112 C232 108 206 112 182 106 C158 100 132 104 110 96 C88 90 64 94 44 90 C28 88 10 96 14 84 Z" fill="#7C9A53" stroke="#fff" stroke-width="3.5"/></svg></div></div>` },
+      { k: "B", t: "La photo du jour traitée", d: "Grande carte photo de la plage préco (voile lagon→nuit, badge verdict) · l'envie d'y être",
+        pv: `<div class="pv-pad pv-grad"><div style="border-radius:18px;overflow:hidden;height:100%;position:relative;background:linear-gradient(180deg,#39c2d6,#0B5E78)"><div style="position:absolute;bottom:10px;left:12px;color:#fff;font-weight:800;font-size:16px">Agiofarago</div><span style="position:absolute;bottom:10px;right:12px;background:rgba(255,255,255,.92);color:#0B8A52;font-size:10px;font-weight:800;border-radius:999px;padding:5px 10px">≈ Calme</span></div></div>` },
+      { k: "C", t: "Les deux empilés", d: "Photo du jour en haut, île compacte en dessous · plus riche mais plus dense",
+        pv: `<div class="pv-pad pv-grad" style="display:flex;flex-direction:column;gap:8px"><div style="border-radius:14px;flex:1.2;position:relative;background:linear-gradient(180deg,#39c2d6,#0B5E78)"><div style="position:absolute;bottom:6px;left:10px;color:#fff;font-weight:800;font-size:12px">Agiofarago</div></div><div style="border-radius:14px;flex:1;background:rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 460 150" style="width:80%"><path d="M14 84 C18 70 30 62 38 56 C40 44 46 30 54 30 C60 30 60 44 64 50 C70 44 76 32 84 32 C92 32 90 46 96 52 C104 44 112 36 122 38 C132 40 130 50 138 54 C160 48 184 50 204 56 C224 62 244 64 264 60 C272 50 282 44 290 48 C296 51 294 58 300 60 C320 56 342 58 360 64 C380 70 404 72 422 80 C436 86 446 92 444 100 C440 110 420 106 404 108 C380 112 356 118 332 114 C306 110 282 116 258 112 C232 108 206 112 182 106 C158 100 132 104 110 96 C88 90 64 94 44 90 C28 88 10 96 14 84 Z" fill="#7C9A53" stroke="#fff" stroke-width="3.5"/></svg></div></div>` },
+    ],
+  },
+  {
+    id: "cta",
+    titre: "3. Le bouton principal (CTA)",
+    note: "La couleur des actions importantes, partout sur le site.",
+    options: [
+      { k: "A", t: "Encre nuit", d: "Sobre et contrasté, la couleur reste au décor",
+        pv: `<div class="pv-pad pv-foam" style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap"><span class="btn" style="background:var(--ink);color:#fff">→ Voir la plage du jour</span><span class="btn" style="background:#fff;color:var(--ink);box-shadow:0 6px 16px rgba(11,94,120,.14)">Planifier un trajet</span></div>` },
+      { k: "B", t: "Jaune soleil", d: "Le plus Waze : chaleureux, impossible à rater",
+        pv: `<div class="pv-pad pv-foam" style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap"><span class="btn" style="background:var(--sun);color:var(--ink)">→ Voir la plage du jour</span><span class="btn" style="background:#fff;color:var(--ink);box-shadow:0 6px 16px rgba(11,94,120,.14)">Planifier un trajet</span></div>` },
+      { k: "C", t: "Lagon", d: "La couleur signature en action · cohérent mais elle est déjà partout",
+        pv: `<div class="pv-pad pv-foam" style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap"><span class="btn" style="background:var(--lagoon);color:var(--night)">→ Voir la plage du jour</span><span class="btn" style="background:#fff;color:var(--ink);box-shadow:0 6px 16px rgba(11,94,120,.14)">Planifier un trajet</span></div>` },
+    ],
+  },
+  {
+    id: "meteo-tuiles",
+    titre: "4. Les tuiles météo",
+    note: "« L'île, maintenant » · le bloc le plus vu du site.",
+    options: [
+      { k: "A", t: "Pastel gradient", d: "Tuiles soleil/mer alternées (comme les mockups)",
+        pv: `<div class="pv-pad pv-foam"><span class="wt" style="background:linear-gradient(160deg,#FFF6DE,#FFE9AE)"><span class="c">Heraklion</span><div class="dg">27°</div><span class="geist" style="font-size:10px;color:var(--muted)">↗ 6 km/h</span></span><span class="wt" style="background:linear-gradient(160deg,#DFF7FA,#B8EDF4)"><span class="c">Chania</span><div class="dg">27°</div><span class="geist" style="font-size:10px;color:var(--muted)">↗ 5 km/h</span></span></div>` },
+      { k: "B", t: "Blanches à liseré", d: "Carte blanche, juste un liseré coloré à gauche · plus calme",
+        pv: `<div class="pv-pad pv-foam"><span class="wt" style="background:#fff;border-left:6px solid var(--sun);box-shadow:0 8px 20px rgba(11,94,120,.10)"><span class="c">Heraklion</span><div class="dg">27°</div><span class="geist" style="font-size:10px;color:var(--muted)">↗ 6 km/h</span></span><span class="wt" style="background:#fff;border-left:6px solid var(--lagoon);box-shadow:0 8px 20px rgba(11,94,120,.10)"><span class="c">Chania</span><div class="dg">27°</div><span class="geist" style="font-size:10px;color:var(--muted)">↗ 5 km/h</span></span></div>` },
+      { k: "C", t: "Couleur pleine", d: "Tuiles franchement colorées, chiffres blancs · le plus punchy",
+        pv: `<div class="pv-pad pv-foam"><span class="wt" style="background:var(--lagoon);color:var(--night)"><span class="c" style="color:rgba(7,55,74,.7)">Heraklion</span><div class="dg">27°</div><span class="geist" style="font-size:10px;color:rgba(7,55,74,.7)">↗ 6 km/h</span></span><span class="wt" style="background:var(--sea);color:#fff"><span class="c" style="color:rgba(255,255,255,.7)">Chania</span><div class="dg">27°</div><span class="geist" style="font-size:10px;color:rgba(255,255,255,.7)">↗ 5 km/h</span></span></div>` },
+    ],
+  },
+  {
+    id: "board",
+    titre: "5. Le board des prochains bus",
+    note: "L'élément signature « données live ». Confirmer ou alléger.",
+    options: [
+      { k: "A", t: "Nuit (signature)", d: "Carte bleu nuit, statuts lumineux · le moment de contraste de la page",
+        pv: `<div class="pv-pad pv-foam" style="display:flex;flex-direction:column;gap:8px;justify-content:center"><div class="brd"><span>Heraklion → Chania</span><b>15:30</b><span class="st">dans 70 min</span></div><div class="brd"><span>Heraklion → Ierapetra</span><b>16:45</b><span class="st">dans 145 min</span></div></div>` },
+      { k: "B", t: "Clair", d: "Carte blanche, statuts colorés · moins de drame, plus homogène",
+        pv: `<div class="pv-pad pv-foam" style="display:flex;flex-direction:column;gap:8px;justify-content:center"><div class="brd" style="background:#fff;color:var(--ink);box-shadow:0 8px 20px rgba(11,94,120,.10)"><span>Heraklion → Chania</span><b>15:30</b><span class="st" style="background:rgba(20,184,107,.13);color:#0B8A52">dans 70 min</span></div><div class="brd" style="background:#fff;color:var(--ink);box-shadow:0 8px 20px rgba(11,94,120,.10)"><span>Heraklion → Ierapetra</span><b>16:45</b><span class="st" style="background:rgba(20,184,107,.13);color:#0B8A52">dans 145 min</span></div></div>` },
+    ],
+  },
+  {
+    id: "radius",
+    titre: "6. Le niveau d'arrondi",
+    note: "Toutes les cartes du site.",
+    options: [
+      { k: "A", t: "Très rond (28-32px)", d: "Le plus doux, très app mobile",
+        pv: `<div class="pv-pad pv-foam" style="display:flex;align-items:center;gap:12px"><div style="background:#fff;border-radius:30px;box-shadow:0 10px 24px rgba(11,94,120,.12);flex:1;height:120px"></div><div style="background:var(--sand);border-radius:30px;flex:1;height:120px"></div></div>` },
+      { k: "B", t: "Modéré (16-20px)", d: "Rond mais plus posé, plus dense possible",
+        pv: `<div class="pv-pad pv-foam" style="display:flex;align-items:center;gap:12px"><div style="background:#fff;border-radius:17px;box-shadow:0 10px 24px rgba(11,94,120,.12);flex:1;height:120px"></div><div style="background:var(--sand);border-radius:17px;flex:1;height:120px"></div></div>` },
+    ],
+  },
+  {
+    id: "newsletter",
+    titre: "7. La bande newsletter",
+    note: "En bas de page, avant le footer.",
+    options: [
+      { k: "A", t: "Sable", d: "Chaleur douce", pv: `<div class="pv-pad pv-foam" style="display:flex;align-items:center"><div class="nl" style="background:linear-gradient(165deg,#FFF3D6,#FFE9AE);width:100%">Le bulletin de la Crète <span class="inp">ton@email.com</span></div></div>` },
+      { k: "B", t: "Lagon", d: "Punchy signature", pv: `<div class="pv-pad pv-foam" style="display:flex;align-items:center"><div class="nl" style="background:var(--lagoon);color:var(--night);width:100%">Le bulletin de la Crète <span class="inp">ton@email.com</span></div></div>` },
+      { k: "C", t: "Nuit", d: "Rappel du board", pv: `<div class="pv-pad pv-foam" style="display:flex;align-items:center"><div class="nl" style="background:var(--night);color:#EAF7FA;width:100%">Le bulletin de la Crète <span class="inp">ton@email.com</span></div></div>` },
+    ],
+  },
+  {
+    id: "densite",
+    titre: "8. La densité",
+    note: "Combien d'air entre les éléments ?",
+    options: [
+      { k: "A", t: "Aéré", d: "Comme les mockups : grandes marges, respiration partout",
+        pv: `<div class="pv-pad pv-foam" style="display:flex;flex-direction:column;gap:14px;justify-content:center"><div style="background:#fff;border-radius:14px;height:34px;box-shadow:0 6px 14px rgba(11,94,120,.08)"></div><div style="background:#fff;border-radius:14px;height:34px;box-shadow:0 6px 14px rgba(11,94,120,.08)"></div><div style="background:#fff;border-radius:14px;height:34px;box-shadow:0 6px 14px rgba(11,94,120,.08)"></div></div>` },
+      { k: "B", t: "Compact", d: "Plus d'infos par écran (utilitaire d'abord), marges resserrées",
+        pv: `<div class="pv-pad pv-foam" style="display:flex;flex-direction:column;gap:6px;justify-content:center"><div style="background:#fff;border-radius:12px;height:30px;box-shadow:0 4px 10px rgba(11,94,120,.08)"></div><div style="background:#fff;border-radius:12px;height:30px;box-shadow:0 4px 10px rgba(11,94,120,.08)"></div><div style="background:#fff;border-radius:12px;height:30px;box-shadow:0 4px 10px rgba(11,94,120,.08)"></div><div style="background:#fff;border-radius:12px;height:30px;box-shadow:0 4px 10px rgba(11,94,120,.08)"></div><div style="background:#fff;border-radius:12px;height:30px;box-shadow:0 4px 10px rgba(11,94,120,.08)"></div></div>` },
+    ],
+  },
+  {
+    id: "mascotte",
+    titre: "9. La mascotte kri-kri",
+    note: "Waze doit beaucoup à ses personnages. La chèvre kri-kri n'existe qu'en Crète. On explore (planche dédiée) ou pas ?",
+    options: [
+      { k: "A", t: "Oui, explorer", d: "Fais-moi une planche d'essai de mascotte kri-kri (états : bonjour, alerte, vide, 404)",
+        pv: `<div class="pv-pad pv-foam" style="display:flex;align-items:center;justify-content:center;font-size:64px">🐐</div>` },
+      { k: "B", t: "Non", d: "Pas de mascotte, l'identité suffit",
+        pv: `<div class="pv-pad pv-foam" style="display:flex;align-items:center;justify-content:center;color:var(--muted);font-weight:700">Sans mascotte</div>` },
+    ],
+  },
+];
+
+let idx = 0;
+const answers = {};
+const main = document.getElementById("main");
+const prog = document.getElementById("prog");
+const bar = document.getElementById("bar");
+const btnNext = document.getElementById("next");
+const btnPrev = document.getElementById("prev");
+const btnSkip = document.getElementById("skip");
+
+function render() {
+  if (idx >= QUESTIONS.length) return renderFinal();
+  const q = QUESTIONS[idx];
+  prog.textContent = (idx + 1) + " / " + QUESTIONS.length;
+  bar.style.width = ((idx + 1) / QUESTIONS.length * 100) + "%";
+  main.innerHTML = `<h1>${q.titre}</h1><p class="note">${q.note}</p>
+    <div class="opts">` + q.options.map(o => `
+      <div class="opt ${answers[q.id] === o.k ? "sel" : ""}" data-k="${o.k}">
+        <div class="pv">${o.pv}</div>
+        <div class="meta"><span class="k">${o.k}</span><span><span class="t">${o.t}</span><span class="d">${o.d}</span></span></div>
+      </div>`).join("") + `</div>`;
+  main.querySelectorAll(".opt").forEach(el => el.onclick = () => {
+    answers[q.id] = el.dataset.k;
+    main.querySelectorAll(".opt").forEach(x => x.classList.remove("sel"));
+    el.classList.add("sel");
+    btnNext.disabled = false;
+  });
+  btnNext.disabled = !answers[q.id];
+  btnPrev.style.visibility = idx === 0 ? "hidden" : "visible";
+  btnNext.textContent = idx === QUESTIONS.length - 1 ? "Terminer →" : "Suivant →";
+  btnSkip.style.display = "";
+}
+
+function renderFinal() {
+  prog.textContent = "Terminé";
+  bar.style.width = "100%";
+  btnNext.style.display = "none";
+  btnSkip.style.display = "none";
+  btnPrev.style.visibility = "visible";
+  const lines = QUESTIONS.map(q => {
+    const a = answers[q.id];
+    const o = a ? q.options.find(o => o.k === a) : null;
+    return `${q.titre.replace(/^\d+\. /, "")} : ${o ? o.k + " · " + o.t : "PASSÉ (à décider)"}`;
+  });
+  const txt = "MES CHOIX DA KALIMERA (wizard " + new Date().toLocaleDateString("fr") + ")\n" + lines.map(l => "- " + l).join("\n");
+  main.innerHTML = `<div class="final"><h2>🎉 C'est tout bon · copie-colle ça à Claude :</h2>
+    <textarea id="out" readonly>${txt}</textarea>
+    <button class="copy" id="copy">📋 Copier mes réponses</button></div>`;
+  document.getElementById("copy").onclick = async () => {
+    const out = document.getElementById("out");
+    out.select();
+    try { await navigator.clipboard.writeText(out.value); } catch { document.execCommand("copy"); }
+    const b = document.getElementById("copy");
+    b.textContent = "✓ Copié !"; b.classList.add("done");
+  };
+}
+
+btnNext.onclick = () => { idx++; render(); };
+btnPrev.onclick = () => { if (idx > 0) { idx--; if (btnNext.style.display === "none") { btnNext.style.display = ""; } render(); } };
+btnSkip.onclick = () => { delete answers[QUESTIONS[idx].id]; idx++; render(); };
+render();
+</script>
+</body>
+</html>

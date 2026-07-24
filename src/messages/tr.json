@@ -1,4 +1,11 @@
 {
+  "activityNudge": {
+    "close": "Kapat",
+    "title": "Hâlâ kararsız mısın?",
+    "subtitle": "Girit'in en güzel noktalarını kaydır, sana uyanı bul.",
+    "dismiss": "Sonra",
+    "cta": "Kaydırmaya başla"
+  },
   "meta": {
     "title": "Crete Direct - Girit'te neler oluyor",
     "description": "Hava durumu, etkinlikler, plajlar, yerel haberler. Girit hakkında her şey, saatlik güncelleme. Ücretsiz, çok dilli."
@@ -47,7 +54,63 @@
     "updatedAt": "Yerel saat {time} itibarıyla güncellendi",
     "noEvents": "Yaklaşan etkinlik yok.",
     "submitEvent": "Bir tane gönderin?",
-    "newsFeedLoading": "Haber akışı yükleniyor. 3 saatte bir güncellenir."
+    "newsFeedLoading": "Haber akışı yükleniyor. 3 saatte bir güncellenir.",
+    "guidesSectionTitle": "Seyahat rehberleri",
+    "guidesSectionSubtitle": "Plajlar, yürüyüşler, yemek, Girit'te yaşam. Yerinde doğrulandı.",
+    "allGuides": "Tüm rehberler",
+    "editorialGuides": "Editör rehberleri",
+    "heroTitle": "Girit, bugün",
+    "carRentalKicker": "Araç kiralama",
+    "carRentalTitle": "Girit'i keşfetmek için aracın",
+    "carRentalSub": "Yerel acente, adil fiyat, ön ödeme yok. 4 dokunuşta teklif, havaalanında teslim mümkün.",
+    "carRentalCta": "Teklif al",
+    "heroMain": {
+      "pre": "Plajlar, otobüsler, hava durumu.",
+      "hl": "Girit, canlı."
+    },
+    "heroToday": "Bugün {name} açıklarında deniz {rating}. Rüzgârı, denizi ve otobüsleri gün boyu senin için takip ediyoruz.",
+    "liveFromIsland": "adadan canlı",
+    "heroSub": "Canlı hesaplandı · 10 meteoroloji istasyonu × 500 plajın yönü.",
+    "ctaBeach": "Bugünün plajını gör",
+    "air": "hava",
+    "sea": "deniz",
+    "islandNow": "Ada, şu anda",
+    "allStations": "Tüm istasyonlar",
+    "swimToday": "Bugün nerede yüzülür",
+    "allBeaches": "500 plajın tümü",
+    "todaysPick": "bugünün seçimi",
+    "toolsTitle": "Araçlar",
+    "ratings": {
+      "calm": "sakin",
+      "fair": "orta",
+      "exposed": "açık"
+    },
+    "seaStates": {
+      "calm": "sakin",
+      "ok": "yüzülür",
+      "rough": "dalgalı"
+    },
+    "regions": {
+      "south": "Güney kıyısı",
+      "west": "Batı kıyısı",
+      "east": "Doğu kıyısı",
+      "central": "Orta kıyı"
+    },
+    "tools": {
+      "buses": "Otobüsler",
+      "busesLine": "Saatler & fiyatlar",
+      "swim": "Yüzme",
+      "swimLine": "500 plaj canlı",
+      "explore": "Keşfet",
+      "exploreLine": "2.296 yer",
+      "airports": "Havalimanları",
+      "airportsLine": "Trafik & sezonlar",
+      "airbnb": "Airbnb verisi",
+      "airbnbLine": "Bölgeye göre fiyatlar",
+      "weather": "Hava durumu",
+      "weatherLine": "10 istasyon + deniz"
+    },
+    "nextEvents": "Yaklaşan etkinlikler"
   },
   "footer": {
     "about": "Girit için ücretsiz, bağımsız rehber. Canlı veri. Reklam yok (henüz). Takip yok.",
@@ -66,11 +129,65 @@
     "weather": "Hava",
     "rights": "Tüm hakları saklıdır.",
     "madeIn": "Girit'te yapıldı",
-    "propertyManagement": "Mülk yönetimi"
+    "airports": "Havalimanları",
+    "ourProject": "Projemiz",
+    "taglineLong": "Girit'in pratik yol arkadaşı. Canlı veriler, ücretsiz, bağımsız. Adada yapıldı.",
+    "plan": "Planla",
+    "discover": "Keşfet",
+    "info": "Bilgi"
   },
   "common": {
     "readMore": "Devamını oku",
     "seeAll": "Tümünü gör",
     "back": "Geri"
+  },
+  "nextDeparture": {
+    "next": "Sonraki sefer",
+    "inMin": "{m} dk içinde",
+    "tomorrow": "İlk otobüs yarın"
+  },
+  "depBoard": {
+    "title": "Sonraki otobüsler",
+    "plan": "Yolculuk planla",
+    "inMin": "{m} dk sonra",
+    "last": "bugün son",
+    "tomorrow": "yarın",
+    "routeAria": "Saatler {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "Kalkışlar",
+    "nearMe": "Yakınımda",
+    "tomorrow": "yarın",
+    "later": "Sonraki kalkışları göster",
+    "none": "Burada kalkış bulunamadı.",
+    "in": "",
+    "min": "dk",
+    "hr": "sa"
+  },
+  "pushBell": {
+    "cta": "Otobüs ve acil Girit uyarılarını al",
+    "on": "Uyarılar açık",
+    "blocked": "Tarayıcında bildirimler engellenmiş.",
+    "iosInstall": "Otobüs uyarıları: etkinleştirmek için bu siteyi Ana Ekranına ekle (Paylaş, ardından Ana Ekrana Ekle)."
+  },
+  "timeChips": {
+    "legend": "sonraki kalkış · geçmiş saatler soluk gösterilir"
+  },
+  "busInCreteBox": {
+    "heading": "Girit'te otobüsle ulaşım",
+    "connector": "→"
+  },
+  "installBanner": {
+    "title": "Girit hep cebinde",
+    "body": "Canlı otobüsler ve plajlar, çevrimdışı bile.",
+    "cta": "Yükle",
+    "later": "Şimdi değil",
+    "ios": "Paylaş'a dokun, sonra “Ana Ekrana Ekle”yi seç."
+  },
+  "tabBar": {
+    "map": "Harita",
+    "buses": "Otobüsler",
+    "beaches": "Plajlar",
+    "quote": "Teklif"
   }
 }

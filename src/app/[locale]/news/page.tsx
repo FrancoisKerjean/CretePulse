@@ -1,4 +1,6 @@
 import { getLatestNews } from "@/lib/news";
+import { getEditorialNews, getLocalizedGuideField } from "@/lib/guides";
+import { setRequestLocale } from "next-intl/server";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { Newspaper, ExternalLink, Clock } from "lucide-react";
 import Link from "next/link";
@@ -17,6 +19,7 @@ const META: Record<string, { title: string; desc: string }> = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = META[locale] || META.en;
   const url = `${BASE_URL}/${locale}/news`;
   return {
@@ -28,13 +31,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  politics: "bg-aegean-faint text-aegean",
-  tourism: "bg-terra-faint text-terra",
+  politics: "bg-sea-faint text-sea",
+  tourism: "bg-terracotta-faint text-terracotta",
   culture: "bg-sand text-text",
   environment: "bg-olive/10 text-olive",
-  economy: "bg-stone text-text-muted",
-  sports: "bg-aegean-faint text-aegean",
-  weather: "bg-aegean-faint text-aegean",
+  economy: "bg-surface text-text-muted",
+  sports: "bg-sea-faint text-sea",
+  weather: "bg-sea-faint text-sea",
 };
 
 const TIME_LABELS: Record<Locale, { justNow: string; yesterday: string; mAgo: string; hAgo: string; dAgo: string }> = {
@@ -51,7 +54,8 @@ function timeAgo(dateStr: string, locale: Locale): string {
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
-  const L = TIME_LABELS[locale];
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  const L = TIME_LABELS[locale] ?? TIME_LABELS.en;
   const lang = locale === "el" ? "el-GR" : locale === "fr" ? "fr-FR" : locale === "de" ? "de-DE" : "en-GB";
 
   if (diffMins < 60) return diffMins <= 1 ? L.justNow : `${diffMins}${L.mAgo}`;
@@ -75,18 +79,24 @@ const PAGE_SUBTITLES: Record<Locale, string> = {
   el: "Ελληνικός Τύπος, μετάφραση σε 4 γλώσσες κάθε 3 ώρες",
 };
 
+const ORIGINAL_LABELS: Record<Locale, string> = {
+  en: "From crete.direct",
+  fr: "Par crete.direct",
+  de: "Von crete.direct",
+  el: "Από το crete.direct",
+};
+
 export default async function NewsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
 
-  let news: Awaited<ReturnType<typeof getLatestNews>> = [];
-  try {
-    news = await getLatestNews(50, locale);
-  } catch {
-    news = [];
-  }
+  const [news, editorial] = await Promise.all([
+    getLatestNews(50, locale).catch(() => [] as Awaited<ReturnType<typeof getLatestNews>>),
+    getEditorialNews(30).catch(() => [] as Awaited<ReturnType<typeof getEditorialNews>>),
+  ]);
 
-  if (news.length === 0) {
+  if (news.length === 0 && editorial.length === 0) {
     return <NewsPlaceholder locale={loc} />;
   }
 
@@ -96,11 +106,64 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-2">
-            <Newspaper className="w-5 h-5 text-aegean" />
-            <h1 className="text-2xl font-bold text-aegean">{PAGE_TITLES[loc]}</h1>
+            <Newspaper className="w-5 h-5 text-sea" />
+            <h1 className="text-2xl font-bold text-sea">{PAGE_TITLES[loc] ?? PAGE_TITLES.en}</h1>
           </div>
-          <p className="text-sm text-text-muted">{PAGE_SUBTITLES[loc]}</p>
+          <p className="text-sm text-text-muted">{PAGE_SUBTITLES[loc] ?? PAGE_SUBTITLES.en}</p>
         </div>
+
+        {/* crete.direct original reporting */}
+        {editorial.length > 0 && (
+          <div className="mb-10">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-terracotta mb-3">
+              {ORIGINAL_LABELS[loc] ?? ORIGINAL_LABELS.en}
+            </h2>
+            <div className="divide-y divide-border">
+              {editorial.map((g) => {
+                const title = getLocalizedGuideField(g, "titles", loc);
+                const summary = getLocalizedGuideField(g, "meta_descs", loc);
+                return (
+                  <article key={g.slug} className="py-4 group">
+                    <Link href={`/${locale}/articles/${g.slug}`} className="flex gap-4 items-start hover:opacity-80 transition-opacity">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-terracotta-faint text-terracotta">
+                            crete.direct
+                          </span>
+                          <span className="text-xs text-text-light flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {timeAgo(g.published_at, loc)}
+                          </span>
+                        </div>
+
+                        <h3 className="text-base font-semibold text-text group-hover:text-sea transition-colors leading-snug">
+                          {title}
+                        </h3>
+
+                        {summary && (
+                          <p className="text-sm text-text-muted mt-1 line-clamp-2 leading-relaxed">
+                            {summary}
+                          </p>
+                        )}
+                      </div>
+
+                      {g.image_url && (
+                        <div className="shrink-0 w-20 h-16 rounded-lg overflow-hidden bg-surface">
+                          <img
+                            src={g.image_url}
+                            alt={title || ""}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+                      )}
+                    </Link>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* News list */}
         <div className="divide-y divide-border">
@@ -110,7 +173,7 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
                     {item.category && (
-                      <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${CATEGORY_COLORS[item.category] || "bg-stone text-text-muted"}`}>
+                      <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${CATEGORY_COLORS[item.category] || "bg-surface text-text-muted"}`}>
                         {item.category}
                       </span>
                     )}
@@ -122,7 +185,7 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
                     <span className="text-xs text-text-light">{item.source_name}</span>
                   </div>
 
-                  <h2 className="text-base font-semibold text-text group-hover:text-aegean transition-colors leading-snug">
+                  <h2 className="text-base font-semibold text-text group-hover:text-sea transition-colors leading-snug">
                     {getLocalizedField(item, "title", loc)}
                   </h2>
 
@@ -134,7 +197,7 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
                 </div>
 
                 {item.image_url && (
-                  <div className="shrink-0 w-20 h-16 rounded-lg overflow-hidden bg-stone">
+                  <div className="shrink-0 w-20 h-16 rounded-lg overflow-hidden bg-surface">
                     <img
                       src={item.image_url}
                       alt={getLocalizedField(item, "title", loc) || ""}
@@ -150,7 +213,7 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
                   href={item.source_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[11px] text-text-light hover:text-aegean transition-colors"
+                  className="inline-flex items-center gap-1 text-[11px] text-text-light hover:text-sea transition-colors"
                 >
                   <ExternalLink className="w-3 h-3" />
                   {item.source_name}
@@ -169,23 +232,23 @@ function NewsPlaceholder({ locale }: { locale: Locale }) {
     <main className="min-h-screen bg-surface">
       <div className="max-w-3xl mx-auto px-4 py-12">
         <div className="flex items-center gap-2 mb-2">
-          <Newspaper className="w-5 h-5 text-aegean" />
-          <h1 className="text-2xl font-bold text-aegean">{PAGE_TITLES[locale]}</h1>
+          <Newspaper className="w-5 h-5 text-sea" />
+          <h1 className="text-2xl font-bold text-sea">{PAGE_TITLES[locale] ?? PAGE_TITLES.en}</h1>
         </div>
-        <p className="text-sm text-text-muted mb-8">{PAGE_SUBTITLES[locale]}</p>
+        <p className="text-sm text-text-muted mb-8">{PAGE_SUBTITLES[locale] ?? PAGE_SUBTITLES.en}</p>
 
         <div className="divide-y divide-border">
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="py-4 animate-pulse flex gap-4">
               <div className="flex-1">
                 <div className="flex gap-2 mb-2">
-                  <div className="h-4 w-16 bg-stone rounded-full" />
-                  <div className="h-4 w-12 bg-stone rounded" />
+                  <div className="h-4 w-16 bg-surface rounded-full" />
+                  <div className="h-4 w-12 bg-surface rounded" />
                 </div>
-                <div className="h-5 bg-stone rounded w-4/5 mb-2" />
-                <div className="h-3 bg-stone rounded w-2/3" />
+                <div className="h-5 bg-surface rounded w-4/5 mb-2" />
+                <div className="h-3 bg-surface rounded w-2/3" />
               </div>
-              <div className="w-20 h-16 bg-stone rounded-lg shrink-0" />
+              <div className="w-20 h-16 bg-surface rounded-lg shrink-0" />
             </div>
           ))}
         </div>

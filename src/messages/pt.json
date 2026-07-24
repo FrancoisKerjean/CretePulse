@@ -1,4 +1,11 @@
 {
+  "activityNudge": {
+    "close": "Fechar",
+    "title": "Ainda em dúvida?",
+    "subtitle": "Faz swipe nos melhores spots de Creta e encontra o que tem mais a ver contigo.",
+    "dismiss": "Mais tarde",
+    "cta": "Começar a fazer swipe"
+  },
   "meta": {
     "title": "Crete Direct - O que está a acontecer em Creta",
     "description": "Tempo, eventos, praias, notícias locais. Tudo sobre Creta, atualizado a cada hora. Grátis, em vários idiomas."
@@ -47,7 +54,63 @@
     "updatedAt": "Atualizado às {time} hora local",
     "noEvents": "Sem eventos próximos.",
     "submitEvent": "Submeter um?",
-    "newsFeedLoading": "A carregar notícias. Atualizadas a cada 3 horas."
+    "newsFeedLoading": "A carregar notícias. Atualizadas a cada 3 horas.",
+    "guidesSectionTitle": "Guias de viagem",
+    "guidesSectionSubtitle": "Praias, caminhadas, gastronomia, vida em Creta. Verificado na ilha.",
+    "allGuides": "Todos os guias",
+    "editorialGuides": "Guias editoriais",
+    "heroTitle": "Creta, hoje",
+    "carRentalKicker": "Aluguer de carros",
+    "carRentalTitle": "O teu carro para explorar Creta",
+    "carRentalSub": "Agência local, preço justo, sem pré-pagamento. Orçamento em 4 toques, recolha no aeroporto possível.",
+    "carRentalCta": "Pedir orçamento",
+    "heroMain": {
+      "pre": "Praias, autocarros, meteorologia.",
+      "hl": "Creta, em direto."
+    },
+    "heroToday": "Hoje o mar está {rating} em {name}. Vigiamos o vento, o mar e os autocarros por ti, durante todo o dia.",
+    "liveFromIsland": "em direto da ilha",
+    "heroSub": "Calculado em direto · 10 estações meteorológicas × a orientação de 500 praias.",
+    "ctaBeach": "Ver a praia de hoje",
+    "air": "ar",
+    "sea": "mar",
+    "islandNow": "A ilha, agora mesmo",
+    "allStations": "Todas as estações",
+    "swimToday": "Onde nadar hoje",
+    "allBeaches": "As 500 praias",
+    "todaysPick": "a escolha de hoje",
+    "toolsTitle": "As ferramentas",
+    "ratings": {
+      "calm": "calmo",
+      "fair": "razoável",
+      "exposed": "exposta"
+    },
+    "seaStates": {
+      "calm": "calmo",
+      "ok": "bom para nadar",
+      "rough": "agitado"
+    },
+    "regions": {
+      "south": "Costa sul",
+      "west": "Costa oeste",
+      "east": "Costa este",
+      "central": "Costa central"
+    },
+    "tools": {
+      "buses": "Autocarros",
+      "busesLine": "Horários & preços",
+      "swim": "Banhos",
+      "swimLine": "500 praias ao vivo",
+      "explore": "Explorar",
+      "exploreLine": "2296 lugares",
+      "airports": "Aeroportos",
+      "airportsLine": "Tráfego & estações",
+      "airbnb": "Dados Airbnb",
+      "airbnbLine": "Preços por zona",
+      "weather": "Meteorologia",
+      "weatherLine": "10 estações + mar"
+    },
+    "nextEvents": "Próximos eventos"
   },
   "footer": {
     "about": "Guia gratuito e independente de Creta. Dados em tempo real. Sem anúncios (por enquanto). Sem rastreamento.",
@@ -66,11 +129,65 @@
     "weather": "Tempo",
     "rights": "Todos os direitos reservados.",
     "madeIn": "Feito em Creta",
-    "propertyManagement": "Gestão de propriedades"
+    "airports": "Aeroportos",
+    "ourProject": "O nosso projeto",
+    "taglineLong": "O companheiro prático de Creta. Dados em tempo real, gratuito, independente. Feito na ilha.",
+    "plan": "Planear",
+    "discover": "Descobrir",
+    "info": "Informações"
   },
   "common": {
     "readMore": "Ler mais",
     "seeAll": "Ver tudo",
     "back": "Voltar"
+  },
+  "nextDeparture": {
+    "next": "Próxima partida",
+    "inMin": "daqui a {m} min",
+    "tomorrow": "Primeiro autocarro amanhã"
+  },
+  "depBoard": {
+    "title": "Próximos autocarros",
+    "plan": "Planear uma viagem",
+    "inMin": "daqui a {m} min",
+    "last": "último de hoje",
+    "tomorrow": "amanhã",
+    "routeAria": "Horários {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "Partidas",
+    "nearMe": "Perto de mim",
+    "tomorrow": "amanhã",
+    "later": "Ver partidas seguintes",
+    "none": "Não foram encontradas partidas aqui.",
+    "in": "daqui a",
+    "min": "min",
+    "hr": "h"
+  },
+  "pushBell": {
+    "cta": "Receber alertas de autocarros e avisos urgentes de Creta",
+    "on": "Alertas ativados",
+    "blocked": "Notificações bloqueadas no navegador.",
+    "iosInstall": "Alertas de autocarros: adiciona este site ao ecrã principal (Partilhar e depois Adicionar ao ecrã principal) para os ativar."
+  },
+  "timeChips": {
+    "legend": "próxima partida · as horas passadas aparecem esbatidas"
+  },
+  "busInCreteBox": {
+    "heading": "Deslocar-se em Creta de autocarro",
+    "connector": "a"
+  },
+  "installBanner": {
+    "title": "Creta sempre no bolso",
+    "body": "Autocarros ao vivo e praias, mesmo offline.",
+    "cta": "Instalar",
+    "later": "Agora não",
+    "ios": "Toca em Partilhar e depois “Adicionar ao ecrã principal”."
+  },
+  "tabBar": {
+    "map": "Mapa",
+    "buses": "Autocarros",
+    "beaches": "Praias",
+    "quote": "Orçamento"
   }
 }

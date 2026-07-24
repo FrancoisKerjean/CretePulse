@@ -1,0 +1,91 @@
+# Match Swipe — découverte de lieux façon Tinder
+
+**Date** : 2026-06-11
+**Statut** : validé par Kami (design approuvé en session)
+**Objectif** : rendre l'arrivée sur crete.direct plus engageante via un jeu de swipe sur les lieux, qui débouche sur un « match » et renvoie vers la fiche du lieu.
+
+## Contexte
+
+- Pool de données : table Supabase `cb_places`, 2296 lieux scrapés (641 monastères, 475 plages, 173 gorges...), photos hébergées `media.crete.direct/places` (18,4K photos), accès via `src/lib/cb-places.ts`.
+- `motion` v12 déjà en dépendance (drag gestures, exit animations).
+- Le drawer `/explore` (`src/components/explore/ExploreView.tsx`, 498 lignes) n'est pas deep-linkable aujourd'hui.
+- Contrainte copyright : les descriptions scrapées cretanbeaches.com ne doivent PAS être exposées à l'index. Le deck n'affiche que nom / photo / attributs / rating.
+
+## Décisions (validées avec Kami)
+
+1. **Contenu du deck** : les lieux `/explore` (pas les tours GYG, pas de mix).
+2. **Emplacement** : teaser sur la home + page dédiée `/[locale]/match` plein écran.
+3. **Mécanique** : match algorithmique après ~8 swipes (pas de like = match immédiat, pas de simple shortlist).
+4. **Approche** : client pur, zéro backend (approche A). Pas de table `swipes`, pas d'auth, pas de RGPD. localStorage + events Plausible. V2 Supabase seulement si les métriques le justifient.
+
+## Architecture
+
+### Nouvelle route `/[locale]/match`
+- `src/app/[locale]/match/page.tsx` : server component.
+  - Charge un échantillon de ~70 lieux : `photo_count > 0` obligatoire ; `rating >= 3.5` quand présent, accepté sans rating si photos ; diversifiés par `place_type` et `prefecture` (échantillonnage stratifié plafonné à ~25 % par type, pas juste top-rated).
+  - Metadata : titre type « Find your perfect spot in Crete », indexable, `buildAlternates` 22 locales (pattern existant).
+  - Passe l'échantillon (champs légers : slug, name, place_type, prefecture, rating, photos[0..2], water_color, sand_type, crowds, accessibility) à `MatchDeck`.
+
+### `src/components/match/MatchDeck.tsx` (client)
+- Deck de cartes empilées, drag horizontal via `motion` (rotation pendant le drag, badges LIKE/PASS en overlay selon la direction, exit animé).
+- Fallback boutons ❌ / ❤️ sous le deck ; desktop : flèches clavier ← →.
+- Scoring local :
+  - Like = +1 sur chaque attribut de la carte (place_type, prefecture, water_color, sand_type, crowds).
+  - Pass = -0.5 sur les mêmes attributs.
+- Au 8e swipe : scorer les lieux restants de l'échantillon contre le profil → le meilleur déclenche l'écran match.
+- Écran match : plein écran, photo du lieu, « It's a match! », confettis sobres (charte), CTA primaire « Voir ce spot » → `/explore?place=slug`, CTA secondaire « Continuer à swiper » (reset du compteur, pas du profil).
+- Shortlist : les likes s'accumulent dans une barre mini-vignettes en bas, cliquables vers `/explore?place=slug`.
+- Persistance localStorage : profil de goûts + likes + lieux déjà vus (clé `cd_match_v1`).
+
+### Deep-link `/explore?place=slug`
+- `ExploreView.tsx` : au mount, lire `useSearchParams()` ; si `place` présent, fetch `getCbPlaceBySlug` et ouvrir le drawer.
+- Aucun autre changement de comportement.
+
+### Teaser home
+- Carte « Trouve ton spot » dans le dashboard home (`src/components/home/`) : 2-3 photos en éventail léger (CSS transforms), libellé localisé, lien `/match`.
+- Respecter les règles UI maison : `card-base`, `font-data` pour toute donnée chiffrée, icônes `icons.tsx`, pas de hors-tokens.
+
+## i18n
+
+UI traduite en/fr/de/el, fallback EN pour les 18 autres locales, hreflang propre via `buildAlternates` (pattern existant des pages airbnb).
+
+## Mesure (Plausible)
+
+Events : `match_deck_start`, `swipe_like`, `swipe_pass`, `match_shown`, `match_clicked`, `match_replay`.
+Critère de succès : `match_clicked` / `match_deck_start` > 25 % après 2 semaines → justifie une V2 (persistance Supabase, social proof « X % ont liké »).
+
+## Hors scope V1
+
+- Table Supabase `swipes`, sessions, social proof.
+- Tours GetYourGuide dans le deck.
+- Pages individuelles `/places/[slug]` (blocage copyright sur les descriptions).
+- Partage social du match (V2 possible : OG image dynamique du lieu).
+
+## Risques
+
+- **Photos lourdes** : précharger seulement les 3 prochaines cartes ; photos déjà servies par `media.crete.direct`.
+- **Échantillon biaisé monastères** (641/2296) : l'échantillonnage stratifié plafonne chaque type à ~25 % du deck.
+- **SEO** : page client-side au contenu mince ; indexable mais sans enjeu de ranking, aucune description scrapée exposée.
+
+## V1.1 — Retours Kami du 12/06/2026 (validés en session)
+
+Retour UX après test local : « comme Tinder au début faudrait cocher des centres d'intérêt, et après ça propose des matchs, et un bouton où ça dit j'ai fini de liker, et après ça fait une synthèse de ce qui a été liké et propose les lieux avec un bouton itinéraire ».
+
+### Décisions
+1. **Onboarding centres d'intérêt** : avant le premier deck, écran de chips multi-select (groupes de types : Plages / Nature & rando / Monastères & églises / Histoire & ruines / Grottes / Villes & villages / Musées / Îles & phares) + bouton « Tout me va » (skip). Effets : le deck est pondéré ~75 % types choisis / 25 % découverte, et le profil de goûts est seedé (+1 par type des groupes choisis). Choix persisté dans `cd_match_v1.interests` ; re-modifiable via un bouton discret sur l'écran de swipe.
+2. **Overlay match conservé** (décision Kami : « garder les deux ») : le match toutes les 8 cartes reste, désormais nourri par les intérêts.
+3. **Bouton « J'ai fini de liker »** : sous les boutons ❌/❤️, actif dès 1 like, ouvre la synthèse.
+4. **Synthèse** : remplace le deck : résumé des goûts (top types likés en chips), liste des lieux likés (photo, nom, type · préfecture, note) avec par lieu : lien fiche (`/explore?place=`) + **boutons Itinéraire = Google Maps directions** (`https://www.google.com/maps/dir/?api=1&destination=lat,lng`) **et Waze** (`https://waze.com/ul?ll=lat,lng&navigate=yes`) (décisions Kami, ajout Waze 12/06). Bouton « Reprendre le swipe » pour revenir au deck.
+5. **MatchPlace** : ajout `latitude`/`longitude` (nécessaires au bouton itinéraire, déjà dans cb_places).
+6. **Events Plausible ajoutés** : `interests_set` (props: groups), `finish_clicked`, `synthesis_route_clicked` (props: slug), `synthesis_place_clicked` (props: slug).
+
+### Hors scope V1.1
+Partage de la synthèse (OG dynamique), réordonnancement manuel, export PDF/itinéraire multi-étapes.
+
+## V1.2 — Conversions de la synthèse (validé Kami 12/06 : « les 3 »)
+
+Constat : la synthèse ne convertissait vers rien. Trois branchements, du plus fort au plus faible :
+1. **Voiture** : `CarPromo` (produit partenaire Auto Smart, lead interne `/car-rental`) avec `source="match-synthesis"`, affiché sous la liste des likes. L'intention est routière par construction (boutons Waze/Maps juste au-dessus).
+2. **Tours GetYourGuide** : `AffiliateBanner type="tours"` affiché UNIQUEMENT si la sélection contient au moins un lieu « excursionnable » (types : gorge, island, beach, cave, natural-park, waterfall, archaeological-site, historical-site).
+3. **Email** : formulaire « Reçois ta sélection par email » : nouvelle route `POST /api/match/selection-email` (honeypot + validation slugs + cap 60) qui envoie la liste (nom, type, lien fiche, lien Maps) via Resend (`sendSelectionEmail` dans `src/lib/email.ts`), + case à cocher NON pré-cochée « et inscris-moi au briefing hebdo » qui poste aussi sur `/api/newsletter/subscribe` (double opt-in existant).
+Events Plausible ajoutés : `synthesis_car_promo` (clic relayé par le wizard via source), `synthesis_email_sent`, `synthesis_email_newsletter_optin`.

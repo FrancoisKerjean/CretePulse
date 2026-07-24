@@ -1,13 +1,15 @@
 import type { Locale } from "@/lib/types";
+import { setRequestLocale } from "next-intl/server";
 import { Flame, AlertTriangle, Phone, Shield } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
 
-export const revalidate = 3600;
+export const revalidate = 7200; // 03/07 optim couts Vercel
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const metaData: Record<string, { title: string; desc: string }> = {
     en: { title: "Fire Risk & Safety in Crete - Live Alerts & Emergency Info | Crete Direct", desc: "Fire risk levels, EU Copernicus satellite data and emergency contacts for Crete. Know the risks during fire season (June-September) and safety tips for tourists." },
     fr: { title: "Risque d'Incendie en Crète - Alertes Live & Sécurité | Crete Direct", desc: "Niveaux de risque d'incendie, données satellites Copernicus UE et contacts d'urgence pour la Crète. Saison des incendies juin-septembre." },
@@ -138,8 +140,10 @@ function isHighSeason(): boolean {
 
 export default async function FireAlertsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
-  const content = CONTENT[loc];
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  const content = CONTENT[loc] ?? CONTENT.en;
   const highSeason = isHighSeason();
 
   return (

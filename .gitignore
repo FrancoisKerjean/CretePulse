@@ -7,3 +7,13 @@ node_modules/
 next-env.d.ts
 
 .vercel
+
+# contacts prospection activités (données perso, jamais versionnées)
+data/activity-catalog-prospects.local.json
+
+# local env backups + data pipeline artifacts (re-downloadable)
+.env*.bak*
+.env.local.bak.*
+__pycache__/
+/fraport_*.pdf
+/hcaa_kinisi_*.xlsx

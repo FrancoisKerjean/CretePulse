@@ -1,4 +1,11 @@
 {
+  "activityNudge": {
+    "close": "Sulje",
+    "title": "Etkö ole vielä päättänyt?",
+    "subtitle": "Swaippaa Kreetan parhaat paikat ja löydä juuri sinulle sopiva.",
+    "dismiss": "Myöhemmin",
+    "cta": "Aloita swaippaus"
+  },
   "meta": {
     "title": "Crete Direct - Mitä Kreetalla tapahtuu",
     "description": "Sää, tapahtumat, rannat, paikallisuutiset. Kaikki Kreetasta, päivitetään joka tunti. Ilmainen, monikielinen."
@@ -47,7 +54,63 @@
     "updatedAt": "Päivitetty klo {time} paikallista aikaa",
     "noEvents": "Ei tulevia tapahtumia.",
     "submitEvent": "Lähetä tapahtuma?",
-    "newsFeedLoading": "Uutissyöte latautuu. Päivitetään 3 tunnin välein."
+    "newsFeedLoading": "Uutissyöte latautuu. Päivitetään 3 tunnin välein.",
+    "guidesSectionTitle": "Matkaoppaat",
+    "guidesSectionSubtitle": "Rannat, vaellukset, ruoka, elämä Kreetalla. Tarkistettu paikan päällä.",
+    "allGuides": "Kaikki oppaat",
+    "editorialGuides": "Toimitukselliset oppaat",
+    "heroTitle": "Kreeta, tänään",
+    "carRentalKicker": "Auton vuokraus",
+    "carRentalTitle": "Autosi Kreetan tutkimiseen",
+    "carRentalSub": "Paikallinen toimisto, reilu hinta, ei ennakkomaksua. Tarjous 4 napautuksella, nouto lentokentältä mahdollista.",
+    "carRentalCta": "Pyydä tarjous",
+    "heroMain": {
+      "pre": "Rannat, bussit, sää.",
+      "hl": "Kreeta, livenä."
+    },
+    "heroToday": "Tänään meri on {rating} kohteessa {name}. Pidämme tuulen, meren ja bussit silmällä puolestasi, koko päivän.",
+    "liveFromIsland": "livenä saarelta",
+    "heroSub": "Laskettu livenä · 10 sääasemaa × 500 rannan suunta.",
+    "ctaBeach": "Katso päivän ranta",
+    "air": "ilma",
+    "sea": "meri",
+    "islandNow": "Saari, juuri nyt",
+    "allStations": "Kaikki asemat",
+    "swimToday": "Missä uida tänään",
+    "allBeaches": "Kaikki 500 rantaa",
+    "todaysPick": "päivän valinta",
+    "toolsTitle": "Työkalut",
+    "ratings": {
+      "calm": "tyyni",
+      "fair": "kohtalainen",
+      "exposed": "tuulinen"
+    },
+    "seaStates": {
+      "calm": "tyyni",
+      "ok": "uintikelpoinen",
+      "rough": "aallokkoinen"
+    },
+    "regions": {
+      "south": "Etelärannikko",
+      "west": "Länsirannikko",
+      "east": "Itärannikko",
+      "central": "Keskirannikko"
+    },
+    "tools": {
+      "buses": "Bussit",
+      "busesLine": "Aikataulut & hinnat",
+      "swim": "Uinti",
+      "swimLine": "500 rantaa livenä",
+      "explore": "Tutustu",
+      "exploreLine": "2 296 paikkaa",
+      "airports": "Lentokentät",
+      "airportsLine": "Liikenne & kaudet",
+      "airbnb": "Airbnb-data",
+      "airbnbLine": "Hinnat alueittain",
+      "weather": "Sää",
+      "weatherLine": "10 asemaa + meri"
+    },
+    "nextEvents": "Tulevat tapahtumat"
   },
   "footer": {
     "about": "Ilmainen, riippumaton Kreeta-opas. Reaaliaikaista dataa. Ei mainoksia (vielä). Ei seurantaa.",
@@ -66,11 +129,65 @@
     "weather": "Sää",
     "rights": "Kaikki oikeudet pidätetään.",
     "madeIn": "Tehty Kreetalla",
-    "propertyManagement": "Kiinteistöhallinta"
+    "airports": "Lentoasemat",
+    "ourProject": "Projektimme",
+    "taglineLong": "Käytännöllinen kumppanisi Kreetalla. Reaaliaikaista tietoa, ilmaista, riippumatonta. Tehty saarella.",
+    "plan": "Suunnittele",
+    "discover": "Löydä",
+    "info": "Tiedot"
   },
   "common": {
     "readMore": "Lue lisää",
     "seeAll": "Näytä kaikki",
     "back": "Takaisin"
+  },
+  "nextDeparture": {
+    "next": "Seuraava lähtö",
+    "inMin": "{m} min kuluttua",
+    "tomorrow": "Ensimmäinen bussi huomenna"
+  },
+  "depBoard": {
+    "title": "Seuraavat bussit",
+    "plan": "Suunnittele matka",
+    "inMin": "{m} min kuluttua",
+    "last": "viimeinen tänään",
+    "tomorrow": "huomenna",
+    "routeAria": "Aikataulu {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "Lähdöt",
+    "nearMe": "Lähelläni",
+    "tomorrow": "huomenna",
+    "later": "Näytä myöhemmät lähdöt",
+    "none": "Ei lähtöjä täältä.",
+    "in": "kuluttua",
+    "min": "min",
+    "hr": "h"
+  },
+  "pushBell": {
+    "cta": "Tilaa bussi- ja kiireelliset Kreeta-hälytykset",
+    "on": "Hälytykset päällä",
+    "blocked": "Ilmoitukset estetty selaimessasi.",
+    "iosInstall": "Bussihälytykset: lisää tämä sivusto aloitusnäyttöön (Jaa, sitten Lisää aloitusnäyttöön) ottaaksesi ne käyttöön."
+  },
+  "timeChips": {
+    "legend": "seuraava lähtö · menneet ajat näkyvät himmennettyinä"
+  },
+  "busInCreteBox": {
+    "heading": "Kreetalla liikkuminen bussilla",
+    "connector": "–"
+  },
+  "installBanner": {
+    "title": "Kreeta taskussasi",
+    "body": "Bussit reaaliajassa ja rannat, myös offline.",
+    "cta": "Asenna",
+    "later": "Ei nyt",
+    "ios": "Napauta Jaa ja sitten ”Lisää Koti-valikkoon”."
+  },
+  "tabBar": {
+    "map": "Kartta",
+    "buses": "Bussit",
+    "beaches": "Rannat",
+    "quote": "Tarjous"
   }
 }

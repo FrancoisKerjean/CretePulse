@@ -1,11 +1,12 @@
 import { getUpcomingEvents, groupEventsByWeek } from "@/lib/events";
+import { setRequestLocale } from "next-intl/server";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { localizeLocation } from "@/lib/localize-location";
 import { Calendar, MapPin, Clock } from "lucide-react";
 import Link from "next/link";
 import { buildAlternates } from "@/lib/seo";
 
-export const revalidate = 7200;
+export const revalidate = 7200; // 03/07 optim couts Vercel
 
 const EVENTS_LABELS: Record<Locale, {
   subtitle: string;
@@ -14,10 +15,10 @@ const EVENTS_LABELS: Record<Locale, {
   events: string;
   coming: string;
 }> = {
-  en: { subtitle: "upcoming events — festivals, markets, concerts, panigýria", until: "Until", event: "event", events: "events", coming: "Upcoming events coming soon." },
-  fr: { subtitle: "événements à venir — festivals, marchés, concerts, panigýria", until: "Jusqu'au", event: "événement", events: "événements", coming: "Événements à venir bientôt." },
-  de: { subtitle: "bevorstehende Events — Festivals, Märkte, Konzerte, Panigýria", until: "Bis", event: "Event", events: "Events", coming: "Bevorstehende Events demnächst." },
-  el: { subtitle: "επερχόμενες εκδηλώσεις — φεστιβάλ, αγορές, συναυλίες, πανηγύρια", until: "Έως", event: "εκδήλωση", events: "εκδηλώσεις", coming: "Επερχόμενες εκδηλώσεις σύντομα." },
+  en: { subtitle: "upcoming events · festivals, markets, concerts, panigýria", until: "Until", event: "event", events: "events", coming: "Upcoming events coming soon." },
+  fr: { subtitle: "événements à venir · festivals, marchés, concerts, panigýria", until: "Jusqu'au", event: "événement", events: "événements", coming: "Événements à venir bientôt." },
+  de: { subtitle: "bevorstehende Events · Festivals, Märkte, Konzerte, Panigýria", until: "Bis", event: "Event", events: "Events", coming: "Bevorstehende Events demnächst." },
+  el: { subtitle: "επερχόμενες εκδηλώσεις · φεστιβάλ, αγορές, συναυλίες, πανηγύρια", until: "Έως", event: "εκδήλωση", events: "εκδηλώσεις", coming: "Επερχόμενες εκδηλώσεις σύντομα." },
 };
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
@@ -31,6 +32,7 @@ const EVENTS_META: Record<string, { title: string; desc: string }> = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = EVENTS_META[locale] || EVENTS_META.en;
   const url = `${BASE_URL}/${locale}/events`;
   return {
@@ -42,13 +44,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  festival: "bg-terra-faint text-terra",
+  festival: "bg-terracotta-faint text-terracotta",
   market: "bg-sand text-text",
-  concert: "bg-aegean-faint text-aegean",
-  religious: "bg-stone text-text-muted",
+  concert: "bg-sea-faint text-sea",
+  religious: "bg-surface text-text-muted",
   sport: "bg-olive/10 text-olive",
-  cultural: "bg-aegean-faint text-aegean",
-  food: "bg-terra-faint text-terra",
+  cultural: "bg-sea-faint text-sea",
+  food: "bg-terracotta-faint text-terracotta",
 };
 
 function formatWeekLabel(mondayStr: string, locale: string): string {
@@ -70,7 +72,10 @@ function formatEventDate(dateStr: string, locale: string): string {
 
 export default async function EventsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  const eventsLabels = EVENTS_LABELS[loc] ?? EVENTS_LABELS.en;
 
   let events: Awaited<ReturnType<typeof getUpcomingEvents>> = [];
   try {
@@ -89,14 +94,14 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
   return (
     <main className="min-h-screen bg-surface">
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-aegean">
+        <h1 className="text-3xl font-bold text-sea">
           {loc === "fr" ? "Événements en Crète" :
            loc === "de" ? "Veranstaltungen auf Kreta" :
            loc === "el" ? "Εκδηλώσεις στην Κρήτη" :
            "Events in Crete"}
         </h1>
         <p className="text-text-muted mt-2">
-          {events.length} {EVENTS_LABELS[loc].subtitle}
+          {events.length} {eventsLabels.subtitle}
         </p>
 
         <div className="mt-8 space-y-10">
@@ -104,11 +109,11 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
             <section key={mondayStr}>
               {/* Week header */}
               <div className="flex items-center gap-3 mb-4">
-                <div className="flex items-center gap-2 bg-aegean text-white px-3 py-1.5 rounded-lg text-sm font-medium">
+                <div className="flex items-center gap-2 bg-sea text-white px-3 py-1.5 rounded-lg text-sm font-medium">
                   <Calendar className="w-4 h-4" />
                   {formatWeekLabel(mondayStr, locale)}
                 </div>
-                <span className="text-xs text-text-muted">{weekEvents.length} {weekEvents.length !== 1 ? EVENTS_LABELS[loc].events : EVENTS_LABELS[loc].event}</span>
+                <span className="text-xs text-text-muted">{weekEvents.length} {weekEvents.length !== 1 ? eventsLabels.events : eventsLabels.event}</span>
               </div>
 
               {/* Events list */}
@@ -117,11 +122,11 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
                   <Link
                     key={event.slug}
                     href={`/${locale}/events/${event.slug}`}
-                    className="group flex gap-4 rounded-xl border border-border bg-white p-4 hover:border-aegean/30 hover:shadow-sm transition-all"
+                    className="group flex gap-4 rounded-xl border border-border bg-white p-4 hover:border-sea/30 hover:shadow-soft transition-all"
                   >
                     {/* Date column */}
                     <div className="shrink-0 w-14 text-center">
-                      <div className="text-2xl font-bold text-aegean leading-none">
+                      <div className="text-2xl font-bold text-sea leading-none">
                         {new Date(event.date_start).getDate()}
                       </div>
                       <div className="text-xs text-text-muted uppercase mt-0.5">
@@ -138,11 +143,11 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start gap-2 flex-wrap">
-                        <h2 className="font-semibold text-base group-hover:text-aegean transition-colors leading-tight">
+                        <h2 className="font-semibold text-base group-hover:text-sea transition-colors leading-tight">
                           {getLocalizedField(event, "title", loc)}
                         </h2>
                         {event.category && (
-                          <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full capitalize ${CATEGORY_COLORS[event.category] || "bg-stone text-text-muted"}`}>
+                          <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full capitalize ${CATEGORY_COLORS[event.category] || "bg-surface text-text-muted"}`}>
                             {event.category}
                           </span>
                         )}
@@ -162,7 +167,7 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
                         {event.date_end && event.date_end !== event.date_start && (
                           <span className="inline-flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
-                            {EVENTS_LABELS[loc].until} {formatEventDate(event.date_end, locale)}
+                            {eventsLabels.until} {formatEventDate(event.date_end, locale)}
                           </span>
                         )}
                       </div>
@@ -185,22 +190,24 @@ function EventsPlaceholder({ locale }: { locale: Locale }) {
     de: "Veranstaltungen auf Kreta",
     el: "Εκδηλώσεις στην Κρήτη",
   };
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  const eventsLabels = EVENTS_LABELS[locale] ?? EVENTS_LABELS.en;
 
   return (
     <main className="min-h-screen bg-surface">
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-aegean">{titles[locale]}</h1>
-        <p className="text-text-muted mt-2">{EVENTS_LABELS[locale].coming}</p>
+        <h1 className="text-3xl font-bold text-sea">{titles[locale] ?? titles.en}</h1>
+        <p className="text-text-muted mt-2">{eventsLabels.coming}</p>
         <div className="mt-8 space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-border bg-white p-4 animate-pulse flex gap-4">
               <div className="w-14 shrink-0">
-                <div className="h-8 bg-stone rounded mb-1" />
-                <div className="h-3 bg-stone rounded" />
+                <div className="h-8 bg-surface rounded mb-1" />
+                <div className="h-3 bg-surface rounded" />
               </div>
               <div className="flex-1">
-                <div className="h-5 bg-stone rounded w-3/4 mb-2" />
-                <div className="h-3 bg-stone rounded w-1/2" />
+                <div className="h-5 bg-surface rounded w-3/4 mb-2" />
+                <div className="h-3 bg-surface rounded w-1/2" />
               </div>
             </div>
           ))}

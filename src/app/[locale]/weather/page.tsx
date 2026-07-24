@@ -1,7 +1,9 @@
 import { fetchAllCitiesWeather, getWeatherLabel, getWeatherIcon } from "@/lib/weather";
+import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/types";
 import { Wind, Droplets, Sun, Thermometer, Waves, Eye } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
+import { ShareBar } from "@/components/ShareBar";
 
 export const revalidate = 7200;
 
@@ -16,6 +18,7 @@ const WEATHER_META: Record<string, { title: string; desc: string }> = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = WEATHER_META[locale] || WEATHER_META.en;
   const url = `${BASE_URL}/${locale}/weather`;
   return {
@@ -84,7 +87,12 @@ function UVBadge({ uv }: { uv: number }) {
 
 export default async function WeatherPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  const title = TITLES[loc] ?? TITLES.en;
+  const subtitle = SUBTITLES[loc] ?? SUBTITLES.en;
+  const cardLabels = WEATHER_CARD_LABELS[loc] ?? WEATHER_CARD_LABELS.en;
 
   let cities: Awaited<ReturnType<typeof fetchAllCitiesWeather>> = [];
   let fetchError = false;
@@ -103,8 +111,9 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
       <div className="max-w-6xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-aegean">{TITLES[loc]}</h1>
-          <p className="text-text-muted mt-2">{SUBTITLES[loc]}</p>
+          <h1 className="text-3xl font-bold text-sea">{title}</h1>
+          <p className="text-text-muted mt-2">{subtitle}</p>
+          <ShareBar url={`${BASE_URL}/${locale}/weather`} title={title} locale={locale} className="mt-4" />
         </div>
 
         {/* Cities grid */}
@@ -112,10 +121,10 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
           {cities.map((city) => (
             <div
               key={city.name}
-              className="rounded-xl border border-border bg-white overflow-hidden hover:shadow-md transition-shadow"
+              className="rounded-xl border border-border bg-white overflow-hidden hover:shadow-soft transition-shadow"
             >
               {/* Card header */}
-              <div className="bg-aegean px-4 pt-4 pb-3 text-white">
+              <div className="bg-sea px-4 pt-4 pb-3 text-white">
                 <div className="flex items-start justify-between">
                   <div>
                     <h2 className="font-bold text-lg leading-tight">{city.name}</h2>
@@ -133,9 +142,9 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
               {/* Stats */}
               <div className="p-4 grid grid-cols-2 gap-3">
                 <div className="flex items-center gap-2">
-                  <Wind className="w-4 h-4 text-aegean shrink-0" />
+                  <Wind className="w-4 h-4 text-sea shrink-0" />
                   <div>
-                    <p className="text-xs text-text-muted">{WEATHER_CARD_LABELS[loc].wind}</p>
+                    <p className="text-xs text-text-muted">{cardLabels.wind}</p>
                     <p className="text-sm font-semibold">
                       {city.windSpeed} km/h{" "}
                       <WindArrow deg={city.windDir} />
@@ -144,11 +153,11 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Waves className="w-4 h-4 text-aegean shrink-0" />
+                  <Waves className="w-4 h-4 text-sea shrink-0" />
                   <div>
-                    <p className="text-xs text-text-muted">{WEATHER_CARD_LABELS[loc].seaTemp}</p>
+                    <p className="text-xs text-text-muted">{cardLabels.seaTemp}</p>
                     <p className="text-sm font-semibold">
-                      {city.seaTemp != null ? `${city.seaTemp}°C` : "—"}
+                      {city.seaTemp != null ? `${city.seaTemp}°C` : "·"}
                     </p>
                   </div>
                 </div>
@@ -156,7 +165,7 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
                 <div className="flex items-center gap-2">
                   <Sun className="w-4 h-4 text-amber-500 shrink-0" />
                   <div>
-                    <p className="text-xs text-text-muted">{WEATHER_CARD_LABELS[loc].uvIndex}</p>
+                    <p className="text-xs text-text-muted">{cardLabels.uvIndex}</p>
                     <div className="mt-0.5">
                       <UVBadge uv={city.uvIndex} />
                     </div>
@@ -164,9 +173,9 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Droplets className="w-4 h-4 text-aegean shrink-0" />
+                  <Droplets className="w-4 h-4 text-sea shrink-0" />
                   <div>
-                    <p className="text-xs text-text-muted">{WEATHER_CARD_LABELS[loc].rain}</p>
+                    <p className="text-xs text-text-muted">{cardLabels.rain}</p>
                     <p className="text-sm font-semibold">{city.precipitation} mm</p>
                   </div>
                 </div>
@@ -176,32 +185,55 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
               {city.waveHeight != null && (
                 <div className="px-4 pb-3 border-t border-border pt-3">
                   <div className="flex items-center gap-2 text-sm text-text-muted">
-                    <Waves className="w-4 h-4 text-aegean" />
-                    {WEATHER_CARD_LABELS[loc].waves}: <span className="font-semibold text-text">{city.waveHeight.toFixed(1)} m</span>
+                    <Waves className="w-4 h-4 text-sea" />
+                    {cardLabels.waves}: <span className="font-semibold text-text">{city.waveHeight.toFixed(1)} m</span>
                   </div>
                 </div>
               )}
 
-              {/* 5-day forecast placeholder */}
+              {/* 5-day forecast */}
               <div className="px-4 pb-4 border-t border-border pt-3">
-                <p className="text-xs text-text-muted mb-2">{WEATHER_CARD_LABELS[loc].forecast}</p>
-                <div className="flex gap-1 justify-between">
-                  {Array.from({ length: 5 }).map((_, i) => {
-                    const d = new Date();
-                    d.setDate(d.getDate() + i + 1);
-                    return (
-                      <div key={i} className="flex-1 text-center">
-                        <p className="text-[10px] text-text-muted">
-                          {d.toLocaleDateString(
-                            locale === "el" ? "el-GR" : locale === "fr" ? "fr-FR" : locale === "de" ? "de-DE" : "en-GB",
-                            { weekday: "short" }
-                          )}
-                        </p>
-                        <div className="h-6 bg-stone rounded mt-1 animate-pulse" />
-                      </div>
-                    );
-                  })}
-                </div>
+                <p className="text-xs text-text-muted mb-2">{cardLabels.forecast}</p>
+                {city.daily && city.daily.length > 0 ? (
+                  <div className="flex gap-1 justify-between">
+                    {city.daily.slice(0, 5).map((day) => {
+                      const d = new Date(day.date);
+                      const icon = getWeatherIcon(day.weatherCode);
+                      const emoji = icon === "sun" ? "☀️" : icon === "rain" ? "🌧️" : icon === "wind" ? "💨" : "⛅";
+                      return (
+                        <div key={day.date} className="flex-1 text-center">
+                          <p className="text-[10px] text-text-muted">
+                            {d.toLocaleDateString(
+                              locale === "el" ? "el-GR" : locale === "fr" ? "fr-FR" : locale === "de" ? "de-DE" : "en-GB",
+                              { weekday: "short" }
+                            )}
+                          </p>
+                          <p className="text-base leading-tight mt-0.5" aria-label={getWeatherLabel(day.weatherCode)}>{emoji}</p>
+                          <p className="text-[11px] font-semibold text-text leading-tight">{day.tempMax}°</p>
+                          <p className="text-[10px] text-text-muted leading-tight">{day.tempMin}°</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="flex gap-1 justify-between">
+                    {Array.from({ length: 5 }).map((_, i) => {
+                      const d = new Date();
+                      d.setDate(d.getDate() + i + 1);
+                      return (
+                        <div key={i} className="flex-1 text-center">
+                          <p className="text-[10px] text-text-muted">
+                            {d.toLocaleDateString(
+                              locale === "el" ? "el-GR" : locale === "fr" ? "fr-FR" : locale === "de" ? "de-DE" : "en-GB",
+                              { weekday: "short" }
+                            )}
+                          </p>
+                          <div className="h-6 bg-surface rounded mt-1 animate-pulse" />
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -218,7 +250,7 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
           >
             Open-Meteo
           </a>
-          {" "}— free & open source. Updated every hour.
+          {" "}· free & open source. Updated every hour.
         </p>
       </div>
     </main>
@@ -229,16 +261,16 @@ function WeatherPlaceholder({ locale }: { locale: Locale }) {
   return (
     <main className="min-h-screen bg-surface">
       <div className="max-w-6xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-aegean">{TITLES[locale]}</h1>
-        <p className="text-text-muted mt-2">{SUBTITLES[locale]}</p>
+        <h1 className="text-3xl font-bold text-sea">{TITLES[locale] ?? TITLES.en}</h1>
+        <p className="text-text-muted mt-2">{SUBTITLES[locale] ?? SUBTITLES.en}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-8">
           {Array.from({ length: 10 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-border bg-white overflow-hidden animate-pulse">
-              <div className="h-28 bg-aegean/20" />
+              <div className="h-28 bg-sea/20" />
               <div className="p-4 space-y-3">
-                <div className="h-4 bg-stone rounded w-3/4" />
-                <div className="h-4 bg-stone rounded w-1/2" />
-                <div className="h-4 bg-stone rounded w-2/3" />
+                <div className="h-4 bg-surface rounded w-3/4" />
+                <div className="h-4 bg-surface rounded w-1/2" />
+                <div className="h-4 bg-surface rounded w-2/3" />
               </div>
             </div>
           ))}

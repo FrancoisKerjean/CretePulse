@@ -1,4 +1,11 @@
 {
+  "activityNudge": {
+    "close": "閉じる",
+    "title": "まだ迷ってる？",
+    "subtitle": "クレタ島のベストスポットをスワイプして、あなたにぴったりの一つを見つけよう。",
+    "dismiss": "あとで",
+    "cta": "スワイプを始める"
+  },
   "meta": {
     "title": "Crete Direct - クレタ島の最新情報",
     "description": "天気、イベント、ビーチ、地元ニュース。クレタ島のすべてを毎時更新。無料、多言語対応。"
@@ -47,7 +54,63 @@
     "updatedAt": "現地時間 {time} に更新",
     "noEvents": "今後のイベントはありません。",
     "submitEvent": "イベントを投稿しますか？",
-    "newsFeedLoading": "ニュースフィードを読み込み中。3時間ごとに更新されます。"
+    "newsFeedLoading": "ニュースフィードを読み込み中。3時間ごとに更新されます。",
+    "guidesSectionTitle": "旅行ガイド",
+    "guidesSectionSubtitle": "クレタ島のビーチ、ハイキング、料理、暮らし。現地で検証済み。",
+    "allGuides": "すべてのガイド",
+    "editorialGuides": "特集ガイド",
+    "heroTitle": "今日のクレタ島",
+    "carRentalKicker": "レンタカー",
+    "carRentalTitle": "クレタ島を巡るあなたの車",
+    "carRentalSub": "地元の代理店、公正な価格、前払い不要。4タップで見積もり、空港受け取り可能。",
+    "carRentalCta": "見積もりを取る",
+    "heroMain": {
+      "pre": "ビーチも、バスも、天気も。",
+      "hl": "クレタ島、ライブ。"
+    },
+    "heroToday": "今日の{name}の海は{rating}。風も、海も、バスも、一日中ぜんぶ見張ってるよ。",
+    "liveFromIsland": "島から生中継",
+    "heroSub": "リアルタイム計算 · 気象観測10地点 × ビーチ500ヶ所の向き。",
+    "ctaBeach": "今日のビーチを見る",
+    "air": "気温",
+    "sea": "海",
+    "islandNow": "島の、今この瞬間",
+    "allStations": "すべての観測地点",
+    "swimToday": "今日はどこで泳ぐ?",
+    "allBeaches": "500のビーチ",
+    "todaysPick": "今日のおすすめ",
+    "toolsTitle": "ツール",
+    "ratings": {
+      "calm": "おだやか",
+      "fair": "まずまず",
+      "exposed": "荒れ気味"
+    },
+    "seaStates": {
+      "calm": "おだやか",
+      "ok": "泳げる",
+      "rough": "波あり"
+    },
+    "regions": {
+      "south": "南海岸",
+      "west": "西海岸",
+      "east": "東海岸",
+      "central": "中央海岸"
+    },
+    "tools": {
+      "buses": "バス",
+      "busesLine": "時刻表と料金",
+      "swim": "海水浴",
+      "swimLine": "500ビーチをライブ",
+      "explore": "探索",
+      "exploreLine": "2,296スポット",
+      "airports": "空港",
+      "airportsLine": "便数とシーズン",
+      "airbnb": "Airbnbデータ",
+      "airbnbLine": "エリア別の価格",
+      "weather": "天気",
+      "weatherLine": "10地点+海況"
+    },
+    "nextEvents": "これからのイベント"
   },
   "footer": {
     "about": "クレタ島の無料・独立ガイド。ライブデータ。広告なし（今のところ）。トラッキングなし。",
@@ -66,11 +129,65 @@
     "weather": "天気",
     "rights": "全著作権所有。",
     "madeIn": "クレタ島製",
-    "propertyManagement": "不動産管理"
+    "airports": "空港",
+    "ourProject": "私たちのプロジェクト",
+    "taglineLong": "クレタ島の実用ガイド。リアルタイム情報、無料、独立運営。島で生まれました。",
+    "plan": "計画する",
+    "discover": "見つける",
+    "info": "インフォメーション"
   },
   "common": {
     "readMore": "続きを読む",
     "seeAll": "すべて見る",
     "back": "戻る"
+  },
+  "nextDeparture": {
+    "next": "次の便",
+    "inMin": "あと{m}分",
+    "tomorrow": "始発は明日"
+  },
+  "depBoard": {
+    "title": "次のバス",
+    "plan": "ルートを検索",
+    "inMin": "{m}分後",
+    "last": "本日最終",
+    "tomorrow": "明日",
+    "routeAria": "時刻表 {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "出発",
+    "nearMe": "現在地周辺",
+    "tomorrow": "明日",
+    "later": "後の便を表示",
+    "none": "この付近に出発便はありません。",
+    "in": "あと",
+    "min": "分",
+    "hr": "時間"
+  },
+  "pushBell": {
+    "cta": "バス運行・クレタ島の緊急情報を受け取る",
+    "on": "通知オン",
+    "blocked": "ブラウザで通知がブロックされています。",
+    "iosInstall": "バス通知：有効にするには、このサイトをホーム画面に追加してください（共有 → ホーム画面に追加）。"
+  },
+  "timeChips": {
+    "legend": "次の出発便 · 過ぎた時刻は薄く表示"
+  },
+  "busInCreteBox": {
+    "heading": "バスで巡るクレタ島",
+    "connector": "→"
+  },
+  "installBanner": {
+    "title": "クレタ島をポケットに",
+    "body": "バスの現在位置とビーチ情報、オフラインでも。",
+    "cta": "インストール",
+    "later": "あとで",
+    "ios": "共有をタップし、「ホーム画面に追加」を選択。"
+  },
+  "tabBar": {
+    "map": "地図",
+    "buses": "バス",
+    "beaches": "ビーチ",
+    "quote": "見積り"
   }
 }

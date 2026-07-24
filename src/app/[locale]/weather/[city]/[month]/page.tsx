@@ -1,11 +1,15 @@
-import { CITIES, MONTHS, MONTH_NAMES, getClimateData, getCity, getSwimVerdict } from "@/lib/weather-monthly";
+import { CITIES, MONTHS, MONTH_NAMES, getClimateData, getCity, getSwimVerdict, getAnnualAverage, getCityLocativeEl } from "@/lib/weather-monthly";
+import { weatherInsight } from "@/lib/weather-insight";
+import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/types";
-import { Thermometer, Waves, Sun, CloudRain, ChevronLeft } from "lucide-react";
+import { Thermometer, Waves, Sun, CloudRain, ChevronLeft, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
+import { weatherPageSchema } from "@/lib/schema";
+import { JsonLd } from "@/components/JsonLd";
 
-export const revalidate = 86400;
+export const revalidate = 172800; // 03/07 optim couts Vercel (48h, ISR Writes)
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
@@ -19,11 +23,21 @@ export function generateStaticParams() {
   return params;
 }
 
+/**
+ * Locales where /weather/[city]/[month] generated >=2 clicks on the last 28d (GSC).
+ * Other locales are noindex'd: they had 0 clicks across 220-1117 impressions
+ * (avg position 50-75 = invisible page 5-8 Google). Decision 15/05/2026.
+ */
+const WEATHER_INDEX_LOCALES = new Set(["fr", "de", "el", "da", "ru"]);
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; city: string; month: string }> }) {
   const { locale, city: citySlug, month } = await params;
+  setRequestLocale(locale);
   const city = getCity(citySlug);
   const monthName = MONTH_NAMES[locale]?.[month] || MONTH_NAMES.en[month];
   if (!city || !monthName) return { title: "Not found" };
+
+  const shouldIndex = WEATHER_INDEX_LOCALES.has(locale);
 
   const climate = getClimateData(citySlug, month);
 
@@ -47,12 +61,14 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     title: titles[locale] || titles.en,
     description: descs[locale] || descs.en,
     alternates: buildAlternates(locale, `/weather/${citySlug}/${month}`),
+    robots: shouldIndex ? undefined : { index: false, follow: true },
     openGraph: { title: titles[locale] || titles.en, description: descs[locale] || descs.en, url },
   };
 }
 
 export default async function WeatherCityMonthPage({ params }: { params: Promise<{ locale: string; city: string; month: string }> }) {
   const { locale, city: citySlug, month } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
   const city = getCity(citySlug);
   const monthName = MONTH_NAMES[locale]?.[month] || MONTH_NAMES.en[month];
@@ -61,6 +77,11 @@ export default async function WeatherCityMonthPage({ params }: { params: Promise
 
   const climate = getClimateData(citySlug, month);
   const swimVerdict = getSwimVerdict(climate.seaTemp, locale);
+  const annual = getAnnualAverage(citySlug);
+  const insightLabel = city.name;
+  const insightLocativeEl = locale === "el" ? getCityLocativeEl(citySlug) : undefined;
+  const insightCityName = locale === "el" ? city.nameEl : insightLabel;
+  const insightText = weatherInsight(insightCityName, monthName, climate, annual, locale, insightLocativeEl);
 
   const heroTitles: Record<string, string> = {
     en: `Weather in ${city.name} in ${monthName}`,
@@ -94,54 +115,91 @@ export default async function WeatherCityMonthPage({ params }: { params: Promise
     },
   ];
 
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqItems.map(f => ({
-      "@type": "Question",
-      name: f.q,
-      acceptedAnswer: { "@type": "Answer", text: f.a },
-    })),
+  const homeLabels: Record<string, string> = {
+    en: "Home", fr: "Accueil", de: "Startseite", el: "Αρχική",
+    it: "Home", nl: "Home", pl: "Strona główna", es: "Inicio", pt: "Início",
+    ru: "Главная", ja: "ホーム", ko: "홈", zh: "首页", tr: "Ana sayfa",
+    sv: "Hem", da: "Hjem", no: "Hjem", fi: "Etusivu", cs: "Domů",
+    hu: "Főoldal", ro: "Acasă", ar: "الرئيسية",
   };
+
+  const weatherLabels: Record<string, string> = {
+    en: "Weather", fr: "Météo", de: "Wetter", el: "Καιρός",
+    it: "Meteo", nl: "Weer", pl: "Pogoda", es: "Clima", pt: "Clima",
+    ru: "Погода", ja: "天気", ko: "날씨", zh: "天气", tr: "Hava durumu",
+    sv: "Väder", da: "Vejr", no: "Vær", fi: "Sää", cs: "Počasí",
+    hu: "Időjárás", ro: "Vremea", ar: "الطقس",
+  };
+
+  const pageDescriptions: Record<string, string> = {
+    en: `${city.name} in ${monthName}: ${climate.avgHigh}°C average high, sea temperature ${climate.seaTemp}°C, ${climate.sunHours}h sunshine daily. Complete weather guide for your trip to Crete.`,
+    fr: `${city.name} en ${monthName} : ${climate.avgHigh}°C en moyenne, mer à ${climate.seaTemp}°C, ${climate.sunHours}h de soleil/jour. Guide météo complet pour votre voyage en Crète.`,
+    de: `${city.name} im ${monthName}: ${climate.avgHigh}°C Durchschnitt, Meer ${climate.seaTemp}°C, ${climate.sunHours}h Sonne täglich. Kompletter Wetterleitfaden für Kreta.`,
+    el: `${city.nameEl} τον ${monthName}: ${climate.avgHigh}°C μέση θερμοκρασία, θάλασσα ${climate.seaTemp}°C, ${climate.sunHours} ώρες ήλιο. Οδηγός καιρού Κρήτης.`,
+  };
+
+  const pageSchema = weatherPageSchema({
+    locale,
+    city: {
+      slug: citySlug,
+      name: city.name,
+      nameEl: city.nameEl,
+      lat: city.lat,
+      lng: city.lng,
+    },
+    monthSlug: month,
+    monthName,
+    climate,
+    pageTitle: heroTitles[locale] || heroTitles.en,
+    description: pageDescriptions[locale] || pageDescriptions.en,
+    faqItems,
+    breadcrumbLabels: {
+      home: homeLabels[locale] || homeLabels.en,
+      weather: weatherLabels[locale] || weatherLabels.en,
+    },
+  });
 
   return (
     <main className="min-h-screen bg-surface">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <JsonLd data={pageSchema} />
 
       {/* Hero */}
-      <section className="bg-aegean text-white py-12 md:py-16 px-4">
+      <section className="relative overflow-hidden bg-sea text-white py-12 md:py-16 px-4">
         <div className="max-w-3xl mx-auto">
           <Link href={`/${locale}/weather`} className="inline-flex items-center gap-1 text-white/50 text-sm hover:text-white/80 mb-4">
             <ChevronLeft className="w-4 h-4" /> {L.allWeather}
           </Link>
-          <h1 className="text-3xl md:text-5xl font-bold" style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}>
+          <h1 className="text-3xl md:text-5xl font-bold" style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}>
             {heroTitles[locale] || heroTitles.en}
           </h1>
           <p className="text-white/50 text-sm mt-2">{city.nameEl}</p>
         </div>
+        <svg className="absolute bottom-0 left-0 w-full h-[56px]" viewBox="0 0 1440 70" preserveAspectRatio="none" aria-hidden>
+          <path d="M0 40 C180 0 320 70 540 42 C760 14 900 66 1130 40 C1290 22 1380 36 1440 28 L1440 70 L0 70 Z" fill="#F6FBFC" />
+        </svg>
       </section>
 
       <div className="max-w-3xl mx-auto px-4 py-10 space-y-10">
         {/* Climate stats grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div className="rounded-xl bg-white border border-border p-5 text-center">
-            <Thermometer className="w-6 h-6 text-terra mx-auto mb-2" />
+            <Thermometer className="w-6 h-6 text-terracotta mx-auto mb-2" />
             <p className="text-xs text-text-muted">{L.avgHigh}</p>
             <p className="text-3xl font-bold text-text">{climate.avgHigh}°C</p>
           </div>
           <div className="rounded-xl bg-white border border-border p-5 text-center">
-            <Thermometer className="w-6 h-6 text-aegean mx-auto mb-2" />
+            <Thermometer className="w-6 h-6 text-sea mx-auto mb-2" />
             <p className="text-xs text-text-muted">{L.avgLow}</p>
             <p className="text-3xl font-bold text-text">{climate.avgLow}°C</p>
           </div>
           <div className="rounded-xl bg-white border border-border p-5 text-center">
-            <Waves className="w-6 h-6 text-aegean mx-auto mb-2" />
+            <Waves className="w-6 h-6 text-sea mx-auto mb-2" />
             <p className="text-xs text-text-muted">{L.seaTemp}</p>
             <p className="text-3xl font-bold text-text">{climate.seaTemp}°C</p>
             <p className="text-xs text-olive mt-1">{swimVerdict}</p>
           </div>
           <div className="rounded-xl bg-white border border-border p-5 text-center">
-            <CloudRain className="w-6 h-6 text-aegean mx-auto mb-2" />
+            <CloudRain className="w-6 h-6 text-sea mx-auto mb-2" />
             <p className="text-xs text-text-muted">{L.rain}</p>
             <p className="text-3xl font-bold text-text">{climate.rainyDays}</p>
           </div>
@@ -157,9 +215,17 @@ export default async function WeatherCityMonthPage({ params }: { params: Promise
           </div>
         </div>
 
+        {/* Data-driven insight: month vs. city's own annual baseline. */}
+        <aside className="rounded-xl bg-sea-faint/60 border border-sea/15 p-5 md:p-6">
+          <div className="flex items-start gap-3">
+            <Sparkles className="w-5 h-5 text-sea flex-shrink-0 mt-0.5" aria-hidden="true" />
+            <p className="text-sm md:text-base text-text leading-relaxed">{insightText}</p>
+          </div>
+        </aside>
+
         {/* FAQ section */}
         <section>
-          <h2 className="text-xl font-bold text-aegean mb-4">FAQ</h2>
+          <h2 className="text-xl font-bold text-sea mb-4">FAQ</h2>
           <div className="space-y-4">
             {faqItems.map((faq, i) => (
               <div key={i} className="p-5 bg-white rounded-xl border border-border">
@@ -178,7 +244,7 @@ export default async function WeatherCityMonthPage({ params }: { params: Promise
               <Link
                 key={m}
                 href={`/${locale}/weather/${citySlug}/${m}`}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${m === month ? "bg-aegean text-white" : "bg-white border border-border text-text-muted hover:bg-aegean-faint hover:text-aegean"}`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${m === month ? "bg-sea text-white" : "bg-white border border-border text-text-muted hover:bg-sea-faint hover:text-sea"}`}
               >
                 {(MONTH_NAMES[locale]?.[m] || MONTH_NAMES.en[m]).substring(0, 3)}
               </Link>
@@ -196,10 +262,10 @@ export default async function WeatherCityMonthPage({ params }: { params: Promise
                 <Link
                   key={c.slug}
                   href={`/${locale}/weather/${c.slug}/${month}`}
-                  className="flex items-center justify-between p-3 bg-white rounded-xl border border-border hover:border-aegean/30 transition-colors"
+                  className="flex items-center justify-between p-3 bg-white rounded-xl border border-border hover:border-sea/30 transition-colors"
                 >
                   <span className="text-sm font-medium text-text">{c.name}</span>
-                  <span className="text-sm font-bold text-terra">{cl.avgHigh}°</span>
+                  <span className="text-sm font-bold text-terracotta">{cl.avgHigh}°</span>
                 </Link>
               );
             })}

@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/types";
+import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { buildAlternates } from "@/lib/seo";
 
@@ -8,6 +9,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
 
   const metadata: Record<Locale, { title: string; description: string }> = {
@@ -30,12 +32,14 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   };
 
   const url = `${BASE_URL}/${locale}/privacy`;
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  const meta = metadata[loc] ?? metadata.en;
 
   return {
-    title: metadata[loc].title,
-    description: metadata[loc].description,
+    title: meta.title,
+    description: meta.description,
     alternates: buildAlternates(locale, "/privacy"),
-    openGraph: { title: metadata[loc].title, description: metadata[loc].description, url, type: "website" },
+    openGraph: { title: meta.title, description: meta.description, url, type: "website" },
     robots: { index: true, follow: true },
   };
 }
@@ -75,6 +79,13 @@ const CONTENT: Record<
           "You can unsubscribe anytime by clicking the unsubscribe link in any email.",
           "Your email is used only to send you our newsletter.",
           "We do not share your email with third parties.",
+        ],
+      },
+      {
+        heading: "Push Notifications",
+        content: [
+          "If you explicitly opt in, we store the pseudonymous push endpoint your browser provides (no email, no personal data) solely to send you bus and urgent Crete alerts.",
+          "You can revoke it anytime from your browser settings or by turning the bell off.",
         ],
       },
       {
@@ -136,6 +147,13 @@ const CONTENT: Record<
         ],
       },
       {
+        heading: "Notifications Push",
+        content: [
+          "Si vous y consentez explicitement, nous stockons l'endpoint push pseudonyme fourni par votre navigateur (pas d'e-mail, aucune donnée personnelle), uniquement pour vous envoyer les alertes bus et infos urgentes de Crète.",
+          "Vous pouvez le révoquer à tout moment depuis les réglages de votre navigateur ou en désactivant la cloche.",
+        ],
+      },
+      {
         heading: "Stockage et Sécurité des Données",
         content: [
           "Toutes les données sont stockées dans l'UE (région Supabase EU).",
@@ -191,6 +209,13 @@ const CONTENT: Record<
           "Sie können sich jederzeit abmelden, indem Sie auf den Abmelde-Link in einer E-Mail klicken.",
           "Ihre E-Mail wird nur verwendet, um Ihnen unseren Newsletter zu senden.",
           "Wir geben Ihre E-Mail nicht an Dritte weiter.",
+        ],
+      },
+      {
+        heading: "Push-Benachrichtigungen",
+        content: [
+          "Wenn Sie ausdrücklich zustimmen, speichern wir den pseudonymen Push-Endpoint Ihres Browsers (keine E-Mail, keine personenbezogenen Daten), ausschließlich um Ihnen Bus- und Eilmeldungen für Kreta zu senden.",
+          "Sie können dies jederzeit in den Browsereinstellungen oder durch Deaktivieren der Glocke widerrufen.",
         ],
       },
       {
@@ -252,6 +277,13 @@ const CONTENT: Record<
         ],
       },
       {
+        heading: "Ειδοποιήσεις Push",
+        content: [
+          "Αν συναινέσετε ρητά, αποθηκεύουμε το ψευδώνυμο push endpoint που παρέχει το πρόγραμμα περιήγησής σας (χωρίς email, χωρίς προσωπικά δεδομένα), αποκλειστικά για να σας στέλνουμε ειδοποιήσεις λεωφορείων και έκτακτα της Κρήτης.",
+          "Μπορείτε να το ανακαλέσετε ανά πάσα στιγμή από τις ρυθμίσεις του προγράμματος περιήγησης ή απενεργοποιώντας το καμπανάκι.",
+        ],
+      },
+      {
         heading: "Αποθήκευση και Ασφάλεια Δεδομένων",
         content: [
           "Όλα τα δεδομένα αποθηκεύονται στην ΕΕ (περιοχή Supabase EU).",
@@ -287,15 +319,17 @@ const CONTENT: Record<
 
 export default async function PrivacyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
-  const content = CONTENT[loc];
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  const content = CONTENT[loc] ?? CONTENT.en;
 
   return (
     <main className="min-h-screen bg-surface">
       <div className="max-w-2xl mx-auto px-4 py-12 md:py-20">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-4xl font-bold text-aegean mb-4">{content.title}</h1>
+          <h1 className="text-4xl font-bold text-sea mb-4">{content.title}</h1>
           <p className="text-lg text-text leading-relaxed">{content.intro}</p>
         </div>
 
@@ -306,14 +340,14 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
               key={idx}
               className="pb-8 border-b border-border last:border-b-0"
             >
-              <h2 className="text-xl font-bold text-aegean mb-3">{section.heading}</h2>
+              <h2 className="text-xl font-bold text-sea mb-3">{section.heading}</h2>
               {typeof section.content === "string" ? (
                 <p className="text-text leading-relaxed">{section.content}</p>
               ) : (
                 <ul className="space-y-2">
                   {section.content.map((item, itemIdx) => (
                     <li key={itemIdx} className="text-text leading-relaxed flex gap-3">
-                      <span className="text-aegean font-bold shrink-0">•</span>
+                      <span className="text-sea font-bold shrink-0">•</span>
                       <span>{item}</span>
                     </li>
                   ))}
@@ -325,7 +359,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
 
         {/* Footer links */}
         <div className="mt-12 pt-8 border-t border-border flex justify-center gap-6 text-sm">
-          <Link href={`/${locale}/about`} className="text-aegean hover:underline">
+          <Link href={`/${locale}/about`} className="text-sea hover:underline">
             {loc === "en" ? "About" : loc === "fr" ? "À propos" : loc === "de" ? "Über" : "Σχετικά"}
           </Link>
         </div>

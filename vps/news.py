@@ -6,14 +6,20 @@ Deduplicates by source_url before inserting into Supabase.
 Cron: */30 * * * *  (every 30 minutes)
 """
 
+import json
 import os
 import re
 import sys
-from datetime import datetime, timezone
+import unicodedata
+import urllib.parse
+import urllib.request
+from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from dotenv import load_dotenv
 import feedparser
 from supabase import create_client
+import news_urgency
+from crete_relevance import is_crete_relevant
 
 load_dotenv()
 
@@ -41,11 +47,11 @@ RSS_FEEDS = [
     {"source": "google_crete_en", "source_name": "Google News", "lang": "en",
      "url": "https://news.google.com/rss/search?q=Crete+Greece+when:1d&hl=en&gl=GR&ceid=GR:en"},
     {"source": "google_crete_tourism", "source_name": "Google News", "lang": "en",
-     "url": "https://news.google.com/rss/search?q=Crete+tourism+travel+when:2d&hl=en&gl=GR&ceid=GR:en"},
+     "url": "https://news.google.com/rss/search?q=Crete+tourism+travel+when:1d&hl=en&gl=GR&ceid=GR:en"},
     {"source": "google_crete_fr", "source_name": "Google News", "lang": "fr",
-     "url": "https://news.google.com/rss/search?q=Cr%C3%A8te+Gr%C3%A8ce+when:2d&hl=fr&gl=FR&ceid=FR:fr"},
+     "url": "https://news.google.com/rss/search?q=Cr%C3%A8te+Gr%C3%A8ce+when:1d&hl=fr&gl=FR&ceid=FR:fr"},
     {"source": "google_crete_de", "source_name": "Google News", "lang": "de",
-     "url": "https://news.google.com/rss/search?q=Kreta+Griechenland+when:2d&hl=de&gl=DE&ceid=DE:de"},
+     "url": "https://news.google.com/rss/search?q=Kreta+Griechenland+when:1d&hl=de&gl=DE&ceid=DE:de"},
 
     # Greek financial press (verified working, needs Crete keyword filter)
     {"source": "naftemporiki", "source_name": "Naftemporiki", "lang": "el",
@@ -55,27 +61,9 @@ RSS_FEEDS = [
     # Scrape fails (403), Haiku can't rewrite them, they block the writer queue.
 ]
 
-# Keywords to filter Crete-relevant articles from general Greek/English feeds
-CRETE_KEYWORDS = [
-    "crete", "creta", "kriti", "kreta", "cretan",
-    "herakl", "chania", "rethymn", "lasithi", "agios nikolaos", "ierapetra", "sitia",
-    "samaria", "elafonisi", "balos", "spinalonga", "knossos", "matala",
-    "κρητ", "ηρακλ", "χανι", "ρεθυμν", "λασιθ", "αγιο νικολ", "ιεραπετρ", "σητει",
-]
-
-# Sources that are Crete-specific (no keyword filtering needed)
-CRETE_ONLY_SOURCES = {"haniotika", "flashnews", "cretanmagazine", "cretaone",
-                       "google_crete_el", "google_crete_en",
-                       "google_crete_tourism", "google_crete_fr", "google_crete_de",
-                       "reddit_crete"}
-
-
-def is_crete_relevant(title: str, summary: str, source: str) -> bool:
-    """Check if article is about Crete (for general feeds)."""
-    if source in CRETE_ONLY_SOURCES:
-        return True
-    text = (title + " " + summary).lower()
-    return any(kw in text for kw in CRETE_KEYWORDS)
+# Filtre Crète (mots-clés, sources crete-only, insensibilité accents) : module
+# dédié crete_relevance.py (testable, cf test_crete_relevance.py). cretaone n'y
+# est plus crete-only -> filtré par mots-clés car son flux mêle du national grec.
 
 
 def slugify(text: str) -> str:
@@ -91,21 +79,126 @@ def slugify(text: str) -> str:
     for gr, lat in replacements.items():
         text = text.replace(gr, lat)
         text = text.replace(gr.upper(), lat)
+    text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
     text = re.sub(r"[^\w\s-]", "", text)
     text = re.sub(r"[\s_-]+", "-", text)
     text = re.sub(r"^-+|-+$", "", text)
     return text[:100]
 
 
-def parse_pub_date(entry) -> str:
+# Freshness window: reject any article (whatever the topic) whose REAL
+# publication date is older than this. Widen/narrow freely here.
+MAX_ARTICLE_AGE_DAYS = 7
+
+# Why "real" date matters: Google News routinely resurfaces years-old articles
+# and serves them with a fresh feed date. Confirmed case: a 2020-12-01 efsyn.gr
+# COVID bulletin was served as "2026-05-21" and rewritten as current news. The
+# feed date is therefore untrustworthy for Google feeds; we resolve the link to
+# the publisher page and read its canonical date instead. Direct publisher feeds
+# emit only fresh posts, so their feed date is trusted.
+HTTP_HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; CretePulseBot/1.0)"}
+HTTP_TIMEOUT = 15
+GNEWS_BATCH_URL = "https://news.google.com/_/DotsSplashUi/data/batchexecute"
+
+# Canonical publication date exposed by the publisher page. These tags carry
+# the ORIGINAL publication date even when an aggregator re-surfaces the article,
+# unlike a `<time datetime>` element which often shows a re-feature/surface date
+# (e.g. efsyn served a 2020 article with a 2026 <time> but a 2020 datePublished).
+# Tried in priority order; first match wins.
+CANONICAL_DATE_PATTERNS = (
+    re.compile(r'"datePublished"\s*:\s*"(\d{4}-\d{2}-\d{2}[^"]*)"'),
+    re.compile(r'property=["\']article:published_time["\']\s+content=["\'](\d{4}-\d{2}-\d{2}[^"\']*)'),
+    re.compile(r'content=["\'](\d{4}-\d{2}-\d{2}[^"\']*)["\']\s+property=["\']article:published_time'),
+    re.compile(r'itemprop=["\']datePublished["\'][^>]*content=["\'](\d{4}-\d{2}-\d{2}[^"\']*)'),
+)
+
+
+def _http_get(url: str) -> str:
+    req = urllib.request.Request(url, headers=HTTP_HEADERS)
+    with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT) as resp:
+        return resp.read().decode("utf-8", "replace")
+
+
+def _iso_to_dt(raw: str):
+    try:
+        dt = datetime.fromisoformat(raw.strip())
+        return dt.replace(tzinfo=timezone.utc) if dt.tzinfo is None else dt
+    except Exception:
+        return None
+
+
+def resolve_google_news_url(gnews_url: str):
+    """Resolve a news.google.com/rss/articles/<ID> link to the real publisher URL.
+
+    Google encodes the target behind an opaque ID; the page exposes a signature +
+    timestamp that a batchexecute call exchanges for the real URL. Returns the
+    publisher URL, or None on any failure (caller then rejects the item).
+    """
+    try:
+        m_id = re.search(r"/articles/([^?]+)", gnews_url)
+        if not m_id:
+            return None
+        page = _http_get(gnews_url)
+        m_sig = re.search(r'data-n-a-sg="([^"]+)"', page)
+        m_ts = re.search(r'data-n-a-ts="([^"]+)"', page)
+        if not (m_sig and m_ts):
+            return None
+        inner = json.dumps([
+            "garturlreq",
+            [["X", "X", ["X", "X"], None, None, 1, 1, "US:en", None, 1,
+              None, None, None, None, None, 0, 1],
+             "X", "X", 1, [1, 1, 1], 1, 1, None, 0, 0, None, 0],
+            m_id.group(1), int(m_ts.group(1)), m_sig.group(1),
+        ])
+        f_req = json.dumps([[["Fbv4je", inner, None, "generic"]]])
+        data = urllib.parse.urlencode({"f.req": f_req}).encode()
+        req = urllib.request.Request(
+            GNEWS_BATCH_URL, data=data,
+            headers={**HTTP_HEADERS,
+                     "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"},
+        )
+        with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT) as resp:
+            body = resp.read().decode("utf-8", "replace")
+        for u in re.findall(r'https?://[^\\"]+', body):
+            if "google" not in u and "gstatic" not in u:
+                return u
+    except Exception as e:
+        print(f"[news] gnews resolve failed: {e}")
+    return None
+
+
+def fetch_canonical_pubdate(url: str):
+    """Fetch the publisher page and return its canonical publication datetime
+    (tz-aware), or None if no canonical date tag is present."""
+    try:
+        page = _http_get(url)
+        for pat in CANONICAL_DATE_PATTERNS:
+            m = pat.search(page)
+            if m:
+                return _iso_to_dt(m.group(1))
+    except Exception as e:
+        print(f"[news] canonical pubdate fetch failed: {e}")
+    return None
+
+
+def parse_pub_date(entry):
+    """Return the entry's publication datetime (tz-aware), or None if undeterminable.
+
+    No silent fallback to now(): an undateable article cannot be freshness-checked,
+    so the caller treats None as 'reject'. That undateability is itself the
+    resurfaced-old-article risk we want to drop, not paper over with today's date.
+    """
     for attr in ("published", "updated", "created"):
         raw = getattr(entry, attr, None)
         if raw:
             try:
-                return parsedate_to_datetime(raw).isoformat()
+                dt = parsedate_to_datetime(raw)
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                return dt
             except Exception:
                 pass
-    return datetime.now(timezone.utc).isoformat()
+    return None
 
 
 def strip_html(text: str) -> str:
@@ -119,6 +212,10 @@ def get_existing_urls(supabase, source_name: str) -> set:
     except Exception as e:
         print(f"[news] WARNING: could not fetch existing URLs for {source_name}: {e}")
         return set()
+
+
+# Slugs inserted during this run, collected for a single IndexNow ping at the end.
+_INSERTED_SLUGS: list[str] = []
 
 
 def process_feed(supabase, feed_config: dict) -> tuple[int, int]:
@@ -163,9 +260,40 @@ def process_feed(supabase, feed_config: dict) -> tuple[int, int]:
             skipped += 1
             continue
 
+        # Freshness guard (topic-agnostic): reject any article whose publication
+        # date is older than the window. Google feeds fake the date on resurfaced
+        # content, so we resolve to the publisher and prefer its canonical date.
+        # "Souple" mode: when the publisher page exposes no canonical date (or the
+        # link can't be resolved), fall back to the feed date instead of dropping
+        # the item, keeping more legit news at the cost of a small resurfacing
+        # risk on date-less pages. Direct feeds emit only fresh posts: trust them.
+        if source.startswith("google_"):
+            real_url = resolve_google_news_url(link)
+            if real_url:
+                link = real_url  # store the publisher URL, not the opaque Google one
+                if link in existing_urls:
+                    skipped += 1
+                    continue
+            pub_dt = fetch_canonical_pubdate(real_url) if real_url else None
+            if pub_dt is None:
+                pub_dt = parse_pub_date(entry)  # souple fallback to feed date
+        else:
+            pub_dt = parse_pub_date(entry)
+
+        if pub_dt is None:
+            print(f"[news] skip (no date at all): {title_raw[:60]}")
+            skipped += 1
+            continue
+
+        age_days = (datetime.now(timezone.utc) - pub_dt).total_seconds() / 86400
+        if age_days > MAX_ARTICLE_AGE_DAYS:
+            print(f"[news] skip (stale {age_days:.1f}d old): {title_raw[:60]}")
+            skipped += 1
+            continue
+
         summary = description_raw[:200] if description_raw else None
         slug = slugify(title_raw) or f"{source}-{abs(hash(link)) % 1000000}"
-        pub_date = parse_pub_date(entry)
+        pub_date = pub_dt.isoformat()
 
         # Pre-fill fields based on source language
         ts = datetime.now(timezone.utc).isoformat()
@@ -197,10 +325,14 @@ def process_feed(supabase, feed_config: dict) -> tuple[int, int]:
             base["title_el"] = title_raw
             base["summary_el"] = summary or ""
         row = base
+        _u_title = row.get("title_en") or row.get("title_fr") or row.get("title_de") or row.get("title_el") or ""
+        _u_summary = row.get("summary_en") or row.get("summary_fr") or row.get("summary_de") or row.get("summary_el") or ""
+        row["is_urgent"] = news_urgency.classify_urgency(_u_title, _u_summary)
 
         try:
             supabase.table("news").insert(row).execute()
             inserted += 1
+            _INSERTED_SLUGS.append(slug)
             print(f"[news] + {title_raw[:60]}...")
         except Exception as e:
             err_str = str(e)
@@ -235,6 +367,28 @@ def main():
 
     elapsed = (datetime.now(timezone.utc) - started_at).total_seconds()
     print(f"[news] done - +{total_inserted}, skip {total_skipped}, err {feed_errors}, {elapsed:.1f}s")
+
+    # Notify search engines of the freshly published news (one batched ping).
+    if _INSERTED_SLUGS:
+        try:
+            import indexnow
+            urls = [u for slug in _INSERTED_SLUGS for u in indexnow.news_urls(slug)]
+            indexnow.submit(urls)
+        except Exception as e:
+            print(f"[news] indexnow skipped: {e}")
+
+    # Push web des news urgentes PRETES (best-effort, jamais bloquant).
+    # On NE pousse PAS a l'insertion : les sources non-EN ont title_en="" tant que
+    # le writer ne les a pas traduites/gardees, et la page /news/<slug> masque ces
+    # lignes -> la notif pointait vers un 404 au body vide. push_ready_urgent ne
+    # pousse que les urgentes deja traduites (title_en non vide) et non filtrees,
+    # poussees ici a chaque run */30 une fois pretes. Fenetre 24h = anti-backlog.
+    try:
+        import push_sender
+        since = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+        push_sender.push_ready_urgent(supabase, since_iso=since)
+    except Exception as e:
+        print(f"[news] push skipped: {e}")
 
     if feed_errors == len(RSS_FEEDS):
         print("[news] FATAL: all feeds failed")

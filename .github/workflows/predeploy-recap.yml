@@ -1,0 +1,64 @@
+name: predeploy-recap
+
+# Recap Telegram ~1h avant le deploy prod de 20h Athens. Donne a Kami sa
+# derniere fenetre pour rattraper un oubli : ce qui va partir (commits master
+# en avance sur main) + les branches feat/fix/seo ACTIVES (<7j) pas encore
+# integrees dans master (= chantier potentiellement fini mais reste bloque).
+# Cf docs/WORKFLOW-MULTI-TERMINAL.md.
+
+on:
+  schedule:
+    # 16:00 UTC = 19:00 Athens (ete, UTC+3), soit 1h avant le deploy (17h UTC).
+    # En hiver : 18:00 Athens, deploy 19:00 Athens. Toujours 1h avant.
+    - cron: "0 16 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  recap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: master
+
+      - name: Composer et envoyer le recap
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          git fetch origin --quiet
+          COUNT=$(git rev-list --count origin/main..origin/master)
+          GOING=$(git log --oneline --no-decorate origin/main..origin/master | head -40)
+
+          NOW=$(date +%s); WEEK=$((7*24*3600)); ORPHANS=""
+          while read -r ref cdate; do
+            [ -z "$ref" ] && continue
+            ahead=$(git rev-list --count "origin/master..$ref" 2>/dev/null || echo 0)
+            age=$((NOW - cdate))
+            if [ "$ahead" -gt 0 ] && [ "$age" -lt "$WEEK" ]; then
+              ORPHANS="${ORPHANS}  - ${ref#origin/} (+${ahead} commits, il y a $((age/3600))h)\n"
+            fi
+          done < <(git for-each-ref --format='%(refname:short) %(committerdate:unix)' 'refs/remotes/origin/feat/*' 'refs/remotes/origin/fix/*' 'refs/remotes/origin/seo/*')
+
+          if [ "$COUNT" = "0" ]; then
+            BODY="crete.direct - recap avant deploy 20h : RIEN a promouvoir ce soir (master == main)."
+          else
+            BODY=$(printf 'crete.direct - recap avant deploy 20h\n\n%s commit(s) partiront (master -> prod) :\n%s' "$COUNT" "$GOING")
+          fi
+          if [ -n "$ORPHANS" ]; then
+            BODY=$(printf '%s\n\n[!] Branches actives NON integrees (<7j) - un chantier oublie avant 20h ?\n%b' "$BODY" "$ORPHANS")
+          fi
+
+          if [ -z "$TG_TOKEN" ] || [ -z "$TG_CHAT" ]; then
+            echo "Secret Telegram absent, recap non envoye. Contenu :"
+            printf '%s\n' "$BODY"
+            exit 0
+          fi
+          curl -s -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TG_CHAT}" \
+            --data-urlencode "text=${BODY}" \
+            -o /dev/null -w "Telegram HTTP %{http_code}\n"

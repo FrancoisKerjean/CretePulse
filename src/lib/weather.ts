@@ -3,6 +3,14 @@
  * Fetches weather + marine data for Crete cities.
  */
 
+export interface ForecastDay {
+  date: string;
+  weatherCode: number;
+  tempMax: number;
+  tempMin: number;
+  precipProb: number;
+}
+
 export interface CityWeather {
   name: string;
   nameEl: string;
@@ -16,6 +24,7 @@ export interface CityWeather {
   waveHeight: number | null;
   uvIndex: number;
   precipitation: number;
+  daily: ForecastDay[];
 }
 
 export const CRETE_CITIES = [
@@ -65,7 +74,7 @@ async function fetchFromOpenMeteo(): Promise<CityWeather[]> {
   const lats = CRETE_CITIES.map((c) => c.lat).join(",");
   const lngs = CRETE_CITIES.map((c) => c.lng).join(",");
 
-  const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lngs}&current=temperature_2m,wind_speed_10m,wind_direction_10m,weather_code,uv_index,precipitation&timezone=Europe/Athens`;
+  const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lngs}&current=temperature_2m,wind_speed_10m,wind_direction_10m,weather_code,uv_index,precipitation&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=6&timezone=Europe/Athens`;
   const marineUrl = `https://marine-api.open-meteo.com/v1/marine?latitude=${lats}&longitude=${lngs}&current=sea_surface_temperature,wave_height&timezone=Europe/Athens`;
 
   const [weatherRes, marineRes] = await Promise.all([
@@ -79,6 +88,19 @@ async function fetchFromOpenMeteo(): Promise<CityWeather[]> {
   return CRETE_CITIES.map((city, i) => {
     const w = Array.isArray(weather) ? weather[i]?.current : weather?.current;
     const m = marine ? (Array.isArray(marine) ? marine[i]?.current : marine?.current) : null;
+    const dayBlock = Array.isArray(weather) ? weather[i]?.daily : weather?.daily;
+    const daily: ForecastDay[] = [];
+    if (dayBlock?.time?.length) {
+      for (let d = 1; d < Math.min(6, dayBlock.time.length); d++) {
+        daily.push({
+          date: dayBlock.time[d],
+          weatherCode: dayBlock.weather_code?.[d] ?? 0,
+          tempMax: Math.round(dayBlock.temperature_2m_max?.[d] ?? 0),
+          tempMin: Math.round(dayBlock.temperature_2m_min?.[d] ?? 0),
+          precipProb: dayBlock.precipitation_probability_max?.[d] ?? 0,
+        });
+      }
+    }
     return {
       name: city.name,
       nameEl: city.nameEl,
@@ -92,6 +114,7 @@ async function fetchFromOpenMeteo(): Promise<CityWeather[]> {
       waveHeight: m?.wave_height ?? null,
       uvIndex: Math.round(w?.uv_index ?? 0),
       precipitation: w?.precipitation ?? 0,
+      daily,
     };
   });
 }
@@ -110,6 +133,14 @@ export async function fetchAllCitiesWeather(): Promise<CityWeather[]> {
         );
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const d: any = cached ? (typeof cached.data === "string" ? JSON.parse(cached.data) : cached.data) : {};
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const daily: ForecastDay[] = Array.isArray(d.daily) ? d.daily.map((x: any) => ({
+          date: x.date,
+          weatherCode: x.weather_code ?? 0,
+          tempMax: Math.round(x.temp_max ?? 0),
+          tempMin: Math.round(x.temp_min ?? 0),
+          precipProb: x.precip_prob ?? 0,
+        })) : [];
         return {
           name: city.name,
           nameEl: city.nameEl,
@@ -123,6 +154,7 @@ export async function fetchAllCitiesWeather(): Promise<CityWeather[]> {
           waveHeight: d.wave_height ?? null,
           uvIndex: Math.round(d.uv_index ?? 0),
           precipitation: d.precipitation ?? 0,
+          daily,
         };
       });
       // Check if data is real (not all zeros)
@@ -132,5 +164,12 @@ export async function fetchAllCitiesWeather(): Promise<CityWeather[]> {
     // Supabase down, fall through to Open-Meteo
   }
 
-  return fetchFromOpenMeteo();
+  // Open-Meteo (free tier) can rate-limit (429) or time out. A throw here would
+  // reject the caller's Promise.all and 500 the whole route, so we degrade to an
+  // empty list instead · every caller already handles a missing weather strip.
+  try {
+    return await fetchFromOpenMeteo();
+  } catch {
+    return [];
+  }
 }

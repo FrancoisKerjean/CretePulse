@@ -1,0 +1,150 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Geist+Mono:wght@400;500;600&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --lagoon:#00C2D4; --lagoon-deep:#008C9E; --sea:#0B5E78; --sky:#BDEDF5; --night:#07374A;
+    --sun:#FFC83D; --terracotta:#ED7A5C; --olive:#7C9A53;
+    --foam:#F6FBFC; --sand:#FFF3D6; --ink:#0B3954; --muted:#5C7886;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--foam); color: var(--ink); font-family: Geist, sans-serif; margin: 0; }
+  .mono { font-family: "Geist Mono", monospace; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
+
+  .navbar { position: sticky; top: 14px; z-index: 50; max-width: 1200px; margin: 14px auto 0; padding: 0 28px; }
+  .nav-pill { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,.88); backdrop-filter: blur(12px); border-radius: 999px; padding: 10px 18px; box-shadow: 0 8px 30px rgba(11,94,120,.14); }
+  .nav-links { display: flex; gap: 4px; font-size: 13px; font-weight: 600; color: var(--muted); }
+  .nav-links span { padding: 7px 14px; border-radius: 999px; }
+  .nav-links .active { background: var(--ink); color: #fff; }
+  .live { background: var(--sun); color: var(--ink); font-weight: 800; font-size: 12px; padding: 8px 14px; border-radius: 999px; }
+
+  .hero { background: linear-gradient(170deg, var(--sky), #8FE0EC 55%, var(--lagoon)); margin-top: -58px; padding: 110px 0 90px; position: relative; overflow: hidden; }
+  .sunball { position: absolute; top: 80px; right: 9%; width: 110px; height: 110px; border-radius: 50%; background: radial-gradient(circle at 38% 35%, #FFE08F, var(--sun) 70%); box-shadow: 0 0 70px 20px rgba(255,200,61,.45); }
+  .hero-in { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; align-items: center; position: relative; }
+  .greet { display: inline-flex; align-items: center; gap: 9px; background: rgba(255,255,255,.72); border-radius: 999px; padding: 8px 16px; font-size: 12.5px; font-weight: 700; color: var(--sea); }
+  .greet .pulse { width: 8px; height: 8px; border-radius: 50%; background: #14B86B; box-shadow: 0 0 0 4px rgba(20,184,107,.25); }
+  h1 { font-family: "Baloo 2"; font-weight: 800; font-size: 50px; line-height: 1.05; margin: 18px 0 12px; }
+  h1 .hl { color: #fff; text-shadow: 0 2px 16px rgba(11,94,120,.35); }
+  .sub { font-size: 15.5px; color: rgba(11,57,84,.78); max-width: 410px; line-height: 1.55; }
+  .pick-card { background: #fff; border-radius: 30px; overflow: hidden; box-shadow: 0 22px 54px rgba(7,55,74,.28); }
+  .pick-card img { width: 100%; height: 230px; object-fit: cover; display: block; }
+  .pick-body { padding: 18px 22px; display: flex; justify-content: space-between; align-items: center; gap: 14px; }
+  .pick-body .n { font-family: "Baloo 2"; font-weight: 700; font-size: 21px; }
+  .pick-body .r { font-size: 12px; color: var(--muted); }
+  .verdict { background: rgba(20,184,107,.14); color: #0B8A52; font-weight: 800; border-radius: 999px; padding: 9px 16px; font-size: 13px; }
+  .pick-stats { display: flex; gap: 18px; border-top: 1px solid rgba(11,57,84,.08); padding: 12px 22px; font-size: 13px; color: var(--muted); }
+  .pick-stats b { color: var(--ink); }
+
+  .wave-sep { display: block; width: 100%; margin: -60px 0 -2px; position: relative; }
+
+  /* Régions */
+  .regions { padding: 40px 0 30px; }
+  .sec-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .sec-head h2 { font-family: "Baloo 2"; font-size: 28px; font-weight: 800; margin: 0; }
+  .region-tabs { display: flex; gap: 8px; }
+  .rtab { background: #fff; border-radius: 999px; padding: 8px 16px; font-size: 13px; font-weight: 700; color: var(--muted); box-shadow: 0 6px 16px rgba(11,94,120,.08); }
+  .rtab.active { background: var(--ink); color: #fff; }
+  .beach-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .bcard { background: #fff; border-radius: 24px; overflow: hidden; box-shadow: 0 12px 30px rgba(11,94,120,.10); }
+  .bcard img, .bcard .ph { width: 100%; height: 120px; object-fit: cover; display: block; }
+  .bcard .ph { background: linear-gradient(135deg, var(--sky), var(--lagoon)); }
+  .bcard .bb { padding: 14px 18px; }
+  .bcard .n { font-weight: 700; font-size: 15.5px; }
+  .bcard .m { font-size: 12px; color: var(--muted); margin: 3px 0 10px; }
+  .pill { font-size: 11.5px; font-weight: 800; border-radius: 999px; padding: 5px 11px; }
+  .pill.ok { background: rgba(20,184,107,.13); color: #0B8A52; }
+  .pill.fair { background: rgba(255,200,61,.2); color: #8A6A14; }
+  .pill.no { background: rgba(237,122,92,.15); color: #B84B30; }
+
+  /* Stations : bandeau nuit arrondi */
+  .stations { background: var(--night); border-radius: 32px; color: #EAF7FA; padding: 26px 32px; margin: 36px 0 56px; }
+  .stations .t { font-family: "Baloo 2"; font-weight: 700; font-size: 20px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: baseline; }
+  .stations .t small { font-size: 12px; color: rgba(234,247,250,.5); font-family: Geist; }
+  .st-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  .st { background: rgba(234,247,250,.07); border-radius: 18px; padding: 13px 15px; }
+  .st .c { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--lagoon); }
+  .st .v { font-size: 21px; font-weight: 700; margin-top: 3px; }
+  .st .w { font-size: 11.5px; color: rgba(234,247,250,.6); }
+</style>
+</head>
+<body>
+
+<div class="navbar">
+  <div class="nav-pill">
+    <svg width="120" height="20" viewBox="0 0 460 74" fill="none" stroke="#0B3954" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M38 18 a16 16 0 1 0 14 24 M38 26 a8.5 8.5 0 1 0 6 14" stroke="#00919E"/>
+      <path d="M64 52 V30 M64 38 q4 -9 13 -9"/><path d="M88 41 h22 a11.5 11.5 0 1 0 -3.4 8"/>
+      <path d="M126 14 V44 a8 8 0 0 0 8 8 M118 28 h16"/><path d="M148 41 h22 a11.5 11.5 0 1 0 -3.4 8"/>
+      <path d="M210 12 V52 M210 41 a11.5 11.5 0 1 1 -11.5 -11.5"/><path d="M228 30 V52"/>
+      <circle cx="228" cy="15.5" r="6" fill="#FFC83D" stroke="none"/>
+      <path d="M228 5.5 v3 M228 22.5 v3 M218 15.5 h3 M235 15.5 h3" stroke="#FFC83D" stroke-width="2.6"/>
+      <path d="M246 52 V30 M246 38 q4 -9 13 -9"/><path d="M270 41 h22 a11.5 11.5 0 1 0 -3.4 8"/>
+      <path d="M324 32 a11.5 11.5 0 1 0 0 17"/><path d="M340 14 V44 a8 8 0 0 0 8 8 M332 28 h16"/>
+      <path d="M196 66 q9 -7 18 0 t18 0 t18 0 t18 0 t18 0 t18 0 t18 0" stroke="#00C2D4" stroke-width="4.5"/>
+    </svg>
+    <div class="nav-links"><span>Aujourd'hui</span><span>Bus</span><span class="active">Plages</span><span>Explorer</span></div>
+    <div class="live mono">LIVE 14:20</div>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="sunball"></div>
+  <div class="wrap hero-in">
+    <div>
+      <span class="greet"><span class="pulse"></span> Καλημέρα — jeudi 11 juin, 14:20</span>
+      <h1>Où se baigner <span class="hl">aujourd'hui ?</span></h1>
+      <p class="sub">Le meltemi souffle NW 6 km/h. On croise le vent des 10 stations avec l'orientation des 500 plages — voilà les criques à l'abri, maintenant.</p>
+    </div>
+    <div class="pick-card">
+      <img src="https://images.pexels.com/photos/1430676/pexels-photo-1430676.jpeg?auto=compress&cs=tinysrgb&w=1000&q=70" alt="">
+      <div class="pick-body">
+        <div>
+          <div class="n">Agiofarago</div>
+          <div class="r">Côte sud · Heraklion · la préco du jour</div>
+        </div>
+        <span class="verdict">≈ Calme</span>
+      </div>
+      <div class="pick-stats mono"><span>vent <b>NW 6 km/h</b></span><span>mer <b>25°</b></span><span>houle <b>0.3 m</b></span><span>bus <b>à 9 km</b></span></div>
+    </div>
+  </div>
+</section>
+<svg class="wave-sep" viewBox="0 0 1440 70" preserveAspectRatio="none" style="height:70px">
+  <path d="M0 40 C180 0 320 70 540 42 C760 14 900 66 1130 40 C1290 22 1380 36 1440 28 L1440 70 L0 70 Z" fill="#F6FBFC"/>
+</svg>
+
+<main class="wrap">
+  <section class="regions">
+    <div class="sec-head">
+      <h2>Les bons choix, par région</h2>
+      <div class="region-tabs">
+        <span class="rtab active">Toutes</span><span class="rtab">Ouest</span><span class="rtab">Centre</span><span class="rtab">Est</span><span class="rtab">Sud</span>
+      </div>
+    </div>
+    <div class="beach-grid">
+      <div class="bcard"><img src="https://images.pexels.com/photos/3010066/pexels-photo-3010066.jpeg?auto=compress&cs=tinysrgb&w=600&q=60" alt=""><div class="bb"><div class="n">Aghios Pavlos</div><div class="m mono">ouest · vent offshore 7 km/h · 0.4 m</div><span class="pill ok">≈ calme</span></div></div>
+      <div class="bcard"><div class="ph"></div><div class="bb"><div class="n">Agia Pelagia</div><div class="m mono">centre · vent cross 8 km/h · 0.4 m</div><span class="pill ok">≈ calme</span></div></div>
+      <div class="bcard"><div class="ph"></div><div class="bb"><div class="n">Almyrida</div><div class="m mono">ouest · vent cross 7 km/h · 0.4 m</div><span class="pill ok">≈ calme</span></div></div>
+      <div class="bcard"><div class="ph"></div><div class="bb"><div class="n">Ammoudi</div><div class="m mono">est · vent onshore 9 km/h · 0.6 m</div><span class="pill fair">≈ correct</span></div></div>
+      <div class="bcard"><div class="ph"></div><div class="bb"><div class="n">Istro Beach</div><div class="m mono">est · vent cross 8 km/h · 0.5 m</div><span class="pill fair">≈ correct</span></div></div>
+      <div class="bcard"><div class="ph"></div><div class="bb"><div class="n">Falassarna</div><div class="m mono">ouest · vent onshore 17 km/h · 1.1 m</div><span class="pill no">≈ exposée</span></div></div>
+    </div>
+  </section>
+
+  <section class="stations">
+    <div class="t">Conditions par station <small class="mono">live · màj 14:20</small></div>
+    <div class="st-grid mono">
+      <div class="st"><div class="c">Heraklion</div><div class="v">27°</div><div class="w">↗ 6 km/h · mer 24°</div></div>
+      <div class="st"><div class="c">Chania</div><div class="v">27°</div><div class="w">↗ 5 km/h · mer 24°</div></div>
+      <div class="st"><div class="c">Rethymno</div><div class="v">27°</div><div class="w">↗ 12 km/h · mer 24°</div></div>
+      <div class="st"><div class="c">Ierapetra</div><div class="v">27°</div><div class="w">→ 2 km/h · mer 24°</div></div>
+      <div class="st"><div class="c">Sitia</div><div class="v">26°</div><div class="w">↗ 7 km/h · mer 23°</div></div>
+    </div>
+  </section>
+</main>
+
+</body>
+</html>

@@ -1,16 +1,31 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { getVillageBySlug, getNearbyVillages } from "@/lib/villages";
 import { getLocalizedField, type Locale } from "@/lib/types";
+import DiscoverCrete from "@/components/DiscoverCrete";
+import NewsletterCTA from "@/components/NewsletterCTA";
 import { breadcrumbSchema, villageSchema } from "@/lib/schema";
 import { MapPin, Mountain, Users, Clock, ChevronLeft, Star } from "lucide-react";
 import { buildAlternates, buildVillageTitle, buildVillageDescription } from "@/lib/seo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AffiliateCTA } from "@/components/ui/affiliate-cta";
+import { CarPromo } from "@/components/car-rental/CarPromo";
+import { allPickups } from "@/lib/car-partners";
+import { SLUG_COORDS } from "@/lib/taxi-fare";
+import { nearestBy } from "@/lib/geo";
+import { JsonLd } from "@/components/JsonLd";
 
-export const revalidate = 86400;
+export const revalidate = 172800; // 03/07 optim couts Vercel (48h, ISR Writes)
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
+
+/**
+ * Locales where /villages/[slug] had 0 clicks on 28d for >=40 impressions (GSC).
+ * Average position 48-66 = invisible. Decision 15/05/2026.
+ * Other locales (fr, fi with positive signal + en/da/nl/zh/etc. with marginal traffic)
+ * remain indexed.
+ */
+const VILLAGES_NOINDEX_LOCALES = new Set(["cs", "sv", "no", "de", "es", "it", "ru", "hu", "pl"]);
 
 export async function generateMetadata({
   params,
@@ -18,8 +33,11 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const village = await getVillageBySlug(slug);
   if (!village) return { title: "Village not found" };
+
+  const shouldIndex = !VILLAGES_NOINDEX_LOCALES.has(locale);
 
   const name = getLocalizedField(village, "name", locale as Locale);
   const desc = getLocalizedField(village, "description", locale as Locale);
@@ -32,6 +50,7 @@ export async function generateMetadata({
     title,
     description,
     alternates: buildAlternates(locale, `/villages/${slug}`),
+    robots: shouldIndex ? undefined : { index: false, follow: true },
     openGraph: {
       title,
       description,
@@ -42,6 +61,17 @@ export async function generateMetadata({
   };
 }
 
+// Maillage interne vers la carte /explore. Vérifié 09/07 : les villages n'ont
+// PAS d'équivalent cb_places (0/28 par slug ou nom, 2/28 par GPS <= 1.5 km),
+// donc pas d'URL canonique /explore/[slug] possible → carte centrée ?lat&lng&z
+// (params supportés par l'init MapLibre d'ExploreView).
+const VIEW_ON_MAP: Record<string, string> = {
+  en: "View on the map",
+  fr: "Voir sur la carte",
+  de: "Auf der Karte ansehen",
+  el: "Δείτε στον χάρτη",
+};
+
 const PERIOD_LABEL: Record<string, string> = {
   minoan: "Minoan era",
   venetian: "Venetian era",
@@ -51,11 +81,11 @@ const PERIOD_LABEL: Record<string, string> = {
 };
 
 const PERIOD_COLORS: Record<string, string> = {
-  minoan: "bg-terra-faint text-terra border-terra/20",
-  venetian: "bg-aegean-faint text-aegean border-aegean/20",
+  minoan: "bg-terracotta-faint text-terracotta border-terracotta/20",
+  venetian: "bg-sea-faint text-sea border-sea/20",
   ottoman: "bg-sand text-text border-sand-warm",
-  modern: "bg-stone text-text-muted border-border",
-  abandoned: "bg-stone-warm text-text-light border-border",
+  modern: "bg-surface text-text-muted border-border",
+  abandoned: "bg-surface text-text-light border-border",
 };
 
 export default async function VillageDetailPage({
@@ -64,6 +94,7 @@ export default async function VillageDetailPage({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
 
   const village = await getVillageBySlug(slug);
@@ -81,17 +112,12 @@ export default async function VillageDetailPage({
 
   return (
     <main className="min-h-screen bg-surface">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(placeJsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
-      />
+      <JsonLd data={placeJsonLd} />
+      <JsonLd data={breadcrumb} />
+      <Breadcrumbs schema={breadcrumb} />
       {/* Hero image */}
       {village.image_url && (
-        <div className="relative h-64 md:h-80 bg-aegean">
+        <div className="relative h-64 md:h-80 bg-sea">
           <img
             src={village.image_url}
             alt={name}
@@ -111,18 +137,18 @@ export default async function VillageDetailPage({
       <div className="max-w-4xl mx-auto px-4 py-8">
         <Link
           href={`/${locale}/villages`}
-          className="inline-flex items-center gap-1 text-sm text-aegean hover:underline mb-6"
+          className="inline-flex items-center gap-1 text-sm text-sea hover:underline mb-6"
         >
           <ChevronLeft className="w-4 h-4" /> All villages
         </Link>
 
         {!village.image_url && (
-          <h1 className="text-3xl font-bold text-aegean mb-2">{name}</h1>
+          <h1 className="text-3xl font-bold text-sea mb-2">{name}</h1>
         )}
 
         {/* Period badge */}
         {village.period && (
-          <span className={`inline-block text-sm px-3 py-1 rounded-full border capitalize mb-6 ${PERIOD_COLORS[village.period] || "bg-stone text-text-muted border-border"}`}>
+          <span className={`inline-block text-sm px-3 py-1 rounded-full border capitalize mb-6 ${PERIOD_COLORS[village.period] || "bg-surface text-text-muted border-border"}`}>
             <Clock className="w-3.5 h-3.5 inline-block mr-1 -mt-0.5" />
             {PERIOD_LABEL[village.period] || village.period}
           </span>
@@ -134,36 +160,36 @@ export default async function VillageDetailPage({
             <Mountain className="w-5 h-5 text-olive mx-auto" />
             <p className="text-xs text-text-muted mt-1">Altitude</p>
             <p className="font-semibold text-sm">
-              {village.altitude_m != null ? `${village.altitude_m} m` : "—"}
+              {village.altitude_m != null ? `${village.altitude_m} m` : "·"}
             </p>
           </div>
           <div className="rounded-lg bg-white border border-border p-3 text-center">
-            <Users className="w-5 h-5 text-aegean mx-auto" />
+            <Users className="w-5 h-5 text-sea mx-auto" />
             <p className="text-xs text-text-muted mt-1">Population</p>
             <p className="font-semibold text-sm">
-              {village.population != null ? village.population.toLocaleString() : "—"}
+              {village.population != null ? village.population.toLocaleString() : "·"}
             </p>
           </div>
           <div className="rounded-lg bg-white border border-border p-3 text-center">
-            <MapPin className="w-5 h-5 text-terra mx-auto" />
+            <MapPin className="w-5 h-5 text-terracotta mx-auto" />
             <p className="text-xs text-text-muted mt-1">Region</p>
-            <p className="font-semibold text-sm capitalize">{village.region || "—"}</p>
+            <p className="font-semibold text-sm capitalize">{village.region || "·"}</p>
           </div>
           <div className="rounded-lg bg-white border border-border p-3 text-center">
-            <Clock className="w-5 h-5 text-aegean mx-auto" />
+            <Clock className="w-5 h-5 text-sea mx-auto" />
             <p className="text-xs text-text-muted mt-1">Era</p>
-            <p className="font-semibold text-sm capitalize">{village.period || "—"}</p>
+            <p className="font-semibold text-sm capitalize">{village.period || "·"}</p>
           </div>
         </div>
 
         {/* Highlights */}
         {village.highlights && village.highlights.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-lg font-semibold text-aegean mb-3">Highlights</h2>
+            <h2 className="text-lg font-semibold text-sea mb-3">Highlights</h2>
             <ul className="space-y-2">
               {village.highlights.map((highlight, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-text">
-                  <Star className="w-4 h-4 text-terra shrink-0 mt-0.5" />
+                  <Star className="w-4 h-4 text-terracotta shrink-0 mt-0.5" />
                   {highlight}
                 </li>
               ))}
@@ -178,31 +204,55 @@ export default async function VillageDetailPage({
           </div>
         )}
 
-        {/* Map link */}
-        <a
-          href={`https://www.google.com/maps?q=${village.latitude},${village.longitude}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-aegean text-white rounded-lg text-sm font-medium hover:bg-aegean-light transition-colors mb-12"
-        >
-          <MapPin className="w-4 h-4" /> Open in Google Maps
-        </a>
+        {/* Map links : Google Maps externe + carte interne /explore centrée */}
+        <div className="flex flex-wrap gap-3 mb-12">
+          <a
+            href={`https://www.google.com/maps?q=${village.latitude},${village.longitude}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-sea text-white rounded-lg text-sm font-medium hover:bg-sea-light transition-colors"
+          >
+            <MapPin className="w-4 h-4" /> Open in Google Maps
+          </a>
+          <Link
+            href={`/${locale}/explore?lat=${village.latitude}&lng=${village.longitude}&z=13`}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white text-sea border border-sea/30 rounded-lg text-sm font-medium hover:border-sea transition-colors"
+          >
+            <MapPin className="w-4 h-4" /> {VIEW_ON_MAP[locale] ?? VIEW_ON_MAP.en}
+          </Link>
+        </div>
 
-        {/* Property management CTA */}
+        {/* Monetisation: village intent to Car Rental Direct. */}
         <div className="mb-12">
-          <AffiliateCTA type="propertyManagement" locale={locale} />
+          {/* Pickup le plus proche s'il est servi (pattern beaches) : le CTA
+              route alors vers la landing /car-rental/<location> du lieu. */}
+          {(() => {
+            const nearestPickup = nearestBy(
+              allPickups(),
+              (p) => SLUG_COORDS[p.slug] ?? null,
+              { lat: village.latitude, lon: village.longitude },
+              1,
+            )[0];
+            return (
+              <CarPromo
+                locale={locale}
+                pickup={nearestPickup?.served ? nearestPickup.slug : undefined}
+                source="village"
+              />
+            );
+          })()}
         </div>
 
         {/* Nearby villages */}
         {nearby.length > 0 && (
           <section>
-            <h2 className="text-xl font-bold text-aegean mb-4">Nearby villages</h2>
+            <h2 className="text-xl font-bold text-sea mb-4">Nearby villages</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {nearby.map((v) => (
                 <Link
                   key={v.slug}
                   href={`/${locale}/villages/${v.slug}`}
-                  className="rounded-xl border border-border bg-white p-3 hover:border-aegean/30 transition-all"
+                  className="rounded-xl border border-border bg-white p-3 hover:border-sea/30 transition-all"
                 >
                   <p className="font-semibold text-sm">{getLocalizedField(v, "name", loc)}</p>
                   <p className="text-xs text-text-muted capitalize">{v.period} - {v.region}</p>
@@ -211,6 +261,10 @@ export default async function VillageDetailPage({
             </div>
           </section>
         )}
+
+        {/* Internal linking + retention: editorial discovery grid + newsletter capture */}
+        <DiscoverCrete category={null} locale={locale} />
+        <NewsletterCTA locale={locale} />
 
         {/* Image credit */}
         {village.image_credit && (

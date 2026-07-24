@@ -1,4 +1,11 @@
 {
+  "activityNudge": {
+    "close": "Fermer",
+    "title": "Pas encore décidé ?",
+    "subtitle": "Swipe les meilleurs spots de Crète et trouve celui qui te ressemble.",
+    "dismiss": "Plus tard",
+    "cta": "Je swipe"
+  },
   "meta": {
     "title": "Crete Direct - Ce qui se passe en Crète",
     "description": "Météo, événements, plages, actus locales. Toute la Crète, mise à jour chaque heure. Gratuit, en 4 langues."
@@ -47,7 +54,63 @@
     "updatedAt": "Mis à jour à {time} heure locale",
     "noEvents": "Aucun événement à venir.",
     "submitEvent": "Proposer un événement ?",
-    "newsFeedLoading": "Flux d'actualités en chargement. Mis à jour toutes les 3 heures."
+    "newsFeedLoading": "Flux d'actualités en chargement. Mis à jour toutes les 3 heures.",
+    "guidesSectionTitle": "Guides de voyage",
+    "guidesSectionSubtitle": "Plages, randonnées, cuisine, vie en Crète. Vérifiés sur l'île.",
+    "allGuides": "Tous les guides",
+    "editorialGuides": "Guides éditoriaux",
+    "heroTitle": "La Crète, aujourd'hui",
+    "carRentalKicker": "Location de voiture",
+    "carRentalTitle": "Votre voiture pour explorer la Crète",
+    "carRentalSub": "Agence locale, prix juste, sans prépaiement. Devis en 4 clics, prise à l'aéroport possible.",
+    "carRentalCta": "Demander un devis",
+    "heroMain": {
+      "pre": "Plages, bus, météo.",
+      "hl": "La Crète, en direct."
+    },
+    "heroToday": "Aujourd'hui la mer est {rating} à {name}. On surveille le vent, la mer et les bus pour toi, toute la journée.",
+    "liveFromIsland": "en direct de l'île",
+    "heroSub": "Calculé en direct · 10 stations météo × l'orientation de 500 plages.",
+    "ctaBeach": "Voir la plage du jour",
+    "air": "air",
+    "sea": "mer",
+    "islandNow": "L'île, maintenant",
+    "allStations": "Toutes les stations",
+    "swimToday": "Où se baigner aujourd’hui",
+    "allBeaches": "Les 500 plages",
+    "todaysPick": "la préco du jour",
+    "toolsTitle": "Les outils",
+    "ratings": {
+      "calm": "calme",
+      "fair": "correct",
+      "exposed": "exposée"
+    },
+    "seaStates": {
+      "calm": "calme",
+      "ok": "baignade ok",
+      "rough": "agitée"
+    },
+    "regions": {
+      "south": "Côte sud",
+      "west": "Côte ouest",
+      "east": "Côte est",
+      "central": "Côte centrale"
+    },
+    "tools": {
+      "buses": "Bus",
+      "busesLine": "Horaires & prix",
+      "swim": "Baignade",
+      "swimLine": "500 plages live",
+      "explore": "Explorer",
+      "exploreLine": "2 296 lieux",
+      "airports": "Aéroports",
+      "airportsLine": "Trafic & saisons",
+      "airbnb": "Data Airbnb",
+      "airbnbLine": "Prix par zone",
+      "weather": "Météo",
+      "weatherLine": "10 stations + mer"
+    },
+    "nextEvents": "Prochains événements"
   },
   "footer": {
     "about": "Guide gratuit et indépendant sur la Crète. Données live. Pas de pub (pour l'instant). Pas de tracking.",
@@ -66,11 +129,65 @@
     "weather": "Météo",
     "rights": "Tous droits réservés.",
     "madeIn": "Fait en Crète",
-    "propertyManagement": "Gestion locative"
+    "airports": "Aéroports",
+    "ourProject": "Notre projet",
+    "taglineLong": "Le compagnon pratique de la Crète. Données live, gratuit, indépendant. Fait sur l'île.",
+    "plan": "Planifier",
+    "discover": "Découvrir",
+    "info": "Infos"
   },
   "common": {
     "readMore": "Lire la suite",
     "seeAll": "Voir tout",
     "back": "Retour"
+  },
+  "nextDeparture": {
+    "next": "Prochain départ",
+    "inMin": "dans {m} min",
+    "tomorrow": "Premier bus demain"
+  },
+  "depBoard": {
+    "title": "Prochains bus",
+    "plan": "Planifier un trajet",
+    "inMin": "dans {m} min",
+    "last": "dernier du jour",
+    "tomorrow": "demain",
+    "routeAria": "Horaires {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "Départs",
+    "nearMe": "Près de moi",
+    "tomorrow": "demain",
+    "later": "Voir les départs suivants",
+    "none": "Aucun départ trouvé ici.",
+    "in": "dans",
+    "min": "min",
+    "hr": "h"
+  },
+  "pushBell": {
+    "cta": "Recevoir les alertes bus & infos urgentes",
+    "on": "Alertes activées",
+    "blocked": "Notifications bloquées dans le navigateur.",
+    "iosInstall": "Alertes bus : ajoute le site à ton écran d'accueil (Partager, puis Sur l'écran d'accueil) pour les activer."
+  },
+  "timeChips": {
+    "legend": "prochain départ · les heures passées sont estompées"
+  },
+  "busInCreteBox": {
+    "heading": "Se déplacer en Crète en bus",
+    "connector": "à"
+  },
+  "installBanner": {
+    "title": "Garde la Crète dans ta poche",
+    "body": "Bus en direct et plages, même hors connexion.",
+    "cta": "Installer",
+    "later": "Plus tard",
+    "ios": "Touche Partager, puis « Sur l'écran d'accueil »."
+  },
+  "tabBar": {
+    "map": "Carte",
+    "buses": "Bus",
+    "beaches": "Plages",
+    "quote": "Devis"
   }
 }

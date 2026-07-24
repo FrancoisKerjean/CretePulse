@@ -1,9 +1,14 @@
 import Link from "next/link";
+import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Trophy, ArrowRight, ChevronLeft, Scale } from "lucide-react";
 import type { Metadata } from "next";
+import { compareSchema } from "@/lib/schema";
+import { getBusRoutes } from "@/lib/buses";
+import { compareToPairSlug, type SeoRoute } from "@/lib/bus-seo";
+import { JsonLd } from "@/components/JsonLd";
 
-export const revalidate = 86400;
+export const revalidate = 172800; // 03/07 optim couts Vercel (48h, ISR Writes)
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
@@ -304,29 +309,75 @@ export function generateStaticParams() {
 /*  SEO metadata                                                       */
 /* ------------------------------------------------------------------ */
 
-const META_TITLES: Record<string, Record<string, string>> = {
-  en: { prefix: "", suffix: "- Which is better? | Crete Direct" },
-  fr: { prefix: "", suffix: "- Lequel choisir ? | Crete Direct" },
-  de: { prefix: "", suffix: "- Was ist besser? | Crete Direct" },
-  el: { prefix: "", suffix: "- Ποιο είναι καλύτερο; | Crete Direct" },
+/**
+ * Title/description templates by locale × comparison type.
+ * Optimised for CTR on Google SERPs (positions 3-15) :
+ * - year for freshness signal
+ * - concrete promise (number of differences, "2 minutes" reading time)
+ * - "local guide" authority cue
+ * - no empty rhetorical question ("Which is better?" performed at 0.4% CTR pos 3.6)
+ */
+const META_TITLES: Record<string, Record<string, (a: string, b: string, n: number) => string>> = {
+  en: {
+    city:   (a, b, n) => `${a} vs ${b} 2026: ${n} Key Differences (Local's Honest Guide)`,
+    island: (a, b, n) => `${a} vs ${b} 2026: Which Greek Island to Pick? Local Comparison`,
+    beach:  (a, b, n) => `${a} vs ${b} 2026: Which Crete Beach Wins? Honest Local Guide`,
+  },
+  fr: {
+    city:   (a, b)    => `${a} ou ${b} en 2026 : que choisir ? Comparatif local`,
+    island: (a, b)    => `${a} ou ${b} en 2026 : quelle île grecque choisir ? Guide local`,
+    beach:  (a, b)    => `${a} ou ${b} en 2026 : quelle plage de Crète choisir ? Guide local`,
+  },
+  de: {
+    city:   (a, b, n) => `${a} oder ${b} 2026: ${n} Unterschiede (Ehrlicher Insider-Guide)`,
+    island: (a, b)    => `${a} oder ${b} 2026: Welche griechische Insel wählen? Vergleich`,
+    beach:  (a, b)    => `${a} oder ${b} 2026: Welcher Kreta-Strand gewinnt? Insider-Guide`,
+  },
+  el: {
+    city:   (a, b, n) => `${a} ή ${b} 2026: ${n} διαφορές · Ειλικρινής οδηγός ντόπιου`,
+    island: (a, b)    => `${a} ή ${b} 2026: Ποιο ελληνικό νησί να διαλέξετε; Σύγκριση`,
+    beach:  (a, b)    => `${a} ή ${b} 2026: Ποια παραλία της Κρήτης κερδίζει; Οδηγός`,
+  },
 };
 
-const META_DESC: Record<string, string> = {
-  en: "Detailed side-by-side comparison of %A% vs %B%. Beaches, food, nightlife, budget, and our honest verdict.",
-  fr: "Comparaison detaillee de %A% vs %B%. Plages, gastronomie, vie nocturne, budget et notre verdict honnete.",
-  de: "Detaillierter Vergleich von %A% vs %B%. Strande, Essen, Nachtleben, Budget und unser ehrliches Urteil.",
-  el: "Λεπτομερής σύγκριση %A% vs %B%. Παραλίες, φαγητό, νυχτερινή ζωή, κόστος.",
+const META_DESC: Record<string, Record<string, (a: string, b: string) => string>> = {
+  en: {
+    city:   (a, b) => `${a} or ${b} in 2026? Compare beaches, food, nightlife, prices and history side-by-side. Local guide with our honest verdict in 2 minutes.`,
+    island: (a, b) => `${a} or ${b} for your 2026 trip? Beaches, prices, vibe, flights and authenticity compared. Local guide with an honest verdict in 2 minutes.`,
+    beach:  (a, b) => `${a} or ${b} beach in 2026? Compare access, crowds, water clarity, family-friendliness and best time to visit. Honest local guide.`,
+  },
+  fr: {
+    city:   (a, b) => `${a} ou ${b} en 2026 ? Plages, gastronomie, vie nocturne, prix et histoire comparés. Guide local avec verdict honnête en 2 minutes.`,
+    island: (a, b) => `${a} ou ${b} pour votre voyage 2026 ? Plages, prix, ambiance, vols et authenticité comparés. Guide local avec verdict honnête en 2 minutes.`,
+    beach:  (a, b) => `Plage ${a} ou ${b} en 2026 ? Accès, affluence, clarté de l'eau et meilleure saison comparés. Guide local honnête, sans bullshit.`,
+  },
+  de: {
+    city:   (a, b) => `${a} oder ${b} 2026? Strände, Essen, Nachtleben, Preise und Geschichte im direkten Vergleich. Lokaler Guide mit ehrlichem Urteil in 2 Minuten.`,
+    island: (a, b) => `${a} oder ${b} für 2026? Strände, Preise, Atmosphäre, Flüge und Authentizität verglichen. Ehrlicher Insider-Guide in 2 Minuten.`,
+    beach:  (a, b) => `Strand ${a} oder ${b} in 2026? Anfahrt, Andrang, Wasserklarheit und beste Reisezeit im Vergleich. Ehrlicher lokaler Guide.`,
+  },
+  el: {
+    city:   (a, b) => `${a} ή ${b} το 2026; Παραλίες, φαγητό, νυχτερινή ζωή, τιμές και ιστορία σε άμεση σύγκριση. Οδηγός ντόπιου με ειλικρινή ετυμηγορία σε 2 λεπτά.`,
+    island: (a, b) => `${a} ή ${b} για το 2026; Παραλίες, τιμές, ατμόσφαιρα, πτήσεις και αυθεντικότητα σε σύγκριση. Ειλικρινής οδηγός ντόπιου.`,
+    beach:  (a, b) => `Παραλία ${a} ή ${b} το 2026; Πρόσβαση, κοσμοσυρροή, διαύγεια νερού και καλύτερη εποχή. Ειλικρινής οδηγός ντόπιου.`,
+  },
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const comp = COMPARISONS.find((c) => c.slug === slug);
   if (!comp) return {};
 
-  const titleMeta = META_TITLES[locale] || META_TITLES.en;
-  const title = `${comp.a} vs ${comp.b} ${titleMeta.suffix}`;
-  const descTemplate = META_DESC[locale] || META_DESC.en;
-  const description = descTemplate.replace("%A%", comp.a).replace("%B%", comp.b);
+  const data = COMPARISON_DATA[slug];
+  const categoryCount = data?.categories.length ?? 8;
+  const titleByType = (META_TITLES[locale] || META_TITLES.en);
+  const titleFn = titleByType[comp.type] || titleByType.city;
+  const title = titleFn(comp.a, comp.b, categoryCount);
+
+  const descByType = (META_DESC[locale] || META_DESC.en);
+  const descFn = descByType[comp.type] || descByType.city;
+  const description = descFn(comp.a, comp.b);
 
   const url = `${BASE_URL}/${locale}/compare/${slug}`;
   const alternates: Record<string, string> = {};
@@ -335,7 +386,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   }
   alternates["x-default"] = `${BASE_URL}/en/compare/${slug}`;
 
-  const data = COMPARISON_DATA[slug];
   const faqSchema = data
     ? {
         "@context": "https://schema.org",
@@ -403,10 +453,17 @@ const LABELS: Record<string, Record<string, string>> = {
   winner: { en: "Winner", fr: "Gagnant", de: "Gewinner", el: "Νικητής" },
   tie: { en: "Tie", fr: "Egalite", de: "Unentschieden", el: "Ισοπαλία" },
   faq: { en: "Frequently asked questions", fr: "Questions frequentes", de: "Haufig gestellte Fragen", el: "Συχνές ερωτήσεις" },
+  gettingBetween: {
+    en: "Getting between {a} and {b}",
+    fr: "Se déplacer entre {a} et {b}",
+    de: "Reisen zwischen {a} und {b}",
+    el: "Μετακίνηση μεταξύ {a} και {b}",
+  },
 };
 
 export default async function ComparePage({ params }: { params: Promise<{ locale: string; slug: string }> }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const comp = COMPARISONS.find((c) => c.slug === slug);
   if (!comp) notFound();
 
@@ -414,6 +471,10 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
   if (!data) notFound();
 
   const other = COMPARISONS.filter((c) => c.slug !== slug);
+
+  // Bus link box: compute pair slug (null for island/beach comparisons)
+  const busRoutes = (await getBusRoutes()) as SeoRoute[];
+  const busPair = compareToPairSlug(busRoutes, comp.a, comp.b);
 
   // Count wins
   let winsA = 0;
@@ -448,27 +509,56 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
 
   return (
     <main className="min-h-screen bg-white">
-      {/* FAQ Schema */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            mainEntity: faqItems.map((item) => ({
-              "@type": "Question",
-              name: t(item.q, locale),
-              acceptedAnswer: {
-                "@type": "Answer",
-                text: t(item.a, locale),
+      {/* @graph schema: WebPage + BreadcrumbList + ItemList comparison + FAQPage */}
+      <JsonLd
+        data={compareSchema({
+              locale,
+              slug,
+              a: comp.a,
+              b: comp.b,
+              pageTitle: `${comp.a} vs ${comp.b}`,
+              description: (() => {
+                const byType = META_DESC[locale] || META_DESC.en;
+                const fn = byType[comp.type] || byType.city;
+                return fn(comp.a, comp.b);
+              })(),
+              categories: data.categories.map((c) => ({
+                label: t(c.label, locale),
+                a: t(c.a, locale),
+                b: t(c.b, locale),
+                winner: c.winner as "a" | "b" | "tie" | undefined,
+              })),
+              verdictA: t(data.verdictA, locale),
+              verdictB: t(data.verdictB, locale),
+              faqItems: faqItems.map((item) => ({
+                q: t(item.q, locale),
+                a: t(item.a, locale),
+              })),
+              breadcrumbLabels: {
+                home:
+                  ({
+                    en: "Home", fr: "Accueil", de: "Startseite", el: "Αρχική",
+                    it: "Home", nl: "Home", pl: "Strona główna", es: "Inicio",
+                    pt: "Início", ru: "Главная", ja: "ホーム", ko: "홈",
+                    zh: "首页", tr: "Ana sayfa", sv: "Hem", da: "Hjem",
+                    no: "Hjem", fi: "Etusivu", cs: "Domů", hu: "Főoldal",
+                    ro: "Acasă", ar: "الرئيسية",
+                  } as Record<string, string>)[locale] || "Home",
+                compare:
+                  ({
+                    en: "Compare", fr: "Comparer", de: "Vergleichen", el: "Σύγκριση",
+                    it: "Confronta", nl: "Vergelijken", pl: "Porównaj", es: "Comparar",
+                    pt: "Comparar", ru: "Сравнить", ja: "比較", ko: "비교",
+                    zh: "比较", tr: "Karşılaştır", sv: "Jämför", da: "Sammenlign",
+                    no: "Sammenlign", fi: "Vertaa", cs: "Porovnat", hu: "Összehasonlítás",
+                    ro: "Comparați", ar: "مقارنة",
+                  } as Record<string, string>)[locale] || "Compare",
               },
-            })),
-          }),
-        }}
+            })}
       />
 
       {/* Hero */}
-      <section className="relative bg-gradient-to-br from-sky-600 to-blue-800 text-white py-16 md:py-24">
+      <section className="relative bg-gradient-to-br from-sea to-night text-white py-16 md:py-24 overflow-hidden">
         <div className="mx-auto max-w-5xl px-4 text-center">
           <Link
             href={`/${locale}`}
@@ -512,6 +602,9 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
             </div>
           </div>
         </div>
+        <svg className="absolute bottom-0 left-0 w-full h-[58px]" viewBox="0 0 1440 70" preserveAspectRatio="none" aria-hidden>
+          <path d="M0 40 C180 0 320 70 540 42 C760 14 900 66 1130 40 C1290 22 1380 36 1440 28 L1440 70 L0 70 Z" fill="#F6FBFC" />
+        </svg>
       </section>
 
       {/* Comparison table */}
@@ -520,10 +613,10 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
           {data.categories.map((cat, i) => (
             <div
               key={i}
-              className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto_2fr] gap-3 md:gap-4 items-start rounded-xl border border-gray-100 bg-gray-50/50 p-4 md:p-5 hover:shadow-md transition-shadow"
+              className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto_2fr] gap-3 md:gap-4 items-start rounded-[22px] border border-border bg-surface/50 p-4 md:p-5 hover:shadow-card transition-shadow"
             >
               {/* Category label */}
-              <div className="font-semibold text-gray-900 text-sm md:text-base">
+              <div className="font-semibold text-ink text-sm md:text-base">
                 {t(cat.label, locale)}
               </div>
 
@@ -532,10 +625,10 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
                 className={`text-sm md:text-base rounded-lg p-3 ${
                   cat.winner === "a"
                     ? "bg-green-50 border border-green-200 text-green-900"
-                    : "bg-white border border-gray-100 text-gray-700"
+                    : "bg-white border border-border text-ink"
                 }`}
               >
-                <span className="md:hidden font-medium text-gray-500 mr-1">{comp.a}:</span>
+                <span className="md:hidden font-medium text-text-muted mr-1">{comp.a}:</span>
                 {t(cat.a, locale)}
                 {cat.winner === "a" && (
                   <Trophy className="inline-block w-4 h-4 ml-2 text-green-600" />
@@ -545,7 +638,7 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
               {/* Winner badge - desktop only */}
               <div className="hidden md:flex items-center justify-center">
                 {cat.winner === "tie" ? (
-                  <span className="text-xs text-gray-400 bg-gray-100 rounded-full px-2 py-1">
+                  <span className="text-xs text-text-muted bg-surface rounded-full px-2 py-1">
                     {t(LABELS.tie, locale)}
                   </span>
                 ) : cat.winner ? (
@@ -562,10 +655,10 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
                 className={`text-sm md:text-base rounded-lg p-3 ${
                   cat.winner === "b"
                     ? "bg-green-50 border border-green-200 text-green-900"
-                    : "bg-white border border-gray-100 text-gray-700"
+                    : "bg-white border border-border text-ink"
                 }`}
               >
-                <span className="md:hidden font-medium text-gray-500 mr-1">{comp.b}:</span>
+                <span className="md:hidden font-medium text-text-muted mr-1">{comp.b}:</span>
                 {t(cat.b, locale)}
                 {cat.winner === "b" && (
                   <Trophy className="inline-block w-4 h-4 ml-2 text-green-600" />
@@ -577,20 +670,20 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
       </section>
 
       {/* Verdict */}
-      <section className="bg-gray-50 py-12 md:py-16">
+      <section className="bg-surface py-12 md:py-16">
         <div className="mx-auto max-w-5xl px-4">
-          <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900 mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-center text-ink mb-8">
             {t(LABELS.verdict, locale)}
           </h2>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-[26px] p-6 md:p-8 shadow-card border border-border">
               <h3 className="text-xl font-bold text-sky-700 mb-3">{comp.a}</h3>
-              <p className="text-gray-700 leading-relaxed">{t(data.verdictA, locale)}</p>
+              <p className="text-ink leading-relaxed">{t(data.verdictA, locale)}</p>
             </div>
-            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-[26px] p-6 md:p-8 shadow-card border border-border">
               <h3 className="text-xl font-bold text-sky-700 mb-3">{comp.b}</h3>
-              <p className="text-gray-700 leading-relaxed">{t(data.verdictB, locale)}</p>
+              <p className="text-ink leading-relaxed">{t(data.verdictB, locale)}</p>
             </div>
           </div>
         </div>
@@ -599,17 +692,17 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
       {/* FAQ */}
       {faqItems.length > 0 && (
         <section className="mx-auto max-w-3xl px-4 py-12 md:py-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">{t(LABELS.faq, locale)}</h2>
+          <h2 className="text-2xl font-bold text-ink mb-6">{t(LABELS.faq, locale)}</h2>
           <div className="space-y-4">
             {faqItems.map((item, i) => (
               <details
                 key={i}
-                className="group rounded-xl border border-gray-200 bg-white overflow-hidden"
+                className="group rounded-xl border border-border bg-white overflow-hidden"
               >
-                <summary className="cursor-pointer px-5 py-4 font-medium text-gray-900 hover:bg-gray-50 transition-colors">
+                <summary className="cursor-pointer px-5 py-4 font-medium text-ink hover:bg-surface transition-colors">
                   {t(item.q, locale)}
                 </summary>
-                <div className="px-5 pb-4 text-gray-600 text-sm leading-relaxed">
+                <div className="px-5 pb-4 text-ink text-sm leading-relaxed">
                   {t(item.a, locale)}
                 </div>
               </details>
@@ -619,9 +712,9 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
       )}
 
       {/* Related links */}
-      <section className="bg-gray-50 py-12 md:py-16">
+      <section className="bg-surface py-12 md:py-16">
         <div className="mx-auto max-w-5xl px-4">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">
+          <h2 className="text-xl font-bold text-ink mb-6">
             {t(LABELS.otherComparisons, locale)}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -629,16 +722,32 @@ export default async function ComparePage({ params }: { params: Promise<{ locale
               <Link
                 key={c.slug}
                 href={`/${locale}/compare/${c.slug}`}
-                className="flex items-center gap-3 rounded-xl bg-white border border-gray-100 px-4 py-3 hover:shadow-md hover:border-sky-200 transition-all text-sm"
+                className="flex items-center gap-3 rounded-xl bg-white border border-border px-4 py-3 hover:shadow-soft hover:border-lagoon/30 transition-all text-sm"
               >
                 <Scale className="w-4 h-4 text-sky-500 flex-shrink-0" />
-                <span className="text-gray-800 font-medium">
+                <span className="text-ink font-medium">
                   {c.a} vs {c.b}
                 </span>
-                <ArrowRight className="w-4 h-4 text-gray-400 ml-auto" />
+                <ArrowRight className="w-4 h-4 text-text-muted ml-auto" />
               </Link>
             ))}
           </div>
+
+          {/* Bus link box: shown only for city-vs-city pairs served by inter-city coaches */}
+          {busPair && (
+            <div className="mt-8">
+              <Link
+                href={`/${locale}/buses/${busPair}`}
+                className="block rounded-2xl border border-border bg-white p-4 hover:bg-surface hover:border-lagoon/30 transition-all shadow-soft"
+              >
+                <p className="text-sm font-medium text-sky-700">
+                  {t(LABELS.gettingBetween, locale)
+                    .replace("{a}", comp.a)
+                    .replace("{b}", comp.b)}
+                </p>
+              </Link>
+            </div>
+          )}
 
           {/* Links back to site */}
           <div className="mt-8 flex flex-wrap gap-3">

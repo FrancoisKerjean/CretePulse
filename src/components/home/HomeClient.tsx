@@ -1,30 +1,30 @@
 "use client";
 
+// Home Kalimera : hero lagon + ile carte live + board nuit + tuiles pleines.
+// Cahier des charges visuel : docs/design/kalimera/home-v8.html (transpose).
+// Spec : docs/superpowers/specs/2026-06-11-brand-da-kalimera-design.md
 import { useState } from "react";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { BlurFade } from "@/components/ui/blur-fade";
-import { Marquee } from "@/components/ui/marquee";
-import { NumberTicker } from "@/components/ui/number-ticker";
-import { SpotlightCard } from "@/components/ui/spotlight-card";
+import Image from "next/image";
+import { CardThumb } from "@/components/CardThumb";
+import { AbstractFallback } from "@/components/AbstractFallback";
+import { CreteMap } from "@/components/CreteMap";
+import { DepBoard } from "@/components/DepBoard";
+import { WindArrow } from "@/components/WindArrow";
+import { Car, MapPin } from "lucide-react";
 import {
-  Sun, Wind, Waves, Calendar, Newspaper, ChevronRight, Mountain,
-  UtensilsCrossed, Footprints, Flame, Cloud, CloudRain, MapPin,
-  BookOpen, ArrowDown, Mail,
-} from "lucide-react";
+  CiBus, CiWave, CiSun, CiCompass, CiPlane, CiChart,
+  CiCalendar, CiNews, CiBook,
+  CiInstagram, CiFacebook, CiYouTube,
+} from "@/components/icons";
 import { Link } from "@/i18n/navigation";
 import type { CityWeather } from "@/lib/weather";
+import type { BusRoute } from "@/lib/buses";
 import type { NewsItem, Event, Locale } from "@/lib/types";
 import { getLocalizedField } from "@/lib/types";
 import { localizeLocation } from "@/lib/localize-location";
-
-function WeatherIcon({ code, wind, className }: { code: number; wind: number; className?: string }) {
-  const c = className || "w-5 h-5";
-  if (wind > 20) return <Wind className={`${c} text-white/80`} />;
-  if (code <= 1) return <Sun className={`${c} text-amber-300`} />;
-  if (code <= 3) return <Cloud className={`${c} text-white/60`} />;
-  return <CloudRain className={`${c} text-blue-300`} />;
-}
+import { type Guide, getLocalizedGuideField } from "@/lib/guides";
 
 function timeAgo(dateStr: string): string {
   const diffMs = Date.now() - new Date(dateStr).getTime();
@@ -45,18 +45,8 @@ function formatEventDate(dateStr: string, locale: string): string {
   return `${month} ${day}`;
 }
 
-const CATEGORY_STYLES: Record<string, string> = {
-  politics: "bg-aegean/10 text-aegean",
-  tourism: "bg-terra/10 text-terra",
-  culture: "bg-sand text-text-muted",
-  environment: "bg-olive/10 text-olive",
-  economy: "bg-stone text-text-muted",
-  sports: "bg-aegean/10 text-aegean",
-  weather: "bg-aegean/10 text-aegean",
-  local: "bg-olive/10 text-olive",
-};
 
-function NewsletterForm({ locale }: { locale: string }) {
+function NewsletterFormCompact({ locale }: { locale: string }) {
   const t = useTranslations("home");
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -79,21 +69,16 @@ function NewsletterForm({ locale }: { locale: string }) {
   }
 
   if (status === "success") {
-    const successMsg: Record<string, string> = {
-      en: "Thanks! Check your inbox.",
-      fr: "Merci ! Verifiez votre boite mail.",
-      de: "Danke! Prufen Sie Ihren Posteingang.",
-      el: "\u0395\u03c5\u03c7\u03b1\u03c1\u03b9\u03c3\u03c4\u03bf\u03cd\u03bc\u03b5! \u0395\u03bb\u03ad\u03b3\u03be\u03c4\u03b5 \u03c4\u03b1 \u03b5\u03b9\u03c3\u03b5\u03c1\u03c7\u03cc\u03bc\u03b5\u03bd\u03ac \u03c3\u03b1\u03c2.",
-    };
+    const successMsg: Record<string, string> = { en: "Thanks!", fr: "Merci !", de: "Danke!", el: "Ευχαριστώ!" };
     return (
-      <div className="rounded-2xl bg-aegean p-6 text-white text-center">
-        <p className="text-sm font-medium">{successMsg[locale] || successMsg.en}</p>
+      <div className="rounded-full bg-night px-6 py-3 text-white text-center">
+        <p className="text-sm font-heading font-bold m-0">{successMsg[locale] || successMsg.en}</p>
       </div>
     );
   }
 
   return (
-    <form className="flex gap-2" onSubmit={handleSubmit}>
+    <form className="flex gap-2.5 w-full max-w-md" onSubmit={handleSubmit}>
       <input type="text" name="website" className="hidden" tabIndex={-1} autoComplete="off" />
       <input
         type="email"
@@ -101,15 +86,12 @@ function NewsletterForm({ locale }: { locale: string }) {
         onChange={(e) => setEmail(e.target.value)}
         placeholder={t("emailPlaceholder")}
         required
-        className="flex-1 px-4 py-3 rounded-xl border border-border bg-white text-sm text-text placeholder:text-text-light focus:outline-none focus:ring-2 focus:ring-aegean/30 focus:border-aegean/40"
+        className="flex-1 min-w-0 px-5 py-3 rounded-full border-none bg-white text-[13.5px] text-text placeholder:text-text-light focus:outline-none focus:ring-2 focus:ring-lagoon/40"
       />
-      {status === "error" && (
-        <p className="text-xs text-red-500 absolute -bottom-5">Error</p>
-      )}
       <button
         type="submit"
         disabled={status === "loading"}
-        className="px-6 py-3 bg-terra text-white rounded-xl font-bold text-sm hover:bg-terra-light transition-colors disabled:opacity-60 shadow-md hover:shadow-lg shrink-0"
+        className="px-5 py-3 bg-text text-white rounded-full font-heading font-bold text-sm hover:bg-night transition-colors disabled:opacity-60"
       >
         {status === "loading" ? "..." : t("subscribe")}
       </button>
@@ -117,394 +99,522 @@ function NewsletterForm({ locale }: { locale: string }) {
   );
 }
 
+export interface SwimPickLite {
+  name: string;
+  slug: string;
+  imageUrl: string | null;
+  rating: "calm" | "fair" | "exposed";
+  windSpeed: number;
+  windCardinal: string;
+  windDir: number;
+  seaTemp: number | null;
+  region: string | null;
+  cityName: string;
+  lat: number;
+  lng: number;
+}
+
+export interface SwimSideLite {
+  name: string;
+  slug: string;
+  imageUrl: string | null;
+  rating: "calm" | "fair" | "exposed";
+}
+
 interface HomeClientProps {
   cities: CityWeather[];
   latestNews: NewsItem[];
   upcomingEvents: Event[];
+  latestGuides: Guide[];
+  swimPick: SwimPickLite | null;
+  swimSides: SwimSideLite[];
+  boardRoutes: BusRoute[];
   locale: string;
 }
 
-export function HomeClient({ cities, latestNews, upcomingEvents, locale }: HomeClientProps) {
+const VERDICT_COLORS: Record<SwimPickLite["rating"], string> = {
+  calm: "text-[#0B8A52]",
+  fair: "text-[#8A6A14]",
+  exposed: "text-terracotta",
+};
+
+// Καλημέρα avant 12h Athens, Καλησπέρα après 17h, Γεια σου entre les deux.
+function greekGreeting(): string {
+  const h = parseInt(
+    new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Athens", hour: "2-digit", hour12: false }).format(new Date()),
+    10,
+  );
+  if (h < 12) return "Καλημέρα !";
+  if (h >= 17) return "Καλησπέρα !";
+  return "Γεια σου !";
+}
+
+function seaState(c: CityWeather): { key: "calm" | "ok" | "rough"; warn: boolean } {
+  if (c.windSpeed < 12) return { key: "calm", warn: false };
+  if (c.windSpeed < 20) return { key: "ok", warn: false };
+  return { key: "rough", warn: true };
+}
+
+const WTILE_CITIES = ["Heraklion", "Chania", "Ierapetra", "Sitia"];
+const TOOL_TINTS = ["bg-[#CFF3F7]", "bg-[#FFE9CF]", "bg-[#E4F0D5]", "bg-[#DCEBFF]", "bg-[#FFE0D6]", "bg-[#FFF1BF]"];
+
+// Defense-in-depth : si un locale invalide arrive malgre le garde du layout,
+// Intl.DateTimeFormat throw RangeError et fait 500 la home. On retombe sur "en".
+function safeIntlLocale(locale: string): string {
+  try {
+    return Intl.DateTimeFormat.supportedLocalesOf([locale]).length ? locale : "en";
+  } catch {
+    return "en";
+  }
+}
+
+export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, swimPick, swimSides, boardRoutes, locale }: HomeClientProps) {
   const loc = locale as Locale;
   const t = useTranslations("home");
 
-  const now = new Date();
-  const updateTime = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
+  const dateLabel = new Intl.DateTimeFormat(safeIntlLocale(locale), {
+    weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Athens",
+  }).format(new Date());
 
-  const featuredNews = latestNews[0] ?? null;
-  const secondNews = latestNews[1] ?? null;
-  const restNews = latestNews.slice(2);
+  const wtileCities = WTILE_CITIES
+    .map((n) => cities.find((c) => c.name === n))
+    .filter((c): c is CityWeather => Boolean(c));
+
+  const news = latestNews.slice(0, 6);
+  const guides = latestGuides.slice(0, 4);
+  const events = upcomingEvents.slice(0, 3);
+  const heroCity = cities.find((c) => c.name === (swimPick?.cityName ?? "Heraklion")) ?? cities[0];
+
+  const swimPin = swimPick
+    ? { name: swimPick.name, lat: swimPick.lat, lng: swimPick.lng }
+    : null;
+
+  const TOOLS = [
+    { href: "/buses", icon: CiBus, title: t("tools.buses"), line: t("tools.busesLine") },
+    { href: "/beaches/today", icon: CiWave, title: t("tools.swim"), line: t("tools.swimLine") },
+    { href: "/explore", icon: CiCompass, title: t("tools.explore"), line: t("tools.exploreLine") },
+    { href: "/airport", icon: CiPlane, title: t("tools.airports"), line: t("tools.airportsLine") },
+    { href: "/airbnb", icon: CiChart, title: t("tools.airbnb"), line: t("tools.airbnbLine") },
+    { href: "/weather", icon: CiSun, title: t("tools.weather"), line: t("tools.weatherLine") },
+  ] as const;
 
   return (
     <main className="min-h-screen bg-surface">
 
-      {/* ═══════════════════ HERO ═══════════════════ */}
-      <section className="relative h-[80vh] min-h-[560px] max-h-[860px] overflow-hidden">
-        <Image
-          src="https://images.pexels.com/photos/11401809/pexels-photo-11401809.jpeg"
-          alt="Crete coastline"
-          fill
-          priority
-          className="object-cover"
-          sizes="100vw"
-          quality={85}
+      {/* ═══════ HERO lagon : greet + phrase mer + chips + ile carte live ═══════ */}
+      <section className="relative -mt-[74px] pt-28 pb-28 bg-gradient-to-b from-sky via-[#8FE0EC] to-lagoon overflow-hidden">
+        {/* sunball */}
+        <div
+          className="absolute top-20 right-[10%] w-[120px] h-[120px] rounded-full shadow-[0_0_76px_22px_rgba(255,200,61,.45)]"
+          style={{ background: "radial-gradient(circle at 38% 35%, #FFE08F, #FFC83D 70%)" }}
+          aria-hidden
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/75" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-transparent" />
-
-        <div className="relative h-full flex flex-col justify-end pb-20 px-4">
-          <div className="max-w-6xl mx-auto w-full">
-            <BlurFade delay={0.1}>
-              <div className="flex items-center gap-2.5 mb-5">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute h-full w-full rounded-full bg-terra opacity-75" />
-                  <span className="relative rounded-full h-2 w-2 bg-terra" />
-                </span>
-                <span className="text-white/40 text-[11px] font-semibold uppercase tracking-[0.25em]">
-                  {t("updatedAt", { time: updateTime })}
-                </span>
-              </div>
-            </BlurFade>
-
-            <BlurFade delay={0.2}>
-              <h1
-                className="text-5xl md:text-7xl lg:text-[5.5rem] font-bold text-white leading-[0.9] tracking-tight max-w-3xl"
-                style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
-              >
-                {t("hero")}
+        <div className="relative max-w-6xl mx-auto px-4 grid lg:grid-cols-2 gap-11 items-center">
+          <div>
+            <BlurFade delay={0.05}>
+              <span className="inline-flex items-center gap-2 bg-white/72 rounded-full px-4 py-2 text-[13px] font-heading font-semibold text-sea">
+                <span className="w-2 h-2 rounded-full bg-ok shadow-[0_0_0_4px_rgba(20,184,107,.25)]" />
+                {greekGreeting()} {dateLabel} · {t("liveFromIsland")}
+              </span>
+              <h1 className="font-heading font-extrabold text-4xl md:text-[54px] leading-[1.06] tracking-tight text-text mt-4 mb-3">
+                {t("heroMain.pre")}
+                <br />
+                <span className="text-white [text-shadow:0_2px_18px_rgba(11,94,120,.35)]">{t("heroMain.hl")}</span>
               </h1>
-            </BlurFade>
-
-            <BlurFade delay={0.3}>
-              <p className="mt-5 text-white/55 text-lg md:text-xl max-w-lg leading-relaxed">
-                {t("subtitle")}
+              <p className="text-base text-[rgba(11,57,84,.78)] max-w-md leading-relaxed mb-6">
+                {swimPick
+                  ? t("heroToday", { rating: t(`ratings.${swimPick.rating}`), name: swimPick.name })
+                  : t("heroSub")}
               </p>
+              <div className="flex flex-wrap gap-3 font-data">
+                <Link href="/beaches/today" className="bg-sun text-text rounded-[17px] px-4 py-2.5 text-sm font-heading font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)] no-underline hover:brightness-105 transition-all">
+                  {t("ctaBeach")}
+                </Link>
+                {heroCity && (
+                  <span className="bg-white rounded-[17px] px-4 py-2.5 text-sm font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)]">
+                    ☼ {heroCity.temp}° {t("air")}
+                  </span>
+                )}
+                {swimPick?.seaTemp != null && (
+                  <span className="bg-white rounded-[17px] px-4 py-2.5 text-sm font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)]">
+                    ≈ {swimPick.seaTemp}° {t("sea")}
+                  </span>
+                )}
+                {swimPick && (
+                  <span className="bg-white rounded-[17px] px-4 py-2.5 text-sm font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)] inline-flex items-center gap-1.5">
+                    <WindArrow deg={swimPick.windDir} className="w-3.5 h-3.5 text-sea" /> {swimPick.windSpeed} km/h
+                  </span>
+                )}
+              </div>
+              {/* Socials Kalimera : chips blancs hover sun, cohérents avec chips météo */}
+              <div className="flex flex-wrap gap-2 mt-5">
+                <a
+                  href="https://www.instagram.com/cretedirect/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Crete Direct on Instagram"
+                  className="bg-white/90 hover:bg-sun rounded-full p-2.5 shadow-[0_8px_22px_rgba(11,94,120,.12)] transition-all"
+                >
+                  <CiInstagram className="w-4 h-4 text-sea" />
+                </a>
+                <a
+                  href="https://www.facebook.com/1098023870060924"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Crete Direct on Facebook"
+                  className="bg-white/90 hover:bg-sun rounded-full p-2.5 shadow-[0_8px_22px_rgba(11,94,120,.12)] transition-all"
+                >
+                  <CiFacebook className="w-4 h-4 text-sea" />
+                </a>
+                <a
+                  href="https://www.youtube.com/@CreteDirect"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Crete Direct on YouTube"
+                  className="bg-white/90 hover:bg-sun rounded-full p-2.5 shadow-[0_8px_22px_rgba(11,94,120,.12)] transition-all"
+                >
+                  <CiYouTube className="w-4 h-4 text-sea" />
+                </a>
+              </div>
             </BlurFade>
           </div>
-        </div>
 
-        {/* Scroll hint */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 animate-bounce opacity-40">
-          <ArrowDown className="w-5 h-5 text-white" />
-        </div>
-      </section>
-
-      {/* ═══════════════════ NEWS TICKER ═══════════════════ */}
-      {latestNews.length > 0 && (
-        <div className="bg-aegean text-white py-2.5 overflow-hidden">
-          <Marquee duration={40} pauseOnHover>
-            {latestNews.map((item) => (
-              <Link
-                key={item.slug}
-                href={`/news/${item.slug}`}
-                className="flex items-center gap-2.5 px-4 text-sm hover:text-sand transition-colors whitespace-nowrap"
+          <BlurFade delay={0.15}>
+            <Link
+              href="/explore"
+              aria-label={locale === "fr" ? "Ouvrir l'explorateur interactif de la Crète" : locale === "de" ? "Interaktiven Kreta-Explorer öffnen" : locale === "el" ? "Άνοιγμα διαδραστικού εξερευνητή" : "Open the interactive Crete explorer"}
+              className="group relative block focus:outline-none focus-visible:ring-4 focus-visible:ring-sun/60 rounded-[30px]"
+            >
+              <CreteMap cities={wtileCities} swimPin={swimPin} locale={locale} />
+              <span
+                className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-sea text-white text-xs font-bold shadow-[0_8px_22px_rgba(11,94,120,.22)] opacity-95 group-hover:opacity-100 group-hover:-translate-y-0.5 transition-all"
+                aria-hidden
               >
-                <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-terra/70 font-semibold shrink-0">
-                  {item.category || "news"}
-                </span>
-                <span className="font-medium">{getLocalizedField(item, "title", loc)}</span>
-                <span className="text-white/30 text-xs font-mono">{timeAgo(item.published_at)}</span>
-                <span className="text-white/20 mx-2">|</span>
-              </Link>
-            ))}
-          </Marquee>
+                <CiCompass className="w-3.5 h-3.5" />
+                {locale === "fr" ? "Explorer la carte" : locale === "de" ? "Karte erkunden" : locale === "el" ? "Εξερεύνηση χάρτη" : "Explore the map"}
+              </span>
+            </Link>
+          </BlurFade>
         </div>
-      )}
-
-      {/* ═══════════════════ WEATHER STRIP ═══════════════════ */}
-      <section className="border-b border-border bg-white">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex gap-0 overflow-x-auto scrollbar-none divide-x divide-border">
-            {cities.slice(0, 6).map((city) => (
-              <Link
-                key={city.name}
-                href="/weather"
-                className="shrink-0 flex items-center gap-3 px-5 py-4 hover:bg-stone/50 transition-colors first:pl-0"
-              >
-                <WeatherIcon code={city.weatherCode} wind={city.windSpeed} />
-                <div>
-                  <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider leading-none">{city.name}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-lg font-bold text-text leading-none">{city.temp}°</span>
-                    {city.seaTemp !== null && (
-                      <span className="text-[11px] text-aegean flex items-center gap-0.5 font-bold">
-                        <Waves className="w-3 h-3" />{city.seaTemp}°
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
+        {/* vague separatrice */}
+        <svg className="absolute bottom-0 left-0 w-full h-[70px]" viewBox="0 0 1440 70" preserveAspectRatio="none" aria-hidden>
+          <path d="M0 40 C180 0 320 70 540 42 C760 14 900 66 1130 40 C1290 22 1380 36 1440 28 L1440 70 L0 70 Z" fill="#F6FBFC" />
+        </svg>
       </section>
 
-      {/* ═══════════════════ STATS BAR ═══════════════════ */}
-      <section className="border-b border-border bg-surface">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-            {[
-              { value: 500, suffix: "+", label: t("beachesCount").replace(/\d+\+?\s*/, ""), icon: <Waves className="w-4 h-4 text-aegean" /> },
-              { value: 212, suffix: "", label: t("foodLabel"), icon: <UtensilsCrossed className="w-4 h-4 text-terra" /> },
-              { value: 300, suffix: "+", label: t("villagesCount").replace(/\d+\+?\s*/, ""), icon: <Mountain className="w-4 h-4 text-olive" /> },
-              { value: 80, suffix: "+", label: t("hikesCount").replace(/\d+\+?\s*/, ""), icon: <Footprints className="w-4 h-4 text-sand-warm" /> },
-            ].map(({ value, suffix, label, icon }) => (
-              <div key={label} className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white border border-border flex items-center justify-center shrink-0">
-                  {icon}
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-text leading-none">
-                    <NumberTicker value={value} suffix={suffix} />
+      <div className="max-w-6xl mx-auto px-4">
+
+        {/* ═══════ BOARD NUIT en chevauchement ═══════ */}
+        {boardRoutes.length > 0 && (
+          <div className="relative z-[5] -mt-20">
+            <DepBoard routes={boardRoutes} locale={locale} />
+          </div>
+        )}
+
+        {/* ═══════ CAR RENTAL : agence locale, prix juste (photo plein bloc, pattern bandeaux v5) ═══════ */}
+        <section className="mt-10">
+            <Link
+              href="/car-rental"
+              className="group relative block overflow-hidden rounded-[30px] no-underline shadow-card"
+            >
+              {/* Visuel partenaire location de voiture (Auto Smart) */}
+              <img
+                src="/images/partners/car-rental.jpg"
+                alt=""
+                loading="lazy"
+                aria-hidden
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-[4000ms] ease-out group-hover:scale-105"
+              />
+              {/* Scrim de lisibilité : dense sur le texte, laisse respirer la photo à droite */}
+              <div className="absolute inset-0 bg-gradient-to-r from-[#08263a]/85 via-[#08263a]/50 to-[#08263a]/10" aria-hidden />
+              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#08263a]/60 to-transparent md:hidden" aria-hidden />
+
+              <div className="relative flex min-w-0 flex-wrap items-center justify-between gap-x-8 gap-y-6 p-6 md:min-h-[210px] md:p-8">
+                <div className="min-w-0 max-w-xl">
+                  <p className="m-0 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 font-heading text-[10.5px] font-bold uppercase tracking-widest text-white/90 backdrop-blur-sm">
+                    <Car size={12} aria-hidden /> {t("carRentalKicker")}
                   </p>
-                  <p className="text-[11px] text-text-muted font-medium mt-0.5">{label}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════ MAINTENANCE BANNER ═══════════════════ */}
-      {latestNews.length === 0 && upcomingEvents.length === 0 && (
-        <div className="max-w-6xl mx-auto px-4 pt-8">
-          <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 flex items-center gap-3">
-            <span className="text-amber-600 text-lg">&#9888;</span>
-            <p className="text-sm text-amber-800">
-              {loc === "fr"
-                ? "Maintenance en cours. La météo est disponible, les actualités et événements reviendront très prochainement."
-                : loc === "de"
-                ? "Wartungsarbeiten. Das Wetter ist verfügbar, Nachrichten und Veranstaltungen kehren in Kürze zurück."
-                : loc === "el"
-                ? "Συντήρηση σε εξέλιξη. Ο καιρός είναι διαθέσιμος, τα νέα και οι εκδηλώσεις θα επιστρέψουν σύντομα."
-                : "Maintenance in progress. Weather is available, news and events will be back shortly."}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* ═══════════════════ MAIN CONTENT ═══════════════════ */}
-      <div className="max-w-6xl mx-auto px-4 py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-
-          {/* ──── LEFT: News ──── */}
-          <div className="lg:col-span-7 space-y-8">
-
-            <section>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xs font-bold text-aegean uppercase tracking-[0.2em] flex items-center gap-2">
-                  <Newspaper className="w-4 h-4" /> {t("latestNews")}
-                </h2>
-                <Link href="/news" className="text-xs text-aegean hover:text-aegean-light flex items-center gap-1 font-semibold transition-colors">
-                  {t("allNews")} <ChevronRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-
-              {latestNews.length > 0 ? (
-                <div className="space-y-4">
-                  {/* Top 2 featured articles - side by side on desktop */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {[featuredNews, secondNews].filter(Boolean).map((item, idx) => (
-                      <BlurFade key={item!.slug} delay={idx * 0.1}>
-                        <SpotlightCard className="rounded-2xl">
-                          <Link
-                            href={`/news/${item!.slug}`}
-                            className="block group rounded-2xl overflow-hidden relative h-56"
-                          >
-                            <div className={`absolute inset-0 ${idx === 0 ? "bg-gradient-to-br from-aegean via-[#1a5f82] to-[#2D6A8F]" : "bg-gradient-to-br from-[#3d2b1f] via-terra to-terra-light"}`} />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                            <div className="relative h-full flex flex-col justify-end p-5">
-                              <div className="flex items-center gap-2 mb-2">
-                                {item!.category && (
-                                  <span className="text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-md bg-white/20 text-white backdrop-blur-sm">
-                                    {item!.category}
-                                  </span>
-                                )}
-                                <span className="text-[9px] text-white/40 font-mono">{timeAgo(item!.published_at)}</span>
-                              </div>
-                              <h3
-                                className="text-base font-bold text-white leading-snug group-hover:text-sand transition-colors line-clamp-3"
-                                style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
-                              >
-                                {getLocalizedField(item!, "title", loc)}
-                              </h3>
-                              <p className="text-[10px] text-white/40 mt-2">{item!.source_name}</p>
-                            </div>
-                          </Link>
-                        </SpotlightCard>
-                      </BlurFade>
-                    ))}
-                  </div>
-
-                  {/* Rest of articles */}
-                  <div className="divide-y divide-border">
-                    {restNews.map((item, i) => (
-                      <BlurFade key={item.slug} delay={0.04 * (i + 1)}>
-                        <Link
-                          href={`/news/${item.slug}`}
-                          className="flex items-start gap-4 py-4 group"
-                        >
-                          <div className="shrink-0 w-1 self-stretch rounded-full bg-border group-hover:bg-aegean transition-colors mt-1" />
-                          <div className="min-w-0 flex-1">
-                            <p className="text-[15px] font-semibold text-text group-hover:text-aegean transition-colors leading-snug line-clamp-2">
-                              {getLocalizedField(item, "title", loc)}
-                            </p>
-                            <div className="flex items-center gap-3 mt-1.5">
-                              <span className="text-[11px] text-text-light">{item.source_name}</span>
-                              {item.category && (
-                                <span className={`text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-md ${CATEGORY_STYLES[item.category] || "bg-stone text-text-muted"}`}>
-                                  {item.category}
-                                </span>
-                              )}
-                              <span className="text-[10px] text-text-light font-mono ml-auto">{timeAgo(item.published_at)}</span>
-                            </div>
-                          </div>
-                        </Link>
-                      </BlurFade>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-white rounded-2xl border border-border p-10 text-center">
-                  <Newspaper className="w-8 h-8 text-text-light mx-auto mb-3" />
-                  <p className="text-sm text-text-muted">{t("newsFeedLoading")}</p>
-                </div>
-              )}
-            </section>
-          </div>
-
-          {/* ──── RIGHT: Events + Newsletter ──── */}
-          <div className="lg:col-span-5 space-y-8">
-
-            {/* Events */}
-            <section>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xs font-bold text-terra uppercase tracking-[0.2em] flex items-center gap-2">
-                  <Calendar className="w-4 h-4" /> {t("eventsThisWeek")}
-                </h2>
-                <Link href="/events" className="text-xs text-terra hover:text-terra-light flex items-center gap-1 font-semibold transition-colors">
-                  {t("allEvents")} <ChevronRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-
-              {upcomingEvents.length > 0 ? (
-                <div className="space-y-2">
-                  {upcomingEvents.map((event, i) => {
-                    const dateParts = formatEventDate(event.date_start, locale).split(" ");
-                    return (
-                      <BlurFade key={event.slug} delay={0.04 * i}>
-                        <Link
-                          href={`/events/${event.slug}`}
-                          className="flex items-center gap-3 p-3 bg-white rounded-xl border border-border hover:border-terra/30 hover:shadow-md transition-all group"
-                        >
-                          <div className="shrink-0 w-12 h-12 rounded-lg bg-terra/8 flex flex-col items-center justify-center">
-                            <span className="text-[9px] text-terra font-bold uppercase tracking-wider leading-none">
-                              {dateParts[0]}
-                            </span>
-                            <span className="text-lg font-bold text-terra leading-none mt-0.5">
-                              {dateParts[1]}
-                            </span>
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold text-text group-hover:text-terra transition-colors leading-snug line-clamp-1">
-                              {getLocalizedField(event, "title", loc)}
-                            </p>
-                            <div className="flex items-center gap-1.5 text-[11px] text-text-muted mt-0.5">
-                              <MapPin className="w-3 h-3 shrink-0" />
-                              <span className="truncate">{localizeLocation(event.location_name, locale)}</span>
-                            </div>
-                          </div>
-                        </Link>
-                      </BlurFade>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="bg-white rounded-2xl border border-border p-6 text-center">
-                  <Calendar className="w-6 h-6 text-text-light mx-auto mb-2" />
-                  <p className="text-sm text-text-muted">
-                    {t("noEvents")}{" "}
-                    <Link href="/submit-event" className="text-terra hover:underline font-semibold">
-                      {t("submitEvent")}
-                    </Link>
+                  <h2 className="m-0 mt-3 font-heading text-[28px] font-extrabold leading-tight text-white [text-wrap:balance] drop-shadow-[0_1px_3px_rgba(8,38,58,0.6)] md:text-[32px]">
+                    {t("carRentalTitle")}
+                  </h2>
+                  <p className="m-0 mt-1.5 text-[14px] text-white/90 drop-shadow-[0_1px_2px_rgba(8,38,58,0.6)]">
+                    {t("carRentalSub")}
                   </p>
-                </div>
-              )}
-            </section>
-
-            {/* Newsletter - clean inline */}
-            <section className="rounded-2xl border border-border bg-white p-6">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-aegean/8 flex items-center justify-center shrink-0">
-                  <Mail className="w-5 h-5 text-aegean" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm text-text">{t("newsletter")}</h3>
-                  <p className="text-xs text-text-muted mt-0.5">{t("newsletterCta")}</p>
+                  <span className="relative mt-5 inline-flex items-center gap-2 overflow-hidden rounded-full bg-white px-7 py-3 font-heading text-[14.5px] font-bold text-terracotta shadow-soft transition-transform group-hover:scale-[1.03]">
+                    <span
+                      className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-terracotta/20 to-transparent bg-[length:300%_100%] animate-gradient"
+                      aria-hidden
+                    />
+                    <span className="relative">{t("carRentalCta")}</span>
+                  </span>
                 </div>
               </div>
-              <NewsletterForm locale={locale} />
-            </section>
+            </Link>
+          </section>
 
-            {/* Quick links */}
-            <div className="grid grid-cols-2 gap-2">
-              <Link href="/fire-alerts" className="flex items-center gap-2 p-3 bg-red-50 rounded-xl border border-red-100 hover:shadow-md transition-all group">
-                <Flame className="w-4 h-4 text-red-500 shrink-0" />
-                <div>
-                  <p className="text-xs font-bold text-red-700">{t("fireLabel")}</p>
-                  <p className="text-[9px] text-red-400 leading-tight">{t("fireDesc")}</p>
-                </div>
-              </Link>
-              <Link href="/articles" className="flex items-center gap-2 p-3 bg-aegean-faint rounded-xl border border-aegean/10 hover:shadow-md transition-all group">
-                <BookOpen className="w-4 h-4 text-aegean shrink-0" />
-                <div>
-                  <p className="text-xs font-bold text-aegean">{t("guidesLabel")}</p>
-                  <p className="text-[9px] text-text-muted leading-tight">{t("guidesDesc")}</p>
-                </div>
+        {/* ═══════ L'ILE, MAINTENANT : tuiles couleur pleine ═══════ */}
+        {wtileCities.length > 0 && (
+          <>
+            <div className="flex items-center justify-between mt-10 mb-4">
+              <h2 className="font-heading text-[28px] font-extrabold text-text m-0">{t("islandNow")}</h2>
+              <Link href="/weather" className="text-[13.5px] font-heading font-bold text-sea bg-white rounded-full px-4 py-2 shadow-[0_8px_20px_rgba(11,94,120,.12)] no-underline">
+                {t("allStations")}
               </Link>
             </div>
-          </div>
-        </div>
-      </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {wtileCities.map((c, i) => {
+                const st = seaState(c);
+                const sunny = i % 2 === 0;
+                return (
+                  <Link key={c.name} href="/weather"
+                        className={`relative overflow-hidden rounded-[28px] px-5 py-4 no-underline ${sunny ? "bg-lagoon text-night" : "bg-sea text-white"}`}>
+                    {sunny && <div className="absolute -top-5 -right-5 w-[66px] h-[66px] rounded-full bg-sun opacity-90" aria-hidden />}
+                    <p className="text-[13px] font-heading font-bold uppercase tracking-[0.08em] opacity-70 m-0">{c.name}</p>
+                    <p className="font-data text-5xl font-extrabold tracking-tight leading-[1.08] m-0">
+                      {c.temp}<sup className="text-xl opacity-75">°</sup>
+                    </p>
+                    <p className="font-data text-[12.5px] opacity-70 m-0 inline-flex items-center gap-1">
+                      <WindArrow deg={c.windDir} className="w-3 h-3" /> {c.windSpeed} km/h
+                      {c.seaTemp != null && <> · {t("sea")} {c.seaTemp}°</>}
+                    </p>
+                    <p className={`mt-2 mb-0 inline-flex text-[12.5px] font-bold rounded-full px-3 py-1.5 font-data ${st.warn ? "bg-white/90 text-[#C2543A]" : "bg-white/85 text-sea"}`}>
+                      ≈ {t(`seaStates.${st.key}`)}
+                    </p>
+                  </Link>
+                );
+              })}
+            </div>
+          </>
+        )}
 
-      {/* ═══════════════════ EXPLORE BENTO ═══════════════════ */}
-      <section className="border-t border-border bg-white py-14 px-4">
-        <div className="max-w-6xl mx-auto">
-          <BlurFade delay={0.1}>
-            <h2
-              className="text-3xl md:text-4xl font-bold text-text mb-2"
-              style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
-            >
-              {t("explore")}
-            </h2>
-            <p className="text-text-muted text-sm mb-8 max-w-lg">{t("exploreSubtitle")}</p>
-          </BlurFade>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[
-              { href: "/beaches", icon: <Waves className="w-7 h-7" />, title: t("beachesCount"), desc: t("beachesDesc"), bg: "from-aegean to-aegean-light" },
-              { href: "/food", icon: <UtensilsCrossed className="w-7 h-7" />, title: t("foodLabel"), desc: t("foodDesc"), bg: "from-terra to-terra-light" },
-              { href: "/villages", icon: <Mountain className="w-7 h-7" />, title: t("villagesCount"), desc: t("villagesDesc"), bg: "from-olive to-olive-light" },
-              { href: "/hikes", icon: <Footprints className="w-7 h-7" />, title: t("hikesCount"), desc: t("hikesDesc"), bg: "from-[#5a4a3a] to-[#8B7355]" },
-            ].map(({ href, icon, title, desc, bg }, idx) => (
-              <BlurFade key={href} delay={0.08 * idx}>
-                <Link
-                  href={href}
-                  className={`block rounded-2xl bg-gradient-to-br ${bg} p-6 h-44 flex flex-col justify-between text-white hover:shadow-xl hover:scale-[1.02] transition-all group relative overflow-hidden`}
-                >
-                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.1)_0%,_transparent_60%)]" />
-                  <div className="relative opacity-50 group-hover:opacity-80 transition-opacity">{icon}</div>
-                  <div className="relative">
-                    <p className="text-base font-bold leading-snug">{title}</p>
-                    <p className="text-[11px] text-white/60 leading-snug mt-1">{desc}</p>
+        {/* ═══════ OU SE BAIGNER AUJOURD'HUI ═══════ */}
+        {swimPick && (
+          <>
+            <div className="flex items-center justify-between mt-10 mb-4">
+              <h2 className="font-heading text-[28px] font-extrabold text-text m-0">{t("swimToday")}</h2>
+              <Link href="/beaches" className="text-[13.5px] font-heading font-bold text-sea bg-white rounded-full px-4 py-2 shadow-[0_8px_20px_rgba(11,94,120,.12)] no-underline">
+                {t("allBeaches")}
+              </Link>
+            </div>
+            <div className="grid lg:grid-cols-[1.25fr_.75fr] gap-4">
+              <Link href="/beaches/today" className="relative rounded-[28px] overflow-hidden shadow-[0_18px_44px_rgba(11,94,120,.18)] min-h-[320px] block no-underline group">
+                {swimPick.imageUrl ? (
+                  <>
+                    <Image src={swimPick.imageUrl} alt={swimPick.name} fill sizes="(max-width: 1024px) 100vw, 60vw"
+                         className="object-cover saturate-[1.08] group-hover:scale-[1.03] transition-transform duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-lagoon/5 via-transparent to-night/55 pointer-events-none" />
+                    <svg className="absolute inset-0 w-full h-full opacity-30 mix-blend-overlay pointer-events-none" aria-hidden>
+                      <filter id="kpick"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" /></filter>
+                      <rect width="100%" height="100%" filter="url(#kpick)" />
+                    </svg>
+                  </>
+                ) : (
+                  <AbstractFallback kind="sea" />
+                )}
+                <div className="absolute bottom-0 left-0 right-0 p-6 text-white flex justify-between items-end gap-3">
+                  <div>
+                    <p className="font-heading text-[27px] font-extrabold m-0 leading-tight">{swimPick.name}</p>
+                    <p className="text-[13px] text-white/80 m-0">
+                      {swimPick.region && ["south", "west", "east", "central"].includes(swimPick.region)
+                        ? <>{t(`regions.${swimPick.region}`)} · </>
+                        : null}
+                      {swimPick.cityName} · {t("todaysPick")}
+                    </p>
                   </div>
-                </Link>
-              </BlurFade>
-            ))}
-          </div>
-        </div>
-      </section>
+                  <span className={`bg-white/92 font-heading font-extrabold rounded-full px-4 py-2 text-sm font-data whitespace-nowrap ${VERDICT_COLORS[swimPick.rating]}`}>
+                    ≈ {t(`ratings.${swimPick.rating}`)}{swimPick.seaTemp != null ? ` · ${swimPick.seaTemp}°` : ""}
+                  </span>
+                </div>
+              </Link>
+              <div className="flex flex-col gap-4">
+                {swimSides.map((s) => (
+                  <Link key={s.slug} href={`/beaches/${s.slug}`}
+                        className="relative rounded-3xl overflow-hidden flex-1 shadow-[0_12px_30px_rgba(11,94,120,.12)] min-h-[150px] block no-underline group">
+                    {s.imageUrl ? (
+                      <>
+                        <Image src={s.imageUrl} alt={s.name} fill sizes="(max-width: 1024px) 100vw, 25vw"
+                             className="object-cover saturate-[1.08] group-hover:scale-[1.03] transition-transform duration-500" />
+                        <div className="absolute inset-0 bg-gradient-to-b from-lagoon/5 to-night/50 pointer-events-none" />
+                      </>
+                    ) : (
+                      <AbstractFallback kind="sea" />
+                    )}
+                    <div className="absolute bottom-3 left-4 right-4 text-white flex justify-between items-center">
+                      <span className="font-heading font-bold text-base">{s.name}</span>
+                      <span className={`bg-white/90 rounded-full text-[11.5px] font-extrabold px-3 py-1 font-data ${VERDICT_COLORS[s.rating]}`}>
+                        ≈ {t(`ratings.${s.rating}`)}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
 
+        {/* ═══════ LES OUTILS : tuiles pastel ═══════ */}
+        <div className="flex items-center justify-between mt-10 mb-4">
+          <h2 className="font-heading text-[28px] font-extrabold text-text m-0">{t("toolsTitle")}</h2>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
+          {TOOLS.map(({ href, icon: Icon, title, line }, idx) => (
+            <BlurFade key={href} delay={Math.min(0.05 * idx, 0.3)}>
+              <Link href={href} className={`block h-full rounded-[22px] p-4 no-underline ${TOOL_TINTS[idx]}`}>
+                <span className="bg-white/85 w-[42px] h-[42px] rounded-[15px] flex items-center justify-center text-text mb-2.5">
+                  <Icon className="w-[21px] h-[21px]" />
+                </span>
+                <p className="font-heading font-bold text-[15px] text-text m-0">{title}</p>
+                <p className="text-[11.5px] text-[rgba(11,57,84,.65)] mt-0.5 mb-0">{line}</p>
+              </Link>
+            </BlurFade>
+          ))}
+        </div>
+
+        {/* ═══════ MAINTENANCE (donnees indisponibles) ═══════ */}
+        {latestNews.length === 0 && upcomingEvents.length === 0 && (
+          <div className="mt-8">
+            <div className="rounded-3xl border border-sun/60 bg-sand px-5 py-4 flex items-center gap-3">
+              <span className="text-[#8A6A14] text-lg">&#9888;</span>
+              <p className="text-sm text-[#8A6A14] m-0">
+                {loc === "fr"
+                  ? "Maintenance en cours. La météo est disponible, les actualités et événements reviendront très prochainement."
+                  : loc === "de"
+                  ? "Wartungsarbeiten. Das Wetter ist verfügbar, Nachrichten und Veranstaltungen kehren in Kürze zurück."
+                  : loc === "el"
+                  ? "Συντήρηση σε εξέλιξη. Ο καιρός είναι διαθέσιμος, τα νέα και οι εκδηλώσεις θα επιστρέψουν σύντομα."
+                  : "Maintenance in progress. Weather is available, news and events will be back shortly."}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* ═══════ NEWS | GUIDES ═══════ */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_.9fr] gap-9 mt-10">
+
+          {/* News curees */}
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-heading text-[28px] font-extrabold text-text m-0 flex items-center gap-2.5">
+                <CiNews className="w-6 h-6 text-sea" /> {t("latestNews")}
+              </h2>
+              <Link href="/news" className="text-[13.5px] font-heading font-bold text-sea bg-white rounded-full px-4 py-2 shadow-[0_8px_20px_rgba(11,94,120,.12)] no-underline">
+                {t("allNews")}
+              </Link>
+            </div>
+
+            {news.length > 0 ? (
+              <div className="bg-white rounded-3xl px-6 py-1.5 shadow-[0_12px_32px_rgba(11,94,120,.08)]">
+                {news.map((item, i) => (
+                  <BlurFade key={item.slug} delay={Math.min(0.04 * i, 0.3)}>
+                    <Link href={`/news/${item.slug}`}
+                          className={`flex items-baseline gap-3.5 py-3.5 group no-underline ${i > 0 ? "border-t border-text/7" : ""}`}>
+                      <span className="font-data text-[12.5px] text-lagoon-deep font-bold min-w-[42px] shrink-0">
+                        {timeAgo(item.published_at)}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[15px] font-semibold text-text group-hover:text-sea transition-colors leading-snug line-clamp-2 m-0">
+                          {getLocalizedField(item, "title", loc)}
+                        </p>
+                        <p className="text-[11.5px] text-text-muted m-0 mt-0.5">
+                          {item.category ? `${item.category} · ` : ""}{item.source_name}
+                        </p>
+                      </div>
+                    </Link>
+                  </BlurFade>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-white rounded-3xl p-10 text-center shadow-[0_12px_32px_rgba(11,94,120,.08)]">
+                <CiNews className="w-8 h-8 text-text-light mx-auto mb-3" />
+                <p className="text-sm text-text-muted m-0">{t("newsFeedLoading")}</p>
+              </div>
+            )}
+          </section>
+
+          {/* Guides + events */}
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-heading text-[28px] font-extrabold text-text m-0 flex items-center gap-2.5">
+                <CiBook className="w-6 h-6 text-sea" /> {t("editorialGuides")}
+              </h2>
+              <Link href="/articles" className="text-[13.5px] font-heading font-bold text-sea bg-white rounded-full px-4 py-2 shadow-[0_8px_20px_rgba(11,94,120,.12)] no-underline">
+                {t("allGuides")}
+              </Link>
+            </div>
+
+            {guides.length > 0 ? (
+              <div>
+                {guides.map((guide, i) => {
+                  const gTitle = getLocalizedGuideField(guide, "titles", locale);
+                  return (
+                    <BlurFade key={guide.slug} delay={Math.min(0.05 * i, 0.3)}>
+                      <Link href={`/articles/${guide.slug}`}
+                            className="grid grid-cols-[112px_1fr] rounded-3xl overflow-hidden bg-white shadow-[0_12px_30px_rgba(11,94,120,.10)] mb-4 no-underline group">
+                        <div className="relative">
+                          {guide.image_url ? (
+                            <>
+                              <Image src={guide.image_url} alt={gTitle} fill sizes="112px"
+                                   className="object-cover saturate-[1.08]" />
+                              <div className="absolute inset-0 bg-gradient-to-b from-lagoon/5 to-night/35 pointer-events-none" />
+                            </>
+                          ) : (
+                            <AbstractFallback kind="land" />
+                          )}
+                        </div>
+                        <div className="px-4 py-4 font-heading font-bold text-[15px] leading-snug text-text group-hover:text-sea transition-colors">
+                          {gTitle}
+                          {guide.read_time && (
+                            <span className="block font-sans font-medium text-[11.5px] text-text-muted mt-1.5 font-data">{guide.read_time} min</span>
+                          )}
+                        </div>
+                      </Link>
+                    </BlurFade>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="bg-white rounded-3xl p-10 text-center shadow-[0_12px_32px_rgba(11,94,120,.08)]">
+                <CiBook className="w-8 h-8 text-text-light mx-auto mb-3" />
+                <p className="text-sm text-text-muted m-0">{t("guidesSectionSubtitle")}</p>
+              </div>
+            )}
+
+            {events.length > 0 && (
+              <div className="mt-7">
+                <h3 className="font-heading text-base font-extrabold text-terracotta flex items-center gap-2 mb-3">
+                  <CiCalendar className="w-4 h-4" /> {t("nextEvents")}
+                </h3>
+                <div className="bg-white rounded-3xl px-5 py-1 shadow-[0_12px_32px_rgba(11,94,120,.08)]">
+                  {events.map((event, i) => (
+                    <Link key={event.slug} href={`/events/${event.slug}`}
+                          className={`flex items-center gap-3 py-3 group no-underline ${i > 0 ? "border-t border-text/7" : ""}`}>
+                      <span className="font-data text-[11px] text-terracotta font-bold shrink-0 w-14">
+                        {formatEventDate(event.date_start, locale)}
+                      </span>
+                      <span className="text-sm text-text group-hover:text-sea transition-colors line-clamp-1 min-w-0">
+                        {getLocalizedField(event, "title", loc)}
+                      </span>
+                      <span className="ml-auto inline-flex items-center gap-1 text-[11px] text-text-light shrink-0">
+                        <MapPin className="w-3 h-3" /> {localizeLocation(event.location_name, locale)}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </section>
+        </div>
+
+        {/* ═══════ NEWSLETTER bande sable ═══════ */}
+        <section className="rounded-[30px] px-8 py-7 my-10 flex flex-col sm:flex-row items-center justify-between gap-6"
+                 style={{ background: "linear-gradient(165deg, #FFF3D6, #FFE9AE)" }}>
+          <div>
+            <h3 className="font-heading font-extrabold text-[22px] text-text m-0">{t("newsletter")}</h3>
+            <p className="text-[13.5px] text-[#8A7340] m-0 mt-0.5">{t("subtitle")}</p>
+          </div>
+          <NewsletterFormCompact locale={locale} />
+        </section>
+      </div>
     </main>
   );
 }

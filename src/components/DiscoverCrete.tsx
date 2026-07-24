@@ -26,10 +26,10 @@ export default async function DiscoverCrete({
           <Link
             key={`${e.type}-${e.href}-${i}`}
             href={e.href}
-            className="group rounded-xl overflow-hidden bg-stone-warm/50 hover:bg-stone-warm transition-colors"
+            className="group rounded-xl overflow-hidden bg-surface/50 hover:bg-surface transition-colors"
           >
             {e.imageUrl ? (
-              <div className="aspect-[4/3] w-full overflow-hidden bg-stone">
+              <div className="aspect-[4/3] w-full overflow-hidden bg-surface">
                 <img
                   src={e.imageUrl}
                   alt={e.title}
@@ -38,7 +38,7 @@ export default async function DiscoverCrete({
                 />
               </div>
             ) : (
-              <div className="aspect-[4/3] w-full bg-gradient-to-br from-aegean-faint to-terra-faint flex items-center justify-center">
+              <div className="aspect-[4/3] w-full bg-gradient-to-br from-sea-faint to-terracotta-faint flex items-center justify-center">
                 <span className="text-4xl opacity-40">
                   {e.type === "beach" ? "⛱" : e.type === "village" ? "⌂" : e.type === "food" ? "✦" : "↑"}
                 </span>
@@ -48,7 +48,7 @@ export default async function DiscoverCrete({
               <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">
                 {getTypeBadge(e.type, locale)}
               </span>
-              <h3 className="text-sm font-semibold text-text leading-tight mt-1 group-hover:text-aegean transition-colors line-clamp-2">
+              <h3 className="text-sm font-semibold text-text leading-tight mt-1 group-hover:text-sea transition-colors line-clamp-2">
                 {e.title}
               </h3>
               {(e.subtitle || e.region) && (

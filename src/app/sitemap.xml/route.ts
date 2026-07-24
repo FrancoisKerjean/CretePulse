@@ -4,7 +4,7 @@
 // (one per locale). That triggered a Next.js 16 / Turbopack bug where the `id`
 // argument passed to the sitemap function was unreliable, producing URLs like
 // /undefined/* in production. After deploying a defensive `resolveLocale()`,
-// we still observed that all sub-sitemaps emitted /en/* — the underlying bug
+// we still observed that all sub-sitemaps emitted /en/* · the underlying bug
 // could not be worked around in code.
 //
 // This route handler bypasses the framework convention entirely. It produces a
@@ -17,7 +17,12 @@
 // competing on the same query without 0 click).
 
 import { supabase } from "@/lib/supabase";
+import { qualityPairSlugs, priorityPairSlugs, pairLastmod } from "@/lib/bus-seo";
 import { MONTHS, CITIES } from "@/lib/weather-monthly";
+import { CRETE_NEIGHBOURHOODS } from "@/lib/airbnb-mappings";
+import { CRETE_AIRPORTS } from "@/lib/airports";
+import { CAR_LOCATION_SLUGS } from "@/lib/car-locations";
+import { ACTIVITY_CATEGORIES, ACTIVITY_CITIES } from "@/lib/activity-taxonomy";
 
 export const revalidate = 86400;
 
@@ -39,10 +44,24 @@ const STATIC_PAGES = [
   "/hikes",
   "/food",
   "/articles",
+  "/daily",
   "/about",
+  "/updates",
   "/buses",
+  "/buses/agios-nikolaos",
+  "/buses/heraklion",
+  "/buses/chania",
+  "/near-me",
+  "/car-rental",
+  "/activities",
   "/fire-alerts",
-  "/property-management",
+  "/airbnb",
+  "/airport",
+  "/partners",
+  "/projet",
+  "/projet/institutions",
+  "/projet/entreprises",
+  "/enquete/paradoxe-tourisme-crete",
 ];
 
 const BEACH_ACTIVITIES = ["snorkeling", "kids", "swimming", "secluded", "sandy", "pebble"];
@@ -156,8 +175,12 @@ export async function GET() {
 
   // Utility pages
   push("/faq", "monthly", 0.7);
-  push("/map", "monthly", 0.6);
+  // Flagship interactive explorer (2296 places, filters by sand/water/crowds).
+  // Highest-priority utility page · was missing entirely, the likely root cause
+  // of it never getting indexed despite strong internal linking.
+  push("/explore", "weekly", 0.9);
   push("/search", "monthly", 0.4);
+  push("/match", "monthly", 0.6);
 
   // Programmatic pages
   for (const city of CITIES) {
@@ -166,15 +189,64 @@ export async function GET() {
       push(`/weather/${city.slug}/${month}`, "monthly", 0.5);
     }
   }
-  for (const month of MONTHS) push(`/visit/${month}`, "monthly", 0.7);
+  // /visit/[month] pages are noindex (GSC: ~5800 impressions on 28d for only 4 clicks
+  // across 170+ pages, average position 60+ = invisible page 5-8 Google).
+  // No /visit index page exists, so the section is fully removed from the sitemap.
+  // for (const month of MONTHS) push(`/visit/${month}`, "monthly", 0.7);
   for (const a of BEACH_ACTIVITIES) push(`/beaches/best-for/${a}`, "monthly", 0.6);
-  for (const s of ROUTE_SLUGS) push(`/getting-around/${s}`, "monthly", 0.6);
+  // /getting-around inter-city = noindex (doublons de /buses/[pair], 301 dans next.config).
+  // Les pages MULTIMODALES (aéroport, ferry/vol Athènes↔Crète, Crète↔Santorin) sont
+  // indexables : plus forte demande transport mesurée en GSC, contenu réel → au sitemap.
+  const MULTIMODAL_ROUTES = ["athens-to-crete", "crete-to-santorini", "heraklion-airport-to-city", "chania-airport-to-city"];
+  for (const s of MULTIMODAL_ROUTES) push(`/getting-around/${s}`, "monthly", 0.8);
+  void ROUTE_SLUGS;
+  // Pages par paire de villes /buses/[pair] (spec 2026-06-10-bus-pair-pages) :
+  // data vivante (horaires MAJ hebdo scraper), indexables, revue GSC J+45.
+  // Élagage : seules les paires AVEC horaires publiés (qualityPairSlugs) sont listées.
+  // lastmod honnête = max(scraped_at) de la paire, pour signaler la fraîcheur réelle.
+  // Exclut les lignes urbaines agncitybus (elles ont leur propre page /buses/agios-nikolaos).
+  const { data: busPairRoutes } = await supabase
+    .from("bus_routes").select("from_place,to_place,departures,scraped_at").neq("operator_id", "agncitybus");
+  const seoRoutes = (busPairRoutes ?? []) as import("@/lib/bus-seo").SeoRoute[];
+  // Concentration du budget de crawl : paires entre hubs majeurs en priorité haute
+  // (0.9), longue traîne des villages en 0.5. Sort les pages-trajet du « Discovered -
+  // not indexed » en signalant à Google les ~12 trajets à fort signal de recherche.
+  const prioritySet = new Set(priorityPairSlugs(seoRoutes));
+  for (const slug of qualityPairSlugs(seoRoutes)) {
+    push(`/buses/${slug}`, "weekly", prioritySet.has(slug) ? 0.9 : 0.5, pairLastmod(seoRoutes, slug) ?? undefined);
+  }
+
   for (const s of COMP_SLUGS) push(`/compare/${s}`, "monthly", 0.6);
   for (const s of AREA_SLUGS) push(`/where-to-stay/${s}`, "monthly", 0.6);
   for (const s of ITINERARY_SLUGS) push(`/itineraries/${s}`, "monthly", 0.7);
   for (const s of ARCH_SLUGS) push(`/archaeology/${s}`, "monthly", 0.6);
 
-  // Dynamic DB pages — news + guides use real published_at as lastmod
+  // Inside Airbnb data pages: 24 Crete neighbourhoods x 22 locales = 528 URLs.
+  // High SEO priority · these are data-exclusive pages (ADR, occupancy, hosts
+  // breakdown, revenue estimates from public Inside Airbnb snapshot) that
+  // no competitor can replicate. Prerendered for en/fr/de/el (96 pages),
+  // ISR-served for the other 18 locales with English UI fallback + proper
+  // hreflang alternates.
+  for (const n of CRETE_NEIGHBOURHOODS) push(`/airbnb/${n.slug}`, "monthly", 0.7);
+
+  // HCAA airport traffic pages: 3 Crete airports, data-exclusive (official
+  // monthly XLSX parsed by our pipeline, updated as HCAA publishes).
+  for (const a of CRETE_AIRPORTS) push(`/airport/${a.slug}`, "monthly", 0.7);
+
+  // Car Rental Direct location hubs: high-intent airport and ferry pick-up
+  // pages that feed the local quote wizard without query strings.
+  for (const slug of CAR_LOCATION_SLUGS) push(`/car-rental/${slug}`, "monthly", 0.8);
+
+  // Activities verticale: catégorie hubs + hubs par ville.
+  for (const c of ACTIVITY_CATEGORIES) {
+    push(`/activities/${c.slug}`, "monthly", 0.8);
+    for (const city of ACTIVITY_CITIES) push(`/activities/${c.slug}/${city.slug}`, "monthly", 0.8);
+  }
+
+  // Live utility: "where to swim today" (wind-aware daily pick, ISR 30 min).
+  push("/beaches/today", "daily", 0.9);
+
+  // Dynamic DB pages · news + guides use real published_at as lastmod
   // (huge crawl prioritization signal for Google News)
   const [beaches, villages, foodPlaces, hikes, news, guides] = await Promise.all([
     fetchSlugs("beaches"),
@@ -190,10 +262,44 @@ export async function GET() {
     push(`/villages/${s}`, "monthly", 0.6);
     push(`/beaches/near/${s}`, "monthly", 0.5);
   }
-  for (const s of foodPlaces) push(`/food/${s}`, "monthly", 0.6);
+  // /food/[slug] pages are noindex (4875/5000 pages had 0 clicks on 28d, low-quality signal).
+  // Keep the /food index page indexed (added above), but exclude individual restaurant pages.
+  // for (const s of foodPlaces) push(`/food/${s}`, "monthly", 0.6);
+  void foodPlaces;
   for (const s of hikes) push(`/hikes/${s}`, "monthly", 0.6);
   for (const n of news) push(`/news/${n.slug}`, "daily", 0.5, n.lastmod);
   for (const g of guides) push(`/articles/${g.slug}`, "weekly", 0.7, g.lastmod);
+
+  // /explore/[slug] : 2294+ fiches lieux (cb_places). Toutes les fiches sont
+  // indexables : pages dédiées avec bento, description, JSON-LD, CTAs. Priorité
+  // 0.6 (infra, comme /beaches/[slug]) ; changefreq mensuelle (données stables).
+  // Le sitemap ne filtre pas par locale (/en/* est la loc canonique dans urlEntry).
+  // PostgREST plafonne à 1000 lignes par requête : on pagine par tranches de 1000
+  // avec .range(offset, offset+999) + .order("slug") jusqu'à épuisement.
+  try {
+    const PAGE_SIZE = 1000;
+    let offset = 0;
+    let done = false;
+    while (!done) {
+      const { data: page, error } = await supabase
+        .from("cb_places")
+        .select("slug")
+        .order("slug")
+        .range(offset, offset + PAGE_SIZE - 1);
+      if (error) break;
+      const rows = (page || []) as Array<{ slug: string }>;
+      for (const row of rows) {
+        push(`/explore/${row.slug}`, "monthly", 0.6);
+      }
+      if (rows.length < PAGE_SIZE) {
+        done = true;
+      } else {
+        offset += PAGE_SIZE;
+      }
+    }
+  } catch {
+    // Silencieux : le sitemap reste valide sans les fiches /explore.
+  }
 
   const lastmod = new Date().toISOString();
   const xmlEntries = entries.map((e) => urlEntry(e, lastmod)).join("\n");

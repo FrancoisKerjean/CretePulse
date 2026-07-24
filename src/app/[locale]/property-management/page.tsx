@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/types";
+import { setRequestLocale } from "next-intl/server";
 import { Waves, Key, BarChart3, Shield, Phone, ChevronRight, MapPin, CheckCircle2 } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
 
@@ -153,6 +154,7 @@ const CONTENT: Record<string, {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = META[locale] || META.en;
   const url = `${BASE_URL}/${locale}/property-management`;
 
@@ -161,11 +163,14 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     description: m.desc,
     alternates: buildAlternates(locale, "/property-management"),
     openGraph: { title: m.title, description: m.desc, url, type: "article" },
+    // Page conservee mais deliee du repositionnement crete.direct : desindexee.
+    robots: { index: false, follow: true },
   };
 }
 
 export default async function PropertyManagementPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const c = CONTENT[locale as keyof typeof CONTENT] || CONTENT.en;
 
   const seasonData = [
@@ -177,7 +182,7 @@ export default async function PropertyManagementPage({ params }: { params: Promi
   return (
     <main className="min-h-screen bg-surface">
       {/* Hero */}
-      <section className="bg-aegean text-white py-16 md:py-24 px-4">
+      <section className="relative overflow-hidden bg-sea text-white py-16 md:py-24 px-4">
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center gap-2 mb-4">
             <Key className="w-5 h-5 text-sand" />
@@ -187,18 +192,21 @@ export default async function PropertyManagementPage({ params }: { params: Promi
           </div>
           <h1
             className="text-4xl md:text-5xl font-bold leading-tight mb-4"
-            style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
+            style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}
           >
             {c.hero}
           </h1>
           <p className="text-lg text-white/70 max-w-xl">{c.heroSub}</p>
         </div>
+        <svg className="absolute bottom-0 left-0 w-full h-[56px]" viewBox="0 0 1440 70" preserveAspectRatio="none" aria-hidden>
+          <path d="M0 40 C180 0 320 70 540 42 C760 14 900 66 1130 40 C1290 22 1380 36 1440 28 L1440 70 L0 70 Z" fill="#F6FBFC" />
+        </svg>
       </section>
 
       <div className="max-w-3xl mx-auto px-4 py-12 space-y-12">
         {/* Why Crete */}
         <section>
-          <h2 className="text-2xl font-bold text-aegean mb-6" style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}>
+          <h2 className="text-2xl font-bold text-sea mb-6" style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}>
             {c.whyTitle}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -215,8 +223,8 @@ export default async function PropertyManagementPage({ params }: { params: Promi
         </section>
 
         {/* Regulations */}
-        <section className="p-6 bg-aegean-faint rounded-2xl border border-aegean/10">
-          <h2 className="text-xl font-bold text-aegean mb-3 flex items-center gap-2">
+        <section className="p-6 bg-sea-faint rounded-2xl border border-sea/10">
+          <h2 className="text-xl font-bold text-sea mb-3 flex items-center gap-2">
             <Shield className="w-5 h-5" />
             {c.regulationTitle}
           </h2>
@@ -224,7 +232,7 @@ export default async function PropertyManagementPage({ params }: { params: Promi
           <ol className="space-y-2">
             {c.regulationSteps.map((step, i) => (
               <li key={i} className="flex items-start gap-3 text-sm text-text">
-                <span className="shrink-0 w-6 h-6 rounded-full bg-aegean text-white text-xs font-bold flex items-center justify-center mt-0.5">
+                <span className="shrink-0 w-6 h-6 rounded-full bg-sea text-white text-xs font-bold flex items-center justify-center mt-0.5">
                   {i + 1}
                 </span>
                 {step}
@@ -235,14 +243,14 @@ export default async function PropertyManagementPage({ params }: { params: Promi
 
         {/* Revenue potential */}
         <section>
-          <h2 className="text-xl font-bold text-aegean mb-3 flex items-center gap-2">
+          <h2 className="text-xl font-bold text-sea mb-3 flex items-center gap-2">
             <BarChart3 className="w-5 h-5" />
             {c.revenueTitle}
           </h2>
           <p className="text-sm text-text-muted mb-4">{c.revenueIntro}</p>
           <div className="overflow-hidden rounded-xl border border-border">
             <table className="w-full text-sm">
-              <thead className="bg-stone text-text-muted text-xs uppercase tracking-wider">
+              <thead className="bg-surface text-text-muted text-xs uppercase tracking-wider">
                 <tr>
                   <th className="text-left px-4 py-3 font-bold">
                     {locale === "fr" ? "Saison" : locale === "de" ? "Saison" : locale === "el" ? "Σεζόν" : "Season"}
@@ -257,7 +265,7 @@ export default async function PropertyManagementPage({ params }: { params: Promi
                 {seasonData.map((row, i) => (
                   <tr key={i}>
                     <td className="px-4 py-3 font-medium text-text">{row.season}</td>
-                    <td className="px-4 py-3 text-terra font-bold">{row.rate}</td>
+                    <td className="px-4 py-3 text-terracotta font-bold">{row.rate}</td>
                     <td className="px-4 py-3 text-text-muted">{row.occ}</td>
                   </tr>
                 ))}
@@ -268,8 +276,8 @@ export default async function PropertyManagementPage({ params }: { params: Promi
         </section>
 
         {/* CTA to Kairos */}
-        <section className="p-8 bg-gradient-to-br from-aegean to-aegean-light rounded-2xl text-white text-center">
-          <h2 className="text-2xl font-bold mb-3" style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}>
+        <section className="p-8 bg-gradient-to-br from-sea to-sea-light rounded-2xl text-white text-center">
+          <h2 className="text-2xl font-bold mb-3" style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}>
             {c.ctaTitle}
           </h2>
           <p className="text-white/70 text-sm mb-6 max-w-md mx-auto">{c.ctaSub}</p>
@@ -277,12 +285,37 @@ export default async function PropertyManagementPage({ params }: { params: Promi
             href="https://kairosguest.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-terra text-white rounded-xl font-bold text-sm hover:bg-terra-light transition-colors shadow-lg hover:shadow-xl"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-terracotta text-white rounded-xl font-bold text-sm hover:bg-terracotta-light transition-colors shadow-card hover:shadow-card"
           >
             {c.ctaButton}
             <ChevronRight className="w-4 h-4" />
           </a>
           <p className="text-[11px] text-white/40 mt-4">{c.ctaNote}</p>
+
+          {/* Discreet referral mention */}
+          <p className="text-[11px] text-white/50 mt-6 pt-4 border-t border-white/10 max-w-md mx-auto">
+            {locale === "fr"
+              ? "Vous connaissez un propriétaire en Crète orientale ? "
+              : locale === "de"
+              ? "Kennen Sie einen Eigentümer in Ostkreta? "
+              : locale === "el"
+              ? "Γνωρίζετε ιδιοκτήτη στην ανατολική Κρήτη; "
+              : "Do you know a property owner in eastern Crete? "}
+            <a
+              href={`https://kairosguest.com/${locale === "fr" ? "fr" : "en"}/recommander-un-proprietaire`}
+              target="_blank"
+              rel="noopener noreferrer nofollow sponsored"
+              className="text-sand hover:underline"
+            >
+              {locale === "fr"
+                ? "Recommandez Kairos"
+                : locale === "de"
+                ? "Empfehlen Sie Kairos"
+                : locale === "el"
+                ? "Συστήστε την Kairos"
+                : "Refer Kairos"}
+            </a>
+          </p>
         </section>
       </div>
     </main>

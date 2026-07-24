@@ -12,7 +12,7 @@ interface FormValues {
   location: string;
   description: string;
   email: string;
-  website: string; // honeypot — hidden from real users
+  website: string; // honeypot · hidden from real users
 }
 
 const INITIAL: FormValues = {
@@ -38,7 +38,7 @@ function Field({
     <div className="flex flex-col gap-1.5">
       <label className="text-sm font-medium text-text">
         {label}
-        {required && <span className="text-terra ml-0.5">*</span>}
+        {required && <span className="text-terracotta ml-0.5">*</span>}
       </label>
       {children}
     </div>
@@ -46,7 +46,7 @@ function Field({
 }
 
 const inputClass =
-  "w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-sm text-text placeholder:text-text-light outline-none focus:border-aegean focus:ring-2 focus:ring-aegean/20 transition-colors";
+  "w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-sm text-text placeholder:text-text-light outline-none focus:border-sea focus:ring-2 focus:ring-sea/20 transition-colors";
 
 export function SubmitEventClient() {
   const [values, setValues] = useState<FormValues>(INITIAL);
@@ -100,10 +100,10 @@ export function SubmitEventClient() {
   if (state === "success") {
     return (
       <main className="min-h-screen bg-surface flex items-center justify-center px-4">
-        <div className="bg-white border border-border rounded-2xl p-10 max-w-md w-full text-center shadow-sm">
+        <div className="bg-white border border-border rounded-2xl p-10 max-w-md w-full text-center shadow-soft">
           <div className="flex justify-center mb-5">
-            <div className="bg-aegean-faint rounded-full p-4">
-              <CheckCircle className="size-8 text-aegean" />
+            <div className="bg-sea-faint rounded-full p-4">
+              <CheckCircle className="size-8 text-sea" />
             </div>
           </div>
           <h1 className="text-2xl font-semibold text-text mb-3">
@@ -115,7 +115,7 @@ export function SubmitEventClient() {
           </p>
           <button
             onClick={() => setState("idle")}
-            className="inline-flex items-center justify-center px-6 py-2.5 bg-aegean text-white font-medium rounded-lg hover:bg-aegean-light transition-colors"
+            className="inline-flex items-center justify-center px-6 py-2.5 bg-sea text-white font-medium rounded-lg hover:bg-sea-light transition-colors"
           >
             Submit another event
           </button>
@@ -129,7 +129,7 @@ export function SubmitEventClient() {
       <div className="max-w-xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="inline-flex items-center gap-2 bg-terra-faint text-terra text-xs font-semibold px-3 py-1 rounded-full mb-4 uppercase tracking-wide">
+          <div className="inline-flex items-center gap-2 bg-terracotta-faint text-terracotta text-xs font-semibold px-3 py-1 rounded-full mb-4 uppercase tracking-wide">
             <CalendarDays className="size-3.5" />
             Community
           </div>
@@ -147,10 +147,10 @@ export function SubmitEventClient() {
         <form
           ref={formRef}
           onSubmit={handleSubmit}
-          className="bg-white border border-border rounded-2xl p-7 shadow-sm flex flex-col gap-5"
+          className="bg-white border border-border rounded-2xl p-7 shadow-soft flex flex-col gap-5"
           noValidate
         >
-          {/* Honeypot — hidden from humans, bots fill it */}
+          {/* Honeypot · hidden from humans, bots fill it */}
           <div className="hidden" aria-hidden="true">
             <input
               type="text"
@@ -256,7 +256,7 @@ export function SubmitEventClient() {
 
           {/* Error banner */}
           {state === "error" && (
-            <div className="flex items-start gap-2.5 bg-terra-faint border border-terra/20 text-terra rounded-lg px-4 py-3 text-sm">
+            <div className="flex items-start gap-2.5 bg-terracotta-faint border border-terracotta/20 text-terracotta rounded-lg px-4 py-3 text-sm">
               <AlertCircle className="size-4 mt-0.5 shrink-0" />
               {errorMsg}
             </div>
@@ -271,7 +271,7 @@ export function SubmitEventClient() {
           <button
             type="submit"
             disabled={state === "submitting"}
-            className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-aegean text-white font-medium rounded-lg hover:bg-aegean-light transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-sea text-white font-medium rounded-lg hover:bg-sea-light transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {state === "submitting" ? (
               <>

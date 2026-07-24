@@ -1,5 +1,6 @@
 import { BookOpen } from "lucide-react";
-import { getPublishedGuides } from "@/lib/guides";
+import { setRequestLocale } from "next-intl/server";
+import { getEditorialGuides } from "@/lib/guides";
 import type { Locale } from "@/lib/types";
 import ArticlesPageClient from "./ArticlesPageClient";
 import { buildAlternates } from "@/lib/seo";
@@ -17,6 +18,7 @@ const META: Record<string, { title: string; desc: string }> = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = META[locale] || META.en;
   const url = `${BASE_URL}/${locale}/articles`;
   return {
@@ -43,9 +45,10 @@ const PAGE_SUBTITLES: Record<Locale, string> = {
 
 export default async function ArticlesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
 
-  const guides = await getPublishedGuides(200);
+  const guides = await getEditorialGuides(200);
 
   const categories = Array.from(new Set(guides.map((g) => g.category))).filter(Boolean);
 
@@ -54,10 +57,10 @@ export default async function ArticlesPage({ params }: { params: Promise<{ local
       <div className="max-w-6xl mx-auto px-4 py-12">
         <div className="mb-10">
           <div className="flex items-center gap-2 mb-2">
-            <BookOpen className="w-5 h-5 text-aegean" />
-            <h1 className="text-2xl font-bold text-aegean">{PAGE_TITLES[loc]}</h1>
+            <BookOpen className="w-5 h-5 text-sea" />
+            <h1 className="text-2xl font-bold text-sea">{PAGE_TITLES[loc] ?? PAGE_TITLES.en}</h1>
           </div>
-          <p className="text-sm text-text-muted">{PAGE_SUBTITLES[loc]}</p>
+          <p className="text-sm text-text-muted">{PAGE_SUBTITLES[loc] ?? PAGE_SUBTITLES.en}</p>
         </div>
 
         <ArticlesPageClient guides={guides} locale={loc} categories={categories} />

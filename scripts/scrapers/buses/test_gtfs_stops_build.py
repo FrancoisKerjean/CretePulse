@@ -1,0 +1,199 @@
+from gtfs_stops_build import (
+    haversine_km, in_crete, curate_routes, collect_stops_with_count,
+    _siblings_by_slug, prefecture_for, PREFECTURE_CENTERS,
+)
+from gtfs_stops_build import coherence_ok
+from gtfs_stops_build import assemble_stops
+
+
+def test_in_crete_bbox():
+    assert in_crete(35.34, 25.14) is True       # Heraklion
+    assert in_crete(37.98, 23.72) is False      # Athènes
+    assert in_crete(None, None) is False
+
+
+def test_haversine_km_known_distance():
+    d = haversine_km((35.3387, 25.1442), (35.5138, 24.0180))  # Heraklion<->Chania
+    assert 100 < d < 140
+
+
+def test_prefecture_for_nearest():
+    assert prefecture_for(35.5138, 24.0180) == "CHA"   # Chania
+    assert prefecture_for(35.2078, 26.1029) == "LAS"   # Sitia -> Lasithi
+    assert prefecture_for(None, None) is None
+
+
+def test_curate_routes_keeps_hotels_drops_codes():
+    routes = [{"from_place": "Heraklion", "to_place": "Malia Palace",
+               "via_stops": ["A90", "Gouves"]}]
+    curated, dropped = curate_routes(routes)
+    assert len(curated) == 1
+    r = curated[0]
+    assert r["from_place"] == "heraklion"
+    assert r["to_place"] == "malia-palace"     # hôtel gardé
+    assert r["via_stops"] == ["gouves"]        # A90 droppé du via
+    assert "A90" in dropped
+
+
+def test_curate_routes_drops_route_with_artifact_terminus():
+    routes = [{"from_place": "A90", "to_place": "Heraklion", "via_stops": None}]
+    curated, dropped = curate_routes(routes)
+    assert curated == []
+    assert "A90" in dropped
+
+
+def test_collect_stops_with_count():
+    routes = [
+        {"from_place": "heraklion", "to_place": "sitia", "via_stops": ["malia"]},
+        {"from_place": "heraklion", "to_place": "malia", "via_stops": None},
+    ]
+    by = {s["slug"]: s for s in collect_stops_with_count(routes)}
+    assert by["heraklion"]["route_count"] == 2
+    assert by["malia"]["route_count"] == 2
+    assert by["sitia"]["route_count"] == 1
+
+
+def test_siblings_by_slug():
+    routes = [{"from_place": "a", "to_place": "b", "via_stops": ["c"]}]
+    adj = _siblings_by_slug(routes)
+    assert adj["a"] == {"b", "c"}
+
+
+def test_coherence_accepts_near_sibling():
+    siblings = {"profitis-ilias": {"heraklion"}}
+    high = {"heraklion": (35.3387, 25.1442)}
+    # ~17 km de Heraklion, dans la bbox -> accepté
+    assert coherence_ok("profitis-ilias", 35.20, 25.10, high, siblings) is True
+
+
+def test_coherence_rejects_far_homonym():
+    siblings = {"profitis-ilias": {"heraklion"}}
+    high = {"heraklion": (35.3387, 25.1442)}
+    # homonyme à >200 km (et hors bbox) -> rejet
+    assert coherence_ok("profitis-ilias", 36.9, 22.0, high, siblings) is False
+
+
+def test_coherence_rejects_outside_crete():
+    siblings = {"x": {"heraklion"}}
+    high = {"heraklion": (35.3387, 25.1442)}
+    assert coherence_ok("x", 48.85, 2.35, high, siblings) is False   # Paris
+
+
+def test_coherence_rejects_when_no_high_sibling():
+    siblings = {"x": {"y"}}   # y n'a pas de coords sûres
+    assert coherence_ok("x", 35.30, 25.10, {}, siblings) is False
+
+
+def test_assemble_stops_cascade_and_guard_accepts_near():
+    routes = [{"from_place": "Heraklion", "to_place": "Malia", "via_stops": ["Unknown Hamlet"]}]
+    place_coords = {"heraklion": (35.3387, 25.1442), "malia": (35.2853, 25.4624)}
+
+    def nomi(name):
+        return (35.30, 25.40) if "hamlet" in name.lower() else None  # ~15km de Malia (sibling)
+
+    stops, dropped = assemble_stops(routes, place_coords, {}, nominatim=nomi)
+    by = {s["stop_id"]: s for s in stops}
+    assert by["heraklion"]["coords_source"] == "referentiel"
+    assert by["heraklion"]["coords_confidence"] == "high"
+    assert by["heraklion"]["needs_review"] is False
+    h = by["unknown-hamlet"]
+    assert h["coords_source"] == "geocoded" and h["coords_confidence"] == "low"
+    assert h["needs_review"] is True
+    assert h["stop_lat"] is not None        # garde-fou OK (proche de Malia)
+    assert h["prefecture"] in PREFECTURE_CENTERS
+
+
+def test_assemble_stops_guard_rejects_far_nominatim():
+    routes = [{"from_place": "Heraklion", "to_place": "Sitia", "via_stops": ["Bad Match"]}]
+    place_coords = {"heraklion": (35.3387, 25.1442), "sitia": (35.2078, 26.1029)}
+
+    def nomi(name):
+        return (40.0, 22.0) if "bad" in name.lower() else None   # hors Crète
+
+    stops, _ = assemble_stops(routes, place_coords, {}, nominatim=nomi)
+    bad = {s["stop_id"]: s for s in stops}["bad-match"]
+    assert bad["stop_lat"] is None and bad["coords_source"] == "none"
+    assert bad["needs_review"] is True
+
+
+from gtfs_stops_build import parent_coords
+
+
+def test_parent_coords_hotel_cluster():
+    idx = {"analipsis": (35.32855, 25.3446), "anissaras": (35.33495, 25.37644)}
+    assert parent_coords("stella-blue-(analipsis-hotels)", idx) == (35.32855, 25.3446)
+    assert parent_coords("knossos-royal-(anissaras-hotels)", idx) == (35.33495, 25.37644)
+
+
+def test_parent_coords_agia_pelagia():
+    idx = {"agia-pelagia": (35.40803, 25.01679)}
+    assert parent_coords("a10-ag.pelagia-beach", idx) == (35.40803, 25.01679)
+    assert parent_coords("ag.pelagia(kapsis)", idx) == (35.40803, 25.01679)
+
+
+def test_parent_coords_none_for_plain_or_unknown():
+    idx = {"analipsis": (35.32855, 25.3446)}
+    assert parent_coords("rodakino", idx) is None                       # village normal
+    assert parent_coords("x-(unknown-hotels)", idx) is None             # parent absent de l'index
+
+
+def test_assemble_stops_parent_fallback_for_hotel():
+    routes = [{"from_place": "Heraklion", "to_place": "Stella Blue (Analipsis Hotels)",
+               "via_stops": None}]
+    place_coords = {"heraklion": (35.3387, 25.1442), "analipsis": (35.32855, 25.3446)}
+    stops, _ = assemble_stops(routes, place_coords, {}, nominatim=lambda n: None)
+    hotel = {s["stop_id"]: s for s in stops}["stella-blue-(analipsis-hotels)"]
+    assert hotel["coords_source"] == "parent"
+    assert (hotel["stop_lat"], hotel["stop_lon"]) == (35.32855, 25.3446)
+    assert hotel["coords_confidence"] == "low" and hotel["needs_review"] is True
+
+
+import pytest
+from gtfs_stops_build import export_stops_txt, write_stats, store_stops
+
+
+def _stop(stop_id, lat=None, lon=None, name=None, conf="low", source="none"):
+    return {"stop_id": stop_id, "stop_name": name or stop_id.title(),
+            "stop_name_el": None, "stop_lat": lat, "stop_lon": lon,
+            "coords_source": source, "coords_confidence": conf,
+            "needs_review": conf != "high", "prefecture": None, "route_count": 1}
+
+
+def test_export_stops_txt_only_geocoded_and_escapes(tmp_path):
+    stops = [
+        {**_stop("a", 35.1, 25.1, name="A, town", conf="high", source="referentiel")},
+        _stop("b"),   # sans coords -> exclu
+    ]
+    n = export_stops_txt(stops, out_dir=str(tmp_path))
+    assert n == 1
+    lines = (tmp_path / "stops.txt").read_text(encoding="utf-8").strip().split("\n")
+    assert lines[0] == "stop_id,stop_name,stop_lat,stop_lon"
+    assert lines[1] == 'a,"A, town",35.100000,25.100000'   # virgule -> quoting CSV
+    assert len(lines) == 2
+
+
+def test_write_stats(tmp_path):
+    stops = [
+        _stop("a", 35.1, 25.1, conf="high", source="referentiel"),
+        _stop("b"),
+    ]
+    stats = write_stats(stops, dropped=["A90", "A90"], out_dir=str(tmp_path))
+    assert stats["total_stops"] == 2
+    assert stats["geocoded"] == 1
+    assert stats["coverage_pct"] == 50.0
+    assert stats["needs_review"] == 1
+    assert stats["dropped_labels"] == ["A90"]   # dédupliqué
+
+
+def test_store_stops_refuses_below_min():
+    class _T:
+        def delete(self): return self
+        def neq(self, *a): return self
+        def insert(self, p): return self
+        def execute(self): return self
+
+    class _SB:
+        def table(self, n): return _T()
+
+    with pytest.raises(ValueError):
+        store_stops(_SB(), [_stop(f"s{i}") for i in range(5)])   # < MIN_STOPS

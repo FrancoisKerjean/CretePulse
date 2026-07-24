@@ -1,11 +1,19 @@
 import { CITIES, MONTH_NAMES } from "@/lib/weather-monthly";
+import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/types";
-import { Waves, Sun, UtensilsCrossed, Mountain, Calendar, ChevronLeft, MapPin, ChevronRight } from "lucide-react";
+import { Waves, Sun, UtensilsCrossed, Mountain, Calendar, ChevronLeft, MapPin, ChevronRight, Bus } from "lucide-react";
+import { BusAccessBox } from "@/components/BusAccessBox";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
+import { cityThingsToDoSchema } from "@/lib/schema";
+import { CarPromo } from "@/components/car-rental/CarPromo";
+import { getBusRoutes } from "@/lib/buses";
+import { qualityPairSlugs, type SeoRoute } from "@/lib/bus-seo";
+import { eligiblePairs } from "@/lib/bus-pairs";
+import { JsonLd } from "@/components/JsonLd";
 
-export const revalidate = 86400;
+export const revalidate = 172800; // 03/07 optim couts Vercel (48h, ISR Writes)
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
@@ -106,12 +114,22 @@ const CITY_INFO: Record<string, {
   },
 };
 
+// Maps things-to-do city slug -> bus place slug (for cities where they differ).
+// For most cities the slugs are identical; only exceptions need an entry.
+const CITY_TO_BUS_SLUG: Record<string, string> = {
+  "makrigialos": "makry-gyalos",
+};
+
+function cityBusSlug(citySlug: string): string {
+  return CITY_TO_BUS_SLUG[citySlug] ?? citySlug;
+}
+
 const LABELS: Record<string, {
   thingsToDo: string; bestBeaches: string; weather: string; whereToEat: string;
   hiking: string; events: string; backToAll: string; allCities: string;
   bestTimeToVisit: string; topHighlights: string; faq: string;
   exploreBeaches: string; checkWeather: string; discoverFood: string;
-  exploreHikes: string; browseEvents: string;
+  exploreHikes: string; browseEvents: string; gettingThereBus: string;
 }> = {
   en: {
     thingsToDo: "Things to do in",
@@ -130,6 +148,7 @@ const LABELS: Record<string, {
     discoverFood: "Discover restaurants",
     exploreHikes: "Explore hikes",
     browseEvents: "Browse events",
+    gettingThereBus: "Getting there by bus",
   },
   fr: {
     thingsToDo: "Que faire à",
@@ -148,6 +167,7 @@ const LABELS: Record<string, {
     discoverFood: "Découvrir les restaurants",
     exploreHikes: "Explorer les randonnées",
     browseEvents: "Voir les événements",
+    gettingThereBus: "Comment y aller en bus",
   },
   de: {
     thingsToDo: "Aktivitäten in",
@@ -166,6 +186,7 @@ const LABELS: Record<string, {
     discoverFood: "Restaurants entdecken",
     exploreHikes: "Wanderungen erkunden",
     browseEvents: "Veranstaltungen ansehen",
+    gettingThereBus: "Anreise mit dem Bus",
   },
   el: {
     thingsToDo: "Τι να κάνετε στ",
@@ -184,6 +205,7 @@ const LABELS: Record<string, {
     discoverFood: "Ανακαλύψτε εστιατόρια",
     exploreHikes: "Εξερευνήστε μονοπάτια",
     browseEvents: "Δείτε εκδηλώσεις",
+    gettingThereBus: "Μετάβαση με λεωφορείο",
   },
 };
 
@@ -197,15 +219,18 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; city: string }> }) {
   const { locale, city: citySlug } = await params;
+  setRequestLocale(locale);
   const city = getCityObj(citySlug);
   const info = CITY_INFO[citySlug];
   if (!city || !info) return { title: "Not found" };
 
+  // CTR-optimised : year 2026 freshness + concrete promise + local authority.
+  // Previous generic "Things to Do in X" at pos 52 = page 5-6. Aim for page 2-3 with better hook.
   const titles: Record<string, string> = {
-    en: `Things to Do in ${city.name}, Crete - Activities & Attractions | Crete Direct`,
-    fr: `Que faire à ${city.name}, Crète - Activités & Sites à visiter | Crete Direct`,
-    de: `Aktivitäten in ${city.name}, Kreta - Sehenswürdigkeiten & Tipps | Crete Direct`,
-    el: `Τι να κάνετε στην ${city.nameEl}, Κρήτη - Δραστηριότητες & Αξιοθέατα | Crete Direct`,
+    en: `${city.name} Crete 2026: Top 10 Things to Do (Local's Honest Guide)`,
+    fr: `Que faire à ${city.name} en Crète 2026 : Top 10 activités (Guide local)`,
+    de: `${city.name} Kreta 2026: Top 10 Aktivitäten (Ehrlicher Insider-Guide)`,
+    el: `${city.nameEl} Κρήτη 2026: Top 10 δραστηριότητες (Οδηγός ντόπιου)`,
   };
 
   const descs: Record<string, string> = {
@@ -227,6 +252,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function ThingsToDoPage({ params }: { params: Promise<{ locale: string; city: string }> }) {
   const { locale, city: citySlug } = await params;
+  setRequestLocale(locale);
   const city = getCityObj(citySlug);
   const info = CITY_INFO[citySlug];
 
@@ -234,6 +260,25 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
 
   const L = LABELS[locale] || LABELS.en;
   const desc = locale === "fr" ? info.descFr : locale === "de" ? info.descDe : locale === "el" ? info.descEl : info.descEn;
+
+  // Bus pair links: find quality pairs that involve this city.
+  const busRoutes = (await getBusRoutes()) as SeoRoute[];
+  const busCitySlug = cityBusSlug(citySlug);
+  const allPairs = eligiblePairs(busRoutes);
+  const qualitySlugs = qualityPairSlugs(busRoutes);
+  const busPairLinks = qualitySlugs
+    .filter((s) => {
+      const sepIdx = s.indexOf("-to-");
+      if (sepIdx === -1) return false;
+      const a = s.slice(0, sepIdx);
+      const b = s.slice(sepIdx + 4);
+      return a === busCitySlug || b === busCitySlug;
+    })
+    .slice(0, 5)
+    .map((pairSlug) => {
+      const pair = allPairs.find((p) => p.slug === pairSlug);
+      return { slug: pairSlug, placeA: pair?.placeA ?? "", placeB: pair?.placeB ?? "" };
+    });
 
   // Pick 4 season months for weather links
   const seasonMonths = ["march", "june", "september", "december"];
@@ -272,19 +317,51 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
     },
   ];
 
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqItems.map(f => ({
-      "@type": "Question",
-      name: f.q,
-      acceptedAnswer: { "@type": "Answer", text: f.a },
-    })),
+  const homeLabels: Record<string, string> = {
+    en: "Home", fr: "Accueil", de: "Startseite", el: "Αρχική",
+    it: "Home", nl: "Home", pl: "Strona główna", es: "Inicio", pt: "Início",
+    ru: "Главная", ja: "ホーム", ko: "홈", zh: "首页", tr: "Ana sayfa",
+    sv: "Hem", da: "Hjem", no: "Hjem", fi: "Etusivu", cs: "Domů",
+    hu: "Főoldal", ro: "Acasă", ar: "الرئيسية",
   };
+
+  const thingsToDoLabels: Record<string, string> = {
+    en: "Things to do", fr: "Que faire", de: "Aktivitäten", el: "Δραστηριότητες",
+    it: "Cosa fare", nl: "Bezienswaardigheden", pl: "Atrakcje", es: "Qué hacer", pt: "O que fazer",
+    ru: "Что делать", ja: "観光", ko: "할 일", zh: "活动", tr: "Yapılacaklar",
+    sv: "Att göra", da: "Ting at gøre", no: "Ting å gjøre", fi: "Tekemistä", cs: "Co dělat",
+    hu: "Tennivalók", ro: "De făcut", ar: "أنشطة",
+  };
+
+  const pageTitles: Record<string, string> = {
+    en: `Things to Do in ${city.name}, Crete - Activities & Attractions`,
+    fr: `Que faire à ${city.name}, Crète - Activités & Sites à visiter`,
+    de: `Aktivitäten in ${city.name}, Kreta - Sehenswürdigkeiten & Tipps`,
+    el: `Τι να κάνετε στην ${city.nameEl}, Κρήτη - Δραστηριότητες & Αξιοθέατα`,
+  };
+
+  const pageSchema = cityThingsToDoSchema({
+    locale,
+    city: {
+      slug: citySlug,
+      name: city.name,
+      nameEl: city.nameEl,
+      lat: city.lat,
+      lng: city.lng,
+    },
+    pageTitle: pageTitles[locale] || pageTitles.en,
+    description: desc,
+    highlights: info.highlights,
+    faqItems,
+    breadcrumbLabels: {
+      home: homeLabels[locale] || homeLabels.en,
+      thingsToDo: thingsToDoLabels[locale] || thingsToDoLabels.en,
+    },
+  });
 
   const sections = [
     {
-      icon: <Waves className="w-6 h-6 text-aegean" />,
+      icon: <Waves className="w-6 h-6 text-sea" />,
       title: `${L.bestBeaches} ${city.name}`,
       description: locale === "fr"
         ? `Découvrez les plus belles plages à proximité de ${city.name}.`
@@ -310,7 +387,7 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
       cta: L.checkWeather,
     },
     {
-      icon: <UtensilsCrossed className="w-6 h-6 text-terra" />,
+      icon: <UtensilsCrossed className="w-6 h-6 text-terracotta" />,
       title: `${L.whereToEat} ${city.name}`,
       description: locale === "fr"
         ? `Tavernes traditionnelles, restaurants et cafés : découvrez la gastronomie crétoise.`
@@ -336,7 +413,7 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
       cta: L.exploreHikes,
     },
     {
-      icon: <Calendar className="w-6 h-6 text-aegean" />,
+      icon: <Calendar className="w-6 h-6 text-sea" />,
       title: `${L.events} ${city.name}`,
       description: locale === "fr"
         ? `Festivals, fêtes locales et événements culturels tout au long de l'année.`
@@ -352,20 +429,23 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
 
   return (
     <main className="min-h-screen bg-surface">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <JsonLd data={pageSchema} />
 
       {/* Hero */}
-      <section className="bg-aegean text-white py-12 md:py-20 px-4">
+      <section className="relative overflow-hidden bg-sea text-white py-12 md:py-20 px-4">
         <div className="max-w-4xl mx-auto">
           <Link href={`/${locale}/weather`} className="inline-flex items-center gap-1 text-white/50 text-sm hover:text-white/80 mb-4">
             <ChevronLeft className="w-4 h-4" /> {L.backToAll}
           </Link>
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight" style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}>
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight" style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}>
             {L.thingsToDo} {city.name}
           </h1>
           <p className="text-white/50 text-sm mt-2">{city.nameEl}</p>
           <p className="text-white/80 text-lg mt-4 max-w-2xl leading-relaxed">{desc}</p>
         </div>
+        <svg className="absolute bottom-0 left-0 w-full h-[56px]" viewBox="0 0 1440 70" preserveAspectRatio="none" aria-hidden>
+          <path d="M0 40 C180 0 320 70 540 42 C760 14 900 66 1130 40 C1290 22 1380 36 1440 28 L1440 70 L0 70 Z" fill="#F6FBFC" />
+        </svg>
       </section>
 
       <div className="max-w-4xl mx-auto px-4 py-10 space-y-10">
@@ -375,7 +455,7 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
           <div className="flex flex-wrap gap-2">
             {info.highlights.map(h => (
               <span key={h} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-border rounded-full text-sm font-medium text-text">
-                <MapPin className="w-3.5 h-3.5 text-terra" /> {h}
+                <MapPin className="w-3.5 h-3.5 text-terracotta" /> {h}
               </span>
             ))}
           </div>
@@ -400,7 +480,7 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
         {/* Activity sections */}
         <div className="space-y-6">
           {sections.map((section, i) => (
-            <section key={i} className="rounded-xl bg-white border border-border p-6 hover:border-aegean/30 transition-colors">
+            <section key={i} className="rounded-xl bg-white border border-border p-6 hover:border-sea/30 transition-colors">
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-surface flex items-center justify-center">
                   {section.icon}
@@ -416,7 +496,7 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
                         <Link
                           key={m}
                           href={`/${locale}/weather/${citySlug}/${m}`}
-                          className="flex items-center justify-between p-2.5 bg-surface rounded-lg text-xs font-semibold text-text hover:bg-aegean-faint hover:text-aegean transition-colors"
+                          className="flex items-center justify-between p-2.5 bg-surface rounded-lg text-xs font-semibold text-text hover:bg-sea-faint hover:text-sea transition-colors"
                         >
                           <span>{(MONTH_NAMES[locale]?.[m] || MONTH_NAMES.en[m])}</span>
                           <ChevronRight className="w-3.5 h-3.5 text-text-muted" />
@@ -426,7 +506,7 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
                   ) : (
                     <Link
                       href={section.link}
-                      className="inline-flex items-center gap-1 text-sm font-semibold text-aegean hover:text-aegean/80 transition-colors"
+                      className="inline-flex items-center gap-1 text-sm font-semibold text-sea hover:text-sea/80 transition-colors"
                     >
                       {section.cta} <ChevronRight className="w-4 h-4" />
                     </Link>
@@ -437,9 +517,13 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
           ))}
         </div>
 
+        {/* Car Rental Direct. Les slugs ACTIVITY_CITIES sont aussi des pickups
+            CAR_ZONES : le CTA route vers la landing /car-rental/<ville>. */}
+        <CarPromo locale={locale} pickup={city.slug} source="things-to-do" />
+
         {/* FAQ */}
         <section>
-          <h2 className="text-xl font-bold text-aegean mb-4">{L.faq}</h2>
+          <h2 className="text-xl font-bold text-sea mb-4">{L.faq}</h2>
           <div className="space-y-4">
             {faqItems.map((faq, i) => (
               <div key={i} className="p-5 bg-white rounded-xl border border-border">
@@ -450,15 +534,57 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
           </div>
         </section>
 
+        {/* Bus access · internal linking vers /buses */}
+        <BusAccessBox
+          locale={locale}
+          destinationName={city.name}
+          matchSlug={citySlug}
+          matchOn="things_to_do_slug"
+        />
+
+        {/* Bus pair links · internal authority flow to quality bus pair pages */}
+        {busPairLinks.length > 0 && (
+          <section className="rounded-xl bg-white border border-border p-6 hover:border-sea/30 transition-colors">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-surface flex items-center justify-center">
+                <Bus className="w-6 h-6 text-sea" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-lg font-bold text-text mb-3">{L.gettingThereBus}</h2>
+                <ul className="space-y-2">
+                  {busPairLinks.map(({ slug: pSlug, placeA, placeB }) => {
+                    const connector =
+                      locale === "fr" ? "bus pour" :
+                      locale === "de" ? "Bus nach" :
+                      locale === "el" ? "λεωφορείο προς" :
+                      "bus to";
+                    return (
+                      <li key={pSlug}>
+                        <Link
+                          href={`/${locale}/buses/${pSlug}`}
+                          className="inline-flex items-center gap-1 text-sm font-semibold text-sea hover:text-sea/80 transition-colors"
+                        >
+                          <ChevronRight className="w-4 h-4 flex-shrink-0" />
+                          {placeA} {connector} {placeB}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Other cities */}
         <section>
-          <h2 className="text-sm font-bold text-text-muted uppercase tracking-wider mb-3">{L.allCities}</h2>
+          <h2 className="text-sm font-bold text-text-muted uppercase tracking-wider mb-3 mt-10">{L.allCities}</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
             {CITIES.filter(c => c.slug !== citySlug).map(c => (
               <Link
                 key={c.slug}
                 href={`/${locale}/things-to-do/${c.slug}`}
-                className="flex items-center justify-between p-3 bg-white rounded-xl border border-border hover:border-aegean/30 transition-colors"
+                className="flex items-center justify-between p-3 bg-white rounded-xl border border-border hover:border-sea/30 transition-colors"
               >
                 <span className="text-sm font-medium text-text">{c.name}</span>
                 <ChevronRight className="w-4 h-4 text-text-muted" />

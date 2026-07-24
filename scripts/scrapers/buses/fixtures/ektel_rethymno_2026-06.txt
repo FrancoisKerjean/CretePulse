@@ -1,0 +1,157 @@
+ΠΡΟΓΡΑΜΜΑ ΜΕ ΑΝΑΧΩΡΗΣΗ ΑΠΟ ΡΕΘΥΜΝΟ ΙΣΧΥEI ΑΠΟ 05-06-2026
+TIMETABLΕ WITH DEPARTURE FROM RETHYMNO VALID FROM 05-06-2026
+ΧΑΝΙΑ-ΓΕΩΡΓΙΟΥΠΟΛΗ-ΚΑΒΡΟΣ-ΡΕΘΥΜΝΟ/
+ΡΕΘΥΜΝΟ-ΚΑΒΡΟΣ-ΓΕΩΡΓΙΟΥΠΟΛΗ-ΧΑΝΙΑ/
+RETHYMNO-KAVRΟS-GEORGIOUPOLIS-CHANIA CHANIA-GEORGIOUPOLIS-KAVROS-RETHYMNO
+ΚΑΘΕ ΜΕΡΑ/EVERY DAY
+ΚΑΘΕ ΜΕΡΑ/EVERY DAY
+06:00* 07:00* 08:00* 09:00* 10:00 11:00* 12:00 13:00* 14:00* 15:00* 05:15 06:30* 07:30* 08:30* 09:30 10:30 11:30* 12:30 13:30* 14:30
+15:30* 16:30 17:30 18:30* 19:30* 20:30* 21:30^
+16:00 17:00 18:00* 19:00 20:00* 21:00 22:00 23:00
+*ΜΕΣΩ ΒΡΥΣΣΩΝ/THROUGH VRISSES
+*ΜΕΣΩ ΒΡΥΣΣΩΝ/THROUGH VRISSES ^ΑΛΛΑΓΗ ΛΕΩΦΟΡΕΙΟΥ ΣΤΟ ΡΕΘΥΜΝΟ/BUS CHANGE IN RETHYMNO
+ΗΡΑΚΛΕΙΟ-MΠΑΛΙ-ΡΕΘΥΜΝΟ/HERAKLION-BALI-RETHYMNO
+ΡΕΘΥΜΝΟ-ΜΠΑΛΙ-ΗΡΑΚΛΕΙΟ/RETHYMNO-BALI-HERAKLION
+ΚΑΘΕ ΜΕΡΑ/EVERY DAY
+ΚΑΘΕ ΜΕΡΑ/EVERY DAY
+05:30 06:30 07:30 08:30 09:30 10:30 11:30 12:30 13:30 14:30 15:30
+06:30 08:00 09:00 10:00 11:00 12:00 13:00 14:00 15:00 16:00 17:00
+16:30 17:30 18:30 19:30 20:30 21:30^
+18:00 19:00 20:00 21:00 22:00 23:00
+^ΑΛΛΑΓΗ ΛΕΩΦΟΡΕΙΟΥ ΣΤΟ ΡΕΘΥΜΝΟ/BUS CHANGE IN RETHYMNO
+ΡΕΘΥΜΝΟ-ΑΓΙΑ ΓΑΛΗΝΗ/RETHYMNO-AGIA GALINI ΑΓΙΑ ΓΑΛΗΝΗ-ΡΕΘΥΜΝΟ/AGIA GALINI-RETHYMNO
+ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY
+10:30 14:30*^ 16:30 07:00*^ 11:45 17:45
+ΣΑΒΒΑΤΟΚΥΡΙΑΚΟ/WEEKEND 10:30 16:30 ΣΑΒΒΑΤΟΚΥΡΙΑΚΟ/WEEKEND 11:45 17:45
+*ΠΕΜΠΤΗ ΣΑKΤΟΥΡΙΑ/ THURSDAY SAKTOURIA *ΠΕΜΠΤΗ ΣΑKΤΟΥΡΙΑ/ THURSDAY SAKTOURIA
+^ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ ΜΕΛΑΜΠΕΣ/MONDAY TO FRIDAY MELABES ^ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ ΜΕΛΑΜΠΕΣ/MONDAY TO FRIDAY MELABES
+ΡΕΘΥΜΝΟ-ΣΠΗΛΙ/RETHYMNO-SPILI ΣΠΗΛΙ-ΡΕΘΥΜΝΟ/SPILI-RETHYMNO
+ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 13:40 ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 14:55
+^ΙΣΧΥΕΙ ΗΜΕΡΕΣ ΛΕΙΤΟΥΡΓΙΑΣ ΤΩΝ ΣΧΟΛΕΙΩΝ/VALID ON SCHOOL OPERATING DAYS ^ΙΣΧΥΕΙ ΗΜΕΡΕΣ ΛΕΙΤΟΥΡΓΙΑΣ ΤΩΝ ΣΧΟΛΕΙΩΝ/VALID ON SCHOOL OPERATING DAYS
+ΡΕΘΥΜΝΟ-ΠΛΑΚΙΑΣ/RETHYMNO-PLAKIAS ΠΛΑΚΙΑΣ-ΡΕΘΥΜΝΟ/PLAKIAS-RETHYMNO
+ΚΑΘΕ ΜΕΡΑ/EVERY DAY 06:00^* 08:30* 11:15 14:30 ΚΑΘΕ ΜΕΡΑ/EVERY DAY 06:50^ 09:30 12:15 15:30*
+^ΕΚΤΟΣ ΣΑΒΒΑΤΟΚΥΡΙΑΚΟ/EXCEPT WEEKEND ^ΕΚΤΟΣ ΣΑΒΒΑΤΟΚΥΡΙΑΚΟ/EXCEPT WEEKEND
+*ΔΙΕΡΧΕΤΑΙ ΑΠΟ ΜΥΡΘΙΟ-ΜΑΡΙΟΥ/PASSES THROUGH MYRTHIOS-MARIOU *ΔΙΕΡΧΕΤΑΙ ΑΠΟ ΜΥΡΘΙΟ-ΜΑΡΙΟΥ/PASSES THROUGH MYRTHIOS-MARIOU
+ΡΕΘΥΜΝΟ-ΑΡΚΑΔΙ-ΑΡΧ.ΜΟΥΣΕΙΟ ΕΛΕΥΘΕΡΝΑΣ-ΜΑΡΓΑΡΙΤΕΣ-ΠΕΡΑΜΑ- ΠΑΝΟΡΜΟ-ΠΕΡΑΜΑ-ΜΑΡΓΑΡΙΤΕΣ-ΑΡΧ.ΜΟΥΣΕΙΟ ΕΛΕΥΘΕΡΝΑΣ-ΑΡΚΑΔΙ-
+ΠΑΝΟΡΜΟ /RETHYMNO-ARKADI-MUSEUM OF ANCIENT ELEFTHERNA- ΡΕΘΥΜΝΟ /PANORMO-PERAMA-MARGARITES-MUSEUM OF ANCIENT
+MARGARITES-PERAMA-PANORMO ELEFTHERNA-ARKADI-RETHYMNO
+ΚΑΘΕ ΜΕΡΑ/EVERY DAY ΚΑΘΕ ΜΕΡΑ/EVERY DAY
+ΑΠΟ ΡΕΘΥΜΝΟ/FROM RETHIMNO 14:15 ΑΠΟ ΠΑΝΟΡΜΟ/FROM PANORMO 16:20
+ΑΠΟ ΑΡΚΑΔΙ/FROM ARKADI 14:45 ΑΠΟ ΠΕΡΑΜΑ/FROM PERAMA 16:30
+ΑΠΟ ΑΡΧ.ΜΟΥΣΕΙΟ/FROM MUSEUM 15:00 ΑΠΟ ΜΑΡΓΑΡΙΤΕΣ/FROM MARGARITES 16:45
+ΑΠΟ ΜΑΡΓΑΡΙΤΕΣ/FROM MARGARITES 15:05 ΑΠΟ ΑΡΧ.ΜΟΥΣΕΙΟ/FROM MUSEUM 16:50
+ΑΠΟ ΠΕΡΑΜΑ/FROM PERAMA 15:10 ΑΠΟ ΑΡΚΑΔΙ/FROM ARKADI 17:00
+ΡΕΘΥΜΝΟ-ΑΡΚΑΔΙ/ RETHYMNO-ARKADI ΑΡΚΑΔΙ-ΡΕΘΥΜΝΟ/ARKADI-RETHYMNO
+ΚΑΘΕ ΜΕΡΑ/EVERY DAY 06:00^ 10:00 14:15 ΚΑΘΕ ΜΕΡΑ/EVERY DAY 07:00^ 12:00 17:00
+^ΕΚΤΟΣ ΣΑΒΒΑΤΟΚΥΡΙΑΚΟ/EXCEPT WEEKEND ^ΕΚΤΟΣ ΣΑΒΒΑΤΟΚΥΡΙΑΚΟ/EXCEPT WEEKEND
+ΡΕΘΥΜΝΟ-(ΠΑΓΚΑΛΟΧΩΡΙ*)-ΧΑΡΚΙΑ/RETHYMNO-(PAGALOCHORI*)-HARKIA ΧΑΡΚΙΑ-(ΠΑΓΚΑΛΟΧΩΡΙ*)-ΡΕΘΥΜΝΟ/HARKIA-(PAGALOCHORI*)-RETHYMNO
+ΤΡΙΤΗ/TUESDAY 06:00 14:15* ΤΡΙΤΗ/TUESDAY 06:50*
+ΡΕΘΥΜΝΟ-ΚΕΡΑΜΕ/RETHYMNO-KERAME
+ΚΕΡΑΜΕ-ΡΕΘΥΜΝΟ/KERAME-RETHYMNO
+ΠΕΜΠΤΗ/THURSDAY 14:30
+ΠΕΜΠΤΗ/THURSDAY 08:30
+ΔΙΕΡΧΕΤΑΙ ΑΠΟ ΠΛΑΤΑΝΕ-ΚΕΝΤΡΟΧΩΡΙ/THROUGH PLATANES-KENTROHORI
+ΡΕΘΥΜΝΟ-ΡΟΔΑΚΙΝΟ/RETHYMNO-RODAKINO ΡΟΔΑΚΙΝΟ-ΡΕΘΥΜΝΟ/RODAKINO-RETHYMNO
+ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 05:45 14:30 ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 06:50 15:30
+ΡΕΘΥΜΝΟ-ΓΑΡΑΖΟ-ΑΛΟΙΔΕΣ/RETHYMNO-GARAZO-ALOIDES ΑΛΟΙΔΕΣ-ΓΑΡΑΖΟ-ΡΕΘΥΜΝΟ/ALOIDES-GARAZO-RETHYMNO
+ΔΕΥΤΕΡΑ/MONDAY 13:30 ΔΕΥΤΕΡΑ/MONDAY 06:25
+ΡΕΘΥΜΝΟ-ΕΡΦΟΙ-ΣΚΟΥΛΟΥΦΙΑ-ΡΟΥΠΕΣ-ΕΛΕΥΘΕΡΝΑ-ΟΡΘΕΣ-ΜΑΡΓΑΡΙΤΕΣ-ΠΕΡΑΜΑ-Β.ΕΠΙΣΚΟΠΗ-ΠΡΙΝΟΣ-ΡΕΘΥΜΝΟ/
+RERHYMNO-ERFI-SKOULOUFIA-ROUPES-ELEFTHERNA-ORTHES-MARGARITES-PERAMA-B.EPISKOPI-PRINOS-RETHYMNO
+ΠΕΜΠΤΗ/THURSDAY 06:15
+ΡΕΘΥΜΝΟ-ΠΡΙΝΟΣ-Β.ΕΠΙΣΚΟΠΗ-ΠΕΡΑΜΑ-ΜΑΡΓΑΡΙΤΕΣ-ΟΡΘΕΣ-ΕΛΕΥΘΕΡΝΑ-ΡΟΥΠΕΣ-ΣΚΟΥΛΟΥΦΙΑ-ΕΡΦΟΙ-ΡΕΘΥΜΝΟ/
+RETHYMNO-PRINOS-B.EPISKOPI-PERAMA-MARGARITES-ORTHES-ELEFTHERNA-ROUPES-SKOULOUFIA-ERFI-RETHYMNO
+ΠΕΜΠΤΗ/THURSDAY 13:30
+ΡΕΘΥΜΝΟ-ΑΓ.ΚΩΝΣΤΑΝΤΙΝΟΣ-ΡΟΥΣΤΙΚΑ-ΜΟΥΝΔΡΟΣ-ΣΑΙΤΟΥΡΕΣ/ ΣΑΙΤΟΥΡΕΣ-ΜΟΥΝΔΡΟΣ-ΡΟΥΣΤΙΚΑ-ΑΓ. ΚΩΝΣΤΑΝΤΙΝΟΣ-ΡΕΘΥΜΝΟ/
+RETHYMNO-AG.KOSTANTINO-ROUSTIKA-MOUNTROS-SAITOURES SAITOURES-MOUNDROS-ROUSTIKA-AG. KONSTANTINOS-RETHYMNO
+ΤΕΤΑΡΤΗ & ΠΑΡΑΣΚΕΥΗ/WEDNESDAY & FRIDAY 06:00 ΤΕΤΑΡΤΗ & ΠΑΡΑΣΚΕΥΗ/WEDNESDAY & FRIDAY 08:45
+ΡΕΘΥΜΝΟ-ΚΑΛΟΝΥΚΤΗ-ΠΑΛΑΙΛΙΜΝΟ/ ΠΑΛΑΙΛΙΜΝΟ-ΚΑΛΟΝΥΚΤΗ-ΡΕΘΥΜΝΟ/
+RETHYMNO-KALONIKTI-PALAILIMNO PALAILIMNO-KALONIKTI-RETHYMNO
+ΔΕΥΤΕΡΑ ΕΩΣ ΤΠΑΡΑΣΚΕΥΗ/MONDAY ΤΟ FRIDAY 14:30 ΔΕΥΤΕΡΑ ΕΩΣ ΤΠΑΡΑΣΚΕΥΗ/MONDAY ΤΟ FRIDAY 07:15
+ΙΣΧΥΕΙ ΗΜΕΡΕΣ ΛΕΙΤΟΥΡΓΙΑΣ ΤΩΝ ΣΧΟΛΕΙΩΝ/VALID ON SCHOOL OPERATING DAYS ΙΣΧΥΕΙ ΗΜΕΡΕΣ ΛΕΙΤΟΥΡΓΙΑΣ ΤΩΝ ΣΧΟΛΕΙΩΝ/VALID ON SCHOOL OPERATING DAYS
+ΡΕΘΥΜΝΟ-ΜΥΡΙΟΚΕΦΑΛΑ/RETHYMNO-MYRIOKEFALA ΜΥΡΙΟΚΕΦΑΛΑ-ΡΕΘΥΜΝΟ/MYRIOKEFALA-RETHYMNO
+ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 06:00^ 14:30 ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 06:50 15:15^
+^ΜΕΣΩ ΒΟΑΚ/FROM BOAK ^ΜΕΣΩ ΒΟΑΚ/FROM BOAK
+ΡΕΘΥΜΝΟ-ΠΕΡΑΜΑ-ΑΝΩΓΕΙΑ/RETHYMNO-PERAMA-ANOGIA ΑΝΩΓΕΙΑ-ΠΕΡΑΜΑ-ΡΕΘΥΜΝΟ/ANOGIA-PERAMA-RETHYMNO
+ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 14:15 ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 06:20 16:15
+ΡΕΘΥΜΝΟ-ΠΕΡΑΜΑ/RETHYMNO-PERAMA ΠΕΡΑΜΑ-ΡΕΘΥΜΝΟ/PERAMA-RETHYMNO
+ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 07:00 10:30 13:30 14:15 ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 07:45 14:15 17:00
+ΡΕΘΥΜΝΟ-ΠΕΡΑΜΑ-ΗΡΑΚΛΕΙΟ ΠΑΛΑΙΑ ΟΔΟΣ/ ΗΡΑΚΛΕΙΟ-ΠΕΡΑΜΑ-ΡΕΘΥΜΝΟ-ΠΑΛΑΙΑ ΟΔΟΣ/
+RETHYMNO-PERAMA-HRAKLEIO OLD ROAD HERAKLION-PERAMA-RETHYMNO OLD ROAD
+ΤΕΤΑΡΤΗ/ WEDNESDAY 07:00 ΤΕΤΑΡΤΗ/ WEDNESDAY 12:00
+ΡΕΘΥΜΝΟ-ΜΑΛΑΚΙ/RETHYMNO-MALAKI ΜΑΛΑΚΙ-ΡΕΘΥΜΝΟ/MALAKI-RΕΤΗΥΜΝΟ
+ΤΡΙΤΗ/TUESDAY 14:30 ΤΡΙΤΗ/TUESDAY 08:45
+Email: ktelreth@otenet.gr http://e-ktel.com
+ΤΗΛ. ΠΛΗΡΟΦΟΡΙΩΝ/TEL. INFORMATION: 2831022212 - THΛ. ΑΠΟΘΗΚΗΣ/TEL. STORE HOUSE: 2831022659 - Fax: 2831022392
+ΠΡΟΓΡΑΜΜΑ ΜΕ ΑΝΑΧΩΡΗΣΗ ΑΠΟ ΡΕΘΥΜΝΟ ΙΣΧΥEI ΑΠΟ 05-06-2026
+TIMETABLΕ WITH DEPARTURE FROM RETHYMNO VALID FROM 05-06-2026
+ΡΕΘΥΜΝΟ-ΜΥΡΘΙΟ ΡΕΘΥΜΝΟΥ/RETHYMNO-MYRTHIO ΜΥΡΘΙΟ ΡΕΘΥΜΝΟΥ-RETHYMNO/MYRTHIO-RETHYMNO
+ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 14:30 ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 06:45
+ΙΣΧΥΕΙ ΗΜΕΡΕΣ ΛΕΙΤΟΥΡΓΙΑΣ ΤΩΝ ΣΧΟΛΕΙΩΝ/VALID ON SCHOOL OPERATING DAYS ΙΣΧΥΕΙ ΗΜΕΡΕΣ ΛΕΙΤΟΥΡΓΙΑΣ ΤΩΝ ΣΧΟΛΕΙΩΝ/VALID ON SCHOOL OPERATING DAYS
+ΡΕΘΥΜΝΟ-ΣΩΜΑΤΑ-ΚΑΣΤΕΛΟ-AΡΜΕΝΟΙ-ΚΟΥΜΟΙ/ ΚΟΥΜΟΙ-ΑΡΜΕΝΟΙ-ΚΑΣΤΕΛΟ-ΣΩΜΑΤΑ-ΡΕΘΥΜΝΟ/
+RETHYMNO-SOMATA-KASTELO-ARMENI-ΚOUMOI KOUMOI-ARMENI-KASTELO-SOMATA-RETHYMNO
+ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 14:30 ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 06:45
+ΙΣΧΥΕΙ ΗΜΕΡΕΣ ΛΕΙΤΟΥΡΓΙΑΣ ΤΩΝ ΣΧΟΛΕΙΩΝ/VALID ON SCHOOL OPERATING DAYS ΙΣΧΥΕΙ ΗΜΕΡΕΣ ΛΕΙΤΟΥΡΓΙΑΣ ΤΩΝ ΣΧΟΛΕΙΩΝ/VALID ON SCHOOL OPERATING DAYS
+ΡΕΘΥΜΝΟ-ΑΝΩ ΜΕΡΟΣ/RETHYMNO-ANO MEROS ΑΝΩ ΜΕΡΟΣ-ΡΕΘΥΜΝΟ/ANO MEROS-RETHYMNO
+ΤΡΙΤΗ & ΠΕΜΠΤΗ / TUESDAY & THURSDAY 14:15 ΤΡΙΤΗ & ΠΕΜΠΤΗ /TUESDAY & THURSDAY 06:45
+ΡΕΘΥΜΝΟ-ΛΟΧΡΙΑ/RETHYMNO-LOCHRIA ΛΟΧΡΙΑ-ΡΕΘΥΜΝΟ/LOCHRIA-RETHYMNO
+ΔΕΥΤΕΡΑ-ΤΕΤΑΡΤΗ-ΠΑΡΑΣΚΕΥΗ/MONDAY-WEDNESDAY-FRIDAY 14:15 ΔΕΥΤΕΡΑ-ΤΕΤΑΡΤΗ-ΠΑΡΑΣΚΕΥΗ/MONDAY-WEDNESDAY-FRIDAY 06:30
+ΡΕΘΥΜΝΟ-ΠΑΝΤΑΝΑΣΣΑ-ΒΟΛΙΩΝΕΣ-ΠΑΤΣΟ/RETHYMNO-PANTANASSA- ΠΑΤΣΟ-ΒΟΛΙΩΝΕΣ-ΠΑΝΤΑΝΑΣΣΑ-ΡΕΘΥΜΝΟ/PATSO-VOLIONES-PANTANASSA-
+VOLIONES-PATSO RETHYMNO
+ΠΕΜΠΤΗ/ THURSDAY 14:15 ΠΕΜΠΤΗ/THURSDAY 07:00
+ΡΕΘΥΜΝΟ-ΑΜΑΡΙ/RETHYMNO-AMARI ΠΕΤΡΟΧΩΡΙ-ΛΑΜΠΙΩΤΕΣ-ΜΟΝΑΣΤΗΡΑΚΙ-ΑΜΑΡΙ-ΒΙΣΤΑΓΗ-ΚΑΛΟΓΕΡΟΥ-ΘΡΟΝΟΣ-
+ΤΕΤΑΡΤΗ/WEDNESDAY 14:15 ΡΕΘΥΜΝΟ/PETROXORI-LABIOTES-MONASTIRAKI-AMARI-VISTAGI-KALOGEROU-
+THRONOS-RETHYMNO ΤΕΤΑΡΤΗ/WEDNESDAY 06:15
+ΡΕΘΥΜΝΟ-ΦΟΥΡΦΟΥΡΑΣ/RETHYMNO-FOURFOURAS ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 05:45 11:00* 14:15
+ΦΟΥΡΦΟΥΡΑΣ-ΡΕΘΥΜΝΟ/FOURFOURAS-RETHYMNO ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 07:00 15:30
+*ΙΣΧΥΕΙ MONO ΚΑΤΑ ΤΙΣ ΜΕΡΕΣ ΛΕΙΤΟΥΡΓΙΑΣ ΤΩΝ ΣΧΟΛΕΙΩΝ/VALID ONLY DURING THE SCHOOL OPERATING DAYS
+ΡΕΘΥΜΝΟ-ΞΕΝΟΔΟΧΕΙΑ-ΠΑΝΟΡΜΟ/RETHYMNO-HOTELS-PANORMO ΠΑΝΟΡΜΟ-ΞΕΝΟΔΟΧΕΙΑ-ΡΕΘΥΜΝΟ/PANORMO-HOTELS-RETHYMNO
+ΚΑΘΕ ΜΕΡΑ/EVERY DAY ΚΑΘΕ ΜΕΡΑ/EVERY DAY
+05:30 06:15 07:30 08:00 09:00 10:00 11:00 12:00 13:00 13:30 14:00 14:30 06:30 07:15 08:30 09:00 10:00 11:00 12:00 13:00 14:00 14:30 15:00 15:30
+15:00 15:30 16:00 17:00 18:00 19:00 20:00 21:00 22:00 23:00 16:00 16:30 17:00 18:00 19:00 20:00 21:00 22:00 23:00 00:00
+ΤΣΕΣΜΕΣ-ΠΛΑΤΑΝΙΑΣ-ΠΕΡΙΒΟΛΙΑ-ΡΕΘΥΜΝΟ-ΠΑΝΕΠΙΣΤΗΜΙΟ ΓΑΛΛΟΥ/ ΠΑΝΕΠΙΣΤΗΜΙΟ ΓΑΛΛΟΥ-ΡΕΘΥΜΝΟ-ΠΕΡΙΒΟΛΙΑ-ΠΛΑΤΑΝΙΑΣ-ΤΣΕΣΜΕΣ/
+TSESMES-PLATANIAS-PERIVOLIA-RETHYMNO-UNIVERSITY GALLOU UNIVERSITY GALLOU-RETHYMNO-PERIVOLIA-PLATANIAS-TSESMES
+ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 07:20 07:40 08:00 08:20 …ΚΑΘΕ ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 07:50 08:20 08:40 09:00 …ΚΑΘΕ
+20 ΛΕΠΤΑ/EVERY 20 MINUTES… 21:20 21:40 22:00 22:40 23:20 20 ΛΕΠΤΑ/EVERY 20 MINUTES… 21:00 21:20 22:00 22:40
+ΣΑΒΒΑΤΟΚΥΡΙΑΚΟ/WEEKEND 07:20 08:00 08:40 09:20 10:00 10:40 11:20 12:00 ΣΑΒΒΑΤΟΚΥΡΙΑΚΟ/WEEKEND 07:50 08:40 09:20 10:00 10:40 11:20 12:00 12:40
+12:40 13:20 14:00 14:40 15:20 16:00 16:40 17:20 18:00 18:40 19:20 20:00 13:20 14:00 14:40 15:20 16:00 16:40 17:20 18:00 18:40 19:20 20:00 20:40
+20:40 21:20 22:00 22:40 23:20 21:20 22:00 22:40
+ΤΣΕΣΜΕΣ-ΠΛΑΤΑΝΙΑΣ-ΠΕΡΙΒΟΛΙΑ-ΡΕΘΥΜΝΟ-ΓΑΛΛΟΥ ΧΩΡΙΟ/ ΓΑΛΛΟΥ ΧΩΡΙΟ-ΡΕΘΥΜΝΟ-ΠΕΡΙΒΟΛΙΑ-ΠΛΑΤΑΝΙΑΣ-ΤΣΕΣΜΕΣ/
+TSESMES-PLATANIAS-PERIVOLIA-RETHYMNO-GALLOU VILLAGE GALLOU VILLAGE-RETHYMNO-PERIVOLIA-PLATANIAS-TSESMES
+ΚΑΘΕ ΜΕΡΑ/EVERY DAY 07:20 11:20 14:00 16:00*~ 18:45*~ ΚΑΘΕ ΜΕΡΑ/EVERY DAY 07:50 11:50 14:30 16:30*~ 19:15*~
+*ΑΝΑΧΩΡΗΣΗ ΑΠΟ ΡΕΘΥΜΝΟ/DEPARTURE FROM RETHYMNO *ΜΟΝΟ ΜΕΧΡΙ ΡΕΘΥΜΝΟ/ONLY TO RETHYMNO
+~ΕΚΤΟΣ ΣΑΒΒΑΤΟΚΥΡΙΑΚΟ/EXCEPT WEEKEND ~ΕΚΤΟΣ ΣΑΒΒΑΤΟΚΥΡΙΑΚΟ/EXCEPT WEEKEND
+ΡΕΘΥΜΝΟ-ΒΑΛΣΑΜΟΝΕΡΟ/RETHYMNO-VALSAMONERO ΒΑΛΣΑΜΟΝΕΡΟ-ΡΕΘΥΜΝO/VALSAMONERO-RETHYMNO
+ΔΕΥΤΕΡΑ ΕΩΣ ΣΑΒΒΑΤΟ/MONDAY TO SATURDAY 06:30 07:50 09:15 10:30 11:45 ΔΕΥΤΕΡΑ ΕΩΣ ΣΑΒΒΑΤΟ/MONDAY TO SATURDAY 07:00 08:45 10:00 11:15 12:40
+13:15 14:30 15:45 17:00 18:15 19:30 20:45 22:00 14:00 15:15 16:30 17:45 19:00 20:15 21:30 22:30
+ΚΥΡΙΑΚΗ/SUNDAY 06:30 09:15 11:45 14:30 17:00 19:30 22:00 ΚΥΡΙΑΚΗ/SUNDAY 07:00 10:00 12:40 15:15 17:45 20:15 22:30
+ΡΕΘΥΜΝΟ-ΚΥΡΙΑΝΝΑ/RETHYMNO-KYRIANA ΚΥΡΙΑΝΝΑ-ΡΕΘΥΜΝΟ/KYRIANA-RETHYMNO
+ΔΕΥΤΕΡΑ ΕΩΣ ΣΑΒΒΑΤΟ/MONDAY TO SATURDAY ΔΕΥΤΕΡΑ ΕΩΣ ΣΑΒΒΑΤΟ/MONDAY TO SATURDAY
+06:30 07:50 09:15 10:30 11:45 13:15 14:30 15:45 17:00* 18:15 19:30 20:45* 07:10 08:45 10:00 11:15 12:40 14:00 15:15 16:30 17:45* 19:00 20:15 21:30*
+22:00 22:30
+*ΕΩΣ ΑΜΝΑΤΟ/TILL AMNATO *ΑΠΟ ΑΜΝΑΤΟ/FROM AMNATO 17:35 21:20
+ΚΥΡΙΑΚΗ/SUNDAY 07:50 10:30 13:15 15:45 18:15 20:45 KYΡΙΑΚΗ/SUNDAY 08:45 11:15 14:00 16:30 19:00 21:30
+ΡΕΘΥΜΝΟ-ΜΑΡΟΥΛΑ-ΑΓ.ΠΑΡΑΣΚΕΥΗ/RETHYMNO-MAROULA-AG. PARASKEVI ΜΑΡΟΥΛΑ-ΑΓ. ΠΑΡΑΣΚΕΥΗ-ΡΕΘΥΜΝΟ/MAROULA-AG. PARASKEVI-RETHYMNO
+ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 06:45 14:15 ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 07:10 14:40
+ΙΣΧΥΕΙ ΗΜΕΡΕΣ ΛΕΙΤΟΥΡΓΙΑΣ ΤΩΝ ΣΧΟΛΕΙΩΝ/VALID ON SCHOOL OPERATING DAYS ΙΣΧΥΕΙ ΗΜΕΡΕΣ ΛΕΙΤΟΥΡΓΙΑΣ ΤΩΝ ΣΧΟΛΕΙΩΝ/VALID ON SCHOOL OPERATING DAYS
+ΡΕΘΥΜΝΟ-ΓΕΡΑΝΙ/RETHΥMNO-GERANI ΓΕΡΑΝΙ-ΡΕΘΥΜΝΟ/GERANI-RETHΥMNO
+ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY
+07:00^ 08:00 11:00 14:30 17:00 20:00 07:30^ 08:30 11:30 14:45 17:30 20:30
+ΣΑΒΒΑΤΟΚΥΡΙΑΚΟ/WEEKEND 08:00 11:00 13:00 14:45 ΣΑΒΒΑΤΟΚΥΡΙΑΚΟ/WEEKEND 08:30 11:30 13:30 15:15
+^ΙΣΧΥΕΙ ΗΜΕΡΕΣ ΛΕΙΤΟΥΡΓΙΑΣ ΤΩΝ ΣΧΟΛΕΙΩΝ/VALID ON SCHOOL OPERATING DAYS ^ΙΣΧΥΕΙ ΗΜΕΡΕΣ ΛΕΙΤΟΥΡΓΙΑΣ ΤΩΝ ΣΧΟΛΕΙΩΝ/VALID ON SCHOOL OPERATING DAYS
+ΡΕΘΥΜNΟ-ΑΓΙΑ ΕΙΡΗΝΗ-ΡΟΥΣΟΣΠΙΤΙ-ΧΡΩΜΟΝΑΣΤΗΡΙ/ ΧΡΩΜΟΝΑΣΤΗΡΙ-ΡΕΘΥΜΝΟ/
+RETHYMNO-AGIA IRINI-ROUSOSPITI-CHROMONASTIRI CHROMONASTITI-RETHYMNO
+ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY
+08:45 11:45 14:15^ 15:00 17:45 20:45 07:10^ 09:15 12:15 15:30 18:15 21:15
+ΣΑΒΒΑΤΟΚΥΡΙΑΚΟ/WEEKEND 08:45 11:45 13:45 15:30 ΣΑΒΒΑΤΟΚΥΡΙΑΚΟ/WEEKEND 09:15 12:15 14:15 16:00
+^ΙΣΧΥΕΙ ΗΜΕΡΕΣ ΛΕΙΤΟΥΡΓΙΑΣ ΤΩΝ ΣΧΟΛΕΙΩΝ/VALID ON SCHOOL OPERATING DAYS ^ΙΣΧΥΕΙ ΗΜΕΡΕΣ ΛΕΙΤΟΥΡΓΙΑΣ ΤΩΝ ΣΧΟΛΕΙΩΝ/VALID ON SCHOOL OPERATING DAYS
+ΡΕΘΥΜΝΟ-ΤΡΙΑ ΜΟΝΑΣΤΗΡΙΑ/RETHYMNO TRIA MONASTIRIA ΤΡΙΑ ΜΟΝΑΣΤΗΡΙΑ-ΡΕΘΥΜΝΟ/TRIA MONASTIRIA-RETHYMNO
+ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 09:45 12:45 ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 10:00 13:00
+ΣΑΒΒΑΤΟ/SATURDAY 09:45* (*Ρ-ΜΑΣΤΑΜΠΑ-ΔΗΜΟΤΙΚΟ ΝΕΚΡΟΤΑΦΕΙΟ) ΣΑΒΒΑΤΟ/SATURDAY 10:45* (*ΔΗΜΟΤΙΚΟ ΝΕΚΡΟΤΑΦΕΙΟ-ΜΑΣΤΑΜΠΑ-Ρ)
+ΡΕΘΥΜΝΟ-ΜΙΚΡΟ & ΜΕΓΑΛΟ ΜΕΤΟΧΙ/RETHYMNO-ΜΙΚRO & MEGALO METOHI MIΚΡΟ & ΜΕΓΑΛΟ ΜΕΤΟΧΙ-ΡΕΘΥΜΝΟ/MIKRO & MEGALO METOHI-RETHYMNO
+ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 10:15 13:15 14:20^* ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 07:20^ 10:30 13:30 14:30^
+^ΙΣΧΥΕΙ ΗΜΕΡΕΣ ΛΕΙΤΟΥΡΓΙΑΣ ΤΩΝ ΣΧΟΛΕΙΩΝ/VALID ON SCHOOL OPERATING DAYS ^ΙΣΧΥΕΙ ΗΜΕΡΕΣ ΛΕΙΤΟΥΡΓΙΑΣ ΤΩΝ ΣΧΟΛΕΙΩΝ/VALID ON SCHOOL OPERATING DAYS
+*ΑΠΟ ΣΤΑΣΗ ΜΟΑΤΣΟΥ/FROM MOATSOU BUS STOP
+ΡΕΘΥΜΝΟ-ΚΑΣΤΕΛΛΑΚΙΑ/RETHYMNO-KASTELLAKIA ΚΑΣΤΕΛΛΑΚΙΑ-ΡΕΘΥΜΝΟ/KASTELLAKIA-RETHYMNO
+ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 14:15 ΔΕΥΤΕΡΑ ΕΩΣ ΠΑΡΑΣΚΕΥΗ/MONDAY TO FRIDAY 07:45
+Email: ktelreth@otenet.gr http://e-ktel.com
+ΤΗΛ. ΠΛΗΡΟΦΟΡΙΩΝ/TEL. INFORMATION: 2831022212 - THΛ. ΑΠΟΘΗΚΗΣ/TEL. STORE HOUSE: 2831022659 - Fax: 2831022392

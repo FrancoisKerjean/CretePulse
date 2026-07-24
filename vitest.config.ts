@@ -1,14 +1,16 @@
-// @ts-nocheck
-import { fileURLToPath, URL } from "url";
+import { defineConfig } from "vitest/config";
+import path from "path";
 
-export default {
-  test: {
-    include: ["src/**/*.test.ts"],
-    environment: "node",
-  },
+export default defineConfig({
   resolve: {
     alias: {
-      "@": fileURLToPath(new URL("./src", import.meta.url)),
+      "@": path.resolve(__dirname, "src"),
     },
   },
-};
+  test: {
+    // affiliate.test.ts uses node:test runner directly (npm run test:affiliate)
+    include: ["src/**/*.test.ts"],
+    exclude: ["src/lib/affiliate.test.ts"],
+    environment: "node",
+  },
+});

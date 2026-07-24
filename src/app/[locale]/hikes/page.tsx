@@ -1,9 +1,10 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getAllHikes } from "@/lib/hikes";
 import { getLocalizedField, type Locale, type Hike } from "@/lib/types";
 import { Footprints, Mountain, MapPin } from "lucide-react";
 import Link from "next/link";
 import { buildAlternates } from "@/lib/seo";
+import { CarPromo } from "@/components/car-rental/CarPromo";
 
 export const revalidate = 86400;
 
@@ -28,6 +29,7 @@ const TYPES: Hike["type"][] = ["gorge", "coastal", "mountain", "cultural"];
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = META[locale] || META.en;
   const url = `${BASE_URL}/${locale}/hikes`;
   return {
@@ -46,6 +48,7 @@ export default async function HikesPage({
   searchParams: Promise<{ difficulty?: string; type?: string }>;
 }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const { difficulty, type } = await searchParams;
   const loc = locale as Locale;
 
@@ -72,8 +75,8 @@ export default async function HikesPage({
       <div className="max-w-6xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="flex items-center gap-3 mb-2">
-          <Mountain className="w-7 h-7 text-aegean" />
-          <h1 className="text-3xl font-bold text-aegean">
+          <Mountain className="w-7 h-7 text-sea" />
+          <h1 className="text-3xl font-bold text-sea">
             {META[locale]?.title || META.en.title}
           </h1>
         </div>
@@ -88,7 +91,7 @@ export default async function HikesPage({
             <span className="text-xs font-medium text-text-muted uppercase tracking-wide">Difficulty:</span>
             <Link
               href={`/${locale}/hikes${type ? `?type=${type}` : ""}`}
-              className={`text-xs px-3 py-1 rounded-full border transition-colors ${!difficulty ? "bg-aegean text-white border-aegean" : "border-border text-text-muted hover:border-aegean/50"}`}
+              className={`text-xs px-3 py-1 rounded-full border transition-colors ${!difficulty ? "bg-sea text-white border-sea" : "border-border text-text-muted hover:border-sea/50"}`}
             >
               All
             </Link>
@@ -100,7 +103,7 @@ export default async function HikesPage({
                 <Link
                   key={d}
                   href={href}
-                  className={`text-xs px-3 py-1 rounded-full border transition-colors ${isActive ? style.classes + " border-transparent font-semibold" : "border-border text-text-muted hover:border-aegean/50"}`}
+                  className={`text-xs px-3 py-1 rounded-full border transition-colors ${isActive ? style.classes + " border-transparent font-semibold" : "border-border text-text-muted hover:border-sea/50"}`}
                 >
                   {style.label}
                 </Link>
@@ -113,7 +116,7 @@ export default async function HikesPage({
             <span className="text-xs font-medium text-text-muted uppercase tracking-wide">Type:</span>
             <Link
               href={`/${locale}/hikes${difficulty ? `?difficulty=${difficulty}` : ""}`}
-              className={`text-xs px-3 py-1 rounded-full border transition-colors capitalize ${!type ? "bg-aegean text-white border-aegean" : "border-border text-text-muted hover:border-aegean/50"}`}
+              className={`text-xs px-3 py-1 rounded-full border transition-colors capitalize ${!type ? "bg-sea text-white border-sea" : "border-border text-text-muted hover:border-sea/50"}`}
             >
               All
             </Link>
@@ -124,7 +127,7 @@ export default async function HikesPage({
                 <Link
                   key={t}
                   href={href}
-                  className={`text-xs px-3 py-1 rounded-full border transition-colors capitalize ${isActive ? "bg-aegean text-white border-aegean font-semibold" : "border-border text-text-muted hover:border-aegean/50"}`}
+                  className={`text-xs px-3 py-1 rounded-full border transition-colors capitalize ${isActive ? "bg-sea text-white border-sea font-semibold" : "border-border text-text-muted hover:border-sea/50"}`}
                 >
                   {t}
                 </Link>
@@ -133,11 +136,18 @@ export default async function HikesPage({
           </div>
         </div>
 
+        {/* Excursions GYG : l'index rando = forte intention activité. Tous les
+            /hikes/[slug] ont déjà ce CTA (source mesurée des clics GYG, 24/06) ;
+            on couvre ici le seul trou restant parmi les pages activité. */}
+        <div className="mb-8">
+          <CarPromo locale={locale} source="hikes-index" />
+        </div>
+
         {filtered.length === 0 ? (
           <div className="text-center py-16 text-text-muted">
             <Footprints className="w-12 h-12 mx-auto mb-4 opacity-30" />
             <p>No trails match the selected filters.</p>
-            <Link href={`/${locale}/hikes`} className="text-aegean text-sm hover:underline mt-2 inline-block">
+            <Link href={`/${locale}/hikes`} className="text-sea text-sm hover:underline mt-2 inline-block">
               Clear filters
             </Link>
           </div>
@@ -149,10 +159,10 @@ export default async function HikesPage({
                 <Link
                   key={hike.slug}
                   href={`/${locale}/hikes/${hike.slug}`}
-                  className="group rounded-xl border border-border bg-white overflow-hidden hover:border-aegean/30 hover:shadow-md transition-all"
+                  className="group rounded-xl border border-border bg-white overflow-hidden hover:border-sea/30 hover:shadow-soft transition-all"
                 >
                   {hike.image_url && (
-                    <div className="h-40 bg-aegean-faint overflow-hidden">
+                    <div className="h-40 bg-sea-faint overflow-hidden">
                       <img
                         src={hike.image_url}
                         alt={getLocalizedField(hike, "name", loc)}
@@ -214,8 +224,8 @@ function HikesPlaceholder({ locale }: { locale: Locale }) {
     <main className="min-h-screen bg-surface">
       <div className="max-w-6xl mx-auto px-4 py-12">
         <div className="flex items-center gap-3 mb-2">
-          <Mountain className="w-7 h-7 text-aegean" />
-          <h1 className="text-3xl font-bold text-aegean">
+          <Mountain className="w-7 h-7 text-sea" />
+          <h1 className="text-3xl font-bold text-sea">
             {META[locale]?.title || META.en.title}
           </h1>
         </div>
@@ -223,13 +233,13 @@ function HikesPlaceholder({ locale }: { locale: Locale }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-border bg-white p-4 animate-pulse">
-              <div className="h-32 bg-stone rounded-lg mb-3" />
-              <div className="h-5 bg-stone rounded w-2/3 mb-2" />
-              <div className="h-3 bg-stone rounded w-1/3 mb-3" />
+              <div className="h-32 bg-surface rounded-lg mb-3" />
+              <div className="h-5 bg-surface rounded w-2/3 mb-2" />
+              <div className="h-3 bg-surface rounded w-1/3 mb-3" />
               <div className="flex gap-2">
-                <div className="h-3 bg-stone rounded w-12" />
-                <div className="h-3 bg-stone rounded w-16" />
-                <div className="h-3 bg-stone rounded w-10" />
+                <div className="h-3 bg-surface rounded w-12" />
+                <div className="h-3 bg-surface rounded w-16" />
+                <div className="h-3 bg-surface rounded w-10" />
               </div>
             </div>
           ))}

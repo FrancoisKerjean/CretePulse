@@ -6,40 +6,43 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  /* Aegean blue - deep Mediterranean sea */
-  --color-aegean: #1B4965;
-  --color-aegean-light: #2D6A8F;
-  --color-aegean-faint: #E8F1F5;
-
-  /* Terra cotta - Cretan earth */
-  --color-terra: #B85C38;
-  --color-terra-light: #D4845F;
-  --color-terra-faint: #FBF0EB;
-
-  /* Olive - Cretan groves */
-  --color-olive: #5F7A3E;
-  --color-olive-light: #8BA665;
-
-  /* Sand - Cretan beaches */
-  --color-sand: #F5E6D3;
-  --color-sand-warm: #EDD9C0;
-
-  /* Limestone - Cretan stone */
-  --color-stone: #F7F4F0;
-  --color-stone-warm: #EDE8E1;
-
-  --color-surface: #FAFAF8;
-  --color-text: #1A1A2E;
-  --color-text-muted: #6B7280;
+  /* Kalimera : roles de surface et tints (migration palette en cours, Chantier 1) */
+  --color-olive: #7C9A53;
+  --color-olive-light: #9BB573;
+  --color-sand: #FFF3D6;
+  --color-sand-warm: #F2E7CE;
+  --color-surface: #F6FBFC;
+  --color-text: #0B3954;
+  --color-text-muted: #5C7886;
   --color-text-light: #94A3B8;
-  --color-border: #E8E4DD;
-
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --color-border: #DCE9EE;
+  /* Nouveaux tokens signature */
+  --color-lagoon: #00C2D4;
+  --color-lagoon-deep: #008C9E;
+  --color-sky: #BDEDF5;
+  --color-night: #07374A;
+  --color-sun: #FFC83D;
+  --color-ok: #14B86B;
+  /* Tokens canoniques Kalimera (DA 11/06) : seuls noms officiels de la palette.
+     sea (ex aegean), terracotta (ex terra), foam (ex surface), ink (ex text).
+     Les anciens noms aegean/terra ont ete migres puis retires au Chantier 1. */
+  --color-sea: #0B5E78;
+  --color-sea-light: #2E7DB2;
+  --color-sea-faint: #DFF7FA;
+  --color-terracotta: #ED7A5C;
+  --color-terracotta-light: #F29A82;
+  --color-terracotta-faint: #FDEEE9;
+  --color-foam: #F6FBFC;
+  --color-ink: #0B3954;
+  --color-warn: #FFC83D;
+  --color-alert: #E5484D;
+  /* DA Kalimera : Geist = corps de texte (var next/font) ; Baloo 2 = titres + UI forte +
+     donnees (font-data) ; Comfortaa = fallback grec/cyrillique (Baloo 2 = latin/latin-ext). */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-baloo), var(--font-comfortaa), system-ui, sans-serif;
 }
 
 @theme inline {
-  --font-heading: var(--font-heading, var(--font-sans));
-  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -119,7 +122,9 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
+  /* Kalimera : fond de page foam (#F6FBFC), jamais blanc pur (DA). Les cartes blanches
+     ressortent en douceur sur le foam chaud. Chantier 1b. */
+  --background: #F6FBFC;
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -142,7 +147,7 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  --radius: 0.875rem; /* Kalimera : arrondi genereux (rounded-2xl/3xl => 25-31px, DA cartes 24-32px) */
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -191,6 +196,18 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* Focus visible coherent et accessible (DA lagon) sur tout element interactif au clavier. */
+  a:focus-visible,
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--color-lagoon);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
   body {
     @apply bg-background text-foreground;
   }
@@ -198,7 +215,19 @@
     @apply font-sans;
   }
   h1, h2 {
-    font-family: var(--font-heading), "Playfair Display", Georgia, serif;
+    font-family: var(--font-heading), "Comfortaa", system-ui, sans-serif;
+  }
+}
+
+/* iOS Safari auto-zooms when a focused field has font-size < 16px, and the page
+   stays zoomed after blur — every page then looks cropped on both edges.
+   Force 16px on real text-entry fields, touch devices only (!important beats
+   Tailwind utilities like text-sm / text-[13.5px]). */
+@media (hover: none) and (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  select,
+  textarea {
+    font-size: 16px !important;
   }
 }
 
@@ -208,7 +237,7 @@
 }
 .card-hover:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px -4px rgba(27, 73, 101, 0.12);
+  box-shadow: 0 8px 24px -4px rgba(11, 94, 120, 0.12);
 }
 
 /* Hide scrollbar for weather strip */
@@ -231,4 +260,206 @@ a, button {
   transition-property: color, background-color, border-color, box-shadow, transform;
   transition-duration: 150ms;
   transition-timing-function: ease;
+}
+
+/* ── Editorial article body (replaces generic `prose prose-slate`) ──────────────
+   Travel-magazine styling: 18px/1.7 body, Baloo H2/H3, drop cap, framed figures,
+   blockquotes and elegant links. Spec: docs/marketing/audits/2026-06-08-crete-direct-article-refonte.md */
+.article-prose {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  line-height: 1.7;
+  color: var(--color-text);
+}
+.article-prose p { margin-bottom: 24px; }
+.article-prose p:first-of-type::first-letter {
+  font-family: var(--font-heading), "Comfortaa", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 72px;
+  line-height: 0.85;
+  float: left;
+  margin: 4px 12px -4px 0;
+  color: var(--color-terracotta);
+}
+.article-prose h2 {
+  font-family: var(--font-heading), "Comfortaa", system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 1.15;
+  margin-top: 64px;
+  margin-bottom: 16px;
+  padding-top: 24px;
+  border-top: 1px solid color-mix(in oklab, var(--color-sea) 20%, transparent);
+  color: var(--color-text);
+}
+.article-prose h3 {
+  font-family: var(--font-heading), "Comfortaa", system-ui, sans-serif;
+  font-weight: 600;
+  font-style: italic;
+  font-size: 22px;
+  margin-top: 40px;
+  margin-bottom: 12px;
+  color: var(--color-text);
+}
+.article-prose ul, .article-prose ol { margin: 0 0 24px; padding-left: 1.4em; }
+.article-prose li { margin-bottom: 8px; }
+.article-prose ul { list-style: disc; }
+.article-prose ol { list-style: decimal; }
+.article-prose strong { font-weight: 700; color: var(--color-text); }
+.article-prose figure { margin: 48px -40px; }
+.article-prose figure img { width: 100%; height: auto; border-radius: 4px; }
+.article-prose figure figcaption {
+  font-family: var(--font-heading), "Comfortaa", system-ui, sans-serif;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  margin-top: 12px;
+}
+.article-prose blockquote {
+  border-left: 4px solid var(--color-terracotta);
+  padding-left: 24px;
+  font-family: var(--font-heading), "Comfortaa", system-ui, sans-serif;
+  font-style: italic;
+  font-size: 22px;
+  line-height: 1.4;
+  margin: 32px 0;
+  color: var(--color-text);
+}
+.article-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 32px 0;
+  font-size: 16px;
+  display: block;
+  overflow-x: auto;
+}
+.article-prose th, .article-prose td {
+  border: 1px solid var(--color-border, #E5E7EB);
+  padding: 10px 14px;
+  text-align: left;
+}
+.article-prose th { background: var(--color-sea-faint, #E8F1F5); font-weight: 600; }
+.article-prose a {
+  color: var(--color-sea);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  text-decoration-color: color-mix(in oklab, var(--color-sea) 40%, transparent);
+}
+.article-prose a:hover { text-decoration-color: var(--color-sea); }
+@media (max-width: 768px) {
+  .article-prose { font-size: 17px; }
+  .article-prose p { margin-bottom: 20px; }
+  .article-prose h2 { font-size: 26px; margin-top: 48px; }
+  .article-prose figure { margin: 32px -16px; }
+}
+/* ── Design system "donnees vivantes" (spec 2026-06-11) ─────────────────── */
+
+/* Voix typographique data : toute donnee chiffree (horaires, prix, temp, stats) */
+@utility font-data {
+  font-family: var(--font-heading), "Comfortaa", system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Ombres signature Kalimera : colorees (sea/night), jamais grises (DA grammaire) */
+@utility shadow-soft {
+  box-shadow: 0 6px 18px -6px rgb(11 94 120 / 0.14);
+}
+@utility shadow-card {
+  box-shadow: 0 12px 32px -10px rgb(11 94 120 / 0.16);
+}
+@utility shadow-float {
+  box-shadow: 0 20px 48px -14px rgb(7 55 74 / 0.22);
+}
+
+/* La carte unique du site : tous les styles de cartes convergent ici */
+@utility card-base {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 1.75rem;
+  transition: box-shadow 150ms ease, transform 150ms ease;
+  &:hover {
+    box-shadow: 0 14px 36px rgb(11 94 120 / 0.16);
+    transform: translateY(-2px);
+  }
+}
+
+/* Selecteur de zones (RegionPicker) : la zone survolee se detoure
+   (contour blanc, soulevee), le reste de l'ile s'estompe. */
+.kzone {
+  cursor: pointer;
+  fill: transparent;
+  transition: fill 180ms ease, transform 180ms ease;
+}
+.kzones:hover .kzone:not(:hover):not(.kzone-active) {
+  fill: rgba(246, 251, 252, 0.72);
+}
+.kzone:hover,
+.kzone-active {
+  fill: rgba(0, 194, 212, 0.16);
+  stroke: #fff;
+  stroke-width: 4;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 10px 16px rgba(7, 55, 74, 0.45));
+  transform: translateY(-4px);
+}
+.kzone-dimmed {
+  fill: rgba(246, 251, 252, 0.72);
+}
+
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@utility animate-live-pulse {
+  animation: live-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes cd-pulse {
+  0%   { transform: scale(0.6); opacity: 0.7; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* ── Page-campagne /projet : highlight snug + animations idle ───────────────
+   Surbrillance jaune "snug" (style maquette campagne-enriched.html) : pas de
+   halo box-shadow qui deborde ; padding minime + box-decoration-clone pour que
+   le fond suive chaque ligne sans toucher la ligne du dessus. */
+.cmp-hl {
+  background: var(--color-sun);
+  border-radius: 6px;
+  padding: 0.06em 0.24em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* Keyframes idle (prefixees cmp-) : bob (chevres), sway (panneaux),
+   drift (nuages), floaty (badges/coeur). */
+@keyframes cmp-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+@keyframes cmp-sway {
+  0%, 100% { transform: rotate(-3.5deg); }
+  50% { transform: rotate(3.5deg); }
+}
+@keyframes cmp-drift {
+  from { transform: translateX(-220px); }
+  to { transform: translateX(120vw); }
+}
+@keyframes cmp-floaty {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* Les classes idle ne s'animent QUE si l'utilisateur n'a pas demande moins de
+   mouvement : par defaut tout est statique pour prefers-reduced-motion: reduce. */
+@media (prefers-reduced-motion: no-preference) {
+  .cmp-bob { animation: cmp-bob 2.5s ease-in-out infinite; transform-origin: bottom center; }
+  .cmp-bob2 { animation: cmp-bob 2.9s ease-in-out infinite; animation-delay: -1.2s; transform-origin: bottom center; }
+  .cmp-bob3 { animation: cmp-bob 3.2s ease-in-out infinite; animation-delay: -0.6s; transform-origin: bottom center; }
+  .cmp-sway { animation: cmp-sway 3.6s ease-in-out infinite; }
+  .cmp-floaty { animation: cmp-floaty 3s ease-in-out infinite; }
+  .cmp-cloud { animation: cmp-drift 26s linear infinite; }
+  .cmp-cloud-b { animation: cmp-drift 34s linear infinite; animation-delay: -12s; }
 }

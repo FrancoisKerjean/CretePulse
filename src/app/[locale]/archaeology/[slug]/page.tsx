@@ -1,11 +1,15 @@
 import { breadcrumbSchema } from "@/lib/schema";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import { JsonLd } from "@/components/JsonLd";
+import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/types";
 import { MapPin, Clock, Ticket, ChevronLeft, ChevronRight, Landmark } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
+import { CarPromo } from "@/components/car-rental/CarPromo";
 
-export const revalidate = 86400;
+export const revalidate = 172800; // 03/07 optim couts Vercel (48h, ISR Writes)
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
@@ -152,6 +156,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const loc = (locale || "en") as Locale;
   const site = SITES.find((s) => s.slug === slug);
   if (!site) return { title: "Site not found" };
@@ -180,8 +185,10 @@ export default async function ArchaeologyDetailPage({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const loc = (locale || "en") as Locale;
-  const L = LABELS[loc];
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  const L = LABELS[loc] ?? LABELS.en;
 
   const site = SITES.find((s) => s.slug === slug);
   if (!site) notFound();
@@ -262,22 +269,14 @@ export default async function ArchaeologyDetailPage({
 
   return (
     <main className="min-h-screen bg-surface">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(attractionSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+      <JsonLd data={breadcrumb} />
+      <Breadcrumbs schema={breadcrumb} />
+      <JsonLd data={attractionSchema} />
+      <JsonLd data={faqSchema} />
 
       {/* Hero */}
-      <div className="relative bg-aegean py-16 md:py-24">
-        <div className="absolute inset-0 bg-gradient-to-br from-aegean via-aegean/90 to-aegean-dark" />
+      <div className="relative bg-sea py-16 md:py-24">
+        <div className="absolute inset-0 bg-gradient-to-br from-sea via-sea/90 to-night" />
         <div className="relative max-w-4xl mx-auto px-4 text-center">
           <span className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-full px-4 py-1.5 text-white/90 text-sm mb-6">
             <Landmark className="w-4 h-4" />
@@ -285,7 +284,7 @@ export default async function ArchaeologyDetailPage({
           </span>
           <h1
             className="text-3xl md:text-5xl font-bold text-white mb-2"
-            style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
+            style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}
           >
             {site.name}
           </h1>
@@ -300,7 +299,7 @@ export default async function ArchaeologyDetailPage({
       <div className="max-w-4xl mx-auto px-4 py-8">
         <Link
           href={`/${locale}/archaeology`}
-          className="inline-flex items-center gap-1 text-sm text-aegean hover:underline mb-8"
+          className="inline-flex items-center gap-1 text-sm text-sea hover:underline mb-8"
         >
           <ChevronLeft className="w-4 h-4" /> {L.allSites}
         </Link>
@@ -308,17 +307,17 @@ export default async function ArchaeologyDetailPage({
         {/* Practical info grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
           <div className="rounded-lg bg-white border border-border p-3 text-center">
-            <Landmark className="w-5 h-5 text-aegean mx-auto" />
+            <Landmark className="w-5 h-5 text-sea mx-auto" />
             <p className="text-xs text-text-muted mt-1">{L.period}</p>
             <p className="font-semibold text-sm">{site.period}</p>
           </div>
           <div className="rounded-lg bg-white border border-border p-3 text-center">
-            <MapPin className="w-5 h-5 text-aegean mx-auto" />
+            <MapPin className="w-5 h-5 text-sea mx-auto" />
             <p className="text-xs text-text-muted mt-1">{L.location}</p>
             <p className="font-semibold text-sm">{site.city}</p>
           </div>
           <div className="rounded-lg bg-white border border-border p-3 text-center">
-            <Ticket className="w-5 h-5 text-terra mx-auto" />
+            <Ticket className="w-5 h-5 text-terracotta mx-auto" />
             <p className="text-xs text-text-muted mt-1">{L.admission}</p>
             <p className="font-semibold text-sm">{displayPrice}</p>
           </div>
@@ -337,8 +336,8 @@ export default async function ArchaeologyDetailPage({
         {/* Highlights */}
         <section className="mb-8">
           <h2
-            className="text-xl font-bold text-aegean mb-4"
-            style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
+            className="text-xl font-bold text-sea mb-4"
+            style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}
           >
             {L.highlights}
           </h2>
@@ -346,7 +345,7 @@ export default async function ArchaeologyDetailPage({
             {site.highlights.map((h) => (
               <span
                 key={h}
-                className="inline-flex items-center text-sm bg-stone px-3 py-1.5 rounded-full text-text"
+                className="inline-flex items-center text-sm bg-surface px-3 py-1.5 rounded-full text-text"
               >
                 {h}
               </span>
@@ -357,8 +356,8 @@ export default async function ArchaeologyDetailPage({
         {/* FAQ */}
         <section className="mt-12 mb-8">
           <h2
-            className="text-2xl font-bold text-aegean mb-6"
-            style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
+            className="text-2xl font-bold text-sea mb-6"
+            style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}
           >
             {L.faqTitle}
           </h2>
@@ -375,11 +374,16 @@ export default async function ArchaeologyDetailPage({
           </div>
         </section>
 
+        {/* Car Rental Direct */}
+        <div className="mt-8">
+          <CarPromo locale={locale} source="archaeology" />
+        </div>
+
         {/* Other sites */}
         <section className="mt-8 mb-8">
           <h2
-            className="text-2xl font-bold text-aegean mb-4"
-            style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
+            className="text-2xl font-bold text-sea mb-4"
+            style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}
           >
             {L.nearbySites}
           </h2>
@@ -388,9 +392,9 @@ export default async function ArchaeologyDetailPage({
               <Link
                 key={s.slug}
                 href={`/${locale}/archaeology/${s.slug}`}
-                className="rounded-xl bg-white border border-border p-4 hover:shadow-md transition-shadow"
+                className="rounded-xl bg-white border border-border p-4 hover:shadow-soft transition-shadow"
               >
-                <div className="flex items-center gap-2 text-aegean mb-1">
+                <div className="flex items-center gap-2 text-sea mb-1">
                   <Landmark className="w-4 h-4" />
                   <span className="font-semibold text-sm">{s.name}</span>
                 </div>
@@ -404,29 +408,29 @@ export default async function ArchaeologyDetailPage({
         {/* Explore more */}
         <section className="mt-8 pb-8">
           <h2
-            className="text-2xl font-bold text-aegean mb-4"
-            style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
+            className="text-2xl font-bold text-sea mb-4"
+            style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}
           >
             {L.exploreMore}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Link
               href={`/${locale}/beaches`}
-              className="rounded-xl bg-white border border-border p-4 hover:shadow-md transition-shadow flex items-center gap-3"
+              className="rounded-xl bg-white border border-border p-4 hover:shadow-soft transition-shadow flex items-center gap-3"
             >
-              <MapPin className="w-5 h-5 text-aegean" />
+              <MapPin className="w-5 h-5 text-sea" />
               <span className="font-medium text-sm text-text">{L.beaches}</span>
             </Link>
             <Link
               href={`/${locale}/itineraries`}
-              className="rounded-xl bg-white border border-border p-4 hover:shadow-md transition-shadow flex items-center gap-3"
+              className="rounded-xl bg-white border border-border p-4 hover:shadow-soft transition-shadow flex items-center gap-3"
             >
-              <Clock className="w-5 h-5 text-terra" />
+              <Clock className="w-5 h-5 text-terracotta" />
               <span className="font-medium text-sm text-text">{L.itineraries}</span>
             </Link>
             <Link
               href={`/${locale}/villages`}
-              className="rounded-xl bg-white border border-border p-4 hover:shadow-md transition-shadow flex items-center gap-3"
+              className="rounded-xl bg-white border border-border p-4 hover:shadow-soft transition-shadow flex items-center gap-3"
             >
               <MapPin className="w-5 h-5 text-olive" />
               <span className="font-medium text-sm text-text">{L.villages}</span>

@@ -1,7 +1,9 @@
 import type { Locale } from "@/lib/types";
+import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { Plane, Car, Waves, Sun, UtensilsCrossed, Globe, Banknote, Hotel } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 86400;
 
@@ -28,6 +30,7 @@ const META: Record<string, { title: string; desc: string }> = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = META[locale] || META.en;
   const url = `${BASE_URL}/${locale}/faq`;
   return {
@@ -436,6 +439,7 @@ function getAllFaqItems(locale: string): FaqItem[] {
 
 export default async function FaqPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
   const sections = getFaqSections(locale);
   const allItems = getAllFaqItems(locale);
@@ -470,17 +474,14 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+      <JsonLd data={faqSchema} />
       <main className="min-h-screen bg-surface">
         <div className="max-w-4xl mx-auto px-4 py-12">
-          <h1 className="text-3xl md:text-4xl font-bold text-aegean mb-3">
-            {pageTitle[loc]}
+          <h1 className="text-3xl md:text-4xl font-bold text-sea mb-3">
+            {pageTitle[loc] ?? pageTitle.en}
           </h1>
           <p className="text-text-muted text-lg mb-10">
-            {pageSubtitle[loc]}
+            {pageSubtitle[loc] ?? pageSubtitle.en}
           </p>
 
           {/* Quick nav */}
@@ -491,7 +492,7 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
                 <a
                   key={section.title}
                   href={`#${section.title.toLowerCase().replace(/[^a-z0-9]/gi, "-")}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-white text-sm font-medium text-aegean hover:bg-aegean hover:text-white transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-white text-sm font-medium text-sea hover:bg-sea hover:text-white transition-colors"
                 >
                   <Icon className="w-4 h-4" />
                   {section.title}
@@ -507,10 +508,10 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
             return (
               <section key={section.title} id={sectionId} className="mb-10">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 rounded-lg bg-aegean/10 flex items-center justify-center">
-                    <Icon className="w-4 h-4 text-aegean" />
+                  <div className="w-8 h-8 rounded-lg bg-sea/10 flex items-center justify-center">
+                    <Icon className="w-4 h-4 text-sea" />
                   </div>
-                  <h2 className="text-xl font-bold text-aegean">{section.title}</h2>
+                  <h2 className="text-xl font-bold text-sea">{section.title}</h2>
                 </div>
 
                 <div className="space-y-2">
@@ -519,7 +520,7 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
                       key={item.q}
                       className="group rounded-xl border border-border bg-white overflow-hidden"
                     >
-                      <summary className="cursor-pointer px-5 py-4 font-semibold text-text flex items-center justify-between hover:bg-aegean-faint/50 transition-colors">
+                      <summary className="cursor-pointer px-5 py-4 font-semibold text-text flex items-center justify-between hover:bg-sea-faint/50 transition-colors">
                         <span>{item.q}</span>
                         <span className="ml-2 text-text-muted text-lg group-open:rotate-45 transition-transform">+</span>
                       </summary>
@@ -528,7 +529,7 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
                         {item.link && (
                           <Link
                             href={`/${locale}${item.link.href}`}
-                            className="inline-block mt-2 text-aegean font-medium hover:underline text-sm"
+                            className="inline-block mt-2 text-sea font-medium hover:underline text-sm"
                           >
                             {item.link.label} &rarr;
                           </Link>

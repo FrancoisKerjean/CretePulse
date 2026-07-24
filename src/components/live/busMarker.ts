@@ -1,0 +1,105 @@
+import type { LiveBus, LiveGpsBus } from "@/lib/bus-live";
+
+const NORMAL = "#0B5E78";   // sea
+const SELECTED = "#ED7A5C"; // terracotta
+
+/** Élément DOM d'un marqueur bus : hit-area 44px + inner 26px (flèche + halo).
+ *  `lineColor` (hex #RRGGBB) colore le marqueur des bus municipaux Agios Nikolaos par
+ *  ligne (jaune/rouge/vert) ; null/absent -> bleu KTEL par défaut. */
+export function createBusEl(bus: LiveBus, lineColor?: string | null): HTMLDivElement {
+  const el = document.createElement("div");
+  // conteneur = zone tactile 44px transparente, centre l'inner
+  el.style.cssText =
+    "position:absolute;top:0;left:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;will-change:transform";
+  el.setAttribute("role", "button");
+  el.setAttribute("tabindex", "0");
+  el.setAttribute("aria-label", `${bus.codeOfficial ?? bus.code} → ${bus.headsign}`);
+  el.title = `${bus.codeOfficial ?? bus.code} → ${bus.headsign}`;
+
+  // Couleur = celle de la ligne pour le réseau municipal (split visuel KTEL / urbain),
+  // sinon bleu KTEL. La page /live indique déjà « estimé d'après l'horaire ».
+  const color = lineColor || NORMAL;
+  const halo = lineColor ? `${lineColor}29` : "rgba(11,94,120,.16)"; // #RRGGBB29 ~= 16% alpha
+  const inner = document.createElement("div");
+  inner.className = "bus-inner";
+  inner.style.cssText = "position:relative;width:26px;height:26px;transition:transform .15s ease";
+  inner.innerHTML =
+    `<span style="position:absolute;inset:-8px;border-radius:50%;background:${halo};animation:cd-pulse 2s ease-out infinite"></span>` +
+    `<span class="bus-arrow" data-base="${color}" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;` +
+    `width:26px;height:26px;border-radius:50%;background:${color};color:#fff;font:700 11px/1 var(--font-heading),sans-serif;` +
+    `box-shadow:0 1px 4px rgba(0,0,0,.3);transform:rotate(${bus.bearing}deg)">▲</span>`;
+  el.appendChild(inner);
+  return el;
+}
+
+/** Met à jour l'orientation de la flèche d'un élément existant. */
+export function setBusArrow(el: HTMLElement, bearingDeg: number): void {
+  const arrow = el.querySelector(".bus-arrow") as HTMLElement | null;
+  if (arrow) arrow.style.transform = `rotate(${bearingDeg}deg)`;
+}
+
+/** Marque (ou démarque) le bus sélectionné : agrandi + couleur terracotta + au-dessus. */
+export function setBusSelected(el: HTMLElement, on: boolean): void {
+  const inner = el.querySelector(".bus-inner") as HTMLElement | null;
+  const arrow = el.querySelector(".bus-arrow") as HTMLElement | null;
+  if (inner) inner.style.transform = on ? "scale(1.35)" : "scale(1)";
+  if (arrow) arrow.style.background = on ? SELECTED : (arrow.getAttribute("data-base") ?? NORMAL);
+  el.style.zIndex = on ? "3" : "";
+}
+
+/** Estompe (ou rétablit) un marqueur non sélectionné. */
+export function setBusDimmed(el: HTMLElement, on: boolean): void {
+  el.style.opacity = on ? "0.35" : "1";
+}
+
+/** Marqueur d'un bus citybus APPROCHANT un arrêt (position GPS réelle de la réponse
+ *  stops/live, affiché tant que le StopSheet est ouvert). Même langage visuel que le
+ *  GPS Agios Nikolaos (anneau vert live) mais sans flèche (pas de bearing upstream) :
+ *  rond couleur ligne avec le code de ligne dedans + badge ETA sous le rond. */
+export function createApproachingBusEl(
+  lineCode: string,
+  color: string | null,
+  textColor: string | null,
+  title: string,
+): HTMLDivElement {
+  const bg = color || NORMAL;
+  const el = document.createElement("div");
+  el.style.cssText = "position:absolute;top:0;left:0;width:30px;height:30px;will-change:transform";
+  el.innerHTML =
+    `<span style="position:absolute;inset:-9px;border-radius:50%;background:${bg}2b;animation:cd-pulse 2s ease-out infinite"></span>` +
+    `<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;` +
+    `width:30px;height:30px;border-radius:50%;background:${bg};color:${textColor || "#fff"};` +
+    `font:800 10px/1 var(--font-heading),sans-serif;box-shadow:0 0 0 2.5px #12B76A,0 1px 5px rgba(0,0,0,.35)">${lineCode}</span>` +
+    `<span style="position:absolute;right:-2px;top:-2px;width:9px;height:9px;border-radius:50%;background:#12B76A;` +
+    `box-shadow:0 0 0 2px #fff"></span>` +
+    `<span class="bus-eta" style="position:absolute;left:50%;top:34px;transform:translateX(-50%);white-space:nowrap;` +
+    `border-radius:9999px;background:#0B3954;color:#fff;padding:1px 6px;font:700 10px/1.4 var(--font-heading),sans-serif;` +
+    `font-variant-numeric:tabular-nums;` +
+    `box-shadow:0 1px 3px rgba(0,0,0,.3)"></span>`;
+  el.title = title;
+  return el;
+}
+
+/** Met à jour le badge ETA d'un marqueur de bus approchant. */
+export function setApproachingBusEta(el: HTMLElement, label: string): void {
+  const eta = el.querySelector(".bus-eta") as HTMLElement | null;
+  if (eta) eta.textContent = label;
+}
+
+/** Marqueur d'un bus à position GPS RÉELLE (Agios Nikolaos). Visuellement distinct de
+ *  l'estimé : rond à la couleur de la ligne + anneau vert "live" + halo pulsé.
+ *  Hypothèse: bus.color est un hex #RRGGBB (garanti par /api/buses/agncitybus-live,
+ *  constantes LINE) -> `${color}2b` = #RRGGBB2b (RGBA 8 chiffres, halo ~17% alpha). */
+export function createGpsBusEl(bus: LiveGpsBus): HTMLDivElement {
+  const el = document.createElement("div");
+  el.style.cssText = "position:absolute;top:0;left:0;width:30px;height:30px;will-change:transform";
+  el.innerHTML =
+    `<span style="position:absolute;inset:-9px;border-radius:50%;background:${bus.color}2b;animation:cd-pulse 2s ease-out infinite"></span>` +
+    `<span class="bus-arrow" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;` +
+    `width:30px;height:30px;border-radius:50%;background:${bus.color};color:#fff;font:800 11px/1 var(--font-heading),sans-serif;` +
+    `box-shadow:0 0 0 2.5px #12B76A,0 1px 5px rgba(0,0,0,.35);transform:rotate(${bus.bearing}deg)">▲</span>` +
+    `<span style="position:absolute;right:-2px;top:-2px;width:9px;height:9px;border-radius:50%;background:#12B76A;` +
+    `box-shadow:0 0 0 2px #fff"></span>`;
+  el.title = `${bus.lineCode} · GPS live${bus.plate ? ` · ${bus.plate}` : ""}`;
+  return el;
+}

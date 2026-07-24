@@ -1,4 +1,11 @@
 {
+  "activityNudge": {
+    "close": "Închide",
+    "title": "Tot indecis?",
+    "subtitle": "Dă swipe celor mai tari locuri din Creta și găsește-l pe cel care ți se potrivește.",
+    "dismiss": "Mai târziu",
+    "cta": "Începe să dai swipe"
+  },
   "meta": {
     "title": "Crete Direct - Ce se întâmplă în Creta",
     "description": "Vreme, evenimente, plaje, știri locale. Totul despre Creta, actualizat în fiecare oră. Gratuit, multilingv."
@@ -47,7 +54,63 @@
     "updatedAt": "Actualizat la {time} ora locală",
     "noEvents": "Nu sunt evenimente viitoare.",
     "submitEvent": "Trimite unul?",
-    "newsFeedLoading": "Fluxul de știri se încarcă. Se actualizează la fiecare 3 ore."
+    "newsFeedLoading": "Fluxul de știri se încarcă. Se actualizează la fiecare 3 ore.",
+    "guidesSectionTitle": "Ghiduri de călătorie",
+    "guidesSectionSubtitle": "Plaje, drumeții, mâncare, viață în Creta. Verificate pe insulă.",
+    "allGuides": "Toate ghidurile",
+    "editorialGuides": "Ghiduri editoriale",
+    "heroTitle": "Creta, azi",
+    "carRentalKicker": "Închirieri auto",
+    "carRentalTitle": "Mașina ta pentru a explora Creta",
+    "carRentalSub": "Agenție locală, preț corect, fără plată în avans. Ofertă în 4 atingeri, preluare la aeroport posibilă.",
+    "carRentalCta": "Cere o ofertă",
+    "heroMain": {
+      "pre": "Plaje, autobuze, vreme.",
+      "hl": "Creta, în direct."
+    },
+    "heroToday": "Azi marea e {rating} la {name}. Urmărim vântul, marea și autobuzele pentru tine, toată ziua.",
+    "liveFromIsland": "în direct de pe insulă",
+    "heroSub": "Calculat în direct · 10 stații meteo × orientarea a 500 de plaje.",
+    "ctaBeach": "Vezi plaja zilei",
+    "air": "aer",
+    "sea": "mare",
+    "islandNow": "Insula, chiar acum",
+    "allStations": "Toate stațiile",
+    "swimToday": "Unde te scalzi azi",
+    "allBeaches": "Toate cele 500 de plaje",
+    "todaysPick": "alegerea zilei",
+    "toolsTitle": "Instrumentele",
+    "ratings": {
+      "calm": "calmă",
+      "fair": "ok",
+      "exposed": "expusă"
+    },
+    "seaStates": {
+      "calm": "calmă",
+      "ok": "bună de scăldat",
+      "rough": "agitată"
+    },
+    "regions": {
+      "south": "Coasta de sud",
+      "west": "Coasta de vest",
+      "east": "Coasta de est",
+      "central": "Coasta centrală"
+    },
+    "tools": {
+      "buses": "Autobuze",
+      "busesLine": "Orare & prețuri",
+      "swim": "Scăldat",
+      "swimLine": "500 de plaje live",
+      "explore": "Explorează",
+      "exploreLine": "2.296 de locuri",
+      "airports": "Aeroporturi",
+      "airportsLine": "Trafic & sezoane",
+      "airbnb": "Date Airbnb",
+      "airbnbLine": "Prețuri pe zone",
+      "weather": "Vreme",
+      "weatherLine": "10 stații + mare"
+    },
+    "nextEvents": "Evenimente viitoare"
   },
   "footer": {
     "about": "Ghid gratuit și independent pentru Creta. Date în timp real. Fără reclame (deocamdată). Fără urmărire.",
@@ -66,11 +129,65 @@
     "weather": "Vreme",
     "rights": "Toate drepturile rezervate.",
     "madeIn": "Făcut în Creta",
-    "propertyManagement": "Administrare proprietăți"
+    "airports": "Aeroporturi",
+    "ourProject": "Proiectul nostru",
+    "taglineLong": "Companionul practic al Cretei. Date live, gratuit, independent. Făcut pe insulă.",
+    "plan": "Planifică",
+    "discover": "Descoperă",
+    "info": "Info"
   },
   "common": {
     "readMore": "Citește mai mult",
     "seeAll": "Vezi tot",
     "back": "Înapoi"
+  },
+  "nextDeparture": {
+    "next": "Următoarea plecare",
+    "inMin": "peste {m} min",
+    "tomorrow": "Primul autobuz mâine"
+  },
+  "depBoard": {
+    "title": "Următoarele autobuze",
+    "plan": "Planifică un traseu",
+    "inMin": "peste {m} min",
+    "last": "ultimul azi",
+    "tomorrow": "mâine",
+    "routeAria": "Orar {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "Plecări",
+    "nearMe": "Lângă mine",
+    "tomorrow": "mâine",
+    "later": "Arată plecările următoare",
+    "none": "Nicio plecare găsită aici.",
+    "in": "peste",
+    "min": "min",
+    "hr": "h"
+  },
+  "pushBell": {
+    "cta": "Primește alerte autobuz și info urgente Creta",
+    "on": "Alerte activate",
+    "blocked": "Notificările sunt blocate în browser.",
+    "iosInstall": "Alerte autobuz: adaugă site-ul pe ecranul principal (Distribuie, apoi Adaugă pe ecranul principal) ca să le activezi."
+  },
+  "timeChips": {
+    "legend": "următoarea plecare · orele trecute sunt estompate"
+  },
+  "busInCreteBox": {
+    "heading": "Cum te deplasezi în Creta cu autobuzul",
+    "connector": "spre"
+  },
+  "installBanner": {
+    "title": "Creta mereu în buzunar",
+    "body": "Autobuze live și plaje, chiar și offline.",
+    "cta": "Instalează",
+    "later": "Nu acum",
+    "ios": "Atinge Distribuie, apoi „Adaugă la ecranul principal”."
+  },
+  "tabBar": {
+    "map": "Hartă",
+    "buses": "Autobuze",
+    "beaches": "Plaje",
+    "quote": "Ofertă"
   }
 }

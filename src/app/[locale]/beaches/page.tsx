@@ -1,9 +1,30 @@
 import { getAllBeaches } from "@/lib/beaches";
+import { setRequestLocale } from "next-intl/server";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { Waves, MapPin, Car, Fish } from "lucide-react";
 import Link from "next/link";
 import { buildAlternates } from "@/lib/seo";
 import { itemListSchema } from "@/lib/schema";
+import { BeachImage } from "@/components/BeachImage";
+import { JsonLd } from "@/components/JsonLd";
+import { getBathingWaterQuality } from "@/lib/bathing-water";
+import { WaterQualityBadge } from "@/components/WaterQualityBadge";
+import { getCrowdScore } from "@/lib/beach-crowd";
+import { BeachesLiveNow } from "@/components/beaches/BeachesLiveNow";
+
+const REGION_LABELS: Record<Locale, Record<string, string>> = {
+  en: { east: "east Crete", west: "west Crete", central: "central Crete", south: "south Crete" },
+  fr: { east: "Crète de l'est", west: "Crète de l'ouest", central: "Crète centrale", south: "Crète du sud" },
+  de: { east: "Ostkreta", west: "Westkreta", central: "Mittelkreta", south: "Südkreta" },
+  el: { east: "ανατολική Κρήτη", west: "δυτική Κρήτη", central: "κεντρική Κρήτη", south: "νότια Κρήτη" },
+};
+
+const TYPE_LABELS: Record<Locale, Record<string, string>> = {
+  en: { sand: "sandy", pebble: "pebble", rock: "rocky", mixed: "mixed" },
+  fr: { sand: "de sable", pebble: "de galets", rock: "rocheuse", mixed: "mixte" },
+  de: { sand: "Sand-", pebble: "Kiesel-", rock: "Fels-", mixed: "gemischt" },
+  el: { sand: "αμμώδης", pebble: "βότσαλο", rock: "βραχώδης", mixed: "μικτή" },
+};
 
 export const revalidate = 86400;
 
@@ -12,6 +33,19 @@ const BEACHES_LABELS: Record<Locale, { subtitle: string; parking: string; kidsOk
   fr: { subtitle: "plages avec conditions en temps réel", parking: "Parking", kidsOk: "Enfants OK", coming: "500+ plages à venir. Données en cours de chargement." },
   de: { subtitle: "Strände mit Echtzeitbedingungen", parking: "Parkplatz", kidsOk: "Kinder OK", coming: "500+ Strände demnächst. Daten werden geladen." },
   el: { subtitle: "παραλίες με συνθήκες σε πραγματικό χρόνο", parking: "Πάρκινγκ", kidsOk: "Παιδιά OK", coming: "500+ παραλίες σύντομα. Τα δεδομένα φορτώνονται." },
+};
+
+// Affluence estimée (JSON précalculé lib/beach-crowd) : libellés courts des cartes.
+const CROWD_LABELS: Record<Locale, Record<string, string>> = {
+  en: { quiet: "quiet", moderate: "moderate", busy: "busy" },
+  fr: { quiet: "calme", moderate: "modérée", busy: "fréquentée" },
+  de: { quiet: "ruhig", moderate: "mäßig", busy: "voll" },
+  el: { quiet: "ήσυχη", moderate: "μέτρια", busy: "πολυσύχναστη" },
+};
+const CROWD_STYLES: Record<string, string> = {
+  quiet: "bg-emerald-50 text-emerald-800",
+  moderate: "bg-amber-50 text-amber-800",
+  busy: "bg-red-50 text-red-800",
 };
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
@@ -25,6 +59,7 @@ const META: Record<string, { title: string; desc: string }> = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = META[locale] || META.en;
   const url = `${BASE_URL}/${locale}/beaches`;
   return {
@@ -37,7 +72,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function BeachesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  const regionLabels = REGION_LABELS[loc] ?? REGION_LABELS.en;
+  const typeLabels = TYPE_LABELS[loc] ?? TYPE_LABELS.en;
+  const beachesLabels = BEACHES_LABELS[loc] ?? BEACHES_LABELS.en;
+  const crowdLabels = CROWD_LABELS[loc] ?? CROWD_LABELS.en;
 
   let beaches: Awaited<ReturnType<typeof getAllBeaches>> = [];
   try {
@@ -62,32 +103,56 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
 
   return (
     <main className="min-h-screen bg-surface">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(listSchema) }} />
+      <JsonLd data={listSchema} />
       <div className="max-w-6xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-aegean">
+        <h1 className="text-3xl font-bold text-sea">
           {getLocalizedField({ title_en: "Beaches in Crete", title_fr: "Plages en Crète", title_de: "Strände auf Kreta", title_el: "Παραλίες στην Κρήτη" }, "title", loc)}
         </h1>
         <p className="text-text-muted mt-2">
-          {beaches.length} {BEACHES_LABELS[loc].subtitle}
+          {beaches.length} {beachesLabels.subtitle}
         </p>
 
+        {/* Live utility entry point: today's wind-aware pick */}
+        <Link
+          href={`/${locale}/beaches/today`}
+          className="mt-5 flex items-center justify-between gap-3 rounded-xl border border-sea/30 bg-sea-faint px-4 py-3 hover:border-sea transition-colors"
+        >
+          <span className="font-medium text-sea">
+            {getLocalizedField(
+              {
+                title_en: "Where to swim today: live pick from wind and sea conditions",
+                title_fr: "Où se baigner aujourd'hui : la préco du jour selon le vent et la mer",
+                title_de: "Wo heute baden: Tagestipp nach Wind und Meer",
+                title_el: "Πού για μπάνιο σήμερα: η πρόταση της ημέρας με βάση άνεμο και θάλασσα",
+              },
+              "title",
+              loc,
+            )}
+          </span>
+          <span className="shrink-0 text-lagoon font-extrabold">·</span>
+        </Link>
+
+        {/* Classement vivant du moment par zone (client, API cache CDN 30 min :
+            le hub reste en ISR 24 h) */}
+        <BeachesLiveNow locale={locale} />
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
-          {beaches.map((beach) => (
+          {beaches.map((beach) => {
+            const wq = getBathingWaterQuality(beach.latitude, beach.longitude, beach.name_en);
+            const crowd = getCrowdScore(beach.slug);
+            return (
             <Link
               key={beach.slug}
               href={`/${locale}/beaches/${beach.slug}`}
-              className="group rounded-xl border border-border bg-white overflow-hidden hover:border-aegean/30 hover:shadow-md transition-all"
+              className="group rounded-xl border border-border bg-white overflow-hidden hover:border-sea/30 hover:shadow-soft transition-all"
             >
-              {beach.image_url && (
-                <div className="h-40 bg-aegean-faint overflow-hidden">
-                  <img
-                    src={beach.image_url}
-                    alt={getLocalizedField(beach, "name", loc)}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    loading="lazy"
-                  />
-                </div>
-              )}
+              <div className="h-40 overflow-hidden">
+                <BeachImage
+                  src={beach.image_url}
+                  alt={`${getLocalizedField(beach, "name", loc)} beach, ${regionLabels[beach.region] || beach.region}${beach.type ? `, ${typeLabels[beach.type] || beach.type}` : ""}`}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              </div>
               <div className="p-4">
                 <h2 className="font-semibold text-lg">
                   {getLocalizedField(beach, "name", loc)}
@@ -96,31 +161,38 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
                   <MapPin className="w-3 h-3" />
                   {beach.region}
                 </div>
-                <div className="flex flex-wrap gap-2 mt-3">
+                <div className="flex flex-wrap items-center gap-2 mt-3">
+                  {wq && <WaterQualityBadge wq={wq} locale={locale} variant="pill" />}
+                  {crowd && (
+                    <span className={`inline-flex items-center text-xs px-2 py-0.5 rounded-full ${CROWD_STYLES[crowd.band]}`}>
+                      {crowdLabels[crowd.band]}
+                    </span>
+                  )}
                   {beach.type && (
-                    <span className="inline-flex items-center gap-1 text-xs bg-aegean-faint text-aegean px-2 py-0.5 rounded-full">
+                    <span className="inline-flex items-center gap-1 text-xs bg-sea-faint text-sea px-2 py-0.5 rounded-full">
                       <Waves className="w-3 h-3" /> {beach.type}
                     </span>
                   )}
                   {beach.parking && (
-                    <span className="inline-flex items-center gap-1 text-xs bg-stone text-text-muted px-2 py-0.5 rounded-full">
-                      <Car className="w-3 h-3" /> {BEACHES_LABELS[loc].parking}
+                    <span className="inline-flex items-center gap-1 text-xs bg-surface text-text-muted px-2 py-0.5 rounded-full">
+                      <Car className="w-3 h-3" /> {beachesLabels.parking}
                     </span>
                   )}
                   {beach.snorkeling && (
-                    <span className="inline-flex items-center gap-1 text-xs bg-aegean-faint text-aegean px-2 py-0.5 rounded-full">
+                    <span className="inline-flex items-center gap-1 text-xs bg-sea-faint text-sea px-2 py-0.5 rounded-full">
                       <Fish className="w-3 h-3" /> Snorkeling
                     </span>
                   )}
                   {beach.kids_friendly && (
-                    <span className="inline-flex items-center gap-1 text-xs bg-terra-faint text-terra px-2 py-0.5 rounded-full">
-                      {BEACHES_LABELS[loc].kidsOk}
+                    <span className="inline-flex items-center gap-1 text-xs bg-terracotta-faint text-terracotta px-2 py-0.5 rounded-full">
+                      {beachesLabels.kidsOk}
                     </span>
                   )}
                 </div>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
       </div>
     </main>
@@ -134,18 +206,20 @@ function BeachesPlaceholder({ locale }: { locale: Locale }) {
     de: "Strände auf Kreta",
     el: "Παραλίες στην Κρήτη",
   };
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  const beachesLabels = BEACHES_LABELS[locale] ?? BEACHES_LABELS.en;
 
   return (
     <main className="min-h-screen bg-surface">
       <div className="max-w-6xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-aegean">{titles[locale]}</h1>
-        <p className="text-text-muted mt-2">{BEACHES_LABELS[locale].coming}</p>
+        <h1 className="text-3xl font-bold text-sea">{titles[locale] ?? titles.en}</h1>
+        <p className="text-text-muted mt-2">{beachesLabels.coming}</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-border bg-white p-4 animate-pulse">
-              <div className="h-32 bg-stone rounded-lg mb-3" />
-              <div className="h-5 bg-stone rounded w-2/3 mb-2" />
-              <div className="h-3 bg-stone rounded w-1/3" />
+              <div className="h-32 bg-surface rounded-lg mb-3" />
+              <div className="h-5 bg-surface rounded w-2/3 mb-2" />
+              <div className="h-3 bg-surface rounded w-1/3" />
             </div>
           ))}
         </div>

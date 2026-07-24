@@ -3,7 +3,7 @@ import { supabase } from "./supabase";
 export interface Guide {
   id: number;
   slug: string;
-  format: "long" | "mid";
+  format: "long" | "mid" | "daily";
   category: string;
   keywords: string[];
   titles: Record<string, string>;
@@ -15,6 +15,7 @@ export interface Guide {
   published_at: string;
   created_at: string;
   status: string;
+  youtube_video_id: string | null;
 }
 
 export function getLocalizedGuideField(
@@ -23,6 +24,17 @@ export function getLocalizedGuideField(
   locale: string
 ): string {
   return guide[field]?.[locale] || guide[field]?.["en"] || "";
+}
+
+/**
+ * True if the guide actually has body content for this locale (not an EN fallback).
+ * Used to noindex EN-fallback variants (e.g. daily weather/news guides that exist only in
+ * EN) so 22 identical-content URLs don't cannibalise each other in search.
+ */
+export function isGuideTranslated(guide: Guide, locale: string): boolean {
+  if (locale === "en") return true;
+  const c = guide.contents?.[locale];
+  return !!c && c.trim().length > 0 && c.trim() !== (guide.contents?.["en"] || "").trim();
 }
 
 export function getLocalizedFaqs(
@@ -46,6 +58,72 @@ export async function getPublishedGuides(limit: number = 100): Promise<Guide[]> 
       .order("published_at", { ascending: false })
       .limit(limit);
 
+    if (error) throw error;
+    return (data as Guide[]) || [];
+  } catch {
+    return [];
+  }
+}
+
+// Editorial travel guides only (format "long" or "mid"), excluding scraped
+// news entries that share the guides table (format "news", from diavgeia
+// administrative announcements and similar).
+export async function getEditorialGuides(limit: number = 12): Promise<Guide[]> {
+  try {
+    const { data, error } = await supabase
+      .from("guides")
+      .select("id, slug, format, category, keywords, titles, meta_descs, image_url, read_time, published_at, status")
+      .eq("status", "published")
+      .in("format", ["long", "mid"])
+      .order("published_at", { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    return (data as Guide[]) || [];
+  } catch {
+    return [];
+  }
+}
+
+// First-party crete.direct news articles (format "news", category "news").
+// Distinct from the diavgeia administrative scrapes, which also use
+// format "news" but carry categories like infrastructure/airport/permits/
+// tourism and stay unlisted. These editorial pieces are surfaced on the
+// /news hub alongside the translated Greek-press aggregator feed.
+export async function getEditorialNews(limit: number = 30): Promise<Guide[]> {
+  try {
+    const { data, error } = await supabase
+      .from("guides")
+      .select("id, slug, format, category, keywords, titles, meta_descs, image_url, read_time, published_at, status")
+      .eq("status", "published")
+      .eq("format", "news")
+      .eq("category", "news")
+      .order("published_at", { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    return (data as Guide[]) || [];
+  } catch {
+    return [];
+  }
+}
+
+// Daily editorial posts (format "daily"): dated weather bulletins + news recaps.
+// Shown only on the /daily hub, excluded from the evergreen /articles index.
+export async function getDailyPosts(
+  category?: "daily-news" | "daily-weather",
+  limit: number = 30
+): Promise<Guide[]> {
+  try {
+    let q = supabase
+      .from("guides")
+      .select("id, slug, format, category, keywords, titles, meta_descs, image_url, read_time, published_at, status")
+      .eq("status", "published")
+      .eq("format", "daily")
+      .order("published_at", { ascending: false })
+      .limit(limit);
+    if (category) q = q.eq("category", category);
+    const { data, error } = await q;
     if (error) throw error;
     return (data as Guide[]) || [];
   } catch {
@@ -77,7 +155,7 @@ export async function getRelatedGuides(
   try {
     const { data, error } = await supabase
       .from("guides")
-      .select("slug, titles, category, image_url, read_time, published_at, format")
+      .select("slug, titles, meta_descs, category, image_url, read_time, published_at, format")
       .eq("status", "published")
       .eq("category", category)
       .neq("slug", excludeSlug)

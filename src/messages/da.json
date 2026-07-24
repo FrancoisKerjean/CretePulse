@@ -1,4 +1,11 @@
 {
+  "activityNudge": {
+    "close": "Luk",
+    "title": "Stadig i tvivl?",
+    "subtitle": "Swipe de bedste steder på Kreta, og find det, der passer til dig.",
+    "dismiss": "Senere",
+    "cta": "Start med at swipe"
+  },
   "meta": {
     "title": "Crete Direct - Hvad sker der på Kreta",
     "description": "Vejr, begivenheder, strande, lokale nyheder. Alt om Kreta, opdateret hver time. Gratis, på flere sprog."
@@ -47,7 +54,63 @@
     "updatedAt": "Opdateret kl. {time} lokal tid",
     "noEvents": "Ingen kommende begivenheder.",
     "submitEvent": "Indsend en?",
-    "newsFeedLoading": "Nyhedsfeed indlæses. Opdateres hver 3. time."
+    "newsFeedLoading": "Nyhedsfeed indlæses. Opdateres hver 3. time.",
+    "guidesSectionTitle": "Rejseguides",
+    "guidesSectionSubtitle": "Strande, vandreture, mad, liv på Kreta. Tjekket på stedet.",
+    "allGuides": "Alle guides",
+    "editorialGuides": "Redaktionelle guider",
+    "heroTitle": "Kreta, i dag",
+    "carRentalKicker": "Lej en bil",
+    "carRentalTitle": "Din bil til at udforske Kreta",
+    "carRentalSub": "Lokalt bureau, fair pris, ingen forudbetaling. Tilbud på 4 tryk, afhentning i lufthavnen mulig.",
+    "carRentalCta": "Bed om tilbud",
+    "heroMain": {
+      "pre": "Strande, busser, vejr.",
+      "hl": "Kreta, live."
+    },
+    "heroToday": "I dag er havet {rating} ved {name}. Vi holder øje med vinden, havet og busserne for dig hele dagen.",
+    "liveFromIsland": "live fra øen",
+    "heroSub": "Beregnet live · 10 vejrstationer × orienteringen af 500 strande.",
+    "ctaBeach": "Se dagens strand",
+    "air": "luft",
+    "sea": "hav",
+    "islandNow": "Øen, lige nu",
+    "allStations": "Alle stationer",
+    "swimToday": "Hvor man kan bade i dag",
+    "allBeaches": "Alle 500 strande",
+    "todaysPick": "dagens valg",
+    "toolsTitle": "Værktøjerne",
+    "ratings": {
+      "calm": "roligt",
+      "fair": "okay",
+      "exposed": "udsat"
+    },
+    "seaStates": {
+      "calm": "roligt",
+      "ok": "bade ok",
+      "rough": "uroligt"
+    },
+    "regions": {
+      "south": "Sydkysten",
+      "west": "Vestkysten",
+      "east": "Østkysten",
+      "central": "Midtkysten"
+    },
+    "tools": {
+      "buses": "Busser",
+      "busesLine": "Køreplaner & priser",
+      "swim": "Badning",
+      "swimLine": "500 strande live",
+      "explore": "Udforsk",
+      "exploreLine": "2.296 steder",
+      "airports": "Lufthavne",
+      "airportsLine": "Trafik & sæsoner",
+      "airbnb": "Airbnb-data",
+      "airbnbLine": "Priser pr. område",
+      "weather": "Vejr",
+      "weatherLine": "10 stationer + hav"
+    },
+    "nextEvents": "Kommende begivenheder"
   },
   "footer": {
     "about": "Gratis, uafhængig guide til Kreta. Live data. Ingen reklamer (endnu). Ingen sporing.",
@@ -66,11 +129,65 @@
     "weather": "Vejr",
     "rights": "Alle rettigheder forbeholdes.",
     "madeIn": "Lavet på Kreta",
-    "propertyManagement": "Ejendomsadministration"
+    "airports": "Lufthavne",
+    "ourProject": "Vores projekt",
+    "taglineLong": "Den praktiske følgesvend til Kreta. Live-data, gratis, uafhængig. Lavet på øen.",
+    "plan": "Planlæg",
+    "discover": "Oplev",
+    "info": "Info"
   },
   "common": {
     "readMore": "Læs mere",
     "seeAll": "Se alle",
     "back": "Tilbage"
+  },
+  "nextDeparture": {
+    "next": "Næste afgang",
+    "inMin": "om {m} min",
+    "tomorrow": "Første bus i morgen"
+  },
+  "depBoard": {
+    "title": "Næste busser",
+    "plan": "Planlæg en rejse",
+    "inMin": "om {m} min",
+    "last": "sidste i dag",
+    "tomorrow": "i morgen",
+    "routeAria": "Køreplan {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "Afgange",
+    "nearMe": "I nærheden",
+    "tomorrow": "i morgen",
+    "later": "Vis senere afgange",
+    "none": "Ingen afgange fundet her.",
+    "in": "om",
+    "min": "min",
+    "hr": "t"
+  },
+  "pushBell": {
+    "cta": "Få bus- og akutalarmer for Kreta",
+    "on": "Alarmer slået til",
+    "blocked": "Notifikationer er blokeret i din browser.",
+    "iosInstall": "Busalarmer: føj siden til din hjemmeskærm (Del, derefter Føj til hjemmeskærm) for at aktivere dem."
+  },
+  "timeChips": {
+    "legend": "næste afgang · forbi tider er nedtonet"
+  },
+  "busInCreteBox": {
+    "heading": "Rundt på Kreta med bus",
+    "connector": "til"
+  },
+  "installBanner": {
+    "title": "Kreta i lommen",
+    "body": "Busser live og strande, også offline.",
+    "cta": "Installér",
+    "later": "Ikke nu",
+    "ios": "Tryk på Del og derefter “Føj til hjemmeskærm”."
+  },
+  "tabBar": {
+    "map": "Kort",
+    "buses": "Busser",
+    "beaches": "Strande",
+    "quote": "Tilbud"
   }
 }

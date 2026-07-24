@@ -1,4 +1,11 @@
 {
+  "activityNudge": {
+    "close": "Sluiten",
+    "title": "Nog niet beslist?",
+    "subtitle": "Swipe de mooiste plekjes van Kreta en vind die ene die bij je past.",
+    "dismiss": "Later",
+    "cta": "Swipen maar"
+  },
   "meta": {
     "title": "Crete Direct - Wat er op Kreta gebeurt",
     "description": "Weer, evenementen, stranden, lokaal nieuws. Heel Kreta, elk uur bijgewerkt. Gratis, in 7 talen."
@@ -47,7 +54,63 @@
     "updatedAt": "Bijgewerkt om {time} lokale tijd",
     "noEvents": "Geen aankomende evenementen.",
     "submitEvent": "Er eentje voorstellen?",
-    "newsFeedLoading": "Nieuwsfeed wordt geladen. Elke 3 uur bijgewerkt."
+    "newsFeedLoading": "Nieuwsfeed wordt geladen. Elke 3 uur bijgewerkt.",
+    "guidesSectionTitle": "Reisgidsen",
+    "guidesSectionSubtitle": "Stranden, wandelen, eten, leven op Kreta. Ter plaatse gecheckt.",
+    "allGuides": "Alle reisgidsen",
+    "editorialGuides": "Redactionele gidsen",
+    "heroTitle": "Kreta, vandaag",
+    "carRentalKicker": "Auto huren",
+    "carRentalTitle": "Jouw auto om Kreta te ontdekken",
+    "carRentalSub": "Lokaal bedrijf, eerlijke prijs, geen vooruitbetaling. Offerte in 4 tikken, ophalen op de luchthaven mogelijk.",
+    "carRentalCta": "Vraag een offerte",
+    "heroMain": {
+      "pre": "Stranden, bussen, weer.",
+      "hl": "Kreta, live."
+    },
+    "heroToday": "Vandaag is de zee {rating} bij {name}. Wij houden de wind, de zee en de bussen voor je in de gaten, de hele dag door.",
+    "liveFromIsland": "live vanaf het eiland",
+    "heroSub": "Live berekend · 10 weerstations × de ligging van 500 stranden.",
+    "ctaBeach": "Bekijk het strand van vandaag",
+    "air": "lucht",
+    "sea": "zee",
+    "islandNow": "Het eiland, nu meteen",
+    "allStations": "Alle stations",
+    "swimToday": "Waar zwem je vandaag",
+    "allBeaches": "Alle 500 stranden",
+    "todaysPick": "de tip van vandaag",
+    "toolsTitle": "De tools",
+    "ratings": {
+      "calm": "kalm",
+      "fair": "redelijk",
+      "exposed": "open"
+    },
+    "seaStates": {
+      "calm": "kalm",
+      "ok": "zwemmen ok",
+      "rough": "ruw"
+    },
+    "regions": {
+      "south": "Zuidkust",
+      "west": "Westkust",
+      "east": "Oostkust",
+      "central": "Middenkust"
+    },
+    "tools": {
+      "buses": "Bussen",
+      "busesLine": "Tijden & prijzen",
+      "swim": "Zwemmen",
+      "swimLine": "500 stranden live",
+      "explore": "Ontdekken",
+      "exploreLine": "2.296 plekken",
+      "airports": "Luchthavens",
+      "airportsLine": "Verkeer & seizoenen",
+      "airbnb": "Airbnb-data",
+      "airbnbLine": "Prijzen per zone",
+      "weather": "Weer",
+      "weatherLine": "10 stations + zee"
+    },
+    "nextEvents": "Komende evenementen"
   },
   "footer": {
     "about": "Gratis, onafhankelijke gids voor Kreta. Live data. Geen advertenties (nog). Geen tracking.",
@@ -66,11 +129,65 @@
     "weather": "Weer",
     "rights": "Alle rechten voorbehouden.",
     "madeIn": "Gemaakt op Kreta",
-    "propertyManagement": "Vastgoedbeheer"
+    "airports": "Luchthavens",
+    "ourProject": "Ons project",
+    "taglineLong": "De praktische metgezel voor Kreta. Live data, gratis, onafhankelijk. Gemaakt op het eiland.",
+    "plan": "Plannen",
+    "discover": "Ontdekken",
+    "info": "Info"
   },
   "common": {
     "readMore": "Lees meer",
     "seeAll": "Bekijk alles",
     "back": "Terug"
+  },
+  "nextDeparture": {
+    "next": "Volgende bus",
+    "inMin": "over {m} min",
+    "tomorrow": "Eerste bus morgen"
+  },
+  "depBoard": {
+    "title": "Volgende bussen",
+    "plan": "Plan een reis",
+    "inMin": "over {m} min",
+    "last": "laatste vandaag",
+    "tomorrow": "morgen",
+    "routeAria": "Dienstregeling {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "Vertrektijden",
+    "nearMe": "Dichtbij",
+    "tomorrow": "morgen",
+    "later": "Latere vertrektijden tonen",
+    "none": "Hier geen vertrektijden gevonden.",
+    "in": "over",
+    "min": "min",
+    "hr": "u"
+  },
+  "pushBell": {
+    "cta": "Bus- en spoedmeldingen voor Kreta ontvangen",
+    "on": "Meldingen aan",
+    "blocked": "Meldingen geblokkeerd in je browser.",
+    "iosInstall": "Busmeldingen: zet deze site op je beginscherm (Deel, dan Zet op beginscherm) om ze in te schakelen."
+  },
+  "timeChips": {
+    "legend": "volgende vertrek · verstreken tijden zijn gedimd"
+  },
+  "busInCreteBox": {
+    "heading": "Met de bus door Kreta reizen",
+    "connector": "naar"
+  },
+  "installBanner": {
+    "title": "Kreta altijd op zak",
+    "body": "Live bussen en stranden, ook offline.",
+    "cta": "Installeren",
+    "later": "Niet nu",
+    "ios": "Tik op Delen en dan “Zet op beginscherm”."
+  },
+  "tabBar": {
+    "map": "Kaart",
+    "buses": "Bussen",
+    "beaches": "Stranden",
+    "quote": "Offerte"
   }
 }

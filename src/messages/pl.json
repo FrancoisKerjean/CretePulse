@@ -1,4 +1,11 @@
 {
+  "activityNudge": {
+    "close": "Zamknij",
+    "title": "Wciąż się wahasz?",
+    "subtitle": "Przesuwaj najlepsze miejsca na Krecie i znajdź to, które pasuje do Ciebie.",
+    "dismiss": "Później",
+    "cta": "Zaczynam przesuwać"
+  },
   "meta": {
     "title": "Crete Direct - Co się dzieje na Krecie",
     "description": "Pogoda, wydarzenia, plaże, lokalne wiadomości. Cała Kreta, aktualizowana co godzinę. Za darmo, w 7 językach."
@@ -47,7 +54,63 @@
     "updatedAt": "Zaktualizowano o {time} czasu lokalnego",
     "noEvents": "Brak nadchodzących wydarzeń.",
     "submitEvent": "Zaproponuj jedno?",
-    "newsFeedLoading": "Ładowanie wiadomości. Aktualizowane co 3 godziny."
+    "newsFeedLoading": "Ładowanie wiadomości. Aktualizowane co 3 godziny.",
+    "guidesSectionTitle": "Przewodniki",
+    "guidesSectionSubtitle": "Plaże, wędrówki, jedzenie, życie na Krecie. Sprawdzone na miejscu.",
+    "allGuides": "Wszystkie przewodniki",
+    "editorialGuides": "Przewodniki redakcyjne",
+    "heroTitle": "Kreta, dzisiaj",
+    "carRentalKicker": "Wynajem samochodu",
+    "carRentalTitle": "Twoje auto, by zwiedzić Kretę",
+    "carRentalSub": "Lokalna firma, uczciwa cena, bez przedpłaty. Wycena w 4 kliknięcia, możliwy odbiór z lotniska.",
+    "carRentalCta": "Poproś o wycenę",
+    "heroMain": {
+      "pre": "Plaże, autobusy, pogoda.",
+      "hl": "Kreta, na żywo."
+    },
+    "heroToday": "Dzisiaj morze jest {rating} na {name}. Przez cały dzień pilnujemy za Ciebie wiatru, morza i autobusów.",
+    "liveFromIsland": "na żywo z wyspy",
+    "heroSub": "Liczone na żywo · 10 stacji pogodowych × orientacja 500 plaż.",
+    "ctaBeach": "Zobacz dzisiejszą plażę",
+    "air": "powietrze",
+    "sea": "morze",
+    "islandNow": "Wyspa, właśnie teraz",
+    "allStations": "Wszystkie stacje",
+    "swimToday": "Gdzie popływać dzisiaj",
+    "allBeaches": "Wszystkie 500 plaż",
+    "todaysPick": "propozycja dnia",
+    "toolsTitle": "Narzędzia",
+    "ratings": {
+      "calm": "spokojne",
+      "fair": "umiarkowane",
+      "exposed": "odsłonięta"
+    },
+    "seaStates": {
+      "calm": "spokojne",
+      "ok": "kąpiel ok",
+      "rough": "wzburzone"
+    },
+    "regions": {
+      "south": "Wybrzeże południowe",
+      "west": "Wybrzeże zachodnie",
+      "east": "Wybrzeże wschodnie",
+      "central": "Wybrzeże centralne"
+    },
+    "tools": {
+      "buses": "Autobusy",
+      "busesLine": "Rozkłady i ceny",
+      "swim": "Kąpiele",
+      "swimLine": "500 plaż na żywo",
+      "explore": "Odkrywaj",
+      "exploreLine": "2296 miejsc",
+      "airports": "Lotniska",
+      "airportsLine": "Ruch i sezony",
+      "airbnb": "Dane Airbnb",
+      "airbnbLine": "Ceny według obszaru",
+      "weather": "Pogoda",
+      "weatherLine": "10 stacji + morze"
+    },
+    "nextEvents": "Nadchodzące wydarzenia"
   },
   "footer": {
     "about": "Darmowy, niezależny przewodnik po Krecie. Dane na żywo. Bez reklam (na razie). Bez śledzenia.",
@@ -66,11 +129,65 @@
     "weather": "Pogoda",
     "rights": "Wszelkie prawa zastrzeżone.",
     "madeIn": "Stworzone na Krecie",
-    "propertyManagement": "Zarządzanie nieruchomościami"
+    "airports": "Lotniska",
+    "ourProject": "Nasz projekt",
+    "taglineLong": "Praktyczny przewodnik po Krecie. Dane na żywo, za darmo, niezależnie. Tworzony na wyspie.",
+    "plan": "Zaplanuj",
+    "discover": "Odkrywaj",
+    "info": "Informacje"
   },
   "common": {
     "readMore": "Czytaj więcej",
     "seeAll": "Zobacz wszystko",
     "back": "Wstecz"
+  },
+  "nextDeparture": {
+    "next": "Następny odjazd",
+    "inMin": "za {m} min",
+    "tomorrow": "Pierwszy autobus jutro"
+  },
+  "depBoard": {
+    "title": "Najbliższe autobusy",
+    "plan": "Zaplanuj podróż",
+    "inMin": "za {m} min",
+    "last": "ostatni dzisiaj",
+    "tomorrow": "jutro",
+    "routeAria": "Rozkład {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "Odjazdy",
+    "nearMe": "W pobliżu",
+    "tomorrow": "jutro",
+    "later": "Pokaż późniejsze odjazdy",
+    "none": "Brak odjazdów w tym miejscu.",
+    "in": "za",
+    "min": "min",
+    "hr": "godz."
+  },
+  "pushBell": {
+    "cta": "Odbieraj alerty o autobusach i pilne info z Krety",
+    "on": "Alerty włączone",
+    "blocked": "Powiadomienia zablokowane w przeglądarce.",
+    "iosInstall": "Alerty o autobusach: dodaj stronę do ekranu głównego (Udostępnij, a następnie Do ekranu głównego), aby je włączyć."
+  },
+  "timeChips": {
+    "legend": "najbliższy odjazd · minione godziny są wyszarzone"
+  },
+  "busInCreteBox": {
+    "heading": "Jak poruszać się po Krecie autobusem",
+    "connector": "do"
+  },
+  "installBanner": {
+    "title": "Kreta zawsze pod ręką",
+    "body": "Autobusy na żywo i plaże, także offline.",
+    "cta": "Zainstaluj",
+    "later": "Nie teraz",
+    "ios": "Stuknij Udostępnij, potem „Do ekranu początkowego”."
+  },
+  "tabBar": {
+    "map": "Mapa",
+    "buses": "Autobusy",
+    "beaches": "Plaże",
+    "quote": "Wycena"
   }
 }

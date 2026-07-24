@@ -1,0 +1,40 @@
+{
+  "zones": [
+    {
+      "id": "heraklion",
+      "label": "Heraklion & the south",
+      "placeSlugs": ["heraklion", "malia", "hersonissos", "stalida", "mochos", "sisi", "gouves", "kokkini-hani", "cretaquarium", "archanes", "myrtia", "thrapsano", "kastelli-pediados", "arkalochori", "krousonas", "avgeniki", "anogeia", "moires", "tympaki", "phaistos", "matala", "agia-galini", "kamares", "ano-viannos", "mesochorio", "demati"]
+    },
+    {
+      "id": "lasithi-north",
+      "label": "Agios Nikolaos – Elounda",
+      "placeSlugs": ["agios-nikolaos", "elounda", "plaka", "kritsa", "kroustas", "kalo-chorio", "mochlos"]
+    },
+    {
+      "id": "ierapetra-southeast",
+      "label": "Ierapetra – Makrigialos",
+      "placeSlugs": ["ierapetra", "myrtos", "ferma", "makry-gyalos"]
+    },
+    {
+      "id": "sitia",
+      "label": "Sitia & the far east",
+      "placeSlugs": ["sitia", "palekastro", "zakros", "ziros"]
+    },
+    {
+      "id": "chania",
+      "label": "Chania & the northwest",
+      "placeSlugs": ["chania", "chania-airport", "kissamos", "theriso", "meskla", "vamos", "voukolies", "sternes", "maleme", "stavros", "kalyves", "almyrida", "georgioupolis", "kavros"]
+    },
+    {
+      "id": "chania-south",
+      "label": "Southwest coast (Paleochora – Sfakia)",
+      "placeSlugs": ["elafonissi", "paleochora", "sougia", "chora-sfakion"]
+    },
+    {
+      "id": "rethymno",
+      "label": "Rethymno",
+      "placeSlugs": ["rethymno", "bali", "panormo", "margarites", "perama", "arkadi", "spili", "plakias", "ano-meros", "anogeia-west"]
+    }
+  ],
+  "partners": []
+}

@@ -1,4 +1,11 @@
 {
+  "activityNudge": {
+    "close": "Zavřít",
+    "title": "Pořád nerozhodnutí?",
+    "subtitle": "Swajpuj nejlepší místa na Krétě a najdi to pravé pro tebe.",
+    "dismiss": "Později",
+    "cta": "Začít swajpovat"
+  },
   "meta": {
     "title": "Crete Direct - Co se děje na Krétě",
     "description": "Počasí, události, pláže, místní zprávy. Vše o Krétě, aktualizováno každou hodinu. Zdarma, vícejazyčné."
@@ -47,7 +54,63 @@
     "updatedAt": "Aktualizováno v {time} místního času",
     "noEvents": "Žádné nadcházející události.",
     "submitEvent": "Odeslat jednu?",
-    "newsFeedLoading": "Zpravodajský kanál se načítá. Aktualizace každé 3 hodiny."
+    "newsFeedLoading": "Zpravodajský kanál se načítá. Aktualizace každé 3 hodiny.",
+    "guidesSectionTitle": "Průvodci",
+    "guidesSectionSubtitle": "Pláže, túry, jídlo, život na Krétě. Ověřeno na místě.",
+    "allGuides": "Všichni průvodci",
+    "editorialGuides": "Redakční průvodci",
+    "heroTitle": "Kréta, dnes",
+    "carRentalKicker": "Půjčovna aut",
+    "carRentalTitle": "Tvé auto pro objevování Kréty",
+    "carRentalSub": "Místní agentura, férová cena, bez platby předem. Nabídka na 4 klepnutí, vyzvednutí na letišti možné.",
+    "carRentalCta": "Vyžádat nabídku",
+    "heroMain": {
+      "pre": "Pláže, autobusy, počasí.",
+      "hl": "Kréta, naživo."
+    },
+    "heroToday": "Dnes je moře {rating} v lokalitě {name}. Hlídáme za tebe vítr, moře i autobusy, celý den.",
+    "liveFromIsland": "naživo z ostrova",
+    "heroSub": "Počítáno naživo · 10 meteostanic × orientace 500 pláží.",
+    "ctaBeach": "Zobrazit pláž dne",
+    "air": "vzduch",
+    "sea": "moře",
+    "islandNow": "Ostrov, právě teď",
+    "allStations": "Všechny stanice",
+    "swimToday": "Kam se dnes vykoupat",
+    "allBeaches": "Všech 500 pláží",
+    "todaysPick": "tip dne",
+    "toolsTitle": "Nástroje",
+    "ratings": {
+      "calm": "klidné",
+      "fair": "ucházející",
+      "exposed": "otevřené"
+    },
+    "seaStates": {
+      "calm": "klidné",
+      "ok": "koupání ok",
+      "rough": "rozbouřené"
+    },
+    "regions": {
+      "south": "Jižní pobřeží",
+      "west": "Západní pobřeží",
+      "east": "Východní pobřeží",
+      "central": "Střední pobřeží"
+    },
+    "tools": {
+      "buses": "Autobusy",
+      "busesLine": "Jízdní řády a ceny",
+      "swim": "Koupání",
+      "swimLine": "500 pláží naživo",
+      "explore": "Objevuj",
+      "exploreLine": "2 296 míst",
+      "airports": "Letiště",
+      "airportsLine": "Provoz a sezóny",
+      "airbnb": "Data Airbnb",
+      "airbnbLine": "Ceny podle oblasti",
+      "weather": "Počasí",
+      "weatherLine": "10 stanic + moře"
+    },
+    "nextEvents": "Nadcházející akce"
   },
   "footer": {
     "about": "Bezplatný, nezávislý průvodce Krétou. Živá data. Bez reklam (zatím). Bez sledování.",
@@ -66,11 +129,65 @@
     "weather": "Počasí",
     "rights": "Všechna práva vyhrazena.",
     "madeIn": "Vyrobeno na Krétě",
-    "propertyManagement": "Správa nemovitostí"
+    "airports": "Letiště",
+    "ourProject": "Náš projekt",
+    "taglineLong": "Praktický společník po Krétě. Živá data, zdarma, nezávisle. Vytvořeno na ostrově.",
+    "plan": "Plánování",
+    "discover": "Objevování",
+    "info": "Informace"
   },
   "common": {
     "readMore": "Číst dále",
     "seeAll": "Zobrazit vše",
     "back": "Zpět"
+  },
+  "nextDeparture": {
+    "next": "Příští odjezd",
+    "inMin": "za {m} min",
+    "tomorrow": "První bus zítra"
+  },
+  "depBoard": {
+    "title": "Nejbližší spoje",
+    "plan": "Naplánovat cestu",
+    "inMin": "za {m} min",
+    "last": "poslední dnes",
+    "tomorrow": "zítra",
+    "routeAria": "Jízdní řád {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "Odjezdy",
+    "nearMe": "V okolí",
+    "tomorrow": "zítra",
+    "later": "Zobrazit pozdější odjezdy",
+    "none": "Tady nejsou žádné odjezdy.",
+    "in": "za",
+    "min": "min",
+    "hr": "h"
+  },
+  "pushBell": {
+    "cta": "Dostávat upozornění na spoje a důležité info o Krétě",
+    "on": "Upozornění zapnuta",
+    "blocked": "Oznámení jsou v prohlížeči zablokovaná.",
+    "iosInstall": "Upozornění na spoje: přidej si stránku na plochu (Sdílet, pak Přidat na plochu) a aktivuj je."
+  },
+  "timeChips": {
+    "legend": "nejbližší odjezd · uplynulé časy jsou ztlumené"
+  },
+  "busInCreteBox": {
+    "heading": "Cestování po Krétě autobusem",
+    "connector": "do"
+  },
+  "installBanner": {
+    "title": "Kréta vždy po ruce",
+    "body": "Autobusy živě a pláže, i offline.",
+    "cta": "Nainstalovat",
+    "later": "Teď ne",
+    "ios": "Klepni na Sdílet a pak „Přidat na plochu“."
+  },
+  "tabBar": {
+    "map": "Mapa",
+    "buses": "Autobusy",
+    "beaches": "Pláže",
+    "quote": "Nabídka"
   }
 }

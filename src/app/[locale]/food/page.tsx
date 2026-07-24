@@ -1,9 +1,12 @@
 import { getAllFoodPlaces, getFoodByRegionAndType } from "@/lib/food";
+import { setRequestLocale } from "next-intl/server";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { UtensilsCrossed, MapPin } from "lucide-react";
 import Link from "next/link";
 import { buildAlternates } from "@/lib/seo";
 import { itemListSchema } from "@/lib/schema";
+import { CarPromo } from "@/components/car-rental/CarPromo";
+import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 86400;
 
@@ -16,7 +19,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 const META: Record<string, { title: string; desc: string }> = {
   en: {
     title: "Best Restaurants & Tavernas in Crete",
-    desc: "Best restaurants, tavernas, cafes and bakeries across Crete. Local picks by region — east, west, central and south Crete. Authentic Cretan cuisine.",
+    desc: "Best restaurants, tavernas, cafes and bakeries across Crete. Local picks by region · east, west, central and south Crete. Authentic Cretan cuisine.",
   },
   fr: {
     title: "Meilleurs Restaurants & Tavernes en Crète",
@@ -53,10 +56,10 @@ const ALL_LABEL: Record<string, string> = {
 };
 
 const SUBTITLE: Record<string, string> = {
-  en: "Local food guide — curated picks from across the island",
-  fr: "Guide gastronomique local — sélection de bonnes adresses",
-  de: "Lokaler Gastronomieführer — kuratierte Empfehlungen",
-  el: "Τοπικός γαστρονομικός οδηγός — επιλεγμένες προτάσεις",
+  en: "Local food guide · curated picks from across the island",
+  fr: "Guide gastronomique local · sélection de bonnes adresses",
+  de: "Lokaler Gastronomieführer · kuratierte Empfehlungen",
+  el: "Τοπικός γαστρονομικός οδηγός · επιλεγμένες προτάσεις",
 };
 
 // ---------------------------------------------------------------------------
@@ -65,22 +68,22 @@ const SUBTITLE: Record<string, string> = {
 
 // Accent bar color per type (left border)
 const TYPE_ACCENT: Record<string, string> = {
-  restaurant: "border-l-aegean",
-  taverna:    "border-l-terra",
+  restaurant: "border-l-sea",
+  taverna:    "border-l-terracotta",
   cafe:       "border-l-olive",
-  bar:        "border-l-aegean-light",
-  bakery:     "border-l-terra-light",
-  other:      "border-l-stone-400",
+  bar:        "border-l-sea-light",
+  bakery:     "border-l-terracotta-light",
+  other:      "border-l-sea/30",
 };
 
 // Badge color per type
 const TYPE_BADGE: Record<string, string> = {
-  restaurant: "bg-aegean-faint text-aegean",
-  taverna:    "bg-terra-faint text-terra",
+  restaurant: "bg-sea-faint text-sea",
+  taverna:    "bg-terracotta-faint text-terracotta",
   cafe:       "bg-olive/10 text-olive",
-  bar:        "bg-aegean-faint text-aegean-light",
-  bakery:     "bg-terra-faint text-terra-light",
-  other:      "bg-stone text-text-muted",
+  bar:        "bg-sea-faint text-sea-light",
+  bakery:     "bg-terracotta-faint text-terracotta-light",
+  other:      "bg-surface text-text-muted",
 };
 
 const PRICE_SYMBOL: Record<string, string> = {
@@ -101,6 +104,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = META[locale] || META.en;
   const url = `${BASE_URL}/${locale}/food`;
   return {
@@ -123,6 +127,7 @@ export default async function FoodPage({
   searchParams: Promise<{ region?: string; type?: string }>;
 }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const { region: regionParam, type: typeParam } = await searchParams;
   const loc = locale as Locale;
 
@@ -130,7 +135,7 @@ export default async function FoodPage({
     ? (regionParam as (typeof REGIONS)[number])
     : undefined;
 
-  // Fetch data — filtered when a region is active, otherwise curated overview
+  // Fetch data · filtered when a region is active, otherwise curated overview
   let places: Awaited<ReturnType<typeof getAllFoodPlaces>> = [];
   try {
     if (activeRegion || typeParam) {
@@ -167,12 +172,12 @@ export default async function FoodPage({
 
   return (
     <main className="min-h-screen bg-surface">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(listSchema) }} />
+      <JsonLd data={listSchema} />
       <div className="max-w-6xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="flex items-center gap-3 mb-1">
-          <UtensilsCrossed className="w-7 h-7 text-terra shrink-0" />
-          <h1 className="text-3xl font-bold text-aegean">{title}</h1>
+          <UtensilsCrossed className="w-7 h-7 text-terracotta shrink-0" />
+          <h1 className="text-3xl font-bold text-sea">{title}</h1>
         </div>
         <p className="text-text-muted mt-1 mb-8 ml-10">{subtitle}</p>
 
@@ -202,7 +207,7 @@ export default async function FoodPage({
         {places.length === 0 ? (
           <EmptyState locale={loc} />
         ) : activeRegion ? (
-          /* Single region view — grouped by type */
+          /* Single region view · grouped by type */
           <RegionSection
             places={places}
             region={activeRegion}
@@ -210,7 +215,7 @@ export default async function FoodPage({
             activeType={typeParam}
           />
         ) : (
-          /* Overview — one section per region that has results */
+          /* Overview · one section per region that has results */
           <div className="space-y-12">
             {REGIONS.map((r) => {
               const regionPlaces = places.filter((p) => p.region === r);
@@ -218,13 +223,13 @@ export default async function FoodPage({
               return (
                 <div key={r}>
                   <div className="flex items-baseline justify-between mb-4">
-                    <h2 className="text-xl font-semibold text-aegean">
+                    <h2 className="text-xl font-semibold text-sea">
                       {REGION_LABELS[r]?.[loc] || REGION_LABELS[r]?.en || r}
                     </h2>
                     {regionPlaces.length >= 8 && (
                       <Link
                         href={`/${locale}/food?region=${r}`}
-                        className="text-sm text-terra hover:underline"
+                        className="text-sm text-terracotta hover:underline"
                       >
                         {loc === "fr"
                           ? "Voir tout"
@@ -246,6 +251,12 @@ export default async function FoodPage({
             })}
           </div>
         )}
+
+        {/* Monetisation (trou residuel 17/06) : guide food = visiteurs en
+            planification locale, intention excursions/sorties. GYG (8%). */}
+        <div className="mt-12">
+          <CarPromo locale={locale} source="food-index" />
+        </div>
       </div>
     </main>
   );
@@ -324,16 +335,16 @@ function FoodCard({
     TYPE_LABELS[place.type]?.[locale] ||
     TYPE_LABELS[place.type]?.en ||
     place.type;
-  const accent = TYPE_ACCENT[place.type] || "border-l-stone-400";
+  const accent = TYPE_ACCENT[place.type] || "border-l-sea/30";
   const badge = TYPE_BADGE[place.type] || TYPE_BADGE.other;
 
   return (
     <Link
       href={`/${locale}/food/${place.slug}`}
-      className={`group flex flex-col rounded-xl border border-border border-l-4 ${accent} bg-white overflow-hidden hover:shadow-md hover:border-opacity-60 transition-all duration-200`}
+      className={`group flex flex-col rounded-xl border border-border border-l-4 ${accent} bg-white overflow-hidden hover:shadow-soft hover:border-opacity-60 transition-all duration-200`}
     >
       {place.image_url && (
-        <div className="h-40 bg-terra-faint overflow-hidden shrink-0">
+        <div className="h-40 bg-terracotta-faint overflow-hidden shrink-0">
           <img
             src={place.image_url}
             alt={place.name}
@@ -345,7 +356,7 @@ function FoodCard({
       <div className="p-4 flex flex-col gap-2 flex-1">
         {/* Name + type badge */}
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-base leading-snug text-text group-hover:text-aegean transition-colors">
+          <h3 className="font-semibold text-base leading-snug text-text group-hover:text-sea transition-colors">
             {place.name}
           </h3>
           <span
@@ -368,7 +379,7 @@ function FoodCard({
           {place.cuisine && (
             <span className="flex flex-wrap gap-1">
               {place.cuisine.split(";").filter(Boolean).slice(0, 3).map((c: string) => (
-                <span key={c} className="px-1.5 py-0.5 bg-stone rounded text-[10px] capitalize">
+                <span key={c} className="px-1.5 py-0.5 bg-surface rounded text-[10px] capitalize">
                   {c.trim().replace(/_/g, " ")}
                 </span>
               ))}
@@ -377,7 +388,7 @@ function FoodCard({
           {place.price_range && (
             <>
               <span aria-hidden>·</span>
-              <span className="font-medium text-terra">
+              <span className="font-medium text-terracotta">
                 {PRICE_SYMBOL[place.price_range] || place.price_range}
               </span>
             </>
@@ -415,8 +426,8 @@ function RegionTab({
       href={href}
       className={`text-sm px-4 py-1.5 rounded-full border transition-colors ${
         active
-          ? "bg-aegean text-white border-aegean"
-          : "bg-white text-text-muted border-border hover:border-aegean hover:text-aegean"
+          ? "bg-sea text-white border-sea"
+          : "bg-white text-text-muted border-border hover:border-sea hover:text-sea"
       }`}
     >
       {label}
@@ -442,7 +453,7 @@ function EmptyState({ locale }: { locale: Locale }) {
   };
   return (
     <div className="py-20 text-center text-text-muted">
-      <UtensilsCrossed className="w-10 h-10 mx-auto mb-3 text-stone-300" />
+      <UtensilsCrossed className="w-10 h-10 mx-auto mb-3 text-text-light" />
       <p>{msgs[locale] || msgs.en}</p>
     </div>
   );

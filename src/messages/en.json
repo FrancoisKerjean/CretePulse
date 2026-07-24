@@ -1,4 +1,11 @@
 {
+  "activityNudge": {
+    "close": "Close",
+    "title": "Still undecided?",
+    "subtitle": "Swipe the best spots in Crete and find the one that fits you.",
+    "dismiss": "Later",
+    "cta": "Start swiping"
+  },
   "meta": {
     "title": "Crete Direct - What's happening in Crete",
     "description": "Weather, events, beaches, local news. Everything Crete, updated every hour. Free, in 4 languages."
@@ -47,7 +54,63 @@
     "updatedAt": "Updated at {time} local time",
     "noEvents": "No upcoming events.",
     "submitEvent": "Submit one?",
-    "newsFeedLoading": "News feed loading. Updated every 3 hours."
+    "newsFeedLoading": "News feed loading. Updated every 3 hours.",
+    "guidesSectionTitle": "Travel guides",
+    "guidesSectionSubtitle": "Beaches, hikes, food, life in Crete. Fact-checked on the island.",
+    "allGuides": "All guides",
+    "editorialGuides": "Editorial guides",
+    "heroTitle": "Crete, today",
+    "carRentalKicker": "Car rental",
+    "carRentalTitle": "Your car to explore Crete",
+    "carRentalSub": "Local agency, fair price, no prepayment. Quote in 4 taps, airport pick-up possible.",
+    "carRentalCta": "Get a quote",
+    "heroMain": {
+      "pre": "Beaches, buses, weather.",
+      "hl": "Crete, live."
+    },
+    "heroToday": "Today the sea is {rating} at {name}. We watch the wind, the sea and the buses for you, all day long.",
+    "liveFromIsland": "live from the island",
+    "heroSub": "Computed live · 10 weather stations × the orientation of 500 beaches.",
+    "ctaBeach": "See today's beach",
+    "air": "air",
+    "sea": "sea",
+    "islandNow": "The island, right now",
+    "allStations": "All stations",
+    "swimToday": "Where to swim today",
+    "allBeaches": "All 500 beaches",
+    "todaysPick": "today's pick",
+    "toolsTitle": "The tools",
+    "ratings": {
+      "calm": "calm",
+      "fair": "fair",
+      "exposed": "exposed"
+    },
+    "seaStates": {
+      "calm": "calm",
+      "ok": "swim ok",
+      "rough": "choppy"
+    },
+    "regions": {
+      "south": "South coast",
+      "west": "West coast",
+      "east": "East coast",
+      "central": "Central coast"
+    },
+    "tools": {
+      "buses": "Buses",
+      "busesLine": "Timetables & prices",
+      "swim": "Swimming",
+      "swimLine": "500 beaches live",
+      "explore": "Explore",
+      "exploreLine": "2,296 places",
+      "airports": "Airports",
+      "airportsLine": "Traffic & seasons",
+      "airbnb": "Airbnb data",
+      "airbnbLine": "Prices by area",
+      "weather": "Weather",
+      "weatherLine": "10 stations + sea"
+    },
+    "nextEvents": "Upcoming events"
   },
   "footer": {
     "about": "Free, independent guide to Crete. Live data. No ads (yet). No tracking.",
@@ -66,11 +129,65 @@
     "weather": "Weather",
     "rights": "All rights reserved.",
     "madeIn": "Made in Crete",
-    "propertyManagement": "Property management"
+    "airports": "Airports",
+    "ourProject": "Our project",
+    "taglineLong": "The practical companion to Crete. Live data, free, independent. Made on the island.",
+    "plan": "Plan",
+    "discover": "Discover",
+    "info": "Info"
   },
   "common": {
     "readMore": "Read more",
     "seeAll": "See all",
     "back": "Back"
+  },
+  "nextDeparture": {
+    "next": "Next departure",
+    "inMin": "in {m} min",
+    "tomorrow": "First bus tomorrow"
+  },
+  "depBoard": {
+    "title": "Next buses",
+    "plan": "Plan a journey",
+    "inMin": "in {m} min",
+    "last": "last today",
+    "tomorrow": "tomorrow",
+    "routeAria": "Timetable {a} · {b}"
+  },
+  "departureBoard": {
+    "departures": "Departures",
+    "nearMe": "Near me",
+    "tomorrow": "tomorrow",
+    "later": "Show later departures",
+    "none": "No departures found here.",
+    "in": "in",
+    "min": "min",
+    "hr": "h"
+  },
+  "pushBell": {
+    "cta": "Get bus & urgent Crete alerts",
+    "on": "Alerts on",
+    "blocked": "Notifications blocked in your browser.",
+    "iosInstall": "Bus alerts: add this site to your Home Screen (Share, then Add to Home Screen) to enable them."
+  },
+  "timeChips": {
+    "legend": "next departure · past times are dimmed"
+  },
+  "busInCreteBox": {
+    "heading": "Getting around Crete by bus",
+    "connector": "to"
+  },
+  "installBanner": {
+    "title": "Keep Crete in your pocket",
+    "body": "Live buses and beaches, even offline.",
+    "cta": "Install",
+    "later": "Not now",
+    "ios": "Tap Share, then “Add to Home Screen”."
+  },
+  "tabBar": {
+    "map": "Map",
+    "buses": "Buses",
+    "beaches": "Beaches",
+    "quote": "Car quote"
   }
 }

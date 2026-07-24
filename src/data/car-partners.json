@@ -1,0 +1,68 @@
+{
+  "zones": [
+    {
+      "id": "chania-west",
+      "label": "Chania & the west",
+      "pickups": [
+        "chania-airport",
+        "chania",
+        "platanias",
+        "kissamos",
+        "paleochora",
+        "kalyves",
+        "georgioupolis"
+      ]
+    },
+    {
+      "id": "rethymno",
+      "label": "Rethymno",
+      "pickups": [
+        "rethymno",
+        "plakias",
+        "panormo",
+        "bali"
+      ]
+    },
+    {
+      "id": "heraklion-center",
+      "label": "Heraklion & central",
+      "pickups": [
+        "heraklion",
+        "hersonissos",
+        "malia",
+        "matala",
+        "agia-galini",
+        "gouves"
+      ]
+    },
+    {
+      "id": "lasithi-east",
+      "label": "Lasithi & the east",
+      "pickups": [
+        "agios-nikolaos",
+        "elounda",
+        "sitia",
+        "ierapetra",
+        "makry-gyalos",
+        "sisi"
+      ]
+    }
+  ],
+  "partners": [
+    {
+      "zoneIds": [
+        "chania-west",
+        "rethymno",
+        "heraklion-center"
+      ],
+      "name": "Auto Smart Car Rental",
+      "email": "autosmartrental@gmail.com",
+      "phone": "+306974147291",
+      "whatsapp": "+306974147291",
+      "website": "https://chaniacarrental.gr",
+      "commission": 0.1,
+      "since": "2026-05-12",
+      "leadRouting": "direct"
+    }
+  ]
+}

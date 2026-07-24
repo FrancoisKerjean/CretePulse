@@ -1,4 +1,7 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import { JsonLd } from "@/components/JsonLd";
+import sanitizeHtml from "sanitize-html";
 import { getEventBySlug } from "@/lib/events";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { localizeLocation } from "@/lib/localize-location";
@@ -8,7 +11,7 @@ import { MapPin, Clock, Calendar, Tag, ExternalLink, ChevronLeft } from "lucide-
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-export const revalidate = 14400;
+export const revalidate = 172800; // 03/07 optim couts Vercel (48h, ISR Writes)
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
@@ -25,13 +28,15 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const event = await getEventBySlug(slug);
   if (!event) return { title: "Event not found" };
 
   const eventTitle = getLocalizedField(event, "title", locale as Locale);
   const desc = getLocalizedField(event, "description", locale as Locale);
+  const plainDesc = desc?.replace(/<[^>]+>/g, "").trim();
   const title = `${eventTitle} - Crete Events | Crete Direct`;
-  const description = desc?.substring(0, 160) || `${eventTitle} in Crete. Location: ${event.location_name}.`;
+  const description = plainDesc?.substring(0, 160) || `${eventTitle} in Crete. Location: ${event.location_name}.`;
   const url = `${BASE_URL}/${locale}/events/${slug}`;
 
   // Noindex expired events (end date is in the past)
@@ -53,13 +58,13 @@ export async function generateMetadata({
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  festival: "bg-terra-faint text-terra border-terra/20",
+  festival: "bg-terracotta-faint text-terracotta border-terracotta/20",
   market: "bg-sand text-text border-sand-warm",
-  concert: "bg-aegean-faint text-aegean border-aegean/20",
-  religious: "bg-stone text-text-muted border-border",
+  concert: "bg-sea-faint text-sea border-sea/20",
+  religious: "bg-surface text-text-muted border-border",
   sport: "bg-olive/10 text-olive border-olive/20",
-  cultural: "bg-aegean-faint text-aegean border-aegean/20",
-  food: "bg-terra-faint text-terra border-terra/20",
+  cultural: "bg-sea-faint text-sea border-sea/20",
+  food: "bg-terracotta-faint text-terracotta border-terracotta/20",
 };
 
 function formatDate(dateStr: string, locale: string): string {
@@ -79,6 +84,7 @@ export default async function EventDetailPage({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
 
   const event = await getEventBySlug(slug);
@@ -102,19 +108,14 @@ export default async function EventDetailPage({
 
   return (
     <main className="min-h-screen bg-surface">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
-      />
+      <JsonLd data={jsonLd} />
+      <JsonLd data={breadcrumb} />
+      <Breadcrumbs schema={breadcrumb} />
       {/* Header band */}
-      <div className="bg-aegean text-white">
+      <div className="bg-sea text-white">
         <div className="max-w-4xl mx-auto px-4 py-10">
           {event.category && (
-            <span className={`inline-block text-xs px-3 py-1 rounded-full border capitalize mb-4 ${CATEGORY_COLORS[event.category] || "bg-stone text-text-muted border-border"}`}>
+            <span className={`inline-block text-xs px-3 py-1 rounded-full border capitalize mb-4 ${CATEGORY_COLORS[event.category] || "bg-surface text-text-muted border-border"}`}>
               <Tag className="w-3 h-3 inline-block mr-1 -mt-0.5" />
               {event.category}
             </span>
@@ -144,7 +145,7 @@ export default async function EventDetailPage({
       <div className="max-w-4xl mx-auto px-4 py-8">
         <Link
           href={`/${locale}/events`}
-          className="inline-flex items-center gap-1 text-sm text-aegean hover:underline mb-8"
+          className="inline-flex items-center gap-1 text-sm text-sea hover:underline mb-8"
         >
           <ChevronLeft className="w-4 h-4" /> {l.allEvents}
         </Link>
@@ -183,9 +184,21 @@ export default async function EventDetailPage({
 
         {/* Description */}
         {description && (
-          <div className="prose prose-sm max-w-none mb-8">
-            <p className="text-text leading-relaxed">{description}</p>
-          </div>
+          <article
+            className="prose prose-slate max-w-none mb-8
+              prose-h2:text-sea prose-h2:font-bold prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-3
+              prose-p:text-text prose-p:leading-relaxed prose-p:mb-4
+              prose-ul:text-text prose-ul:leading-relaxed
+              prose-li:mb-1
+              prose-a:text-sea prose-a:underline hover:prose-a:text-sea-light
+              prose-strong:text-text"
+            dangerouslySetInnerHTML={{
+              __html: sanitizeHtml(description, {
+                allowedTags: ["p", "h2", "h3", "ul", "ol", "li", "a", "strong", "em", "br"],
+                allowedAttributes: { a: ["href", "target", "rel"], h2: ["id"], h3: ["id"] },
+              }),
+            }}
+          />
         )}
 
         {/* Actions */}
@@ -194,7 +207,7 @@ export default async function EventDetailPage({
             href={mapsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-aegean text-white rounded-lg text-sm font-medium hover:bg-aegean-light transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-sea text-white rounded-lg text-sm font-medium hover:bg-sea-light transition-colors"
           >
             <MapPin className="w-4 h-4" /> {l.maps}
           </a>
@@ -203,7 +216,7 @@ export default async function EventDetailPage({
               href={event.source_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-border text-text rounded-lg text-sm font-medium hover:border-aegean/40 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-border text-text rounded-lg text-sm font-medium hover:border-sea/40 transition-colors"
             >
               <ExternalLink className="w-4 h-4" /> {l.official}
             </a>
@@ -211,8 +224,8 @@ export default async function EventDetailPage({
         </div>
 
         {/* Add to calendar hint */}
-        <div className="rounded-xl bg-stone p-4 text-sm text-text-muted">
-          <Calendar className="w-4 h-4 inline-block mr-2 -mt-0.5 text-aegean" />
+        <div className="rounded-xl bg-surface p-4 text-sm text-text-muted">
+          <Calendar className="w-4 h-4 inline-block mr-2 -mt-0.5 text-sea" />
           {l.save}
         </div>
       </div>

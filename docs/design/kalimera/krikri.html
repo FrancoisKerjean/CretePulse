@@ -1,0 +1,150 @@
+﻿<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Geist:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root { --lagoon:#00C2D4; --lagoon-deep:#008C9E; --sea:#0B5E78; --night:#07374A; --sun:#FFC83D; --terracotta:#ED7A5C; --foam:#F6FBFC; --sand:#FFF3D6; --ink:#0B3954; --muted:#5C7886; }
+  body { background: var(--foam); color: var(--ink); font-family: "Baloo 2", sans-serif; margin: 0; padding: 40px; }
+  h1 { font-size: 22px; margin: 0 0 4px; } p.s { font-family: Geist; color: var(--muted); font-size: 13px; margin: 0 0 28px; }
+  .row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 26px; }
+  .cell { background: #fff; border-radius: 26px; padding: 22px 18px 16px; text-align: center; box-shadow: 0 12px 30px rgba(11,94,120,.10); }
+  .cell .name { font-weight: 700; font-size: 14.5px; margin-top: 10px; }
+  .cell .use { font-family: Geist; font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .ctx-row { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 18px; }
+  .ctx { background: #fff; border-radius: 26px; padding: 20px; box-shadow: 0 12px 30px rgba(11,94,120,.10); }
+  .ctx .lbl { font-family: Geist; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin-bottom: 12px; }
+  .empty { background: var(--foam); border-radius: 18px; padding: 22px; text-align: center; }
+  .empty .t { font-weight: 700; font-size: 15px; margin-top: 8px; }
+  .empty .d { font-family: Geist; font-size: 12px; color: var(--muted); }
+  .nightctx { background: var(--night); border-radius: 18px; padding: 18px; color: #EAF7FA; display: flex; gap: 14px; align-items: center; }
+  .nightctx .t { font-weight: 700; font-size: 14px; }
+  .nightctx .d { font-family: Geist; font-size: 11.5px; color: rgba(234,247,250,.6); }
+</style>
+</head>
+<body>
+<h1>Exploration mascotte · le kri-kri 🐐</h1>
+<p class="s">La chèvre sauvage qui n'existe qu'en Crète, en rond joyeux. Cornes arquées signature, yeux-spirale au 404 (clin d'œil au mark). 4 états + usages.</p>
+
+<!-- défs réutilisables -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <g id="kk-base">
+      <!-- cornes arquées (signature kri-kri) -->
+      <path d="M44 36 C28 28 22 12 32 4 C33 15 40 24 51 30 Z" fill="#C98A5B" stroke="#0B3954" stroke-width="2.6" stroke-linejoin="round"/>
+      <path d="M76 36 C92 28 98 12 88 4 C87 15 80 24 69 30 Z" fill="#C98A5B" stroke="#0B3954" stroke-width="2.6" stroke-linejoin="round"/>
+      <!-- oreilles -->
+      <ellipse cx="33" cy="50" rx="9" ry="5.5" transform="rotate(-22 33 50)" fill="#E8D2AE" stroke="#0B3954" stroke-width="2.6"/>
+      <ellipse cx="87" cy="50" rx="9" ry="5.5" transform="rotate(22 87 50)" fill="#E8D2AE" stroke="#0B3954" stroke-width="2.6"/>
+      <!-- tête -->
+      <ellipse cx="60" cy="58" rx="27" ry="25" fill="#F5E9D2" stroke="#0B3954" stroke-width="2.8"/>
+      <!-- museau -->
+      <ellipse cx="60" cy="67" rx="15" ry="10.5" fill="#FFF9EC"/>
+      <!-- narines -->
+      <circle cx="55.5" cy="66.5" r="1.5" fill="#0B3954"/>
+      <circle cx="64.5" cy="66.5" r="1.5" fill="#0B3954"/>
+      <!-- barbiche -->
+      <path d="M56 82 C57 89 63 89 64 82 C62 84 58 84 56 82 Z" fill="#E8D2AE" stroke="#0B3954" stroke-width="2.4" stroke-linejoin="round"/>
+    </g>
+  </defs>
+</svg>
+
+<div class="row">
+  <!-- 1 Kalimera -->
+  <div class="cell">
+    <svg width="120" height="100" viewBox="0 0 120 96">
+      <g transform="translate(0,6)">
+        <path d="M14 22 v6 M10 28 h-6 M17 30 l-4 4" stroke="#FFC83D" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <circle cx="20" cy="20" r="7" fill="#FFC83D"/>
+        <use href="#kk-base"/>
+        <circle cx="50" cy="55" r="3.4" fill="#0B3954"/><circle cx="51.2" cy="53.8" r="1.1" fill="#fff"/>
+        <circle cx="70" cy="55" r="3.4" fill="#0B3954"/><circle cx="71.2" cy="53.8" r="1.1" fill="#fff"/>
+        <path d="M53 72 q7 5.5 14 0" stroke="#0B3954" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+      </g>
+    </svg>
+    <div class="name">Καλημέρα !</div>
+    <div class="use">accueil, onboarding, newsletter</div>
+  </div>
+
+  <!-- 2 Alerte -->
+  <div class="cell">
+    <svg width="120" height="100" viewBox="0 0 120 96">
+      <g transform="translate(0,6)">
+        <g transform="rotate(-6 60 58)"><use href="#kk-base"/></g>
+        <circle cx="50" cy="55" r="3.6" fill="#0B3954"/><circle cx="51.4" cy="53.6" r="1.1" fill="#fff"/>
+        <circle cx="70" cy="55" r="3.6" fill="#0B3954"/><circle cx="71.4" cy="53.6" r="1.1" fill="#fff"/>
+        <path d="M44 47 l9 -3 M76 47 l-9 -3" stroke="#0B3954" stroke-width="2.6" stroke-linecap="round"/>
+        <ellipse cx="60" cy="73" rx="4" ry="5" fill="#0B3954"/>
+        <g transform="translate(96,14)">
+          <circle r="13" fill="#FFC83D" stroke="#0B3954" stroke-width="2.6"/>
+          <path d="M0 -6 v7" stroke="#0B3954" stroke-width="3.4" stroke-linecap="round"/>
+          <circle cy="5.5" r="1.9" fill="#0B3954"/>
+        </g>
+      </g>
+    </svg>
+    <div class="name">Le meltemi souffle !</div>
+    <div class="use">alertes vent/feu, mer agitée</div>
+  </div>
+
+  <!-- 3 Cherche -->
+  <div class="cell">
+    <svg width="120" height="100" viewBox="0 0 120 96">
+      <g transform="translate(0,6)">
+        <use href="#kk-base"/>
+        <circle cx="52" cy="55" r="3.4" fill="#0B3954"/><circle cx="53.4" cy="54" r="1.1" fill="#fff"/>
+        <circle cx="72" cy="55" r="3.4" fill="#0B3954"/><circle cx="73.4" cy="54" r="1.1" fill="#fff"/>
+        <path d="M54 73 q6 3.5 12 0" stroke="#0B3954" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+        <text x="97" y="34" font-size="30" font-weight="800" fill="#ED7A5C" font-family="Baloo 2">?</text>
+      </g>
+    </svg>
+    <div class="name">Hmm, rien ici…</div>
+    <div class="use">résultats vides, recherche</div>
+  </div>
+
+  <!-- 4 : 404 yeux spirale -->
+  <div class="cell">
+    <svg width="120" height="100" viewBox="0 0 120 96">
+      <g transform="translate(0,6)">
+        <g transform="rotate(5 60 58)"><use href="#kk-base"/></g>
+        <path d="M50 55 a4 4 0 1 1 4 4 a2.6 2.6 0 0 1 -2.6 -2.6 a1.4 1.4 0 0 1 1.4 -1.4" stroke="#0B3954" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M70 55 a4 4 0 1 1 4 4 a2.6 2.6 0 0 1 -2.6 -2.6 a1.4 1.4 0 0 1 1.4 -1.4" stroke="#0B3954" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M54 74 q3 -3 6 0 t6 0" stroke="#0B3954" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+        <path d="M88 20 q4 -8 12 -6 M92 28 q6 -3 10 1" stroke="#94A3B8" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+      </g>
+    </svg>
+    <div class="name">Oups, perdue !</div>
+    <div class="use">404, erreurs (yeux = notre spirale)</div>
+  </div>
+</div>
+
+<!-- usages en contexte -->
+<div class="ctx-row">
+  <div class="ctx">
+    <div class="lbl">État vide en contexte</div>
+    <div class="empty">
+      <svg width="86" height="72" viewBox="0 0 120 96"><g transform="translate(0,6)"><use href="#kk-base"/><circle cx="52" cy="55" r="3.4" fill="#0B3954"/><circle cx="72" cy="55" r="3.4" fill="#0B3954"/><path d="M54 73 q6 3.5 12 0" stroke="#0B3954" stroke-width="2.6" stroke-linecap="round" fill="none"/></g></svg>
+      <div class="t">Pas de bus à cette date</div>
+      <div class="d">Essaie un autre jour · ou regarde côté taxi.</div>
+    </div>
+  </div>
+  <div class="ctx">
+    <div class="lbl">Pin de carte</div>
+    <div style="display:flex;justify-content:center;align-items:center;height:120px">
+      <svg width="74" height="92" viewBox="0 0 74 92">
+        <path d="M37 88 C20 64 6 50 6 33 a31 31 0 1 1 62 0 C68 50 54 64 37 88 Z" fill="#ED7A5C" stroke="#fff" stroke-width="4"/>
+        <circle cx="37" cy="33" r="22" fill="#fff"/>
+        <g transform="translate(13.6,12) scale(0.39)"><use href="#kk-base"/><circle cx="50" cy="55" r="3.4" fill="#0B3954"/><circle cx="70" cy="55" r="3.4" fill="#0B3954"/><path d="M53 72 q7 5.5 14 0" stroke="#0B3954" stroke-width="2.6" stroke-linecap="round" fill="none"/></g>
+      </svg>
+    </div>
+  </div>
+  <div class="ctx">
+    <div class="lbl">Sur fond nuit (board)</div>
+    <div class="nightctx">
+      <svg width="62" height="52" viewBox="0 0 120 96"><g transform="translate(0,6)"><use href="#kk-base"/><circle cx="50" cy="55" r="3.4" fill="#0B3954"/><circle cx="70" cy="55" r="3.4" fill="#0B3954"/><path d="M53 72 q7 5.5 14 0" stroke="#0B3954" stroke-width="2.6" stroke-linecap="round" fill="none"/></g></svg>
+      <div><div class="t">Dernier bus dans 20 min !</div><div class="d">Le kri-kri te prévient · notification douce</div></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

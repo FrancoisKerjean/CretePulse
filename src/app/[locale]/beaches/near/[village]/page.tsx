@@ -1,12 +1,18 @@
 import { getAllBeaches } from "@/lib/beaches";
+import { setRequestLocale } from "next-intl/server";
 import { getAllVillages } from "@/lib/villages";
 import { getLocalizedField, type Locale } from "@/lib/types";
-import { Waves, MapPin, ChevronLeft } from "lucide-react";
+import { Waves, MapPin, ChevronLeft, Sparkles } from "lucide-react";
+import { beachVillageInsight } from "@/lib/beach-village-insight";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
+import { CarPromo } from "@/components/car-rental/CarPromo";
+import { getBathingWaterQuality } from "@/lib/bathing-water";
+import { WaterQualityBadge } from "@/components/WaterQualityBadge";
 
-export const revalidate = 86400;
+export const revalidate = 172800; // 03/07 optim couts Vercel (48h, ISR Writes)
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
@@ -21,6 +27,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; village: string }> }) {
   const { locale, village: villageSlug } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
 
   let villages;
@@ -54,6 +61,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function BeachesNearVillagePage({ params }: { params: Promise<{ locale: string; village: string }> }) {
   const { locale, village: villageSlug } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
 
   let villages, beaches;
@@ -80,6 +88,13 @@ export default async function BeachesNearVillagePage({ params }: { params: Promi
     .sort((a, b) => a.dist - b.dist)
     .slice(0, 12);
 
+  const insightText = beachVillageInsight(
+    villageName,
+    nearbyBeaches,
+    locale,
+    (b) => getLocalizedField(b, "name", loc),
+  );
+
   const heroTitles: Record<string, string> = {
     en: `Beaches near ${villageName}`,
     fr: `Plages près de ${villageName}`,
@@ -96,46 +111,67 @@ export default async function BeachesNearVillagePage({ params }: { params: Promi
 
   return (
     <main className="min-h-screen bg-surface">
-      <section className="bg-aegean text-white py-10 px-4">
+      <section className="relative overflow-hidden bg-sea text-white py-10 px-4">
         <div className="max-w-4xl mx-auto">
           <Link href={`/${locale}/beaches`} className="inline-flex items-center gap-1 text-white/50 text-sm hover:text-white/80 mb-3">
             <ChevronLeft className="w-4 h-4" /> {loc === "fr" ? "Toutes les plages" : loc === "de" ? "Alle Strände" : loc === "el" ? "Όλες οι παραλίες" : "All beaches"}
           </Link>
-          <h1 className="text-3xl md:text-4xl font-bold" style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}>
+          <h1 className="text-3xl md:text-4xl font-bold" style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}>
             {heroTitles[locale] || heroTitles.en}
           </h1>
           <p className="text-white/60 text-sm mt-2">{village.region}</p>
         </div>
+        <svg className="absolute bottom-0 left-0 w-full h-[56px]" viewBox="0 0 1440 70" preserveAspectRatio="none" aria-hidden>
+          <path d="M0 40 C180 0 320 70 540 42 C760 14 900 66 1130 40 C1290 22 1380 36 1440 28 L1440 70 L0 70 Z" fill="#F6FBFC" />
+        </svg>
       </section>
 
       <div className="max-w-4xl mx-auto px-4 py-8">
+        {insightText && (
+          <aside className="rounded-xl bg-sea-faint/60 border border-sea/15 p-5 md:p-6 mb-6">
+            <div className="flex items-start gap-3">
+              <Sparkles className="w-5 h-5 text-sea flex-shrink-0 mt-0.5" aria-hidden="true" />
+              <p className="text-sm md:text-base text-text leading-relaxed">{insightText}</p>
+            </div>
+          </aside>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {nearbyBeaches.map(beach => (
+          {nearbyBeaches.map(beach => {
+            const wq = getBathingWaterQuality(beach.latitude, beach.longitude, beach.name_en);
+            return (
             <Link
               key={beach.slug}
               href={`/${locale}/beaches/${beach.slug}`}
-              className="group rounded-xl border border-border bg-white overflow-hidden hover:border-aegean/30 hover:shadow-md transition-all"
+              className="group rounded-xl border border-border bg-white overflow-hidden hover:border-sea/30 hover:shadow-soft transition-all"
             >
               {beach.image_url && (
-                <div className="h-36 overflow-hidden">
-                  <img src={beach.image_url} alt={getLocalizedField(beach, "name", loc)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                <div className="relative h-36 overflow-hidden">
+                  <Image src={beach.image_url} alt={getLocalizedField(beach, "name", loc)} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
                 </div>
               )}
               <div className="p-4">
-                <h2 className="font-semibold text-base text-text group-hover:text-aegean transition-colors">
+                <h2 className="font-semibold text-base text-text group-hover:text-sea transition-colors">
                   {getLocalizedField(beach, "name", loc)}
                 </h2>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-xs text-text-muted flex items-center gap-1">
                     <MapPin className="w-3 h-3" /> {beach.dist.toFixed(1)} {distLabel[locale] || distLabel.en}
                   </span>
-                  <span className="text-xs bg-aegean-faint text-aegean px-1.5 py-0.5 rounded capitalize flex items-center gap-1">
+                  <span className="text-xs bg-sea-faint text-sea px-1.5 py-0.5 rounded capitalize flex items-center gap-1">
                     <Waves className="w-3 h-3" /> {beach.type || "mixed"}
                   </span>
+                  {wq && <WaterQualityBadge wq={wq} locale={locale} variant="pill" />}
                 </div>
               </div>
             </Link>
-          ))}
+            );
+          })}
+        </div>
+
+        {/* Monétisation (audit 13/06/2026, A2) : "within driving distance"
+            = intention voiture. Auto Smart primaire (CarPromo → wizard). */}
+        <div className="mt-10">
+          <CarPromo locale={locale} source="beaches-near" />
         </div>
 
         {/* Other villages */}
@@ -148,7 +184,7 @@ export default async function BeachesNearVillagePage({ params }: { params: Promi
               <Link
                 key={v.slug}
                 href={`/${locale}/beaches/near/${v.slug}`}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-border text-text-muted hover:bg-aegean-faint hover:text-aegean transition-colors"
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-border text-text-muted hover:bg-sea-faint hover:text-sea transition-colors"
               >
                 {getLocalizedField(v, "name", loc)}
               </Link>

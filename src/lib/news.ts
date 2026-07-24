@@ -1,6 +1,28 @@
 import { supabase } from "./supabase";
 import type { NewsItem } from "./types";
 
+/**
+ * True if the news item has a real title for this locale (not an EN fallback).
+ * News is translated only to en/fr/de/el; the other 18 locales serve EN, so their
+ * detail pages should be noindex to avoid duplicate-content cannibalisation.
+ */
+export function isNewsTranslated(item: NewsItem, locale: string): boolean {
+  if (locale === "en") return true;
+  const t = item[`title_${locale}` as keyof NewsItem] as string | undefined;
+  return typeof t === "string" && t.trim().length > 0 && t.trim() !== (item.title_en || "").trim();
+}
+
+// Plan B 22/07/2026 : fenêtre indexable news bornée. Une news sans date connue est
+// traitée comme périmée (prudence : ne jamais indexer de l'indatable).
+export const NEWS_INDEXABLE_MAX_AGE_DAYS = 30;
+
+export function isNewsStale(publishedAt: string | null | undefined, now: Date = new Date()): boolean {
+  if (!publishedAt) return true;
+  const ts = Date.parse(publishedAt);
+  if (Number.isNaN(ts)) return true;
+  return now.getTime() - ts > NEWS_INDEXABLE_MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
+}
+
 // Greek Unicode range check
 function hasGreek(text: string): boolean {
   return /[\u0370-\u03FF\u1F00-\u1FFF]/.test(text);
@@ -16,7 +38,7 @@ function hasGermanOnlyMarkers(text: string): boolean {
 }
 
 // Heuristic: detect English-only function words / patterns that should NOT
-// appear in a French/German title or summary. Conservative — only words
+// appear in a French/German title or summary. Conservative · only words
 // extremely unlikely to appear in proper FR/DE prose (avoid false positives
 // on borrowed English words in legitimate French content).
 function hasEnglishOnlyMarkers(text: string): boolean {

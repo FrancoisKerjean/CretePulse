@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
 
   // Honeypot: bots fill this field, humans don't see it
   if (body.website && String(body.website).trim() !== "") {
-    // Silent rejection — looks like success to the bot
+    // Silent rejection · looks like success to the bot
     return NextResponse.json({ ok: true });
   }
 
@@ -28,13 +28,13 @@ export async function POST(request: NextRequest) {
   const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
   const { data: recent } = await supabase
     .from("newsletter_subscribers")
-    .select("id, created_at")
+    .select("id, subscribed_at")
     .eq("email", email)
-    .gte("created_at", fiveMinutesAgo)
+    .gte("subscribed_at", fiveMinutesAgo)
     .limit(1);
 
   if (recent && recent.length > 0) {
-    // Silent success — don't reveal rate limiting to scrapers
+    // Silent success · don't reveal rate limiting to scrapers
     return NextResponse.json({ ok: true });
   }
 
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
   if (existing && existing.length > 0) {
     const sub = existing[0];
     if (sub.confirmed && !sub.unsubscribed_at) {
-      // Already subscribed — silent success
+      // Already subscribed · silent success
       return NextResponse.json({ ok: true });
     }
     // Resubscribe or re-confirm: delete old record and reinsert
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     locale,
     confirmed: false,
     confirm_token,
-    created_at: new Date().toISOString(),
+    subscribed_at: new Date().toISOString(),
   });
 
   if (error) {

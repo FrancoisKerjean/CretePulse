@@ -1,19 +1,24 @@
 import { notFound } from "next/navigation";
-import { getNewsBySlug, getLatestNews } from "@/lib/news";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import { setRequestLocale } from "next-intl/server";
+import { getNewsBySlug, getLatestNews, isNewsTranslated, isNewsStale } from "@/lib/news";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { newsSchema, breadcrumbSchema } from "@/lib/schema";
 import { ExternalLink, Clock, ArrowLeft, Calendar, Globe } from "lucide-react";
-import { buildAlternates } from "@/lib/seo";
+import { buildAlternates, INDEXABLE_ROBOTS } from "@/lib/seo";
 import Link from "next/link";
 import DiscoverCrete from "@/components/DiscoverCrete";
+import { BusInCreteBox } from "@/components/BusInCreteBox";
 import NewsletterCTA from "@/components/NewsletterCTA";
+import { JsonLd } from "@/components/JsonLd";
 
-export const revalidate = 14400;
+export const revalidate = 172800; // 03/07 optim couts Vercel (48h, ISR Writes)
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
   const item = await getNewsBySlug(slug);
   if (!item) return { title: "News not found" };
@@ -23,17 +28,29 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const title = `${headline} | Crete Direct`;
   const description = summary?.replace(/<[^>]*>/g, "").substring(0, 160) || `${headline} - Crete news.`;
   const url = `${BASE_URL}/${locale}/news/${slug}`;
+  // Discover exige une grande image sur CHAQUE article : fallback OG dynamique 1200x630.
+  const ogImage = item.image_url || `${BASE_URL}/api/og?title=${encodeURIComponent(headline)}`;
 
   return {
     title,
     description,
     alternates: buildAlternates(locale, `/news/${slug}`),
+    // noindex locales that only have the EN fallback (news is translated to en/fr/de/el
+    // only) so duplicate-content variants don't cannibalise the real article.
+    // INDEXABLE_ROBOTS (pas undefined) : une clé robots même undefined écrase
+    // le max-image-preview:large du layout, requis par Discover.
+    // Plan B 22/07/2026 : news > 30 j = noindex (fenêtre indexable glissante, réévaluée
+    // à chaque revalidation ISR 48 h). 87 % du stock news n'a jamais eu d'impression
+    // GSC en 90 j ; on borne l'empreinte « scaled content » sans casser le maillage.
+    robots: isNewsStale(item.published_at) || !isNewsTranslated(item, locale)
+      ? { index: false, follow: true }
+      : INDEXABLE_ROBOTS,
     openGraph: {
       title,
       description,
       url,
       type: "article",
-      images: item.image_url ? [{ url: item.image_url, width: 1200, height: 630, alt: headline }] : [],
+      images: [{ url: ogImage, width: 1200, height: 630, alt: headline }],
       publishedTime: item.published_at,
       authors: ["Crete Direct"],
       section: item.category || undefined,
@@ -43,7 +60,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       card: "summary_large_image",
       title,
       description,
-      images: item.image_url ? [item.image_url] : [],
+      images: [ogImage],
       site: "@cretedirect",
     },
   };
@@ -89,23 +106,23 @@ const RELATED_LABELS: Record<Locale, string> = {
 // ── Category styles ────────────────────────────────────────────────────────
 
 const CATEGORY_COLORS: Record<string, string> = {
-  politics:    "bg-aegean-faint text-aegean border border-aegean/20",
-  tourism:     "bg-terra-faint text-terra border border-terra/20",
+  politics:    "bg-sea-faint text-sea border border-sea/20",
+  tourism:     "bg-terracotta-faint text-terracotta border border-terracotta/20",
   culture:     "bg-sand text-text border border-border",
   environment: "bg-olive/10 text-olive border border-olive/20",
-  economy:     "bg-stone-warm text-text-muted border border-border",
-  sports:      "bg-aegean-faint text-aegean border border-aegean/20",
-  weather:     "bg-aegean-faint text-aegean border border-aegean/20",
+  economy:     "bg-surface text-text-muted border border-border",
+  sports:      "bg-sea-faint text-sea border border-sea/20",
+  weather:     "bg-sea-faint text-sea border border-sea/20",
 };
 
 const CATEGORY_DOT: Record<string, string> = {
-  politics:    "bg-aegean",
-  tourism:     "bg-terra",
+  politics:    "bg-sea",
+  tourism:     "bg-terracotta",
   culture:     "bg-text-muted",
   environment: "bg-olive",
   economy:     "bg-text-muted",
-  sports:      "bg-aegean",
-  weather:     "bg-aegean",
+  sports:      "bg-sea",
+  weather:     "bg-sea",
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -143,7 +160,14 @@ function calcReadingTime(html: string): number {
 
 export default async function NewsDetailPage({ params }: { params: Promise<{ locale: string; slug: string }> }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
+  // Fallback to en on extended locales to avoid `undefined.x` crashes.
+  const backLabel = BACK_LABELS[loc] ?? BACK_LABELS.en;
+  const readOriginalLabel = READ_ORIGINAL_LABELS[loc] ?? READ_ORIGINAL_LABELS.en;
+  const sourceLabel = SOURCE_LABELS[loc] ?? SOURCE_LABELS.en;
+  const readMinLabel = READ_MIN_LABELS[loc] ?? READ_MIN_LABELS.en;
+  const relatedLabel = RELATED_LABELS[loc] ?? RELATED_LABELS.en;
 
   const [item, allNews] = await Promise.all([
     getNewsBySlug(slug),
@@ -176,28 +200,29 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
     })
     .slice(0, 3);
 
-  const catColor = CATEGORY_COLORS[item.category || ""] || "bg-stone text-text-muted border border-border";
+  const catColor = CATEGORY_COLORS[item.category || ""] || "bg-surface text-text-muted border border-border";
   const catDot   = CATEGORY_DOT[item.category || ""]   || "bg-text-muted";
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <JsonLd data={schema} />
+      <JsonLd data={breadcrumb} />
+      <Breadcrumbs schema={breadcrumb} />
 
       <main className="min-h-screen bg-surface">
 
         {/* Top accent bar */}
-        <div className="h-0.5 bg-gradient-to-r from-aegean via-terra to-olive" />
+        <div className="h-0.5 bg-gradient-to-r from-sea via-terracotta to-olive" />
 
         <div className="max-w-[720px] mx-auto px-4 sm:px-6 py-10">
 
           {/* Back link */}
           <Link
             href={`/${locale}/news`}
-            className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-aegean transition-colors mb-10 group"
+            className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-sea transition-colors mb-10 group"
           >
             <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
-            {BACK_LABELS[loc]}
+            {backLabel}
           </Link>
 
           {/* ── HEADER ─────────────────────────────── */}
@@ -229,12 +254,12 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
             <span className="text-border select-none">/</span>
             <span className="flex items-center gap-1.5">
               <Globe className="w-3.5 h-3.5 text-text-light flex-shrink-0" />
-              {SOURCE_LABELS[loc]}:&nbsp;
+              {sourceLabel}:&nbsp;
               <a
                 href={item.source_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-aegean hover:underline font-medium"
+                className="text-sea hover:underline font-medium"
               >
                 {item.source_name}
               </a>
@@ -242,7 +267,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
             <span className="text-border select-none">/</span>
             <span className="flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-text-light flex-shrink-0" />
-              {readingTime}&nbsp;{READ_MIN_LABELS[loc]}
+              {readingTime}&nbsp;{readMinLabel}
             </span>
           </div>
 
@@ -251,7 +276,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
 
           {/* ── HERO IMAGE ─────────────────────────── */}
           {item.image_url && (
-            <div className="mb-8 rounded-xl overflow-hidden bg-stone shadow-sm">
+            <div className="mb-8 rounded-xl overflow-hidden bg-surface shadow-soft">
               <img
                 src={item.image_url}
                 alt={title}
@@ -276,10 +301,10 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
                 "[&>ul]:list-disc [&>ul]:pl-6 [&>ul]:space-y-1.5 [&>ul]:mb-5",
                 "[&>ol]:list-decimal [&>ol]:pl-6 [&>ol]:space-y-1.5 [&>ol]:mb-5",
                 /* blockquote */
-                "[&>blockquote]:border-l-4 [&>blockquote]:border-terra [&>blockquote]:pl-5 [&>blockquote]:italic [&>blockquote]:text-text-muted [&>blockquote]:my-6",
+                "[&>blockquote]:border-l-4 [&>blockquote]:border-terracotta [&>blockquote]:pl-5 [&>blockquote]:italic [&>blockquote]:text-text-muted [&>blockquote]:my-6",
                 /* inline */
                 "[&_strong]:font-semibold [&_strong]:text-text",
-                "[&_a]:text-aegean [&_a]:underline [&_a:hover]:text-aegean-light",
+                "[&_a]:text-sea [&_a]:underline [&_a:hover]:text-sea-light",
               ].join(" ")}
               style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
               dangerouslySetInnerHTML={{ __html: summary }}
@@ -292,10 +317,10 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
               href={item.source_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-aegean transition-colors underline underline-offset-2"
+              className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-sea transition-colors underline underline-offset-2"
             >
               <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
-              {READ_ORIGINAL_LABELS[loc]} &rarr; {item.source_name}
+              {readOriginalLabel} &rarr; {item.source_name}
             </a>
           </div>
 
@@ -304,7 +329,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
             <section className="mt-14">
               <div className="flex items-center gap-3 mb-6">
                 <h2 className="text-xs font-bold uppercase tracking-widest text-text-muted whitespace-nowrap">
-                  {RELATED_LABELS[loc]}
+                  {relatedLabel}
                 </h2>
                 <div className="flex-1 h-px bg-border" />
               </div>
@@ -312,7 +337,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
               <div className="divide-y divide-border">
                 {related.map((n) => {
                   const relTitle  = getLocalizedField(n, "title", loc);
-                  const relColor  = CATEGORY_COLORS[n.category || ""] || "bg-stone text-text-muted border border-border";
+                  const relColor  = CATEGORY_COLORS[n.category || ""] || "bg-surface text-text-muted border border-border";
                   const relDot    = CATEGORY_DOT[n.category || ""]    || "bg-text-muted";
 
                   return (
@@ -322,7 +347,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
                       className="flex items-start gap-4 py-4 group"
                     >
                       {/* Thumbnail */}
-                      <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-stone-warm">
+                      <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-surface">
                         {n.image_url ? (
                           <img
                             src={n.image_url}
@@ -344,7 +369,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
                             {n.category}
                           </span>
                         )}
-                        <p className="text-sm font-semibold text-text leading-snug group-hover:text-aegean transition-colors line-clamp-2">
+                        <p className="text-sm font-semibold text-text leading-snug group-hover:text-sea transition-colors line-clamp-2">
                           {relTitle}
                         </p>
                         <p className="text-xs text-text-light mt-1">
@@ -360,6 +385,9 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
 
           {/* ── DISCOVER CRETE (internal links boost) ── */}
           <DiscoverCrete category={item.category} locale={locale} />
+
+          {/* ── BUS INTERNAL LINKS (crawl-budget vers pages-trajet prioritaires) ── */}
+          <BusInCreteBox locale={locale} />
 
           {/* ── NEWSLETTER CTA ─────────────────────── */}
           <NewsletterCTA locale={locale} />

@@ -92,6 +92,46 @@ export function getCity(slug: string) {
   return CITIES.find(c => c.slug === slug);
 }
 
+// Greek "in {city}" locative form per city, preposition included. The
+// article depends on the noun's gender and number, no reliable rule
+// exists from the name alone (e.g. Χανιά is neuter plural → "στα", but
+// Ιεράπετρα is feminine → "στην"), so we table it explicitly.
+const CITY_LOCATIVE_EL: Record<string, string> = {
+  heraklion:        "στο Ηράκλειο",
+  chania:           "στα Χανιά",
+  rethymno:         "στο Ρέθυμνο",
+  "agios-nikolaos": "στον Άγιο Νικόλαο",
+  sitia:            "στη Σητεία",
+  ierapetra:        "στην Ιεράπετρα",
+  malia:            "στα Μάλια",
+  hersonissos:      "στη Χερσόνησο",
+  elounda:          "στην Ελούντα",
+  makrigialos:      "στον Μακρύγιαλο",
+};
+
+export function getCityLocativeEl(slug: string): string | undefined {
+  return CITY_LOCATIVE_EL[slug];
+}
+
+// Annual mean across the 12 months for a given city. Used by the
+// insight callout to contextualize each month against its city's
+// own baseline (not the Crete average: southern cities like
+// Ierapetra run consistently hotter and would look "average"
+// against Crete when they are in fact peak Mediterranean).
+export function getAnnualAverage(citySlug: string): MonthlyClimate {
+  const months = MONTHS.map(m => getClimateData(citySlug, m));
+  const mean = (key: keyof MonthlyClimate) =>
+    Math.round((months.reduce((s, m) => s + m[key], 0) / months.length) * 10) / 10;
+  return {
+    avgHigh: mean("avgHigh"),
+    avgLow: mean("avgLow"),
+    seaTemp: mean("seaTemp"),
+    rainyDays: mean("rainyDays"),
+    sunHours: mean("sunHours"),
+    uvIndex: mean("uvIndex"),
+  };
+}
+
 export function getSwimVerdict(seaTemp: number, locale: string): string {
   if (seaTemp >= 24) return locale === "fr" ? "Idéale pour la baignade" : locale === "de" ? "Ideal zum Schwimmen" : locale === "el" ? "Ιδανική για κολύμπι" : "Perfect for swimming";
   if (seaTemp >= 21) return locale === "fr" ? "Agréable pour la baignade" : locale === "de" ? "Angenehm zum Schwimmen" : locale === "el" ? "Ευχάριστη για κολύμπι" : "Pleasant for swimming";

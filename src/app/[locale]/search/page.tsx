@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Search as SearchIcon } from "lucide-react";
@@ -48,9 +48,9 @@ const SEARCH_INDEX: SearchEntry[] = [
     tags: ["bus", "transport", "ktel", "route", "λεωφορείο"],
   },
   {
-    title: { en: "Map of Crete", fr: "Carte de la Crète", de: "Karte von Kreta", el: "Χάρτης Κρήτης" },
-    path: "/map",
-    tags: ["map", "carte", "karte", "χάρτης", "location"],
+    title: { en: "Crete Explorer - Interactive Map", fr: "Explorateur de Crète - Carte Interactive", de: "Kreta Explorer - Interaktive Karte", el: "Εξερευνητής Κρήτης - Διαδραστικός Χάρτης" },
+    path: "/explore",
+    tags: ["map", "carte", "karte", "χάρτης", "location", "explore", "explorer"],
   },
   {
     title: { en: "FAQ About Crete", fr: "FAQ sur la Crète", de: "FAQ über Kreta", el: "Συχνές Ερωτήσεις Κρήτη" },
@@ -223,10 +223,26 @@ export default function SearchPage() {
 
   const showResults = query.trim().length >= 2;
 
+  // Capture décisionnelle (instrumentation 13/06) : ce que les gens cherchent
+  // = signal de demande / trou de contenu (une requête à 0 résultat = page à
+  // créer). Debounce 1,2s pour ne logger que la requête "finie", pas chaque
+  // frappe. Le pathname est attaché automatiquement par Plausible.
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 3) return;
+    const t = setTimeout(() => {
+      type Plausible = (e: string, o?: { props?: Record<string, string | number> }) => void;
+      (window as unknown as { plausible?: Plausible }).plausible?.("search_query", {
+        props: { q: q.toLowerCase().slice(0, 60), results: results.length, locale },
+      });
+    }, 1200);
+    return () => clearTimeout(t);
+  }, [query, results.length, locale]);
+
   return (
     <main className="min-h-screen bg-surface">
       <div className="max-w-3xl mx-auto px-4 py-12">
-        <h1 className="text-3xl md:text-4xl font-bold text-aegean mb-6">
+        <h1 className="text-3xl md:text-4xl font-bold text-sea mb-6">
           {labels.title}
         </h1>
 
@@ -239,7 +255,7 @@ export default function SearchPage() {
             onChange={(e) => setQuery(e.target.value)}
             placeholder={labels.placeholder}
             autoFocus
-            className="w-full pl-12 pr-4 py-4 text-lg rounded-xl border border-border bg-white focus:border-aegean focus:ring-2 focus:ring-aegean/20 outline-none transition-all"
+            className="w-full pl-12 pr-4 py-4 text-lg rounded-xl border border-border bg-white focus:border-sea focus:ring-2 focus:ring-sea/20 outline-none transition-all"
           />
         </div>
 
@@ -260,9 +276,9 @@ export default function SearchPage() {
                   <Link
                     key={entry.path}
                     href={`/${locale}${entry.path}`}
-                    className="block rounded-xl border border-border bg-white px-5 py-4 hover:border-aegean/30 hover:shadow-md transition-all"
+                    className="block rounded-xl border border-border bg-white px-5 py-4 hover:border-sea/30 hover:shadow-soft transition-all"
                   >
-                    <span className="font-semibold text-text hover:text-aegean transition-colors">
+                    <span className="font-semibold text-text hover:text-sea transition-colors">
                       {entry.title[locale] || entry.title.en}
                     </span>
                     <span className="block text-sm text-text-muted mt-0.5">
@@ -282,9 +298,9 @@ export default function SearchPage() {
               <Link
                 key={entry.path}
                 href={`/${locale}${entry.path}`}
-                className="block rounded-xl border border-border bg-white px-5 py-4 hover:border-aegean/30 hover:shadow-md transition-all"
+                className="block rounded-xl border border-border bg-white px-5 py-4 hover:border-sea/30 hover:shadow-soft transition-all"
               >
-                <span className="font-semibold text-text hover:text-aegean transition-colors">
+                <span className="font-semibold text-text hover:text-sea transition-colors">
                   {entry.title[locale] || entry.title.en}
                 </span>
                 <span className="block text-sm text-text-muted mt-0.5">

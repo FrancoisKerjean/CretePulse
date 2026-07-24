@@ -10,7 +10,7 @@ const TITLES: Record<string, string> = {
 };
 
 const SUBS: Record<string, string> = {
-  en: "Get the weekly Crete briefing — news, weather, events. No spam.",
+  en: "Get the weekly Crete briefing · news, weather, events. No spam.",
   fr: "Recevez la synthèse hebdomadaire de Crète : actualités, météo, événements. Pas de spam.",
   de: "Das wöchentliche Kreta-Briefing : Nachrichten, Wetter, Events. Kein Spam.",
   el: "Το εβδομαδιαίο ενημερωτικό για την Κρήτη : νέα, καιρός, εκδηλώσεις. Χωρίς spam.",
@@ -62,16 +62,16 @@ export default function NewsletterCTA({ locale, variant = "card" }: { locale: st
 
   if (status === "success") {
     return (
-      <div className={`mt-14 rounded-2xl bg-aegean px-6 py-8 text-center text-white ${variant === "inline" ? "" : ""}`}>
+      <div className={`mt-14 rounded-2xl bg-sea px-6 py-8 text-center text-white ${variant === "inline" ? "" : ""}`}>
         <p className="text-sm font-medium">{t(SUCCESS)}</p>
       </div>
     );
   }
 
   return (
-    <div className="mt-14 rounded-2xl border border-aegean/20 bg-aegean-faint px-6 py-8 text-center">
-      <div className="w-8 h-1 bg-terra rounded-full mx-auto mb-4" />
-      <h3 className="text-lg font-bold text-aegean mb-2" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
+    <div className="mt-14 rounded-2xl border border-sea/20 bg-sea-faint px-6 py-8 text-center">
+      <div className="w-8 h-1 bg-terracotta rounded-full mx-auto mb-4" />
+      <h3 className="text-lg font-bold text-sea mb-2" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
         {t(TITLES)}
       </h3>
       <p className="text-sm text-text-muted mb-5 max-w-sm mx-auto leading-relaxed">{t(SUBS)}</p>
@@ -83,12 +83,12 @@ export default function NewsletterCTA({ locale, variant = "card" }: { locale: st
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@email.com"
           required
-          className="flex-1 px-4 py-2.5 text-sm rounded-lg border border-aegean/30 bg-white text-text placeholder:text-text-light focus:outline-none focus:ring-2 focus:ring-aegean/40"
+          className="flex-1 px-4 py-2.5 text-sm rounded-lg border border-sea/30 bg-white text-text placeholder:text-text-light focus:outline-none focus:ring-2 focus:ring-sea/40"
         />
         <button
           type="submit"
           disabled={status === "loading"}
-          className="px-5 py-2.5 text-sm font-semibold bg-aegean text-white rounded-lg hover:bg-aegean-light transition-colors whitespace-nowrap cursor-pointer disabled:opacity-60"
+          className="px-5 py-2.5 text-sm font-semibold bg-sea text-white rounded-lg hover:bg-sea-light transition-colors whitespace-nowrap cursor-pointer disabled:opacity-60"
         >
           {status === "loading" ? "…" : t(CTAS)}
         </button>

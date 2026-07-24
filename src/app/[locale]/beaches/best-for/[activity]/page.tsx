@@ -1,12 +1,18 @@
 import { getAllBeaches } from "@/lib/beaches";
+import { setRequestLocale } from "next-intl/server";
 import { getLocalizedField, type Locale, type Beach } from "@/lib/types";
 import { Waves, Fish, Baby, Shield, Sun, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildAlternates } from "@/lib/seo";
+import { CarPromo } from "@/components/car-rental/CarPromo";
+import { JsonLd } from "@/components/JsonLd";
+import { beachFacing } from "@/lib/swim-today";
+import { getBathingWaterQuality } from "@/lib/bathing-water";
+import { WaterQualityBadge } from "@/components/WaterQualityBadge";
 
-export const revalidate = 86400;
+export const revalidate = 172800; // 03/07 optim couts Vercel (48h, ISR Writes)
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
@@ -26,7 +32,7 @@ const ACTIVITIES: Activity[] = [
     descFr: "Eaux cristallines, criques rocheuses et vie marine abondante font de ces plages crétoises des spots parfaits pour le snorkeling.",
     descDe: "Kristallklares Wasser, felsige Buchten und reichhaltiges Meeresleben machen diese kretischen Strände perfekt zum Schnorcheln.",
     descEl: "Κρυστάλλινα νερά, βραχώδεις κόλποι και πλούσια θαλάσσια ζωή κάνουν αυτές τις παραλίες ιδανικές για snorkeling.",
-    icon: <Fish className="w-6 h-6 text-aegean" />,
+    icon: <Fish className="w-6 h-6 text-sea" />,
     filter: (b: Beach) => b.snorkeling,
   },
   {
@@ -36,7 +42,7 @@ const ACTIVITIES: Activity[] = [
     descFr: "Eaux peu profondes, rivages de sable et équipements à proximité font de ces plages des lieux idéaux pour les familles avec enfants en Crète.",
     descDe: "Flaches Wasser, Sandstrände und nahe Einrichtungen machen diese Strände ideal für Familien mit Kindern auf Kreta.",
     descEl: "Ρηχά νερά, αμμώδεις ακτές και κοντινές εγκαταστάσεις κάνουν αυτές τις παραλίες ιδανικές για οικογένειες με παιδιά.",
-    icon: <Baby className="w-6 h-6 text-terra" />,
+    icon: <Baby className="w-6 h-6 text-terracotta" />,
     filter: (b: Beach) => b.kids_friendly,
   },
   {
@@ -46,8 +52,16 @@ const ACTIVITIES: Activity[] = [
     descFr: "Protégées du vent et des vagues, ces plages crétoises calmes offrent les meilleures conditions pour une baignade confortable.",
     descDe: "Vor Wind und Wellen geschützt, bieten diese ruhigen kretischen Strände die besten Bedingungen zum Schwimmen.",
     descEl: "Προφυλαγμένες από τον αέρα και τα κύματα, αυτές οι ήρεμες παραλίες προσφέρουν τις καλύτερες συνθήκες για κολύμβηση.",
-    icon: <Waves className="w-6 h-6 text-aegean" />,
-    filter: (b: Beach) => b.wind_exposure === "sheltered",
+    icon: <Waves className="w-6 h-6 text-sea" />,
+    // Abritees du meltemi (vent dominant de secteur nord l'ete) : on garde les
+    // plages orientees vers le sud via l'orientation geometrique beachFacing
+    // (cf swim-today). La colonne wind_exposure est NULL sur toutes les plages
+    // en base, d'ou ce calcul evergreen plutot qu'un filtre sur la colonne.
+    filter: (b: Beach) => {
+      if (b.latitude == null || b.longitude == null) return false;
+      const facing = beachFacing(b.latitude, b.longitude);
+      return Math.min(facing, 360 - facing) > 90;
+    },
   },
   {
     slug: "secluded",
@@ -77,7 +91,9 @@ const ACTIVITIES: Activity[] = [
     descDe: "Türkisfarbenes Wasser trifft auf glatte Kieselsteine. Diese kretischen Kiesstrände haben oft das klarste Wasser.",
     descEl: "Τιρκουάζ νερά και λεία βότσαλα. Αυτές οι βοτσαλωτές παραλίες έχουν συχνά τα πιο καθαρά νερά.",
     icon: <Waves className="w-6 h-6 text-text-muted" />,
-    filter: (b: Beach) => b.type === "pebble",
+    // type en base non normalise ("pebble", "pebblestone", "pebblestone and
+    // sand") : match souple sinon 12 plages de galets sont perdues.
+    filter: (b: Beach) => (b.type ?? "").toLowerCase().includes("pebble"),
   },
 ];
 
@@ -148,6 +164,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; activity: string }> }) {
   const { locale, activity: activitySlug } = await params;
+  setRequestLocale(locale);
   const activity = getActivity(activitySlug);
   if (!activity) return { title: "Not found" };
 
@@ -173,6 +190,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function BestBeachesForPage({ params }: { params: Promise<{ locale: string; activity: string }> }) {
   const { locale, activity: activitySlug } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
   const activity = getActivity(activitySlug);
 
@@ -254,10 +272,10 @@ export default async function BestBeachesForPage({ params }: { params: Promise<{
 
   return (
     <main className="min-h-screen bg-surface">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <JsonLd data={faqSchema} />
 
       {/* Hero */}
-      <section className="bg-aegean text-white py-12 md:py-20 px-4">
+      <section className="relative overflow-hidden bg-sea text-white py-12 md:py-20 px-4">
         <div className="max-w-4xl mx-auto">
           <Link href={`/${locale}/beaches`} className="inline-flex items-center gap-1 text-white/50 text-sm hover:text-white/80 mb-4">
             <ChevronLeft className="w-4 h-4" /> {L.allBeaches}
@@ -266,13 +284,16 @@ export default async function BestBeachesForPage({ params }: { params: Promise<{
             <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
               {activity.icon}
             </div>
-            <h1 className="text-3xl md:text-5xl font-bold" style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}>
+            <h1 className="text-3xl md:text-5xl font-bold" style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}>
               {L.bestFor} {activityName}
             </h1>
           </div>
           <p className="text-white/80 text-lg mt-4 max-w-2xl leading-relaxed">{activityDesc}</p>
           <p className="text-white/50 text-sm mt-2">{beaches.length} {L.beachesFound}</p>
         </div>
+        <svg className="absolute bottom-0 left-0 w-full h-[56px]" viewBox="0 0 1440 70" preserveAspectRatio="none" aria-hidden>
+          <path d="M0 40 C180 0 320 70 540 42 C760 14 900 66 1130 40 C1290 22 1380 36 1440 28 L1440 70 L0 70 Z" fill="#F6FBFC" />
+        </svg>
       </section>
 
       <div className="max-w-4xl mx-auto px-4 py-10 space-y-10">
@@ -281,14 +302,15 @@ export default async function BestBeachesForPage({ params }: { params: Promise<{
           {beaches.map(beach => {
             const name = getLocalizedField(beach, "name", loc);
             const desc = getLocalizedField(beach, "description", loc);
+            const wq = getBathingWaterQuality(beach.latitude, beach.longitude, beach.name_en);
             return (
               <Link
                 key={beach.slug}
                 href={`/${locale}/beaches/${beach.slug}`}
-                className="group rounded-xl bg-white border border-border overflow-hidden hover:border-aegean/30 hover:shadow-sm transition-all"
+                className="group rounded-xl bg-white border border-border overflow-hidden hover:border-sea/30 hover:shadow-soft transition-all"
               >
                 {beach.image_url && (
-                  <div className="relative h-40 bg-aegean/5">
+                  <div className="relative h-40 bg-sea/5">
                     <Image
                       src={beach.image_url}
                       alt={`${name} beach, Crete`}
@@ -301,7 +323,7 @@ export default async function BestBeachesForPage({ params }: { params: Promise<{
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <h2 className="font-bold text-text group-hover:text-aegean transition-colors">{name}</h2>
+                      <h2 className="font-bold text-text group-hover:text-sea transition-colors">{name}</h2>
                       <div className="flex items-center gap-1 text-xs text-text-muted mt-0.5">
                         <MapPin className="w-3 h-3" /> {beach.region}
                       </div>
@@ -311,7 +333,8 @@ export default async function BestBeachesForPage({ params }: { params: Promise<{
                   {desc && (
                     <p className="text-sm text-text-muted mt-2 line-clamp-2">{desc}</p>
                   )}
-                  <div className="flex flex-wrap gap-1.5 mt-3">
+                  <div className="flex flex-wrap items-center gap-1.5 mt-3">
+                    {wq && <WaterQualityBadge wq={wq} locale={locale} variant="pill" />}
                     <span className="text-xs px-2 py-0.5 bg-surface rounded-full text-text-muted capitalize">{beach.type}</span>
                     <span className="text-xs px-2 py-0.5 bg-surface rounded-full text-text-muted capitalize">{beach.wind_exposure}</span>
                     {beach.parking && <span className="text-xs px-2 py-0.5 bg-surface rounded-full text-text-muted">{L.parking}</span>}
@@ -332,9 +355,12 @@ export default async function BestBeachesForPage({ params }: { params: Promise<{
           </div>
         )}
 
+        {/* Monetisation: beach activity intent to Car Rental Direct. */}
+        <CarPromo locale={locale} source="beaches-best-for" />
+
         {/* FAQ */}
         <section>
-          <h2 className="text-xl font-bold text-aegean mb-4">{L.faq}</h2>
+          <h2 className="text-xl font-bold text-sea mb-4">{L.faq}</h2>
           <div className="space-y-4">
             {faqItems.map((faq, i) => (
               <div key={i} className="p-5 bg-white rounded-xl border border-border">
@@ -353,7 +379,7 @@ export default async function BestBeachesForPage({ params }: { params: Promise<{
               <Link
                 key={a.slug}
                 href={`/${locale}/beaches/best-for/${a.slug}`}
-                className="flex items-center gap-3 p-3 bg-white rounded-xl border border-border hover:border-aegean/30 transition-colors"
+                className="flex items-center gap-3 p-3 bg-white rounded-xl border border-border hover:border-sea/30 transition-colors"
               >
                 <div className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center flex-shrink-0">
                   {a.icon}

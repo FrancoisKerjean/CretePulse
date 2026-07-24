@@ -1,10 +1,12 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getAllVillages } from "@/lib/villages";
 import { getLocalizedField, type Locale } from "@/lib/types";
 import { MapPin, Mountain, Users, Clock } from "lucide-react";
 import Link from "next/link";
 import { buildAlternates } from "@/lib/seo";
 import { itemListSchema } from "@/lib/schema";
+import { CarPromo } from "@/components/car-rental/CarPromo";
+import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 86400;
 
@@ -19,6 +21,7 @@ const VILLAGES_META: Record<string, { title: string; desc: string }> = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const m = VILLAGES_META[locale] || VILLAGES_META.en;
   const url = `${BASE_URL}/${locale}/villages`;
   return {
@@ -30,15 +33,16 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 const PERIOD_COLORS: Record<string, string> = {
-  minoan: "bg-terra-faint text-terra",
-  venetian: "bg-aegean-faint text-aegean",
+  minoan: "bg-terracotta-faint text-terracotta",
+  venetian: "bg-sea-faint text-sea",
   ottoman: "bg-sand text-text-muted",
-  modern: "bg-stone text-text-muted",
-  abandoned: "bg-stone-warm text-text-light",
+  modern: "bg-surface text-text-muted",
+  abandoned: "bg-surface text-text-light",
 };
 
 export default async function VillagesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const loc = locale as Locale;
 
   let villages: Awaited<ReturnType<typeof getAllVillages>> = [];
@@ -63,9 +67,9 @@ export default async function VillagesPage({ params }: { params: Promise<{ local
 
   return (
     <main className="min-h-screen bg-surface">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(listSchema) }} />
+      <JsonLd data={listSchema} />
       <div className="max-w-6xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-aegean">
+        <h1 className="text-3xl font-bold text-sea">
           {loc === "fr" ? "Villages de Crète" :
            loc === "de" ? "Dörfer auf Kreta" :
            loc === "el" ? "Χωριά της Κρήτης" :
@@ -78,10 +82,10 @@ export default async function VillagesPage({ params }: { params: Promise<{ local
             <Link
               key={village.slug}
               href={`/${locale}/villages/${village.slug}`}
-              className="group rounded-xl border border-border bg-white overflow-hidden hover:border-aegean/30 hover:shadow-md transition-all"
+              className="group rounded-xl border border-border bg-white overflow-hidden hover:border-sea/30 hover:shadow-soft transition-all"
             >
               {village.image_url && (
-                <div className="h-40 bg-stone overflow-hidden">
+                <div className="h-40 bg-surface overflow-hidden">
                   <img
                     src={village.image_url}
                     alt={getLocalizedField(village, "name", loc)}
@@ -96,7 +100,7 @@ export default async function VillagesPage({ params }: { params: Promise<{ local
                     {getLocalizedField(village, "name", loc)}
                   </h2>
                   {village.period && (
-                    <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full capitalize ${PERIOD_COLORS[village.period] || "bg-stone text-text-muted"}`}>
+                    <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full capitalize ${PERIOD_COLORS[village.period] || "bg-surface text-text-muted"}`}>
                       {village.period}
                     </span>
                   )}
@@ -114,7 +118,7 @@ export default async function VillagesPage({ params }: { params: Promise<{ local
                   )}
                   {village.population != null && (
                     <span className="inline-flex items-center gap-1">
-                      <Users className="w-3 h-3 text-aegean" />
+                      <Users className="w-3 h-3 text-sea" />
                       {village.population.toLocaleString()}
                     </span>
                   )}
@@ -122,6 +126,12 @@ export default async function VillagesPage({ params }: { params: Promise<{ local
               </div>
             </Link>
           ))}
+        </div>
+
+        {/* Monetisation (trou residuel 17/06) : visiteurs en decouverte des
+            villages = intention excursions/tours au depart. GYG (8%). */}
+        <div className="mt-10">
+          <CarPromo locale={locale} source="villages-index" />
         </div>
       </div>
     </main>
@@ -139,14 +149,14 @@ function VillagesPlaceholder({ locale }: { locale: Locale }) {
   return (
     <main className="min-h-screen bg-surface">
       <div className="max-w-6xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-aegean">{titles[locale]}</h1>
+        <h1 className="text-3xl font-bold text-sea">{titles[locale] ?? titles.en}</h1>
         <p className="text-text-muted mt-2">300+ villages coming soon. Data being loaded.</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-border bg-white p-4 animate-pulse">
-              <div className="h-32 bg-stone rounded-lg mb-3" />
-              <div className="h-5 bg-stone rounded w-2/3 mb-2" />
-              <div className="h-3 bg-stone rounded w-1/3" />
+              <div className="h-32 bg-surface rounded-lg mb-3" />
+              <div className="h-5 bg-surface rounded w-2/3 mb-2" />
+              <div className="h-3 bg-surface rounded w-1/3" />
             </div>
           ))}
         </div>

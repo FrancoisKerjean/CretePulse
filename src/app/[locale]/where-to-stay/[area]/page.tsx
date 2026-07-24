@@ -1,11 +1,14 @@
 import { MapPin, Bed, Euro, Lightbulb, Umbrella, ChevronLeft, ChevronRight } from "lucide-react";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { breadcrumbSchema } from "@/lib/schema";
-import { AffiliateCTA } from "@/components/ui/affiliate-cta";
+import { BusAccessBox } from "@/components/BusAccessBox";
 import { buildAlternates } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 
-export const revalidate = 86400;
+export const revalidate = 172800; // 03/07 optim couts Vercel (48h, ISR Writes)
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
@@ -265,22 +268,24 @@ export function generateStaticParams() {
 /*  SEO metadata                                                       */
 /* ------------------------------------------------------------------ */
 
+// Where-to-stay already has the best CTR of the site (2.79% on 28d / 38 pages).
+// Pattern preserved : answer-the-question framing. Adding year 2026 + price tease for freshness.
 const META: Record<Loc, { title: (name: string) => string; desc: (name: string, vibe: string) => string }> = {
   en: {
-    title: (name) => `Where to Stay in ${name}, Crete - Best Areas & Tips`,
-    desc: (name, vibe) => `Find the best area to stay in ${name}, Crete. ${vibe}. Price ranges, local tips, and nearby beaches.`,
+    title: (name) => `Where to Stay in ${name} Crete 2026: Best Areas, Prices & Local Tips`,
+    desc: (name, vibe) => `Where to stay in ${name}, Crete in 2026. ${vibe}. Best areas by budget, price ranges, walking distances, and nearby beaches. Honest local guide.`,
   },
   fr: {
-    title: (name) => `Où loger à ${name}, Crète - Meilleurs quartiers & conseils`,
-    desc: (name, vibe) => `Trouvez le meilleur quartier où loger à ${name}, Crète. ${vibe}. Gammes de prix, conseils locaux et plages à proximité.`,
+    title: (name) => `Où loger à ${name} en Crète 2026 : Meilleurs quartiers, prix & conseils`,
+    desc: (name, vibe) => `Où loger à ${name}, Crète en 2026. ${vibe}. Quartiers par budget, fourchettes de prix, distances et plages voisines. Guide local honnête.`,
   },
   de: {
-    title: (name) => `Wo übernachten in ${name}, Kreta - Beste Gegenden & Tipps`,
-    desc: (name, vibe) => `Finden Sie die beste Gegend zum Übernachten in ${name}, Kreta. ${vibe}. Preisklassen, lokale Tipps und nahe Strände.`,
+    title: (name) => `Wo übernachten in ${name} Kreta 2026: Beste Gegenden, Preise & Tipps`,
+    desc: (name, vibe) => `Wo in ${name}, Kreta übernachten in 2026. ${vibe}. Beste Viertel nach Budget, Preisklassen, Entfernungen und nahe Strände. Ehrlicher Insider-Guide.`,
   },
   el: {
-    title: (name) => `Πού να μείνετε στ${name.match(/^[ΑΕΗΙΟΥΩΆΈΉΊΌΎΏ]/i) ? "ο" : "ην"} ${name}, Κρήτη`,
-    desc: (name, vibe) => `Βρείτε την καλύτερη περιοχή για διαμονή στ${name.match(/^[ΑΕΗΙΟΥΩΆΈΉΊΌΎΏ]/i) ? "ο" : "ην"} ${name}, Κρήτη. ${vibe}.`,
+    title: (name) => `Πού να μείνετε στ${name.match(/^[ΑΕΗΙΟΥΩΆΈΉΊΌΎΏ]/i) ? "ο" : "ην"} ${name}, Κρήτη 2026 : Καλύτερες περιοχές, τιμές & συμβουλές`,
+    desc: (name, vibe) => `Πού να μείνετε στ${name.match(/^[ΑΕΗΙΟΥΩΆΈΉΊΌΎΏ]/i) ? "ο" : "ην"} ${name}, Κρήτη το 2026. ${vibe}. Καλύτερες περιοχές ανά budget, τιμές και κοντινές παραλίες.`,
   },
 };
 
@@ -290,6 +295,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; area: string }>;
 }) {
   const { locale, area: areaSlug } = await params;
+  setRequestLocale(locale);
   const area = getArea(areaSlug);
   if (!area) return { title: "Not found" };
 
@@ -317,6 +323,7 @@ export default async function WhereToStayAreaPage({
   params: Promise<{ locale: string; area: string }>;
 }) {
   const { locale, area: areaSlug } = await params;
+  setRequestLocale(locale);
   const area = getArea(areaSlug);
   if (!area) notFound();
 
@@ -362,28 +369,20 @@ export default async function WhereToStayAreaPage({
 
   return (
     <main className="min-h-screen bg-surface">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(destinationSchema) }}
-      />
+      <JsonLd data={breadcrumb} />
+      <Breadcrumbs schema={breadcrumb} />
+      <JsonLd data={faqSchema} />
+      <JsonLd data={destinationSchema} />
 
       {/* Hero */}
-      <div className="bg-aegean text-white py-16 md:py-24">
+      <div className="bg-sea text-white py-16 md:py-24">
         <div className="max-w-4xl mx-auto px-4">
           <span className="inline-block bg-white/15 text-white/90 text-xs font-medium px-3 py-1 rounded-full mb-4">
             {typeLabel}
           </span>
           <h1
             className="text-3xl md:text-5xl font-bold mb-3"
-            style={{ fontFamily: "var(--font-heading, 'Playfair Display', Georgia, serif)" }}
+            style={{ fontFamily: "var(--font-heading, 'Comfortaa', system-ui, sans-serif)" }}
           >
             {labels.pageTitle} {area.name}
           </h1>
@@ -395,7 +394,7 @@ export default async function WhereToStayAreaPage({
         {/* Back link */}
         <Link
           href={`/${locale}/where-to-stay`}
-          className="inline-flex items-center gap-1 text-sm text-aegean hover:underline mb-8"
+          className="inline-flex items-center gap-1 text-sm text-sea hover:underline mb-8"
         >
           <ChevronLeft className="w-4 h-4" /> {labels.backAll}
         </Link>
@@ -405,8 +404,8 @@ export default async function WhereToStayAreaPage({
           {/* Best area card */}
           <div className="rounded-xl border border-border bg-white p-5">
             <div className="flex items-center gap-2 mb-2">
-              <MapPin className="w-5 h-5 text-aegean" />
-              <h2 className="font-semibold text-aegean">{labels.bestArea}</h2>
+              <MapPin className="w-5 h-5 text-sea" />
+              <h2 className="font-semibold text-sea">{labels.bestArea}</h2>
             </div>
             <p className="text-sm text-text leading-relaxed">{area.bestArea[loc]}</p>
           </div>
@@ -414,8 +413,8 @@ export default async function WhereToStayAreaPage({
           {/* Best for card */}
           <div className="rounded-xl border border-border bg-white p-5">
             <div className="flex items-center gap-2 mb-2">
-              <Bed className="w-5 h-5 text-terra" />
-              <h2 className="font-semibold text-aegean">{labels.bestFor}</h2>
+              <Bed className="w-5 h-5 text-terracotta" />
+              <h2 className="font-semibold text-sea">{labels.bestFor}</h2>
             </div>
             <p className="text-sm text-text leading-relaxed">{area.bestFor[loc]}</p>
           </div>
@@ -425,7 +424,7 @@ export default async function WhereToStayAreaPage({
         <div className="rounded-xl border border-border bg-white p-5 mb-10 max-w-sm">
           <div className="flex items-center gap-2 mb-2">
             <Euro className="w-5 h-5 text-amber-600" />
-            <h2 className="font-semibold text-aegean">{labels.priceRange}</h2>
+            <h2 className="font-semibold text-sea">{labels.priceRange}</h2>
           </div>
           <p className="text-2xl font-bold text-text">
             {area.priceRange}
@@ -438,12 +437,12 @@ export default async function WhereToStayAreaPage({
           <section className="mb-10">
             <div className="flex items-center gap-2 mb-4">
               <Lightbulb className="w-5 h-5 text-amber-500" />
-              <h2 className="text-xl font-bold text-aegean">{labels.tips}</h2>
+              <h2 className="text-xl font-bold text-sea">{labels.tips}</h2>
             </div>
             <ul className="space-y-2">
               {area.tips[loc].map((tip, i) => (
                 <li key={i} className="flex items-start gap-3 text-sm text-text leading-relaxed">
-                  <ChevronRight className="w-4 h-4 text-aegean mt-0.5 shrink-0" />
+                  <ChevronRight className="w-4 h-4 text-sea mt-0.5 shrink-0" />
                   {tip}
                 </li>
               ))}
@@ -454,8 +453,8 @@ export default async function WhereToStayAreaPage({
         {/* Nearby beaches */}
         <section className="mb-10">
           <div className="flex items-center gap-2 mb-4">
-            <Umbrella className="w-5 h-5 text-aegean" />
-            <h2 className="text-xl font-bold text-aegean">{labels.nearbyBeaches}</h2>
+            <Umbrella className="w-5 h-5 text-sea" />
+            <h2 className="text-xl font-bold text-sea">{labels.nearbyBeaches}</h2>
           </div>
           <div className="flex flex-wrap gap-2">
             {area.nearbyBeaches.map((beach) => {
@@ -464,9 +463,9 @@ export default async function WhereToStayAreaPage({
                 <Link
                   key={beach}
                   href={`/${locale}/beaches/${beachSlug}`}
-                  className="inline-flex items-center gap-1.5 text-sm bg-white border border-border rounded-full px-4 py-2 hover:border-aegean/40 transition-colors"
+                  className="inline-flex items-center gap-1.5 text-sm bg-white border border-border rounded-full px-4 py-2 hover:border-sea/40 transition-colors"
                 >
-                  <Umbrella className="w-3.5 h-3.5 text-aegean" />
+                  <Umbrella className="w-3.5 h-3.5 text-sea" />
                   {beach}
                 </Link>
               );
@@ -474,9 +473,17 @@ export default async function WhereToStayAreaPage({
           </div>
         </section>
 
+        {/* Bus access · internal linking vers /buses */}
+        <BusAccessBox
+          locale={locale}
+          destinationName={area.name}
+          matchSlug={areaSlug}
+          matchOn="where_to_stay_slug"
+        />
+
         {/* FAQ */}
         <section className="mb-12">
-          <h2 className="text-xl font-bold text-aegean mb-4">{labels.faq}</h2>
+          <h2 className="text-xl font-bold text-sea mb-4">{labels.faq}</h2>
           <div className="space-y-3">
             {faqItems.map((faq, i) => (
               <div key={i} className="p-4 bg-white rounded-xl border border-border">
@@ -487,24 +494,20 @@ export default async function WhereToStayAreaPage({
           </div>
         </section>
 
-        {/* Property management CTA */}
-        <div className="mb-10">
-          <AffiliateCTA type="propertyManagement" locale={locale} />
-        </div>
 
         {/* Other areas */}
         <section className="mb-8">
-          <h2 className="text-xl font-bold text-aegean mb-4">{labels.otherAreas}</h2>
+          <h2 className="text-xl font-bold text-sea mb-4">{labels.otherAreas}</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {otherAreas.map((a) => (
               <Link
                 key={a.slug}
                 href={`/${locale}/where-to-stay/${a.slug}`}
-                className="rounded-xl border border-border bg-white p-3 hover:border-aegean/30 transition-all"
+                className="rounded-xl border border-border bg-white p-3 hover:border-sea/30 transition-all"
               >
                 <p className="font-semibold text-sm">{a.name}</p>
                 <p className="text-xs text-text-muted">{a.vibe[loc]}</p>
-                <p className="text-xs text-aegean mt-1">{a.priceRange}</p>
+                <p className="text-xs text-sea mt-1">{a.priceRange}</p>
               </Link>
             ))}
           </div>

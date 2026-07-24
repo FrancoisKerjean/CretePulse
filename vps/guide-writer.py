@@ -85,6 +85,38 @@ def parse_json_response(raw):
         raise
 
 
+def call_claude_json(prompt, model="sonnet", max_retries=2, label="response"):
+    """Call Claude and parse its JSON, retrying on malformed output.
+
+    LLM JSON occasionally breaks (e.g. an unescaped double quote inside long HTML,
+    surfacing as "Expecting ',' delimiter"). With no retry this silently drops the
+    whole article. Output is non-deterministic, so a fresh attempt usually parses;
+    each retry also appends a strict-escaping reminder. Same hardening as the
+    kairos-compta OCR pipeline.
+    """
+    last_err = None
+    for attempt in range(max_retries + 1):
+        p = prompt
+        if attempt > 0:
+            p = (
+                prompt
+                + f"\n\nREMINDER: your previous answer was NOT valid JSON ({last_err})."
+                + " Return exactly ONE strictly valid JSON object. Escape every"
+                + ' double quote inside string values as \\". No markdown fences,'
+                + " no text before or after the JSON."
+            )
+        raw = call_claude(p, model)
+        try:
+            return parse_json_response(raw)
+        except (json.JSONDecodeError, ValueError) as e:
+            last_err = e
+            print(f"[guide-writer] {label}: JSON parse failed "
+                  f"(attempt {attempt + 1}/{max_retries + 1}): {e}")
+    raise RuntimeError(
+        f"{label}: JSON still invalid after {max_retries + 1} attempts: {last_err}"
+    )
+
+
 def select_topic():
     """Select next topic from the bank, excluding already published slugs."""
     with open(TOPICS_FILE, "r") as f:
@@ -150,11 +182,16 @@ def generate_en(topic, existing_guides):
     word_target = "1500-2000 words" if fmt == "long" else "500-800 words"
     min_h2 = 4 if fmt == "long" else 2
 
-    year = datetime.now(timezone.utc).year
+    current_year = datetime.now(timezone.utc).year
+    # Strip any 4-digit year baked into the slug/keywords so it can't override the
+    # current-year instruction below (a "...-2025-..." slug used to leak into titles).
+    topic_phrase = re.sub(r"\b20\d{2}\b", "", topic["slug"].replace("-", " ")).strip()
+    kw_clean = [re.sub(r"\b20\d{2}\b", str(current_year), k).strip() for k in topic["keywords"]]
     prompt = f"""You are an expert SEO travel writer specializing in Crete, Greece.
-Write a {fmt}-format guide about: {topic['slug'].replace('-', ' ')}
-Target keywords: {', '.join(topic['keywords'])}
-IMPORTANT: The current year is {year}. All references to years must use {year}, never 2024 or 2025.
+Write a {fmt}-format guide about: {topic_phrase}
+Target keywords: {', '.join(kw_clean)}
+
+CURRENT YEAR: {current_year}. NEVER reference any other year (no "2024", no "2025") unless quoting historical facts. The title MUST use {current_year} if a year is mentioned.
 
 Requirements:
 - {word_target}, factual, concrete data (distances, prices, seasons)
@@ -171,8 +208,7 @@ Return ONLY valid JSON (no markdown, no code fences):
 
 Minimum 3 FAQ questions that tourists actually ask."""
 
-    raw = call_claude(prompt, "sonnet")
-    return parse_json_response(raw)
+    return call_claude_json(prompt, "sonnet", label="EN content")
 
 
 def validate_content(data, fmt):
@@ -223,8 +259,7 @@ Source:
 Return ONLY valid JSON (no markdown):
 {{"fr": {{"title": "...", "meta_desc": "...", "content": "...", "faq": [...]}}, "de": {{"title": "...", "meta_desc": "...", "content": "...", "faq": [...]}}, "el": {{"title": "...", "meta_desc": "...", "content": "...", "faq": [...]}}}}"""
 
-    raw = call_claude(prompt, "sonnet")
-    return parse_json_response(raw)
+    return call_claude_json(prompt, "sonnet", label="FR/DE/EL translation")
 
 
 def translate_batch(en_data, locales):
@@ -242,39 +277,83 @@ Source:
 Return ONLY valid JSON (no markdown), one key per locale code:
 {{"{locales[0]}": {{"title": "...", "meta_desc": "...", "content": "...", "faq": [...]}}, ...}}"""
 
-    raw = call_claude(prompt, "haiku")
-    return parse_json_response(raw)
+    return call_claude_json(prompt, "haiku", label=f"batch {locale_str}")
 
 
-def generate_and_upload_image(title, category, slug):
-    """Generate hero image via fal.ai FLUX, upload to Supabase Storage."""
-    if not FAL_KEY:
-        print("[guide-writer] No FAL_KEY, skipping image generation")
-        return None
+WIKI_UA = "CreteDirect/1.0 (contact@kairosguest.com)"
 
+
+def search_wikimedia_image(query, limit=8):
+    """Search Wikimedia Commons for a relevant image. Returns first quality match URL or None."""
+    import urllib.request, urllib.parse
+    params = {
+        "action": "query",
+        "generator": "search",
+        "gsrsearch": query,
+        "gsrnamespace": "6",
+        "gsrlimit": str(limit),
+        "prop": "imageinfo",
+        "iiprop": "url|size",
+        "iiurlwidth": "1600",
+        "format": "json",
+    }
+    url = f"https://commons.wikimedia.org/w/api.php?{urllib.parse.urlencode(params)}"
+    req = urllib.request.Request(url, headers={"User-Agent": WIKI_UA})
     try:
-        import fal_client
-        prompt = f"Professional travel photography of {title}, Crete Greece, {category}, golden hour, cinematic, 16:9 aspect ratio"
-
-        result = fal_client.subscribe(
-            "fal-ai/flux/schnell",
-            arguments={"prompt": prompt, "image_size": "landscape_16_9", "num_images": 1},
-        )
-
-        image_url = result["images"][0]["url"]
-        img_data = requests.get(image_url, timeout=30).content
-        filename = f"{slug}.webp"
-
-        sb.storage.from_("guide-images").upload(
-            filename, img_data, {"content-type": "image/webp"}
-        )
-
-        public_url = f"{SUPABASE_URL}/storage/v1/object/public/guide-images/{filename}"
-        return public_url
-
+        resp = urllib.request.urlopen(req, timeout=15)
+        data = json.loads(resp.read().decode("utf-8"))
     except Exception as e:
-        print(f"[guide-writer] Image generation error: {e}")
+        print(f"[guide-writer] Wikimedia search error: {e}")
         return None
+
+    pages = data.get("query", {}).get("pages", {})
+    candidates = []
+    for page in pages.values():
+        info = (page.get("imageinfo") or [{}])[0]
+        thumb = info.get("thumburl", "")
+        width = info.get("width", 0)
+        title = page.get("title", "").lower()
+        # Filter: must be jpg/png/webp, min 1200px wide native, no logos/maps/diagrams
+        if not thumb:
+            continue
+        if not any(thumb.split("?")[0].lower().endswith(ext) for ext in [".jpg", ".jpeg", ".png", ".webp"]):
+            continue
+        if width < 800:
+            continue
+        if any(bad in title for bad in ["logo", "map", "diagram", "flag", "coat_of_arms", "location_map", ".svg"]):
+            continue
+        candidates.append(thumb)
+    return candidates[0] if candidates else None
+
+
+def generate_and_upload_image(title, category, slug, topic=None):
+    """Find a real Crete photo on Wikimedia Commons, upload to Supabase Storage."""
+    # Build search queries from keywords (richer than slug) + category fallbacks
+    base = re.sub(r'-\d{6}.*$|-202[0-9].*$', '', slug).replace('-', ' ')
+    keywords = (topic or {}).get("keywords", []) if topic else []
+    place_words = [k for k in keywords if k and k[0:1].isupper() and k.lower() not in ("crete", "greece")]
+    queries = []
+    # Try place names from keywords first (most likely to have Wikimedia photos)
+    for place in place_words[:3]:
+        queries.append(f"{place} Crete")
+    # Then keyword-rich combos
+    for kw in keywords[:2]:
+        queries.append(f"{kw} Crete")
+    # Slug-based
+    queries.extend([f"{base} Crete", f"Crete {category}", "Crete Greece beach", "Crete Greece landscape", "Crete Greece"])
+    image_url = None
+    for q in queries:
+        image_url = search_wikimedia_image(q)
+        if image_url:
+            print(f"[guide-writer] Found Wikimedia image for query: {q}")
+            break
+    if not image_url:
+        print("[guide-writer] No suitable Wikimedia image found, skipping")
+        return None
+
+    # No upload: Wikimedia CDN is fast and free; just return the direct URL.
+    print(f"[guide-writer] Using Wikimedia CDN URL directly: {image_url[:90]}...")
+    return image_url
 
 
 def main():
@@ -312,7 +391,7 @@ def main():
             all_translations.update(batch_result)
 
         print("[guide-writer] Generating image...")
-        image_url = generate_and_upload_image(en_data["title"], topic["category"], slug)
+        image_url = generate_and_upload_image(en_data["title"], topic["category"], slug, topic)
 
         titles = {loc: t.get("title", "") for loc, t in all_translations.items()}
         meta_descs = {loc: t.get("meta_desc", "") for loc, t in all_translations.items()}
@@ -335,6 +414,13 @@ def main():
 
         sb.table("guides").insert(row).execute()
         print(f"[guide-writer] Inserted guide: {slug}")
+
+        # Tell search engines immediately (all locales) instead of waiting for recrawl.
+        try:
+            import indexnow
+            indexnow.submit(indexnow.guide_urls(slug))
+        except Exception as e:
+            print(f"[guide-writer] indexnow skipped: {e}")
 
         msg = f"✅ Guide publié : {en_data['title']} ({fmt}, {topic['category']})"
         send_telegram(msg)
