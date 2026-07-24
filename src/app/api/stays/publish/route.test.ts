@@ -9,6 +9,7 @@ vi.mock("@/lib/stays/db", () => ({
 vi.mock("@/lib/stays/ical", () => ({
   parseICalText: vi.fn(() => [{ dateFrom: "2026-07-01", dateTo: "2026-07-08" }]),
 }));
+vi.mock("@/lib/stays/tokens", () => ({ hashToken: (t: string) => `hash(${t})` }));
 global.fetch = vi.fn(async () => ({ ok: true, text: async () => "BEGIN:VCALENDAR" }) as never);
 
 import { POST } from "./route";
@@ -21,25 +22,34 @@ function req(body: unknown): Request {
   });
 }
 
+const draft = { id: 9, slug: "villa-abc", status: "draft", publish_token_hash: "hash(pub-plain)" };
+
 describe("POST /api/stays/publish", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("publishes a draft when a valid private iCal is provided", async () => {
-    getListingBySlug.mockResolvedValueOnce({ id: 9, slug: "villa-abc", status: "draft" });
-    const res = await POST(req({ slug: "villa-abc", icalUrl: "https://airbnb.com/calendar/ical/x.ics" }) as never);
+  it("publishes a draft when the owner token and a valid iCal are provided", async () => {
+    getListingBySlug.mockResolvedValueOnce(draft);
+    const res = await POST(req({ slug: "villa-abc", icalUrl: "https://airbnb.com/calendar/ical/x.ics", token: "pub-plain" }) as never);
     expect(res.status).toBe(200);
     expect(publishListing).toHaveBeenCalledWith(9, "https://airbnb.com/calendar/ical/x.ics");
   });
 
+  it("403s when the ownership token is wrong", async () => {
+    getListingBySlug.mockResolvedValueOnce(draft);
+    const res = await POST(req({ slug: "villa-abc", icalUrl: "https://airbnb.com/calendar/ical/x.ics", token: "wrong" }) as never);
+    expect(res.status).toBe(403);
+    expect(publishListing).not.toHaveBeenCalled();
+  });
+
   it("404s an unknown slug", async () => {
     getListingBySlug.mockResolvedValueOnce(null);
-    const res = await POST(req({ slug: "nope", icalUrl: "https://airbnb.com/x.ics" }) as never);
+    const res = await POST(req({ slug: "nope", icalUrl: "https://airbnb.com/x.ics", token: "pub-plain" }) as never);
     expect(res.status).toBe(404);
   });
 
   it("422s when the iCal URL is not an ics feed", async () => {
-    getListingBySlug.mockResolvedValueOnce({ id: 9, slug: "villa-abc", status: "draft" });
-    const res = await POST(req({ slug: "villa-abc", icalUrl: "not-a-url" }) as never);
+    getListingBySlug.mockResolvedValueOnce(draft);
+    const res = await POST(req({ slug: "villa-abc", icalUrl: "not-a-url", token: "pub-plain" }) as never);
     expect(res.status).toBe(422);
   });
 });

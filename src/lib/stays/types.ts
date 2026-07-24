@@ -45,6 +45,7 @@ export interface StayListing {
   commission_rate: number;
   ical_private_url: string | null;
   ical_sync_meta: unknown | null;
+  publish_token_hash: string | null;
   status: ListingStatus;
   created_at: string;
 }

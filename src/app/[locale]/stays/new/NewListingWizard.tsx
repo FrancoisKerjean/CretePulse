@@ -7,6 +7,7 @@ export default function NewListingWizard() {
   const [email, setEmail] = useState("");
   const [price, setPrice] = useState("");
   const [slug, setSlug] = useState<string | null>(null);
+  const [pubToken, setPubToken] = useState("");
   const [ical, setIcal] = useState("");
   const [msg, setMsg] = useState("");
 
@@ -18,7 +19,7 @@ export default function NewListingWizard() {
       body: JSON.stringify({ airbnbUrl: url, ownerEmail: email, basePriceEur: Number(price), website: "" }),
     });
     const j = await r.json();
-    if (j.ok && j.slug) { setSlug(j.slug); setMsg("Brouillon créé. Ajoutez votre iCal privé Airbnb pour publier."); }
+    if (j.ok && j.slug) { setSlug(j.slug); setPubToken(j.publishToken ?? ""); setMsg("Brouillon créé. Ajoutez votre iCal privé Airbnb pour publier."); }
     else setMsg("Lien invalide, réessayez.");
   }
 
@@ -27,7 +28,7 @@ export default function NewListingWizard() {
     setMsg("Publication…");
     const r = await fetch("/api/stays/publish", {
       method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ slug, icalUrl: ical }),
+      body: JSON.stringify({ slug, icalUrl: ical, token: pubToken }),
     });
     const j = await r.json();
     setMsg(j.ok ? "Annonce publiée ✅" : `Erreur : ${j.error}`);

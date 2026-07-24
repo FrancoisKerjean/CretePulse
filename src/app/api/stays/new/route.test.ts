@@ -38,6 +38,7 @@ describe("POST /api/stays/new", () => {
     expect(json.ok).toBe(true);
     expect(json.slug).toBeTruthy();
     expect(createDraftListing).toHaveBeenCalledOnce();
+    expect(json.publishToken).toBeTruthy();
   });
 
   it("rejects a missing URL", async () => {
