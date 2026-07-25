@@ -13,6 +13,7 @@
     "check:geo": "node --experimental-strip-types scripts/check-geo.mjs",
     "check:car-partners": "node --experimental-strip-types scripts/check-car-partners.mjs",
     "check:car-lead": "node --experimental-strip-types scripts/check-car-lead.mjs",
+    "check:car-demand": "node --experimental-strip-types scripts/check-car-demand.mjs",
     "check:car-quotes": "node --experimental-strip-types scripts/check-car-quotes.mjs",
     "check:activity-taxonomy": "node --experimental-strip-types scripts/check-activity-taxonomy.mjs",
     "check:activity-catalog": "node --experimental-strip-types scripts/check-activity-catalog.mjs",
@@ -33,7 +34,7 @@
     "check:boarding": "node --experimental-strip-types scripts/check-boarding.mjs",
     "check:nearest-stop": "node --experimental-strip-types scripts/check-nearest-stop.mjs",
     "check:swim-near": "node --experimental-strip-types scripts/check-swim-near.mjs",
-    "check": "npm run check:retention && npm run check:boarding && npm run check:nearest-stop && npm run check:swim-near && npm run check:geo && npm run check:car-partners && npm run check:car-lead && npm run check:car-admin && npm run check:car-monitoring && npm run check:bus-select && npm run check:citybus-engine && npm run check:stop-departures && npm run check:projet-copy && npm run check:projet-lead && npm run check:da && npm run check:i18n && tsc --noEmit",
+    "check": "npm run check:retention && npm run check:boarding && npm run check:nearest-stop && npm run check:swim-near && npm run check:geo && npm run check:car-partners && npm run check:car-lead && npm run check:car-demand && npm run check:car-admin && npm run check:car-monitoring && npm run check:bus-select && npm run check:citybus-engine && npm run check:stop-departures && npm run check:projet-copy && npm run check:projet-lead && npm run check:da && npm run check:i18n && tsc --noEmit",
     "seed:activity-catalog": "node scripts/seed-activity-catalog.mjs",
     "test:affiliate": "node --test --experimental-strip-types src/lib/affiliate.test.ts"
   },

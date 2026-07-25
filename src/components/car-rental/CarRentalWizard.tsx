@@ -321,6 +321,7 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
     if (q && zoneForPickup(q) && SLUG_COORDS[q]) return q;
     return initialPickupProp && zoneForPickup(initialPickupProp) && SLUG_COORDS[initialPickupProp] ? initialPickupProp : null;
   }, [sp, initialPickupProp]);
+  const source = sp.get("source") ?? initialSource ?? (initialPickup ? "promo" : "direct");
 
   const [view, setView] = useState<View>("steps");
   const [step, setStep] = useState(initialPickup ? 2 : 1);
@@ -345,6 +346,21 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
   const [submitError, setSubmitError] = useState(false);
   const [fallbackWhatsapp, setFallbackWhatsapp] = useState<string | null>(null);
   const [nearRequested, setNearRequested] = useState(false);
+  const funnelStartedRef = useRef(false);
+  const viewTrackedRef = useRef(false);
+
+  const trackFunnelStarted = () => {
+    if (funnelStartedRef.current) return;
+    funnelStartedRef.current = true;
+    window.plausible?.("Car Wizard Started", {
+      props: {
+        source,
+        pickup: pickup ?? "none",
+        entry_step: String(initialPickup ? 2 : 1),
+        locale,
+      },
+    });
+  };
 
   // Défauts dates au mount (et pas au render : la page est prérendue au build).
   useEffect(() => {
@@ -365,9 +381,35 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
     rootRef.current?.scrollIntoView({ block: "start" });
   }, [step, view]);
 
+  // Funnel complet : l'entrée et l'étape initiale des landings préremplies
+  // doivent être visibles, même si l'utilisateur ne clique jamais.
+  useEffect(() => {
+    if (viewTrackedRef.current) return;
+    viewTrackedRef.current = true;
+    window.plausible?.("Car Wizard Viewed", {
+      props: {
+        source,
+        pickup: initialPickup ?? "none",
+        entry_step: String(initialPickup ? 2 : 1),
+        locale,
+      },
+    });
+  }, [initialPickup, locale, source]);
+
+  useEffect(() => {
+    if (view !== "steps") return;
+    window.plausible?.("Car Wizard Step", {
+      props: {
+        step: String(step),
+        source,
+        pickup: pickup ?? "none",
+        locale,
+      },
+    });
+  }, [locale, pickup, source, step, view]);
+
   const advance = (to: number) => {
     setStep(to);
-    window.plausible?.("Car Wizard Step", { props: { step: String(to) } });
   };
 
   // "Près de moi" : dès que la position arrive, pickup le plus proche → étape 2.
@@ -405,10 +447,11 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
   const timesValid = timeFilled && (dateTo !== dateFrom || timeTo > timeFrom);
   const contactValid = name.trim().length > 0 && EMAIL_REGEX.test(email.trim());
 
-  const source = sp.get("source") ?? initialSource ?? (initialPickup ? "promo" : "direct");
-
   async function submit() {
     if (!pickup || !carTypeDef || !contactValid || submitting) return;
+    window.plausible?.("Car Wizard Submit", {
+      props: { status: "attempt", source, pickup, locale },
+    });
     setSubmitting(true);
     setSubmitError(false);
     try {
@@ -427,6 +470,9 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
       });
       const json = await res.json().catch(() => null);
       if (res.ok && json?.ok === true) {
+        window.plausible?.("Car Wizard Submit", {
+          props: { status: "success", source, pickup, locale },
+        });
         window.plausible?.("Car Lead", {
           props: {
             zone: zoneForPickup(pickup)?.id ?? "unknown",
@@ -437,12 +483,21 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
         });
         setView("sent");
       } else if (res.ok && json?.ok === false && json.fallbackWhatsapp) {
+        window.plausible?.("Car Wizard Submit", {
+          props: { status: "fallback", source, pickup, locale },
+        });
         setFallbackWhatsapp(String(json.fallbackWhatsapp));
         setView("fallback");
       } else {
+        window.plausible?.("Car Wizard Submit", {
+          props: { status: `http_${res.status}`, source, pickup, locale },
+        });
         setSubmitError(true);
       }
     } catch {
+      window.plausible?.("Car Wizard Submit", {
+        props: { status: "network_error", source, pickup, locale },
+      });
       setSubmitError(true);
     } finally {
       setSubmitting(false);
@@ -541,7 +596,12 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
   // ---- Étapes ---------------------------------------------------------------
 
   return (
-    <div ref={rootRef} className="card-base p-5 sm:p-7 scroll-mt-24">
+    <div
+      ref={rootRef}
+      className="card-base p-5 sm:p-7 scroll-mt-24"
+      onFocusCapture={trackFunnelStarted}
+      onChangeCapture={trackFunnelStarted}
+    >
       {/* Barre de progression : 4 segments */}
       <div className="flex items-center gap-3 mb-6">
         <div className="flex flex-1 gap-1.5">
