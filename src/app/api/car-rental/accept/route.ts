@@ -73,6 +73,7 @@ export async function POST(request: NextRequest) {
   const locale = (row.locale as string) || "en";
   const ct = CAR_TYPES_DATA.find((c) => c.id === row.car_type);
   const carTypeLabel = carTypeLabelWithExamples(ct, "en", row.car_type as string);
+  const carTypeLabelClient = carTypeLabelWithExamples(ct, locale, row.car_type as string);
   const days = Math.max(1, Math.round((new Date(row.date_to as string).getTime() - new Date(row.date_from as string).getTime()) / 86400000));
   const partnerName = partner?.name ?? chosen.partner_name;
 
@@ -83,7 +84,7 @@ export async function POST(request: NextRequest) {
       customer: { name: row.customer_name as string, email: row.customer_email as string, phone: (row.customer_phone as string | null) ?? undefined, locale },
       quote: {
         pickupLabel: carPickupLabel(row.pickup_slug as string), dateFrom: row.date_from as string, dateTo: row.date_to as string,
-        carTypeLabel, price: chosen.price, currency: chosen.currency ?? "EUR",
+        carTypeLabel, carTypeLabelClient, price: chosen.price, currency: chosen.currency ?? "EUR",
         partnerName, carModel: carModelSnapshot,
         inclusions: Array.isArray(chosen.inclusions) ? chosen.inclusions : [],
         insuranceType: chosen.insurance_type, excessEur: chosen.excess_eur, zeroExcessUpsellEurDay: chosen.zero_excess_upsell_eur_day,

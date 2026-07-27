@@ -689,6 +689,9 @@ export async function sendLeadKamiSummary(lead: CarLead, partnerNames: string[])
 
 export interface CarQuoteInfo {
   pickupLabel: string; dateFrom: string; dateTo: string; carTypeLabel: string;
+  // Version localisée (langue du client) du carTypeLabel avec exemples, pour le
+  // mail de confirmation client. Le carTypeLabel « nu » reste EN pour le loueur.
+  carTypeLabelClient?: string;
   price: number; currency: string;
   partnerName: string;
   carModel?: string | null;
@@ -836,11 +839,11 @@ const CONNECT_SUBJECT: Record<string, string> = {
   el: "Συνδεθήκατε με το γραφείο ενοικίασης αυτοκινήτων",
 };
 
-const CONNECT_COPY: Record<string, { intro: string; agency: string; foot: string }> = {
-  en: { intro: "You accepted the offer. Here are the rental agency's details, they will also reach out to finalise your booking.", agency: "Rental agency", foot: "Payment and terms are agreed directly with the agency." },
-  fr: { intro: "Vous avez accepté l'offre. Voici les coordonnées de l'agence de location, elle vous contactera aussi pour finaliser votre réservation.", agency: "Agence de location", foot: "Le paiement et les conditions se règlent directement avec l'agence." },
-  de: { intro: "Sie haben das Angebot angenommen. Hier sind die Kontaktdaten der Autovermietung, sie meldet sich ebenfalls bei Ihnen.", agency: "Autovermietung", foot: "Zahlung und Bedingungen werden direkt mit der Vermietung vereinbart." },
-  el: { intro: "Αποδεχτήκατε την προσφορά. Ακολουθούν τα στοιχεία του γραφείου ενοικίασης, θα επικοινωνήσει και εκείνο μαζί σας.", agency: "Γραφείο ενοικίασης", foot: "Η πληρωμή και οι όροι συμφωνούνται απευθείας με το γραφείο." },
+const CONNECT_COPY: Record<string, { intro: string; booking: string; agency: string; totalWord: string; foot: string }> = {
+  en: { intro: "You accepted the offer. Here are the rental agency's details, they will also reach out to finalise your booking.", booking: "Your booking", agency: "Rental agency", totalWord: "total", foot: "Payment and terms are agreed directly with the agency." },
+  fr: { intro: "Vous avez accepté l'offre. Voici les coordonnées de l'agence de location, elle vous contactera aussi pour finaliser votre réservation.", booking: "Votre réservation", agency: "Agence de location", totalWord: "au total", foot: "Le paiement et les conditions se règlent directement avec l'agence." },
+  de: { intro: "Sie haben das Angebot angenommen. Hier sind die Kontaktdaten der Autovermietung, sie meldet sich ebenfalls bei Ihnen.", booking: "Ihre Buchung", agency: "Autovermietung", totalWord: "gesamt", foot: "Zahlung und Bedingungen werden direkt mit der Vermietung vereinbart." },
+  el: { intro: "Αποδεχτήκατε την προσφορά. Ακολουθούν τα στοιχεία του γραφείου ενοικίασης, θα επικοινωνήσει και εκείνο μαζί σας.", booking: "Η κράτησή σας", agency: "Γραφείο ενοικίασης", totalWord: "σύνολο", foot: "Η πληρωμή και οι όροι συμφωνούνται απευθείας με το γραφείο." },
 };
 
 // Loueurs partenaires (Grèce) reçoivent des numéros avec l'indicatif du pays du
@@ -911,6 +914,12 @@ export async function sendConnectionEmails(opts: {
   const insLines = insuranceSummary(quote.insuranceType, quote.excessEur, quote.zeroExcessUpsellEurDay, l);
   const inner = `
     <p style="margin:0 0 16px; color:${C.muted}; font-size:14px; line-height:1.6;">${customer.name ? `${customer.name}, ` : ""}${c.intro}</p>
+    <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 18px;">
+      <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${c.booking}</p>
+      <p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">
+        ${quote.pickupLabel}<br>${quote.dateFrom} → ${quote.dateTo}<br>${quote.carTypeLabelClient ?? quote.carTypeLabel}${quote.carModel ? `<br><strong>${quote.carModel}</strong>` : ""}<br><strong>${money(quote.price, quote.currency)}</strong> <span style="color:${C.muted};">${c.totalWord}</span>
+      </p>
+    </div>
     <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 18px;">
       <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${c.agency}</p>
       <p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">
