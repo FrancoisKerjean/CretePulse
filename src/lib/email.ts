@@ -843,6 +843,28 @@ const CONNECT_COPY: Record<string, { intro: string; agency: string; foot: string
   el: { intro: "Αποδεχτήκατε την προσφορά. Ακολουθούν τα στοιχεία του γραφείου ενοικίασης, θα επικοινωνήσει και εκείνο μαζί σας.", agency: "Γραφείο ενοικίασης", foot: "Η πληρωμή και οι όροι συμφωνούνται απευθείας με το γραφείο." },
 };
 
+// Loueurs partenaires (Grèce) reçoivent des numéros avec l'indicatif du pays du
+// client. Sans indicatif, ils tombent en support côté eux (ex. Lux Trans 27/07).
+// Mapping conservateur : locales du site pour lesquelles on connaît le pays.
+const LOCALE_TO_COUNTRY_CODE: Record<string, string> = {
+  fr: "33", de: "49", el: "30", it: "39", es: "34",
+  nl: "31", pt: "351", pl: "48", cs: "420", da: "45",
+  fi: "358", no: "47", sv: "46", ro: "40", hu: "36",
+  bg: "359", sk: "421", sl: "386", hr: "385", lt: "370",
+  lv: "371", et: "372",
+};
+
+function formatPhoneWithCountryCode(phone: string | null | undefined, locale: string): string {
+  const raw = (phone ?? "").trim();
+  if (!raw) return "-";
+  const digits = raw.replace(/[^\d+]/g, "");
+  if (digits.startsWith("+")) return digits;
+  if (digits.startsWith("00")) return `+${digits.slice(2)}`;
+  const cc = LOCALE_TO_COUNTRY_CODE[locale];
+  if (cc && digits.startsWith("0")) return `+${cc}${digits.slice(1)}`;
+  return raw;
+}
+
 /** Après acceptation : met loueur et client en relation (coordonnées échangées).
  *  Loueur = email texte B2B (CC Kami, preuve) ; client = HTML localisé. */
 export async function sendConnectionEmails(opts: {
@@ -862,9 +884,10 @@ export async function sendConnectionEmails(opts: {
     ``,
     `Customer: ${customer.name}`,
     `Email: ${customer.email}`,
-    `Phone / WhatsApp: ${customer.phone ?? "-"}`,
+    `Phone / WhatsApp: ${formatPhoneWithCountryCode(customer.phone, customer.locale)}`,
     ``,
     `Booking: ${quote.pickupLabel}, ${quote.dateFrom} → ${quote.dateTo}, ${quote.carTypeLabel}`,
+    ...(quote.carModel ? [`Car model quoted: ${quote.carModel}`] : []),
     ...(insuranceSummary(quote.insuranceType, quote.excessEur, quote.zeroExcessUpsellEurDay, "en").length
       ? [`Insurance quoted: ${insuranceSummary(quote.insuranceType, quote.excessEur, quote.zeroExcessUpsellEurDay, "en").join(" · ")}`]
       : []),

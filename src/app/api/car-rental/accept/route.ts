@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
-import { carPickupLabel } from "@/lib/car-lead";
+import { carPickupLabel, carTypeLabelWithExamples } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { partnerById } from "@/lib/car-partners-db";
 import { isOfferExpired } from "@/lib/car-offer-expiry";
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
 
   const locale = (row.locale as string) || "en";
   const ct = CAR_TYPES_DATA.find((c) => c.id === row.car_type);
-  const carTypeLabel = ct?.labels[locale] ?? ct?.labels.en ?? (row.car_type as string);
+  const carTypeLabel = carTypeLabelWithExamples(ct, "en", row.car_type as string);
   const days = Math.max(1, Math.round((new Date(row.date_to as string).getTime() - new Date(row.date_from as string).getTime()) / 86400000));
   const partnerName = partner?.name ?? chosen.partner_name;
 
