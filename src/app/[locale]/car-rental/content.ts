@@ -17,91 +17,91 @@ export type PageStrings = {
 export const META: Record<string, { title: string; desc: string }> = {
   "en": {
     "title": "Rent a car in Crete · local agency, fair price, no prepayment",
-    "desc": "Request a rental car in Crete in four taps. A vetted local agency replies directly with a quote: you pay the agency, cash accepted, no online prepayment, airport pick-up possible."
+    "desc": "Request a rental car in Crete in four taps. Vetted local agencies reply directly with their own quotes: you pick, you pay the agency, cash accepted, no online prepayment, airport pick-up possible."
   },
   "fr": {
     "title": "Louer une voiture en Crète · agence locale, prix juste, sans prépaiement",
-    "desc": "Demandez une voiture de location en Crète en quatre clics. Une agence locale vérifiée vous répond directement avec un devis : vous payez l'agence, espèces acceptées, aucun prépaiement en ligne, prise à l'aéroport possible."
+    "desc": "Demandez une voiture de location en Crète en quatre clics. Des agences locales vérifiées vous répondent directement avec leurs devis : vous choisissez, vous payez l'agence, espèces acceptées, aucun prépaiement en ligne, prise à l'aéroport possible."
   },
   "de": {
     "title": "Mietwagen auf Kreta · lokale Agentur, fairer Preis, keine Vorauszahlung",
-    "desc": "Fordern Sie in vier Klicks einen Mietwagen auf Kreta an. Eine geprüfte lokale Agentur antwortet direkt mit einem Angebot: Sie zahlen an die Agentur, Barzahlung möglich, keine Online-Vorauszahlung, Abholung am Flughafen möglich."
+    "desc": "Fordern Sie in vier Klicks einen Mietwagen auf Kreta an. Geprüfte lokale Agenturen antworten direkt mit ihren eigenen Angeboten: Sie wählen, Sie zahlen an die Agentur, Barzahlung möglich, keine Online-Vorauszahlung, Abholung am Flughafen möglich."
   },
   "el": {
     "title": "Ενοικίαση αυτοκινήτου στην Κρήτη · τοπικό γραφείο, δίκαιη τιμή, χωρίς προπληρωμή",
-    "desc": "Ζητήστε ενοικιαζόμενο αυτοκίνητο στην Κρήτη με τέσσερα κλικ. Ένα ελεγμένο τοπικό γραφείο απαντά απευθείας με προσφορά: πληρώνετε το γραφείο, δεκτά μετρητά, καμία online προπληρωμή, δυνατή παραλαβή στο αεροδρόμιο."
+    "desc": "Ζητήστε ενοικιαζόμενο αυτοκίνητο στην Κρήτη με τέσσερα κλικ. Ελεγμένα τοπικά γραφεία απαντούν απευθείας με τις δικές τους προσφορές: επιλέγετε εσείς, πληρώνετε το γραφείο, δεκτά μετρητά, καμία online προπληρωμή, δυνατή παραλαβή στο αεροδρόμιο."
   },
   "it": {
     "title": "Noleggio auto a Creta · agenzia locale, prezzo onesto, nessun pagamento anticipato",
-    "desc": "Richiedi un'auto a noleggio a Creta in quattro tap. Un'agenzia locale selezionata ti risponde direttamente con un preventivo: paghi l'agenzia, contanti accettati, nessun pagamento online anticipato, ritiro in aeroporto possibile."
+    "desc": "Richiedi un'auto a noleggio a Creta in quattro tap. Agenzie locali selezionate ti rispondono direttamente con i loro preventivi: scegli tu, paghi l'agenzia, contanti accettati, nessun pagamento online anticipato, ritiro in aeroporto possibile."
   },
   "nl": {
     "title": "Auto huren op Kreta · lokaal verhuurbedrijf, eerlijke prijs, geen vooruitbetaling",
-    "desc": "Vraag in vier tikken een huurauto op Kreta aan. Een gescreend lokaal verhuurbedrijf reageert rechtstreeks met een offerte: je betaalt het verhuurbedrijf, contant mag, geen vooruitbetaling online, ophalen op de luchthaven mogelijk."
+    "desc": "Vraag in vier tikken een huurauto op Kreta aan. Gescreende lokale verhuurbedrijven reageren rechtstreeks met hun eigen offertes: jij kiest, je betaalt het verhuurbedrijf, contant mag, geen vooruitbetaling online, ophalen op de luchthaven mogelijk."
   },
   "pl": {
     "title": "Wynajem samochodu na Krecie · lokalna firma, uczciwa cena, bez przedpłaty",
-    "desc": "Zamów samochód na Krecie w cztery kliknięcia. Sprawdzona lokalna firma odpowiada bezpośrednio z wyceną: płacisz firmie, gotówka akceptowana, bez przedpłaty online, możliwy odbiór z lotniska."
+    "desc": "Zamów samochód na Krecie w cztery kliknięcia. Sprawdzone lokalne firmy odpowiadają bezpośrednio własnymi wycenami: Ty wybierasz, płacisz firmie, gotówka akceptowana, bez przedpłaty online, możliwy odbiór z lotniska."
   },
   "es": {
     "title": "Alquilar un coche en Creta · agencia local, precio justo, sin pago por adelantado",
-    "desc": "Solicita un coche de alquiler en Creta en cuatro toques. Una agencia local verificada responde directamente con un presupuesto: pagas a la agencia, se acepta efectivo, sin pago en línea por adelantado, recogida en el aeropuerto posible."
+    "desc": "Solicita un coche de alquiler en Creta en cuatro toques. Agencias locales verificadas responden directamente con sus presupuestos: tú eliges, pagas a la agencia, se acepta efectivo, sin pago en línea por adelantado, recogida en el aeropuerto posible."
   },
   "pt": {
     "title": "Alugar um carro em Creta · agência local, preço justo, sem pré-pagamento",
-    "desc": "Peça um carro de aluguer em Creta em quatro toques. Uma agência local de confiança responde diretamente com um orçamento: paga à agência, dinheiro aceite, sem pré-pagamento online, recolha no aeroporto possível."
+    "desc": "Peça um carro de aluguer em Creta em quatro toques. Agências locais de confiança respondem diretamente com os seus orçamentos: você escolhe, paga à agência, dinheiro aceite, sem pré-pagamento online, recolha no aeroporto possível."
   },
   "ru": {
     "title": "Аренда авто на Крите · местное агентство, честная цена, без предоплаты",
-    "desc": "Оставьте заявку на аренду авто на Крите в четыре касания. Проверенное местное агентство отвечает напрямую и присылает расчёт: вы платите агентству, наличные принимаются, без онлайн-предоплаты, возможна встреча в аэропорту."
+    "desc": "Оставьте заявку на аренду авто на Крите в четыре касания. Проверенные местные агентства отвечают напрямую своими расчётами: вы выбираете и платите агентству, наличные принимаются, без онлайн-предоплаты, возможна встреча в аэропорту."
   },
   "ja": {
     "title": "クレタ島でレンタカーを借りる · 地元の代理店、適正価格、前払いなし",
-    "desc": "4回のタップでクレタ島のレンタカーをリクエスト。信頼できる地元の代理店が見積もりを添えて直接返信します。支払いは代理店へ、現金可、オンライン前払いなし、空港での受け取りも可能です。"
+    "desc": "4回のタップでクレタ島のレンタカーをリクエスト。信頼できる地元の代理店がそれぞれの見積もりを添えて直接返信し、お客様が選びます。支払いは代理店へ、現金可、オンライン前払いなし、空港での受け取りも可能です。"
   },
   "ko": {
     "title": "크레타 렌터카 · 현지 업체, 합리적인 가격, 온라인 선결제 없음",
-    "desc": "네 번의 터치로 크레타 렌터카를 요청하세요. 검증된 현지 업체가 견적과 함께 직접 답변합니다. 업체에 직접 결제하고, 현금 결제 가능, 온라인 선결제 없음, 공항 픽업 가능."
+    "desc": "네 번의 터치로 크레타 렌터카를 요청하세요. 검증된 현지 업체들이 각자의 견적으로 직접 답변하고 고객님이 선택합니다. 업체에 직접 결제하고, 현금 결제 가능, 온라인 선결제 없음, 공항 픽업 가능."
   },
   "zh": {
     "title": "在克里特岛租车 · 本地车行，价格公道，无需预付",
-    "desc": "在克里特岛租车，四步即可提交需求。我们筛选过的本地车行会直接回复报价：您付款给车行，接受现金，无需在线预付，可在机场取车。"
+    "desc": "在克里特岛租车，四步即可提交需求。我们筛选过的本地车行会直接回复各自的报价，由您挑选：您付款给车行，接受现金，无需在线预付，可在机场取车。"
   },
   "tr": {
     "title": "Girit'te araba kiralayın · yerel acente, adil fiyat, ön ödeme yok",
-    "desc": "Girit'te kiralık araba talebinizi dört dokunuşta gönderin. Doğrulanmış yerel bir acente size doğrudan fiyat teklifiyle yanıt verir: ödemeyi acenteye yaparsınız, nakit kabul edilir, çevrimiçi ön ödeme yoktur, havalimanından teslim mümkündür."
+    "desc": "Girit'te kiralık araba talebinizi dört dokunuşta gönderin. Doğrulanmış yerel acenteler size doğrudan kendi fiyat teklifleriyle yanıt verir: siz seçersiniz, ödemeyi acenteye yaparsınız, nakit kabul edilir, çevrimiçi ön ödeme yoktur, havalimanından teslim mümkündür."
   },
   "sv": {
     "title": "Hyr bil på Kreta · lokal byrå, rättvist pris, ingen förskottsbetalning",
-    "desc": "Begär en hyrbil på Kreta med fyra tryck. En granskad lokal byrå svarar direkt med en offert: du betalar byrån, kontanter accepteras, ingen förskottsbetalning online, hämtning på flygplatsen möjlig."
+    "desc": "Begär en hyrbil på Kreta med fyra tryck. Granskade lokala byråer svarar direkt med sina egna offerter: du väljer, du betalar byrån, kontanter accepteras, ingen förskottsbetalning online, hämtning på flygplatsen möjlig."
   },
   "da": {
     "title": "Lej en bil på Kreta · lokalt bureau, fair pris, ingen forudbetaling",
-    "desc": "Anmod om en lejebil på Kreta med fire tryk. Et udvalgt lokalt bureau svarer dig direkte med et tilbud: du betaler bureauet, kontanter accepteres, ingen forudbetaling online, afhentning i lufthavnen er mulig."
+    "desc": "Anmod om en lejebil på Kreta med fire tryk. Udvalgte lokale bureauer svarer dig direkte med deres egne tilbud: du vælger, du betaler bureauet, kontanter accepteres, ingen forudbetaling online, afhentning i lufthavnen er mulig."
   },
   "no": {
     "title": "Leie bil på Kreta · lokalt byrå, rettferdig pris, ingen forhåndsbetaling",
-    "desc": "Be om en leiebil på Kreta med fire trykk. Et kvalitetssikret lokalt byrå svarer direkte med et tilbud: du betaler byrået, kontant godtas, ingen forhåndsbetaling på nett, henting på flyplassen mulig."
+    "desc": "Be om en leiebil på Kreta med fire trykk. Kvalitetssikrede lokale byråer svarer direkte med sine egne tilbud: du velger, du betaler byrået, kontant godtas, ingen forhåndsbetaling på nett, henting på flyplassen mulig."
   },
   "fi": {
     "title": "Vuokraa auto Kreetalla · paikallinen toimisto, reilu hinta, ei ennakkomaksua",
-    "desc": "Pyydä vuokra-autoa Kreetalla neljällä napautuksella. Luotettu paikallinen toimisto vastaa suoraan tarjouksella: maksat toimistolle, käteinen käy, ei verkkomaksua etukäteen, nouto lentokentältä mahdollinen."
+    "desc": "Pyydä vuokra-autoa Kreetalla neljällä napautuksella. Luotetut paikalliset toimistot vastaavat suoraan omilla tarjouksillaan: sinä valitset, maksat toimistolle, käteinen käy, ei verkkomaksua etukäteen, nouto lentokentältä mahdollinen."
   },
   "cs": {
     "title": "Pronájem auta na Krétě · místní agentura, férová cena, bez platby předem",
-    "desc": "Požádejte o pronájem auta na Krétě ve čtyřech krocích. Prověřená místní agentura vám odpoví přímo s cenovou nabídkou: platíte agentuře, hotovost lze platit, žádná platba předem online, vyzvednutí na letišti je možné."
+    "desc": "Požádejte o pronájem auta na Krétě ve čtyřech krocích. Prověřené místní agentury vám odpoví přímo vlastními nabídkami: vybíráte si vy, platíte agentuře, hotovost lze platit, žádná platba předem online, vyzvednutí na letišti je možné."
   },
   "hu": {
     "title": "Autóbérlés Krétán · helyi iroda, korrekt ár, előleg nélkül",
-    "desc": "Kérjen bérautót Krétán négy koppintással. Egy ellenőrzött helyi iroda közvetlenül válaszol árajánlattal: az irodának fizet, készpénz elfogadott, online előleg nincs, reptéri átvétel lehetséges."
+    "desc": "Kérjen bérautót Krétán négy koppintással. Ellenőrzött helyi irodák közvetlenül a saját árajánlatukkal válaszolnak: Ön választ, az irodának fizet, készpénz elfogadott, online előleg nincs, reptéri átvétel lehetséges."
   },
   "ro": {
     "title": "Închiriază o mașină în Creta · agenție locală, preț corect, fără plată în avans",
-    "desc": "Cere o mașină de închiriat în Creta în patru atingeri. O agenție locală verificată răspunde direct cu o ofertă: plătești agenției, se acceptă numerar, fără plată online în avans, preluare de la aeroport posibilă."
+    "desc": "Cere o mașină de închiriat în Creta în patru atingeri. Agenții locale verificate răspund direct cu ofertele lor: tu alegi, plătești agenției, se acceptă numerar, fără plată online în avans, preluare de la aeroport posibilă."
   },
   "ar": {
     "title": "استئجار سيارة في كريت · وكالة محلية، سعر عادل، بدون دفع مسبق",
-    "desc": "اطلب سيارة للإيجار في كريت بأربع نقرات. تردّ وكالة محلية موثوقة مباشرةً بعرض سعر: تدفع للوكالة، والنقد مقبول، بلا دفع مسبق عبر الإنترنت، والاستلام من المطار ممكن."
+    "desc": "اطلب سيارة للإيجار في كريت بأربع نقرات. تردّ وكالات محلية موثوقة مباشرةً بعروضها الخاصة: أنت تختار، وتدفع للوكالة، والنقد مقبول، بلا دفع مسبق عبر الإنترنت، والاستلام من المطار ممكن."
   }
 };
 
@@ -144,7 +144,7 @@ export const L: Record<string, PageStrings> = {
       },
       {
         "q": "Can I pick the car up at the airport?",
-        "a": "Yes. Chania airport pick-up and drop-off is standard, and the agency also covers Heraklion airport, the ports and Rethymno: add your flight number in the form and the agency tracks delays. Pick-up in town or at your accommodation is typically possible too."
+        "a": "Yes. Airport pick-up and drop-off is standard at both Chania and Heraklion, and our partner agencies also cover the ports, Rethymno, Agios Nikolaos and the main resort towns: add your flight number in the form and the agency tracks delays. Pick-up in town or at your accommodation is typically possible too."
       }
     ],
     "breadcrumbHome": "Home",
@@ -188,7 +188,7 @@ export const L: Record<string, PageStrings> = {
       },
       {
         "q": "Puis-je prendre la voiture à l'aéroport ?",
-        "a": "Oui. La prise et la restitution à l'aéroport de La Canée sont courantes, et l'agence couvre aussi l'aéroport d'Héraklion, les ports et Réthymnon : indiquez votre numéro de vol dans le formulaire et l'agence suit les retards. La prise en ville ou à votre hébergement est généralement possible aussi."
+        "a": "Oui. La prise et la restitution à l'aéroport sont courantes à La Canée comme à Héraklion, et nos agences partenaires couvrent aussi les ports, Réthymnon, Agios Nikolaos et les principales stations : indiquez votre numéro de vol dans le formulaire et l'agence suit les retards. La prise en ville ou à votre hébergement est généralement possible aussi."
       }
     ],
     "breadcrumbHome": "Accueil",
@@ -232,7 +232,7 @@ export const L: Record<string, PageStrings> = {
       },
       {
         "q": "Kann ich das Auto am Flughafen abholen?",
-        "a": "Ja. Abholung und Rückgabe am Flughafen Chania sind Standard, und die Agentur deckt auch den Flughafen Heraklion, die Häfen und Rethymno ab: tragen Sie Ihre Flugnummer in das Formular ein, die Agentur verfolgt Verspätungen. Abholung in der Stadt oder an Ihrer Unterkunft ist in der Regel ebenfalls möglich."
+        "a": "Ja. Abholung und Rückgabe am Flughafen sind in Chania wie in Heraklion Standard, und unsere Partneragenturen decken auch die Häfen, Rethymno, Agios Nikolaos und die wichtigsten Ferienorte ab: tragen Sie Ihre Flugnummer in das Formular ein, die Agentur verfolgt Verspätungen. Abholung in der Stadt oder an Ihrer Unterkunft ist in der Regel ebenfalls möglich."
       }
     ],
     "breadcrumbHome": "Startseite",
@@ -276,7 +276,7 @@ export const L: Record<string, PageStrings> = {
       },
       {
         "q": "Μπορώ να παραλάβω το αυτοκίνητο στο αεροδρόμιο;",
-        "a": "Ναι. Η παραλαβή και επιστροφή στο αεροδρόμιο των Χανίων είναι στάνταρ, και το γραφείο καλύπτει επίσης το αεροδρόμιο του Ηρακλείου, τα λιμάνια και το Ρέθυμνο: προσθέστε τον αριθμό πτήσης σας στη φόρμα και το γραφείο παρακολουθεί τις καθυστερήσεις. Παραλαβή στην πόλη ή στο κατάλυμά σας είναι συνήθως δυνατή επίσης."
+        "a": "Ναι. Η παραλαβή και επιστροφή στο αεροδρόμιο είναι στάνταρ τόσο στα Χανιά όσο και στο Ηράκλειο, ενώ τα συνεργαζόμενα γραφεία καλύπτουν επίσης τα λιμάνια, το Ρέθυμνο, τον Άγιο Νικόλαο και τα βασικά θέρετρα: προσθέστε τον αριθμό πτήσης σας στη φόρμα και το γραφείο παρακολουθεί τις καθυστερήσεις. Παραλαβή στην πόλη ή στο κατάλυμά σας είναι συνήθως δυνατή επίσης."
       }
     ],
     "breadcrumbHome": "Αρχική",
@@ -320,7 +320,7 @@ export const L: Record<string, PageStrings> = {
       },
       {
         "q": "Posso ritirare l'auto in aeroporto?",
-        "a": "Sì. Il ritiro e la riconsegna all'aeroporto di Chania sono standard, e l'agenzia copre anche l'aeroporto di Heraklion, i porti e Rethymno: aggiungi il numero del tuo volo nel modulo e l'agenzia monitora eventuali ritardi. Di solito è possibile anche il ritiro in città o presso il tuo alloggio."
+        "a": "Sì. Il ritiro e la riconsegna in aeroporto sono standard sia a Chania sia a Heraklion, e le nostre agenzie partner coprono anche i porti, Rethymno, Agios Nikolaos e le principali località turistiche: aggiungi il numero del tuo volo nel modulo e l'agenzia monitora eventuali ritardi. Di solito è possibile anche il ritiro in città o presso il tuo alloggio."
       }
     ],
     "breadcrumbHome": "Home",
@@ -364,7 +364,7 @@ export const L: Record<string, PageStrings> = {
       },
       {
         "q": "Kan ik de auto op de luchthaven ophalen?",
-        "a": "Ja. Ophalen en inleveren op de luchthaven van Chania is standaard, en het verhuurbedrijf bedient ook de luchthaven van Heraklion, de havens en Rethymno: vermeld je vluchtnummer in het formulier, dan houdt het verhuurbedrijf vertragingen in de gaten. Ophalen in de stad of bij je accommodatie is meestal ook mogelijk."
+        "a": "Ja. Ophalen en inleveren op de luchthaven is standaard in zowel Chania als Heraklion, en onze partnerbedrijven bedienen ook de havens, Rethymno, Agios Nikolaos en de belangrijkste badplaatsen: vermeld je vluchtnummer in het formulier, dan houdt het verhuurbedrijf vertragingen in de gaten. Ophalen in de stad of bij je accommodatie is meestal ook mogelijk."
       }
     ],
     "breadcrumbHome": "Home",
@@ -408,7 +408,7 @@ export const L: Record<string, PageStrings> = {
       },
       {
         "q": "Czy mogę odebrać samochód na lotnisku?",
-        "a": "Tak. Odbiór i zwrot na lotnisku w Chanii to standard, a wypożyczalnia obsługuje też lotnisko w Heraklionie, porty oraz Rethymno: dodaj numer lotu w formularzu, a firma śledzi opóźnienia. Odbiór w mieście lub w miejscu zakwaterowania zazwyczaj również jest możliwy."
+        "a": "Tak. Odbiór i zwrot na lotnisku to standard zarówno w Chanii, jak i w Heraklionie, a nasze wypożyczalnie partnerskie obsługują też porty, Rethymno, Agios Nikolaos i główne kurorty: dodaj numer lotu w formularzu, a firma śledzi opóźnienia. Odbiór w mieście lub w miejscu zakwaterowania zazwyczaj również jest możliwy."
       }
     ],
     "breadcrumbHome": "Strona główna",
@@ -452,7 +452,7 @@ export const L: Record<string, PageStrings> = {
       },
       {
         "q": "¿Puedo recoger el coche en el aeropuerto?",
-        "a": "Sí. La recogida y la devolución en el aeropuerto de Chania son habituales, y la agencia también cubre el aeropuerto de Heraklion, los puertos y Rethymno: añade tu número de vuelo en el formulario y la agencia hace seguimiento de los retrasos. La recogida en la ciudad o en tu alojamiento suele ser posible también."
+        "a": "Sí. La recogida y la devolución en el aeropuerto son habituales tanto en Chania como en Heraklion, y nuestras agencias asociadas cubren también los puertos, Rethymno, Agios Nikolaos y las principales zonas turísticas: añade tu número de vuelo en el formulario y la agencia hace seguimiento de los retrasos. La recogida en la ciudad o en tu alojamiento suele ser posible también."
       }
     ],
     "breadcrumbHome": "Inicio",
@@ -496,7 +496,7 @@ export const L: Record<string, PageStrings> = {
       },
       {
         "q": "Posso levantar o carro no aeroporto?",
-        "a": "Sim. A recolha e a entrega no aeroporto de Chania são padrão, e a agência cobre também o aeroporto de Heraklion, os portos e Rethymno: indique o número do seu voo no formulário e a agência acompanha os atrasos. A recolha na cidade ou no seu alojamento costuma também ser possível."
+        "a": "Sim. A recolha e a entrega no aeroporto são padrão tanto em Chania como em Heraklion, e as nossas agências parceiras cobrem também os portos, Rethymno, Agios Nikolaos e as principais zonas turísticas: indique o número do seu voo no formulário e a agência acompanha os atrasos. A recolha na cidade ou no seu alojamento costuma também ser possível."
       }
     ],
     "breadcrumbHome": "Início",
@@ -540,7 +540,7 @@ export const L: Record<string, PageStrings> = {
       },
       {
         "q": "Можно ли забрать машину в аэропорту?",
-        "a": "Да. Встреча и возврат в аэропорту Ханьи · это стандарт, а ещё агентство работает с аэропортом Ираклиона, портами и Ретимно: укажите номер рейса в форме, и агентство отследит задержки. Подача в город или к месту проживания обычно тоже возможна."
+        "a": "Да. Встреча и возврат в аэропорту · это стандарт и в Ханье, и в Ираклионе, а наши агентства-партнёры работают также с портами, Ретимно, Агиос-Николаосом и основными курортами: укажите номер рейса в форме, и агентство отследит задержки. Подача в город или к месту проживания обычно тоже возможна."
       }
     ],
     "breadcrumbHome": "Главная",
@@ -584,7 +584,7 @@ export const L: Record<string, PageStrings> = {
       },
       {
         "q": "空港で車を受け取れますか？",
-        "a": "はい。シャニア（Chania）空港での受け取り・返却は標準対応で、代理店はイラクリオン（Heraklion）空港、各港、レティムノ（Rethymno）もカバーしています。フォームに便名を記入すれば、代理店が遅延を確認します。市内や宿泊先での受け取りも通常は可能です。"
+        "a": "はい。空港での受け取り・返却はシャニア（Chania）でもイラクリオン（Heraklion）でも標準対応で、提携代理店は各港、レティムノ（Rethymno）、アギオス・ニコラオス、主要リゾート地もカバーしています。フォームに便名を記入すれば、代理店が遅延を確認します。市内や宿泊先での受け取りも通常は可能です。"
       }
     ],
     "breadcrumbHome": "ホーム",
@@ -628,7 +628,7 @@ export const L: Record<string, PageStrings> = {
       },
       {
         "q": "공항에서 차를 픽업할 수 있나요?",
-        "a": "네. 하니아(Chania) 공항 픽업과 반납이 기본이며, 업체는 이라클리온(Heraklion) 공항, 항구, 레팀노(Rethymno)도 커버합니다. 양식에 항공편 번호를 적어 두면 업체가 지연 여부를 확인합니다. 시내나 숙소에서의 픽업도 보통 가능합니다."
+        "a": "네. 공항 픽업과 반납은 하니아(Chania)와 이라클리온(Heraklion) 모두 기본이며, 제휴 업체들은 항구, 레팀노(Rethymno), 아기오스 니콜라오스와 주요 리조트 지역도 커버합니다. 양식에 항공편 번호를 적어 두면 업체가 지연 여부를 확인합니다. 시내나 숙소에서의 픽업도 보통 가능합니다."
       }
     ],
     "breadcrumbHome": "홈",
@@ -672,7 +672,7 @@ export const L: Record<string, PageStrings> = {
       },
       {
         "q": "我可以在机场取车吗？",
-        "a": "可以。哈尼亚（Chania）机场取还车是标准服务，车行同时也覆盖伊拉克利翁（Heraklion）机场、各港口以及雷西姆诺（Rethymno）：请在表单中填写航班号，车行会追踪航班延误情况。通常也可在市区或您的住处取车。"
+        "a": "可以。哈尼亚（Chania）和伊拉克利翁（Heraklion）机场取还车都是标准服务，合作车行同时也覆盖各港口、雷西姆诺（Rethymno）、阿吉奥斯尼古拉奥斯以及主要度假区：请在表单中填写航班号，车行会追踪航班延误情况。通常也可在市区或您的住处取车。"
       }
     ],
     "breadcrumbHome": "首页",
@@ -716,7 +716,7 @@ export const L: Record<string, PageStrings> = {
       },
       {
         "q": "Arabayı havalimanından teslim alabilir miyim?",
-        "a": "Evet. Chania havalimanından teslim alma ve bırakma standarttır ve acente ayrıca Heraklion havalimanını, limanları ve Rethymno'yu da kapsar: forma uçuş numaranızı ekleyin, acente gecikmeleri takip eder. Şehirde ya da konakladığınız yerde teslim alma da genellikle mümkündür."
+        "a": "Evet. Havalimanından teslim alma ve bırakma hem Chania'da hem Heraklion'da standarttır ve iş ortağı acentelerimiz ayrıca limanları, Rethymno'yu, Agios Nikolaos'u ve başlıca tatil beldelerini de kapsar: forma uçuş numaranızı ekleyin, acente gecikmeleri takip eder. Şehirde ya da konakladığınız yerde teslim alma da genellikle mümkündür."
       }
     ],
     "breadcrumbHome": "Ana Sayfa",
@@ -760,7 +760,7 @@ export const L: Record<string, PageStrings> = {
       },
       {
         "q": "Kan jag hämta bilen på flygplatsen?",
-        "a": "Ja. Hämtning och återlämning på Chanias flygplats är standard, och byrån täcker även Heraklions flygplats, hamnarna och Rethymno: lägg till ditt flightnummer i formuläret så håller byrån koll på förseningar. Hämtning i stan eller på ditt boende är vanligtvis också möjlig."
+        "a": "Ja. Hämtning och återlämning på flygplatsen är standard både i Chania och Heraklion, och våra partnerbyråer täcker även hamnarna, Rethymno, Agios Nikolaos och de största turistorterna: lägg till ditt flightnummer i formuläret så håller byrån koll på förseningar. Hämtning i stan eller på ditt boende är vanligtvis också möjlig."
       }
     ],
     "breadcrumbHome": "Hem",
@@ -804,7 +804,7 @@ export const L: Record<string, PageStrings> = {
       },
       {
         "q": "Kan jeg hente bilen i lufthavnen?",
-        "a": "Ja. Afhentning og aflevering i Chania lufthavn er standard, og bureauet dækker også Heraklion lufthavn, havnene og Rethymno: tilføj dit flynummer i formularen, så holder bureauet øje med forsinkelser. Afhentning i byen eller ved din indkvartering er typisk også muligt."
+        "a": "Ja. Afhentning og aflevering i lufthavnen er standard i både Chania og Heraklion, og vores partnerbureauer dækker også havnene, Rethymno, Agios Nikolaos og de største feriebyer: tilføj dit flynummer i formularen, så holder bureauet øje med forsinkelser. Afhentning i byen eller ved din indkvartering er typisk også muligt."
       }
     ],
     "breadcrumbHome": "Forside",
@@ -848,7 +848,7 @@ export const L: Record<string, PageStrings> = {
       },
       {
         "q": "Kan jeg hente bilen på flyplassen?",
-        "a": "Ja. Henting og levering på Chania flyplass er standard, og byrået dekker også Heraklion flyplass, havnene og Rethymno: legg inn flynummeret ditt i skjemaet, så følger byrået med på forsinkelser. Henting i byen eller på overnattingsstedet ditt er vanligvis også mulig."
+        "a": "Ja. Henting og levering på flyplassen er standard både i Chania og Heraklion, og partnerbyråene våre dekker også havnene, Rethymno, Agios Nikolaos og de største feriestedene: legg inn flynummeret ditt i skjemaet, så følger byrået med på forsinkelser. Henting i byen eller på overnattingsstedet ditt er vanligvis også mulig."
       }
     ],
     "breadcrumbHome": "Hjem",
@@ -892,7 +892,7 @@ export const L: Record<string, PageStrings> = {
       },
       {
         "q": "Voinko noutaa auton lentokentältä?",
-        "a": "Kyllä. Nouto ja palautus Chanian lentokentällä on vakiona, ja toimisto palvelee myös Heraklionin lentokentällä, satamissa ja Rethymnossa: lisää lennon numero lomakkeeseen, niin toimisto seuraa viivästyksiä. Nouto kaupungista tai majoituksestasi on yleensä myös mahdollinen."
+        "a": "Kyllä. Nouto ja palautus lentokentällä on vakiona sekä Chaniassa että Heraklionissa, ja kumppanitoimistomme palvelevat myös satamissa, Rethymnossa, Agios Nikolaosissa ja tärkeimmillä lomakohteilla: lisää lennon numero lomakkeeseen, niin toimisto seuraa viivästyksiä. Nouto kaupungista tai majoituksestasi on yleensä myös mahdollinen."
       }
     ],
     "breadcrumbHome": "Etusivu",
@@ -936,7 +936,7 @@ export const L: Record<string, PageStrings> = {
       },
       {
         "q": "Můžu si auto vyzvednout na letišti?",
-        "a": "Ano. Vyzvednutí a vrácení na letišti v Chanii je standardní a agentura pokrývá také letiště v Heraklionu, přístavy a Rethymno: do formuláře doplňte číslo letu a agentura sleduje zpoždění. Vyzvednutí ve městě nebo v ubytování je obvykle také možné."
+        "a": "Ano. Vyzvednutí a vrácení na letišti je standardní v Chanii i v Heraklionu a naše partnerské půjčovny pokrývají také přístavy, Rethymno, Agios Nikolaos a hlavní turistická střediska: do formuláře doplňte číslo letu a agentura sleduje zpoždění. Vyzvednutí ve městě nebo v ubytování je obvykle také možné."
       }
     ],
     "breadcrumbHome": "Domů",
@@ -980,7 +980,7 @@ export const L: Record<string, PageStrings> = {
       },
       {
         "q": "Átvehetem az autót a reptéren?",
-        "a": "Igen. A chaniai reptéri átvétel és visszaadás alapból megoldott, és az iroda lefedi a heraklioni repteret, a kikötőket és Rethymnót is: adja meg a járatszámát az űrlapon, és az iroda követi a késéseket. A városban vagy a szállásán való átvétel is jellemzően lehetséges."
+        "a": "Igen. A reptéri átvétel és visszaadás Chaniában és Heraklionban is alapból megoldott, partneririodáink pedig lefedik a kikötőket, Rethymnót, Agios Nikolaost és a főbb üdülőhelyeket is: adja meg a járatszámát az űrlapon, és az iroda követi a késéseket. A városban vagy a szállásán való átvétel is jellemzően lehetséges."
       }
     ],
     "breadcrumbHome": "Főoldal",
@@ -1024,7 +1024,7 @@ export const L: Record<string, PageStrings> = {
       },
       {
         "q": "Pot prelua mașina de la aeroport?",
-        "a": "Da. Preluarea și returnarea la aeroportul din Chania este standard, iar agenția acoperă și aeroportul din Heraklion, porturile și Rethymno: adaugă numărul zborului în formular, iar agenția urmărește întârzierile. De obicei este posibilă și preluarea în oraș sau la cazarea ta."
+        "a": "Da. Preluarea și returnarea la aeroport sunt standard atât la Chania, cât și la Heraklion, iar agențiile noastre partenere acoperă și porturile, Rethymno, Agios Nikolaos și principalele stațiuni: adaugă numărul zborului în formular, iar agenția urmărește întârzierile. De obicei este posibilă și preluarea în oraș sau la cazarea ta."
       }
     ],
     "breadcrumbHome": "Acasă",
@@ -1068,7 +1068,7 @@ export const L: Record<string, PageStrings> = {
       },
       {
         "q": "هل يمكنني استلام السيارة من المطار؟",
-        "a": "نعم. استلام السيارة وتسليمها في مطار خانيا أمر معتاد، كما تغطي الوكالة مطار هيراكليون والموانئ وريثيمنو: أضف رقم رحلتك في النموذج وتتابع الوكالة أي تأخير. ويمكن عادةً الاستلام في المدينة أو في مكان إقامتك أيضًا."
+        "a": "نعم. استلام السيارة وتسليمها في المطار أمر معتاد في خانيا وهيراكليون معًا، كما تغطي وكالاتنا الشريكة الموانئ وريثيمنو وآغيوس نيكولاوس وأبرز المنتجعات: أضف رقم رحلتك في النموذج وتتابع الوكالة أي تأخير. ويمكن عادةً الاستلام في المدينة أو في مكان إقامتك أيضًا."
       }
     ],
     "breadcrumbHome": "الرئيسية",
