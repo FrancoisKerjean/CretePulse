@@ -33,8 +33,44 @@ function evt(id: string): Request {
   });
 }
 
+function foreignEvt(id: string, metadata: Record<string, string>): Request {
+  constructEvent.mockReturnValueOnce({
+    id, type: "checkout.session.completed",
+    data: { object: { id: "cs_x", payment_intent: "pi_x", metadata } },
+  });
+  return new Request("http://localhost/api/stays/webhook", {
+    method: "POST", headers: { "stripe-signature": "sig" }, body: "{}",
+  });
+}
+
 describe("POST /api/stays/webhook", () => {
   beforeEach(() => vi.clearAllMocks());
+
+  // Le compte Stripe est partage (NovAI acct_1TDPicEQ3UQbwGzY) : IEUF, Eleni et le
+  // moteur Kairos emettent leurs propres checkout.session.completed, qui arrivent
+  // aussi sur cet endpoint. Les ignorer sans rien ecrire ni renvoyer d'erreur.
+  it("ignore une session d une autre marque du compte", async () => {
+    const res = await POST(foreignEvt("ev_ieuf", { order_id: "42" }) as never);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ received: true, ignored: true });
+    expect(insert).not.toHaveBeenCalled();
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("ignore un request_id vide, que Number() convertirait en 0", async () => {
+    const res = await POST(foreignEvt("ev_empty", { request_id: "" }) as never);
+    expect(res.status).toBe(200);
+    expect(insert).not.toHaveBeenCalled();
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("ignore une session portant explicitement une autre marque", async () => {
+    const res = await POST(
+      foreignEvt("ev_other", { request_id: "5", brand: "iletaitunfut" }) as never,
+    );
+    expect(res.status).toBe(200);
+    expect(rpc).not.toHaveBeenCalled();
+  });
 
   it("confirms the booking on first delivery", async () => {
     const res = await POST(evt("ev_1") as never);

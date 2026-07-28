@@ -15,9 +15,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  const requestId = Number(
-    (event.data.object as { metadata?: Record<string, string> })?.metadata?.request_id,
-  );
+  const meta =
+    (event.data.object as { metadata?: Record<string, string> })?.metadata ?? {};
+  const requestId = Number(meta.request_id);
+
+  // Le compte Stripe est partage (NovAI acct_1TDPicEQ3UQbwGzY) : IEUF, Eleni et le
+  // moteur de reservation Kairos ont leurs propres endpoints, et chaque endpoint du
+  // compte recoit les checkout.session.completed de TOUTES les marques. On ecarte ce
+  // qui n'est pas Stays avant d'ecrire au registre, et on repond 200 : un 4xx ferait
+  // retenter Stripe pendant 3 jours et degraderait la sante de l'endpoint.
+  if (
+    !Number.isInteger(requestId) ||
+    requestId <= 0 ||
+    (meta.brand && meta.brand !== "crete.direct")
+  ) {
+    return NextResponse.json({ received: true, ignored: true });
+  }
 
   const { error: insErr } = await supabaseAdmin.from("stripe_webhook_events").insert({
     stripe_event_id: event.id,
