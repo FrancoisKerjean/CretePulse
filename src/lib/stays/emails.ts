@@ -1,7 +1,9 @@
 import { Resend } from "resend";
 
 const FROM_EMAIL = "Crete Direct <hello@crete.direct>";
-const REPLY_TO = "contact@kairosguest.com";
+// Convention du repo (cf src/lib/email.ts) : toute surface crete.direct repond sur
+// hello@crete.direct. Jamais une adresse d'une autre marque.
+const REPLY_TO = "hello@crete.direct";
 
 function resendClient(): Resend {
   return new Resend(process.env.RESEND_API_KEY);

@@ -1,5 +1,15 @@
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
 import { ownerRequestSubject, ownerRequestBody, guestApprovedSubject } from "./emails";
+
+describe("cloisonnement crete.direct", () => {
+  // feedback_crete_direct_no_kairos_mention : aucune surface crete.direct ne doit
+  // exposer Kairos. Un replyTo est visible dans le client mail du voyageur.
+  it("n expose aucune adresse Kairos", () => {
+    const src = readFileSync("src/lib/stays/emails.ts", "utf8");
+    expect(src).not.toMatch(/kairos/i);
+  });
+});
 
 describe("email builders", () => {
   it("owner request subject names the dates", () => {
