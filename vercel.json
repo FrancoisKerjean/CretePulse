@@ -7,6 +7,7 @@
     { "path": "/api/cron/car-relance", "schedule": "0 9 * * *" },
     { "path": "/api/cron/activity-no-quote", "schedule": "30 * * * *" },
     { "path": "/api/cron/activity-relance", "schedule": "10 9 * * *" },
-    { "path": "/api/cron/newsletter", "schedule": "0 5 * * 1" }
+    { "path": "/api/cron/newsletter", "schedule": "0 5 * * 1" },
+    { "path": "/api/cron/stays-balance", "schedule": "20 9 * * *" }
   ]
 }

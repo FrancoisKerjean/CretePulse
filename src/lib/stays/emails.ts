@@ -149,6 +149,26 @@ export async function sendGuestConflict(
   await send(guestEmail, guestConflictSubject(o.listingTitle), guestConflictBody(o));
 }
 
+export function guestBalanceDueBody(o: {
+  listingTitle: string;
+  dateFrom: string;
+  amountEur: number;
+  payUrl: string;
+}): string {
+  return `<div style="font-family:Inter,Arial,sans-serif;color:#1A1A2E">
+    <p>Votre arrivée à <strong>${o.listingTitle}</strong> approche : ${o.dateFrom}.</p>
+    <p>Il reste le solde de <strong>${o.amountEur.toFixed(2)} EUR</strong> à régler.</p>
+    <p><a href="${o.payUrl}" style="background:#C8A35F;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none">Payer le solde</a></p>
+  </div>`;
+}
+
+export async function sendGuestBalanceDue(
+  guestEmail: string,
+  o: Parameters<typeof guestBalanceDueBody>[0],
+): Promise<void> {
+  await send(guestEmail, `Solde à régler : ${o.listingTitle}`, guestBalanceDueBody(o));
+}
+
 export async function sendGuestBalancePaid(
   guestEmail: string,
   listingTitle: string,
