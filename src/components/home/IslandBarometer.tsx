@@ -69,7 +69,7 @@ export function IslandBarometer({
           <Ship className="w-[18px] h-[18px] text-sea shrink-0" aria-hidden />
           <p className="flex-1 text-[13.5px] leading-snug text-text m-0">
             {t("barometer.cruise", {
-              pax: cruise.paxCapacity.toLocaleString("fr-FR").replace(/ | /g, " "),
+              pax: cruise.paxCapacity.toLocaleString("fr-FR").replace(/\u202f|\u00a0/g, " "),
               port: PORT_LABEL[cruise.port] ?? cruise.port,
             })}
             <br />
