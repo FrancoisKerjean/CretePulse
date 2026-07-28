@@ -1,9 +1,9 @@
 "use client";
 
-// Barometre de l'ile : panneau du hero. Trois lignes de FAITS observes.
-// La mer arrive en props (deja rendue cote serveur, ISR 2 h) ; croisiere et bus
+// Baromètre de l'île : panneau du hero. Trois lignes de FAITS observés.
+// La mer arrive en props (déjà rendue côté serveur, ISR 2 h) ; croisière et bus
 // viennent de /api/island-now (cache CDN 10 min). Une source absente = ligne
-// absente, jamais de zero affiche, jamais d'estimation.
+// absente, jamais de zéro affiché, jamais d'estimation.
 // Spec : docs/superpowers/specs/2026-07-28-home-service-rail-design.md
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
@@ -37,9 +37,9 @@ export function IslandBarometer({
   const locale = useLocale();
   const [data, setData] = useState<IslandNow | null>(null);
 
-  // Le decalage visuel a l'arrivee des lignes croisiere/bus est accepte : reserver
-  // une hauteur fixe laisserait un trou visible les jours ou une seule source
-  // repond. La ligne mer, elle, est deja rendue cote serveur : le panneau n'apparait
+  // Le décalage visuel à l'arrivée des lignes croisière/bus est accepté : réserver
+  // une hauteur fixe laisserait un trou visible les jours où une seule source
+  // répond. La ligne mer, elle, est déjà rendue côté serveur : le panneau n'apparaît
   // donc jamais de rien.
   useEffect(() => {
     let alive = true;
