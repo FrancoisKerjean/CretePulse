@@ -37,11 +37,17 @@ export function buildCheckoutParams(
     payment_intent_data: {
       application_fee_amount: input.applicationFeeCents,
       transfer_data: { destination: input.connectAccountId },
+      // Compte plateforme partage (NovAI, descripteur par defaut "NOVAI"). Le
+      // suffixe est la seule surface ou le voyageur lit une marque sur son releve.
+      statement_descriptor_suffix: "CRETE DIRECT",
     },
     customer_email: input.guestEmail,
     metadata: {
       request_id: String(input.requestId),
       payment_type: "deposit",
+      // Discriminant lu par le webhook : les 3 autres endpoints du compte recoivent
+      // aussi cet evenement.
+      brand: "crete.direct",
     },
     success_url: `${base}/${input.locale}/stays/pay/${input.payToken}?paid=1`,
     cancel_url: `${base}/${input.locale}/stays/pay/${input.payToken}`,

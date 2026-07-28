@@ -23,4 +23,25 @@ describe("buildCheckoutParams", () => {
     expect(params.customer_email).toBe("jane@example.com");
     expect(params.success_url).toContain("/fr/stays/");
   });
+
+  // Le compte Stripe est partage (NovAI acct_1TDPicEQ3UQbwGzY, descripteur par
+  // defaut "NOVAI"). Sans suffixe, le voyageur lit NOVAI sur son releve bancaire,
+  // ce qui casse le cloisonnement crete.direct.
+  it("marque le paiement crete.direct sur le releve bancaire", () => {
+    const params = buildCheckoutParams({
+      listingTitle: "Villa Danae",
+      dateFrom: "2026-08-01",
+      dateTo: "2026-08-08",
+      depositEur: 220.5,
+      applicationFeeCents: 2100,
+      connectAccountId: "acct_test",
+      guestEmail: "g@example.com",
+      requestId: 42,
+      payToken: "tok",
+      locale: "fr",
+    });
+    expect(params.payment_intent_data?.statement_descriptor_suffix).toBe("CRETE DIRECT");
+    expect(params.metadata?.brand).toBe("crete.direct");
+    expect(params.metadata?.payment_type).toBe("deposit");
+  });
 });
