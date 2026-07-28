@@ -1,5 +1,33 @@
 import { describe, it, expect } from "vitest";
-import { buildCheckoutParams, buildConnectAccountParams } from "./stripe-helpers";
+import {
+  buildCheckoutParams,
+  buildConnectAccountParams,
+  buildBalanceCheckoutParams,
+} from "./stripe-helpers";
+
+describe("buildBalanceCheckoutParams", () => {
+  it("porte le type de paiement solde et le montant restant", () => {
+    const p = buildBalanceCheckoutParams({
+      listingTitle: "Villa Danae",
+      dateFrom: "2026-08-01",
+      dateTo: "2026-08-08",
+      balanceEur: 514.5,
+      applicationFeeCents: 2400,
+      connectAccountId: "acct_test",
+      guestEmail: "g@example.com",
+      requestId: 42,
+      balanceToken: "tok",
+      locale: "fr",
+    });
+    expect(p.metadata?.payment_type).toBe("balance");
+    expect(p.metadata?.request_id).toBe("42");
+    expect(p.metadata?.brand).toBe("crete.direct");
+    expect(p.line_items![0].price_data!.unit_amount).toBe(51450);
+    expect(p.payment_intent_data?.application_fee_amount).toBe(2400);
+    expect(p.payment_intent_data?.statement_descriptor_suffix).toBe("CRETE DIRECT");
+    expect(p.success_url).toContain("/fr/stays/balance/tok");
+  });
+});
 
 describe("buildConnectAccountParams", () => {
   it("cree un compte grec individuel par defaut", () => {

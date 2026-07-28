@@ -20,7 +20,14 @@ export function pickStaysLocale(locale: string): StaysLocale {
     : "en";
 }
 
-export type StaysMetaKey = "index" | "listing" | "new" | "approve" | "pay" | "terms";
+export type StaysMetaKey =
+  | "index"
+  | "listing"
+  | "new"
+  | "approve"
+  | "pay"
+  | "balance"
+  | "terms";
 
 export type StaysStrings = {
   index: {
@@ -106,6 +113,14 @@ export type StaysStrings = {
     redirecting: string;
     error: string;
   };
+  balance: {
+    h1: string;
+    intro: string;
+    balanceNote: string;
+    submit: string;
+    redirecting: string;
+    error: string;
+  };
   terms: {
     h1: string;
     paragraphs: Array<{ strong: string; text: string }>;
@@ -134,6 +149,10 @@ export const META: Record<StaysLocale, Record<StaysMetaKey, { title: string; des
       title: "Confirm your stay · crete.direct Stays",
       desc: "Pay the 30 % deposit to lock your dates.",
     },
+    balance: {
+      title: "Pay the balance · crete.direct Stays",
+      desc: "Settle the remaining 70 % before you arrive.",
+    },
     terms: {
       title: "Terms · crete.direct Stays",
       desc: "crete.direct acts as a technical intermediary between owner and traveller. Commission, cancellation policy and responsibilities.",
@@ -159,6 +178,10 @@ export const META: Record<StaysLocale, Record<StaysMetaKey, { title: string; des
     pay: {
       title: "Confirmez votre séjour · crete.direct Stays",
       desc: "Réglez l'acompte de 30 % pour bloquer vos dates.",
+    },
+    balance: {
+      title: "Réglez le solde · crete.direct Stays",
+      desc: "Réglez les 70 % restants avant votre arrivée.",
     },
     terms: {
       title: "Conditions · crete.direct Stays",
@@ -186,6 +209,10 @@ export const META: Record<StaysLocale, Record<StaysMetaKey, { title: string; des
       title: "Aufenthalt bestätigen · crete.direct Stays",
       desc: "Zahlen Sie die Anzahlung von 30 %, um Ihre Daten zu sichern.",
     },
+    balance: {
+      title: "Restbetrag zahlen · crete.direct Stays",
+      desc: "Begleichen Sie die restlichen 70 % vor Ihrer Anreise.",
+    },
     terms: {
       title: "Bedingungen · crete.direct Stays",
       desc: "crete.direct handelt als technischer Vermittler zwischen Eigentümer und Reisendem. Provision, Stornierung und Verantwortlichkeiten.",
@@ -211,6 +238,10 @@ export const META: Record<StaysLocale, Record<StaysMetaKey, { title: string; des
     pay: {
       title: "Επιβεβαιώστε τη διαμονή σας · crete.direct Stays",
       desc: "Πληρώστε την προκαταβολή 30 % για να κλειδώσετε τις ημερομηνίες σας.",
+    },
+    balance: {
+      title: "Πληρωμή υπολοίπου · crete.direct Stays",
+      desc: "Εξοφλήστε το υπόλοιπο 70 % πριν την άφιξή σας.",
     },
     terms: {
       title: "Όροι · crete.direct Stays",
@@ -309,6 +340,16 @@ export const L: Record<StaysLocale, StaysStrings> = {
       depositNote:
         "The remaining balance is requested 14 days before arrival. Free cancellation more than 14 days before arrival.",
       submit: "Pay the 30 % deposit",
+      redirecting: "Redirecting to the payment page",
+      error: "Error",
+    },
+    balance: {
+      h1: "Pay the balance of your stay",
+      intro:
+        "Your dates are locked. Settle the remaining 70 % before you arrive.",
+      balanceNote:
+        "The deposit is already paid. This is the balance, the last step before your stay.",
+      submit: "Pay the balance",
       redirecting: "Redirecting to the payment page",
       error: "Error",
     },
@@ -427,6 +468,16 @@ export const L: Record<StaysLocale, StaysStrings> = {
       depositNote:
         "Le solde est demandé 14 jours avant l'arrivée. Annulation gratuite jusqu'à 14 jours avant l'arrivée.",
       submit: "Payer l'acompte de 30 %",
+      redirecting: "Redirection vers la page de paiement",
+      error: "Erreur",
+    },
+    balance: {
+      h1: "Réglez le solde de votre séjour",
+      intro:
+        "Vos dates sont bloquées. Il reste les 70 % à régler avant votre arrivée.",
+      balanceNote:
+        "L'acompte est déjà réglé. Voici le solde, dernière étape avant votre séjour.",
+      submit: "Payer le solde",
       redirecting: "Redirection vers la page de paiement",
       error: "Erreur",
     },
@@ -550,6 +601,16 @@ export const L: Record<StaysLocale, StaysStrings> = {
       redirecting: "Weiterleitung zur Zahlungsseite",
       error: "Fehler",
     },
+    balance: {
+      h1: "Restbetrag Ihres Aufenthalts zahlen",
+      intro:
+        "Ihre Daten sind gesichert. Es verbleiben 70 % vor Ihrer Anreise.",
+      balanceNote:
+        "Die Anzahlung ist bereits beglichen. Dies ist der Restbetrag, der letzte Schritt vor Ihrem Aufenthalt.",
+      submit: "Restbetrag zahlen",
+      redirecting: "Weiterleitung zur Zahlungsseite",
+      error: "Fehler",
+    },
     terms: {
       h1: "Bedingungen · crete.direct Stays",
       paragraphs: [
@@ -666,6 +727,16 @@ export const L: Record<StaysLocale, StaysStrings> = {
       depositNote:
         "Το υπόλοιπο ζητείται 14 ημέρες πριν από την άφιξη. Δωρεάν ακύρωση έως 14 ημέρες πριν από την άφιξη.",
       submit: "Πληρωμή προκαταβολής 30 %",
+      redirecting: "Ανακατεύθυνση στη σελίδα πληρωμής",
+      error: "Σφάλμα",
+    },
+    balance: {
+      h1: "Πληρώστε το υπόλοιπο της διαμονής σας",
+      intro:
+        "Οι ημερομηνίες σας είναι κλειδωμένες. Απομένει το 70 % πριν την άφιξή σας.",
+      balanceNote:
+        "Η προκαταβολή έχει ήδη πληρωθεί. Αυτό είναι το υπόλοιπο, το τελευταίο βήμα πριν τη διαμονή σας.",
+      submit: "Πληρωμή υπολοίπου",
       redirecting: "Ανακατεύθυνση στη σελίδα πληρωμής",
       error: "Σφάλμα",
     },

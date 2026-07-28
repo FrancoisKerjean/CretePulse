@@ -107,6 +107,17 @@ export async function getRequestByPayHash(
   return (data as StayRequest) ?? null;
 }
 
+export async function getRequestByBalanceHash(
+  hash: string,
+): Promise<StayRequest | null> {
+  const { data } = await supabaseAdmin
+    .from("stay_requests")
+    .select("*")
+    .eq("balance_token_hash", hash)
+    .maybeSingle();
+  return (data as StayRequest) ?? null;
+}
+
 export async function recentDuplicateExists(
   guestEmail: string,
   listingId: number,

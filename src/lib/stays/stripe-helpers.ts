@@ -54,6 +54,56 @@ export function buildCheckoutParams(
   };
 }
 
+export interface BalanceCheckoutInput {
+  listingTitle: string;
+  dateFrom: string;
+  dateTo: string;
+  balanceEur: number;
+  applicationFeeCents: number;
+  connectAccountId: string;
+  guestEmail: string;
+  requestId: number;
+  balanceToken: string;
+  locale: string;
+}
+
+/** Second charge : le solde 70 %, demande a J-14 par le cron stays-balance. */
+export function buildBalanceCheckoutParams(
+  input: BalanceCheckoutInput,
+): Stripe.Checkout.SessionCreateParams {
+  const base = siteBase();
+  return {
+    mode: "payment",
+    payment_method_types: ["card"],
+    line_items: [
+      {
+        price_data: {
+          currency: "eur",
+          product_data: {
+            name: `${input.listingTitle} · solde 70%`,
+            description: `${input.dateFrom} → ${input.dateTo}`,
+          },
+          unit_amount: Math.round(input.balanceEur * 100),
+        },
+        quantity: 1,
+      },
+    ],
+    payment_intent_data: {
+      application_fee_amount: input.applicationFeeCents,
+      transfer_data: { destination: input.connectAccountId },
+      statement_descriptor_suffix: "CRETE DIRECT",
+    },
+    customer_email: input.guestEmail,
+    metadata: {
+      request_id: String(input.requestId),
+      payment_type: "balance",
+      brand: "crete.direct",
+    },
+    success_url: `${base}/${input.locale}/stays/balance/${input.balanceToken}?paid=1`,
+    cancel_url: `${base}/${input.locale}/stays/balance/${input.balanceToken}`,
+  };
+}
+
 export function stripeClient(): Stripe {
   return new Stripe(process.env.STRIPE_SECRET_KEY as string);
 }
