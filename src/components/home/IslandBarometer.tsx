@@ -6,7 +6,7 @@
 // absente, jamais de zero affiche, jamais d'estimation.
 // Spec : docs/superpowers/specs/2026-07-28-home-service-rail-design.md
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { CiBus, CiWave } from "@/components/icons";
 import { Ship } from "lucide-react";
 
@@ -34,8 +34,13 @@ export function IslandBarometer({
   airTemp: number | null;
 }) {
   const t = useTranslations("home");
+  const locale = useLocale();
   const [data, setData] = useState<IslandNow | null>(null);
 
+  // Le decalage visuel a l'arrivee des lignes croisiere/bus est accepte : reserver
+  // une hauteur fixe laisserait un trou visible les jours ou une seule source
+  // repond. La ligne mer, elle, est deja rendue cote serveur : le panneau n'apparait
+  // donc jamais de rien.
   useEffect(() => {
     let alive = true;
     fetch("/api/island-now")
@@ -58,18 +63,18 @@ export function IslandBarometer({
           <p className="flex-1 text-[13.5px] leading-snug text-text m-0">
             {t("barometer.sea", { temp: seaTemp, wind: windSpeed, air: airTemp })}
           </p>
-          <span className="text-[10px] text-text-muted text-right max-w-[96px] leading-tight hidden sm:block">
+          <span className="text-[10px] text-text-muted text-right max-w-[96px] leading-tight sr-only sm:not-sr-only sm:block">
             {t("barometer.src.weather")}
           </span>
         </div>
       )}
 
       {cruise && (
-        <div className="flex items-center gap-3 py-3 border-t border-text/8">
+        <div className="flex items-center gap-3 py-3 border-t border-text/8 first:border-t-0">
           <Ship className="w-[18px] h-[18px] text-sea shrink-0" aria-hidden />
           <p className="flex-1 text-[13.5px] leading-snug text-text m-0">
             {t("barometer.cruise", {
-              pax: cruise.paxCapacity.toLocaleString("fr-FR").replace(/\u202f|\u00a0/g, " "),
+              pax: cruise.paxCapacity.toLocaleString(locale).replace(/\u202f|\u00a0/g, " "),
               port: PORT_LABEL[cruise.port] ?? cruise.port,
             })}
             <br />
@@ -77,19 +82,19 @@ export function IslandBarometer({
               {cruise.ships.map((s) => `${s.name}${s.eta && s.etd ? ` ${s.eta}-${s.etd}` : ""}`).join(" · ")}
             </span>
           </p>
-          <span className="text-[10px] text-text-muted text-right max-w-[96px] leading-tight hidden sm:block">
+          <span className="text-[10px] text-text-muted text-right max-w-[96px] leading-tight sr-only sm:not-sr-only sm:block">
             {t("barometer.src.port")}
           </span>
         </div>
       )}
 
       {buses && (
-        <div className="flex items-center gap-3 py-3 border-t border-text/8">
+        <div className="flex items-center gap-3 py-3 border-t border-text/8 first:border-t-0">
           <CiBus className="w-[18px] h-[18px] text-sea shrink-0" aria-hidden />
           <p className="flex-1 text-[13.5px] leading-snug text-text m-0">
             {t("barometer.buses", { count: buses.tracked })}
           </p>
-          <span className="text-[10px] text-text-muted text-right max-w-[96px] leading-tight hidden sm:block">
+          <span className="text-[10px] text-text-muted text-right max-w-[96px] leading-tight sr-only sm:not-sr-only sm:block">
             {t("barometer.src.gps")}
           </span>
         </div>
