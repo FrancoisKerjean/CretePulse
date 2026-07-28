@@ -1752,58 +1752,51 @@ git commit -m "feat(stays): cron de demande du solde a J-14"
 
 ---
 
-## Task 14 : mise en service (opérations, propriétaire Kami)
+## Task 0 : le webhook ignore les sessions des autres marques du compte ✅ FAIT
 
-Aucun code. C'est la séquence qui rend le tunnel réellement encaissable. Tant qu'elle n'est pas faite, tout ce qui précède est mort en production.
+[FACT 2026-07-29 source: commit `398c5e6`, 5 tests verts, tsc 0 erreur]
 
-- [ ] **Step 1: Récupérer la clé secrète du compte NovAI**
+Découvert en inspectant le compte Stripe avant de créer l'endpoint : `acct_1TDPicEQ3UQbwGzY` porte déjà 4 endpoints, dont **trois abonnés à `checkout.session.completed`** (IEUF, Kairos, Eleni). Sur Stripe, chaque endpoint d'un compte reçoit TOUS les événements du type auquel il est abonné, quelle que soit la marque qui a créé la session. Le webhook Stays, tel qu'écrit en Phase 1, aurait donc traité chaque commande IEUF : `Number(undefined)` vaut `NaN`, l'événement était quand même inscrit au registre, puis le RPC partait avec `p_request_id: NaN`, soit une erreur et un `500`. Stripe aurait retenté pendant 3 jours et dégradé la santé de l'endpoint.
 
-La clé vit dans le projet Vercel `iletaitunfut` (scope Production, `STRIPE_SECRET_KEY`, compte `acct_1TDPicEQ3UQbwGzY`).
+Correctif livré : sortie anticipée `200 {received, ignored}` avant toute écriture, si `request_id` n'est pas un entier strictement positif ou si `metadata.brand` désigne une autre marque. Le `200` est délibéré, un `4xx` déclencherait les retries.
 
-```bash
-cd /c/Users/fkerj/iletaitunfut && vercel env pull /tmp/ieuf.env --environment=production
-```
+**Défaut voisin, hors périmètre, à traiter côté Kairos** : `siteweb/src/app/api/bookings/webhook/route.ts:92` renvoie `400 Missing booking_id` sur toute session sans `booking_id`. Chaque commande IEUF et Eleni produit donc déjà un échec de livraison sur l'endpoint Kairos, et les sessions Stays s'y ajouteront. À corriger de la même façon (sortie `200` silencieuse) dans une session dédiée au dépôt `siteweb`.
 
-Ne jamais afficher la valeur dans un log, un commit ou un message. Supprimer `/tmp/ieuf.env` immédiatement après usage.
+---
 
-- [ ] **Step 2: Poser la clé sur le projet crete.direct**
+## Task 14 : mise en service (opérations)
 
-```bash
-cd /c/Users/fkerj/cretepulse-build
-vercel env add STRIPE_SECRET_KEY production
-vercel env add STRIPE_SECRET_KEY preview
-```
+C'est la séquence qui rend le tunnel réellement encaissable. Tant qu'elle n'est pas faite, tout ce qui précède est mort en production.
 
-Coller la valeur au prompt. Vérifier ensuite :
+- [x] **Step 1: Récupérer la clé secrète du compte NovAI** ✅ FAIT 29/07
 
-```bash
-vercel env ls production | grep STRIPE_SECRET_KEY
-```
+Clé tirée du projet Vercel `iletaitunfut` (scope Production) via `vercel env pull` dans le scratchpad, jamais affichée, fichier supprimé après usage. Compte confirmé par `GET /v1/account` : `acct_1TDPicEQ3UQbwGzY`, « Novai », pays FR, type standard, `charges_enabled: true`, descripteur de relevé par défaut **`NOVAI`** (ce qui confirme la nécessité de la Task 1 : sans suffixe, le voyageur lit « NOVAI » sur son relevé).
 
-Expected: 1 ligne.
+- [x] **Step 2: Poser la clé sur le projet crete.direct** ✅ FAIT 29/07
 
-- [ ] **Step 3: Créer l'endpoint webhook Stripe**
+`STRIPE_SECRET_KEY` ajoutée en Production ET Preview sur `cretepulse-build`.
 
-Dans le dashboard Stripe du compte `acct_1TDPicEQ3UQbwGzY`, section Developers puis Webhooks, ajouter un endpoint :
-- URL : `https://crete.direct/api/stays/webhook`
-- Événement : `checkout.session.completed`
-- Description : `crete.direct Stays`
+- [x] **Step 3: Créer l'endpoint webhook Stripe** ✅ FAIT 29/07, **VOLONTAIREMENT DÉSACTIVÉ**
 
-Attention : cet endpoint s'ajoute à celui de Kairos (`kairosguest.com/api/bookings/webhook`) déjà présent sur ce compte. Ne pas le modifier ni le supprimer. Les deux endpoints reçoivent les mêmes événements ; c'est le `metadata.brand` posé en Task 1 et l'identifiant de session inconnu de l'autre système qui les cloisonnent. Vérifier après le premier test que le webhook Kairos ignore proprement une session Stays (il cherche ses propres `booking_id` en metadata et ne les trouvera pas).
+Endpoint créé par API : `we_1TyJZpEQ3UQbwGzYkeimteNI`, URL `https://crete.direct/api/stays/webhook`, événement `checkout.session.completed`, `metadata[brand]=crete.direct`. Le `whsec_` a été posé dans `STRIPE_WEBHOOK_SECRET_STAYS` (Production + Preview).
 
-Récupérer le `whsec_...` généré, puis :
+**Il a été immédiatement passé en `disabled`** : `/api/stays/webhook` renvoie encore 404 en production tant que la PR #6 n'est pas mergée. Le laisser actif ferait marteler un 404 par chaque paiement réel d'IEUF, d'Eleni et de Kairos, avec retries sur 3 jours et risque de désactivation automatique par Stripe.
 
-```bash
-vercel env add STRIPE_WEBHOOK_SECRET_STAYS production
-```
+Constat relevé au passage : le compte n'a **aucun compte connecté en live** (`GET /v1/accounts` renvoie 0). Le flux Connect de Kairos n'a donc jamais tourné qu'en mode test, ce qui est cohérent avec la note de `clients/prospect_avital_zion.md`. Pour Stays, ce n'est pas un blocage : chaque propriétaire crée son compte Express à la première acceptation (KYC juste à temps).
 
-- [ ] **Step 4: Vérifier que rien ne manque**
+- [x] **Step 4: Vérifier que rien ne manque** ✅ FAIT 29/07
+
+`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET_STAYS`, `RESEND_API_KEY`, `CRON_SECRET` présentes en Production.
+
+- [ ] **Step 4 bis: Réactiver l'endpoint, APRÈS le déploiement**
+
+À faire juste après le Step 6 (vérification que `/fr/stays` répond 200 en production), jamais avant :
 
 ```bash
-vercel env ls production | grep -E "STRIPE_SECRET_KEY|STRIPE_WEBHOOK_SECRET_STAYS|RESEND_API_KEY|CRON_SECRET"
+curl -s -u "$SK:" https://api.stripe.com/v1/webhook_endpoints/we_1TyJZpEQ3UQbwGzYkeimteNI -d disabled=false
 ```
 
-Expected: 4 lignes.
+Puis vérifier dans le dashboard Stripe, onglet du endpoint, que les premières livraisons passent en `200`.
 
 - [ ] **Step 5: Faire passer la CI et merger**
 
