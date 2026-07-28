@@ -31,9 +31,11 @@ vi.mock("@/lib/supabase-admin", () => ({
 }));
 const sendGuestConfirmed = vi.fn(async () => {});
 const sendGuestConflict = vi.fn(async () => {});
+const sendOwnerBooked = vi.fn(async () => {});
 vi.mock("@/lib/stays/emails", () => ({
   sendGuestConfirmed: (...a: unknown[]) => sendGuestConfirmed(...a),
   sendGuestConflict: (...a: unknown[]) => sendGuestConflict(...a),
+  sendOwnerBooked: (...a: unknown[]) => sendOwnerBooked(...a),
 }));
 
 import { POST } from "./route";
@@ -92,6 +94,37 @@ describe("POST /api/stays/webhook", () => {
     expect(res.status).toBe(200);
     expect(rpc).toHaveBeenCalledWith("mark_stay_deposit_paid", expect.objectContaining({ p_request_id: 5 }));
     expect(sendGuestConfirmed).toHaveBeenCalledOnce();
+  });
+
+  // Sans cet email, un proprietaire accepte une demande puis n apprend jamais qu il
+  // a une reservation. C est le trou le plus grave cote offre.
+  it("previent aussi le proprietaire, avec son net et le contact voyageur", async () => {
+    rpc.mockResolvedValueOnce({
+      data: [{
+        id: 5, listing_id: 9, guest_email: "j@x.com", guest_name: "Jane",
+        guest_phone: "+33600000000", date_from: "2026-08-01", date_to: "2026-08-08",
+        quoted_price_eur: 100,
+      }],
+      error: null,
+    });
+    maybeSingle
+      .mockResolvedValueOnce({
+        data: { title: "Villa Danae", owner_id: 3, cleaning_fee_eur: 60, commission_rate: 5 },
+      })
+      .mockResolvedValueOnce({ data: { email: "owner@x.com" } });
+
+    await POST(evt("ev_owner") as never);
+
+    expect(sendOwnerBooked).toHaveBeenCalledWith(
+      "owner@x.com",
+      expect.objectContaining({
+        guestName: "Jane",
+        guestEmail: "j@x.com",
+        guestPhone: "+33600000000",
+        // 100 EUR x 7 nuits + 60 de menage
+        ownerNetEur: 760,
+      }),
+    );
   });
 
   // Les dates ont ete prises entre l'acceptation et le paiement : la contrainte GIST

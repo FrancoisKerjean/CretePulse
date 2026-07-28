@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { stripeClient } from "@/lib/stays/stripe-helpers";
-import { sendGuestConfirmed, sendGuestConflict } from "@/lib/stays/emails";
+import { sendGuestConfirmed, sendGuestConflict, sendOwnerBooked } from "@/lib/stays/emails";
 import { notifyTelegram } from "@/lib/stays/telegram";
+import { computeQuote } from "@/lib/stays/pricing";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const sig = request.headers.get("stripe-signature") ?? "";
@@ -99,8 +100,40 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const row = Array.isArray(data) ? data[0] : null;
     if (row) {
       const { data: listing } = await supabaseAdmin
-        .from("stay_listings").select("title").eq("id", row.listing_id).maybeSingle();
+        .from("stay_listings")
+        .select("title, owner_id, cleaning_fee_eur, commission_rate")
+        .eq("id", row.listing_id)
+        .maybeSingle();
       await sendGuestConfirmed(row.guest_email, listing?.title ?? "votre séjour");
+
+      // Le proprietaire doit apprendre sa reservation par crete.direct, pas la
+      // decouvrir sur son releve Stripe.
+      if (listing?.owner_id) {
+        const { data: owner } = await supabaseAdmin
+          .from("stay_owners")
+          .select("email")
+          .eq("id", listing.owner_id)
+          .maybeSingle();
+        if (owner?.email) {
+          const quote = computeQuote({
+            basePriceEur: Number(row.quoted_price_eur),
+            cleaningFeeEur: Number(listing.cleaning_fee_eur) || 0,
+            commissionRate: Number(listing.commission_rate) || 5,
+            dateFrom: row.date_from,
+            dateTo: row.date_to,
+          });
+          await sendOwnerBooked(owner.email, {
+            listingTitle: listing.title ?? "votre logement",
+            guestName: row.guest_name,
+            guestEmail: row.guest_email,
+            guestPhone: row.guest_phone ?? null,
+            dateFrom: row.date_from,
+            dateTo: row.date_to,
+            ownerNetEur: quote.ownerNetEur,
+            depositEur: quote.depositEur,
+          });
+        }
+      }
     }
   }
 

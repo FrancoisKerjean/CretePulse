@@ -44,6 +44,35 @@ export function guestApprovedBody(o: {
   </div>`;
 }
 
+export function ownerBookedSubject(dateFrom: string, dateTo: string): string {
+  return `Réservation confirmée : ${dateFrom} au ${dateTo}`;
+}
+
+export function ownerBookedBody(o: {
+  listingTitle: string;
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string | null;
+  dateFrom: string;
+  dateTo: string;
+  ownerNetEur: number;
+  depositEur: number;
+}): string {
+  return `<div style="font-family:Inter,Arial,sans-serif;color:#1A1A2E">
+    <p><strong>${o.guestName}</strong> a réglé son acompte pour <strong>${o.listingTitle}</strong>, du <strong>${o.dateFrom}</strong> au <strong>${o.dateTo}</strong>.</p>
+    <p>Vos dates sont bloquées sur crete.direct. Bloquez les aussi sur vos autres canaux si votre calendrier n'est pas synchronisé.</p>
+    <p>Contact voyageur : ${o.guestEmail}${o.guestPhone ? ` · ${o.guestPhone}` : ""}</p>
+    <p>Votre net sur ce séjour : <strong>${o.ownerNetEur.toFixed(2)} EUR</strong>. Acompte déjà versé sur votre compte Stripe : ${o.depositEur.toFixed(2)} EUR. Le solde suit 14 jours avant l'arrivée.</p>
+  </div>`;
+}
+
+export async function sendOwnerBooked(
+  ownerEmail: string,
+  o: Parameters<typeof ownerBookedBody>[0],
+): Promise<void> {
+  await send(ownerEmail, ownerBookedSubject(o.dateFrom, o.dateTo), ownerBookedBody(o));
+}
+
 export function guestReceivedSubject(listingTitle: string): string {
   return `Demande envoyée : ${listingTitle}`;
 }
