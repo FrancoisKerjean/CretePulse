@@ -110,7 +110,20 @@
       "weather": "Väder",
       "weatherLine": "10 stationer + hav"
     },
-    "nextEvents": "Kommande evenemang"
+    "nextEvents": "Kommande evenemang",
+    "barometer": {
+      "sea": "{temp}° i vattnet, vind {wind} km/h, luft {air}°",
+      "cruise": "Upp till {pax} kryssningspassagerare i dag i {port}",
+      "buses": "{count} bussar spåras live",
+      "src": { "weather": "väderstationer", "port": "hamnens officiella tidtabell", "gps": "GPS, var 5:e min" }
+    },
+    "serviceRail": {
+      "title": "Boka direkt",
+      "lead": "Fyra tjänster som drivs från ön. Utan internationell mellanhand, utan dold provision.",
+      "van": { "kicker": "Delad van", "title": "Flygplats till stad", "sub": "Från 40 € per plats, på rutter bussen inte täcker.", "cta": "Se rutter" },
+      "activities": { "kicker": "Aktiviteter", "title": "Vandring, båt, matlagning", "sub": "Flera lokala aktörer offererar din förfrågan.", "cta": "Begär offert" },
+      "stays": { "kicker": "Villa och hus", "title": "Hyr utan Airbnb", "sub": "Ägaren sätter priset, du betalar 5 % avgift i stället för cirka 14 %.", "cta": "Se boenden" }
+    }
   },
   "footer": {
     "about": "Gratis, oberoende guide till Kreta. Realtidsdata. Inga annonser (ännu). Ingen spårning.",

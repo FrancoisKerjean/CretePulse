@@ -110,7 +110,20 @@
       "weather": "Météo",
       "weatherLine": "10 stations + mer"
     },
-    "nextEvents": "Prochains événements"
+    "nextEvents": "Prochains événements",
+    "barometer": {
+      "sea": "{temp}° dans l'eau, vent {wind} km/h, air {air}°",
+      "cruise": "Jusqu'à {pax} croisiéristes à {port} aujourd'hui",
+      "buses": "{count} bus suivis en direct",
+      "src": { "weather": "stations météo", "port": "calendrier officiel du port", "gps": "GPS, toutes les 5 min" }
+    },
+    "serviceRail": {
+      "title": "Réserver en direct",
+      "lead": "Quatre services opérés depuis l'île. Sans intermédiaire international, sans commission cachée.",
+      "van": { "kicker": "Van partagé", "title": "Aéroport vers ville", "sub": "Dès 40 € le siège, sur les trajets que le bus ne fait pas.", "cta": "Voir les trajets" },
+      "activities": { "kicker": "Activités", "title": "Randonnée, bateau, cuisine", "sub": "Plusieurs prestataires chiffrent votre demande.", "cta": "Demander un devis" },
+      "stays": { "kicker": "Villa et maison", "title": "Louez sans Airbnb", "sub": "Le propriétaire fixe son prix, vous payez 5 % de frais au lieu d'environ 14 %.", "cta": "Voir les logements" }
+    }
   },
   "footer": {
     "about": "Guide gratuit et indépendant sur la Crète. Données live. Pas de pub (pour l'instant). Pas de tracking.",

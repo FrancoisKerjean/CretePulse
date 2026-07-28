@@ -110,7 +110,20 @@
       "weather": "Počasí",
       "weatherLine": "10 stanic + moře"
     },
-    "nextEvents": "Nadcházející akce"
+    "nextEvents": "Nadcházející akce",
+    "barometer": {
+      "sea": "{temp}° ve vodě, vítr {wind} km/h, vzduch {air}°",
+      "cruise": "Až {pax} cestujících z výletních lodí dnes v {port}",
+      "buses": "{count} autobusů sledovaných živě",
+      "src": { "weather": "meteorologické stanice", "port": "oficiální rozpis přístavu", "gps": "GPS, každých 5 min" }
+    },
+    "serviceRail": {
+      "title": "Rezervujte přímo",
+      "lead": "Čtyři služby provozované z ostrova. Bez mezinárodního prostředníka, bez skryté provize.",
+      "van": { "kicker": "Sdílený van", "title": "Z letiště do města", "sub": "Už od 40 € za místo, na trasách, které autobus neobsluhuje.", "cta": "Zobrazit trasy" },
+      "activities": { "kicker": "Aktivity", "title": "Turistika, loď, vaření", "sub": "Několik místních poskytovatelů vám připraví nabídku.", "cta": "Vyžádat nabídku" },
+      "stays": { "kicker": "Vila a dům", "title": "Pronájem bez Airbnb", "sub": "Majitel určuje cenu, vy platíte 5 % poplatek místo asi 14 %.", "cta": "Zobrazit ubytování" }
+    }
   },
   "footer": {
     "about": "Bezplatný, nezávislý průvodce Krétou. Živá data. Bez reklam (zatím). Bez sledování.",

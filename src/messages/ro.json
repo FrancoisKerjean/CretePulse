@@ -110,7 +110,20 @@
       "weather": "Vreme",
       "weatherLine": "10 stații + mare"
     },
-    "nextEvents": "Evenimente viitoare"
+    "nextEvents": "Evenimente viitoare",
+    "barometer": {
+      "sea": "{temp}° în apă, vânt {wind} km/h, aer {air}°",
+      "cruise": "Până la {pax} pasageri de croazieră astăzi în {port}",
+      "buses": "{count} autobuze urmărite live",
+      "src": { "weather": "stații meteo", "port": "programul oficial al portului", "gps": "GPS, la fiecare 5 min" }
+    },
+    "serviceRail": {
+      "title": "Rezervă direct",
+      "lead": "Patru servicii operate de pe insulă. Fără intermediar internațional, fără comision ascuns.",
+      "van": { "kicker": "Van partajat", "title": "De la aeroport în oraș", "sub": "De la 40 € locul, pe rute pe care autobuzul nu le acoperă.", "cta": "Vezi rutele" },
+      "activities": { "kicker": "Activități", "title": "Drumeții, barcă, gătit", "sub": "Mai mulți operatori locali oferă o ofertă de preț pentru cererea ta.", "cta": "Cere o ofertă" },
+      "stays": { "kicker": "Vilă și casă", "title": "Închiriază fără Airbnb", "sub": "Proprietarul stabilește prețul, tu plătești un comision de 5 % în loc de aproximativ 14 %.", "cta": "Vezi locuințele" }
+    }
   },
   "footer": {
     "about": "Ghid gratuit și independent pentru Creta. Date în timp real. Fără reclame (deocamdată). Fără urmărire.",
