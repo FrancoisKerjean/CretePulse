@@ -1,9 +1,10 @@
 "use client";
 
-// Rail « Reserver en direct » : bandeau voiture (format prouve a 5,7 % de clic)
-// plus trois cartes de poids egal. Le contenu vient de getHomeServices, la
-// visibilite du bloc villa d'un flag serveur.
+// Rail « Réserver en direct » : bandeau voiture (format prouvé à 5,7 % de clic)
+// plus trois cartes de poids égal. Le contenu vient de getHomeServices, la
+// visibilité du bloc villa d'un flag serveur.
 // Spec : docs/superpowers/specs/2026-07-28-home-service-rail-design.md
+import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { ImpressionTracker } from "@/components/ui/ImpressionTracker";
@@ -21,13 +22,18 @@ function track(service: HomeServiceId, layout: HomeService["layout"]) {
     .plausible?.("service_rail_click", { props: { service, layout } });
 }
 
-function Card({ s, band }: { s: HomeService; band: boolean }) {
+function Card({ s }: { s: HomeService }) {
+  const band = s.layout === "band";
   const t = useTranslations("home");
   const k = COPY_KEY[s.id];
+  const impressionProps = useMemo(
+    () => ({ block: "service-rail", source: "home", service: s.id }),
+    [s.id],
+  );
   const inner = (
     <>
-      <ImpressionTracker event="promo_impression" props={{ block: "service-rail", source: "home", service: s.id }} />
-      <img src={s.photo} alt="" loading="lazy" aria-hidden
+      <ImpressionTracker event="promo_impression" props={impressionProps} />
+      <img src={s.photo} alt="" loading={band ? "eager" : "lazy"} aria-hidden
            className="absolute inset-0 h-full w-full object-cover transition-transform duration-[4000ms] ease-out group-hover:scale-105" />
       <div className={`absolute inset-0 ${band
         ? "bg-gradient-to-r from-[#08263a]/85 via-[#08263a]/50 to-[#08263a]/10"
@@ -69,9 +75,9 @@ export function ServiceRail({ services }: { services: HomeService[] }) {
     <section className="mt-10">
       <h2 className="font-heading text-[28px] font-extrabold text-text m-0">{t("serviceRail.title")}</h2>
       <p className="text-[13.5px] text-text-muted mt-1 mb-4 max-w-2xl">{t("serviceRail.lead")}</p>
-      {band && <Card s={band} band />}
-      <div className={`grid gap-3.5 mt-3.5 ${cards.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
-        {cards.map((s) => <Card key={s.id} s={s} band={false} />)}
+      {band && <Card s={band} />}
+      <div className={`grid grid-cols-1 gap-3.5 mt-3.5 ${cards.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
+        {cards.map((s) => <Card key={s.id} s={s} />)}
       </div>
     </section>
   );
