@@ -1,5 +1,30 @@
 import { describe, it, expect } from "vitest";
-import { buildCheckoutParams } from "./stripe-helpers";
+import { buildCheckoutParams, buildConnectAccountParams } from "./stripe-helpers";
+
+describe("buildConnectAccountParams", () => {
+  it("cree un compte grec individuel par defaut", () => {
+    const p = buildConnectAccountParams("o@example.com", {});
+    expect(p.country).toBe("GR");
+    expect(p.business_type).toBe("individual");
+    expect(p.email).toBe("o@example.com");
+  });
+
+  // Vangelis (Villa Danae) est base en Belgique, un proprietaire en IKE est une
+  // societe : les deux etaient bloques par un pays et un type figes.
+  it("respecte le pays et le type declares par le proprietaire", () => {
+    const p = buildConnectAccountParams("o@example.com", {
+      country: "be",
+      businessType: "company",
+    });
+    expect(p.country).toBe("BE");
+    expect(p.business_type).toBe("company");
+  });
+
+  it("retombe sur GR quand le code pays est invalide", () => {
+    expect(buildConnectAccountParams("o@example.com", { country: "zzz" }).country).toBe("GR");
+    expect(buildConnectAccountParams("o@example.com", { country: "" }).country).toBe("GR");
+  });
+});
 
 describe("buildCheckoutParams", () => {
   it("builds a destination charge with application_fee on the deposit", () => {

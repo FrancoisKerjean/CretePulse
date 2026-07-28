@@ -81,6 +81,12 @@ export type StaysStrings = {
     intro: string;
     priceLabel: string;
     priceHelp: string;
+    payoutTitle: string;
+    payoutHelp: string;
+    countryLabel: string;
+    businessTypeLabel: string;
+    businessIndividual: string;
+    businessCompany: string;
     accept: string;
     decline: string;
     working: string;
@@ -275,6 +281,13 @@ export const L: Record<StaysLocale, StaysStrings> = {
         "Confirm or adjust your price. crete.direct collects the payment on your behalf and pays you out through Stripe, with a 5 % commission.",
       priceLabel: "Your net price per night",
       priceHelp: "In euros, per night. The traveller pays the nights booked plus 5 % payment fees.",
+      payoutTitle: "Your payout account",
+      payoutHelp:
+        "Asked once only, when you accept your first stay. It opens your Stripe account, where crete.direct pays you out.",
+      countryLabel: "Country of your bank account",
+      businessTypeLabel: "You are",
+      businessIndividual: "An individual",
+      businessCompany: "A company",
       accept: "Accept and send the payment link",
       decline: "Decline",
       working: "Working",
@@ -382,6 +395,13 @@ export const L: Record<StaysLocale, StaysStrings> = {
         "Confirmez ou ajustez votre prix. crete.direct encaisse pour votre compte et vous reverse via Stripe, avec une commission de 5 %.",
       priceLabel: "Votre prix net par nuit",
       priceHelp: "En euros, par nuit. Le voyageur règle les nuits réservées plus 5 % de frais de paiement.",
+      payoutTitle: "Votre compte de versement",
+      payoutHelp:
+        "Demandé une seule fois, à votre première acceptation. Cela ouvre votre compte Stripe, sur lequel crete.direct vous reverse.",
+      countryLabel: "Pays de votre compte bancaire",
+      businessTypeLabel: "Vous êtes",
+      businessIndividual: "Un particulier",
+      businessCompany: "Une société",
       accept: "Accepter et envoyer le lien de paiement",
       decline: "Refuser",
       working: "Traitement en cours",
@@ -491,6 +511,13 @@ export const L: Record<StaysLocale, StaysStrings> = {
       priceLabel: "Ihr Nettopreis pro Nacht",
       priceHelp:
         "In Euro. Der Reisende zahlt diesen Betrag zuzüglich 5 % Zahlungsgebühren.",
+      payoutTitle: "Ihr Auszahlungskonto",
+      payoutHelp:
+        "Wird nur einmal abgefragt, bei Ihrer ersten Annahme. Damit wird Ihr Stripe Konto eröffnet, über das crete.direct auszahlt.",
+      countryLabel: "Land Ihres Bankkontos",
+      businessTypeLabel: "Sie sind",
+      businessIndividual: "Eine Privatperson",
+      businessCompany: "Ein Unternehmen",
       accept: "Annehmen und Zahlungslink senden",
       decline: "Ablehnen",
       working: "Wird verarbeitet",
@@ -599,6 +626,13 @@ export const L: Record<StaysLocale, StaysStrings> = {
         "Επιβεβαιώστε ή προσαρμόστε την τιμή σας. Το crete.direct εισπράττει για λογαριασμό σας και σας αποδίδει μέσω Stripe, με προμήθεια 5 %.",
       priceLabel: "Η καθαρή σας τιμή ανά διανυκτέρευση",
       priceHelp: "Σε ευρώ. Ο ταξιδιώτης πληρώνει αυτό το ποσό συν 5 % έξοδα πληρωμής.",
+      payoutTitle: "Ο λογαριασμός πληρωμής σας",
+      payoutHelp:
+        "Ζητείται μία μόνο φορά, στην πρώτη σας αποδοχή. Ανοίγει τον λογαριασμό σας Stripe, μέσω του οποίου σας πληρώνει το crete.direct.",
+      countryLabel: "Χώρα του τραπεζικού σας λογαριασμού",
+      businessTypeLabel: "Είστε",
+      businessIndividual: "Ιδιώτης",
+      businessCompany: "Εταιρεία",
       accept: "Αποδοχή και αποστολή συνδέσμου πληρωμής",
       decline: "Απόρριψη",
       working: "Γίνεται επεξεργασία",

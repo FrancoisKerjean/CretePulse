@@ -8,10 +8,41 @@ const LABEL = "block text-[13px] font-heading font-bold text-text mb-1.5";
 
 type Note = { tone: "info" | "ok" | "error"; text: string } | null;
 
+// Pays de versement proposes. Grece en tete (le gros du parc), puis les pays des
+// proprietaires non residents deja rencontres et les voisins evidents. Un pays
+// absent de cette liste reste possible cote API, le champ n'est qu'un raccourci.
+const PAYOUT_COUNTRIES = [
+  { code: "GR", label: "Ελλάδα · Greece" },
+  { code: "FR", label: "France" },
+  { code: "BE", label: "Belgique · België" },
+  { code: "DE", label: "Deutschland" },
+  { code: "NL", label: "Nederland" },
+  { code: "GB", label: "United Kingdom" },
+  { code: "IE", label: "Ireland" },
+  { code: "IT", label: "Italia" },
+  { code: "ES", label: "España" },
+  { code: "AT", label: "Österreich" },
+  { code: "CH", label: "Schweiz · Suisse" },
+  { code: "SE", label: "Sverige" },
+  { code: "DK", label: "Danmark" },
+  { code: "NO", label: "Norge" },
+  { code: "FI", label: "Suomi" },
+  { code: "PL", label: "Polska" },
+  { code: "CZ", label: "Česko" },
+  { code: "PT", label: "Portugal" },
+  { code: "US", label: "United States" },
+  { code: "CA", label: "Canada" },
+  { code: "AU", label: "Australia" },
+] as const;
+
 export default function ApprovePanel(
   { token, strings }: { token: string; strings: StaysStrings["approve"] },
 ) {
   const [price, setPrice] = useState("");
+  // Pays et type d'entite du compte de versement. Lus par Stripe Connect a la
+  // premiere acceptation seulement. Ignores ensuite (le compte existe deja).
+  const [country, setCountry] = useState("GR");
+  const [businessType, setBusinessType] = useState<"individual" | "company">("individual");
   const [busy, setBusy] = useState(false);
   const [settled, setSettled] = useState(false);
   const [note, setNote] = useState<Note>(null);
@@ -23,7 +54,7 @@ export default function ApprovePanel(
       const r = await fetch("/api/stays/approve", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ token, action, price: Number(price) }),
+        body: JSON.stringify({ token, action, price: Number(price), country, businessType }),
       });
       const j = await r.json();
       // KYC juste-a-temps : Stripe Connect onboarding avant la premiere acceptation.
@@ -61,6 +92,48 @@ export default function ApprovePanel(
           disabled={settled}
         />
         <p className="m-0 mt-1.5 text-[13px] text-text-muted">{strings.priceHelp}</p>
+      </div>
+
+      <div className="border-t border-border pt-4">
+        <p className="m-0 mb-1 text-[13px] font-heading font-bold text-text">
+          {strings.payoutTitle}
+        </p>
+        <p className="m-0 mb-3 text-[13px] text-text-muted">{strings.payoutHelp}</p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className={LABEL} htmlFor="stay-approve-country">
+              {strings.countryLabel}
+            </label>
+            <select
+              id="stay-approve-country"
+              className={FIELD}
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              disabled={settled}
+            >
+              {PAYOUT_COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className={LABEL} htmlFor="stay-approve-business">
+              {strings.businessTypeLabel}
+            </label>
+            <select
+              id="stay-approve-business"
+              className={FIELD}
+              value={businessType}
+              onChange={(e) => setBusinessType(e.target.value as "individual" | "company")}
+              disabled={settled}
+            >
+              <option value="individual">{strings.businessIndividual}</option>
+              <option value="company">{strings.businessCompany}</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-3">

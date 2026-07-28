@@ -36,7 +36,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     .maybeSingle();
 
   if (!owner?.stripe_connect_account_id) {
-    const link = await createConnectOnboardingLink(owner?.email ?? "", listing.owner_id);
+    const link = await createConnectOnboardingLink(owner?.email ?? "", listing.owner_id, {
+      country: typeof body.country === "string" ? body.country : undefined,
+      businessType: body.businessType === "company" ? "company" : "individual",
+    });
     await supabaseAdmin.from("stay_owners")
       .update({ stripe_connect_account_id: link.accountId, kyc_status: "pending" })
       .eq("id", listing.owner_id);

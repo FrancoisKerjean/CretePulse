@@ -58,21 +58,41 @@ export function stripeClient(): Stripe {
   return new Stripe(process.env.STRIPE_SECRET_KEY as string);
 }
 
-export async function createConnectOnboardingLink(
+export interface ConnectProfile {
+  /** Code pays ISO 3166-1 alpha-2 du compte bancaire du proprietaire. */
+  country?: string;
+  businessType?: "individual" | "company";
+}
+
+export function buildConnectAccountParams(
   ownerEmail: string,
-  ownerId: number,
-): Promise<{ accountId: string; url: string }> {
-  const stripe = stripeClient();
-  const account = await stripe.accounts.create({
+  profile: ConnectProfile,
+): Stripe.AccountCreateParams {
+  const country =
+    typeof profile.country === "string" && /^[A-Za-z]{2}$/.test(profile.country)
+      ? profile.country.toUpperCase()
+      : "GR";
+  return {
     type: "express",
-    country: "GR",
+    country,
     email: ownerEmail,
-    business_type: "individual",
+    business_type: profile.businessType === "company" ? "company" : "individual",
     capabilities: {
       card_payments: { requested: true },
       transfers: { requested: true },
     },
-  });
+  };
+}
+
+export async function createConnectOnboardingLink(
+  ownerEmail: string,
+  ownerId: number,
+  profile: ConnectProfile = {},
+): Promise<{ accountId: string; url: string }> {
+  const stripe = stripeClient();
+  const account = await stripe.accounts.create(
+    buildConnectAccountParams(ownerEmail, profile),
+  );
   const base = siteBase();
   const link = await stripe.accountLinks.create({
     account: account.id,
