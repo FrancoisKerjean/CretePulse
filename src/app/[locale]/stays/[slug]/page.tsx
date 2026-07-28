@@ -6,7 +6,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
-import { getListingBySlug } from "@/lib/stays/db";
+import { getListingBySlug, bookedRangesForListing } from "@/lib/stays/db";
+import { unavailableNights } from "@/lib/stays/availability";
 import { L, pickStaysLocale } from "../content";
 import { staysMetadata } from "../metadata";
 import RequestForm from "./RequestForm";
@@ -30,6 +31,14 @@ export default async function StayDetailPage(
 
   const listing = await getListingBySlug(slug);
   if (!listing || listing.status !== "published") notFound();
+
+  // Nuits deja prises, tenues a jour par la synchro iCal et par les reservations.
+  // On n'affiche que celles a venir : le passe n'apprend rien au voyageur.
+  const today = new Date().toISOString().slice(0, 10);
+  const unavailable = unavailableNights(await bookedRangesForListing(listing.id)).filter(
+    (d) => d >= today,
+  );
+  const minNights = Number(listing.min_nights) || 1;
 
   return (
     <main className="min-h-screen bg-surface">
@@ -73,7 +82,32 @@ export default async function StayDetailPage(
           <p className="text-[15px] text-text-muted leading-relaxed mt-0 mb-5">
             {t.listing.requestIntro}
           </p>
-          <RequestForm slug={listing.slug} strings={t.form} />
+          <RequestForm
+            slug={listing.slug}
+            strings={t.form}
+            unavailable={unavailable}
+            minNights={minNights}
+          />
+
+          <div className="mt-5">
+            <p className="m-0 mb-2 text-[12px] uppercase tracking-wide text-text-muted">
+              {t.listing.unavailableTitle}
+            </p>
+            {unavailable.length === 0 ? (
+              <p className="m-0 text-[14px] text-text-muted">{t.listing.unavailableEmpty}</p>
+            ) : (
+              <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
+                {unavailable.slice(0, 45).map((d) => (
+                  <li
+                    key={d}
+                    className="rounded-lg border border-border bg-white px-2 py-1 text-[12.5px] text-text-muted font-data line-through"
+                  >
+                    {d}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </section>
 
         <p className="mt-8 text-[13px]">

@@ -39,6 +39,8 @@ export type StaysStrings = {
     requestTitle: string;
     requestIntro: string;
     termsLink: string;
+    unavailableTitle: string;
+    unavailableEmpty: string;
   };
   form: {
     name: string;
@@ -52,6 +54,8 @@ export type StaysStrings = {
     sending: string;
     success: string;
     error: string;
+    errorUnavailable: string;
+    errorMinNights: string;
   };
   wizard: {
     h1: string;
@@ -235,6 +239,8 @@ export const L: Record<StaysLocale, StaysStrings> = {
       requestIntro:
         "The owner receives your request by email and replies with a confirmed price. Nothing is charged at this stage.",
       termsLink: "Read the terms",
+      unavailableTitle: "Already booked",
+      unavailableEmpty: "Every night is open for now.",
     },
     form: {
       name: "Full name",
@@ -248,6 +254,8 @@ export const L: Record<StaysLocale, StaysStrings> = {
       sending: "Sending",
       success: "Request sent. The owner will reply shortly.",
       error: "Something went wrong. Please try again.",
+      errorUnavailable: "Those nights are already booked. Pick another range.",
+      errorMinNights: "This place is booked from {n} nights.",
     },
     wizard: {
       h1: "List your property",
@@ -349,6 +357,8 @@ export const L: Record<StaysLocale, StaysStrings> = {
       requestIntro:
         "Le propriétaire reçoit votre demande par email et répond avec un prix confirmé. Rien n'est débité à ce stade.",
       termsLink: "Lire les conditions",
+      unavailableTitle: "Nuits deja reservees",
+      unavailableEmpty: "Toutes les nuits sont libres pour l instant.",
     },
     form: {
       name: "Nom complet",
@@ -362,6 +372,8 @@ export const L: Record<StaysLocale, StaysStrings> = {
       sending: "Envoi en cours",
       success: "Demande envoyée. Le propriétaire vous répond sous peu.",
       error: "Une erreur est survenue. Réessayez.",
+      errorUnavailable: "Ces nuits sont déjà réservées. Choisissez d autres dates.",
+      errorMinNights: "Ce logement se réserve à partir de {n} nuits.",
     },
     wizard: {
       h1: "Publiez votre logement",
@@ -463,6 +475,8 @@ export const L: Record<StaysLocale, StaysStrings> = {
       requestIntro:
         "Der Eigentümer erhält Ihre Anfrage per E-Mail und antwortet mit einem bestätigten Preis. Zu diesem Zeitpunkt wird nichts abgebucht.",
       termsLink: "Bedingungen lesen",
+      unavailableTitle: "Bereits gebuchte Nachte",
+      unavailableEmpty: "Aktuell sind alle Nachte frei.",
     },
     form: {
       name: "Vollständiger Name",
@@ -476,6 +490,8 @@ export const L: Record<StaysLocale, StaysStrings> = {
       sending: "Wird gesendet",
       success: "Anfrage gesendet. Der Eigentümer antwortet in Kürze.",
       error: "Es ist ein Fehler aufgetreten. Bitte erneut versuchen.",
+      errorUnavailable: "Diese Nächte sind bereits gebucht. Bitte andere Daten wählen.",
+      errorMinNights: "Diese Unterkunft wird ab {n} Nächten gebucht.",
     },
     wizard: {
       h1: "Ihre Unterkunft eintragen",
@@ -579,6 +595,8 @@ export const L: Record<StaysLocale, StaysStrings> = {
       requestIntro:
         "Ο ιδιοκτήτης λαμβάνει το αίτημά σας με email και απαντά με επιβεβαιωμένη τιμή. Τίποτα δεν χρεώνεται σε αυτό το στάδιο.",
       termsLink: "Διαβάστε τους όρους",
+      unavailableTitle: "Ήδη κλεισμένες νύχτες",
+      unavailableEmpty: "Όλες οι νύχτες είναι ελεύθερες προς το παρόν.",
     },
     form: {
       name: "Ονοματεπώνυμο",
@@ -592,6 +610,8 @@ export const L: Record<StaysLocale, StaysStrings> = {
       sending: "Γίνεται αποστολή",
       success: "Το αίτημα στάλθηκε. Ο ιδιοκτήτης θα απαντήσει σύντομα.",
       error: "Παρουσιάστηκε σφάλμα. Δοκιμάστε ξανά.",
+      errorUnavailable: "Αυτές οι νύχτες είναι ήδη κλεισμένες. Επιλέξτε άλλες ημερομηνίες.",
+      errorMinNights: "Το κατάλυμα κλείνει από {n} νύχτες.",
     },
     wizard: {
       h1: "Καταχωρίστε το κατάλυμά σας",
