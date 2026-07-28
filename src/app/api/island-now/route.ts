@@ -20,33 +20,51 @@ const CACHE_HEADERS = {
   "Cache-Control": "public, s-maxage=600, stale-while-revalidate=1800",
 };
 
+// Filet de securite : un hang reseau contre le PostgREST self-hosted ne doit
+// jamais laisser le Promise.all pendu jusqu'a ce que la plateforme tue la
+// fonction. 5 s par requete, le meme budget que le cache CDN est genereux.
+const QUERY_TIMEOUT_MS = 5000;
+
 export async function GET() {
-  const now = Date.now();
-  const today = athensDate(now);
+  try {
+    const now = Date.now();
+    const today = athensDate(now);
 
-  const [cruiseRes, busRes] = await Promise.all([
-    supabaseAdmin
-      .from("flux_cruise_calls")
-      .select("call_date,port,ship_name,pax_capacity,eta,etd")
-      .eq("call_date", today),
-    supabaseAdmin
-      .from("flux_bus_positions")
-      .select("vehicle_key,recorded_at")
-      .gte("recorded_at", new Date(now - BUS_MAX_AGE_MIN * 60_000).toISOString())
-      .order("recorded_at", { ascending: false })
-      .limit(2000),
-  ]);
+    const [cruiseRes, busRes] = await Promise.all([
+      supabaseAdmin
+        .from("flux_cruise_calls")
+        .select("call_date,port,ship_name,pax_capacity,eta,etd")
+        .eq("call_date", today)
+        .abortSignal(AbortSignal.timeout(QUERY_TIMEOUT_MS)),
+      supabaseAdmin
+        .from("flux_bus_positions")
+        .select("vehicle_key,recorded_at")
+        .gte("recorded_at", new Date(now - BUS_MAX_AGE_MIN * 60_000).toISOString())
+        .order("recorded_at", { ascending: false })
+        .limit(2000)
+        .abortSignal(AbortSignal.timeout(QUERY_TIMEOUT_MS)),
+    ]);
 
-  // Une source en echec ne casse pas le hero : sa ligne disparait, point.
-  const cruise = cruiseRes.error ? null : pickTodayCruise((cruiseRes.data ?? []) as CruiseCallRow[], today);
+    // Une source en echec ne casse pas le hero : sa ligne disparait, point.
+    // Le console.error garde une trace (cle rotee, grant change) sans bloquer le hero.
+    if (cruiseRes.error) console.error("[island-now] flux_cruise_calls:", cruiseRes.error.message);
+    const cruise = cruiseRes.error ? null : pickTodayCruise((cruiseRes.data ?? []) as CruiseCallRow[], today);
 
-  let buses: { tracked: number; asOf: string } | null = null;
-  if (!busRes.error && busRes.data && busRes.data.length > 0) {
-    const rows = busRes.data as { vehicle_key: string; recorded_at: string }[];
-    const tracked = countTrackedVehicles(rows);
-    const asOf = rows[0].recorded_at;
-    if (shouldShowBuses(tracked, asOf, now)) buses = { tracked, asOf };
+    let buses: { tracked: number; asOf: string } | null = null;
+    if (busRes.error) {
+      console.error("[island-now] flux_bus_positions:", busRes.error.message);
+    } else if (busRes.data && busRes.data.length > 0) {
+      const rows = busRes.data as { vehicle_key: string; recorded_at: string }[];
+      const tracked = countTrackedVehicles(rows);
+      const asOf = rows[0].recorded_at;
+      if (shouldShowBuses(tracked, asOf, now)) buses = { tracked, asOf };
+    }
+
+    return NextResponse.json({ cruise, buses, stock: null }, { headers: CACHE_HEADERS });
+  } catch (err) {
+    // Contrat explicite : jamais de 500 au client, meme sur timeout ou exception
+    // imprevue -> hero degrade proprement, memes en-tetes de cache.
+    console.error("[island-now] exception:", err instanceof Error ? err.message : String(err));
+    return NextResponse.json({ cruise: null, buses: null, stock: null }, { headers: CACHE_HEADERS });
   }
-
-  return NextResponse.json({ cruise, buses, stock: null }, { headers: CACHE_HEADERS });
 }
