@@ -224,11 +224,9 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                 windSpeed={swimPick?.windSpeed ?? null}
                 airTemp={heroCity?.temp ?? null}
               />
-              <div className="flex flex-wrap gap-3 font-data">
-                <Link href="/beaches/today" className="bg-sun text-text rounded-[17px] px-4 py-2.5 text-sm font-heading font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)] no-underline hover:brightness-105 transition-all">
-                  {t("ctaBeach")}
-                </Link>
-              </div>
+              <Link href="/beaches/today" className="inline-block bg-sun text-text rounded-[17px] px-4 py-2.5 text-sm font-heading font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)] no-underline hover:brightness-105 transition-all">
+                {t("ctaBeach")}
+              </Link>
               {/* Socials Kalimera : chips blancs hover sun, cohérents avec chips météo */}
               <div className="flex flex-wrap gap-2 mt-5">
                 <a
@@ -294,6 +292,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
           </div>
         )}
 
+        {/* ═══════ RESERVER EN DIRECT : voiture, van, activites, villa ═══════ */}
         <ServiceRail services={services} />
 
         {/* ═══════ L'ILE, MAINTENANT : tuiles couleur pleine ═══════ */}
@@ -475,7 +474,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
             )}
           </section>
 
-          {/* Guides + events */}
+          {/* Guides editoriaux */}
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-heading text-[28px] font-extrabold text-text m-0 flex items-center gap-2.5">
