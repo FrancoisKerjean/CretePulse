@@ -129,12 +129,18 @@ Route `GET /api/island-now`, `Cache-Control: s-maxage=600, stale-while-revalidat
 
 ```ts
 {
-  sea:    { tempC: number; windKmh: number; airC: number } | null,
-  cruise: { port: string; ship: string; paxCapacity: number; eta: string; etd: string } | null,
+  cruise: { port: string; paxCapacity: number;
+            ships: { name: string; eta: string | null; etd: string | null }[] } | null,
   buses:  { tracked: number; asOf: string } | null,
   stock:  null   // reste null tant que le capteur vols n'est pas repare
 }
 ```
+
+La ligne mer et vent **ne passe pas par cette route** : la météo bouge lentement
+et la home la reçoit déjà en props côté serveur (`cities`, `swimPick`). Deux
+heures de fraîcheur suffisent pour une température d'eau, et cela retire une
+source d'échec au hero. Seules les données réellement volatiles ou absentes du
+rendu serveur transitent par l'API.
 
 Vérifié le 28/07 : les tables `flux_cruise_calls`, `flux_bus_positions` et
 `v_flux_stock_daily` **refusent le rôle anonyme** (`42501 permission denied`).
