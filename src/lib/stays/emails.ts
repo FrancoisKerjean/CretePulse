@@ -149,6 +149,17 @@ export async function sendGuestConflict(
   await send(guestEmail, guestConflictSubject(o.listingTitle), guestConflictBody(o));
 }
 
+export async function sendGuestBalancePaid(
+  guestEmail: string,
+  listingTitle: string,
+): Promise<void> {
+  await send(
+    guestEmail,
+    `Séjour réglé : ${listingTitle}`,
+    `<div style="font-family:Inter,Arial,sans-serif;color:#1A1A2E">Le solde est réglé, votre séjour est intégralement payé. Le propriétaire vous contacte pour les modalités d'arrivée.</div>`,
+  );
+}
+
 export async function sendGuestConfirmed(
   guestEmail: string,
   listingTitle: string,

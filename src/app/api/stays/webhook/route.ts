@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { stripeClient } from "@/lib/stays/stripe-helpers";
-import { sendGuestConfirmed, sendGuestConflict, sendOwnerBooked } from "@/lib/stays/emails";
+import {
+  sendGuestConfirmed,
+  sendGuestConflict,
+  sendOwnerBooked,
+  sendGuestBalancePaid,
+} from "@/lib/stays/emails";
 import { notifyTelegram } from "@/lib/stays/telegram";
 import { computeQuote } from "@/lib/stays/pricing";
 
@@ -48,6 +53,28 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   if (event.type === "checkout.session.completed") {
     const obj = event.data.object as { id: string; payment_intent?: string };
+
+    // Second charge : le solde. Meme evenement, meme endpoint, discrimine par
+    // metadata.payment_type pose dans buildBalanceCheckoutParams.
+    if (meta.payment_type === "balance") {
+      const { data, error } = await supabaseAdmin.rpc("mark_stay_balance_paid", {
+        p_request_id: requestId,
+        p_payment_intent_id: obj.payment_intent ?? null,
+      });
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+      const row = Array.isArray(data) ? data[0] : null;
+      if (row) {
+        const { data: l } = await supabaseAdmin
+          .from("stay_listings")
+          .select("title")
+          .eq("id", row.listing_id)
+          .maybeSingle();
+        await sendGuestBalancePaid(row.guest_email, l?.title ?? "votre séjour");
+      }
+      return NextResponse.json({ received: true, balance: true });
+    }
     const { data, error } = await supabaseAdmin.rpc("mark_stay_deposit_paid", {
       p_request_id: requestId,
       p_session_id: obj.id,

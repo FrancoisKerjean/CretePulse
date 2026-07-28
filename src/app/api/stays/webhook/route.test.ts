@@ -32,10 +32,12 @@ vi.mock("@/lib/supabase-admin", () => ({
 const sendGuestConfirmed = vi.fn(async () => {});
 const sendGuestConflict = vi.fn(async () => {});
 const sendOwnerBooked = vi.fn(async () => {});
+const sendGuestBalancePaid = vi.fn(async () => {});
 vi.mock("@/lib/stays/emails", () => ({
   sendGuestConfirmed: (...a: unknown[]) => sendGuestConfirmed(...a),
   sendGuestConflict: (...a: unknown[]) => sendGuestConflict(...a),
   sendOwnerBooked: (...a: unknown[]) => sendOwnerBooked(...a),
+  sendGuestBalancePaid: (...a: unknown[]) => sendGuestBalancePaid(...a),
 }));
 
 import { POST } from "./route";
@@ -164,6 +166,36 @@ describe("POST /api/stays/webhook", () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({ refunded: false });
     expect(notifyTelegram).toHaveBeenCalledWith(expect.stringMatching(/main/i));
+  });
+
+  it("passe la demande en confirmed au paiement du solde", async () => {
+    constructEvent.mockReturnValueOnce({
+      id: "ev_balance",
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          id: "cs_b", payment_intent: "pi_b",
+          metadata: { request_id: "5", payment_type: "balance", brand: "crete.direct" },
+        },
+      },
+    });
+    rpc.mockResolvedValueOnce({
+      data: [{ id: 5, listing_id: 9, guest_email: "j@x.com" }],
+      error: null,
+    });
+    maybeSingle.mockResolvedValueOnce({ data: { title: "Villa Danae" } });
+
+    const res = await POST(new Request("http://localhost/api/stays/webhook", {
+      method: "POST", headers: { "stripe-signature": "sig" }, body: "{}",
+    }) as never);
+
+    expect(res.status).toBe(200);
+    expect(rpc).toHaveBeenCalledWith("mark_stay_balance_paid", {
+      p_request_id: 5,
+      p_payment_intent_id: "pi_b",
+    });
+    expect(sendGuestBalancePaid).toHaveBeenCalledWith("j@x.com", "Villa Danae");
+    expect(sendOwnerBooked).not.toHaveBeenCalled();
   });
 
   it("is idempotent on duplicate delivery", async () => {
