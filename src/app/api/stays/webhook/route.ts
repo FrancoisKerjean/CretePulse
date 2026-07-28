@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { stripeClient } from "@/lib/stays/stripe-helpers";
-import { sendGuestConfirmed } from "@/lib/stays/emails";
+import { sendGuestConfirmed, sendGuestConflict } from "@/lib/stays/emails";
+import { notifyTelegram } from "@/lib/stays/telegram";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const sig = request.headers.get("stripe-signature") ?? "";
@@ -53,7 +54,45 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
     if (error) {
       if ((error as { code?: string }).code === "23P01") {
-        return NextResponse.json({ received: true, conflict: true });
+        // Les dates ont ete prises entre l'acceptation et le paiement. L'acompte est
+        // deja encaisse : on rembourse, on previent, on alerte. Un 200 muet laisserait
+        // un voyageur debite sans reservation et sans personne au courant.
+        const pi = obj.payment_intent;
+        let refunded = false;
+        if (pi) {
+          try {
+            await stripeClient().refunds.create({ payment_intent: pi });
+            refunded = true;
+          } catch (e) {
+            console.error("[stays/webhook] refund failed:", e);
+          }
+        }
+
+        const { data: req } = await supabaseAdmin
+          .from("stay_requests")
+          .select("guest_email, listing_id, deposit_amount")
+          .eq("id", requestId)
+          .maybeSingle();
+
+        if (req?.guest_email) {
+          const { data: l } = await supabaseAdmin
+            .from("stay_listings")
+            .select("title")
+            .eq("id", req.listing_id)
+            .maybeSingle();
+          await sendGuestConflict(req.guest_email, {
+            listingTitle: l?.title ?? "votre séjour",
+            amountEur: Number(req.deposit_amount) || 0,
+          });
+        }
+
+        await notifyTelegram(
+          `Collision Stays sur la demande ${requestId} : dates prises entre temps, remboursement ${
+            refunded ? "OK" : "ECHOUE, a traiter a la main"
+          }`,
+        );
+
+        return NextResponse.json({ received: true, conflict: true, refunded });
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }

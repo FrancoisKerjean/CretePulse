@@ -1,6 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
-import { ownerRequestSubject, ownerRequestBody, guestApprovedSubject } from "./emails";
+import {
+  ownerRequestSubject,
+  ownerRequestBody,
+  guestApprovedSubject,
+  guestConflictSubject,
+  guestConflictBody,
+} from "./emails";
 
 describe("cloisonnement crete.direct", () => {
   // feedback_crete_direct_no_kairos_mention : aucune surface crete.direct ne doit
@@ -28,5 +34,12 @@ describe("email builders", () => {
   });
   it("guest approved subject is celebratory", () => {
     expect(guestApprovedSubject("Sea view villa")).toContain("Sea view villa");
+  });
+
+  it("annonce le remboursement integral au voyageur", () => {
+    expect(guestConflictSubject("Villa Danae")).toContain("Villa Danae");
+    const html = guestConflictBody({ listingTitle: "Villa Danae", amountEur: 220.5 });
+    expect(html).toContain("220.50");
+    expect(html).toMatch(/rembours/i);
   });
 });

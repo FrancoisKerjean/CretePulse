@@ -44,6 +44,21 @@ export function guestApprovedBody(o: {
   </div>`;
 }
 
+export function guestConflictSubject(listingTitle: string): string {
+  return `Séjour indisponible : ${listingTitle}, vous êtes remboursé`;
+}
+
+export function guestConflictBody(o: {
+  listingTitle: string;
+  amountEur: number;
+}): string {
+  return `<div style="font-family:Inter,Arial,sans-serif;color:#1A1A2E">
+    <p>Les dates que vous venez de régler pour <strong>${o.listingTitle}</strong> ont été réservées quelques instants avant votre paiement.</p>
+    <p>Votre acompte de ${o.amountEur.toFixed(2)} EUR est <strong>intégralement remboursé</strong>. Selon votre banque, il apparaît sur votre compte sous 5 à 10 jours ouvrés.</p>
+    <p>D'autres dates restent ouvertes sur crete.direct. Toutes nos excuses.</p>
+  </div>`;
+}
+
 async function send(to: string, subject: string, html: string): Promise<void> {
   try {
     await resendClient().emails.send({
@@ -70,6 +85,13 @@ export async function sendGuestApproved(
   o: Parameters<typeof guestApprovedBody>[0],
 ): Promise<void> {
   await send(guestEmail, guestApprovedSubject(o.listingTitle), guestApprovedBody(o));
+}
+
+export async function sendGuestConflict(
+  guestEmail: string,
+  o: Parameters<typeof guestConflictBody>[0],
+): Promise<void> {
+  await send(guestEmail, guestConflictSubject(o.listingTitle), guestConflictBody(o));
 }
 
 export async function sendGuestConfirmed(
