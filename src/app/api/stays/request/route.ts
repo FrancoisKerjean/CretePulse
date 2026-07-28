@@ -10,7 +10,7 @@ import {
 import { isRangeFree } from "@/lib/stays/availability";
 import { nightsBetween } from "@/lib/stays/pricing";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { sendOwnerRequest } from "@/lib/stays/emails";
+import { sendOwnerRequest, sendGuestReceived } from "@/lib/stays/emails";
 import { notifyTelegram } from "@/lib/stays/telegram";
 import { newToken, hashToken, siteBase } from "@/lib/stays/tokens";
 
@@ -82,6 +82,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       approveUrl,
     });
   }
+  await sendGuestReceived(v.row.guestEmail, {
+    listingTitle: listing.title ?? slug,
+    dateFrom: v.row.dateFrom,
+    dateTo: v.row.dateTo,
+  });
+
   await notifyTelegram(`🏠 Nouvelle demande Stays · ${listing.title ?? slug} · ${v.row.dateFrom}→${v.row.dateTo}`);
 
   return NextResponse.json({ ok: true });

@@ -4,6 +4,8 @@ import {
   ownerRequestSubject,
   ownerRequestBody,
   guestApprovedSubject,
+  guestReceivedSubject,
+  guestReceivedBody,
   guestConflictSubject,
   guestConflictBody,
 } from "./emails";
@@ -34,6 +36,19 @@ describe("email builders", () => {
   });
   it("guest approved subject is celebratory", () => {
     expect(guestApprovedSubject("Sea view villa")).toContain("Sea view villa");
+  });
+
+  it("accuse reception de la demande au voyageur", () => {
+    expect(guestReceivedSubject("Villa Danae")).toContain("Villa Danae");
+    const html = guestReceivedBody({
+      listingTitle: "Villa Danae",
+      dateFrom: "2026-08-01",
+      dateTo: "2026-08-08",
+    });
+    expect(html).toContain("2026-08-01");
+    expect(html).toMatch(/rien n'est prélevé/i);
+    // Aucune promesse d'expiration : le cron correspondant n'existe pas encore.
+    expect(html).not.toMatch(/\b7 jours\b|expire/i);
   });
 
   it("annonce le remboursement integral au voyageur", () => {

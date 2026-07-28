@@ -13,7 +13,11 @@ vi.mock("@/lib/stays/db", () => ({
   bookedRangesForListing: (...a: unknown[]) => bookedRangesForListing(...a),
 }));
 const sendOwnerRequest = vi.fn(async () => {});
-vi.mock("@/lib/stays/emails", () => ({ sendOwnerRequest: (...a: unknown[]) => sendOwnerRequest(...a) }));
+const sendGuestReceived = vi.fn(async () => {});
+vi.mock("@/lib/stays/emails", () => ({
+  sendOwnerRequest: (...a: unknown[]) => sendOwnerRequest(...a),
+  sendGuestReceived: (...a: unknown[]) => sendGuestReceived(...a),
+}));
 vi.mock("@/lib/stays/tokens", () => ({
   newToken: () => "tok-plain",
   hashToken: (t: string) => `hash(${t})`,
@@ -48,6 +52,10 @@ describe("POST /api/stays/request", () => {
     expect(res.status).toBe(200);
     expect(createStayRequest).toHaveBeenCalledOnce();
     expect(sendOwnerRequest).toHaveBeenCalledOnce();
+    expect(sendGuestReceived).toHaveBeenCalledWith(
+      "jane@x.com",
+      expect.objectContaining({ dateFrom: "2026-07-01", dateTo: "2026-07-08" }),
+    );
   });
 
   it("honeypot -> silent ok, no request created", async () => {

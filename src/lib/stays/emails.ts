@@ -44,6 +44,25 @@ export function guestApprovedBody(o: {
   </div>`;
 }
 
+export function guestReceivedSubject(listingTitle: string): string {
+  return `Demande envoyée : ${listingTitle}`;
+}
+
+export function guestReceivedBody(o: {
+  listingTitle: string;
+  dateFrom: string;
+  dateTo: string;
+}): string {
+  // Volontairement AUCUNE promesse d'expiration automatique : le cron d'expiration
+  // est hors perimetre (lot B, tache 10, decalee le 29/07). Ne pas ajouter de delai
+  // ici tant que ce cron n'existe pas.
+  return `<div style="font-family:Inter,Arial,sans-serif;color:#1A1A2E">
+    <p>Votre demande pour <strong>${o.listingTitle}</strong>, du <strong>${o.dateFrom}</strong> au <strong>${o.dateTo}</strong>, est partie chez le propriétaire.</p>
+    <p>Il confirme ses dates et son prix, puis vous recevez un lien de paiement. <strong>Rien n'est prélevé avant votre accord.</strong></p>
+    <p>Sans réponse de sa part sous quelques jours, écrivez nous en répondant à ce message.</p>
+  </div>`;
+}
+
 export function guestConflictSubject(listingTitle: string): string {
   return `Séjour indisponible : ${listingTitle}, vous êtes remboursé`;
 }
@@ -85,6 +104,13 @@ export async function sendGuestApproved(
   o: Parameters<typeof guestApprovedBody>[0],
 ): Promise<void> {
   await send(guestEmail, guestApprovedSubject(o.listingTitle), guestApprovedBody(o));
+}
+
+export async function sendGuestReceived(
+  guestEmail: string,
+  o: Parameters<typeof guestReceivedBody>[0],
+): Promise<void> {
+  await send(guestEmail, guestReceivedSubject(o.listingTitle), guestReceivedBody(o));
 }
 
 export async function sendGuestConflict(
