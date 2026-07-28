@@ -11,6 +11,7 @@ import type { NewsItem, Event, Locale } from "@/lib/types";
 import { getLocalizedField } from "@/lib/types";
 import { buildAlternates } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
+import { getHomeServices } from "@/lib/home-services";
 
 export const revalidate = 7200; // 2h - reduce Supabase egress
 
@@ -152,6 +153,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         }))
     : [];
 
+  // Flag serveur : /stays est en noindex sans annonce reelle (decision Kami 25/07).
+  const services = getHomeServices({ staysEnabled: process.env.STAYS_HOME_BLOCK === "on" });
+
   return (
     <>
       <JsonLd data={websiteSchema} />
@@ -164,6 +168,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         swimSides={swimSides}
         boardRoutes={boardRoutes}
         locale={locale}
+        services={services}
       />
     </>
   );

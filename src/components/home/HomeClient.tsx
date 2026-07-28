@@ -12,10 +12,9 @@ import { AbstractFallback } from "@/components/AbstractFallback";
 import { CreteMap } from "@/components/CreteMap";
 import { DepBoard } from "@/components/DepBoard";
 import { WindArrow } from "@/components/WindArrow";
-import { Car, MapPin } from "lucide-react";
 import {
   CiBus, CiWave, CiSun, CiCompass, CiPlane, CiChart,
-  CiCalendar, CiNews, CiBook,
+  CiNews, CiBook,
   CiInstagram, CiFacebook, CiYouTube,
 } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
@@ -23,8 +22,10 @@ import type { CityWeather } from "@/lib/weather";
 import type { BusRoute } from "@/lib/buses";
 import type { NewsItem, Event, Locale } from "@/lib/types";
 import { getLocalizedField } from "@/lib/types";
-import { localizeLocation } from "@/lib/localize-location";
 import { type Guide, getLocalizedGuideField } from "@/lib/guides";
+import { ServiceRail } from "@/components/home/ServiceRail";
+import { IslandBarometer } from "@/components/home/IslandBarometer";
+import type { HomeService } from "@/lib/home-services";
 
 function timeAgo(dateStr: string): string {
   const diffMs = Date.now() - new Date(dateStr).getTime();
@@ -36,15 +37,6 @@ function timeAgo(dateStr: string): string {
   if (days === 1) return "1d";
   return `${days}d`;
 }
-
-function formatEventDate(dateStr: string, locale: string): string {
-  const d = new Date(dateStr);
-  const lang = locale === "el" ? "el-GR" : locale === "fr" ? "fr-FR" : locale === "de" ? "de-DE" : "en-GB";
-  const month = d.toLocaleDateString(lang, { month: "short" });
-  const day = d.getDate();
-  return `${month} ${day}`;
-}
-
 
 function NewsletterFormCompact({ locale }: { locale: string }) {
   const t = useTranslations("home");
@@ -130,6 +122,7 @@ interface HomeClientProps {
   swimSides: SwimSideLite[];
   boardRoutes: BusRoute[];
   locale: string;
+  services: HomeService[];
 }
 
 const VERDICT_COLORS: Record<SwimPickLite["rating"], string> = {
@@ -168,7 +161,7 @@ function safeIntlLocale(locale: string): string {
   }
 }
 
-export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, swimPick, swimSides, boardRoutes, locale }: HomeClientProps) {
+export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, swimPick, swimSides, boardRoutes, locale, services }: HomeClientProps) {
   const loc = locale as Locale;
   const t = useTranslations("home");
 
@@ -180,9 +173,9 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
     .map((n) => cities.find((c) => c.name === n))
     .filter((c): c is CityWeather => Boolean(c));
 
-  const news = latestNews.slice(0, 6);
-  const guides = latestGuides.slice(0, 4);
-  const events = upcomingEvents.slice(0, 3);
+  // Dégonflé le 28/07 : le bloc occupait environ 40 % de la hauteur pour 3,7 % des clics.
+  const news = latestNews.slice(0, 4);
+  const guides = latestGuides.slice(0, 2);
   const heroCity = cities.find((c) => c.name === (swimPick?.cityName ?? "Heraklion")) ?? cities[0];
 
   const swimPin = swimPick
@@ -226,25 +219,15 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                   ? t("heroToday", { rating: t(`ratings.${swimPick.rating}`), name: swimPick.name })
                   : t("heroSub")}
               </p>
+              <IslandBarometer
+                seaTemp={swimPick?.seaTemp ?? null}
+                windSpeed={swimPick?.windSpeed ?? null}
+                airTemp={heroCity?.temp ?? null}
+              />
               <div className="flex flex-wrap gap-3 font-data">
                 <Link href="/beaches/today" className="bg-sun text-text rounded-[17px] px-4 py-2.5 text-sm font-heading font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)] no-underline hover:brightness-105 transition-all">
                   {t("ctaBeach")}
                 </Link>
-                {heroCity && (
-                  <span className="bg-white rounded-[17px] px-4 py-2.5 text-sm font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)]">
-                    ☼ {heroCity.temp}° {t("air")}
-                  </span>
-                )}
-                {swimPick?.seaTemp != null && (
-                  <span className="bg-white rounded-[17px] px-4 py-2.5 text-sm font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)]">
-                    ≈ {swimPick.seaTemp}° {t("sea")}
-                  </span>
-                )}
-                {swimPick && (
-                  <span className="bg-white rounded-[17px] px-4 py-2.5 text-sm font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)] inline-flex items-center gap-1.5">
-                    <WindArrow deg={swimPick.windDir} className="w-3.5 h-3.5 text-sea" /> {swimPick.windSpeed} km/h
-                  </span>
-                )}
               </div>
               {/* Socials Kalimera : chips blancs hover sun, cohérents avec chips météo */}
               <div className="flex flex-wrap gap-2 mt-5">
@@ -311,46 +294,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
           </div>
         )}
 
-        {/* ═══════ CAR RENTAL : agence locale, prix juste (photo plein bloc, pattern bandeaux v5) ═══════ */}
-        <section className="mt-10">
-            <Link
-              href="/car-rental"
-              className="group relative block overflow-hidden rounded-[30px] no-underline shadow-card"
-            >
-              {/* Visuel partenaire location de voiture (Auto Smart) */}
-              <img
-                src="/images/partners/car-rental.jpg"
-                alt=""
-                loading="lazy"
-                aria-hidden
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-[4000ms] ease-out group-hover:scale-105"
-              />
-              {/* Scrim de lisibilité : dense sur le texte, laisse respirer la photo à droite */}
-              <div className="absolute inset-0 bg-gradient-to-r from-[#08263a]/85 via-[#08263a]/50 to-[#08263a]/10" aria-hidden />
-              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#08263a]/60 to-transparent md:hidden" aria-hidden />
-
-              <div className="relative flex min-w-0 flex-wrap items-center justify-between gap-x-8 gap-y-6 p-6 md:min-h-[210px] md:p-8">
-                <div className="min-w-0 max-w-xl">
-                  <p className="m-0 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 font-heading text-[10.5px] font-bold uppercase tracking-widest text-white/90 backdrop-blur-sm">
-                    <Car size={12} aria-hidden /> {t("carRentalKicker")}
-                  </p>
-                  <h2 className="m-0 mt-3 font-heading text-[28px] font-extrabold leading-tight text-white [text-wrap:balance] drop-shadow-[0_1px_3px_rgba(8,38,58,0.6)] md:text-[32px]">
-                    {t("carRentalTitle")}
-                  </h2>
-                  <p className="m-0 mt-1.5 text-[14px] text-white/90 drop-shadow-[0_1px_2px_rgba(8,38,58,0.6)]">
-                    {t("carRentalSub")}
-                  </p>
-                  <span className="relative mt-5 inline-flex items-center gap-2 overflow-hidden rounded-full bg-white px-7 py-3 font-heading text-[14.5px] font-bold text-terracotta shadow-soft transition-transform group-hover:scale-[1.03]">
-                    <span
-                      className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-terracotta/20 to-transparent bg-[length:300%_100%] animate-gradient"
-                      aria-hidden
-                    />
-                    <span className="relative">{t("carRentalCta")}</span>
-                  </span>
-                </div>
-              </div>
-            </Link>
-          </section>
+        <ServiceRail services={services} />
 
         {/* ═══════ L'ILE, MAINTENANT : tuiles couleur pleine ═══════ */}
         {wtileCities.length > 0 && (
@@ -576,30 +520,6 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
               <div className="bg-white rounded-3xl p-10 text-center shadow-[0_12px_32px_rgba(11,94,120,.08)]">
                 <CiBook className="w-8 h-8 text-text-light mx-auto mb-3" />
                 <p className="text-sm text-text-muted m-0">{t("guidesSectionSubtitle")}</p>
-              </div>
-            )}
-
-            {events.length > 0 && (
-              <div className="mt-7">
-                <h3 className="font-heading text-base font-extrabold text-terracotta flex items-center gap-2 mb-3">
-                  <CiCalendar className="w-4 h-4" /> {t("nextEvents")}
-                </h3>
-                <div className="bg-white rounded-3xl px-5 py-1 shadow-[0_12px_32px_rgba(11,94,120,.08)]">
-                  {events.map((event, i) => (
-                    <Link key={event.slug} href={`/events/${event.slug}`}
-                          className={`flex items-center gap-3 py-3 group no-underline ${i > 0 ? "border-t border-text/7" : ""}`}>
-                      <span className="font-data text-[11px] text-terracotta font-bold shrink-0 w-14">
-                        {formatEventDate(event.date_start, locale)}
-                      </span>
-                      <span className="text-sm text-text group-hover:text-sea transition-colors line-clamp-1 min-w-0">
-                        {getLocalizedField(event, "title", loc)}
-                      </span>
-                      <span className="ml-auto inline-flex items-center gap-1 text-[11px] text-text-light shrink-0">
-                        <MapPin className="w-3 h-3" /> {localizeLocation(event.location_name, locale)}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
               </div>
             )}
           </section>
