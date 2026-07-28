@@ -5,7 +5,10 @@ import {
   recentDuplicateExists,
   ipRateLimited,
   createStayRequest,
+  bookedRangesForListing,
 } from "@/lib/stays/db";
+import { isRangeFree } from "@/lib/stays/availability";
+import { nightsBetween } from "@/lib/stays/pricing";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { sendOwnerRequest } from "@/lib/stays/emails";
 import { notifyTelegram } from "@/lib/stays/telegram";
@@ -21,6 +24,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const listing = await getListingBySlug(slug);
   if (!listing || listing.status !== "published") {
     return NextResponse.json({ ok: false, error: "Not bookable" }, { status: 404 });
+  }
+
+  // Ces deux refus sont des erreurs honnetes rendues au voyageur, donc places AVANT
+  // le rate-limit et la dedup, qui eux renvoient volontairement un 200 silencieux
+  // pour ne rien reveler a un robot.
+  const minNights = Number(listing.min_nights) || 1;
+  if (nightsBetween(v.row.dateFrom, v.row.dateTo) < minNights) {
+    return NextResponse.json(
+      { ok: false, error: "Minimum stay", minNights },
+      { status: 422 },
+    );
+  }
+
+  const booked = await bookedRangesForListing(listing.id);
+  if (!isRangeFree(booked, v.row.dateFrom, v.row.dateTo)) {
+    return NextResponse.json({ ok: false, error: "Dates unavailable" }, { status: 409 });
   }
 
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
