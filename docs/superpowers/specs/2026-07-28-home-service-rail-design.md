@@ -50,9 +50,9 @@ Trois conclusions qui pilotent ce design :
 
 ## 3. Décisions verrouillées avec Kami (28/07/2026)
 
-1. **Outils d'abord, services en second rideau.** On ne déplace ni le hero, ni le
-   board départs, ni les blocs météo, baignade et outils. Le rail s'insère entre
-   le board départs et « L'île, maintenant ».
+1. **Outils d'abord, services en second rideau.** On ne déplace ni le board
+   départs, ni les blocs météo, baignade et outils. Le rail s'insère entre le
+   board départs et « L'île, maintenant ».
 2. **Variante V1 « hiérarchie »** : un bandeau photo pleine largeur pour la
    voiture (format prouvé), suivi d'une rangée de trois cartes de poids égal
    (van, activités, villa).
@@ -62,11 +62,16 @@ Trois conclusions qui pilotent ce design :
    25/07 (`src/app/[locale]/stays/metadata.ts`).
 4. **Bloc News + Guides dégonflé** : 6 actualités → 4, 4 guides → 2, les
    événements quittent la home.
+5. **Hero « baromètre de l'île »** : les chips météo redondantes cèdent la place
+   à trois indicateurs observés, plus un emplacement éteint pour le compteur de
+   touristes présents.
+6. **Le capteur vols HER est réparé après ce chantier**, dans un chantier dédié.
+   Owner Claude, butoir 04/08/2026.
 
 ## 4. Structure de la home v2
 
 ```
-HERO (inchangé)
+HERO (refondu : baromètre de l'île)
 DepBoard (inchangé)
 ► RAIL « Réserver en direct »          ← nouveau
 L'île, maintenant (inchangé)
@@ -75,6 +80,78 @@ Les outils (inchangé)
 Actus & guides (dégonflé)
 Newsletter (inchangé)
 ```
+
+## 4bis. Hero « baromètre de l'île »
+
+### Ce qui ne va pas dans le hero actuel
+
+- **Redondance** : les chips air, mer et vent affichent une ville, et le bloc
+  « L'île, maintenant » situé un scroll plus bas affiche la même chose pour
+  quatre villes.
+- **Il ne dit pas ce que le site fait** : trois chips météo et un lien carte.
+- **Sur mobile la carte passe sous la ligne de flottaison** alors qu'elle capte
+  34 % des clics de la page, et 73,5 % du trafic est mobile.
+
+### Contenu retenu
+
+Un panneau blanc translucide sous le titre, trois lignes plus une éteinte. Chaque
+ligne porte sa source en petit, à droite, masquée sous 640 px.
+
+| Ligne | Contenu | Source | Robustesse |
+|---|---|---|---|
+| Mer et vent | température de l'eau, vent, air | stations météo | live, déjà en place |
+| Croisière | « Jusqu'à N croisiéristes à Héraklion aujourd'hui » + navire et créneau | `flux_cruise_calls`, PDF officiel du port | planifié, 139 escales jusqu'au 31/12 |
+| Bus | « N bus suivis en direct » | `flux_bus_positions`, GPS réseaux urbains | live, 5 min |
+| Touristes présents | emplacement réservé, **éteint** | `v_flux_stock_daily` | capteur cassé |
+
+### Règles de vérité, non négociables
+
+- **Aucune estimation affichée.** Les trois lignes actives sont des faits
+  observés ou planifiés. Le mot « estimation » n'apparaît pas parce qu'il n'y a
+  rien d'estimé.
+- Le chiffre croisière est une **capacité de navire**, pas un comptage de
+  passagers. Le libellé dit donc « jusqu'à N », jamais « N croisiéristes ».
+- **La nuit, la ligne bus disparaît** au lieu d'afficher zéro : les réseaux
+  urbains ne roulent pas et les crons GPS tournent de 4h à 20h UTC. Règle :
+  masquer si le comptage vaut zéro ou si la donnée la plus récente a plus de
+  15 minutes. Vérifié le 28/07 à 21:29 UTC : zéro véhicule, aucune position.
+- **Aucune ligne ne bloque le rendu.** Si une source ne répond pas, sa ligne
+  disparaît ; le hero reste debout avec ce qui est disponible.
+
+### Accès aux données
+
+La home est en ISR `revalidate = 7200`. Y injecter des données live côté serveur
+les rendrait périmées de deux heures et multiplierait les écritures ISR, poste
+déjà surveillé sur la facture Vercel. Le baromètre est donc un composant client
+qui interroge une route dédiée.
+
+Route `GET /api/island-now`, `Cache-Control: s-maxage=600, stale-while-revalidate=1800`.
+
+```ts
+{
+  sea:    { tempC: number; windKmh: number; airC: number } | null,
+  cruise: { port: string; ship: string; paxCapacity: number; eta: string; etd: string } | null,
+  buses:  { tracked: number; asOf: string } | null,
+  stock:  null   // reste null tant que le capteur vols n'est pas repare
+}
+```
+
+Vérifié le 28/07 : les tables `flux_cruise_calls`, `flux_bus_positions` et
+`v_flux_stock_daily` **refusent le rôle anonyme** (`42501 permission denied`).
+La route s'exécute donc côté serveur avec `SUPABASE_SERVICE_KEY`, déjà présente
+en environnement de production, et ne renvoie que des agrégats. Aucun accès
+anonyme n'est ouvert, aucune clé ne part au navigateur.
+
+Logique pure isolée dans `src/lib/island-now.ts` (choix de l'escale du jour,
+règle de masquage nocturne, mise en forme), testée par
+`scripts/check-island-now.mjs` câblé à `npm run check`.
+
+### Conséquence à ne pas oublier
+
+L'aperçu social de la home est une **capture d'écran du hero**
+(`scripts/capture-og-home.mjs` produit `og-home.jpg` et `og-home-fr.jpg`).
+Refondre le hero périme ces images : elles doivent être régénérées dans le même
+chantier, sinon les partages Facebook et WhatsApp montrent l'ancienne home.
 
 ## 5. Composants et données
 
@@ -137,6 +214,10 @@ aujourd'hui). Clés ajoutées :
 - `serviceRail.van.{kicker,title,sub,cta}`
 - `serviceRail.activities.{kicker,title,sub,cta}`
 - `serviceRail.stays.{kicker,title,sub,cta}`
+- `barometer.sea` : « {temp}° dans l'eau, vent {wind} km/h, air {air}° »
+- `barometer.cruise` : « Jusqu'à {pax} croisiéristes à {port} aujourd'hui »
+- `barometer.buses` : « {count} bus suivis en direct »
+- `barometer.src.{weather,port,gps}` : libellés de source
 
 Les quatre clés `carRental*` existantes sont réutilisées telles quelles, sans
 retraduction. `npm run check:i18n` doit rester vert (22 locales × N clés) et le
@@ -203,6 +284,10 @@ que 5,5 % du trafic.
 - L'ajout d'entrées dans la nav du header. À traiter séparément, une fois qu'on
   saura ce que le rail produit.
 - La `MobileTabBar` : quatre onglets aujourd'hui, elle n'est pas touchée.
+- **La réparation du capteur vols HER.** Chantier dédié, owner Claude, butoir
+  04/08/2026. Ce chantier réserve l'emplacement, il ne répare rien.
+- La publication du compteur de touristes présents. Décision après deux semaines
+  de collecte propre, butoir 18/08/2026.
 
 ## 10. Dettes ouvertes
 
@@ -215,7 +300,10 @@ que 5,5 % du trafic.
 ## 11. Vérifications avant `npm run ship`
 
 - `npx tsc --noEmit` vert.
-- `npm run check` vert, incluant le nouveau `check:home-services`.
+- `npm run check` vert, incluant `check:home-services` et `check:island-now`.
+- `GET /api/island-now` répond en local avec les trois lignes, et la ligne bus
+  disparaît bien la nuit (test à horaire simulé, pas à 3h du matin).
+- `og-home.jpg` et `og-home-fr.jpg` régénérés via `scripts/capture-og-home.mjs`.
 - `npm run check:i18n` vert sur les 22 locales, contrôle d'alphabets inclus.
 - `npm run check:da` sans nouvelle violation.
 - `npm run build` vert.

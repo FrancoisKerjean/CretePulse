@@ -52,6 +52,17 @@ body.mobile .hero .grid{grid-template-columns:1fr;gap:20px}
 body.mobile .hero h1{font-size:32px}
 .hero h1 .hl{color:#fff;text-shadow:0 2px 18px rgba(11,94,120,.35)}
 .hero p{color:rgba(11,57,84,.78);max-width:420px;margin:0 0 18px;font-size:15px}
+/* ===== baromètre de l'île ===== */
+.baro{background:rgba(255,255,255,.86);border-radius:22px;padding:6px 16px;margin:0 0 16px;max-width:470px;box-shadow:0 12px 30px rgba(11,94,120,.14)}
+.baro-row{display:flex;align-items:center;gap:11px;padding:11px 0;border-top:1px solid rgba(11,57,84,.09)}
+.baro-row:first-child{border-top:0}
+.baro-row.off{opacity:.42}
+.b-ic{font-size:17px;width:22px;text-align:center;flex:none}
+.b-tx{flex:1;font-size:13.5px;line-height:1.35;color:var(--text)}
+.b-tx b{font-family:var(--head);font-weight:800}
+.b-tx small{color:var(--text-muted);font-size:11.5px}
+.b-src{font-size:10px;color:var(--text-muted);text-align:right;flex:none;max-width:96px;line-height:1.25}
+body.mobile .b-src{display:none}
 .chips{display:flex;flex-wrap:wrap;gap:9px}
 .chip{background:#fff;border-radius:16px;padding:9px 14px;font-weight:700;font-size:13.5px;box-shadow:0 10px 26px rgba(11,94,120,.16)}
 .chip.sun{background:var(--sun)}
@@ -193,12 +204,35 @@ footer.mockfoot{padding:26px 18px 40px;text-align:center;color:var(--text-muted)
       <div>
         <span class="pill"><span class="dot"></span> Καλημέρα ! mardi 28 juillet · en direct de l'île</span>
         <h1>La Crète,<br><span class="hl">en direct.</span></h1>
-        <p>Mer calme aujourd'hui à Vaï. 26° dans l'eau, vent d'ouest 11 km/h.</p>
+        <p>Mer calme aujourd'hui à Vaï. Ce qui se passe sur l'île, mesuré, pas raconté.</p>
+
+        <!-- ===== BAROMÈTRE DE L'ÎLE ===== -->
+        <div class="baro">
+          <div class="baro-row">
+            <span class="b-ic">🌊</span>
+            <span class="b-tx"><b>26° dans l'eau</b>, vent 11 km/h, air 31°</span>
+            <span class="b-src">stations météo</span>
+          </div>
+          <div class="baro-row">
+            <span class="b-ic">🚢</span>
+            <span class="b-tx"><b>Jusqu'à 3 470 croisiéristes</b> à Héraklion aujourd'hui<br><small>Costa Fortuna, 08:00 à 18:30</small></span>
+            <span class="b-src">calendrier officiel du port</span>
+          </div>
+          <div class="baro-row">
+            <span class="b-ic">🚌</span>
+            <span class="b-tx"><b>32 bus suivis en direct</b> sur les réseaux urbains</span>
+            <span class="b-src">GPS, actualisé toutes les 5 min</span>
+          </div>
+          <div class="baro-row off">
+            <span class="b-ic">👥</span>
+            <span class="b-tx"><b>Touristes présents sur l'île</b><br><small>emplacement réservé, capteur vols en réparation</small></span>
+            <span class="b-src">éteint</span>
+          </div>
+        </div>
+
         <div class="chips">
           <span class="chip sun">Où se baigner aujourd'hui</span>
-          <span class="chip">☼ 31° air</span>
-          <span class="chip">≈ 26° mer</span>
-          <span class="chip">↗ 11 km/h</span>
+          <span class="chip">Voir tous les chiffres</span>
         </div>
       </div>
       <div class="mapbox">Carte live de la Crète<small>Explorer la carte</small></div>
@@ -207,6 +241,8 @@ footer.mockfoot{padding:26px 18px 40px;text-align:center;color:var(--text-muted)
   </section>
 
   <div class="pad">
+
+    <div class="annot" style="margin-top:18px">Baromètre : trois indicateurs <b>observés</b>, jamais estimés. Météo et mer en direct, croisiéristes depuis le calendrier officiel du port (capacité du navire à quai, pas un comptage de passagers), bus depuis le GPS des réseaux urbains. <b>Les réseaux ne roulent pas la nuit</b> : entre 20h et 7h la ligne bus disparaît au lieu d'afficher zéro. Le compteur de touristes présents reste éteint tant que le capteur vols HER n'est pas réparé (trou du 19 au 26/07, comptes gonflés jusqu'à 776 arrivées/jour). <b>Aucun chiffre affiché n'est une estimation.</b></div>
 
     <!-- ══════ BOARD DÉPARTS : INCHANGÉ ══════ -->
     <div class="dep">
