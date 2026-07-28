@@ -114,7 +114,7 @@
     "barometer": {
       "sea": "{temp}° in acqua, vento {wind} km/h, aria {air}°",
       "cruise": "Fino a {pax} passeggeri da crociera oggi a {port}",
-      "buses": "{count} autobus tracciati in diretta",
+      "buses": "{count, plural, one {# autobus tracciato in diretta} other {# autobus tracciati in diretta}}",
       "src": { "weather": "stazioni meteo", "port": "calendario ufficiale del porto", "gps": "GPS, ogni 5 min" }
     },
     "serviceRail": {

@@ -114,7 +114,7 @@
     "barometer": {
       "sea": "{temp}° a vízben, szél {wind} km/h, levegő {air}°",
       "cruise": "Akár {pax} hajósutas ma {port} kikötőjében",
-      "buses": "{count} busz élőben nyomon követve",
+      "buses": "{count, plural, one {# busz élőben nyomon követve} other {# busz élőben nyomon követve}}",
       "src": { "weather": "időjárás-állomások", "port": "hivatalos kikötői menetrend", "gps": "GPS, 5 percenként" }
     },
     "serviceRail": {

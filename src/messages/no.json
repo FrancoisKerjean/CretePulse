@@ -114,7 +114,7 @@
     "barometer": {
       "sea": "{temp}° i vannet, vind {wind} km/h, luft {air}°",
       "cruise": "Opptil {pax} cruisepassasjerer i dag i {port}",
-      "buses": "{count} busser sporet direkte",
+      "buses": "{count, plural, one {# buss sporet direkte} other {# busser sporet direkte}}",
       "src": { "weather": "værstasjoner", "port": "offisiell havneplan", "gps": "GPS, hvert 5. min" }
     },
     "serviceRail": {

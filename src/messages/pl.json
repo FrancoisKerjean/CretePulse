@@ -114,7 +114,7 @@
     "barometer": {
       "sea": "{temp}° w wodzie, wiatr {wind} km/h, powietrze {air}°",
       "cruise": "Nawet {pax} pasażerów wycieczkowców dziś w {port}",
-      "buses": "{count} autobusów śledzonych na żywo",
+      "buses": "{count, plural, one {# autobus śledzony na żywo} few {# autobusy śledzone na żywo} many {# autobusów śledzonych na żywo} other {# autobusa śledzonego na żywo}}",
       "src": { "weather": "stacje pogodowe", "port": "oficjalny rozkład portu", "gps": "GPS, co 5 min" }
     },
     "serviceRail": {

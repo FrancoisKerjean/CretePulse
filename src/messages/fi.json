@@ -114,7 +114,7 @@
     "barometer": {
       "sea": "{temp}° vedessä, tuuli {wind} km/h, ilma {air}°",
       "cruise": "Jopa {pax} risteilymatkustajaa tänään satamassa {port}",
-      "buses": "{count} bussia seurattavana suorana",
+      "buses": "{count, plural, one {# bussi seurattavana suorana} other {# bussia seurattavana suorana}}",
       "src": { "weather": "sääasemat", "port": "sataman virallinen aikataulu", "gps": "GPS, 5 minuutin välein" }
     },
     "serviceRail": {

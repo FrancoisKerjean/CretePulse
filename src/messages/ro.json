@@ -114,7 +114,7 @@
     "barometer": {
       "sea": "{temp}° în apă, vânt {wind} km/h, aer {air}°",
       "cruise": "Până la {pax} pasageri de croazieră astăzi în {port}",
-      "buses": "{count} autobuze urmărite live",
+      "buses": "{count, plural, one {# autobuz urmărit live} few {# autobuze urmărite live} other {# de autobuze urmărite live}}",
       "src": { "weather": "stații meteo", "port": "programul oficial al portului", "gps": "GPS, la fiecare 5 min" }
     },
     "serviceRail": {

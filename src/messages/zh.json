@@ -114,7 +114,7 @@
     "barometer": {
       "sea": "水温{temp}°，风速{wind} km/h，气温{air}°",
       "cruise": "今天{port}最多有{pax}名邮轮乘客",
-      "buses": "{count}辆巴士正在实时追踪",
+      "buses": "{count, plural, other {#辆巴士正在实时追踪}}",
       "src": { "weather": "气象站", "port": "港口官方时刻表", "gps": "GPS，每5分钟" }
     },
     "serviceRail": {

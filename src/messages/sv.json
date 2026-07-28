@@ -114,7 +114,7 @@
     "barometer": {
       "sea": "{temp}° i vattnet, vind {wind} km/h, luft {air}°",
       "cruise": "Upp till {pax} kryssningspassagerare i dag i {port}",
-      "buses": "{count} bussar spåras live",
+      "buses": "{count, plural, one {# buss spåras live} other {# bussar spåras live}}",
       "src": { "weather": "väderstationer", "port": "hamnens officiella tidtabell", "gps": "GPS, var 5:e min" }
     },
     "serviceRail": {

@@ -114,7 +114,7 @@
     "barometer": {
       "sea": "Suda {temp}°, rüzgar {wind} km/h, havada {air}°",
       "cruise": "Bugün {port}'da en fazla {pax} kruvaziyer yolcusu",
-      "buses": "{count} otobüs canlı takip ediliyor",
+      "buses": "{count, plural, other {# otobüs canlı takip ediliyor}}",
       "src": { "weather": "hava durumu istasyonları", "port": "resmi liman programı", "gps": "GPS, her 5 dakikada bir" }
     },
     "serviceRail": {

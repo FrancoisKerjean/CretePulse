@@ -114,7 +114,7 @@
     "barometer": {
       "sea": "수온 {temp}°, 바람 {wind} km/h, 기온 {air}°",
       "cruise": "오늘 {port}에 최대 {pax}명의 크루즈 승객",
-      "buses": "{count}대의 버스 실시간 추적 중",
+      "buses": "{count, plural, other {#대의 버스 실시간 추적 중}}",
       "src": { "weather": "기상 관측소", "port": "공식 항구 일정", "gps": "GPS, 5분마다" }
     },
     "serviceRail": {

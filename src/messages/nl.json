@@ -114,7 +114,7 @@
     "barometer": {
       "sea": "{temp}° in het water, wind {wind} km/h, lucht {air}°",
       "cruise": "Tot {pax} cruisepassagiers vandaag in {port}",
-      "buses": "{count} bussen live gevolgd",
+      "buses": "{count, plural, one {# bus live gevolgd} other {# bussen live gevolgd}}",
       "src": { "weather": "weerstations", "port": "officieel havenschema", "gps": "GPS, elke 5 min" }
     },
     "serviceRail": {

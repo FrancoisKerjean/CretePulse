@@ -114,7 +114,7 @@
     "barometer": {
       "sea": "水温{temp}°、風速{wind} km/h、気温{air}°",
       "cruise": "本日{port}に最大{pax}人のクルーズ客",
-      "buses": "{count}台のバスをライブ追跡中",
+      "buses": "{count, plural, other {#台のバスをライブ追跡中}}",
       "src": { "weather": "気象観測所", "port": "港の公式スケジュール", "gps": "GPS、5分ごと" }
     },
     "serviceRail": {

@@ -114,7 +114,7 @@
     "barometer": {
       "sea": "{temp}° i vandet, vind {wind} km/h, luft {air}°",
       "cruise": "Op til {pax} krydstogtpassagerer i dag i {port}",
-      "buses": "{count} busser sporet live",
+      "buses": "{count, plural, one {# bus sporet live} other {# busser sporet live}}",
       "src": { "weather": "vejrstationer", "port": "officiel havneplan", "gps": "GPS, hvert 5. min." }
     },
     "serviceRail": {

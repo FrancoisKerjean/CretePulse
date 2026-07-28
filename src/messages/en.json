@@ -114,7 +114,7 @@
     "barometer": {
       "sea": "{temp}° in the water, wind {wind} km/h, air {air}°",
       "cruise": "Up to {pax} cruise passengers in {port} today",
-      "buses": "{count} buses tracked live",
+      "buses": "{count, plural, one {# bus tracked live} other {# buses tracked live}}",
       "src": { "weather": "weather stations", "port": "official port schedule", "gps": "GPS, every 5 min" }
     },
     "serviceRail": {

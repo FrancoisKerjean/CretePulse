@@ -114,7 +114,7 @@
     "barometer": {
       "sea": "{temp}° ve vodě, vítr {wind} km/h, vzduch {air}°",
       "cruise": "Až {pax} cestujících z výletních lodí dnes v {port}",
-      "buses": "{count} autobusů sledovaných živě",
+      "buses": "{count, plural, one {# autobus sledovaný živě} few {# autobusy sledované živě} many {# autobusu sledovaného živě} other {# autobusů sledovaných živě}}",
       "src": { "weather": "meteorologické stanice", "port": "oficiální rozpis přístavu", "gps": "GPS, každých 5 min" }
     },
     "serviceRail": {
