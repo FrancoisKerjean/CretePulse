@@ -153,7 +153,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         }))
     : [];
 
-  // Flag serveur : /stays est en noindex sans annonce reelle (decision Kami 25/07).
+  // Flag serveur : /stays est en noindex sans annonce réelle (décision Kami 25/07).
   const services = getHomeServices({ staysEnabled: process.env.STAYS_HOME_BLOCK === "on" });
 
   return (

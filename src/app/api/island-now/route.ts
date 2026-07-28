@@ -1,7 +1,7 @@
-// Barometre de l'ile : agregats servis au hero de la home.
+// Baromètre de l'île : agrégats servis au hero de la home.
 // La home est en ISR 2 h : le live passe par ici, cache CDN 10 min.
-// Les tables flux_* REFUSENT le role anonyme (42501 permission denied, verifie
-// le 28/07/2026) : lecture avec la cle service, cote serveur uniquement.
+// Les tables flux_* REFUSENT le rôle anonyme (42501 permission denied, vérifié
+// le 28/07/2026) : lecture avec la clé service, côté serveur uniquement.
 // Spec : docs/superpowers/specs/2026-07-28-home-service-rail-design.md
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
@@ -20,9 +20,9 @@ const CACHE_HEADERS = {
   "Cache-Control": "public, s-maxage=600, stale-while-revalidate=1800",
 };
 
-// Filet de securite : un hang reseau contre le PostgREST self-hosted ne doit
-// jamais laisser le Promise.all pendu jusqu'a ce que la plateforme tue la
-// fonction. 5 s par requete, le meme budget que le cache CDN est genereux.
+// Filet de sécurité : un hang réseau contre le PostgREST self-hosted ne doit
+// jamais laisser le Promise.all pendu jusqu'à ce que la plateforme tue la
+// fonction. 5 s par requête, le même budget que le cache CDN est généreux.
 const QUERY_TIMEOUT_MS = 5000;
 
 export async function GET() {

@@ -1,6 +1,6 @@
-// Barometre de l'ile (hero home v2) : regles pures de selection et d'affichage.
-// AUCUNE estimation ici, uniquement des faits observes ou planifies.
-// Teste par scripts/check-island-now.mjs.
+// Baromètre de l'île (hero home v2) : règles pures de sélection et d'affichage.
+// AUCUNE estimation ici, uniquement des faits observés ou planifiés.
+// Testé par scripts/check-island-now.mjs.
 // Spec : docs/superpowers/specs/2026-07-28-home-service-rail-design.md
 export interface CruiseCallRow {
   call_date: string;
@@ -13,15 +13,15 @@ export interface CruiseCallRow {
 
 export interface CruiseLine {
   port: string;
-  /** Somme des capacites des navires a quai ce jour. C'est une CAPACITE, pas un comptage. */
+  /** Somme des capacités des navires à quai ce jour. C'est une CAPACITÉ, pas un comptage. */
   paxCapacity: number;
   ships: { name: string; eta: string | null; etd: string | null }[];
 }
 
-/** Fenetre de fraicheur du GPS bus, en minutes. */
+/** Fenêtre de fraîcheur du GPS bus, en minutes. */
 export const BUS_MAX_AGE_MIN = 15;
 
-/** Date du jour a Athens au format YYYY-MM-DD (en-CA rend l'ISO court). */
+/** Date du jour à Athènes au format YYYY-MM-DD (en-CA rend l'ISO court). */
 export function athensDate(now: number): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Athens" }).format(new Date(now));
 }
@@ -43,8 +43,8 @@ export function countTrackedVehicles(rows: { vehicle_key: string }[]): number {
 }
 
 /**
- * Les reseaux urbains ne roulent pas la nuit et les crons GPS tournent de 4h a
- * 20h UTC : on masque la ligne au lieu d'afficher zero.
+ * Les réseaux urbains ne roulent pas la nuit et les crons GPS tournent de 4h à
+ * 20h UTC : on masque la ligne au lieu d'afficher zéro.
  */
 export function shouldShowBuses(tracked: number, asOf: string | null, now: number, maxAgeMin = BUS_MAX_AGE_MIN): boolean {
   if (tracked <= 0 || !asOf) return false;
