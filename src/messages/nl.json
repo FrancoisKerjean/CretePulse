@@ -118,7 +118,7 @@
     },
     "serviceRail": {
       "title": "Rechtstreeks boeken",
-      "lead": "Vier diensten vanaf het eiland. Zonder internationale tussenpersoon, zonder verborgen commissie.",
+      "lead": "Diensten vanaf het eiland. Zonder internationale tussenpersoon, zonder verborgen commissie.",
       "van": { "kicker": "Gedeelde bus", "title": "Luchthaven naar stad", "sub": "Vanaf 40 € per zitplaats, op routes die de bus niet doet.", "cta": "Bekijk routes" },
       "activities": { "kicker": "Activiteiten", "title": "Wandelen, boot, koken", "sub": "Meerdere lokale aanbieders maken een offerte voor uw aanvraag.", "cta": "Offerte aanvragen" },
       "stays": { "kicker": "Villa en huis", "title": "Huur zonder Airbnb", "sub": "De eigenaar bepaalt de prijs, u betaalt 5 % kosten in plaats van ongeveer 14 %.", "cta": "Bekijk verblijven" }

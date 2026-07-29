@@ -118,7 +118,7 @@
     },
     "serviceRail": {
       "title": "Book direct",
-      "lead": "Four services run from the island. No international middleman, no hidden commission.",
+      "lead": "Services run from the island. No international middleman, no hidden commission.",
       "van": { "kicker": "Shared van", "title": "Airport to town", "sub": "From 40 € a seat, on routes the bus does not cover.", "cta": "See routes" },
       "activities": { "kicker": "Activities", "title": "Hiking, boat, cooking", "sub": "Several local operators quote your request.", "cta": "Get a quote" },
       "stays": { "kicker": "Villa and house", "title": "Rent without Airbnb", "sub": "The owner sets the price, you pay 5 % in fees instead of about 14 %.", "cta": "See places" }

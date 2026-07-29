@@ -118,7 +118,7 @@
     },
     "serviceRail": {
       "title": "Réserver en direct",
-      "lead": "Quatre services opérés depuis l'île. Sans intermédiaire international, sans commission cachée.",
+      "lead": "Des services opérés depuis l'île. Sans intermédiaire international, sans commission cachée.",
       "van": { "kicker": "Van partagé", "title": "Aéroport vers ville", "sub": "Dès 40 € le siège, sur les trajets que le bus ne fait pas.", "cta": "Voir les trajets" },
       "activities": { "kicker": "Activités", "title": "Randonnée, bateau, cuisine", "sub": "Plusieurs prestataires chiffrent votre demande.", "cta": "Demander un devis" },
       "stays": { "kicker": "Villa et maison", "title": "Louez sans Airbnb", "sub": "Le propriétaire fixe son prix, vous payez 5 % de frais au lieu d'environ 14 %.", "cta": "Voir les logements" }

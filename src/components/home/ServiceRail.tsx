@@ -35,9 +35,12 @@ function Card({ s }: { s: HomeService }) {
       <ImpressionTracker event="promo_impression" props={impressionProps} />
       <img src={s.photo} alt="" loading={band ? "eager" : "lazy"} aria-hidden
            className="absolute inset-0 h-full w-full object-cover transition-transform duration-[4000ms] ease-out group-hover:scale-105" />
+      {/* Voilage : en dessous de md le bandeau n'a pas de zone calme a droite,
+          on repasse en degrade vertical. Les cartes portent un texte qui remplit
+          toute leur hauteur : le haut du degrade doit deja etre couvrant. */}
       <div className={`absolute inset-0 ${band
-        ? "bg-gradient-to-r from-[#08263a]/85 via-[#08263a]/50 to-[#08263a]/10"
-        : "bg-gradient-to-b from-[#08263a]/15 via-[#08263a]/45 to-[#08263a]/88"}`} aria-hidden />
+        ? "bg-gradient-to-b from-[#08263a]/72 via-[#08263a]/58 to-[#08263a]/76 md:bg-gradient-to-r md:from-[#08263a]/85 md:via-[#08263a]/50 md:to-[#08263a]/10"
+        : "bg-gradient-to-b from-[#08263a]/32 via-[#08263a]/58 to-[#08263a]/92"}`} aria-hidden />
       <div className={`relative ${band ? "p-6 md:p-8 md:min-h-[210px] flex items-center" : "p-5 flex h-full items-end"}`}>
         <div className="min-w-0 max-w-xl">
           <p className="m-0 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 font-heading text-[10.5px] font-bold uppercase tracking-widest text-white/90 backdrop-blur-sm">
@@ -57,7 +60,9 @@ function Card({ s }: { s: HomeService }) {
     </>
   );
 
-  const cls = `group relative block overflow-hidden rounded-[26px] no-underline shadow-card ${band ? "" : "min-h-[200px]"}`;
+  // 250 px et non 200 : a 200 le texte remplissait la carte et remontait dans la
+  // partie claire du degrade, titre illisible sur ciel (constate au controle 390 px).
+  const cls = `group relative block overflow-hidden rounded-[26px] no-underline shadow-card ${band ? "" : "min-h-[250px]"}`;
 
   return s.external ? (
     <a href={s.href} target="_blank" rel="noopener" className={cls} onClick={() => track(s.id, s.layout)}>{inner}</a>

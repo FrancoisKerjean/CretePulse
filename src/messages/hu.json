@@ -118,7 +118,7 @@
     },
     "serviceRail": {
       "title": "Foglaljon közvetlenül",
-      "lead": "Négy szolgáltatás a szigetről működtetve. Nemzetközi közvetítő nélkül, rejtett jutalék nélkül.",
+      "lead": "Szolgáltatások a szigetről működtetve. Nemzetközi közvetítő nélkül, rejtett jutalék nélkül.",
       "van": { "kicker": "Közös kisbusz", "title": "Repülőtértől a városig", "sub": "Már 40 €-tól ülésenként, olyan útvonalakon, amelyeket a busz nem fed le.", "cta": "Útvonalak megtekintése" },
       "activities": { "kicker": "Programok", "title": "Túrázás, hajó, főzés", "sub": "Több helyi szolgáltató ad árajánlatot a kérésére.", "cta": "Árajánlat kérése" },
       "stays": { "kicker": "Villa és ház", "title": "Bérlés Airbnb nélkül", "sub": "A tulajdonos szabja meg az árat, Ön 5 % díjat fizet a kb. 14 % helyett.", "cta": "Szállások megtekintése" }

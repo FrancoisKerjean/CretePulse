@@ -118,7 +118,7 @@
     },
     "serviceRail": {
       "title": "Varaa suoraan",
-      "lead": "Neljä palvelua, jotka toimivat saarelta käsin. Ei kansainvälistä välikättä, ei piilotettua provisiota.",
+      "lead": "Palveluita, jotka toimivat saarelta käsin. Ei kansainvälistä välikättä, ei piilotettua provisiota.",
       "van": { "kicker": "Jaettu pikkubussi", "title": "Lentokentältä kaupunkiin", "sub": "Alkaen 40 € paikka, reiteillä joita bussi ei kata.", "cta": "Katso reitit" },
       "activities": { "kicker": "Aktiviteetit", "title": "Vaellus, vene, ruoanlaitto", "sub": "Useat paikalliset toimijat tarjoavat hintaa pyyntöösi.", "cta": "Pyydä tarjous" },
       "stays": { "kicker": "Huvila ja talo", "title": "Vuokraa ilman Airbnbtä", "sub": "Omistaja määrittää hinnan, sinä maksat 5 %:n palkkion noin 14 %:n sijaan.", "cta": "Katso majoitukset" }

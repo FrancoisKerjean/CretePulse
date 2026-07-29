@@ -118,7 +118,7 @@
     },
     "serviceRail": {
       "title": "Reserva directa",
-      "lead": "Cuatro servicios operados desde la isla. Sin intermediario internacional, sin comisión oculta.",
+      "lead": "Servicios operados desde la isla. Sin intermediario internacional, sin comisión oculta.",
       "van": { "kicker": "Furgoneta compartida", "title": "Del aeropuerto a la ciudad", "sub": "Desde 40 € el asiento, en rutas que el autobús no cubre.", "cta": "Ver rutas" },
       "activities": { "kicker": "Actividades", "title": "Senderismo, barco, cocina", "sub": "Varios proveedores locales presupuestan tu solicitud.", "cta": "Pedir presupuesto" },
       "stays": { "kicker": "Villa y casa", "title": "Alquila sin Airbnb", "sub": "El propietario fija el precio, tú pagas un 5 % de comisión en lugar de cerca del 14 %.", "cta": "Ver alojamientos" }

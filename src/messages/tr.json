@@ -118,7 +118,7 @@
     },
     "serviceRail": {
       "title": "Doğrudan rezervasyon yapın",
-      "lead": "Adadan işletilen dört hizmet. Uluslararası aracı yok, gizli komisyon yok.",
+      "lead": "Adadan işletilen hizmetler. Uluslararası aracı yok, gizli komisyon yok.",
       "van": { "kicker": "Paylaşımlı van", "title": "Havalimanından şehre", "sub": "Koltuk başına 40 €'dan başlayan fiyatlarla, otobüsün gitmediği güzergahlarda.", "cta": "Güzergahları görün" },
       "activities": { "kicker": "Aktiviteler", "title": "Yürüyüş, tekne, mutfak", "sub": "Birkaç yerel operatör talebinize fiyat teklifi verir.", "cta": "Teklif isteyin" },
       "stays": { "kicker": "Villa ve ev", "title": "Airbnb olmadan kiralayın", "sub": "Fiyatı ev sahibi belirler, siz yaklaşık %14 yerine %5 komisyon ödersiniz.", "cta": "Konaklama yerlerini görün" }

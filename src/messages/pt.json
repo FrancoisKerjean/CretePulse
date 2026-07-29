@@ -118,7 +118,7 @@
     },
     "serviceRail": {
       "title": "Reserve diretamente",
-      "lead": "Quatro serviços operados a partir da ilha. Sem intermediário internacional, sem comissão oculta.",
+      "lead": "Serviços operados a partir da ilha. Sem intermediário internacional, sem comissão oculta.",
       "van": { "kicker": "Van partilhada", "title": "Do aeroporto para a cidade", "sub": "A partir de 40 € por lugar, em trajetos que o autocarro não cobre.", "cta": "Ver trajetos" },
       "activities": { "kicker": "Atividades", "title": "Caminhadas, barco, culinária", "sub": "Vários operadores locais orçamentam o seu pedido.", "cta": "Pedir orçamento" },
       "stays": { "kicker": "Vila e casa", "title": "Alugue sem Airbnb", "sub": "O proprietário fixa o preço, você paga 5 % de comissão em vez de cerca de 14 %.", "cta": "Ver alojamentos" }

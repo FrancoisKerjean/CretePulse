@@ -118,7 +118,7 @@
     },
     "serviceRail": {
       "title": "Book direkte",
-      "lead": "Fire services drevet fra øen. Ingen international mellemmand, ingen skjult provision.",
+      "lead": "Services drevet fra øen. Ingen international mellemmand, ingen skjult provision.",
       "van": { "kicker": "Delt van", "title": "Lufthavn til by", "sub": "Fra 40 € pr. sæde, på ruter bussen ikke dækker.", "cta": "Se ruter" },
       "activities": { "kicker": "Aktiviteter", "title": "Vandring, båd, madlavning", "sub": "Flere lokale udbydere giver dig et tilbud.", "cta": "Få et tilbud" },
       "stays": { "kicker": "Villa og hus", "title": "Lej uden Airbnb", "sub": "Ejeren sætter prisen, du betaler 5 % i gebyr i stedet for cirka 14 %.", "cta": "Se boliger" }

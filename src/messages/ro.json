@@ -118,7 +118,7 @@
     },
     "serviceRail": {
       "title": "Rezervă direct",
-      "lead": "Patru servicii operate de pe insulă. Fără intermediar internațional, fără comision ascuns.",
+      "lead": "Servicii operate de pe insulă. Fără intermediar internațional, fără comision ascuns.",
       "van": { "kicker": "Van partajat", "title": "De la aeroport în oraș", "sub": "De la 40 € locul, pe rute pe care autobuzul nu le acoperă.", "cta": "Vezi rutele" },
       "activities": { "kicker": "Activități", "title": "Drumeții, barcă, gătit", "sub": "Mai mulți operatori locali oferă o ofertă de preț pentru cererea ta.", "cta": "Cere o ofertă" },
       "stays": { "kicker": "Vilă și casă", "title": "Închiriază fără Airbnb", "sub": "Proprietarul stabilește prețul, tu plătești un comision de 5 % în loc de aproximativ 14 %.", "cta": "Vezi locuințele" }

@@ -118,7 +118,7 @@
     },
     "serviceRail": {
       "title": "Direkt buchen",
-      "lead": "Vier Dienste, betrieben von der Insel aus. Ohne internationalen Zwischenhändler, ohne versteckte Provision.",
+      "lead": "Dienste, die von der Insel aus betrieben werden. Ohne internationalen Zwischenhändler, ohne versteckte Provision.",
       "van": { "kicker": "Sammelvan", "title": "Flughafen in die Stadt", "sub": "Ab 40 € pro Sitz, auf Strecken ohne Busverbindung.", "cta": "Strecken ansehen" },
       "activities": { "kicker": "Aktivitäten", "title": "Wandern, Boot, Kochen", "sub": "Mehrere örtliche Anbieter machen Ihnen ein Angebot.", "cta": "Angebot anfordern" },
       "stays": { "kicker": "Villa und Haus", "title": "Mieten ohne Airbnb", "sub": "Der Eigentümer setzt den Preis, Sie zahlen 5 % Gebühren statt rund 14 %.", "cta": "Unterkünfte ansehen" }

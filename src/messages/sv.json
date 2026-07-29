@@ -118,7 +118,7 @@
     },
     "serviceRail": {
       "title": "Boka direkt",
-      "lead": "Fyra tjänster som drivs från ön. Utan internationell mellanhand, utan dold provision.",
+      "lead": "Tjänster som drivs från ön. Utan internationell mellanhand, utan dold provision.",
       "van": { "kicker": "Delad van", "title": "Flygplats till stad", "sub": "Från 40 € per plats, på rutter bussen inte täcker.", "cta": "Se rutter" },
       "activities": { "kicker": "Aktiviteter", "title": "Vandring, båt, matlagning", "sub": "Flera lokala aktörer offererar din förfrågan.", "cta": "Begär offert" },
       "stays": { "kicker": "Villa och hus", "title": "Hyr utan Airbnb", "sub": "Ägaren sätter priset, du betalar 5 % avgift i stället för cirka 14 %.", "cta": "Se boenden" }

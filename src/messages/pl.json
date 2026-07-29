@@ -118,7 +118,7 @@
     },
     "serviceRail": {
       "title": "Rezerwuj bezpośrednio",
-      "lead": "Cztery usługi prowadzone z wyspy. Bez międzynarodowego pośrednika, bez ukrytej prowizji.",
+      "lead": "Usługi prowadzone z wyspy. Bez międzynarodowego pośrednika, bez ukrytej prowizji.",
       "van": { "kicker": "Wspólny van", "title": "Z lotniska do miasta", "sub": "Już od 40 € za miejsce, na trasach, których nie obsługuje autobus.", "cta": "Zobacz trasy" },
       "activities": { "kicker": "Atrakcje", "title": "Piesze wycieczki, łódź, gotowanie", "sub": "Kilku lokalnych operatorów wycenia Twoje zapytanie.", "cta": "Poproś o wycenę" },
       "stays": { "kicker": "Willa i dom", "title": "Wynajmij bez Airbnb", "sub": "Właściciel ustala cenę, Ty płacisz 5 % prowizji zamiast około 14 %.", "cta": "Zobacz noclegi" }
