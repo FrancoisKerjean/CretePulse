@@ -7,7 +7,11 @@
 // Pas de création ici : l'auto-enroll signup + INSERT SQL couvrent l'onboarding.
 import { partnerStats, ZONE_IDS, type AdminPartner, type AdminRequest } from "@/lib/car-admin";
 import { partnerPerf, type MonitorInvite } from "@/lib/car-monitoring";
-import { togglePartnerActive, updatePartner, openPartnerOnboarding, refreshPartnerConnect } from "./actions";
+import { formatRating } from "@/lib/google-rating";
+import {
+  togglePartnerActive, updatePartner, openPartnerOnboarding, refreshPartnerConnect,
+  refreshPartnerRatingAction,
+} from "./actions";
 
 const BASE = "/admin/car-rental";
 
@@ -19,6 +23,32 @@ function outreachBadge(status?: string | null) {
       {status}
     </span>
   );
+}
+
+/**
+ * Note Google en un coup d'oeil sur la ligne repliée.
+ *
+ * Trois états distincts, et ils comptent : une note, un relevé qui n'a trouvé
+ * aucune fiche sûre, et un loueur jamais relevé. Confondre les deux derniers
+ * ferait lire « mauvaise réputation » là où il n'y a que donnée manquante.
+ */
+function ratingBadge(p: AdminPartner) {
+  const label = formatRating(p.google_rating, p.google_rating_count);
+  if (label) {
+    return (
+      <span className="rounded-full bg-sand px-2 py-0.5 text-xs font-bold text-night" title="Note Google">
+        ★ {label}
+      </span>
+    );
+  }
+  if (p.google_rating_at) {
+    return (
+      <span className="rounded-full border border-border px-2 py-0.5 text-xs text-text-muted" title="Aucune fiche Google appariée avec certitude">
+        ★ fiche non trouvée
+      </span>
+    );
+  }
+  return null;
 }
 
 export function PartnersTable({
@@ -106,6 +136,7 @@ export function PartnersTable({
                   ? <span className="rounded-full bg-ok px-2 py-0.5 text-xs font-bold text-white">actif</span>
                   : <span className="rounded-full border border-border px-2 py-0.5 text-xs text-text-muted">inactif</span>}
                 {outreachBadge(p.outreach_status)}
+                {ratingBadge(p)}
                 <span className="text-xs text-text-muted">
                   {p.zone_ids.length} zone(s) · {Math.round(p.commission * 10000) / 100} %
                   {st.won > 0 ? <> · <span className="font-bold text-text">{st.won} devis gagné(s)</span></> : null}
@@ -159,6 +190,37 @@ export function PartnersTable({
                   ) : null}
                 </div>
 
+                {/* Note Google. Jamais saisie à la main : elle vient de Places
+                    API et n'est écrite que si la fiche a été appariée au
+                    loueur. Le Place ID ci-dessous sert à lever un doute. */}
+                <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-border pt-2">
+                  <span className="text-xs text-text-muted">
+                    note Google :{" "}
+                    {formatRating(p.google_rating, p.google_rating_count) ? (
+                      <span className="font-data font-bold text-text">
+                        ★ {formatRating(p.google_rating, p.google_rating_count)}
+                      </span>
+                    ) : (
+                      <span className="font-bold text-text-muted">
+                        {p.google_rating_at ? "aucune fiche appariée" : "jamais relevée"}
+                      </span>
+                    )}
+                    {p.google_rating_at
+                      ? ` · relevée le ${new Date(p.google_rating_at).toLocaleDateString("fr-FR", { timeZone: "Europe/Athens" })}`
+                      : null}
+                  </span>
+                  {p.google_maps_url ? (
+                    <a href={p.google_maps_url} target="_blank" rel="noreferrer" className="text-xs text-sea">
+                      voir la fiche
+                    </a>
+                  ) : null}
+                  <form action={refreshPartnerRatingAction.bind(null, p.id)}>
+                    <button className="rounded-full border border-border bg-white px-3 py-1 text-xs font-bold">
+                      Relever la note
+                    </button>
+                  </form>
+                </div>
+
                 <div className="text-xs text-text-muted">
                   {perf.invited} invité(s) · {perf.quoted} chiffré(s) · {perf.chosen} choisi(s) · {perf.declined} désisté(s)
                   {perf.avgQuotePriceEur != null ? ` · prix moy ${perf.avgQuotePriceEur.toFixed(0)} €` : ""}
@@ -173,6 +235,12 @@ export function PartnersTable({
                       {z}
                     </label>
                   ))}
+                  <label className="flex items-center gap-1.5">
+                    Place ID
+                    <input name="googlePlaceId" defaultValue={p.google_place_id ?? ""} placeholder="ChIJ…"
+                           className="w-44 rounded-lg border border-border px-2 py-1"
+                           aria-label="Google Place ID (corrige un appariement raté)" />
+                  </label>
                   <label className="flex items-center gap-1.5">
                     commission
                     <input name="commissionPct" inputMode="decimal" defaultValue={Math.round(p.commission * 10000) / 100}

@@ -11,6 +11,7 @@ import { OUTCOMES, commissionEur, validatePartnerUpdate, ZONE_IDS } from "@/lib/
 import { canCancelRequest } from "@/lib/car-quotes";
 import { requestCommission } from "@/lib/car-commission-server";
 import { startPartnerOnboarding, refreshPartnerKyc } from "@/lib/car-connect-server";
+import { refreshPartnerRating } from "@/lib/google-rating-server";
 
 const PATH = "/admin/car-rental";
 
@@ -125,7 +126,21 @@ export async function updatePartner(id: number, formData: FormData) {
   const commission = pct == null ? NaN : Math.round(pct * 100) / 10000; // "12" -> 0.12
   const err = validatePartnerUpdate({ zone_ids, commission });
   if (err) redirect(`${PATH}?tab=partners&error=${encodeURIComponent(err)}`);
-  const { error } = await supabase.from("car_partners").update({ zone_ids, commission }).eq("id", id);
+  // Place ID corrigé à la main : on efface la note relevée avec l'ancienne
+  // fiche, sinon l'écran garderait la note d'un autre établissement jusqu'au
+  // prochain relevé.
+  const placeId = String(formData.get("googlePlaceId") ?? "").trim() || null;
+  const { data: current } = await supabase.from("car_partners")
+    .select("google_place_id").eq("id", id).maybeSingle();
+  const placeChanged = (current?.google_place_id ?? null) !== placeId;
+  const { error } = await supabase.from("car_partners").update({
+    zone_ids,
+    commission,
+    google_place_id: placeId,
+    ...(placeChanged
+      ? { google_rating: null, google_rating_count: null, google_maps_url: null, google_rating_at: null }
+      : {}),
+  }).eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath(PATH);
 }
@@ -150,5 +165,28 @@ export async function openPartnerOnboarding(id: number) {
 export async function refreshPartnerConnect(id: number) {
   await guard();
   await refreshPartnerKyc(id);
+  revalidatePath(PATH);
+}
+
+/**
+ * Relève la note Google du loueur (bouton « note Google »).
+ *
+ * Un échec n'écrit rien et le dit dans le bandeau : une note absente doit se
+ * lire comme absente, jamais comme « pas encore rafraîchie ».
+ */
+export async function refreshPartnerRatingAction(id: number) {
+  await guard();
+  const res = await refreshPartnerRating(id);
+  const message =
+    res.status === "no_key"
+      ? "Clé GOOGLE_PLACES_API_KEY absente : aucune note ne peut être relevée"
+      : res.status === "unmatched"
+        ? "Aucune fiche Google ne correspond à ce loueur avec certitude. Collez son Place ID pour lever le doute."
+        : res.status === "not_found"
+          ? "Loueur introuvable"
+          : res.status === "failed"
+            ? "Google a refusé la requête, réessayez dans quelques minutes"
+            : null;
+  if (message) redirect(`${PATH}?tab=partners&error=${encodeURIComponent(message)}`);
   revalidatePath(PATH);
 }
