@@ -3,6 +3,7 @@ import { getRequestByPayHash, getListingById } from "@/lib/stays/db";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { buildCheckoutParams, stripeClient } from "@/lib/stays/stripe-helpers";
 import { computeQuote } from "@/lib/stays/pricing";
+import { classifyStripeFailure, stripeLogFields } from "@/lib/stays/stripe-errors";
 import { hashToken } from "@/lib/stays/tokens";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -48,7 +49,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     locale,
   });
 
-  const session = await stripeClient().checkout.sessions.create(params);
+  let session: { id: string; url: string | null };
+  try {
+    session = await stripeClient().checkout.sessions.create(params);
+  } catch (err) {
+    // La demande reste `approved` et le jeton de paiement reste valide : le
+    // voyageur peut relancer depuis le meme lien, sans nouvelle acceptation.
+    const failure = classifyStripeFailure(err);
+    console.error("[stays/pay] session d acompte refusee", {
+      requestId: req.id,
+      failure: failure.code,
+      ...stripeLogFields(err),
+    });
+    return NextResponse.json(
+      { ok: false, code: failure.code, error: failure.message },
+      { status: failure.status },
+    );
+  }
   await supabaseAdmin.from("stay_requests").update({ stripe_session_id: session.id }).eq("id", req.id);
 
   return NextResponse.json({ ok: true, url: session.url });

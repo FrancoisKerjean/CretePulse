@@ -115,6 +115,8 @@ export type StaysStrings = {
     submit: string;
     redirecting: string;
     error: string;
+    errorPayouts: string;
+    errorPayment: string;
   };
   balance: {
     h1: string;
@@ -351,6 +353,10 @@ export const L: Record<StaysLocale, StaysStrings> = {
       submit: "Pay the 30 % deposit",
       redirecting: "Redirecting to the payment page",
       error: "Error",
+      errorPayouts:
+        "Payouts are not open yet, so this stay cannot be paid for right now. Your dates are held and the owner has been told: we come back to you shortly.",
+      errorPayment:
+        "Payment is temporarily unavailable. Try again in a few minutes; if it persists, write to contact@crete.direct.",
     },
     balance: {
       h1: "Pay the balance of your stay",
@@ -487,6 +493,10 @@ export const L: Record<StaysLocale, StaysStrings> = {
       submit: "Payer l'acompte de 30 %",
       redirecting: "Redirection vers la page de paiement",
       error: "Erreur",
+      errorPayouts:
+        "Les versements ne sont pas encore ouverts, ce séjour ne peut donc pas être réglé pour l'instant. Vos dates sont retenues et le propriétaire est prévenu : nous revenons vers vous rapidement.",
+      errorPayment:
+        "Le paiement est momentanément indisponible. Réessayez dans quelques minutes ; si cela persiste, écrivez à contact@crete.direct.",
     },
     balance: {
       h1: "Réglez le solde de votre séjour",
@@ -625,6 +635,10 @@ export const L: Record<StaysLocale, StaysStrings> = {
       submit: "Anzahlung von 30 % zahlen",
       redirecting: "Weiterleitung zur Zahlungsseite",
       error: "Fehler",
+      errorPayouts:
+        "Auszahlungen sind noch nicht freigeschaltet, dieser Aufenthalt kann daher derzeit nicht bezahlt werden. Ihre Daten bleiben reserviert und der Eigentümer ist informiert: Wir melden uns in Kürze.",
+      errorPayment:
+        "Die Zahlung ist vorübergehend nicht verfügbar. Bitte in einigen Minuten erneut versuchen; bei anhaltendem Fehler an contact@crete.direct schreiben.",
     },
     balance: {
       h1: "Restbetrag Ihres Aufenthalts zahlen",
@@ -762,6 +776,10 @@ export const L: Record<StaysLocale, StaysStrings> = {
       submit: "Πληρωμή προκαταβολής 30 %",
       redirecting: "Ανακατεύθυνση στη σελίδα πληρωμής",
       error: "Σφάλμα",
+      errorPayouts:
+        "Οι πληρωμές προς τους ιδιοκτήτες δεν έχουν ενεργοποιηθεί ακόμη, οπότε η διαμονή δεν μπορεί να εξοφληθεί αυτή τη στιγμή. Οι ημερομηνίες σας κρατούνται και ο ιδιοκτήτης έχει ενημερωθεί: επικοινωνούμε σύντομα μαζί σας.",
+      errorPayment:
+        "Η πληρωμή δεν είναι προσωρινά διαθέσιμη. Δοκιμάστε ξανά σε λίγα λεπτά· αν επιμείνει, γράψτε στο contact@crete.direct.",
     },
     balance: {
       h1: "Πληρώστε το υπόλοιπο της διαμονής σας",
