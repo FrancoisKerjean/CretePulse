@@ -931,7 +931,7 @@ ils ne sont visibles qu'à l'image.
 
 `npm run check` et `npm run build` rejoués verts après ces deux correctifs.
 
-- [ ] **Step 4 : régénérer les aperçus sociaux**
+- [x] **Step 4 : régénérer les aperçus sociaux**
 
 Le hero a changé, donc `og-home.jpg` et `og-home-fr.jpg` sont périmés. À rejouer **après** la mise en production, quand `https://crete.direct/en` sert la nouvelle home :
 
@@ -941,6 +941,15 @@ OG_URL=https://crete.direct/fr OG_OUT=$PWD/public/og-home-fr.jpg node scripts/ca
 git add public/og-home.jpg public/og-home-fr.jpg
 git commit -m "chore(home): apercus sociaux regeneres apres la refonte du hero"
 ```
+
+**Résultat 29/07/2026**, capturé sur la production après la promotion.
+**Un piège découvert à la capture** : le baromètre affiche l'escale du jour, nom
+du navire et horaires compris. La première capture annonçait « Jusqu'à 1 850
+croisiéristes à Heraklion · Marella Voyager 07:00-15:00 » — une image OG est figée
+jusqu'à la capture suivante, elle aurait donc affirmé ce fait précis pendant des
+semaines à chaque partage du lien. `scripts/capture-og-home.mjs` coupe désormais
+`/api/island-now` pendant la capture : le panneau se limite à la ligne mer, rendue
+côté serveur, qui vieillit sans mentir sur un fait vérifiable. Images reprises.
 
 - [ ] **Step 5 : livrer**
 
@@ -972,13 +981,27 @@ toujours en avant-dernier. La fusion de `master` a aussi tiré la dépendance
 résolution à ajouter. `npm run check` et `npm run build` rejoués verts sur le
 résultat de la fusion, avec le code Stays embarqué.
 
-- [ ] **Step 6 : vérifier en production après la promotion**
+- [x] **Step 6 : vérifier en production après la promotion**
 
 ```bash
 curl -s https://crete.direct/api/island-now
 curl -s https://crete.direct/fr | grep -c "serviceRail\|Réserver en direct"
 ```
 Attendu : la route renvoie un JSON avec `cruise` non nul si une escale est prévue ce jour, et la home contient le titre du rail.
+
+**Résultat 29/07/2026 vers 04h30 Athens, sur `https://crete.direct` :**
+
+- `/api/island-now` →
+  `{"cruise":{"port":"heraklion","paxCapacity":1850,"ships":[{"name":"Marella Voyager","eta":"07:00","etd":"15:00"}]},"buses":null,"stock":null}`.
+  La clé service fonctionne en production, la croisière du jour remonte.
+  `buses` à `null` à 4h du matin : c'est la règle de masquage nocturne qui joue,
+  pas une panne.
+- `/fr` sert « Réserver en direct » et le lead corrigé « Des services opérés
+  depuis l'île ».
+- `/en` : le rail rend exactement **trois** blocs, `/car-rental`, `van.crete.direct`
+  et `/activities`. Aucun lien `/stays`, le flag est bien éteint en production.
+- Le hero affiche deux lignes de baromètre, mer et croisière, la ligne bus est
+  absente. Capture de la production dans `public/og-home-fr.jpg`.
 
 ---
 
@@ -988,13 +1011,19 @@ Attendu : la route renvoie un JSON avec `cruise` non nul si une escale est prév
 - **Allumage du bloc villa** : poser `STAYS_HOME_BLOCK=on` sur Vercel une fois `feat/stays-marketplace` mergée, `/stays` indexable et au moins une annonce réelle publiée. **Poser la variable ne suffit pas** : elle est figée dans l'image du déploiement, il faut redéployer. Sans redéploiement manuel, l'effet arrive au deploy automatique de 20h Athènes, donc jusqu'à 24 heures plus tard.
 - **Dette assumée** : `getUpcomingEvents(5)` charge encore 5 événements complets alors que la home ne s'en sert plus que pour tester `length === 0` dans le garde-fou de maintenance. Coût faible, la requête ne tourne qu'à la régénération ISR toutes les 2 h, mais c'est du poids mort. À remplacer par un comptage `head: true` au prochain passage sur `page.tsx`. Owner Claude, butoir 30/09/2026, sinon `ABANDONED`.
 - [ ] **Relevé J+14 de l'instrumentation. Owner Kami, butoir 12/08/2026.**
-  Vérifié en place le 29/07/2026 avant livraison : `promo_impression` avec
-  `block: "service-rail"`, `source: "home"`, `service: <id>` part une fois par bloc
-  au passage à 50 % dans le viewport (`ImpressionTracker`, un par carte, `props`
-  mémoïsé pour ne pas relancer l'observer) ; `service_rail_click` avec
-  `service: <id>` et `layout: "band" | "card"` part au clic avant la navigation.
-  Les deux passent par le stub `window.plausible` posé dans `[locale]/layout.tsx`,
-  donc rien ne tombe dans le vide avant le chargement du script.
+  Vérifié **au navigateur**, pas à la lecture du code, le 29/07/2026 avant
+  livraison : `promo_impression` avec `block: "service-rail"`, `source: "home"`,
+  `service: <id>` part une fois par bloc à l'entrée dans le viewport
+  (`ImpressionTracker`, un par carte, `props` mémoïsé pour ne pas relancer
+  l'observer) ; `service_rail_click` avec `service: <id>` et
+  `layout: "band" | "card"` part au clic avant la navigation. Les deux passent par
+  le stub `window.plausible` posé dans `[locale]/layout.tsx`, donc rien ne tombe
+  dans le vide avant le chargement du script.
+  Relevé effectif du contrôle : trois `promo_impression`
+  (`service: car | van | activities`) au scroll, et trois `service_rail_click`
+  (`car`/`band`, `van`/`card`, `activities`/`card`) au clic. Méthode et pièges du
+  test en section 7 de la spec : espionner `window.plausible` donne un faux négatif,
+  le vrai script écrase la fonction et ignore `localhost`.
   **Baseline à battre**, 30 jours avant bascule : **71 clics voiture, 0 clic van,
   0 clic activités**, 5,7 % de taux de clic du bloc commercial.
   À relever : taux de clic du rail entier, répartition par service (clics ÷
