@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestByApproveHash, getListingById } from "@/lib/stays/db";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { createConnectOnboardingLink } from "@/lib/stays/stripe-helpers";
-import { classifyStripeFailure, stripeLogFields } from "@/lib/stays/stripe-errors";
+import { classifyStripeFailure, stripeLogFields } from "@/lib/stripe-errors";
 import { sendGuestApproved } from "@/lib/stays/emails";
 import { computeQuote } from "@/lib/stays/pricing";
 import { newToken, hashToken } from "@/lib/stays/tokens";

@@ -3,7 +3,7 @@ import { getRequestByPayHash, getListingById } from "@/lib/stays/db";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { buildCheckoutParams, stripeClient } from "@/lib/stays/stripe-helpers";
 import { computeQuote } from "@/lib/stays/pricing";
-import { classifyStripeFailure, stripeLogFields } from "@/lib/stays/stripe-errors";
+import { classifyStripeFailure, stripeLogFields } from "@/lib/stripe-errors";
 import { hashToken } from "@/lib/stays/tokens";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {

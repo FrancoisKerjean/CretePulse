@@ -9,6 +9,7 @@ import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { isCarAdmin } from "@/lib/car-admin-auth";
 import { OUTCOMES, commissionEur, validatePartnerUpdate, ZONE_IDS } from "@/lib/car-admin";
 import { canCancelRequest } from "@/lib/car-quotes";
+import { requestCommission } from "@/lib/car-commission-server";
 
 const PATH = "/admin/car-rental";
 
@@ -56,6 +57,19 @@ export async function setOutcome(id: number, formData: FormData) {
     ...(outcome === "lost" ? { commission_paid_at: null } : {}),
   }).eq("id", id);
   if (error) throw new Error(error.message);
+
+  // Facturation automatique de la commission au passage en « louée » (décision
+  // Kami 29/07/2026). requestCommission porte ses propres gardes : montant sous
+  // le minimum Stripe, demande déjà partie, loueur inconnu. Un échec Stripe est
+  // journalisé et relâche son verrou, il ne fait pas échouer le marquage : la
+  // location EST louée, c'est un fait, la facturation se rattrape ensuite.
+  if (outcome === "rented") {
+    const result = await requestCommission(id);
+    if (result.status === "failed") {
+      console.error("[admin/car-rental] commission non demandée", { id, code: result.code });
+    }
+  }
+
   revalidatePath(PATH);
 }
 
