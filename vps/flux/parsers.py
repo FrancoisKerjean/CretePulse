@@ -8,6 +8,21 @@ from bs4 import BeautifulSoup
 
 CRETE_TZ = ZoneInfo("Europe/Athens")
 
+# GTP refuse le service en repondant 200 avec cette phrase et AUCUNE table
+# d'horaires. Le piege est mortel pour un capteur : une liste vide se lit
+# exactement comme une journee sans traversee. Heraklion a ete ecrit a 4
+# traversees le 31/07/2026 alors qu'il en compte 11, sans une ligne d'erreur.
+GTP_RATE_LIMIT_MARKER = "exceeded the website's maximum request limit"
+
+
+class GtpRateLimited(RuntimeError):
+    """GTP a refuse la requete. Ne JAMAIS convertir en resultat vide."""
+
+
+def raise_if_gtp_refused(html):
+    if GTP_RATE_LIMIT_MARKER in (html or ""):
+        raise GtpRateLimited("GTP a refuse la requete (plafond de requetes atteint)")
+
 
 def vehicle_key(raw) -> str:
     return hashlib.sha256(str(raw).encode()).hexdigest()[:12]
@@ -124,6 +139,7 @@ def parse_gtp_destinations(html):
     relies : c'est notre enumeration des liaisons, elle se met a jour toute
     seule quand une compagnie ouvre ou ferme une ligne.
     """
+    raise_if_gtp_refused(html)
     soup = BeautifulSoup(html, "html.parser")
     select = soup.select_one("select[name=selectdestination]")
     if not select:
@@ -164,6 +180,7 @@ def parse_gtp_schedules(html):
     validite deja appliques. Le parseur n'a donc pas a reinterpreter les cases
     M T W T F S S ni les mentions "Even days" / "Effective until".
     """
+    raise_if_gtp_refused(html)
     soup = BeautifulSoup(html, "html.parser")
     schedules = []
     for table in soup.find_all("table"):

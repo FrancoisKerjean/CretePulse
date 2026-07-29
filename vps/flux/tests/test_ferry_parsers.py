@@ -14,8 +14,11 @@ Les fixtures sont des captures reelles du 29/07/2026 :
 from datetime import date, datetime, timezone
 from pathlib import Path
 
+import pytest
+
 from flux.parsers import (
     FERRY_SLOT_WINDOW_MIN,
+    GtpRateLimited,
     athens_day,
     dedupe_ferry_movements,
     ferry_movements,
@@ -110,6 +113,30 @@ def test_les_identifiants_gtp_sont_conserves_pour_audit():
 
 def test_une_page_sans_resultat_ne_rend_aucune_traversee():
     assert parse_gtp_schedules(_fixture("gtp_her_destinations.html")) == []
+
+
+# --- refus de service : le piege qui vide un jeu de donnees en silence -------
+
+def test_un_refus_de_service_de_gtp_leve_au_lieu_de_rendre_une_liste_vide():
+    """GTP repond 200 avec « You have exceeded the website's maximum request
+    limit » et aucune table d'horaires. Rendre [] ferait passer un refus pour
+    une journee sans traversee : Heraklion a ete ecrit a 4 traversees le
+    31/07/2026 alors qu'il en compte 11, sans une ligne d'erreur nulle part.
+    """
+    with pytest.raises(GtpRateLimited):
+        parse_gtp_schedules(_fixture("gtp_rate_limited.html"))
+
+
+def test_un_refus_de_service_leve_aussi_sur_la_liste_des_destinations():
+    # Sans cela, un refus viderait la liste des liaisons et le port entier
+    # tomberait a zero traversee pour la journee.
+    with pytest.raises(GtpRateLimited):
+        parse_gtp_destinations(_fixture("gtp_rate_limited.html"))
+
+
+def test_une_page_normale_ne_declenche_pas_la_detection_de_refus():
+    assert parse_gtp_schedules(_fixture("gtp_her_piraeus.html"))
+    assert parse_gtp_destinations(_fixture("gtp_her_destinations.html"))
 
 
 # --- ancrage sur le port cretois --------------------------------------------

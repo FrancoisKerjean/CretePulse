@@ -104,10 +104,16 @@ PAX_SQL = "select quarter, port, direction, passengers, source_url from flux_por
 # interroges sont ceux ou le collecteur a tourne, lus dans flux_collector_runs.
 CROSSINGS_SQL = """
 with polled as (
+  -- Seules comptent les journees interrogees AVANT leur debut. GTP retire de
+  -- ses resultats les departs deja passes : Heraklion rendait 8 traversees le
+  -- 29/07 a 09:23 et 3 a 09:46, les cinq navires du matin ayant appareille.
+  -- Une journee sondee en cours de route est donc definitivement sous-comptee
+  -- et n'a rien a faire dans un denominateur.
   select distinct airport as port_code, direction, service_date
   from flux_collector_runs
   where collector = 'ferry_crossings' and ok
     and direction is not null and service_date is not null
+    and service_date > (ran_at at time zone 'Europe/Athens')::date
 ),
 -- Une journee n'est completement couverte que si la veille a AUSSI ete
 -- interrogee : GTP date les traversees sur leur depart, donc les arrivees de

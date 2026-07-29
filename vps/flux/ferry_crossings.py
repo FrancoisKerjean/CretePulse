@@ -24,27 +24,38 @@ Usage :
   ferry_crossings.py --day 2026-08-15 --dry-run
 """
 import argparse
+import os
 import sys
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timedelta, timezone
 
 import requests
 
 try:  # execution directe VPS et import package dans pytest
     from .db import connect
-    from .parsers import (FERRY_SLOT_WINDOW_MIN, athens_day, dedupe_ferry_movements,
-                          ferry_movements, parse_gtp_destinations, parse_gtp_schedules,
-                          pick_slot)
+    from .parsers import (FERRY_SLOT_WINDOW_MIN, GtpRateLimited, athens_day,
+                          dedupe_ferry_movements, ferry_movements, parse_gtp_destinations,
+                          parse_gtp_schedules, pick_slot, raise_if_gtp_refused)
 except ImportError:
     from db import connect
-    from parsers import (FERRY_SLOT_WINDOW_MIN, athens_day, dedupe_ferry_movements,
-                         ferry_movements, parse_gtp_destinations, parse_gtp_schedules,
-                         pick_slot)
+    from parsers import (FERRY_SLOT_WINDOW_MIN, GtpRateLimited, athens_day,
+                         dedupe_ferry_movements, ferry_movements, parse_gtp_destinations,
+                         parse_gtp_schedules, pick_slot, raise_if_gtp_refused)
 
 BASE = "https://www.gtp.gr/RoutesForm.asp"
 UA = "crete.direct flux research/1.0 (ferry schedule counter; contact@crete.direct)"
-THROTTLE_S = 1.0      # une requete par seconde, on lit un site public
-ATTEMPTS = 3
+# GTP plafonne les requetes et le fait savoir par une page 200 sans horaires.
+# A 2 req/s avec 4 lecteurs, il a commence a refuser au bout de quelques
+# centaines de requetes : Heraklion s'est retrouve ecrit a 4 traversees le
+# 31/07/2026 au lieu de 11. Une requete par seconde, deux lecteurs, et le refus
+# est desormais une erreur bruyante, jamais une journee vide.
+WORKERS = 2
+MIN_INTERVAL_S = 1.0
+ATTEMPTS = 4
+REFUSAL_BACKOFF_S = (30, 60, 120, 240)
+LOCK_PATH = "/tmp/ferry_crossings.lock"
 
 # Les trois ports cretois pour lesquels ELSTAT publie des passagers
 # (flux_port_quarterly) : sans chiffre officiel, pas de calibration possible,
@@ -56,14 +67,38 @@ PORTS = {
 }
 
 
-def _get(session, params):
+class Throttle:
+    """Plafond global de requetes, partage par tous les lecteurs."""
+
+    def __init__(self, min_interval_s=MIN_INTERVAL_S):
+        self.min_interval_s = min_interval_s
+        self._lock = threading.Lock()
+        self._next_at = 0.0
+
+    def wait(self):
+        with self._lock:
+            now = time.monotonic()
+            delay = max(0.0, self._next_at - now)
+            self._next_at = max(now, self._next_at) + self.min_interval_s
+        if delay:
+            time.sleep(delay)
+
+
+def _get(session, params, throttle):
     """GET avec reprises : une coupure reseau ne doit pas passer pour "0 traversee"."""
     last = None
     for attempt in range(ATTEMPTS):
+        throttle.wait()
         try:
             response = session.get(BASE, params=params, timeout=45)
             response.raise_for_status()
+            raise_if_gtp_refused(response.text)
             return response.text
+        except GtpRateLimited as exc:
+            # Refus de service : on attend vraiment, sinon on s'entete a plein
+            # regime et toutes les requetes suivantes reviennent vides.
+            last = exc
+            time.sleep(REFUSAL_BACKOFF_S[min(attempt, len(REFUSAL_BACKOFF_S) - 1)])
         except requests.RequestException as exc:
             last = exc
             time.sleep(2 ** attempt)
@@ -76,14 +111,13 @@ def _params(origin, destination, day):
             "OCode": origin, "OName": "", "DCode": destination, "DName": ""}
 
 
-def destinations(session, gtp_code, day):
+def destinations(session, gtp_code, day, throttle):
     """Ports relies a celui-ci, d'apres la page de desambiguisation de GTP."""
-    html = _get(session, _params(gtp_code, "", day))
-    time.sleep(THROTTLE_S)
+    html = _get(session, _params(gtp_code, "", day), throttle)
     return [d["code"] for d in parse_gtp_destinations(html)]
 
 
-def collect_port(session, port_code, day, cache=None):
+def collect_port(session, port_code, day, throttle, cache=None):
     """Tous les mouvements a quai d'un port cretois pour une journee de service.
 
     GTP elargit parfois l'origine a la zone (« Initial location expanded to
@@ -91,20 +125,25 @@ def collect_port(session, port_code, day, cache=None):
     porte donc sur gtp_port_id, jamais sur le code interroge.
     """
     port = PORTS[port_code]
-    movements = []
     # La liste des liaisons ne change pas d'un jour a l'autre : une seule
     # interrogation par balayage suffit, au lieu d'une par journee.
     if cache is None or port_code not in cache:
-        served = destinations(session, port["gtp_code"], day)
+        served = destinations(session, port["gtp_code"], day, throttle)
         if cache is not None:
             cache[port_code] = served
     else:
         served = cache[port_code]
-    for destination in served:
-        for origin, target in ((port["gtp_code"], destination), (destination, port["gtp_code"])):
-            schedules = parse_gtp_schedules(_get(session, _params(origin, target, day)))
-            movements += ferry_movements(schedules, port["gtp_port_id"], day)
-            time.sleep(THROTTLE_S)
+    pairs = [(origin, target)
+             for destination in served
+             for origin, target in ((port["gtp_code"], destination),
+                                    (destination, port["gtp_code"]))]
+
+    def fetch(pair):
+        schedules = parse_gtp_schedules(_get(session, _params(*pair, day), throttle))
+        return ferry_movements(schedules, port["gtp_port_id"], day)
+
+    with ThreadPoolExecutor(max_workers=WORKERS) as pool:
+        movements = [m for batch in pool.map(fetch, pairs) for m in batch]
     # GTP filtre sur la date de DEPART de la traversee. Le ferry qui accoste a
     # Heraklion a 06:15 le 30 a quitte le Piree le 29 : il sort donc de la
     # requete du 29, pas de celle du 30. On garde tous les mouvements produits,
@@ -172,6 +211,8 @@ def persist(conn, port_code, movements):
 def run(days, start=None, dry_run=False):
     session = requests.Session()
     session.headers["User-Agent"] = UA
+    session.mount("https://", requests.adapters.HTTPAdapter(pool_maxsize=WORKERS))
+    throttle = Throttle()
     # On part de la VEILLE : les arrivees de nuit du jour courant sont publiees
     # sous la date de depart de la traversee, donc dans la requete d'hier.
     first = start or athens_day(datetime.now(timezone.utc)) - timedelta(days=1)
@@ -186,7 +227,7 @@ def run(days, start=None, dry_run=False):
                 day = first + timedelta(days=offset)
                 stamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
                 try:
-                    movements = collect_port(session, port_code, day, served)
+                    movements = collect_port(session, port_code, day, throttle, served)
                 except Exception as exc:                     # noqa: BLE001 - journalise puis relance
                     if conn:
                         with conn.cursor() as cur:
@@ -219,12 +260,36 @@ def run(days, start=None, dry_run=False):
     return totals
 
 
+def _single_run_lock():
+    """Empeche deux collectes simultanees.
+
+    Le balayage hebdomadaire dure ~40 min et peut chevaucher la passe
+    quotidienne. Deux processus qui ne trouvent pas de creneau existant
+    inserent la meme traversee et la contrainte unique fait tomber l'un des
+    deux : on prefere qu'une passe se retire proprement.
+    """
+    import fcntl
+    handle = open(LOCK_PATH, "w")
+    try:
+        fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        handle.close()
+        return None
+    handle.write(f"{os.getpid()}\n")
+    handle.flush()
+    return handle
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--days", type=int, default=3, help="nombre de journees a partir du depart")
     parser.add_argument("--day", help="journee de depart YYYY-MM-DD (defaut : hier a Athenes)")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
+    lock = None if args.dry_run else _single_run_lock()
+    if not args.dry_run and lock is None:
+        print("ferry_crossings: une collecte tourne deja, passe abandonnee")
+        sys.exit(0)
     try:
         run(args.days,
             start=date.fromisoformat(args.day) if args.day else None,
@@ -232,3 +297,6 @@ if __name__ == "__main__":
     except Exception as exc:
         print(f"ferry_crossings ERROR: {exc}", file=sys.stderr)
         sys.exit(1)
+    finally:
+        if lock is not None:
+            lock.close()
