@@ -95,11 +95,17 @@ export async function refreshPartnerRating(partnerId: number): Promise<RatingRef
   const key = apiKey();
   if (!key) return { status: "no_key" };
 
-  const { data } = await supabaseAdmin
+  const { data, error } = await supabaseAdmin
     .from("car_partners")
     .select("id, name, email, google_place_id")
     .eq("id", partnerId)
     .maybeSingle();
+  // Une lecture refusee (cle de service absente, droits) n est PAS un loueur
+  // introuvable : la confondre ferait passer une panne pour un etat normal.
+  if (error) {
+    console.error("[google-rating] lecture du loueur impossible", { partnerId, error: error.message });
+    return { status: "failed", partnerId, code: "db_read" };
+  }
   const partner = data as PartnerRow | null;
   if (!partner) return { status: "not_found", partnerId };
 
@@ -148,6 +154,8 @@ export interface SweepResult {
   failed: number;
   skipped: number;
   disabled?: true;
+  /** Lecture du registre impossible : la passe n a rien vu, elle ne vaut rien. */
+  error?: string;
 }
 
 /**
@@ -162,11 +170,18 @@ export async function refreshStaleRatings(
   const out: SweepResult = { checked: 0, updated: 0, unmatched: 0, failed: 0, skipped: 0 };
   if (!apiKey()) return { ...out, disabled: true };
 
-  const { data } = await supabaseAdmin
+  const { data, error } = await supabaseAdmin
     .from("car_partners")
     .select("id, google_rating_at")
     .eq("active", true)
     .order("id", { ascending: true });
+
+  // Sans ce garde, une lecture refusee rendait « 0 loueur verifie, tout va
+  // bien » : indiscernable d un roster deja a jour.
+  if (error) {
+    console.error("[google-rating] lecture du registre impossible", { error: error.message });
+    return { ...out, error: error.message };
+  }
 
   const rows = (data ?? []) as Array<{ id: number; google_rating_at: string | null }>;
   for (const row of rows) {

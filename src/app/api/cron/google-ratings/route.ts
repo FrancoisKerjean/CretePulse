@@ -18,6 +18,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   const res = await refreshStaleRatings();
   if (res.disabled) return NextResponse.json({ ok: true, disabled: true });
+  // Registre illisible : la passe ne prouve rien, elle ne doit pas repondre 200.
+  if (res.error) return NextResponse.json({ ok: false, error: res.error }, { status: 502 });
 
   console.log("[cron/google-ratings] passe terminee", res);
   return NextResponse.json({ ok: true, ...res });

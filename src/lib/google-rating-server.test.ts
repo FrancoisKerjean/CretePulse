@@ -133,6 +133,18 @@ describe("refreshPartnerRating", () => {
     const res = await refreshPartnerRating(999);
     expect(res).toMatchObject({ status: "not_found" });
   });
+
+  it("ne deguise pas une lecture en erreur en loueur introuvable", async () => {
+    // Une clé de service absente rend exactement ce cas : sans distinction,
+    // le releve se declare vert en n ayant rien lu du tout.
+    from.mockImplementation(() => ({
+      select: () => ({
+        eq: () => ({ maybeSingle: async () => ({ data: null, error: { message: "permission denied" } }) }),
+      }),
+    }));
+    const res = await refreshPartnerRating(105);
+    expect(res).toMatchObject({ status: "failed", code: "db_read" });
+  });
 });
 
 describe("refreshStaleRatings", () => {
@@ -160,6 +172,19 @@ describe("refreshStaleRatings", () => {
     const res = await refreshStaleRatings({ now });
 
     expect(res).toMatchObject({ checked: 2, updated: 2, skipped: 1, failed: 0 });
+  });
+
+  it("signale une lecture en erreur au lieu de rendre une passe vide et verte", async () => {
+    from.mockImplementation(() => ({
+      select: () => ({
+        eq: () => ({ order: async () => ({ data: null, error: { message: "permission denied for table car_partners" } }) }),
+      }),
+    }));
+
+    const res = await refreshStaleRatings({ now: new Date("2026-07-30T10:00:00Z") });
+
+    expect(res.error).toContain("permission denied");
+    expect(res.checked).toBe(0);
   });
 
   it("sans cle, la passe ne touche a rien et se declare desarmee", async () => {
