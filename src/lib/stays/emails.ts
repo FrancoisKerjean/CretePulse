@@ -109,13 +109,20 @@ export function guestConflictBody(o: {
 
 async function send(to: string, subject: string, html: string): Promise<void> {
   try {
-    await resendClient().emails.send({
+    // Le SDK Resend ne leve PAS sur une erreur d'API : il renvoie { data, error }.
+    // Sans cette lecture explicite, un domaine non verifie, un quota atteint ou une
+    // adresse refusee passait en silence, et le proprietaire ne recevait jamais sa
+    // demande sans que rien ne le signale.
+    const { error } = await resendClient().emails.send({
       from: FROM_EMAIL,
       to,
       replyTo: REPLY_TO,
       subject,
       html,
     });
+    if (error) {
+      console.error("[stays/emails] send rejected:", subject, error);
+    }
   } catch (e) {
     console.error("[stays/emails] send failed:", e);
   }

@@ -1788,7 +1788,48 @@ Constat relevé au passage : le compte n'a **aucun compte connecté en live** (`
 
 `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET_STAYS`, `RESEND_API_KEY`, `CRON_SECRET` présentes en Production.
 
-- [ ] **Step 4 bis: Réactiver l'endpoint, APRÈS le déploiement**
+### Résultat de la mise en service, 29/07/2026 (session autonome)
+
+Séquence exécutée dans l'ordre imposé, chaque étape vérifiée avant la suivante.
+
+**Livré et vérifié**
+- PR #6 mergée en squash sur `master` (`54ae5f5`), CI verte, `npm run check` (tsc inclus)
+  et 236 tests verts, `next build` local vert avant le merge.
+- Promotion `master → main` (`ac87a65`), deployment Vercel `5649913627`.
+- Production : `/fr/stays` **200**, `/en/stays` 200, `/fr/stays/villa-danae-makrigialos` 200,
+  `/api/stays/availability/villa-danae-makrigialos` → `{"ok":true,"unavailable":[],"minNights":3}`,
+  `/api/stays/webhook` → 400 sans signature valide. Noindex toujours en place sur la
+  liste et sur la fiche.
+- Endpoint Stripe `we_1TyJZpEQ3UQbwGzYkeimteNI` réactivé **après** le 200 vérifié.
+- Smoke bout en bout joué sur le build de production servi en local, branché sur la
+  **vraie base de production**, avec des `checkout.session.completed` signés au format
+  Stripe exact : `min_nights` refusé en 422, demande acceptée, devis calculé
+  (700 net, commission 35, acompte 220,50, solde 514,50), acompte encaissé →
+  `deposit_paid` + 7 nuits bloquées, disponibilité publique à jour, re-demande sur les
+  mêmes dates → 409, rejeu du même `event_id` → `duplicate`, événement d'une autre
+  marque (IEUF) → `ignored`, collision GIST → `conflict` avec remboursement tenté et
+  échec loggé, cron solde J-14 → 1 envoi puis 0 au second passage, solde payé →
+  `confirmed`. **Invariant vérifié : fee acompte 1050 + fee solde 2450 = commission
+  3500 centimes**, et acompte + solde = total voyageur.
+- Jeu de test entièrement supprimé : `stay_requests` et `stay_availability` revenus à 0,
+  `stripe_webhook_events` à 0, 3 annonces et 1 propriétaire d'origine intacts.
+
+**⛔ Bloquant restant, action strictement humaine**
+Stripe Connect **n'est pas activé en live** sur `acct_1TDPicEQ3UQbwGzY` :
+`POST /v1/accounts` répond `400 You can only create new accounts if you've signed up for
+Connect` (requestId `req_w8zGbAC5EWADuw`). Aucun propriétaire ne peut donc être onboardé
+et aucun acompte encaissé. Le Step 3 supposait l'inverse en lisant `GET /v1/accounts` = 0
+comme « aucun propriétaire encore » alors que cela voulait dire « pas de plateforme
+Connect ». À faire sur dashboard.stripe.com/connect.
+
+**Dettes ouvertes constatées pendant le smoke** (aucune ne bloque la mise en service)
+1. `/api/stays/approve` renvoie un 500 brut quand Stripe refuse la création du compte :
+   le propriétaire mérite un message lisible.
+2. `/api/stays/pay-balance` renvoie un 500 à corps vide sur erreur Stripe.
+3. Corrigé dans la foulée : `send()` ignorait le `error` renvoyé par Resend, donc un
+   email refusé disparaissait sans trace (commit `a4b3c96`).
+
+- [x] **Step 4 bis: Réactiver l'endpoint, APRÈS le déploiement** ✅ FAIT 29/07, après le 200 vérifié
 
 À faire juste après le Step 6 (vérification que `/fr/stays` répond 200 en production), jamais avant :
 
@@ -1823,7 +1864,7 @@ journée entière et la séquence à moitié faite. Le geste retenu est
 `gh workflow run daily-deploy.yml`, prévu par le workflow lui-même (`workflow_dispatch`) et
 par le Step 5 ci-dessous. C'est le workflow qui pousse `main`, jamais moi.
 
-- [ ] **Step 5: Faire passer la CI et merger**
+- [x] **Step 5: Faire passer la CI et merger** ✅ FAIT 29/07 (`54ae5f5`)
 
 ```bash
 npm run check
@@ -1833,7 +1874,7 @@ gh pr merge 6 --squash
 
 Expected: checks verts, merge sur `master`. Ne PAS pousser `main` : la promotion se fait à 20 h Athènes par `daily-deploy.yml`. Pour une mise en service immédiate, lancer manuellement le workflow (`gh workflow run daily-deploy.yml`).
 
-- [ ] **Step 6: Vérifier la production**
+- [x] **Step 6: Vérifier la production** ✅ FAIT 29/07, 200 / 200 / JSON
 
 ```bash
 curl -s -o /dev/null -w "%{http_code}\n" -A "Mozilla/5.0" https://crete.direct/fr/stays
@@ -1843,7 +1884,7 @@ curl -s https://crete.direct/api/stays/availability/villa-danae-makrigialos | he
 
 Expected: 200, 200, un JSON `{"ok":true,...}`.
 
-- [ ] **Step 7: Smoke bout en bout en conditions réelles**
+- [x] **Step 7: Smoke bout en bout** ✅ FAIT 29/07, sauf le maillon Connect (bloquant humain)
 
 Dans cet ordre, sur une annonce de test créée pour l'occasion (pas sur les 3 annonces Kairos) :
 1. `/stays/new` avec un lien Airbnb, obtenir un brouillon et son jeton de publication.
@@ -1856,7 +1897,7 @@ Dans cet ordre, sur une annonce de test créée pour l'occasion (pas sur les 3 a
 
 Consigner le résultat dans `memory/dev_state.md` et une ligne `session_log.md`.
 
-- [ ] **Step 8: Nettoyer**
+- [x] **Step 8: Nettoyer** ✅ FAIT 29/07, base revenue à son état d'avant
 
 Supprimer l'annonce de test et ses demandes en base. Vérifier `select count(*) from stay_requests;` revenu à sa valeur d'avant.
 
