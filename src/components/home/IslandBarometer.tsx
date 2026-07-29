@@ -5,15 +5,53 @@
 // viennent de /api/island-now (cache CDN 10 min). Une source absente = ligne
 // absente, jamais de zéro affiché, jamais d'estimation.
 // Spec : docs/superpowers/specs/2026-07-28-home-service-rail-design.md
+// Lignes cliquables : docs/superpowers/specs/2026-07-29-hero-clickable-design.md
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { CiBus, CiWave } from "@/components/icons";
-import { Ship } from "lucide-react";
+import { ChevronRight, Ship } from "lucide-react";
+import { Link } from "@/i18n/navigation";
+import { cruisePortHref } from "@/lib/hero-links";
 
 interface IslandNow {
   cruise: { port: string; paxCapacity: number; ships: { name: string; eta: string | null; etd: string | null }[] } | null;
   buses: { tracked: number; asOf: string } | null;
   stock: null;
+}
+
+type Zone = "sea" | "cruise" | "buses";
+
+function track(zone: Zone) {
+  (window as unknown as { plausible?: (e: string, o?: { props?: Record<string, string> }) => void })
+    .plausible?.("hero_click", { props: { zone } });
+}
+
+const ROW = "flex items-center gap-3 py-3 border-t border-text/8 first:border-t-0";
+
+// Chevron : révélé au survol sur pointeur fin, permanent à opacité réduite sur
+// tactile, où le hover n'existe pas et où passe l'essentiel du trafic. Sans lui,
+// ces liens seraient invisibles là où ils comptent le plus.
+const CHEVRON =
+  "w-4 h-4 shrink-0 text-sea/70 transition-all duration-200 opacity-0 -translate-x-1 " +
+  "group-hover/row:opacity-100 group-hover/row:translate-x-0 " +
+  "[@media(hover:none)]:opacity-60 [@media(hover:none)]:translate-x-0";
+
+/**
+ * Une ligne du baromètre. Sans href (port sans page dédiée), elle reste du texte :
+ * on ne fabrique pas plus un lien qu'un chiffre.
+ */
+function Row({ href, zone, children }: { href: string | null; zone: Zone; children: React.ReactNode }) {
+  if (!href) return <div className={ROW}>{children}</div>;
+  return (
+    <Link
+      href={href}
+      onClick={() => track(zone)}
+      className={`${ROW} group/row no-underline rounded-xl transition-colors hover:bg-sea/[0.055]`}
+    >
+      {children}
+      <ChevronRight className={CHEVRON} aria-hidden />
+    </Link>
+  );
 }
 
 const PORT_LABEL: Record<string, string> = {
@@ -58,7 +96,7 @@ export function IslandBarometer({
   return (
     <div className="bg-white/86 rounded-[22px] px-4 py-0.5 mb-4 max-w-[470px] shadow-[0_12px_30px_rgba(11,94,120,.14)]">
       {showSea && (
-        <div className="flex items-center gap-3 py-3">
+        <Row href="/weather" zone="sea">
           <CiWave className="w-[18px] h-[18px] text-sea shrink-0" aria-hidden />
           <p className="flex-1 text-[13.5px] leading-snug text-text m-0">
             {t("barometer.sea", { temp: seaTemp, wind: windSpeed, air: airTemp })}
@@ -66,11 +104,11 @@ export function IslandBarometer({
           <span className="text-[10px] text-text-muted text-right max-w-[96px] leading-tight sr-only sm:not-sr-only sm:block">
             {t("barometer.src.weather")}
           </span>
-        </div>
+        </Row>
       )}
 
       {cruise && (
-        <div className="flex items-center gap-3 py-3 border-t border-text/8 first:border-t-0">
+        <Row href={cruisePortHref(cruise.port)} zone="cruise">
           <Ship className="w-[18px] h-[18px] text-sea shrink-0" aria-hidden />
           <p className="flex-1 text-[13.5px] leading-snug text-text m-0">
             {t("barometer.cruise", {
@@ -85,11 +123,11 @@ export function IslandBarometer({
           <span className="text-[10px] text-text-muted text-right max-w-[96px] leading-tight sr-only sm:not-sr-only sm:block">
             {t("barometer.src.port")}
           </span>
-        </div>
+        </Row>
       )}
 
       {buses && (
-        <div className="flex items-center gap-3 py-3 border-t border-text/8 first:border-t-0">
+        <Row href="/live" zone="buses">
           <CiBus className="w-[18px] h-[18px] text-sea shrink-0" aria-hidden />
           <p className="flex-1 text-[13.5px] leading-snug text-text m-0">
             {t("barometer.buses", { count: buses.tracked })}
@@ -97,7 +135,7 @@ export function IslandBarometer({
           <span className="text-[10px] text-text-muted text-right max-w-[96px] leading-tight sr-only sm:not-sr-only sm:block">
             {t("barometer.src.gps")}
           </span>
-        </div>
+        </Row>
       )}
     </div>
   );
