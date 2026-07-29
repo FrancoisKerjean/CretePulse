@@ -960,6 +960,18 @@ d'écritures ISR. Effet de bord connu et accepté : la file `master` contenait d
 16 h plus tôt que prévu. Sans risque de surface : `/stays` est en noindex, sans
 annonce publiée, et `STAYS_HOME_BLOCK` reste éteint donc la home ne pointe pas dessus.
 
+**Conflit rencontré au premier `ship`.** `package.json` : le chantier Stays avait
+ajouté `check:stays` et `check:car-demand` à l'agrégat `check` pendant que ce
+chantier y ajoutait `check:home-services` et `check:island-now`. Résolu en union,
+les quatre sont dans la chaîne, `check:stays` avant les deux nouveaux et `check:da`
+toujours en avant-dernier. La fusion de `master` a aussi tiré la dépendance
+`stripe` : `npm install` dans le worktree, sinon `tsc` échoue sur
+`src/lib/stays/stripe-helpers.ts`. Le `package-lock.json` réécrit par ce
+`npm install` a été **rejeté** : son diff n'était que du bruit npm-Windows
+(suppression des champs `libc` des dépendances optionnelles), il n'y avait aucune
+résolution à ajouter. `npm run check` et `npm run build` rejoués verts sur le
+résultat de la fusion, avec le code Stays embarqué.
+
 - [ ] **Step 6 : vérifier en production après la promotion**
 
 ```bash
