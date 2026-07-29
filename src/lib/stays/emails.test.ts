@@ -19,6 +19,17 @@ describe("cloisonnement crete.direct", () => {
   });
 });
 
+describe("fiabilite des envois", () => {
+  // Le SDK Resend ne leve pas sur erreur d'API, il renvoie { data, error }. Un
+  // await nu perd l'echec en silence : le proprietaire ne recoit rien et rien ne
+  // le signale. La lecture de `error` est donc une garantie, pas un detail.
+  it("lit l erreur renvoyee par Resend au lieu de l ignorer", () => {
+    const src = readFileSync("src/lib/stays/emails.ts", "utf8");
+    expect(src).toMatch(/const \{ error \} = await resendClient\(\)\.emails\.send/);
+    expect(src).toMatch(/if \(error\)/);
+  });
+});
+
 describe("email builders", () => {
   it("owner request subject names the dates", () => {
     expect(ownerRequestSubject("2026-07-01", "2026-07-08")).toContain("2026-07-01");
