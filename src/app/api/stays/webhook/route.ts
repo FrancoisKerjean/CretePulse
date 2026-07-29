@@ -89,7 +89,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         let refunded = false;
         if (pi) {
           try {
-            await stripeClient().refunds.create({ payment_intent: pi });
+            // Charge de destination : l'acompte est deja parti chez le
+            // proprietaire au moment ou Stripe confirme le paiement. Sans
+            // `reverse_transfer`, le remboursement sort du compte plateforme et
+            // le proprietaire garde l'argent d'un sejour qui n'aura pas lieu.
+            // `refund_application_fee` rend aussi la commission : crete.direct
+            // n'encaisse pas 5 % sur une reservation qu'elle vient d'annuler.
+            await stripeClient().refunds.create({
+              payment_intent: pi,
+              reverse_transfer: true,
+              refund_application_fee: true,
+            });
             refunded = true;
           } catch (e) {
             console.error("[stays/webhook] refund failed:", e);
