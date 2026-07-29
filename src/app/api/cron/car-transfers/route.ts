@@ -1,5 +1,9 @@
 // Versement differe aux loueurs. Une passe quotidienne : chaque location payee
-// dont l'echeance est atteinte recoit son transfert, prix moins commission.
+// dont l'echeance est atteinte declenche le PAYOUT du compte du loueur.
+//
+// L'argent est deja chez lui depuis le paiement (charge de destination) ; il est
+// simplement bloque, son compte etant en versement `manual`. On ne transfere
+// donc rien, on libere.
 //
 // L'echeance vaut la fermeture du droit au remboursement (booking-policy) : au
 // moment ou l'argent part, le client ne peut plus etre rembourse. Aucune reprise
@@ -80,8 +84,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       continue;
     }
 
-    // L'option d'annulation n'entre jamais dans le versement : elle paie le
-    // risque porte par crete.direct.
+    // Montant deja credite au loueur a l'encaissement : total moins la
+    // commission et l'option, prelevees en application fee.
     const { partnerPayoutCents } = bookingBreakdownCents({
       quotedPriceEur: Number(row.quoted_price) || 0,
       hasOption: false,
@@ -89,16 +93,20 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
 
     try {
-      const transfer = await stripeClient().transfers.create({
-        amount: partnerPayoutCents,
-        currency: "eur",
-        destination,
-        metadata: { car_request_id: String(row.id), brand: "crete.direct" },
-      });
+      // `stripeAccount` : on agit AU NOM du loueur pour liberer son propre
+      // solde. C'est son argent, on ne fait que lever le blocage.
+      const payout = await stripeClient().payouts.create(
+        {
+          amount: partnerPayoutCents,
+          currency: "eur",
+          metadata: { car_request_id: String(row.id), brand: "crete.direct" },
+        },
+        { stripeAccount: destination },
+      );
       await supabaseAdmin
         .from("car_requests")
         .update({
-          transfer_id: transfer.id,
+          transfer_id: payout.id,
           transferred_at: new Date().toISOString(),
           booking_status: "transferred",
         })

@@ -1,17 +1,22 @@
 // Annulation d'une location payee en ligne.
 //
-// Les fonds n'ont pas encore quitte le compte plateforme : le remboursement est
-// un simple `refunds.create`, SANS `reverse_transfer`, puisqu'il n'y a rien a
-// reprendre au loueur. C'est tout l'interet du versement differe. Une fois le
-// versement parti (`transferred`), l'annulation est refusee : la fenetre de
-// remboursement est fermee par construction, les deux seuils etant egaux.
+// L'argent est sur le compte du loueur depuis le paiement, mais bloque : son
+// compte est en versement `manual` et le payout n'a pas encore ete declenche.
+// Le remboursement reprend donc le transfert ET la commission, sans creer le
+// moindre decouvert chez lui. Une fois le payout parti (`transferred`),
+// l'annulation est refusee : la fenetre de remboursement est fermee par
+// construction, les deux seuils etant egaux.
+//
+// Stripe reverse proportionnellement au montant rembourse, sans reglage fin.
+// On rembourse donc la TOTALITE, option comprise : c'est la seule regle qui
+// tombe juste au centime des deux cotes.
 //
 // Plan : docs/superpowers/plans/2026-07-29-car-rental-tunnel-voyageur.md
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { stripeClient } from "@/lib/stays/stripe-helpers";
 import { hashToken } from "@/lib/car-quote";
-import { refundDueEur, CANCELLATION_OPTION_EUR } from "@/lib/booking-policy";
+import { refundDueEur } from "@/lib/booking-policy";
 import { classifyStripeFailure, stripeLogFields } from "@/lib/stripe-errors";
 
 const enabled = (): boolean => process.env.CAR_BOOKING_ENABLED === "on";
@@ -40,17 +45,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: false, error: "Not cancellable" }, { status: 409 });
   }
 
-  // Le prix de l'option n'est jamais rendu : il paie le droit d'annuler, il est
-  // consomme au moment ou ce droit est exerce.
   const paidEur = Number(row.booking_amount_eur) || 0;
-  const rentalEur = row.cancellation_option
-    ? Math.round((paidEur - CANCELLATION_OPTION_EUR) * 100) / 100
-    : paidEur;
 
   const refundEur = refundDueEur({
     hasOption: row.cancellation_option === true,
     hoursUntilStart: hoursUntil(row.date_from),
-    amountPaidEur: rentalEur,
+    amountPaidEur: paidEur,
   });
 
   if (refundEur > 0) {
@@ -58,6 +58,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const refund = await stripeClient().refunds.create({
         payment_intent: row.booking_payment_intent_id,
         amount: Math.round(refundEur * 100),
+        // Reprend au loueur ce qui lui avait ete credite, et rend la commission.
+        // Les fonds etant encore bloques sur son solde, la reprise est indolore.
+        reverse_transfer: true,
+        refund_application_fee: true,
       });
       await supabaseAdmin
         .from("car_requests")

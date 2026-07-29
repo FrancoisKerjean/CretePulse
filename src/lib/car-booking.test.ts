@@ -31,6 +31,14 @@ describe("bookingBreakdownCents", () => {
     expect(b.partnerPayoutCents + b.commissionCents + b.optionCents).toBe(b.totalCents);
   });
 
+  it("l application fee regroupe commission et option", () => {
+    // Charge de destination : le loueur recoit le total moins les frais
+    // d application. crete.direct encaisse donc commission + option en une fois.
+    const b = bookingBreakdownCents({ quotedPriceEur: 310, hasOption: true, partnerRate: 0.1 });
+    expect(b.applicationFeeCents).toBe(3_600);
+    expect(b.totalCents - b.applicationFeeCents).toBe(b.partnerPayoutCents);
+  });
+
   it("ne reverse jamais l option au loueur : elle paie le risque porte par crete.direct", () => {
     const withOption = bookingBreakdownCents({ quotedPriceEur: 310, hasOption: true, partnerRate: 0.1 });
     const without = bookingBreakdownCents({ quotedPriceEur: 310, hasOption: false, partnerRate: 0.1 });
@@ -65,13 +73,16 @@ describe("buildBookingCheckoutParams", () => {
     dateTo: "2026-10-09",
     bookingToken: "tok-plain",
     locale: "fr",
+    connectAccountId: "acct_zorbas",
   });
 
-  it("encaisse sur le compte plateforme, sans rien transferer tout de suite", () => {
-    // Charges separees : les fonds restent chez nous jusqu'au versement differe.
-    // Un transfer_data ici rouvrirait la reprise de fonds a l annulation.
-    expect(params.payment_intent_data?.transfer_data).toBeUndefined();
-    expect(params.payment_intent_data?.application_fee_amount).toBeUndefined();
+  it("envoie l argent DIRECTEMENT sur le compte du loueur", () => {
+    // Charge de destination : les fonds sont ceux du loueur des la seconde du
+    // paiement, crete.direct ne les detient jamais. C est ce qui permet de lui
+    // dire « c est votre argent » sans mentir, et ce qui evite d encaisser pour
+    // le compte d un tiers.
+    expect(params.payment_intent_data?.transfer_data?.destination).toBe("acct_zorbas");
+    expect(params.payment_intent_data?.application_fee_amount).toBe(3_600);
   });
 
   it("facture la location et l option sur deux lignes lisibles", () => {
@@ -89,8 +100,11 @@ describe("buildBookingCheckoutParams", () => {
       requestId: 25, customerEmail: "x@y.z", quotedPriceEur: 310, hasOption: false,
       partnerName: "Zorbas", carLabel: "City car", dateFrom: "2026-09-25",
       dateTo: "2026-10-09", bookingToken: "tok", locale: "fr",
+      connectAccountId: "acct_zorbas",
     });
     expect(p.line_items).toHaveLength(1);
+    // Sans option, l application fee tombe a la seule commission.
+    expect(p.payment_intent_data?.application_fee_amount).toBe(3_100);
   });
 
   it("porte les discriminants que le webhook lit", () => {

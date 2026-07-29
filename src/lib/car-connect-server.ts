@@ -46,6 +46,15 @@ export async function startPartnerOnboarding(partnerId: number): Promise<Onboard
           card_payments: { requested: true },
           transfers: { requested: true },
         },
+        settings: {
+          payouts: {
+            // Versement MANUEL : les fonds restent bloques sur le compte Stripe
+            // du loueur jusqu'a ce que le cron declenche le payout, 48 h avant
+            // la prise. C'est ce qui rend une annulation indolore : l'argent est
+            // a lui, mais pas encore parti a la banque.
+            schedule: { interval: "manual" },
+          },
+        },
       });
       accountId = account.id;
     } catch (err) {

@@ -2,9 +2,19 @@
 // retenus, la commission est prelevee au passage et le solde part chez le loueur
 // a la fermeture du droit au remboursement.
 //
-// CHARGES SEPAREES, pas charge de destination : aucun `transfer_data` ici. Le
-// versement est un `transfers.create` distinct, declenche par le cron. C'est ce
-// qui permet de rembourser sans jamais reprendre d'argent au loueur.
+// CHARGE DE DESTINATION : le paiement va DIRECTEMENT sur le compte Stripe du
+// loueur, commission et option prelevees au passage via `application_fee_amount`.
+// crete.direct ne detient jamais les fonds du loueur.
+//
+// Deux consequences voulues (decision Kami 29/07/2026, apres un premier jet en
+// charges separees) :
+//  - on peut dire au loueur « c'est votre argent, on n'y touche jamais », et
+//    c'est vrai ;
+//  - crete.direct n'encaisse pas pour le compte d'un tiers, ce qui evite la
+//    qualification de service de paiement.
+// Les fonds restent bloques chez Stripe parce que le compte connecte est en
+// versement `manual` : le cron declenche le payout 48 h avant la prise, et une
+// annulation avant cette echeance reprend les fonds sans creer de decouvert.
 //
 // Plan : docs/superpowers/plans/2026-07-29-car-rental-tunnel-voyageur.md
 import type Stripe from "stripe";
@@ -28,11 +38,13 @@ export interface BreakdownInput {
 
 export interface BookingBreakdown {
   totalCents: number;
-  /** Ce qui partira au loueur au versement differe. */
+  /** Ce qui reste au loueur sur son compte, en attente de versement. */
   partnerPayoutCents: number;
   commissionCents: number;
   /** Prix de l'option, acquis a crete.direct : il paie le risque d'annulation. */
   optionCents: number;
+  /** Ce que preleve crete.direct sur la charge : commission + option. */
+  applicationFeeCents: number;
 }
 
 /**
@@ -52,6 +64,7 @@ export function bookingBreakdownCents(input: BreakdownInput): BookingBreakdown {
     partnerPayoutCents: priceCents - commissionCents,
     commissionCents,
     optionCents,
+    applicationFeeCents: commissionCents + optionCents,
   };
 }
 
@@ -66,6 +79,10 @@ export interface BookingCheckoutInput {
   dateTo: string;
   bookingToken: string;
   locale: string;
+  /** Compte Stripe Express du loueur. Sans lui, pas de paiement possible. */
+  connectAccountId: string;
+  /** Taux de commission du loueur, en fraction. */
+  partnerRate?: number;
 }
 
 const siteBase = (): string =>
@@ -75,6 +92,11 @@ export function buildBookingCheckoutParams(
   input: BookingCheckoutInput,
 ): Stripe.Checkout.SessionCreateParams {
   const base = siteBase();
+  const breakdown = bookingBreakdownCents({
+    quotedPriceEur: input.quotedPriceEur,
+    hasOption: input.hasOption,
+    partnerRate: input.partnerRate ?? 0.1,
+  });
   const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
     {
       price_data: {
@@ -109,6 +131,10 @@ export function buildBookingCheckoutParams(
     payment_method_types: ["card"],
     line_items: lineItems,
     payment_intent_data: {
+      // L'argent atterrit sur le compte du loueur ; crete.direct ne preleve que
+      // sa commission et le prix de l'option.
+      transfer_data: { destination: input.connectAccountId },
+      application_fee_amount: breakdown.applicationFeeCents,
       // Compte plateforme partage (NovAI, descripteur par defaut "NOVAI").
       statement_descriptor_suffix: "CRETE DIRECT",
     },

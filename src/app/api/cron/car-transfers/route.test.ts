@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const transfersCreate = vi.fn(async () => ({ id: "tr_1" }));
+const payoutsCreate = vi.fn(async () => ({ id: "po_1" }));
 vi.mock("@/lib/stays/stripe-helpers", () => ({
-  stripeClient: () => ({ transfers: { create: transfersCreate } }),
+  stripeClient: () => ({ payouts: { create: payoutsCreate } }),
 }));
 const { from } = vi.hoisted(() => ({ from: vi.fn() }));
 vi.mock("@/lib/supabase-admin", () => ({ supabaseAdmin: { from } }));
@@ -50,7 +50,7 @@ describe("GET /api/cron/car-transfers", () => {
   it("401 sans le secret du cron", async () => {
     wiring();
     expect((await GET(req("mauvais") as never)).status).toBe(401);
-    expect(transfersCreate).not.toHaveBeenCalled();
+    expect(payoutsCreate).not.toHaveBeenCalled();
   });
 
   it("desarme : ne verse rien", async () => {
@@ -58,7 +58,7 @@ describe("GET /api/cron/car-transfers", () => {
     wiring();
     const res = await GET(req() as never);
     expect((await res.json()).disabled).toBe(true);
-    expect(transfersCreate).not.toHaveBeenCalled();
+    expect(payoutsCreate).not.toHaveBeenCalled();
   });
 
   it("verse au loueur le prix moins la commission", async () => {
@@ -67,14 +67,17 @@ describe("GET /api/cron/car-transfers", () => {
 
     expect(res.status).toBe(200);
     expect((await res.json()).transferred).toBe(1);
-    // 310 EUR moins 10 % = 279 EUR. L option d annulation n entre jamais ici.
-    expect(transfersCreate).toHaveBeenCalledWith({
-      amount: 27_900,
-      currency: "eur",
-      destination: "acct_z",
-      metadata: { car_request_id: "25", brand: "crete.direct" },
-    });
-    expect(updates[0].transfer_id).toBe("tr_1");
+    // 310 EUR moins 10 % = 279 EUR, deja credites au loueur a l encaissement.
+    // On libere son solde en agissant EN SON NOM : c est son argent.
+    expect(payoutsCreate).toHaveBeenCalledWith(
+      {
+        amount: 27_900,
+        currency: "eur",
+        metadata: { car_request_id: "25", brand: "crete.direct" },
+      },
+      { stripeAccount: "acct_z" },
+    );
+    expect(updates[0].transfer_id).toBe("po_1");
     expect(updates[0].booking_status).toBe("transferred");
     expect(updates[0].transferred_at).toBeTruthy();
   });
@@ -85,7 +88,7 @@ describe("GET /api/cron/car-transfers", () => {
     wiring([{ ...DUE, date_from: far }]);
     const res = await GET(req() as never);
     expect((await res.json()).transferred).toBe(0);
-    expect(transfersCreate).not.toHaveBeenCalled();
+    expect(payoutsCreate).not.toHaveBeenCalled();
   });
 
   it("ignore un loueur sans compte de versement, sans planter la passe", async () => {
@@ -99,12 +102,12 @@ describe("GET /api/cron/car-transfers", () => {
 
     // La location versable passe quand meme : une ligne bloquee n'arrete pas tout.
     expect((await res.json()).transferred).toBe(1);
-    expect(updates.filter((u) => u.transfer_id === "tr_1")).toHaveLength(1);
+    expect(updates.filter((u) => u.transfer_id === "po_1")).toHaveLength(1);
     errSpy.mockRestore();
   });
 
   it("un echec Stripe n interrompt pas la passe et ne marque rien", async () => {
-    transfersCreate.mockRejectedValueOnce(
+    payoutsCreate.mockRejectedValueOnce(
       Object.assign(new Error("insufficient funds"), { requestId: "req_tr_1" }) as never,
     );
     const updates = wiring([DUE, { ...DUE, id: 27 }]);

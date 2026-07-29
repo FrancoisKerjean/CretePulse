@@ -55,7 +55,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const { data: partner } = await supabaseAdmin
     .from("car_partners")
-    .select("id, name, commission")
+    .select("id, name, commission, stripe_connect_account_id, kyc_status")
     .eq("id", row.quoted_by_partner_id)
     .maybeSingle();
 
@@ -66,6 +66,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       .eq("id", row.id)
       .select();
   };
+
+  // Charge de destination : sans compte de versement chez le loueur, il n'y a
+  // nulle part ou envoyer l'argent. Mieux vaut refuser le paiement que
+  // l'encaisser et le bloquer.
+  if (!partner?.stripe_connect_account_id || partner.kyc_status !== "complete") {
+    console.error("[car/booking] loueur sans compte de versement pret", {
+      requestId: row.id,
+      partnerId: row.quoted_by_partner_id,
+      kyc: partner?.kyc_status,
+    });
+    await releaseLock();
+    return NextResponse.json(
+      { ok: false, code: "payouts_unavailable", error: "Ce loueur ne peut pas encore encaisser en ligne." },
+      { status: 503 },
+    );
+  }
 
   const quotedPriceEur = Number(row.quoted_price) || 0;
   let session: { id: string; url: string | null };
@@ -82,6 +98,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         dateTo: row.date_to,
         bookingToken: token,
         locale,
+        connectAccountId: partner.stripe_connect_account_id,
+        partnerRate: Number(partner.commission) || 0.1,
       }),
     );
   } catch (err) {

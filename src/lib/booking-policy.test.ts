@@ -28,11 +28,13 @@ describe("refundDueEur", () => {
     expect(refundDueEur({ hasOption: true, hoursUntilStart: H(-12), amountPaidEur: 310 })).toBe(0);
   });
 
-  it("ne rembourse jamais le prix de l option elle-meme", () => {
-    // Le voyageur a paye 310 de location + 5 d option. L option est le prix du
-    // droit d annuler : elle est consommee, elle reste acquise.
-    const paid = 310;
-    expect(refundDueEur({ hasOption: true, hoursUntilStart: H(72), amountPaidEur: paid })).toBe(310);
+  it("rembourse TOUT ce qui a ete paye, option comprise", () => {
+    // Stripe reverse le transfert et la commission PROPORTIONNELLEMENT au
+    // montant rembourse, sans reglage fin possible. Garder les 5 EUR laisserait
+    // donc des centimes indus chez le loueur et chez nous. Rendre la totalite
+    // est la seule regle qui tombe juste au centime, et elle se dit mieux :
+    // annulation dans les delais, tout est rendu.
+    expect(refundDueEur({ hasOption: true, hoursUntilStart: H(72), amountPaidEur: 315 })).toBe(315);
     expect(CANCELLATION_OPTION_EUR).toBe(5);
   });
 

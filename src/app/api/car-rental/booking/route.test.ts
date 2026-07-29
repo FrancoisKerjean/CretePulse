@@ -34,9 +34,12 @@ const ROW = {
   date_from: "2026-09-25",
   date_to: "2026-10-09",
 };
-const PARTNER = { id: 111, name: "Zorbas Rent a Car", commission: 0.1 };
+const PARTNER = {
+  id: 111, name: "Zorbas Rent a Car", commission: 0.1,
+  stripe_connect_account_id: "acct_zorbas", kyc_status: "complete",
+};
 
-function wiring(opts: { row?: unknown; lockRows?: unknown[] } = {}) {
+function wiring(opts: { row?: unknown; lockRows?: unknown[]; partner?: unknown } = {}) {
   const updates: Array<Record<string, unknown>> = [];
   from.mockImplementation((table: string) => {
     if (table === "car_requests") {
@@ -53,7 +56,7 @@ function wiring(opts: { row?: unknown; lockRows?: unknown[] } = {}) {
         },
       };
     }
-    return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: PARTNER }) }) }) };
+    return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: opts.partner === undefined ? PARTNER : opts.partner }) }) }) };
   });
   return updates;
 }
@@ -85,8 +88,9 @@ describe("POST /api/car-rental/booking", () => {
     };
     // 310 de location + 5 d option, sur deux lignes.
     expect(params.line_items.map((l) => l.price_data.unit_amount)).toEqual([31_000, 500]);
-    // Charges separees : les fonds restent sur la plateforme.
-    expect(params.payment_intent_data.transfer_data).toBeUndefined();
+    // Charge de destination : l argent va droit chez le loueur.
+    expect(params.payment_intent_data.transfer_data).toEqual({ destination: "acct_zorbas" });
+    expect(params.payment_intent_data.application_fee_amount).toBe(3_600);
 
     const patch = updates.find((u) => u.booking_session_id === "cs_live_b1");
     expect(patch).toBeDefined();
@@ -100,6 +104,22 @@ describe("POST /api/car-rental/booking", () => {
     const params = sessionsCreate.mock.calls[0][0] as unknown as { line_items: unknown[] };
     expect(params.line_items).toHaveLength(1);
     expect(updates.find((u) => u.booking_amount_eur === 310)?.cancellation_option).toBe(false);
+  });
+
+  it("503 quand le loueur n a pas de compte de versement pret", async () => {
+    // Sans compte connecte, il n y a nulle part ou envoyer l argent : mieux vaut
+    // refuser que d encaisser et bloquer les fonds.
+    const updates = wiring({ partner: { ...PARTNER, kyc_status: "pending" } });
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await POST(req({ token: "t" }) as never);
+
+    expect(res.status).toBe(503);
+    expect((await res.json()).code).toBe("payouts_unavailable");
+    expect(sessionsCreate).not.toHaveBeenCalled();
+    // Verrou relache : le paiement redeviendra possible une fois le loueur pret.
+    expect(updates.some((u) => u.booking_status === null)).toBe(true);
+    errSpy.mockRestore();
   });
 
   it("404 sur un jeton inconnu", async () => {

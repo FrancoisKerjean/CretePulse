@@ -20,8 +20,8 @@ conclues hors ligne. Il est désarmé (`CAR_COMMISSION_ENABLED`).
 
 | Décision | Valeur | Où elle vit |
 |---|---|---|
-| Flux de fonds | Différé : fonds retenus, versement au loueur à la fermeture du droit au remboursement | `booking-policy.ts` |
-| Option d'annulation | 5 €, remboursement intégral jusqu'à 48 h avant, **rien sans l'option** | `booking-policy.ts` |
+| Flux de fonds | **Charge de destination** : l'argent va droit sur le compte du loueur, bloqué par un versement `manual`, libéré à la fermeture du droit au remboursement | `car-booking.ts` |
+| Option d'annulation | 5 €, remboursement **de la totalité, option comprise**, jusqu'à 48 h avant, **rien sans l'option** | `booking-policy.ts` |
 | Seuil unique | `TRANSFER_LEAD_HOURS === REFUND_WINDOW_HOURS` : aucune fenêtre de reprise de fonds | gate `check:booking-policy` |
 | Vocabulaire | « option d'annulation », **jamais « assurance »** (activité réglementée) | `booking-policy.ts` |
 | Armement | Éteint par défaut, valeur exacte `on` | `CAR_BOOKING_ENABLED` |
@@ -143,3 +143,32 @@ T9 puis T10 exigent Connect.
 - La caution du véhicule : elle reste entre le loueur et le client, crete.direct n'y touche pas.
 - Les litiges et dommages : hors périmètre, le contrat de location reste celui du loueur.
 - Le changement de dates : une modification = annulation puis nouvelle réservation.
+
+
+## Bascule du 29/07/2026 22:30 — charges séparées → charge de destination
+
+**Décision Kami**, après avoir formulé l'argument que je n'avais pas trouvé : « c'est leur
+argent et on n'y touche jamais, la somme est bloquée par Stripe jusqu'à la réservation ».
+
+Le premier jet plaçait le paiement sur le compte plateforme, puis transférait au loueur.
+C'était défendable techniquement mais faux commercialement, et cela faisait de crete.direct
+un détenteur de fonds de tiers.
+
+**Le modèle retenu** : `transfer_data.destination` vers le compte du loueur, commission et
+option prélevées par `application_fee_amount`. Le compte connecté est créé en versement
+`manual`, donc les fonds restent bloqués chez Stripe. Le cron déclenche le `payouts.create`
+**au nom du loueur** 48 h avant la prise. Une annulation avant cette échéance rembourse avec
+`reverse_transfer` sans créer le moindre découvert.
+
+**Trois gains** : on peut dire au loueur « c'est votre argent » sans mentir ; crete.direct
+n'encaisse jamais pour le compte d'un tiers, donc la qualification de service de paiement ne
+se pose plus ; et aucun fonds de tiers ne transite par les comptes de NovAI.
+
+**Une contrainte découverte** : `reverse_transfer` et `refund_application_fee` reversent
+**proportionnellement** au montant remboursé, sans réglage fin possible. Retenir les 5 € de
+l'option laisserait donc des centimes indus des deux côtés. D'où la règle simplifiée :
+**annulation dans les délais, tout est rendu, option comprise**. C'est aussi ce qui se dit
+le mieux.
+
+**Le gate `check:car-booking` a été inversé** : il exigeait l'absence de `transfer_data`, il
+exige maintenant sa présence et vérifie que payout + application fee = total, au centime.

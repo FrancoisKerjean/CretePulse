@@ -56,23 +56,31 @@ describe("POST /api/car-rental/booking/cancel", () => {
 
     expect(res.status).toBe(200);
     const json = await res.json();
-    expect(json.refundedEur).toBe(310);
-    // Aucun reverse_transfer : rien n'a ete transfere, les fonds sont encore chez nous.
+    // TOUT est rendu, option comprise : Stripe reverse proportionnellement et
+    // ne permet aucun reglage fin, une retenue partielle laisserait des centimes
+    // indus chez le loueur comme chez nous.
+    expect(json.refundedEur).toBe(315);
     expect(refundsCreate).toHaveBeenCalledWith({
       payment_intent: "pi_b1",
-      amount: 31_000,
+      amount: 31_500,
+      reverse_transfer: true,
+      refund_application_fee: true,
     });
     expect(updates[0].booking_status).toBe("refunded");
-    expect(updates[0].refund_amount_eur).toBe(310);
+    expect(updates[0].refund_amount_eur).toBe(315);
     expect(updates[0].cancelled_at).toBeTruthy();
   });
 
-  it("ne rembourse pas le prix de l option elle-meme", async () => {
+  it("reprend au loueur ce qui lui avait ete credite", async () => {
     wiring();
     await POST(req() as never);
-    // 315 payes, 310 rendus : les 5 EUR de l option sont acquis.
-    const call = refundsCreate.mock.calls[0][0] as unknown as { amount: number };
-    expect(call.amount).toBe(31_000);
+    // L argent etait deja sur SON compte, mais bloque en versement manual : la
+    // reprise ne peut donc pas lui creer de decouvert.
+    const call = refundsCreate.mock.calls[0][0] as unknown as {
+      reverse_transfer: boolean; refund_application_fee: boolean;
+    };
+    expect(call.reverse_transfer).toBe(true);
+    expect(call.refund_application_fee).toBe(true);
   });
 
   it("annule sans rembourser quand l option n a pas ete prise", async () => {
