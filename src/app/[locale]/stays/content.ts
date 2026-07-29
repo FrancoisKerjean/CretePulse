@@ -104,6 +104,9 @@ export type StaysStrings = {
     accepted: string;
     declined: string;
     error: string;
+    /** Panne cote paiement, cle = `code` renvoye par l'API. Repli : message serveur. */
+    errorPayouts: string;
+    errorPayment: string;
   };
   pay: {
     h1: string;
@@ -120,6 +123,8 @@ export type StaysStrings = {
     submit: string;
     redirecting: string;
     error: string;
+    errorPayouts: string;
+    errorPayment: string;
   };
   terms: {
     h1: string;
@@ -332,6 +337,10 @@ export const L: Record<StaysLocale, StaysStrings> = {
       working: "Working",
       accepted: "Accepted. The traveller receives the payment link.",
       declined: "Declined.",
+      errorPayouts:
+        "Payouts are not open yet. Your request is safe: we come back to you as soon as your payout account can be created.",
+      errorPayment:
+        "Payment is temporarily unavailable. Try again in a few minutes; if it persists, write to contact@crete.direct.",
       error: "Error",
     },
     pay: {
@@ -352,6 +361,10 @@ export const L: Record<StaysLocale, StaysStrings> = {
       submit: "Pay the balance",
       redirecting: "Redirecting to the payment page",
       error: "Error",
+      errorPayouts:
+        "Payouts are not open yet. Your request is safe: we come back to you as soon as your payout account can be created.",
+      errorPayment:
+        "Payment is temporarily unavailable. Try again in a few minutes; if it persists, write to contact@crete.direct.",
     },
     terms: {
       h1: "Terms · crete.direct Stays",
@@ -460,6 +473,10 @@ export const L: Record<StaysLocale, StaysStrings> = {
       working: "Traitement en cours",
       accepted: "Accepté. Le voyageur reçoit le lien de paiement.",
       declined: "Refusé.",
+      errorPayouts:
+        "Les versements ne sont pas encore ouverts. Votre demande est conservée : nous revenons vers vous dès que votre compte de versement peut être créé.",
+      errorPayment:
+        "Le paiement est momentanément indisponible. Réessayez dans quelques minutes ; si cela persiste, écrivez à contact@crete.direct.",
       error: "Erreur",
     },
     pay: {
@@ -480,6 +497,10 @@ export const L: Record<StaysLocale, StaysStrings> = {
       submit: "Payer le solde",
       redirecting: "Redirection vers la page de paiement",
       error: "Erreur",
+      errorPayouts:
+        "Les versements ne sont pas encore ouverts. Votre demande est conservée : nous revenons vers vous dès que votre compte de versement peut être créé.",
+      errorPayment:
+        "Le paiement est momentanément indisponible. Réessayez dans quelques minutes ; si cela persiste, écrivez à contact@crete.direct.",
     },
     terms: {
       h1: "Conditions · crete.direct Stays",
@@ -590,6 +611,10 @@ export const L: Record<StaysLocale, StaysStrings> = {
       working: "Wird verarbeitet",
       accepted: "Angenommen. Der Reisende erhält den Zahlungslink.",
       declined: "Abgelehnt.",
+      errorPayouts:
+        "Auszahlungen sind noch nicht freigeschaltet. Ihre Anfrage bleibt erhalten: Wir melden uns, sobald Ihr Auszahlungskonto angelegt werden kann.",
+      errorPayment:
+        "Die Zahlung ist vorübergehend nicht verfügbar. Bitte in einigen Minuten erneut versuchen; bei anhaltendem Fehler an contact@crete.direct schreiben.",
       error: "Fehler",
     },
     pay: {
@@ -610,6 +635,10 @@ export const L: Record<StaysLocale, StaysStrings> = {
       submit: "Restbetrag zahlen",
       redirecting: "Weiterleitung zur Zahlungsseite",
       error: "Fehler",
+      errorPayouts:
+        "Auszahlungen sind noch nicht freigeschaltet. Ihre Anfrage bleibt erhalten: Wir melden uns, sobald Ihr Auszahlungskonto angelegt werden kann.",
+      errorPayment:
+        "Die Zahlung ist vorübergehend nicht verfügbar. Bitte in einigen Minuten erneut versuchen; bei anhaltendem Fehler an contact@crete.direct schreiben.",
     },
     terms: {
       h1: "Bedingungen · crete.direct Stays",
@@ -719,6 +748,10 @@ export const L: Record<StaysLocale, StaysStrings> = {
       working: "Γίνεται επεξεργασία",
       accepted: "Έγινε αποδοχή. Ο ταξιδιώτης λαμβάνει τον σύνδεσμο πληρωμής.",
       declined: "Απορρίφθηκε.",
+      errorPayouts:
+        "Οι πληρωμές προς τους ιδιοκτήτες δεν έχουν ενεργοποιηθεί ακόμη. Το αίτημά σας διατηρείται: επικοινωνούμε μαζί σας μόλις δημιουργηθεί ο λογαριασμός πληρωμών.",
+      errorPayment:
+        "Η πληρωμή δεν είναι προσωρινά διαθέσιμη. Δοκιμάστε ξανά σε λίγα λεπτά· αν επιμείνει, γράψτε στο contact@crete.direct.",
       error: "Σφάλμα",
     },
     pay: {
@@ -739,6 +772,10 @@ export const L: Record<StaysLocale, StaysStrings> = {
       submit: "Πληρωμή υπολοίπου",
       redirecting: "Ανακατεύθυνση στη σελίδα πληρωμής",
       error: "Σφάλμα",
+      errorPayouts:
+        "Οι πληρωμές προς τους ιδιοκτήτες δεν έχουν ενεργοποιηθεί ακόμη. Το αίτημά σας διατηρείται: επικοινωνούμε μαζί σας μόλις δημιουργηθεί ο λογαριασμός πληρωμών.",
+      errorPayment:
+        "Η πληρωμή δεν είναι προσωρινά διαθέσιμη. Δοκιμάστε ξανά σε λίγα λεπτά· αν επιμείνει, γράψτε στο contact@crete.direct.",
     },
     terms: {
       h1: "Όροι · crete.direct Stays",

@@ -84,4 +84,58 @@ describe("POST /api/stays/approve", () => {
     const res = await POST(req({ token: "x", action: "accept", price: 1 }) as never);
     expect(res.status).toBe(404);
   });
+
+  it("503 lisible quand la plateforme Connect n est pas activee", async () => {
+    const ownerUpdate = vi.fn(() => ({ eq: async () => ({ error: null }) }));
+    getRequestByApproveHash.mockResolvedValueOnce({ id: 5, listing_id: 9, status: "pending", guest_email: "j@x.com" });
+    getListingById.mockResolvedValueOnce({ id: 9, owner_id: 1, title: "Villa" });
+    from.mockImplementation((table: string) => {
+      if (table === "stay_owners") {
+        return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { id: 1, email: "o@x.com", stripe_connect_account_id: null } }) }) }),
+                 update: ownerUpdate };
+      }
+      return chainUpdate();
+    });
+    createConnectOnboardingLink.mockRejectedValueOnce(
+      Object.assign(
+        new Error("You can only create new accounts if you've signed up for Connect, which you can do at https://dashboard.stripe.com/connect."),
+        { type: "invalid_request_error", statusCode: 400, requestId: "req_LTgM8Q2P3wMWA8" },
+      ),
+    );
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await POST(req({ token: "app-plain", action: "accept", price: 700 }) as never);
+
+    expect(res.status).toBe(503);
+    const json = await res.json();
+    expect(json.code).toBe("payouts_unavailable");
+    // Rien de Stripe ne doit atteindre le navigateur.
+    expect(JSON.stringify(json)).not.toMatch(/stripe|acct_|You can only create/i);
+    // Le serveur, lui, garde le requestId pour retrouver la requete dans Workbench.
+    expect(JSON.stringify(errSpy.mock.calls)).toContain("req_LTgM8Q2P3wMWA8");
+    // Aucun compte fantome ecrit sur le proprietaire, aucun email au voyageur.
+    expect(ownerUpdate).not.toHaveBeenCalled();
+    expect(sendGuestApproved).not.toHaveBeenCalled();
+    errSpy.mockRestore();
+  });
+
+  it("502 sur toute autre panne Stripe a la creation du compte", async () => {
+    getRequestByApproveHash.mockResolvedValueOnce({ id: 5, listing_id: 9, status: "pending", guest_email: "j@x.com" });
+    getListingById.mockResolvedValueOnce({ id: 9, owner_id: 1, title: "Villa" });
+    from.mockImplementation((table: string) => {
+      if (table === "stay_owners") {
+        return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { id: 1, email: "o@x.com", stripe_connect_account_id: null } }) }) }),
+                 update: () => ({ eq: async () => ({ error: null }) }) };
+      }
+      return chainUpdate();
+    });
+    createConnectOnboardingLink.mockRejectedValueOnce(new Error("fetch failed"));
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await POST(req({ token: "app-plain", action: "accept", price: 700 }) as never);
+
+    expect(res.status).toBe(502);
+    expect((await res.json()).code).toBe("payment_provider");
+    errSpy.mockRestore();
+  });
 });

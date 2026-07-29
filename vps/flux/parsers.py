@@ -44,13 +44,6 @@ def normalize_citybus_vehicles(payload, source):
     return list(rows.values())
 
 
-def parse_service_date(html):
-    m = re.search(r"Last Update:\s*(\d{1,2} \w+ \d{4})", html)
-    if not m:
-        return datetime.now(timezone.utc).date()
-    return datetime.strptime(m.group(1), "%d %B %Y").date()
-
-
 def _parse_flight_rows(html, number_sel, place_key, belt_sel):
     soup = BeautifulSoup(html, "html.parser")
     rows = []
@@ -121,20 +114,67 @@ def parse_chq(payload, direction):
     return rows
 
 
-def assign_service_dates(rows, board_date):
-    """Le tableau couvre ~24h glissantes : un recul horaire > 60 min entre deux
-    lignes (triees par heure) = passage de minuit -> jour suivant."""
-    day = board_date
-    prev = None
+MIDNIGHT_GAP_MIN = 60   # recul horaire au-dela duquel on considere un passage de minuit
+SLOT_WINDOW_MIN = 240   # ecart max entre deux horaires du meme vol = un retard
+
+
+def _minutes(sched_time):
+    """'14:05' -> 845. None si l'heure est illisible."""
+    try:
+        h, m = sched_time.split(":")
+        return int(h) * 60 + int(m)
+    except (AttributeError, ValueError):
+        return None
+
+
+def assign_service_dates(rows, now_local):
+    """Date chaque ligne du tableau HER a partir de l'heure de capture LOCALE.
+
+    Le tableau couvre ~25 h glissantes et demarre 1 a 2 h dans le PASSE : il ne
+    peut donc couvrir que deux dates civiles, celle d'ancrage et la suivante.
+
+    L'entete "Last Update" n'est plus utilisee : elle datait tout le tableau du
+    jour courant d'Athenes, y compris ses premieres lignes qui appartiennent a la
+    veille lorsque la capture tombe entre minuit et ~02 h. Combinee a un
+    incrementeur de minuit non borne, elle produisait jusqu'a quatre dates de
+    service par capture et une journee fantome chaque nuit.
+    """
+    now_minutes = now_local.hour * 60 + now_local.minute
+    day = now_local.date()
+    first = next((m for m in (_minutes(r.get("sched_time")) for r in rows) if m is not None), None)
+    if first is not None and first - now_minutes > MIDNIGHT_GAP_MIN:
+        day -= timedelta(days=1)  # le tableau commence avant minuit : c'est hier
+    prev, bumped = None, False
     for row in rows:
-        try:
-            h, m = row["sched_time"].split(":")
-            minutes = int(h) * 60 + int(m)
-        except (AttributeError, ValueError):
-            minutes = None
-        if prev is not None and minutes is not None and prev - minutes > 60:
-            day = day + timedelta(days=1)
+        minutes = _minutes(row.get("sched_time"))
+        if (not bumped and prev is not None and minutes is not None
+                and prev - minutes > MIDNIGHT_GAP_MIN):
+            day += timedelta(days=1)
+            bumped = True
         if minutes is not None:
             prev = minutes
         row["service_date"] = day
     return rows
+
+
+def pick_slot(existing, sched_time, window_min=SLOT_WINDOW_MIN):
+    """Retourne l'id du creneau existant que `sched_time` met a jour, sinon None.
+
+    Un vol retarde reapparait sur le tableau avec une autre heure : c'est le MEME
+    vol, pas une ligne de plus. Au-dela de la fenetre, c'est une seconde rotation
+    reelle du meme numero dans la journee (GQ 560 vole a 00:15 puis 20:25).
+    Pas de rapprochement par-dessus minuit : il rendrait ces deux rotations
+    indistinguables d'un retard.
+    """
+    target = _minutes(sched_time)
+    if target is None:
+        return None
+    best, best_gap = None, None
+    for row_id, slot in existing:
+        slot_minutes = _minutes(slot)
+        if slot_minutes is None:
+            continue
+        gap = abs(slot_minutes - target)
+        if gap <= window_min and (best_gap is None or gap < best_gap):
+            best, best_gap = row_id, gap
+    return best

@@ -68,6 +68,12 @@ export default function ApprovePanel(
       } else if (j.declined) {
         setSettled(true);
         setNote({ tone: "ok", text: strings.declined });
+      } else if (j.code === "payouts_unavailable" || j.code === "payment_provider") {
+        // Panne cote paiement : phrase complete, localisee, sans code technique.
+        setNote({
+          tone: "error",
+          text: j.code === "payouts_unavailable" ? strings.errorPayouts : strings.errorPayment,
+        });
       } else {
         setNote({ tone: "error", text: `${strings.error} : ${j.error ?? ""}` });
       }

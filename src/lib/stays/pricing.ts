@@ -28,6 +28,19 @@ export interface QuoteInput {
   dateTo: string;
 }
 
+/**
+ * Frais d'application preleves sur le solde 70 %. Invariant d'encaissement :
+ * `applicationFeeCents` (acompte) + ce montant = commission totale du sejour, au
+ * centime. Seule source de cette formule : /api/stays/pay-balance et
+ * scripts/check-stays.mjs l'appellent, personne ne la reecrit.
+ */
+export function balanceApplicationFeeCents(quote: StayQuote): number {
+  return Math.max(
+    0,
+    Math.round(quote.commissionEur * 100) - quote.applicationFeeCents,
+  );
+}
+
 export function computeQuote(input: QuoteInput): StayQuote {
   const nights = nightsBetween(input.dateFrom, input.dateTo);
   const ownerNetEur = round2(input.basePriceEur * nights + input.cleaningFeeEur);
