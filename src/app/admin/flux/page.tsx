@@ -26,6 +26,10 @@ type PortQuarterRow = {
   quarter: string; port: string; direction: "embarked" | "disembarked";
   passengers: number; updated_at: string;
 };
+type FerryDay = {
+  day: string; port_code: string; direction: "arrival" | "departure";
+  crossings: number; pax_low: number | null; pax_high: number | null;
+};
 type EconomyRow = {
   year: number; metric: string; value: number; unit: string; updated_at: string;
 };
@@ -143,9 +147,10 @@ export default async function FluxAdminPage({
   let latestCruiseUpdate: string | undefined;
   let portQuarterly: PortQuarterRow[] = [];
   let economyAnnual: EconomyRow[] = [];
+  let ferryDays: FerryDay[] = [];
   let loadError: string | null = null;
   try {
-    const [fRes, bRes, cRes, iRes, wRes, zRes, sRes, oRes, hRes, aRes, wdRes, cuRes, pRes, eRes] = await Promise.all([
+    const [fRes, bRes, cRes, iRes, wRes, zRes, sRes, oRes, hRes, aRes, wdRes, cuRes, pRes, eRes, feRes] = await Promise.all([
       supabase.from("v_flux_flights_daily").select("*").order("service_date", { ascending: false }).limit(14),
       supabase.from("v_flux_bus_daily").select("*").order("day", { ascending: false }).limit(21),
       supabase.from("v_flux_cruise_daily").select("*").gte("call_date", today).lte("call_date", in14).order("call_date"),
@@ -160,11 +165,13 @@ export default async function FluxAdminPage({
       supabase.from("flux_cruise_calls").select("updated_at").order("updated_at", { ascending: false }).limit(1),
       supabase.from("flux_port_quarterly").select("quarter, port, direction, passengers, updated_at").order("quarter", { ascending: false }).limit(60),
       supabase.from("flux_economy_annual").select("year, metric, value, unit, updated_at").order("year", { ascending: false }).limit(80),
+      supabase.from("v_flux_ferry_daily").select("*").order("day", { ascending: false }).limit(120),
     ]);
     loadError = fRes.error?.message ?? bRes.error?.message ?? cRes.error?.message
       ?? iRes.error?.message ?? wRes.error?.message ?? zRes.error?.message ?? sRes.error?.message
       ?? oRes.error?.message ?? hRes.error?.message ?? aRes.error?.message
-      ?? wdRes.error?.message ?? cuRes.error?.message ?? pRes.error?.message ?? eRes.error?.message ?? null;
+      ?? wdRes.error?.message ?? cuRes.error?.message ?? pRes.error?.message ?? eRes.error?.message
+      ?? feRes.error?.message ?? null;
     flights = (fRes.data ?? []) as FlightDay[];
     bus = (bRes.data ?? []) as BusDay[];
     cruises = (cRes.data ?? []) as CruiseDay[];
@@ -179,9 +186,33 @@ export default async function FluxAdminPage({
     latestCruiseUpdate = ((cuRes.data ?? []) as UpdatedAtRow[])[0]?.updated_at?.slice(0, 10);
     portQuarterly = (pRes.data ?? []) as PortQuarterRow[];
     economyAnnual = (eRes.data ?? []) as EconomyRow[];
+    ferryDays = (feRes.data ?? []) as FerryDay[];
   } catch (e) {
     loadError = e instanceof Error ? e.message : String(e);
   }
+
+  const FERRY_PORTS = [
+    { code: "HER", label: "Héraklion" },
+    { code: "SOU", label: "Souda" },
+    { code: "SIT", label: "Sitia" },
+  ];
+  const ferryDaily = ferryDays.filter((row) => row.day <= today);
+  const ferryLatestDay = ferryDaily[0]?.day;
+  const ferryCount = (day: string, port: string, direction: FerryDay["direction"]) =>
+    ferryDaily.find((r) => r.day === day && r.port_code === port && r.direction === direction)?.crossings ?? 0;
+  const ferryTotal = (day: string) =>
+    ferryDaily.filter((r) => r.day === day).reduce((sum, r) => sum + r.crossings, 0);
+  const ferryRecentDays = [...new Set(ferryDaily.map((r) => r.day))].slice(0, 10).reverse();
+  const ferryMaxDay = Math.max(1, ...ferryRecentDays.map(ferryTotal));
+  const ferryArrivals = ferryLatestDay
+    ? ferryDaily.filter((r) => r.day === ferryLatestDay && r.direction === "arrival")
+    : [];
+  const ferryPax = ferryArrivals.length && ferryArrivals.every((r) => r.pax_low != null)
+    ? {
+        low: ferryArrivals.reduce((sum, r) => sum + (r.pax_low ?? 0), 0),
+        high: ferryArrivals.reduce((sum, r) => sum + (r.pax_high ?? 0), 0),
+      }
+    : null;
 
   const topBy = (name: string, n = 12) =>
     intents.filter((r) => r.event_name === name).sort((a, b) => b.total - a.total).slice(0, n);
@@ -334,10 +365,10 @@ export default async function FluxAdminPage({
     },
     {
       id: "ferries", decision: "Combien entrent par la mer ?", source: "Ferries Héraklion, Souda et Sitia",
-      evidence: "observé", coverage: "partielle", status: "à consolider", cadence: "trimestriel",
-      latestDay: latestPortQuarter, confidence: 3,
-      limit: "Historique officiel acquis ; aucun comptage journalier ni horaire temps réel.",
-      next: "Brancher les traversées quotidiennes puis calibrer avec ELSTAT par port.",
+      evidence: "observé", coverage: "partielle", status: "à consolider", cadence: "quotidienne",
+      latestDay: ferryLatestDay ?? latestPortQuarter, confidence: 2,
+      limit: "Offre programmée comptée, pas les mouvements réels : une annulation météo reste invisible. Conversion en passagers muette tant que le trimestre n'est pas intégralement couvert.",
+      next: "Balayage hebdomadaire jusqu'à couvrir le 4e trimestre, premier trimestre convertible.",
     },
     {
       id: "road", decision: "Où circulent les touristes en voiture ?", source: "Comptages routiers et flottes de location",
@@ -515,6 +546,45 @@ export default async function FluxAdminPage({
       </p>
 
       <Section
+        title="Traversées ferries (comptage)"
+        hint="Horaires GTP, toutes compagnies, pour Héraklion, Souda et Sitia. Un navire desservant plusieurs ports compte pour une seule traversée. Comptage d'offre programmée, pas de mouvements réels observés : une annulation météo n'est pas visible."
+      >
+        {ferryDaily.length ? (
+          <>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {FERRY_PORTS.map((port) => (
+                <Cell
+                  key={port.code}
+                  label={`${port.label} ${fmtDay(ferryLatestDay!)}`}
+                  v={`${ferryCount(ferryLatestDay!, port.code, "arrival")} arr / ${ferryCount(ferryLatestDay!, port.code, "departure")} dép`}
+                />
+              ))}
+              <Cell
+                label="passagers estimés / jour"
+                v={ferryPax ? `${ferryPax.low.toLocaleString("fr-FR")} à ${ferryPax.high.toLocaleString("fr-FR")}` : "calibration en attente"}
+              />
+            </div>
+            <div className="mt-3 space-y-1">
+              {ferryRecentDays.map((day) => (
+                <div key={day} className="flex items-center gap-2">
+                  <span className="w-20 shrink-0 text-[11px] text-text-muted">{fmtDay(day)}</span>
+                  <Bar value={ferryTotal(day)} max={ferryMaxDay} />
+                  <span className="w-8 shrink-0 text-right font-data text-[11px]">{ferryTotal(day)}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className="text-xs text-text-muted">Aucune traversée comptée pour l&apos;instant.</p>
+        )}
+        <ul className="mt-3 list-disc pl-4 text-[11px] text-text-muted">
+          <li>Périmètre : les trois ports crétois pour lesquels ELSTAT publie des passagers. Sans chiffre officiel, pas de coefficient, donc pas de conversion.</li>
+          <li>Conversion en passagers : passagers officiels du trimestre ELSTAT divisés par les traversées du même trimestre. Elle reste muette tant que le trimestre n&apos;est pas intégralement couvert.</li>
+          <li>Le 3e trimestre 2026 ne le sera jamais : GTP n&apos;ouvre ses horaires que le 28/07/2026, il manque 27 jours de juillet. Premier trimestre convertible : le 4e.</li>
+        </ul>
+      </Section>
+
+      <Section
         title="Touristes présents (estimation)"
         hint="Vols HER+CHQ comptés /10 min, convertis en passagers via calibration officielle HCAA (ypa.gr) ; séjour moyen 7,5 à 8,2 nuits (INSETE 2024). Jours non mesurés comblés par la moyenne HCAA du mois. Toujours une fourchette, jamais un chiffre sec."
       >
@@ -550,7 +620,8 @@ export default async function FluxAdminPage({
           </p>
         )}
         <ul className="mt-3 list-disc pl-4 text-[11px] text-text-muted">
-          <li>Non comptés : ferries (branchement en cours) et Sitia JSH (~0,5 % du trafic). L&apos;estimation couvre HER + CHQ, soit ~97 % du trafic aérien crétois.</li>
+          <li>Cette fourchette est AÉRIENNE : HER + CHQ, soit ~97 % du trafic aérien crétois. Sitia JSH (~0,5 %) reste hors périmètre.</li>
+          <li>La mer est comptée à part (section Traversées ferries) et ne s&apos;ajoute à cette fourchette que lorsque la fenêtre de séjour est intégralement couverte côté maritime.</li>
           <li>Croisiéristes : transitoires comptés à part (calendrier officiel du port, section Croisières).</li>
           <li>Méthode primaire : fenêtre séjour-moyen 7 à 8 jours glissants sur les arrivées estimées ; croisée au bilan cumulé.</li>
           <li>Montée en charge : la fourchette devient fiable après 8 jours de comptage continu des deux directions.</li>
