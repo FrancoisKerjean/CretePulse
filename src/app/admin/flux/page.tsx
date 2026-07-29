@@ -28,7 +28,7 @@ type PortQuarterRow = {
 };
 type FerryDay = {
   day: string; port_code: string; direction: "arrival" | "departure";
-  crossings: number; pax_low: number | null; pax_high: number | null;
+  crossings: number; complete: boolean; pax_low: number | null; pax_high: number | null;
 };
 type EconomyRow = {
   year: number; metric: string; value: number; unit: string; updated_at: string;
@@ -197,12 +197,20 @@ export default async function FluxAdminPage({
     { code: "SIT", label: "Sitia" },
   ];
   const ferryDaily = ferryDays.filter((row) => row.day <= today);
-  const ferryLatestDay = ferryDaily[0]?.day;
+  // GTP retire les departs deja passes : une journee interrogee en cours de
+  // route est amputee. On titre sur la derniere journee COMPLETE et, faute de
+  // mieux, on affiche la derniere connue en la disant partielle.
+  const ferryDayIsComplete = (day: string) =>
+    ferryDaily.filter((r) => r.day === day).every((r) => r.complete);
+  const ferryDays30 = [...new Set(ferryDaily.map((r) => r.day))];
+  const ferryLatestComplete = ferryDays30.find(ferryDayIsComplete);
+  const ferryLatestDay = ferryLatestComplete ?? ferryDays30[0];
+  const ferryHeadlinePartial = ferryLatestDay != null && !ferryDayIsComplete(ferryLatestDay);
   const ferryCount = (day: string, port: string, direction: FerryDay["direction"]) =>
     ferryDaily.find((r) => r.day === day && r.port_code === port && r.direction === direction)?.crossings ?? 0;
   const ferryTotal = (day: string) =>
     ferryDaily.filter((r) => r.day === day).reduce((sum, r) => sum + r.crossings, 0);
-  const ferryRecentDays = [...new Set(ferryDaily.map((r) => r.day))].slice(0, 10).reverse();
+  const ferryRecentDays = ferryDays30.slice(0, 10).reverse();
   const ferryMaxDay = Math.max(1, ...ferryRecentDays.map(ferryTotal));
   const ferryArrivals = ferryLatestDay
     ? ferryDaily.filter((r) => r.day === ferryLatestDay && r.direction === "arrival")
@@ -555,7 +563,7 @@ export default async function FluxAdminPage({
               {FERRY_PORTS.map((port) => (
                 <Cell
                   key={port.code}
-                  label={`${port.label} ${fmtDay(ferryLatestDay!)}`}
+                  label={`${port.label} ${fmtDay(ferryLatestDay!)}${ferryHeadlinePartial ? " · partiel" : ""}`}
                   v={`${ferryCount(ferryLatestDay!, port.code, "arrival")} arr / ${ferryCount(ferryLatestDay!, port.code, "departure")} dép`}
                 />
               ))}
@@ -570,6 +578,9 @@ export default async function FluxAdminPage({
                   <span className="w-20 shrink-0 text-[11px] text-text-muted">{fmtDay(day)}</span>
                   <Bar value={ferryTotal(day)} max={ferryMaxDay} />
                   <span className="w-8 shrink-0 text-right font-data text-[11px]">{ferryTotal(day)}</span>
+                  <span className="w-12 shrink-0 text-[10px] text-text-muted">
+                    {ferryDayIsComplete(day) ? "" : "partiel"}
+                  </span>
                 </div>
               ))}
             </div>
@@ -581,6 +592,7 @@ export default async function FluxAdminPage({
           <li>Périmètre : les trois ports crétois pour lesquels ELSTAT publie des passagers. Sans chiffre officiel, pas de coefficient, donc pas de conversion.</li>
           <li>Conversion en passagers : passagers officiels du trimestre ELSTAT divisés par les traversées du même trimestre. Elle reste muette tant que le trimestre n&apos;est pas intégralement couvert.</li>
           <li>Le 3e trimestre 2026 ne le sera jamais : GTP n&apos;ouvre ses horaires que le 28/07/2026, il manque 27 jours de juillet. Premier trimestre convertible : le 4e.</li>
+          <li>« Partiel » = journée interrogée après son début. GTP retire les départs déjà passés, le compte est donc amputé et ne sert ni au titre, ni à la calibration, ni à l&apos;estimation de stock.</li>
         </ul>
       </Section>
 
