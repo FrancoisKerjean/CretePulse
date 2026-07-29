@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { nightsBetween, computeQuote } from "./pricing";
+import { nightsBetween, computeQuote, balanceApplicationFeeCents } from "./pricing";
 
 describe("nightsBetween", () => {
   it("counts nights exclusive of checkout", () => {
@@ -63,5 +63,29 @@ describe("computeQuote", () => {
     expect(q.ownerNetEur).toBe(350);
     expect(q.commissionEur).toBe(17.5);
     expect(q.guestTotalEur).toBe(367.5);
+  });
+});
+
+describe("balanceApplicationFeeCents", () => {
+  const cases = [
+    { basePriceEur: 100, cleaningFeeEur: 0, commissionRate: 5, dateFrom: "2026-07-01", dateTo: "2026-07-08" },
+    { basePriceEur: 87, cleaningFeeEur: 45, commissionRate: 5, dateFrom: "2026-08-01", dateTo: "2026-08-04" },
+    { basePriceEur: 233.33, cleaningFeeEur: 12.5, commissionRate: 7.5, dateFrom: "2026-09-10", dateTo: "2026-09-21" },
+    { basePriceEur: 45, cleaningFeeEur: 0, commissionRate: 12, dateFrom: "2026-05-02", dateTo: "2026-05-05" },
+  ];
+
+  it("porte exactement le reste de la commission, au centime", () => {
+    for (const input of cases) {
+      const q = computeQuote(input);
+      expect(q.applicationFeeCents + balanceApplicationFeeCents(q)).toBe(
+        Math.round(q.commissionEur * 100),
+      );
+    }
+  });
+
+  it("ne descend jamais sous zero", () => {
+    for (const input of cases) {
+      expect(balanceApplicationFeeCents(computeQuote(input))).toBeGreaterThanOrEqual(0);
+    }
   });
 });

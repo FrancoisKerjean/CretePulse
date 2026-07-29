@@ -108,4 +108,35 @@ describe("POST /api/stays/pay-balance", () => {
     }));
     expect((await POST(req({ token: "bal", locale: "fr" }) as never)).status).toBe(409);
   });
+
+  it("502 lisible quand Stripe refuse la session de solde", async () => {
+    getRequestByBalanceHash.mockResolvedValueOnce({
+      id: 5, listing_id: 9, status: "deposit_paid", quoted_price_eur: 100,
+      guest_email: "j@x.com", date_from: "2026-07-01", date_to: "2026-07-08",
+    });
+    getListingById.mockResolvedValueOnce({
+      id: 9, owner_id: 1, title: "Villa", cleaning_fee_eur: 0, commission_rate: 5,
+    });
+    from.mockImplementationOnce(ownerReady);
+    sessionsCreate.mockRejectedValueOnce(
+      Object.assign(new Error("No such destination: acct_1TDPicEQ3UQbwGzY"), {
+        type: "invalid_request_error", statusCode: 400, requestId: "req_balance_1",
+      }) as never,
+    );
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await POST(req({ token: "bal", locale: "fr" }) as never);
+
+    expect(res.status).toBe(502);
+    const json = await res.json();
+    expect(json.ok).toBe(false);
+    expect(json.code).toBe("payment_provider");
+    // Corps non vide et sans fuite : ni identifiant de compte, ni texte Stripe.
+    expect(String(json.error).length).toBeGreaterThan(20);
+    expect(JSON.stringify(json)).not.toMatch(/stripe|acct_|No such destination/i);
+    expect(JSON.stringify(errSpy.mock.calls)).toContain("req_balance_1");
+    // Aucune ecriture de montant sur une session qui n'existe pas.
+    expect(from).toHaveBeenCalledTimes(1);
+    errSpy.mockRestore();
+  });
 });
