@@ -30,13 +30,19 @@ function readMessage(err: unknown): string {
 }
 
 /**
- * La plateforme Connect non activee se reconnait au texte de Stripe : il n'existe
- * pas de `code` machine pour ce refus (verifie en live le 29/07/2026,
- * requestId `req_LTgM8Q2P3wMWA8`).
+ * Les refus de plateforme de versement se reconnaissent au texte de Stripe : il
+ * n'existe pas de `code` machine pour eux. Deux formes rencontrees en live le
+ * 29/07/2026, dans cet ordre :
+ *  1. Connect pas active du tout (`req_LTgM8Q2P3wMWA8`)
+ *  2. Connect active mais questionnaire plateforme non rempli (`req_CfO14aOa3mLv1M`)
+ * Les deux bloquent le versement et meritent le meme message : ce n'est pas une
+ * panne du prestataire, c'est notre plateforme qui n'est pas encore ouverte.
  */
+const PAYOUTS_BLOCKED = /signed up for Connect|complete your platform profile/i;
+
 export function classifyStripeFailure(err: unknown): StaysStripeFailure {
   const raw = readMessage(err);
-  const code: StaysStripeFailureCode = /signed up for Connect/i.test(raw)
+  const code: StaysStripeFailureCode = PAYOUTS_BLOCKED.test(raw)
     ? "payouts_unavailable"
     : "payment_provider";
   return {
