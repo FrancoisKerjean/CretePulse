@@ -1,6 +1,6 @@
 # Home v2 crete.direct : hero baromètre + rail services : plan d'implémentation
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Refondre le hero de la home crete.direct en baromètre de faits observés, et insérer un rail de quatre services (voiture, van, activités, villa) dont le bloc villa est câblé mais éteint par feature-flag.
 
@@ -39,7 +39,7 @@
 - Create: `scripts/check-home-services.mjs`
 - Modify: `package.json`
 
-- [ ] **Step 1 : écrire le test qui échoue**
+- [x] **Step 1 : écrire le test qui échoue**
 
 Créer `scripts/check-home-services.mjs` :
 
@@ -92,12 +92,12 @@ ok("chaque photo existe reellement dans public/", () => {
 console.log(`check:home-services OK (${n} tests)`);
 ```
 
-- [ ] **Step 2 : lancer le test et vérifier qu'il échoue**
+- [x] **Step 2 : lancer le test et vérifier qu'il échoue**
 
 Run : `node --experimental-strip-types scripts/check-home-services.mjs`
 Attendu : `ERR_MODULE_NOT_FOUND` sur `../src/lib/home-services.ts`.
 
-- [ ] **Step 3 : écrire l'implémentation minimale**
+- [x] **Step 3 : écrire l'implémentation minimale**
 
 Créer `src/lib/home-services.ts` :
 
@@ -136,12 +136,12 @@ export function getHomeServices(opts: { staysEnabled: boolean }): HomeService[] 
 }
 ```
 
-- [ ] **Step 4 : lancer le test et vérifier qu'il passe**
+- [x] **Step 4 : lancer le test et vérifier qu'il passe**
 
 Run : `node --experimental-strip-types scripts/check-home-services.mjs`
 Attendu : 6 lignes `ok` puis `check:home-services OK (6 tests)`.
 
-- [ ] **Step 5 : câbler le script**
+- [x] **Step 5 : câbler le script**
 
 Dans `package.json`, ajouter à `scripts` :
 
@@ -151,12 +151,12 @@ Dans `package.json`, ajouter à `scripts` :
 
 et insérer `npm run check:home-services && ` juste avant `npm run check:da` dans la valeur de `"check"`.
 
-- [ ] **Step 6 : vérifier l'agrégat**
+- [x] **Step 6 : vérifier l'agrégat**
 
 Run : `npm run check:home-services`
 Attendu : `check:home-services OK (6 tests)`.
 
-- [ ] **Step 7 : commit**
+- [x] **Step 7 : commit**
 
 ```bash
 git add src/lib/home-services.ts scripts/check-home-services.mjs package.json
@@ -172,7 +172,7 @@ git commit -m "feat(home): catalogue des services du rail avec flag villa"
 - Create: `scripts/check-island-now.mjs`
 - Modify: `package.json`
 
-- [ ] **Step 1 : écrire le test qui échoue**
+- [x] **Step 1 : écrire le test qui échoue**
 
 Créer `scripts/check-island-now.mjs` :
 
@@ -241,12 +241,12 @@ ok("date Athens au format ISO court", () => {
 console.log(`check:island-now OK (${n} tests)`);
 ```
 
-- [ ] **Step 2 : lancer le test et vérifier qu'il échoue**
+- [x] **Step 2 : lancer le test et vérifier qu'il échoue**
 
 Run : `node --experimental-strip-types scripts/check-island-now.mjs`
 Attendu : `ERR_MODULE_NOT_FOUND` sur `../src/lib/island-now.ts`.
 
-- [ ] **Step 3 : écrire l'implémentation minimale**
+- [x] **Step 3 : écrire l'implémentation minimale**
 
 Créer `src/lib/island-now.ts` :
 
@@ -307,12 +307,12 @@ export function shouldShowBuses(tracked: number, asOf: string | null, now: numbe
 }
 ```
 
-- [ ] **Step 4 : lancer le test et vérifier qu'il passe**
+- [x] **Step 4 : lancer le test et vérifier qu'il passe**
 
 Run : `node --experimental-strip-types scripts/check-island-now.mjs`
 Attendu : 10 lignes `ok` puis `check:island-now OK (10 tests)`.
 
-- [ ] **Step 5 : câbler le script**
+- [x] **Step 5 : câbler le script**
 
 Dans `package.json` :
 
@@ -322,7 +322,7 @@ Dans `package.json` :
 
 et insérer `npm run check:island-now && ` juste après `npm run check:home-services && ` dans `"check"`.
 
-- [ ] **Step 6 : commit**
+- [x] **Step 6 : commit**
 
 ```bash
 git add src/lib/island-now.ts scripts/check-island-now.mjs package.json
@@ -336,7 +336,7 @@ git commit -m "feat(home): regles pures du barometre de l'ile"
 **Files:**
 - Create: `src/app/api/island-now/route.ts`
 
-- [ ] **Step 1 : écrire la route**
+- [x] **Step 1 : écrire la route**
 
 Créer `src/app/api/island-now/route.ts` :
 
@@ -395,12 +395,12 @@ export async function GET() {
 }
 ```
 
-- [ ] **Step 2 : vérifier le typage**
+- [x] **Step 2 : vérifier le typage**
 
 Run : `npx tsc --noEmit`
 Attendu : aucune erreur.
 
-- [ ] **Step 3 : vérifier la réponse en local**
+- [x] **Step 3 : vérifier la réponse en local**
 
 Run :
 ```bash
@@ -411,7 +411,7 @@ curl -s http://localhost:3000/api/island-now
 Attendu en journée : `{"cruise":{"port":"heraklion","paxCapacity":...,"ships":[...]},"buses":{"tracked":...,"asOf":"..."},"stock":null}`.
 Attendu la nuit ou sans clé service en local : `{"cruise":null,"buses":null,"stock":null}`. C'est un résultat valide, pas un échec : la clé service n'existe que sur Vercel.
 
-- [ ] **Step 4 : commit**
+- [x] **Step 4 : commit**
 
 ```bash
 git add src/app/api/island-now/route.ts
@@ -425,7 +425,7 @@ git commit -m "feat(home): route /api/island-now (croisieres du jour, bus suivis
 **Files:**
 - Modify: `src/messages/en.json`, `fr.json`, `de.json`, `el.json` et les 18 autres
 
-- [ ] **Step 1 : ajouter les clés dans `en.json`**
+- [x] **Step 1 : ajouter les clés dans `en.json`**
 
 Dans l'objet `home` de `src/messages/en.json`, ajouter :
 
@@ -445,7 +445,7 @@ Dans l'objet `home` de `src/messages/en.json`, ajouter :
 }
 ```
 
-- [ ] **Step 2 : ajouter les mêmes clés dans `fr.json`**
+- [x] **Step 2 : ajouter les mêmes clés dans `fr.json`**
 
 ```json
 "barometer": {
@@ -463,7 +463,7 @@ Dans l'objet `home` de `src/messages/en.json`, ajouter :
 }
 ```
 
-- [ ] **Step 3 : ajouter les mêmes clés dans `de.json`**
+- [x] **Step 3 : ajouter les mêmes clés dans `de.json`**
 
 ```json
 "barometer": {
@@ -481,7 +481,7 @@ Dans l'objet `home` de `src/messages/en.json`, ajouter :
 }
 ```
 
-- [ ] **Step 4 : ajouter les mêmes clés dans `el.json`**
+- [x] **Step 4 : ajouter les mêmes clés dans `el.json`**
 
 ```json
 "barometer": {
@@ -499,19 +499,19 @@ Dans l'objet `home` de `src/messages/en.json`, ajouter :
 }
 ```
 
-- [ ] **Step 5 : traduire les 18 locales restantes**
+- [x] **Step 5 : traduire les 18 locales restantes**
 
 Fichiers : `ar, cs, da, es, fi, hu, it, ja, ko, nl, no, pl, pt, ro, ru, sv, tr, zh`.
 Même arborescence de clés, mêmes placeholders `{temp} {wind} {air} {pax} {port} {count}` conservés à l'identique.
 Procédure identique au commit `ab2d927` (44 chaînes × 22 langues) : traduire dans la langue cible, jamais de recopie de l'anglais, jamais de mélange d'alphabets.
 Contraintes de contenu : aucun tiret cadratin, garder « jusqu'à » ou son équivalent devant le nombre de croisiéristes (c'est une capacité), garder le symbole `€` et l'espace insécable avant `%` dans les langues qui l'utilisent.
 
-- [ ] **Step 6 : vérifier la parité des clés**
+- [x] **Step 6 : vérifier la parité des clés**
 
 Run : `npm run check:i18n`
 Attendu : aucune ligne `MANQUANTE` ni `EN TROP`, sortie finale OK sur 22 fichiers.
 
-- [ ] **Step 7 : vérifier l'absence de mélange d'alphabets**
+- [x] **Step 7 : vérifier l'absence de mélange d'alphabets**
 
 Run :
 ```bash
@@ -519,7 +519,7 @@ node -e "const fs=require('fs');for(const f of fs.readdirSync('src/messages')){c
 ```
 Attendu : aucune sortie. `km/h`, `GPS` et `Airbnb` restent en latin partout, c'est voulu : si le script signale `ru.json` ou `el.json`, vérifier à la main que seuls ces termes sont concernés.
 
-- [ ] **Step 8 : commit**
+- [x] **Step 8 : commit**
 
 ```bash
 git add src/messages
@@ -533,7 +533,7 @@ git commit -m "i18n(home): cles barometre et rail services dans les 22 locales"
 **Files:**
 - Create: `src/components/home/IslandBarometer.tsx`
 
-- [ ] **Step 1 : écrire le composant**
+- [x] **Step 1 : écrire le composant**
 
 Créer `src/components/home/IslandBarometer.tsx` :
 
@@ -639,12 +639,12 @@ export function IslandBarometer({
 }
 ```
 
-- [ ] **Step 2 : vérifier le typage**
+- [x] **Step 2 : vérifier le typage**
 
 Run : `npx tsc --noEmit`
 Attendu : aucune erreur.
 
-- [ ] **Step 3 : commit**
+- [x] **Step 3 : commit**
 
 ```bash
 git add src/components/home/IslandBarometer.tsx
@@ -658,7 +658,7 @@ git commit -m "feat(home): composant barometre de l'ile"
 **Files:**
 - Create: `src/components/home/ServiceRail.tsx`
 
-- [ ] **Step 1 : écrire le composant**
+- [x] **Step 1 : écrire le composant**
 
 Créer `src/components/home/ServiceRail.tsx` :
 
@@ -743,12 +743,12 @@ export function ServiceRail({ services }: { services: HomeService[] }) {
 }
 ```
 
-- [ ] **Step 2 : vérifier le typage**
+- [x] **Step 2 : vérifier le typage**
 
 Run : `npx tsc --noEmit`
 Attendu : aucune erreur.
 
-- [ ] **Step 3 : commit**
+- [x] **Step 3 : commit**
 
 ```bash
 git add src/components/home/ServiceRail.tsx
@@ -763,7 +763,7 @@ git commit -m "feat(home): composant rail services"
 - Modify: `src/app/[locale]/page.tsx`
 - Modify: `src/components/home/HomeClient.tsx`
 
-- [ ] **Step 1 : lire le flag et passer les services en props**
+- [x] **Step 1 : lire le flag et passer les services en props**
 
 Dans `src/app/[locale]/page.tsx`, ajouter l'import :
 
@@ -780,7 +780,7 @@ const services = getHomeServices({ staysEnabled: process.env.STAYS_HOME_BLOCK ==
 
 et ajouter `services={services}` à la liste des props de `<HomeClient />`.
 
-- [ ] **Step 2 : déclarer la prop côté client**
+- [x] **Step 2 : déclarer la prop côté client**
 
 Dans `src/components/home/HomeClient.tsx`, ajouter aux imports :
 
@@ -798,7 +798,7 @@ Dans `interface HomeClientProps`, ajouter :
 
 Dans la signature de `export function HomeClient({ ... })`, ajouter `services` à la déstructuration.
 
-- [ ] **Step 3 : remplacer les chips du hero par le baromètre**
+- [x] **Step 3 : remplacer les chips du hero par le baromètre**
 
 Dans le hero, remplacer le bloc `<div className="flex flex-wrap gap-3 font-data"> ... </div>` (chips air, mer, vent, CTA baignade) par :
 
@@ -817,7 +817,7 @@ Dans le hero, remplacer le bloc `<div className="flex flex-wrap gap-3 font-data"
 
 Le `WindArrow` n'est plus utilisé dans le hero mais reste employé par les tuiles météo plus bas : ne pas retirer son import.
 
-- [ ] **Step 4 : insérer le rail après le board départs**
+- [x] **Step 4 : insérer le rail après le board départs**
 
 Juste après le bloc `{boardRoutes.length > 0 && ( ... <DepBoard ... /> ... )}`, remplacer toute la `<section className="mt-10">` qui contient le bandeau `/car-rental` par :
 
@@ -827,7 +827,7 @@ Juste après le bloc `{boardRoutes.length > 0 && ( ... <DepBoard ... /> ... )}`,
 
 Le bandeau voiture n'est pas supprimé : il est désormais rendu par `ServiceRail` à partir du catalogue, avec les mêmes clés `carRental*`.
 
-- [ ] **Step 5 : dégonfler actus, guides et événements**
+- [x] **Step 5 : dégonfler actus, guides et événements**
 
 Remplacer :
 
@@ -847,12 +847,12 @@ par :
 
 Supprimer le bloc `{events.length > 0 && ( ... )}` en entier, ainsi que l'import `CiCalendar` et la fonction `formatEventDate` s'ils ne sont plus référencés. Conserver la prop `upcomingEvents` : elle sert encore au garde-fou maintenance `latestNews.length === 0 && upcomingEvents.length === 0`.
 
-- [ ] **Step 6 : vérifier le typage**
+- [x] **Step 6 : vérifier le typage**
 
 Run : `npx tsc --noEmit`
 Attendu : aucune erreur. Si `MapPin` ou `localizeLocation` ne sont plus utilisés, retirer leurs imports.
 
-- [ ] **Step 7 : vérifier le rendu**
+- [x] **Step 7 : vérifier le rendu**
 
 Run : `npm run dev` puis ouvrir `http://localhost:3000/fr`.
 Attendu : le hero montre le panneau baromètre, le rail affiche **trois** services (flag absent), le bloc actus montre 4 titres et 2 guides, plus aucun bloc événements.
@@ -864,7 +864,7 @@ STAYS_HOME_BLOCK=on npm run dev
 ```
 Attendu : quatre services, la carte villa en dernier.
 
-- [ ] **Step 8 : commit**
+- [x] **Step 8 : commit**
 
 ```bash
 git add "src/app/[locale]/page.tsx" src/components/home/HomeClient.tsx
@@ -878,7 +878,7 @@ git commit -m "feat(home): hero barometre, rail services et bloc actus degonfle"
 **Files:**
 - Modify: `public/og-home.jpg`, `public/og-home-fr.jpg`
 
-- [ ] **Step 1 : lancer l'agrégat de vérification**
+- [x] **Step 1 : lancer l'agrégat de vérification**
 
 Run : `npm run check`
 Attendu : `check:home-services OK (6 tests)`, `check:island-now OK (10 tests)`, `check:i18n` vert, `tsc --noEmit` sans erreur.
@@ -889,15 +889,47 @@ node scripts/check-da.mjs 2>&1 | grep -E "home-services|island-now|IslandBaromet
 ```
 Attendu : aucune ligne.
 
-- [ ] **Step 2 : build de production**
+**Résultat 29/07/2026** : `check:home-services OK (6 tests)`, `check:island-now OK (10 tests)`,
+`check:da` « 0 nouvelle violation DA (119 dettes grandfatherées via baseline) »,
+`check:i18n` « 22 locales en parité (172 clés chacune) », `tsc --noEmit` code 0.
+Contrôle du mélange d'alphabets (Task 4 step 7) : `el.json` et `ru.json` signalés,
+vérifié à la main, le seul latin est `Airbnb` dans `serviceRail.stays.title`, c'est voulu.
+
+- [x] **Step 2 : build de production**
 
 Run : `npm run build`
 Attendu : build vert.
 
-- [ ] **Step 3 : contrôle visuel en 390 px**
+**Résultat 29/07/2026** : vert, 13 190 pages statiques générées en 13 min, code 0.
+
+- [x] **Step 3 : contrôle visuel en 390 px**
 
 Ouvrir `http://localhost:3000/en` en largeur 390 px dans les outils navigateur.
 Vérifier : le baromètre tient sans débordement, les libellés de source sont masqués, les trois cartes du rail sont empilées, le bandeau voiture reste lisible.
+
+**Résultat 29/07/2026, sur `next start` port 3100, captures Playwright 390 px et 1280 px.**
+Conforme : `scrollWidth - clientWidth = 0` aux deux largeurs (aucun débordement
+horizontal), libellés de source masqués sous `sm`, blocs du rail empilés, actus à 4
+titres, guides à 2, plus aucun bloc événements, baromètre réduit à la seule ligne mer
+(pas de clé service en local, donc `cruise` et `buses` à `null` : comportement attendu).
+
+**Deux défauts trouvés, corrigés avant livraison.** Le build ne les voyait pas :
+ils ne sont visibles qu'à l'image.
+
+1. **Le lead comptait faux.** `serviceRail.lead` annonçait « Quatre services » dans
+   les 22 locales alors que le flag villa est éteint en production : la page en
+   affiche trois. Numéral retiré partout ; la copie survit désormais au basculement
+   du flag sans retouche i18n. Décision reportée dans la spec, section 6.
+2. **Titres illisibles sur les cartes van et activités.** `min-h-[200px]` valait
+   exactement la hauteur du contenu, donc `items-end` ne décalait rien et le titre
+   se posait dans la zone `from-[#08263a]/15` du dégradé, c'est-à-dire sur du ciel
+   clair. Corrigé en `min-h-[250px]` plus dégradé carte `/32 → /58 → /92`. Même
+   cause sur le bandeau voiture en mobile : son dégradé est horizontal et la zone
+   calme est à gauche, or sous `md` la carte n'a pas de zone calme à droite et la
+   deuxième ligne du sous-titre tombait sur le sable. Le bandeau passe en dégradé
+   vertical sous `md` et garde l'horizontal à partir de `md`.
+
+`npm run check` et `npm run build` rejoués verts après ces deux correctifs.
 
 - [ ] **Step 4 : régénérer les aperçus sociaux**
 
@@ -915,6 +947,19 @@ git commit -m "chore(home): apercus sociaux regeneres apres la refonte du hero"
 Run : `npm run ship`
 Attendu : intégration dans `master` et push. La promotion vers `main` part automatiquement à 20h Athens. **Ne jamais pousser `main` à la main.**
 
+**Décision du 29/07/2026 sur la promotion.** Le chantier se termine à 03h Athens et
+demande une vérification du rendu **en production**, pas seulement du build. Attendre
+le cron de 20h ne la rendrait possible que 17 heures plus tard. La promotion est donc
+déclenchée par `gh workflow run daily-deploy.yml`, c'est-à-dire le bouton « Run
+workflow » prévu par le `workflow_dispatch` de l'Action. Ce n'est **pas** un
+`git push origin master:main` à la main : la règle « jamais `main` » tient, c'est
+l'Action qui promeut, en un seul build comme le soir.
+Coût assumé : deux builds prod dans la journée au lieu d'un, donc deux vagues
+d'écritures ISR. Effet de bord connu et accepté : la file `master` contenait déjà
+5 commits d'autres terminaux, dont `feat(stays)` Phase 1 (#6) ; ils partent en prod
+16 h plus tôt que prévu. Sans risque de surface : `/stays` est en noindex, sans
+annonce publiée, et `STAYS_HOME_BLOCK` reste éteint donc la home ne pointe pas dessus.
+
 - [ ] **Step 6 : vérifier en production après la promotion**
 
 ```bash
@@ -930,5 +975,21 @@ Attendu : la route renvoie un JSON avec `cruise` non nul si une escale est prév
 - **Réparation du capteur vols HER** : trou du 19 au 26/07, comptes gonflés jusqu'à 776 arrivées par jour. Owner Claude, butoir 04/08/2026. Tant qu'il n'est pas réparé, `stock` reste `null` et la quatrième ligne du baromètre n'existe pas.
 - **Allumage du bloc villa** : poser `STAYS_HOME_BLOCK=on` sur Vercel une fois `feat/stays-marketplace` mergée, `/stays` indexable et au moins une annonce réelle publiée. **Poser la variable ne suffit pas** : elle est figée dans l'image du déploiement, il faut redéployer. Sans redéploiement manuel, l'effet arrive au deploy automatique de 20h Athènes, donc jusqu'à 24 heures plus tard.
 - **Dette assumée** : `getUpcomingEvents(5)` charge encore 5 événements complets alors que la home ne s'en sert plus que pour tester `length === 0` dans le garde-fou de maintenance. Coût faible, la requête ne tourne qu'à la régénération ISR toutes les 2 h, mais c'est du poids mort. À remplacer par un comptage `head: true` au prochain passage sur `page.tsx`. Owner Claude, butoir 30/09/2026, sinon `ABANDONED`.
-- **Relevé J+14** de l'instrumentation, owner Claude : taux de clic du rail par service et contrôle de non-régression sur explore, bus et plages depuis la home. Seuil d'alerte et décision écrits en section 7 de la spec.
+- [ ] **Relevé J+14 de l'instrumentation. Owner Kami, butoir 12/08/2026.**
+  Vérifié en place le 29/07/2026 avant livraison : `promo_impression` avec
+  `block: "service-rail"`, `source: "home"`, `service: <id>` part une fois par bloc
+  au passage à 50 % dans le viewport (`ImpressionTracker`, un par carte, `props`
+  mémoïsé pour ne pas relancer l'observer) ; `service_rail_click` avec
+  `service: <id>` et `layout: "band" | "card"` part au clic avant la navigation.
+  Les deux passent par le stub `window.plausible` posé dans `[locale]/layout.tsx`,
+  donc rien ne tombe dans le vide avant le chargement du script.
+  **Baseline à battre**, 30 jours avant bascule : **71 clics voiture, 0 clic van,
+  0 clic activités**, 5,7 % de taux de clic du bloc commercial.
+  À relever : taux de clic du rail entier, répartition par service (clics ÷
+  impressions, pas les clics absolus), et part relative des clics home vers
+  `/explore`, `/buses` et `/beaches`.
+  **Garde-fou déjà décidé, pas à rediscuter le jour du relevé** : si ces trois
+  destinations perdent plus de 15 % de part relative, le rail redescend sous
+  « Où se baigner », sans aucun autre changement. Si le butoir passe sans relevé :
+  marquer `ABANDONED` plutôt que laisser traîner.
 - **Photo van** dédiée, owner Kami, butoir 15/08/2026. Le catalogue pointe `ferry.jpg` en attendant : un seul chemin à changer dans `home-services.ts`.

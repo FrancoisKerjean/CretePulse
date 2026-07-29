@@ -244,7 +244,13 @@ contrôle anti-mélange d'alphabets doit passer, y compris sur `ru`, `ar`, `el`,
 | Clé | Texte |
 |---|---|
 | `serviceRail.title` | Réserver en direct |
-| `serviceRail.lead` | Quatre services opérés depuis l'île. Sans intermédiaire international, sans commission cachée. |
+| `serviceRail.lead` | Des services opérés depuis l'île. Sans intermédiaire international, sans commission cachée. |
+
+> **Corrigé au contrôle visuel du 29/07/2026.** Le lead disait « Quatre services »
+> dans les 22 locales alors que le flag villa est éteint en production : la page
+> en affichait trois. Une accroche qui compte faux est une accroche qui ment.
+> Le numéral est retiré, la copie survit désormais au basculement du flag sans
+> retouche i18n.
 | `van.kicker` | Van partagé |
 | `van.title` | Aéroport vers ville |
 | `van.sub` | Dès 40 € le siège, sur les trajets que le bus ne fait pas. |
