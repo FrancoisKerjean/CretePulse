@@ -10,6 +10,7 @@ import { isCarAdmin } from "@/lib/car-admin-auth";
 import { OUTCOMES, commissionEur, validatePartnerUpdate, ZONE_IDS } from "@/lib/car-admin";
 import { canCancelRequest } from "@/lib/car-quotes";
 import { requestCommission } from "@/lib/car-commission-server";
+import { startPartnerOnboarding, refreshPartnerKyc } from "@/lib/car-connect-server";
 
 const PATH = "/admin/car-rental";
 
@@ -126,5 +127,28 @@ export async function updatePartner(id: number, formData: FormData) {
   if (err) redirect(`${PATH}?tab=partners&error=${encodeURIComponent(err)}`);
   const { error } = await supabase.from("car_partners").update({ zone_ids, commission }).eq("id", id);
   if (error) throw new Error(error.message);
+  revalidatePath(PATH);
+}
+
+/** Ouvre l'onboarding Stripe Connect d'un loueur et redirige vers Stripe.
+ *  Sans compte connecté, le cron de versement garde ses fonds : ce bouton est
+ *  le seul chemin pour le débloquer. */
+export async function openPartnerOnboarding(id: number) {
+  await guard();
+  const res = await startPartnerOnboarding(id);
+  if (res.status === "ready") redirect(res.url);
+  const message =
+    res.status === "not_found"
+      ? "Loueur introuvable ou sans email"
+      : res.code === "payouts_unavailable"
+        ? "Les versements ne sont pas encore ouverts côté crete.direct"
+        : "Stripe a refusé l'ouverture du compte, réessayez dans quelques minutes";
+  redirect(`${PATH}?tab=partners&error=${encodeURIComponent(message)}`);
+}
+
+/** Relit l'état du compte du loueur chez Stripe (bouton « rafraîchir »). */
+export async function refreshPartnerConnect(id: number) {
+  await guard();
+  await refreshPartnerKyc(id);
   revalidatePath(PATH);
 }

@@ -310,7 +310,16 @@ export function RequestsTable({
                 {statusBadge(r.status)}
                 {closureReasonBadge(r.closure_reason)}
                 {outcomeBadge(r.outcome)}
-                {r.commission_paid_at ? <span className="rounded-full bg-ok px-2 py-0.5 text-xs font-bold text-white">commission encaissée</span> : null}
+                {r.commission_paid_at ? (
+                  <span className="rounded-full bg-ok px-2 py-0.5 text-xs font-bold text-white">commission encaissée</span>
+                ) : r.commission_requested_at ? (
+                  // Facture partie mais non réglée : sans cette mention, une
+                  // commission due restait invisible tant qu'on ne lisait pas la base.
+                  <span className="rounded-full border border-border px-2 py-0.5 text-xs font-bold text-text-muted">
+                    commission demandée le{" "}
+                    {new Date(r.commission_requested_at).toLocaleDateString("fr-FR", { timeZone: "Europe/Athens" })}
+                  </span>
+                ) : null}
                 <span className="ml-auto text-xs text-text-muted">{invitesByRequest.get(r.id) ?? 0} loueur(s) invité(s)</span>
               </div>
 

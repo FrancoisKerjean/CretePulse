@@ -39,6 +39,8 @@ export interface AdminRequest {
   final_amount_eur?: number | null;
   commission_eur?: number | null;
   commission_paid_at?: string | null;
+  /** Facture partie chez le loueur, pas encore reglee (migration 20260729). */
+  commission_requested_at?: string | null;
   admin_note?: string | null;
   client_relanced_at?: string | null;
   client_relance_count?: number;
@@ -58,6 +60,10 @@ export interface AdminPartner {
   // Colonne recrutement ajoutée en SQL direct sur le VPS (non versionnée) :
   // affichée si présente, ignorée sinon.
   outreach_status?: string | null;
+  // Compte de versement Stripe Connect (migration 20260730_car_booking).
+  // Sans lui, le cron de versement garde les fonds du client et le signale.
+  stripe_connect_account_id?: string | null;
+  kyc_status?: string | null;
 }
 
 export const OUTCOMES = ["rented", "lost"] as const;
