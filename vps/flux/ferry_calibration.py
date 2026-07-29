@@ -73,7 +73,14 @@ def port_coefficients(pax_quarterly, crossings_daily):
         total = sum(days.values())
         if not total:
             continue
-        coef = passengers / total
+        # Tant que le trimestre n'est pas integralement interroge, le
+        # denominateur est ampute et le rapport n'a aucun sens : sept jours sur
+        # 92 donnaient 14 010 passagers par traversee. La ligne est ecrite quand
+        # meme, pour que l'avancement de la couverture soit lisible, mais sans
+        # coefficient ni passagers. Le comptage de traversees, lui, est reel.
+        days_total = _quarter_days(quarter)
+        complete = len(days) >= days_total
+        coef = passengers / total if complete else None
         months = {}
         for day, crossings in days.items():
             months[date(day.year, day.month, 1)] = months.get(date(day.year, day.month, 1), 0) + crossings
@@ -83,14 +90,14 @@ def port_coefficients(pax_quarterly, crossings_daily):
                 "scope": "port",
                 "node": port,
                 "direction": direction,
-                "pax_official": round(passengers * crossings / total),
+                "pax_official": round(passengers * crossings / total) if complete else None,
                 "movements_official": crossings,
                 "coef": coef,
                 "method": METHOD,
                 "source_url": source_url,
                 "source_quarter": source_quarter,
                 "quarter_days_covered": len(days),
-                "quarter_days_total": _quarter_days(quarter),
+                "quarter_days_total": days_total,
             })
     return rows
 
@@ -165,9 +172,11 @@ def run(dry_run=False):
         rows = port_coefficients(pax, crossings)
         if dry_run:
             for row in sorted(rows, key=lambda r: (r["node"], r["direction"], r["month"])):
+                coef = f"{row['coef']:.1f}" if row["coef"] is not None else "-"
+                pax = row["pax_official"] if row["pax_official"] is not None else "-"
                 print(f"{row['month']} {row['node']:12} {row['direction']:9} "
-                      f"pax={row['pax_official']:>8} traversees={row['movements_official']:>4} "
-                      f"coef={row['coef']:.1f} "
+                      f"pax={pax:>8} traversees={row['movements_official']:>4} "
+                      f"coef={coef:>8} "
                       f"couverture={row['quarter_days_covered']}/{row['quarter_days_total']} j")
             return len(rows)
         with conn.cursor() as cur:

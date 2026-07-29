@@ -79,6 +79,20 @@ def test_un_trimestre_ampute_de_ses_premiers_jours_n_est_pas_complet():
     assert all(r["quarter_days_total"] == Q3_DAYS for r in rows)
 
 
+def test_un_trimestre_incomplet_ne_produit_aucun_coefficient():
+    """Sept jours couverts sur 92 donnaient 14 010 passagers par traversee.
+
+    La vue journaliere refusait deja ce chiffre, mais le laisser en base est un
+    piege pour qui lit flux_calibration directement. La ligne existe pour
+    montrer l'avancement de la couverture ; le coefficient, lui, reste vide
+    tant qu'il n'a pas de sens.
+    """
+    rows = port_coefficients(_pax(), _crossings(_days(7)))
+    assert rows and all(r["coef"] is None for r in rows)
+    assert all(r["pax_official"] is None for r in rows)
+    assert all(r["movements_official"] > 0 for r in rows)  # le comptage, lui, est reel
+
+
 def test_un_trimestre_entierement_couvert_est_signale_comme_complet():
     rows = port_coefficients(_pax(), _crossings())
     assert all(r["quarter_days_covered"] == r["quarter_days_total"] for r in rows)
