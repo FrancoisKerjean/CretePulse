@@ -951,7 +951,7 @@ semaines à chaque partage du lien. `scripts/capture-og-home.mjs` coupe désorma
 `/api/island-now` pendant la capture : le panneau se limite à la ligne mer, rendue
 côté serveur, qui vieillit sans mentir sur un fait vérifiable. Images reprises.
 
-- [ ] **Step 5 : livrer**
+- [x] **Step 5 : livrer**
 
 Run : `npm run ship`
 Attendu : intégration dans `master` et push. La promotion vers `main` part automatiquement à 20h Athens. **Ne jamais pousser `main` à la main.**
@@ -980,6 +980,16 @@ toujours en avant-dernier. La fusion de `master` a aussi tiré la dépendance
 (suppression des champs `libc` des dépendances optionnelles), il n'y avait aucune
 résolution à ajouter. `npm run check` et `npm run build` rejoués verts sur le
 résultat de la fusion, avec le code Stays embarqué.
+
+**Deux `ship` au total.** Le premier a livré le chantier lui-même
+(`a14e244`), promu en production dans la foulée : c'est la version vérifiée en
+live. Le second (`2b31589`) porte les aperçus sociaux régénérés depuis cette
+production et la clôture documentaire. Il **n'a pas été promu** : ce sont des
+images statiques et de la documentation, cela ne justifie pas un troisième build
+de production dans la même journée, et `master` porte entre-temps du travail
+d'autres terminaux qu'il ne m'appartient pas d'avancer. Elles partiront au deploy
+automatique de 20h Athens. **Conséquence assumée** : entre-temps, un partage du
+lien crete.direct affiche encore l'ancien aperçu social, celui du hero à chips.
 
 - [x] **Step 6 : vérifier en production après la promotion**
 
