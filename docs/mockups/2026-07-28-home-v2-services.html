@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Home v2 : rail services (voiture / van / activités / villa) : crete.direct</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --olive:#7C9A53; --sand:#FFF3D6; --sand-warm:#F2E7CE; --surface:#F6FBFC;
+  --text:#0B3954; --text-muted:#5C7886; --text-light:#94A3B8; --border:#DCE9EE;
+  --lagoon:#00C2D4; --lagoon-deep:#008C9E; --sky:#BDEDF5; --night:#07374A;
+  --sun:#FFC83D; --ok:#14B86B; --sea:#0B5E78; --sea-light:#2E7DB2; --sea-faint:#DFF7FA;
+  --terracotta:#ED7A5C;
+  --head:"Baloo 2",system-ui,sans-serif; --body:"Geist",ui-sans-serif,system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#E7EFF2;font-family:var(--body);color:var(--text)}
+h1,h2,h3,.h{font-family:var(--head);font-weight:800;letter-spacing:-.01em}
+a{text-decoration:none;color:inherit}
+
+/* ===== barre de pilotage du mockup (hors DA site) ===== */
+.bar{position:sticky;top:0;z-index:50;background:#0B3954;color:#fff;padding:10px 16px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;font-size:13px}
+.bar strong{font-family:var(--head)}
+.bar .grp{display:flex;gap:6px;align-items:center}
+.bar button{font:inherit;font-weight:600;border:0;border-radius:999px;padding:6px 13px;background:rgba(255,255,255,.15);color:#fff;cursor:pointer}
+.bar button.on{background:var(--sun);color:#0B3954}
+.bar .note{opacity:.72;font-size:12px}
+
+.frame{margin:22px auto;background:var(--surface);border-radius:26px;overflow:hidden;box-shadow:0 30px 70px rgba(11,57,84,.22);transition:max-width .25s}
+.frame{max-width:1180px}
+body.mobile .frame{max-width:390px}
+.pad{max-width:1060px;margin:0 auto;padding:0 18px}
+body.mobile .pad{padding:0 14px}
+
+/* ===== header ===== */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;position:relative;z-index:6}
+.logo{font-family:var(--head);font-weight:800;font-size:19px;color:var(--sea)}
+.nav{display:flex;gap:16px;font-size:13.5px;font-weight:500;color:var(--sea)}
+body.mobile .nav{display:none}
+
+/* ===== hero ===== */
+.hero{position:relative;background:linear-gradient(180deg,var(--sky),#8FE0EC 55%,var(--lagoon));padding:26px 0 76px;margin-top:-58px;padding-top:74px;overflow:hidden}
+.hero .sun{position:absolute;top:56px;right:9%;width:104px;height:104px;border-radius:50%;background:radial-gradient(circle at 38% 35%,#FFE08F,#FFC83D 70%);box-shadow:0 0 70px 20px rgba(255,200,61,.42)}
+.hero .grid{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:34px;align-items:center;max-width:1060px;margin:0 auto;padding:0 18px}
+body.mobile .hero .grid{grid-template-columns:1fr;gap:20px}
+.pill{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.72);border-radius:999px;padding:7px 14px;font-family:var(--head);font-weight:700;font-size:12.5px;color:var(--sea)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px rgba(20,184,107,.25)}
+.hero h1{font-size:46px;line-height:1.06;margin:14px 0 10px}
+body.mobile .hero h1{font-size:32px}
+.hero h1 .hl{color:#fff;text-shadow:0 2px 18px rgba(11,94,120,.35)}
+.hero p{color:rgba(11,57,84,.78);max-width:420px;margin:0 0 18px;font-size:15px}
+/* ===== baromètre de l'île ===== */
+.baro{background:rgba(255,255,255,.86);border-radius:22px;padding:6px 16px;margin:0 0 16px;max-width:470px;box-shadow:0 12px 30px rgba(11,94,120,.14)}
+.baro-row{display:flex;align-items:center;gap:11px;padding:11px 0;border-top:1px solid rgba(11,57,84,.09)}
+.baro-row:first-child{border-top:0}
+.baro-row.off{opacity:.42}
+.b-ic{font-size:17px;width:22px;text-align:center;flex:none}
+.b-tx{flex:1;font-size:13.5px;line-height:1.35;color:var(--text)}
+.b-tx b{font-family:var(--head);font-weight:800}
+.b-tx small{color:var(--text-muted);font-size:11.5px}
+.b-src{font-size:10px;color:var(--text-muted);text-align:right;flex:none;max-width:96px;line-height:1.25}
+body.mobile .b-src{display:none}
+.chips{display:flex;flex-wrap:wrap;gap:9px}
+.chip{background:#fff;border-radius:16px;padding:9px 14px;font-weight:700;font-size:13.5px;box-shadow:0 10px 26px rgba(11,94,120,.16)}
+.chip.sun{background:var(--sun)}
+.mapbox{position:relative;border-radius:28px;background:linear-gradient(160deg,#5FD8E6,#0E93A8);min-height:250px;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--head);font-weight:700;box-shadow:0 20px 50px rgba(11,94,120,.25)}
+.mapbox small{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);background:var(--sea);padding:6px 14px;border-radius:999px;font-size:11.5px}
+.wave{position:absolute;bottom:-1px;left:0;width:100%;height:64px;display:block}
+
+/* ===== depboard ===== */
+.dep{position:relative;z-index:5;margin-top:-56px;background:var(--night);color:#fff;border-radius:26px;padding:16px 20px;box-shadow:0 22px 50px rgba(7,55,74,.35)}
+.dep .t{font-family:var(--head);font-weight:700;font-size:13px;color:var(--sun);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.dep .row{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid rgba(255,255,255,.12);font-size:14px}
+.dep .row:first-of-type{border-top:0}
+.dep .row b{font-weight:600}
+.dep .row span{opacity:.7;font-size:13px}
+
+/* ===== titres de section ===== */
+.sec-h{display:flex;align-items:center;justify-content:space-between;margin:34px 0 14px}
+.sec-h h2{font-size:26px;margin:0}
+body.mobile .sec-h h2{font-size:21px}
+.more{background:#fff;border-radius:999px;padding:8px 15px;font-family:var(--head);font-weight:700;font-size:13px;color:var(--sea);box-shadow:0 8px 20px rgba(11,94,120,.12)}
+.kicker{font-family:var(--head);font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted)}
+
+/* ===== RAIL SERVICES : socle commun ===== */
+.svc-lead{font-size:13.5px;color:var(--text-muted);margin:0 0 14px;max-width:640px}
+.card{position:relative;display:block;border-radius:26px;overflow:hidden;box-shadow:0 16px 40px rgba(11,94,120,.14);color:#fff}
+.card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform 3s ease-out}
+.card:hover img{transform:scale(1.05)}
+.card .scrim{position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,38,58,.88) 0%,rgba(8,38,58,.55) 45%,rgba(8,38,58,.12) 100%)}
+.card .scrim.v{background:linear-gradient(180deg,rgba(8,38,58,.12) 30%,rgba(8,38,58,.86) 100%)}
+.card .in{position:relative;padding:22px}
+.tag{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.16);backdrop-filter:blur(4px);border-radius:999px;padding:4px 10px;font-family:var(--head);font-weight:700;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.92)}
+.card h3{margin:10px 0 4px;font-size:23px;line-height:1.15;text-shadow:0 1px 3px rgba(8,38,58,.6)}
+.card p{margin:0;font-size:13.5px;color:rgba(255,255,255,.9);text-shadow:0 1px 2px rgba(8,38,58,.6)}
+.cta{display:inline-block;margin-top:16px;background:#fff;color:var(--terracotta);border-radius:999px;padding:11px 24px;font-family:var(--head);font-weight:700;font-size:14px;box-shadow:0 8px 20px rgba(8,38,58,.25)}
+.cta.sm{margin-top:12px;padding:8px 17px;font-size:12.5px}
+.flag{position:absolute;top:12px;right:12px;background:var(--sun);color:#0B3954;border-radius:999px;padding:4px 11px;font-family:var(--head);font-weight:800;font-size:10.5px;letter-spacing:.06em}
+.data{font-size:11.5px;color:var(--text-light);margin:8px 2px 0}
+
+/* V1 : bandeau héros + 3 cartes */
+.v1 .hero-band{min-height:206px;display:flex;align-items:center}
+.v1 .trio{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+.v1 .trio .card{min-height:190px;display:flex;align-items:flex-end}
+.v1 .trio h3{font-size:18px}
+.v1 .trio p{font-size:12.5px}
+body.mobile .v1 .trio{grid-template-columns:1fr}
+
+/* V2 : 4 bandeaux compacts */
+.v2 .stack{display:flex;flex-direction:column;gap:11px}
+.v2 .card{min-height:112px;display:flex;align-items:center}
+.v2 .in{display:flex;align-items:center;justify-content:space-between;width:100%;gap:16px;padding:18px 22px}
+.v2 h3{font-size:19px;margin:6px 0 3px}
+.v2 p{font-size:12.5px}
+.v2 .cta{margin-top:0;flex:none}
+body.mobile .v2 .in{flex-direction:column;align-items:flex-start;gap:10px}
+
+/* V3 : rail scrollable */
+.v3 .rail{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;margin:0 -18px;padding-left:18px;padding-right:18px}
+.v3 .rail::-webkit-scrollbar{height:6px}
+.v3 .rail::-webkit-scrollbar-thumb{background:rgba(11,94,120,.2);border-radius:99px}
+.v3 .card{flex:0 0 268px;scroll-snap-align:start;min-height:230px;display:flex;align-items:flex-end}
+.v3 h3{font-size:19px}
+.v3 p{font-size:12.5px}
+
+/* ===== météo / plages / outils ===== */
+.tiles4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+body.mobile .tiles4{grid-template-columns:repeat(2,1fr)}
+.wt{border-radius:26px;padding:16px 18px;position:relative;overflow:hidden}
+.wt.a{background:var(--lagoon);color:var(--night)}
+.wt.b{background:var(--sea);color:#fff}
+.wt .c{font-family:var(--head);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.08em;opacity:.72;margin:0}
+.wt .d{font-family:var(--head);font-weight:800;font-size:42px;margin:2px 0}
+.wt .e{font-size:12px;opacity:.72;margin:0}
+.wt .f{display:inline-block;margin-top:8px;background:rgba(255,255,255,.88);color:var(--sea);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700}
+.beach{display:grid;grid-template-columns:1.25fr .75fr;gap:14px}
+body.mobile .beach{grid-template-columns:1fr}
+.beach .big{border-radius:26px;min-height:250px;background:linear-gradient(160deg,#7FD8E0,#0B5E78);position:relative;overflow:hidden}
+.beach .sm{border-radius:22px;min-height:118px;background:linear-gradient(160deg,#9FE3D2,#0E7C8C);position:relative;overflow:hidden}
+.beach .lbl{position:absolute;left:16px;bottom:14px;right:16px;display:flex;justify-content:space-between;align-items:center;color:#fff;font-family:var(--head);font-weight:800}
+.beach .verd{background:rgba(255,255,255,.92);color:#0B8A52;border-radius:999px;padding:5px 13px;font-size:12.5px}
+.tools{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+body.mobile .tools{grid-template-columns:repeat(2,1fr)}
+.tool{border-radius:20px;padding:14px}
+.tool .ic{background:rgba(255,255,255,.85);width:38px;height:38px;border-radius:13px;display:flex;align-items:center;justify-content:center;margin-bottom:9px;font-size:17px}
+.tool b{font-family:var(--head);font-size:14px;display:block}
+.tool span{font-size:11px;color:rgba(11,57,84,.65)}
+
+/* ===== news compact ===== */
+.newsgrid{display:grid;grid-template-columns:1.1fr .9fr;gap:26px}
+body.mobile .newsgrid{grid-template-columns:1fr}
+.list{background:#fff;border-radius:24px;padding:4px 20px;box-shadow:0 12px 32px rgba(11,94,120,.08)}
+.li{display:flex;gap:12px;align-items:baseline;padding:12px 0;border-top:1px solid rgba(11,57,84,.07);font-size:14.5px}
+.li:first-child{border-top:0}
+.li em{font-style:normal;font-size:12px;font-weight:700;color:var(--lagoon-deep);min-width:38px}
+.gd{display:grid;grid-template-columns:96px 1fr;background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 12px 30px rgba(11,94,120,.1);margin-bottom:12px}
+.gd .th{background:linear-gradient(160deg,#CDE9C6,#7C9A53)}
+.gd .tx{padding:14px;font-family:var(--head);font-weight:700;font-size:14px}
+.nl{border-radius:28px;padding:26px;margin:30px 0 0;background:linear-gradient(165deg,#FFF3D6,#FFE9AE);display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.nl h3{margin:0;font-size:20px}
+.nl p{margin:3px 0 0;font-size:13px;color:#8A7340}
+.nlf{display:flex;gap:9px}
+.nlf input{border:0;border-radius:999px;padding:11px 18px;font:inherit;font-size:13px;min-width:190px}
+.nlf button{border:0;border-radius:999px;padding:11px 20px;background:var(--text);color:#fff;font-family:var(--head);font-weight:700;font-size:13.5px}
+.cut{margin:26px 0;border:0;border-top:2px dashed rgba(11,57,84,.14)}
+.killed{opacity:.42;filter:grayscale(.6)}
+.annot{background:#0B3954;color:#fff;border-radius:16px;padding:12px 16px;font-size:12.5px;margin:14px 0;line-height:1.5}
+.annot b{color:var(--sun)}
+footer.mockfoot{padding:26px 18px 40px;text-align:center;color:var(--text-muted);font-size:12px}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <strong>Home v2 : rail services</strong>
+  <span class="grp">Variante :
+    <button data-v="1" class="on">V1 hiérarchie</button>
+    <button data-v="2">V2 4 bandeaux</button>
+    <button data-v="3">V3 rail scroll</button>
+  </span>
+  <span class="grp">Écran :
+    <button id="mob">Mobile 390px</button>
+  </span>
+  <span class="grp">Villa :
+    <button id="flag" class="on">Flag ON</button>
+  </span>
+  <span class="note">28/07/2026 · copy FR de travail · données Plausible 30 j</span>
+</div>
+
+<div class="frame">
+
+  <div class="hdr">
+    <div class="logo">crete.direct</div>
+    <div class="nav"><span>Explorer</span><span>Bus</span><span>Plages</span><span>Météo</span><span>Réserver</span><span>Actus</span></div>
+  </div>
+
+  <!-- ══════ HERO : INCHANGÉ ══════ -->
+  <section class="hero">
+    <div class="sun"></div>
+    <div class="grid">
+      <div>
+        <span class="pill"><span class="dot"></span> Καλημέρα ! mardi 28 juillet · en direct de l'île</span>
+        <h1>La Crète,<br><span class="hl">en direct.</span></h1>
+        <p>Mer calme aujourd'hui à Vaï. Ce qui se passe sur l'île, mesuré, pas raconté.</p>
+
+        <!-- ===== BAROMÈTRE DE L'ÎLE ===== -->
+        <div class="baro">
+          <div class="baro-row">
+            <span class="b-ic">🌊</span>
+            <span class="b-tx"><b>26° dans l'eau</b>, vent 11 km/h, air 31°</span>
+            <span class="b-src">stations météo</span>
+          </div>
+          <div class="baro-row">
+            <span class="b-ic">🚢</span>
+            <span class="b-tx"><b>Jusqu'à 3 470 croisiéristes</b> à Héraklion aujourd'hui<br><small>Costa Fortuna, 08:00 à 18:30</small></span>
+            <span class="b-src">calendrier officiel du port</span>
+          </div>
+          <div class="baro-row">
+            <span class="b-ic">🚌</span>
+            <span class="b-tx"><b>32 bus suivis en direct</b> sur les réseaux urbains</span>
+            <span class="b-src">GPS, actualisé toutes les 5 min</span>
+          </div>
+          <div class="baro-row off">
+            <span class="b-ic">👥</span>
+            <span class="b-tx"><b>Touristes présents sur l'île</b><br><small>emplacement réservé, capteur vols en réparation</small></span>
+            <span class="b-src">éteint</span>
+          </div>
+        </div>
+
+        <div class="chips">
+          <span class="chip sun">Où se baigner aujourd'hui</span>
+          <span class="chip">Voir tous les chiffres</span>
+        </div>
+      </div>
+      <div class="mapbox">Carte live de la Crète<small>Explorer la carte</small></div>
+    </div>
+    <svg class="wave" viewBox="0 0 1440 70" preserveAspectRatio="none"><path d="M0 40 C180 0 320 70 540 42 C760 14 900 66 1130 40 C1290 22 1380 36 1440 28 L1440 70 L0 70 Z" fill="#F6FBFC"/></svg>
+  </section>
+
+  <div class="pad">
+
+    <div class="annot" style="margin-top:18px">Baromètre : trois indicateurs <b>observés</b>, jamais estimés. Météo et mer en direct, croisiéristes depuis le calendrier officiel du port (capacité du navire à quai, pas un comptage de passagers), bus depuis le GPS des réseaux urbains. <b>Les réseaux ne roulent pas la nuit</b> : entre 20h et 7h la ligne bus disparaît au lieu d'afficher zéro. Le compteur de touristes présents reste éteint tant que le capteur vols HER n'est pas réparé (trou du 19 au 26/07, comptes gonflés jusqu'à 776 arrivées/jour). <b>Aucun chiffre affiché n'est une estimation.</b></div>
+
+    <!-- ══════ BOARD DÉPARTS : INCHANGÉ ══════ -->
+    <div class="dep">
+      <p class="t">Prochains départs · Héraklion</p>
+      <div class="row"><b>14:30 → Rethymno</b><span>KTEL · quai 3</span></div>
+      <div class="row"><b>15:00 → Agios Nikolaos</b><span>KTEL · quai 1</span></div>
+      <div class="row"><b>15:15 → Malia</b><span>KTEL · quai 7</span></div>
+    </div>
+
+    <!-- ══════ NOUVEAU : RAIL SERVICES ══════ -->
+    <div class="sec-h">
+      <div>
+        <p class="kicker" style="margin:0 0 4px">Nouveau bloc</p>
+        <h2>Réserver en direct</h2>
+      </div>
+      <span class="more">Tout voir</span>
+    </div>
+    <p class="svc-lead">Quatre services opérés depuis l'île. Sans intermédiaire international, sans commission cachée.</p>
+
+    <!-- ===== V1 : bandeau prouvé + trio ===== -->
+    <div class="var v1">
+      <a class="card hero-band">
+        <img src="../../public/images/partners/car-rental.jpg" alt="">
+        <div class="scrim"></div>
+        <div class="in">
+          <span class="tag">🚗 Location de voiture</span>
+          <h3>Un loueur local, un prix ferme</h3>
+          <p>Vous décrivez votre besoin, plusieurs agences crétoises chiffrent, vous choisissez.</p>
+          <span class="cta">Demander un devis</span>
+        </div>
+      </a>
+      <div class="trio">
+        <a class="card">
+          <img src="../../public/images/partners/ferry.jpg" alt="">
+          <div class="scrim v"></div>
+          <div class="in">
+            <span class="tag">🚐 Van partagé</span>
+            <h3>Aéroport ↔ ville</h3>
+            <p>Dès 40 € le siège, sur les trajets que le bus ne fait pas.</p>
+            <span class="cta sm">Voir les trajets</span>
+          </div>
+        </a>
+        <a class="card">
+          <img src="../../public/images/partners/tours.jpg" alt="">
+          <div class="scrim v"></div>
+          <div class="in">
+            <span class="tag">🥾 Activités</span>
+            <h3>Rando, bateau, cuisine</h3>
+            <p>39 activités, plusieurs prestataires chiffrent votre demande.</p>
+            <span class="cta sm">Demander un devis</span>
+          </div>
+        </a>
+        <a class="card villa-card">
+          <span class="flag">flag OFF ⇢ masqué</span>
+          <img src="../../public/images/partners/villa.jpg" alt="">
+          <div class="scrim v"></div>
+          <div class="in">
+            <span class="tag">🏝️ Villa &amp; maison</span>
+            <h3>Louez sans Airbnb</h3>
+            <p>Le propriétaire fixe son prix, vous payez 5 % de frais au lieu de ~14 %.</p>
+            <span class="cta sm">Voir les logements</span>
+          </div>
+        </a>
+      </div>
+      <p class="data">V1 : on garde le format qui convertit déjà (bandeau photo pleine largeur : 71 clics / 1 247 sessions = 5,7 %) et on lui adosse trois cartes de poids égal.</p>
+    </div>
+
+    <!-- ===== V2 : 4 bandeaux compacts ===== -->
+    <div class="var v2" hidden>
+      <div class="stack">
+        <a class="card">
+          <img src="../../public/images/partners/car-rental.jpg" alt="">
+          <div class="scrim"></div>
+          <div class="in">
+            <div><span class="tag">🚗 Voiture</span><h3>Un loueur local, un prix ferme</h3><p>Plusieurs agences crétoises chiffrent, vous choisissez.</p></div>
+            <span class="cta">Devis</span>
+          </div>
+        </a>
+        <a class="card">
+          <img src="../../public/images/partners/ferry.jpg" alt="">
+          <div class="scrim"></div>
+          <div class="in">
+            <div><span class="tag">🚐 Van partagé</span><h3>Aéroport ↔ ville, dès 40 €</h3><p>Sur les trajets que le bus ne dessert pas.</p></div>
+            <span class="cta">Trajets</span>
+          </div>
+        </a>
+        <a class="card">
+          <img src="../../public/images/partners/tours.jpg" alt="">
+          <div class="scrim"></div>
+          <div class="in">
+            <div><span class="tag">🥾 Activités</span><h3>Rando, bateau, cuisine</h3><p>39 activités, devis en direct des prestataires.</p></div>
+            <span class="cta">Devis</span>
+          </div>
+        </a>
+        <a class="card villa-card">
+          <span class="flag">flag OFF ⇢ masqué</span>
+          <img src="../../public/images/partners/villa.jpg" alt="">
+          <div class="scrim"></div>
+          <div class="in">
+            <div><span class="tag">🏝️ Villa &amp; maison</span><h3>Louez sans Airbnb</h3><p>5 % de frais au lieu de ~14 %. Le proprio fixe son prix.</p></div>
+            <span class="cta">Logements</span>
+          </div>
+        </a>
+      </div>
+      <p class="data">V2 : quatre services de poids strictement égal. Le plus lisible en scroll mobile (73,5 % du trafic home), mais on perd la dominante voiture qui est aujourd'hui le seul bloc commercial prouvé.</p>
+    </div>
+
+    <!-- ===== V3 : rail scrollable ===== -->
+    <div class="var v3" hidden>
+      <div class="rail">
+        <a class="card">
+          <img src="../../public/images/partners/car-rental.jpg" alt="">
+          <div class="scrim v"></div>
+          <div class="in"><span class="tag">🚗 Voiture</span><h3>Loueur local, prix ferme</h3><p>Plusieurs agences chiffrent, vous choisissez.</p><span class="cta sm">Devis</span></div>
+        </a>
+        <a class="card">
+          <img src="../../public/images/partners/ferry.jpg" alt="">
+          <div class="scrim v"></div>
+          <div class="in"><span class="tag">🚐 Van partagé</span><h3>Aéroport ↔ ville</h3><p>Dès 40 € le siège.</p><span class="cta sm">Trajets</span></div>
+        </a>
+        <a class="card">
+          <img src="../../public/images/partners/tours.jpg" alt="">
+          <div class="scrim v"></div>
+          <div class="in"><span class="tag">🥾 Activités</span><h3>Rando, bateau, cuisine</h3><p>39 activités chiffrées en direct.</p><span class="cta sm">Devis</span></div>
+        </a>
+        <a class="card villa-card">
+          <span class="flag">flag OFF ⇢ masqué</span>
+          <img src="../../public/images/partners/villa.jpg" alt="">
+          <div class="scrim v"></div>
+          <div class="in"><span class="tag">🏝️ Villa</span><h3>Louez sans Airbnb</h3><p>5 % de frais au lieu de ~14 %.</p><span class="cta sm">Logements</span></div>
+        </a>
+      </div>
+      <p class="data">V3 : rail à défilement horizontal, natif mobile. Compact, mais sur desktop la 4ᵉ carte sort du champ et un service reste invisible sans geste.</p>
+    </div>
+
+    <div class="annot">Le bloc villa est <b>masquable par feature-flag</b>. Tant que <code>/stays</code> reste en noindex et sans annonce publiée (décision du 25/07, butoir solde 70 % au 15/08), la home affiche trois services. Le jour où le flag passe à ON, le quatrième apparaît sans redéploiement de structure.</div>
+
+    <hr class="cut">
+
+    <!-- ══════ SUITE : INCHANGÉE ══════ -->
+    <div class="sec-h"><h2>L'île, maintenant</h2><span class="more">Toutes les stations</span></div>
+    <div class="tiles4">
+      <div class="wt a"><p class="c">Heraklion</p><p class="d">31°</p><p class="e">↗ 14 km/h · mer 26°</p><span class="f">≈ calme</span></div>
+      <div class="wt b"><p class="c">Chania</p><p class="d">29°</p><p class="e">↗ 19 km/h · mer 25°</p><span class="f">≈ moyenne</span></div>
+      <div class="wt a"><p class="c">Ierapetra</p><p class="d">33°</p><p class="e">↗ 9 km/h · mer 27°</p><span class="f">≈ calme</span></div>
+      <div class="wt b"><p class="c">Sitia</p><p class="d">30°</p><p class="e">↗ 22 km/h · mer 25°</p><span class="f">≈ agitée</span></div>
+    </div>
+
+    <div class="sec-h"><h2>Où se baigner aujourd'hui</h2><span class="more">Toutes les plages</span></div>
+    <div class="beach">
+      <div class="big"><div class="lbl"><span>Vaï · côte est</span><span class="verd">≈ calme · 26°</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="sm"><div class="lbl"><span>Kouremenos</span><span class="verd">≈ calme</span></div></div>
+        <div class="sm"><div class="lbl"><span>Xerokambos</span><span class="verd">≈ calme</span></div></div>
+      </div>
+    </div>
+
+    <div class="sec-h"><h2>Les outils</h2></div>
+    <div class="tools">
+      <div class="tool" style="background:#CFF3F7"><div class="ic">🚌</div><b>Bus</b><span>Horaires KTEL</span></div>
+      <div class="tool" style="background:#FFE9CF"><div class="ic">🌊</div><b>Baignade</b><span>Où nager aujourd'hui</span></div>
+      <div class="tool" style="background:#E4F0D5"><div class="ic">🧭</div><b>Explorer</b><span>La carte de l'île</span></div>
+      <div class="tool" style="background:#DCEBFF"><div class="ic">✈️</div><b>Aéroports</b><span>Arrivées, transferts</span></div>
+      <div class="tool" style="background:#FFE0D6"><div class="ic">📊</div><b>Airbnb</b><span>Densité, prix</span></div>
+      <div class="tool" style="background:#FFF1BF"><div class="ic">☀️</div><b>Météo</b><span>7 jours</span></div>
+    </div>
+
+    <!-- ══════ NEWS + GUIDES : DÉGONFLÉ ══════ -->
+    <div class="sec-h"><h2>Actus &amp; guides</h2><span class="more">Tout voir</span></div>
+    <div class="newsgrid">
+      <div class="list">
+        <div class="li"><em>2h</em><span>Incendie maîtrisé au sud d'Héraklion, route rouverte</span></div>
+        <div class="li"><em>6h</em><span>KTEL : modification des départs Chania ↔ Héraklion</span></div>
+        <div class="li"><em>1j</em><span>Nouvelle ligne culturelle Myrtia : musée Kazantzakis</span></div>
+        <div class="li"><em>2j</em><span>Qualité des eaux de baignade : 100 % conforme en Crète est</span></div>
+      </div>
+      <div>
+        <div class="gd"><div class="th"></div><div class="tx">Lagune de Balos : le guide complet<span style="display:block;font-family:var(--body);font-weight:500;font-size:11.5px;color:var(--text-muted);margin-top:5px">8 min</span></div></div>
+        <div class="gd"><div class="th"></div><div class="tx">Les plus belles plages de Crète<span style="display:block;font-family:var(--body);font-weight:500;font-size:11.5px;color:var(--text-muted);margin-top:5px">11 min</span></div></div>
+      </div>
+    </div>
+    <p class="data">Bloc dégonflé : 6 actus + 4 guides + 3 événements aujourd'hui (≈ 40 % de la hauteur de page pour 3,7 % des clics) ⇢ 4 actus + 2 guides. Les événements descendent au footer.</p>
+
+    <div class="nl">
+      <div><h3>La Crète dans votre boîte mail</h3><p>Une fois par semaine, ce qui bouge vraiment sur l'île.</p></div>
+      <div class="nlf"><input placeholder="votre@email.com"><button>S'inscrire</button></div>
+    </div>
+
+  </div>
+  <footer class="mockfoot">Mockup de travail : structure et hiérarchie uniquement. Photos = visuels partenaires déjà présents dans le repo (<code>public/images/partners/</code>) ; le visuel « van » utilise <code>ferry.jpg</code> en attendant une photo dédiée.</footer>
+</div>
+
+<script>
+document.querySelectorAll('.bar [data-v]').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.bar [data-v]').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  document.querySelectorAll('.var').forEach(v=>v.hidden=!v.classList.contains('v'+b.dataset.v));
+}));
+document.getElementById('mob').addEventListener('click',e=>{
+  document.body.classList.toggle('mobile');
+  e.target.classList.toggle('on');
+});
+document.getElementById('flag').addEventListener('click',e=>{
+  const off=e.target.classList.toggle('off');
+  e.target.classList.toggle('on',!off);
+  e.target.textContent=off?'Flag OFF':'Flag ON';
+  document.querySelectorAll('.villa-card').forEach(c=>c.style.display=off?'none':'');
+});
+</script>
+</body>
+</html>

@@ -72,7 +72,6 @@
     "liveFromIsland": "direkte fra øya",
     "heroSub": "Beregnet direkte · 10 værstasjoner × orienteringen til 500 strender.",
     "ctaBeach": "Se dagens strand",
-    "air": "luft",
     "sea": "sjø",
     "islandNow": "Øya, akkurat nå",
     "allStations": "Alle stasjoner",
@@ -110,7 +109,20 @@
       "weather": "Vær",
       "weatherLine": "10 stasjoner + sjø"
     },
-    "nextEvents": "Kommende arrangementer"
+    "nextEvents": "Kommende arrangementer",
+    "barometer": {
+      "sea": "{temp}° i vannet, vind {wind} km/h, luft {air}°",
+      "cruise": "Opptil {pax} cruisepassasjerer i dag i {port}",
+      "buses": "{count, plural, one {# buss sporet direkte} other {# busser sporet direkte}}",
+      "src": { "weather": "værstasjoner", "port": "offisiell havneplan", "gps": "GPS, hvert 5. min" }
+    },
+    "serviceRail": {
+      "title": "Book direkte",
+      "lead": "Tjenester drevet fra øya. Uten internasjonal mellommann, uten skjult provisjon.",
+      "van": { "kicker": "Delt van", "title": "Fra flyplass til by", "sub": "Fra 40 € per sete, på ruter bussen ikke dekker.", "cta": "Se ruter" },
+      "activities": { "kicker": "Aktiviteter", "title": "Vandring, båt, matlaging", "sub": "Flere lokale tilbydere gir deg et tilbud.", "cta": "Be om tilbud" },
+      "stays": { "kicker": "Villa og hus", "title": "Lei uten Airbnb", "sub": "Eieren setter prisen, du betaler 5 % i gebyr i stedet for rundt 14 %.", "cta": "Se overnattinger" }
+    }
   },
   "footer": {
     "about": "Gratis, uavhengig guide til Kreta. Sanntidsdata. Ingen annonser (ennå). Ingen sporing.",

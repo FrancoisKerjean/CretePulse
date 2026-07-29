@@ -72,7 +72,6 @@
     "liveFromIsland": "élőben a szigetről",
     "heroSub": "Élőben számolva · 10 időjárás-állomás × 500 strand tájolása.",
     "ctaBeach": "Mutasd a mai strandot",
-    "air": "levegő",
     "sea": "tenger",
     "islandNow": "A sziget, most",
     "allStations": "Összes állomás",
@@ -110,7 +109,20 @@
       "weather": "Időjárás",
       "weatherLine": "10 állomás + tenger"
     },
-    "nextEvents": "Közelgő események"
+    "nextEvents": "Közelgő események",
+    "barometer": {
+      "sea": "{temp}° a vízben, szél {wind} km/h, levegő {air}°",
+      "cruise": "Akár {pax} hajósutas ma {port} kikötőjében",
+      "buses": "{count, plural, one {# busz élőben nyomon követve} other {# busz élőben nyomon követve}}",
+      "src": { "weather": "időjárás-állomások", "port": "hivatalos kikötői menetrend", "gps": "GPS, 5 percenként" }
+    },
+    "serviceRail": {
+      "title": "Foglaljon közvetlenül",
+      "lead": "Szolgáltatások a szigetről működtetve. Nemzetközi közvetítő nélkül, rejtett jutalék nélkül.",
+      "van": { "kicker": "Közös kisbusz", "title": "Repülőtértől a városig", "sub": "Már 40 €-tól ülésenként, olyan útvonalakon, amelyeket a busz nem fed le.", "cta": "Útvonalak megtekintése" },
+      "activities": { "kicker": "Programok", "title": "Túrázás, hajó, főzés", "sub": "Több helyi szolgáltató ad árajánlatot a kérésére.", "cta": "Árajánlat kérése" },
+      "stays": { "kicker": "Villa és ház", "title": "Bérlés Airbnb nélkül", "sub": "A tulajdonos szabja meg az árat, Ön 5 % díjat fizet a kb. 14 % helyett.", "cta": "Szállások megtekintése" }
+    }
   },
   "footer": {
     "about": "Ingyenes, független Kréta-útmutató. Élő adatok. Nincs reklám (egyelőre). Nincs nyomon követés.",

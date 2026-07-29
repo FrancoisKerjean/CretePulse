@@ -72,7 +72,6 @@
     "liveFromIsland": "na żywo z wyspy",
     "heroSub": "Liczone na żywo · 10 stacji pogodowych × orientacja 500 plaż.",
     "ctaBeach": "Zobacz dzisiejszą plażę",
-    "air": "powietrze",
     "sea": "morze",
     "islandNow": "Wyspa, właśnie teraz",
     "allStations": "Wszystkie stacje",
@@ -110,7 +109,20 @@
       "weather": "Pogoda",
       "weatherLine": "10 stacji + morze"
     },
-    "nextEvents": "Nadchodzące wydarzenia"
+    "nextEvents": "Nadchodzące wydarzenia",
+    "barometer": {
+      "sea": "{temp}° w wodzie, wiatr {wind} km/h, powietrze {air}°",
+      "cruise": "Nawet {pax} pasażerów wycieczkowców dziś w {port}",
+      "buses": "{count, plural, one {# autobus śledzony na żywo} few {# autobusy śledzone na żywo} many {# autobusów śledzonych na żywo} other {# autobusa śledzonego na żywo}}",
+      "src": { "weather": "stacje pogodowe", "port": "oficjalny rozkład portu", "gps": "GPS, co 5 min" }
+    },
+    "serviceRail": {
+      "title": "Rezerwuj bezpośrednio",
+      "lead": "Usługi prowadzone z wyspy. Bez międzynarodowego pośrednika, bez ukrytej prowizji.",
+      "van": { "kicker": "Wspólny van", "title": "Z lotniska do miasta", "sub": "Już od 40 € za miejsce, na trasach, których nie obsługuje autobus.", "cta": "Zobacz trasy" },
+      "activities": { "kicker": "Atrakcje", "title": "Piesze wycieczki, łódź, gotowanie", "sub": "Kilku lokalnych operatorów wycenia Twoje zapytanie.", "cta": "Poproś o wycenę" },
+      "stays": { "kicker": "Willa i dom", "title": "Wynajmij bez Airbnb", "sub": "Właściciel ustala cenę, Ty płacisz 5 % prowizji zamiast około 14 %.", "cta": "Zobacz noclegi" }
+    }
   },
   "footer": {
     "about": "Darmowy, niezależny przewodnik po Krecie. Dane na żywo. Bez reklam (na razie). Bez śledzenia.",

@@ -72,7 +72,6 @@
     "liveFromIsland": "live from the island",
     "heroSub": "Computed live · 10 weather stations × the orientation of 500 beaches.",
     "ctaBeach": "See today's beach",
-    "air": "air",
     "sea": "sea",
     "islandNow": "The island, right now",
     "allStations": "All stations",
@@ -110,7 +109,20 @@
       "weather": "Weather",
       "weatherLine": "10 stations + sea"
     },
-    "nextEvents": "Upcoming events"
+    "nextEvents": "Upcoming events",
+    "barometer": {
+      "sea": "{temp}° in the water, wind {wind} km/h, air {air}°",
+      "cruise": "Up to {pax} cruise passengers in {port} today",
+      "buses": "{count, plural, one {# bus tracked live} other {# buses tracked live}}",
+      "src": { "weather": "weather stations", "port": "official port schedule", "gps": "GPS, every 5 min" }
+    },
+    "serviceRail": {
+      "title": "Book direct",
+      "lead": "Services run from the island. No international middleman, no hidden commission.",
+      "van": { "kicker": "Shared van", "title": "Airport to town", "sub": "From 40 € a seat, on routes the bus does not cover.", "cta": "See routes" },
+      "activities": { "kicker": "Activities", "title": "Hiking, boat, cooking", "sub": "Several local operators quote your request.", "cta": "Get a quote" },
+      "stays": { "kicker": "Villa and house", "title": "Rent without Airbnb", "sub": "The owner sets the price, you pay 5 % in fees instead of about 14 %.", "cta": "See places" }
+    }
   },
   "footer": {
     "about": "Free, independent guide to Crete. Live data. No ads (yet). No tracking.",

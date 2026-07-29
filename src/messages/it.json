@@ -72,7 +72,6 @@
     "liveFromIsland": "in diretta dall'isola",
     "heroSub": "Calcolato in diretta · 10 stazioni meteo × l'orientamento di 500 spiagge.",
     "ctaBeach": "Scopri la spiaggia del giorno",
-    "air": "aria",
     "sea": "mare",
     "islandNow": "L'isola, proprio ora",
     "allStations": "Tutte le stazioni",
@@ -110,7 +109,20 @@
       "weather": "Meteo",
       "weatherLine": "10 stazioni + mare"
     },
-    "nextEvents": "Prossimi eventi"
+    "nextEvents": "Prossimi eventi",
+    "barometer": {
+      "sea": "{temp}° in acqua, vento {wind} km/h, aria {air}°",
+      "cruise": "Fino a {pax} passeggeri da crociera oggi a {port}",
+      "buses": "{count, plural, one {# autobus tracciato in diretta} other {# autobus tracciati in diretta}}",
+      "src": { "weather": "stazioni meteo", "port": "calendario ufficiale del porto", "gps": "GPS, ogni 5 min" }
+    },
+    "serviceRail": {
+      "title": "Prenota diretto",
+      "lead": "Servizi gestiti dall'isola. Senza intermediario internazionale, senza commissione nascosta.",
+      "van": { "kicker": "Van condiviso", "title": "Dall'aeroporto in città", "sub": "Da 40 € a posto, su tratte non coperte dal bus.", "cta": "Vedi le tratte" },
+      "activities": { "kicker": "Attività", "title": "Trekking, barca, cucina", "sub": "Diversi operatori locali preventivano la tua richiesta.", "cta": "Richiedi un preventivo" },
+      "stays": { "kicker": "Villa e casa", "title": "Affitta senza Airbnb", "sub": "Il proprietario fissa il prezzo, tu paghi il 5 % di commissione invece di circa il 14 %.", "cta": "Vedi gli alloggi" }
+    }
   },
   "footer": {
     "about": "Guida gratuita e indipendente su Creta. Dati live. Niente pubblicità (ancora). Niente tracking.",

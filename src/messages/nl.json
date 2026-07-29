@@ -72,7 +72,6 @@
     "liveFromIsland": "live vanaf het eiland",
     "heroSub": "Live berekend · 10 weerstations × de ligging van 500 stranden.",
     "ctaBeach": "Bekijk het strand van vandaag",
-    "air": "lucht",
     "sea": "zee",
     "islandNow": "Het eiland, nu meteen",
     "allStations": "Alle stations",
@@ -110,7 +109,20 @@
       "weather": "Weer",
       "weatherLine": "10 stations + zee"
     },
-    "nextEvents": "Komende evenementen"
+    "nextEvents": "Komende evenementen",
+    "barometer": {
+      "sea": "{temp}° in het water, wind {wind} km/h, lucht {air}°",
+      "cruise": "Tot {pax} cruisepassagiers vandaag in {port}",
+      "buses": "{count, plural, one {# bus live gevolgd} other {# bussen live gevolgd}}",
+      "src": { "weather": "weerstations", "port": "officieel havenschema", "gps": "GPS, elke 5 min" }
+    },
+    "serviceRail": {
+      "title": "Rechtstreeks boeken",
+      "lead": "Diensten vanaf het eiland. Zonder internationale tussenpersoon, zonder verborgen commissie.",
+      "van": { "kicker": "Gedeelde bus", "title": "Luchthaven naar stad", "sub": "Vanaf 40 € per zitplaats, op routes die de bus niet doet.", "cta": "Bekijk routes" },
+      "activities": { "kicker": "Activiteiten", "title": "Wandelen, boot, koken", "sub": "Meerdere lokale aanbieders maken een offerte voor uw aanvraag.", "cta": "Offerte aanvragen" },
+      "stays": { "kicker": "Villa en huis", "title": "Huur zonder Airbnb", "sub": "De eigenaar bepaalt de prijs, u betaalt 5 % kosten in plaats van ongeveer 14 %.", "cta": "Bekijk verblijven" }
+    }
   },
   "footer": {
     "about": "Gratis, onafhankelijke gids voor Kreta. Live data. Geen advertenties (nog). Geen tracking.",

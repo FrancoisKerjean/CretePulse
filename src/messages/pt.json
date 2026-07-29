@@ -72,7 +72,6 @@
     "liveFromIsland": "em direto da ilha",
     "heroSub": "Calculado em direto · 10 estações meteorológicas × a orientação de 500 praias.",
     "ctaBeach": "Ver a praia de hoje",
-    "air": "ar",
     "sea": "mar",
     "islandNow": "A ilha, agora mesmo",
     "allStations": "Todas as estações",
@@ -110,7 +109,20 @@
       "weather": "Meteorologia",
       "weatherLine": "10 estações + mar"
     },
-    "nextEvents": "Próximos eventos"
+    "nextEvents": "Próximos eventos",
+    "barometer": {
+      "sea": "{temp}° na água, vento {wind} km/h, ar {air}°",
+      "cruise": "Até {pax} passageiros de cruzeiro hoje em {port}",
+      "buses": "{count, plural, one {# autocarro seguido em direto} other {# autocarros seguidos em direto}}",
+      "src": { "weather": "estações meteorológicas", "port": "calendário oficial do porto", "gps": "GPS, a cada 5 min" }
+    },
+    "serviceRail": {
+      "title": "Reserve diretamente",
+      "lead": "Serviços operados a partir da ilha. Sem intermediário internacional, sem comissão oculta.",
+      "van": { "kicker": "Van partilhada", "title": "Do aeroporto para a cidade", "sub": "A partir de 40 € por lugar, em trajetos que o autocarro não cobre.", "cta": "Ver trajetos" },
+      "activities": { "kicker": "Atividades", "title": "Caminhadas, barco, culinária", "sub": "Vários operadores locais orçamentam o seu pedido.", "cta": "Pedir orçamento" },
+      "stays": { "kicker": "Vila e casa", "title": "Alugue sem Airbnb", "sub": "O proprietário fixa o preço, você paga 5 % de comissão em vez de cerca de 14 %.", "cta": "Ver alojamentos" }
+    }
   },
   "footer": {
     "about": "Guia gratuito e independente de Creta. Dados em tempo real. Sem anúncios (por enquanto). Sem rastreamento.",

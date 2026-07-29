@@ -72,7 +72,6 @@
     "liveFromIsland": "live von der Insel",
     "heroSub": "Live berechnet · 10 Wetterstationen × die Ausrichtung von 500 Stränden.",
     "ctaBeach": "Strand des Tages",
-    "air": "Luft",
     "sea": "Meer",
     "islandNow": "Die Insel, jetzt",
     "allStations": "Alle Stationen",
@@ -110,7 +109,20 @@
       "weather": "Wetter",
       "weatherLine": "10 Stationen + Meer"
     },
-    "nextEvents": "Nächste Events"
+    "nextEvents": "Nächste Events",
+    "barometer": {
+      "sea": "{temp}° im Wasser, Wind {wind} km/h, Luft {air}°",
+      "cruise": "Bis zu {pax} Kreuzfahrtgäste heute in {port}",
+      "buses": "{count, plural, one {# Bus live verfolgt} other {# Busse live verfolgt}}",
+      "src": { "weather": "Wetterstationen", "port": "offizieller Hafenkalender", "gps": "GPS, alle 5 Min." }
+    },
+    "serviceRail": {
+      "title": "Direkt buchen",
+      "lead": "Dienste, die von der Insel aus betrieben werden. Ohne internationalen Zwischenhändler, ohne versteckte Provision.",
+      "van": { "kicker": "Sammelvan", "title": "Flughafen in die Stadt", "sub": "Ab 40 € pro Sitz, auf Strecken ohne Busverbindung.", "cta": "Strecken ansehen" },
+      "activities": { "kicker": "Aktivitäten", "title": "Wandern, Boot, Kochen", "sub": "Mehrere örtliche Anbieter machen Ihnen ein Angebot.", "cta": "Angebot anfordern" },
+      "stays": { "kicker": "Villa und Haus", "title": "Mieten ohne Airbnb", "sub": "Der Eigentümer setzt den Preis, Sie zahlen 5 % Gebühren statt rund 14 %.", "cta": "Unterkünfte ansehen" }
+    }
   },
   "footer": {
     "about": "Kostenloser, unabhängiger Kreta-Reiseführer. Live-Daten. Keine Werbung (noch). Kein Tracking.",
