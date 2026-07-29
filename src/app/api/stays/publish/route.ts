@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getListingBySlug, publishListing } from "@/lib/stays/db";
-import { parseICalText } from "@/lib/stays/ical";
+import { syncListingFromIcal } from "@/lib/stays/ical-apply";
 import { hashToken } from "@/lib/stays/tokens";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -22,12 +22,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 403 });
   }
 
+  let text: string;
   try {
     const res = await fetch(icalUrl);
     if (!res.ok) throw new Error("fetch failed");
-    const text = await res.text();
-    const events = parseICalText(text);
-    void events;
+    text = await res.text();
   } catch {
     return NextResponse.json(
       { ok: false, error: "Could not read the private iCal" },
@@ -36,5 +35,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   await publishListing(listing.id, icalUrl);
-  return NextResponse.json({ ok: true, status: "published" });
+
+  // Le flux etait lu puis jete : une annonce publiee arrivait avec un calendrier
+  // vide, et le proprietaire reste sur Airbnb louait deux fois les memes nuits.
+  // On ecrit desormais les nuits OTA des la publication.
+  let sync = { blocked: 0, released: 0 };
+  try {
+    sync = await syncListingFromIcal(listing.id, text);
+  } catch (e) {
+    // L'annonce est publiee, c'est un fait. Une synchro ratee se rattrape au
+    // passage suivant du cron ; la faire echouer ici perdrait la publication.
+    console.error("[stays/publish] synchronisation iCal echouee", { listingId: listing.id, error: e });
+  }
+
+  return NextResponse.json({ ok: true, status: "published", sync });
 }
