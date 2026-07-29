@@ -103,6 +103,36 @@ describe("POST /api/car-rental/commission/webhook", () => {
     expect(updates).toHaveLength(0);
   });
 
+  it("marque une reservation payee et fixe l echeance de versement", async () => {
+    // Second type d'evenement sur le meme endpoint : le paiement du voyageur.
+    constructEvent.mockReturnValueOnce({
+      id: "evt_book",
+      type: "checkout.session.completed",
+      data: { object: {
+        id: "cs_b1", payment_intent: "pi_b1",
+        metadata: { car_request_id: "25", payment_type: "car_booking", brand: "crete.direct" },
+      } },
+    });
+    const updates: Array<Record<string, unknown>> = [];
+    from.mockImplementation((table: string) => {
+      if (table === "stripe_webhook_events") return { insert: async () => ({ error: null }) };
+      return {
+        select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { id: 25, date_from: "2026-09-25" } }) }) }),
+        update: (patch: Record<string, unknown>) => { updates.push(patch); return { eq: async () => ({ error: null }) }; },
+      };
+    });
+
+    const res = await POST(req() as never);
+
+    expect(res.status).toBe(200);
+    expect((await res.json()).booking).toBe(true);
+    expect(updates[0].booking_status).toBe("paid");
+    expect(updates[0].booking_payment_intent_id).toBe("pi_b1");
+    // 48 h avant le debut : le versement au loueur ne peut pas partir avant la
+    // fermeture du droit au remboursement.
+    expect(updates[0].transfer_due_at).toBe("2026-09-23T00:00:00.000Z");
+  });
+
   it("inscrit l evenement au registre sous le scope car", async () => {
     constructEvent.mockReturnValueOnce(event(CAR_META));
     const inserts: Array<Record<string, unknown>> = [];
