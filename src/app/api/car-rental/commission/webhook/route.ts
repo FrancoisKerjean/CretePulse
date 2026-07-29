@@ -77,6 +77,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       })
       .eq("id", requestId);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    // Mise en relation SEULEMENT ici : avant paiement, le client aurait le
+    // numero du loueur et aucune raison de payer sur crete.direct.
+    const { notifyBookingPaid } = await import("@/lib/car-booking-server");
+    await notifyBookingPaid(requestId);
+
     return NextResponse.json({ received: true, booking: true });
   }
 

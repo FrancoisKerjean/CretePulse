@@ -3,6 +3,8 @@ import {
   bookingTotalEur,
   bookingBreakdownCents,
   buildBookingCheckoutParams,
+  bookingPaidPartnerBody,
+  bookingPaidCustomerBody,
 } from "./car-booking";
 import { CANCELLATION_OPTION_EUR } from "./booking-policy";
 
@@ -102,5 +104,50 @@ describe("buildBookingCheckoutParams", () => {
 
   it("nomme crete.direct sur le releve du client", () => {
     expect(params.payment_intent_data?.statement_descriptor_suffix).toBe("CRETE DIRECT");
+  });
+});
+
+describe("emails de reservation payee", () => {
+  const info = {
+    requestId: 25,
+    partnerName: "Zorbas Rent a Car",
+    partnerPhone: "+30 690 000 0000",
+    customerName: "Natasha Ferdinand",
+    customerEmail: "n@example.com",
+    customerPhone: "+33 6 00 00 00 00",
+    carLabel: "City car · Manual",
+    pickupLabel: "Chania Airport",
+    dateFrom: "2026-09-25",
+    dateTo: "2026-10-09",
+    amountPaidEur: 315,
+    hasOption: true,
+    cancelUrl: "https://crete.direct/fr/car-booking/tok/cancel",
+  };
+
+  it("donne au loueur les coordonnees du client et dit que c est deja paye", () => {
+    const body = bookingPaidPartnerBody(info);
+    expect(body).toContain("Natasha Ferdinand");
+    expect(body).toContain("n@example.com");
+    expect(body).toContain("+33 6 00 00 00 00");
+    expect(body).toContain("Chania Airport");
+    // Le loueur ne doit surtout pas redemander le paiement au client.
+    expect(body).toMatch(/already paid|paid online/i);
+    // Il doit savoir quand il touche son argent.
+    expect(body).toMatch(/48 hours/i);
+  });
+
+  it("ne divulgue pas la commission au client", () => {
+    const body = bookingPaidCustomerBody(info);
+    expect(body).not.toMatch(/commission/i);
+    expect(body).toContain("Zorbas Rent a Car");
+    expect(body).toContain("315.00");
+  });
+
+  it("donne au client son lien d annulation seulement s il a l option", () => {
+    expect(bookingPaidCustomerBody(info)).toContain(info.cancelUrl);
+    const without = bookingPaidCustomerBody({ ...info, hasOption: false });
+    expect(without).not.toContain(info.cancelUrl);
+    // Et il doit savoir qu il n a pas de remboursement possible.
+    expect(without).toMatch(/no refund|not refundable/i);
   });
 });

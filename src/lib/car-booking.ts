@@ -123,3 +123,73 @@ export function buildBookingCheckoutParams(
     cancel_url: `${base}/${input.locale}/car-booking/${input.bookingToken}`,
   };
 }
+
+export interface BookingPaidInfo {
+  requestId: number;
+  partnerName: string;
+  partnerPhone?: string | null;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string | null;
+  carLabel: string;
+  pickupLabel: string;
+  dateFrom: string;
+  dateTo: string;
+  amountPaidEur: number;
+  hasOption: boolean;
+  cancelUrl: string;
+}
+
+/**
+ * Au loueur. Deux choses qu'il doit lire sans ambiguite : le client a DEJA paye,
+ * il ne faut rien lui redemander a la prise du vehicule ; et son versement part
+ * 48 h avant la prise, pas apres la location.
+ */
+export function bookingPaidPartnerBody(i: BookingPaidInfo): string {
+  return [
+    `Hi ${i.partnerName.split(" ")[0]},`,
+    ``,
+    `A booking has been paid online on crete.direct. Reference ${i.requestId}.`,
+    ``,
+    `Pick-up: ${i.pickupLabel}`,
+    `Dates: ${i.dateFrom} to ${i.dateTo}`,
+    `Car: ${i.carLabel}`,
+    ``,
+    `Customer: ${i.customerName}`,
+    `Email: ${i.customerEmail}`,
+    `Phone: ${i.customerPhone ?? "-"}`,
+    ``,
+    `The customer has already paid the rental in full. Do not ask for the rental amount at pick-up.`,
+    `Your payout, rental minus commission, is sent 48 hours before pick-up.`,
+    ``,
+    `Any question on this booking, just reply to this email.`,
+  ].join("\n");
+}
+
+/**
+ * Au client. Il ne voit jamais la commission : ce qu'il a paye est le prix
+ * annonce, la repartition ne le regarde pas. Le lien d'annulation n'existe que
+ * s'il a pris l'option, sinon lui en donner un serait mentir.
+ */
+export function bookingPaidCustomerBody(i: BookingPaidInfo): string {
+  return [
+    `Hi ${i.customerName.split(" ")[0]},`,
+    ``,
+    `Your car is booked with ${i.partnerName}.`,
+    ``,
+    `Pick-up: ${i.pickupLabel}`,
+    `Dates: ${i.dateFrom} to ${i.dateTo}`,
+    `Car: ${i.carLabel}`,
+    `Paid: ${i.amountPaidEur.toFixed(2)} EUR`,
+    ...(i.partnerPhone ? [`Rental company phone: ${i.partnerPhone}`] : []),
+    ``,
+    ...(i.hasOption
+      ? [
+          `You took the cancellation option: full refund if you cancel more than 48 hours before pick-up.`,
+          i.cancelUrl,
+        ]
+      : [`You did not take the cancellation option: no refund applies if you cancel.`]),
+    ``,
+    `The rental company will confirm the pick-up arrangements.`,
+  ].join("\n");
+}
