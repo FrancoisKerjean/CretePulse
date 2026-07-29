@@ -44,7 +44,33 @@ function wiring(opts: { lockRows?: unknown[]; request?: unknown } = {}) {
 }
 
 describe("requestCommission", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Interrupteur allume pour les cas nominaux ; son extinction a son propre test.
+    process.env.CAR_COMMISSION_ENABLED = "on";
+  });
+
+  it("eteint par defaut : ni session Stripe, ni email, ni ecriture", async () => {
+    // Tant que le systeme n'est pas juge pret, aucune facture ne doit partir chez
+    // un loueur reel, meme si le code est deja deploye en production.
+    delete process.env.CAR_COMMISSION_ENABLED;
+    const updates = wiring();
+    const res = await requestCommission(42);
+    expect(res.status).toBe("disabled");
+    expect(sessionsCreate).not.toHaveBeenCalled();
+    expect(sendPartnerCommissionRequest).not.toHaveBeenCalled();
+    expect(updates).toHaveLength(0);
+  });
+
+  it("toute valeur autre que \"on\" laisse le systeme eteint", async () => {
+    for (const value of ["", "off", "true", "1", "ON "]) {
+      process.env.CAR_COMMISSION_ENABLED = value;
+      vi.clearAllMocks();
+      wiring();
+      expect((await requestCommission(42)).status).toBe("disabled");
+      expect(sessionsCreate).not.toHaveBeenCalled();
+    }
+  });
 
   it("cree la session, note l id et ecrit au loueur", async () => {
     const updates = wiring();

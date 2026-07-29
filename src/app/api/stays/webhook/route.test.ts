@@ -143,7 +143,14 @@ describe("POST /api/stays/webhook", () => {
 
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({ conflict: true, refunded: true });
-    expect(refundsCreate).toHaveBeenCalledWith({ payment_intent: "pi_1" });
+    // Charge de destination : l'acompte est DEJA parti chez le proprietaire.
+    // Sans reverse_transfer, crete.direct rembourse le voyageur de sa poche et le
+    // proprietaire garde l'argent d'un sejour qui n'aura pas lieu.
+    expect(refundsCreate).toHaveBeenCalledWith({
+      payment_intent: "pi_1",
+      reverse_transfer: true,
+      refund_application_fee: true,
+    });
     expect(sendGuestConflict).toHaveBeenCalledWith(
       "j@x.com",
       expect.objectContaining({ listingTitle: "Villa Danae", amountEur: 220.5 }),

@@ -14,8 +14,24 @@ import {
 } from "./car-commission";
 import { classifyStripeFailure, stripeLogFields } from "./stripe-errors";
 
+/**
+ * Interrupteur d'armement. **Eteint par defaut, et il doit le rester** tant que
+ * le systeme n'est pas juge pret : le code est deploye en production bien avant
+ * que la premiere facture ne doive partir, et une facture part chez un loueur
+ * reel, avec un email et un lien de paiement. Seule la valeur exacte "on" arme
+ * le systeme ; toute autre valeur, y compris "true" ou "1", le laisse eteint.
+ *
+ * Pour l'allumer : poser CAR_COMMISSION_ENABLED=on sur Vercel **puis
+ * redeployer**, la variable etant figee dans l'image du deploiement.
+ */
+function commissionEnabled(): boolean {
+  return process.env.CAR_COMMISSION_ENABLED === "on";
+}
+
 export type CommissionOutcome =
   | { status: "requested"; sessionId: string; url: string | null }
+  /** Interrupteur eteint : rien n'a ete tente, rien n'a ete ecrit. */
+  | { status: "disabled" }
   /** Rien a facturer : pas louee, deja reglee, montant sous le minimum Stripe. */
   | { status: "skipped" }
   /** Un autre appel a pris le verrou : la demande est deja partie. */
@@ -29,6 +45,10 @@ type RequestRow = CommissionCandidate & {
 };
 
 export async function requestCommission(requestId: number): Promise<CommissionOutcome> {
+  // Premiere garde, avant toute lecture : eteint, on ne touche ni la base, ni
+  // Stripe, ni la boite mail du loueur.
+  if (!commissionEnabled()) return { status: "disabled" };
+
   const { data: req } = await supabaseAdmin
     .from("car_requests")
     .select(
