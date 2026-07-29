@@ -7,8 +7,11 @@
 // Difference avec les jetons d'acceptation ou de paiement : celui-ci est STABLE.
 // Un proprietaire garde son lien dans sa boite mail pendant des mois, on ne le
 // regenere jamais tant qu'il existe.
-import { supabaseAdmin } from "../supabase-admin";
-import { newToken, hashToken, siteBase } from "./tokens";
+// Imports relatifs avec extension .ts : ce module est importe par
+// scripts/backfill-owner-tokens.mjs, execute en Node pur (--experimental-strip-types),
+// qui ne resout pas les imports sans extension.
+import { supabaseAdmin } from "../supabase-admin.ts";
+import { newToken, hashToken, siteBase } from "./tokens.ts";
 
 /**
  * Cree le jeton d'espace du proprietaire s'il n'en a pas encore.
