@@ -14,6 +14,12 @@ const page = await browser.newPage({
   viewport: { width: 1200, height: 630 },
   deviceScaleFactor: 2,
 });
+// Le barometre du hero affiche l'escale du jour, nom du navire et horaires
+// compris. Une image OG est figee jusqu'a la prochaine capture : elle
+// annoncerait « Marella Voyager 07:00-15:00 » pendant des semaines. On coupe
+// donc /api/island-now pendant la capture, le panneau se limite a la ligne mer
+// (rendue cote serveur), qui vieillit sans mentir sur un fait precis.
+await page.route("**/api/island-now", (route) => route.abort());
 await page.goto(TARGET, { waitUntil: "load", timeout: 60000 });
 await page.waitForTimeout(4500); // laisse l'animation GSAP du hero se poser
 await page.screenshot({ path: OUT, type: "jpeg", quality: 88 });
