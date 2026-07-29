@@ -82,13 +82,13 @@ export function guestReceivedBody(o: {
   dateFrom: string;
   dateTo: string;
 }): string {
-  // Volontairement AUCUNE promesse d'expiration automatique : le cron d'expiration
-  // est hors perimetre (lot B, tache 10, decalee le 29/07). Ne pas ajouter de delai
-  // ici tant que ce cron n'existe pas.
+  // Le delai annonce ici est TENU par /api/cron/stays-expire (livre le 30/07).
+  // Les deux doivent bouger ensemble : si le cron change de delai ou disparait,
+  // cette phrase devient un mensonge.
   return `<div style="font-family:Inter,Arial,sans-serif;color:#1A1A2E">
     <p>Votre demande pour <strong>${o.listingTitle}</strong>, du <strong>${o.dateFrom}</strong> au <strong>${o.dateTo}</strong>, est partie chez le propriétaire.</p>
     <p>Il confirme ses dates et son prix, puis vous recevez un lien de paiement. <strong>Rien n'est prélevé avant votre accord.</strong></p>
-    <p>Sans réponse de sa part sous quelques jours, écrivez nous en répondant à ce message.</p>
+    <p>Sans réponse de sa part sous 7 jours, votre demande se ferme d'elle-même et nous vous prévenons. <strong>Rien ne vous sera prélevé.</strong></p>
   </div>`;
 }
 
@@ -317,4 +317,20 @@ export async function sendOwnerWelcome(
   locale: string,
 ): Promise<void> {
   await send(ownerEmail, ownerWelcomeSubject(o.listingTitle, locale), ownerWelcomeHtml(o, locale));
+}
+
+/** Expiration d'une demande restee sans reponse du proprietaire. */
+export async function sendGuestExpired(
+  guestEmail: string,
+  o: { listingTitle: string; dateFrom: string; dateTo: string },
+): Promise<void> {
+  await send(
+    guestEmail,
+    `Demande sans réponse : ${o.listingTitle}`,
+    `<div style="font-family:Inter,Arial,sans-serif;color:#0B3954;line-height:1.55">
+      <p style="margin:0 0 12px">Le propriétaire de <strong>${o.listingTitle}</strong> n'a pas répondu à votre demande du <strong>${o.dateFrom}</strong> au <strong>${o.dateTo}</strong>.</p>
+      <p style="margin:0 0 12px">Elle est close, et <strong>rien ne vous a été prélevé</strong>.</p>
+      <p style="margin:0">D'autres logements restent ouverts sur crete.direct. Toutes nos excuses pour ce silence.</p>
+    </div>`,
+  );
 }

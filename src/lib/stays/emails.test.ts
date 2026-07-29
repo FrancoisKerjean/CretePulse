@@ -61,8 +61,10 @@ describe("email builders", () => {
     });
     expect(html).toContain("2026-08-01");
     expect(html).toMatch(/rien n'est prélevé/i);
-    // Aucune promesse d'expiration : le cron correspondant n'existe pas encore.
-    expect(html).not.toMatch(/\b7 jours\b|expire/i);
+    // Le délai est désormais TENU par /api/cron/stays-expire, livré le 30/07.
+    // Ce test était l'inverse tant que le cron n'existait pas : il a servi de
+    // garde-fou contre une promesse invérifiable, et il bascule avec le produit.
+    expect(html).toMatch(/\b7 jours\b/);
   });
 
   it("annonce le remboursement integral au voyageur", () => {
@@ -140,5 +142,17 @@ describe("mise en forme HTML de l accueil", () => {
 
   it("ne laisse aucune ligne vide produire un paragraphe fantome", () => {
     expect(ownerWelcomeHtml(o, "fr")).not.toContain("<p style=\"margin:0 0 12px\"></p>");
+  });
+});
+
+describe("coherence entre l accuse de reception et le cron d expiration", () => {
+  it("annonce le meme delai que celui applique par le cron", async () => {
+    // Promettre un delai qu on ne tient pas est pire que ne rien promettre :
+    // ce test casse si l un des deux bouge sans l autre.
+    const { EXPIRY_DAYS } = await import("../../app/api/cron/stays-expire/route");
+    const body = guestReceivedBody({
+      listingTitle: "Villa", dateFrom: "2026-08-01", dateTo: "2026-08-05",
+    });
+    expect(body).toContain(`${EXPIRY_DAYS} jours`);
   });
 });
