@@ -9,6 +9,7 @@
     { "path": "/api/cron/activity-relance", "schedule": "10 9 * * *" },
     { "path": "/api/cron/newsletter", "schedule": "0 5 * * 1" },
     { "path": "/api/cron/stays-balance", "schedule": "20 9 * * *" },
-    { "path": "/api/cron/car-transfers", "schedule": "30 9 * * *" }
+    { "path": "/api/cron/car-transfers", "schedule": "30 9 * * *" },
+    { "path": "/api/cron/google-ratings", "schedule": "40 4 * * 1" }
   ]
 }

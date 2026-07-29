@@ -64,6 +64,13 @@ export interface AdminPartner {
   // Sans lui, le cron de versement garde les fonds du client et le signale.
   stripe_connect_account_id?: string | null;
   kyc_status?: string | null;
+  // Note Google (migration 20260730_partner_google_rating), relevée par
+  // Places API. `google_rating_at` sans note = fiche cherchée, non trouvée.
+  google_place_id?: string | null;
+  google_rating?: number | null;
+  google_rating_count?: number | null;
+  google_maps_url?: string | null;
+  google_rating_at?: string | null;
 }
 
 export const OUTCOMES = ["rented", "lost"] as const;
