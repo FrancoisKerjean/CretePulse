@@ -282,6 +282,23 @@ Sans instrumentation, ce chantier n'est pas évaluable. Deux événements :
 **Baseline à battre** (30 jours avant bascule) : 71 clics `/car-rental` depuis la
 home, 0 clic van, 0 clic activités, 5,7 % de taux de clic du bloc commercial.
 
+> **Vérifié au navigateur le 29/07/2026, les deux events partent.** Contrôle sur
+> le build de production servi en local, `/en` en 390 px : scroll réel jusqu'au
+> rail, puis clic sur chacun des trois blocs. Relevé dans la file d'events
+> Plausible : trois `promo_impression`
+> (`block: "service-rail"`, `source: "home"`, `service: car | van | activities`)
+> et trois `service_rail_click` (`car`/`band`, `van`/`card`, `activities`/`card`).
+>
+> **Méthode, pour que le contrôle soit rejouable.** Deux pièges rendent ce test
+> faux s'ils sont ignorés. (1) Espionner `window.plausible` ne prouve rien : le
+> script Plausible **remplace** la fonction dès qu'il est chargé, l'espion ne voit
+> alors plus que les events émis avant, et on conclut à tort que rien ne part.
+> (2) Le script officiel ignore `localhost` et n'envoie aucune requête, donc
+> intercepter le réseau ne montre rien non plus. La bonne méthode : **empêcher le
+> chargement de `script.outbound-links.js`**, ce qui laisse en place le stub inline
+> du layout, puis lire `window.plausible.q` — la file contient exactement ce que le
+> vrai script enverrait.
+
 **Relevé J+14** après la mise en production, owner Claude : taux de clic du rail
 entier, répartition par service, et contrôle de non-régression sur
 `/explore`, `/buses` et `/beaches` depuis la home. Seuil d'alerte : si les clics
