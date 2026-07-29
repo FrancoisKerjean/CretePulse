@@ -33,6 +33,7 @@ const ZONES: { title: string; items: Shortcut[] }[] = [
       { icon: "≋", title: "FLUX_CRETE.EXE", sub: "stock touristes + capteurs", href: "/admin/flux" },
       { icon: "🚗", title: "CAR_ADMIN.EXE", sub: "demandes, devis, partenaires", href: "/admin/car-rental" },
       { icon: "⛵", title: "ACTIVITIES.EXE", sub: "demandes, devis, partenaires", href: "/admin/activities" },
+      { icon: "🏠", title: "STAYS.EXE", sub: "annonces, demandes, proprietaires", href: "/admin/stays" },
     ],
   },
   {
