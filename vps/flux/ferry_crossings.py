@@ -208,7 +208,7 @@ def persist(conn, port_code, movements):
     return inserted, updated
 
 
-def run(days, start=None, dry_run=False):
+def run(days, start=None, dry_run=False, max_minutes=None):
     session = requests.Session()
     session.headers["User-Agent"] = UA
     session.mount("https://", requests.adapters.HTTPAdapter(pool_maxsize=WORKERS))
@@ -221,10 +221,19 @@ def run(days, start=None, dry_run=False):
         conn.autocommit = True
     totals = {"seen": 0, "inserted": 0, "updated": 0}
     served = {}
+    # Budget de temps : quand GTP refuse, le collecteur attend pour de bon et un
+    # balayage peut deborder sur la passe quotidienne, que le verrou ferait
+    # alors sauter. On s'arrete net, et on DIT ce qui n'a pas ete collecte :
+    # un balayage tronque en silence se lirait comme une couverture complete.
+    deadline = None if not max_minutes else time.monotonic() + max_minutes * 60
+    skipped = []
     try:
         for port_code in PORTS:
             for offset in range(days):
                 day = first + timedelta(days=offset)
+                if deadline is not None and time.monotonic() > deadline:
+                    skipped.append((port_code, day))
+                    continue
                 stamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
                 try:
                     movements = collect_port(session, port_code, day, throttle, served)
@@ -257,6 +266,10 @@ def run(days, start=None, dry_run=False):
             conn.close()
     print(f"ferry_crossings: {totals['seen']} traversees, "
           f"{totals['inserted']} creees, {totals['updated']} mises a jour")
+    if skipped:
+        days_left = sorted({f"{p} {d}" for p, d in skipped})
+        print(f"ferry_crossings: BUDGET ATTEINT, {len(days_left)} journees NON collectees "
+              f"(de {days_left[0]} a {days_left[-1]})", file=sys.stderr)
     return totals
 
 
@@ -285,6 +298,8 @@ if __name__ == "__main__":
     parser.add_argument("--days", type=int, default=3, help="nombre de journees a partir du depart")
     parser.add_argument("--day", help="journee de depart YYYY-MM-DD (defaut : hier a Athenes)")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--max-minutes", type=int,
+                        help="budget de temps ; au-dela, on s'arrete et on dit ce qui manque")
     args = parser.parse_args()
     lock = None if args.dry_run else _single_run_lock()
     if not args.dry_run and lock is None:
@@ -293,7 +308,8 @@ if __name__ == "__main__":
     try:
         run(args.days,
             start=date.fromisoformat(args.day) if args.day else None,
-            dry_run=args.dry_run)
+            dry_run=args.dry_run,
+            max_minutes=args.max_minutes)
     except Exception as exc:
         print(f"ferry_crossings ERROR: {exc}", file=sys.stderr)
         sys.exit(1)
