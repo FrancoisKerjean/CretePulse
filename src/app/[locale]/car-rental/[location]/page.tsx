@@ -22,30 +22,82 @@ const STATIC_SERVED = ["chania-west", "rethymno", "heraklion-center"];
 
 type Params = { locale: string; location: string };
 
-const UI: Record<CarLocLocale, { home: string; carRental: string; back: string; wizardLead: string }> = {
+const UI: Record<CarLocLocale, {
+  home: string;
+  carRental: string;
+  back: string;
+  wizardLead: string;
+  processTitle: string;
+  process: [string, string, string];
+  trust: [string, string, string];
+}> = {
   en: {
     home: "Home",
     carRental: "Car rental",
     back: "All car rental in Crete",
     wizardLead: "Request this pick-up point. A local rental agency replies with a quote.",
+    processTitle: "Get a local car rental quote",
+    process: [
+      "Enter your dates and the car you need.",
+      "Local rental agencies receive your request.",
+      "Review the reply and pay the agency at pick-up.",
+    ],
+    trust: [
+      "This is a quote request, not an instant booking.",
+      "The agency confirms the price and rental conditions.",
+      "No online prepayment through Crete Direct.",
+    ],
   },
   fr: {
     home: "Accueil",
     carRental: "Location de voiture",
     back: "Toute la location de voiture en Crète",
     wizardLead: "Demandez ce point de prise en charge. Une agence locale répond avec un devis.",
+    processTitle: "Obtenir un devis de location local",
+    process: [
+      "Indiquez vos dates et le véhicule recherché.",
+      "Les agences locales reçoivent votre demande.",
+      "Consultez la réponse et payez l'agence à la prise du véhicule.",
+    ],
+    trust: [
+      "C'est une demande de devis, pas une réservation immédiate.",
+      "L'agence confirme le prix et les conditions de location.",
+      "Aucun prépaiement en ligne via Crete Direct.",
+    ],
   },
   de: {
     home: "Start",
     carRental: "Mietwagen",
     back: "Mietwagen auf Kreta",
     wizardLead: "Fragen Sie diesen Abholpunkt an. Eine lokale Agentur antwortet mit einem Angebot.",
+    processTitle: "Lokales Mietwagenangebot erhalten",
+    process: [
+      "Geben Sie Reisedaten und gewünschten Wagen an.",
+      "Lokale Vermieter erhalten Ihre Anfrage.",
+      "Prüfen Sie die Antwort und zahlen Sie bei der Abholung.",
+    ],
+    trust: [
+      "Dies ist eine Angebotsanfrage, keine Sofortbuchung.",
+      "Der Vermieter bestätigt Preis und Mietbedingungen.",
+      "Keine Online-Vorauszahlung über Crete Direct.",
+    ],
   },
   el: {
     home: "Αρχική",
     carRental: "Ενοικίαση αυτοκινήτου",
     back: "Όλη η ενοικίαση αυτοκινήτου στην Κρήτη",
     wizardLead: "Ζητήστε αυτό το σημείο παραλαβής. Ένα τοπικό γραφείο ενοικίασης απαντά με προσφορά.",
+    processTitle: "Λάβετε προσφορά από τοπικό γραφείο",
+    process: [
+      "Συμπληρώστε ημερομηνίες και τύπο αυτοκινήτου.",
+      "Τα τοπικά γραφεία λαμβάνουν το αίτημά σας.",
+      "Ελέγξτε την απάντηση και πληρώστε κατά την παραλαβή.",
+    ],
+    trust: [
+      "Πρόκειται για αίτημα προσφοράς, όχι άμεση κράτηση.",
+      "Το γραφείο επιβεβαιώνει τιμή και όρους ενοικίασης.",
+      "Χωρίς online προπληρωμή μέσω Crete Direct.",
+    ],
   },
 };
 
@@ -173,6 +225,25 @@ export default async function CarLocationPage(
           </h1>
           <p className="m-0 text-[15.5px] leading-relaxed text-text-muted">{t.intro}</p>
         </header>
+
+        <section aria-labelledby="quote-process-title" className="mb-7 rounded-3xl bg-white p-5 shadow-soft">
+          <h2 id="quote-process-title" className="m-0 font-heading text-xl font-extrabold text-text">
+            {ui.processTitle}
+          </h2>
+          <ol className="mt-4 grid list-none gap-3 p-0 sm:grid-cols-3">
+            {ui.process.map((item, index) => (
+              <li key={item} className="flex gap-3 text-[14px] leading-snug text-text-muted">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sun font-data text-xs font-bold text-text">
+                  {index + 1}
+                </span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ol>
+          <ul className="mt-4 grid gap-2 border-t border-border pt-4 text-[13px] font-semibold text-lagoon-deep sm:grid-cols-3">
+            {ui.trust.map((item) => <li key={item}>{item}</li>)}
+          </ul>
+        </section>
 
         <p className="mb-3 text-[15px] font-semibold text-text">{ui.wizardLead}</p>
         <Suspense fallback={null}>

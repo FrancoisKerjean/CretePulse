@@ -119,7 +119,7 @@ const COPY: Record<CarLandingSlug, CarLocationCopy> = {
     hub: { en: "Heraklion Airport (HER)", fr: "Aéroport d'Héraklion (HER)", de: "Flughafen Heraklion (HER)", el: "Αεροδρόμιο Ηρακλείου (HER)" },
     meta: {
       en: {
-        title: "Car Rental Heraklion Airport (HER) - local agency, no prepayment",
+        title: "Car Rental Heraklion Airport (HER) - No Prepayment",
         desc: "Rent a car at Heraklion Airport (HER) with a local agency. Meet at arrivals, pay on the spot, no online prepayment.",
       },
       fr: {

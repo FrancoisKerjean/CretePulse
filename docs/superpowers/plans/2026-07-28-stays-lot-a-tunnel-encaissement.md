@@ -1798,6 +1798,31 @@ curl -s -u "$SK:" https://api.stripe.com/v1/webhook_endpoints/we_1TyJZpEQ3UQbwGz
 
 Puis vérifier dans le dashboard Stripe, onglet du endpoint, que les premières livraisons passent en `200`.
 
+### Décisions tranchées en autonomie le 29/07 (session de mise en service)
+
+**D1. `check:stays` était rouge et invisible.** Le script attendait encore la sémantique
+d'avant la décision Kami du 25/07 (`basePriceEur` est un tarif À LA NUIT, pas un forfait) :
+il passait 700 pour un séjour de 7 nuits et attendait 735 de total. Il n'était appelé par
+aucune chaîne, donc il a dérivé en silence pendant que `pricing.ts` changeait. Corrigé pour
+la sémantique réelle, complété par l'invariant d'encaissement (fee acompte 1050 + fee solde
+2450 = commission 3500 centimes) et **branché dans `npm run check`**, donc désormais gardé
+par la CI. Commit `7cecc63`.
+
+**D2. Un `next build` local avant le merge.** La politique preview opt-in du repo
+(`[preview]` dans le message de commit) fait que Vercel annule le build des branches
+`feat/*` : le check Vercel de la PR #6 affiche « Canceled by Ignored Build Step ». Les 49
+commits n'ont donc jamais été validés par un `next build` en CI. Comme la promotion vers
+`main` est un build prod unique, un échec à ce moment laisserait `/fr/stays` en 404 sans
+rien signaler. Build lancé en local avant le merge, sortie redirigée vers un fichier (jamais
+`| tail`, qui masquerait le code de sortie derrière celui de `tail`).
+
+**D3. Promotion immédiate par le workflow, pas par un push `main`.** `master` ne se déploie
+pas : seule la promotion `master → main` déclenche le build prod, et elle est programmée à
+20 h Athènes. Attendre 20 h pour vérifier le 200 laisserait le webhook Stripe désactivé une
+journée entière et la séquence à moitié faite. Le geste retenu est
+`gh workflow run daily-deploy.yml`, prévu par le workflow lui-même (`workflow_dispatch`) et
+par le Step 5 ci-dessous. C'est le workflow qui pousse `main`, jamais moi.
+
 - [ ] **Step 5: Faire passer la CI et merger**
 
 ```bash
