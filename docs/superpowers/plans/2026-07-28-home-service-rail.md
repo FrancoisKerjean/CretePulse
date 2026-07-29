@@ -928,6 +928,7 @@ Attendu : la route renvoie un JSON avec `cruise` non nul si une escale est prév
 ## Suites hors de ce plan
 
 - **Réparation du capteur vols HER** : trou du 19 au 26/07, comptes gonflés jusqu'à 776 arrivées par jour. Owner Claude, butoir 04/08/2026. Tant qu'il n'est pas réparé, `stock` reste `null` et la quatrième ligne du baromètre n'existe pas.
-- **Allumage du bloc villa** : poser `STAYS_HOME_BLOCK=on` sur Vercel une fois `feat/stays-marketplace` mergée, `/stays` indexable et au moins une annonce réelle publiée.
+- **Allumage du bloc villa** : poser `STAYS_HOME_BLOCK=on` sur Vercel une fois `feat/stays-marketplace` mergée, `/stays` indexable et au moins une annonce réelle publiée. **Poser la variable ne suffit pas** : elle est figée dans l'image du déploiement, il faut redéployer. Sans redéploiement manuel, l'effet arrive au deploy automatique de 20h Athènes, donc jusqu'à 24 heures plus tard.
+- **Dette assumée** : `getUpcomingEvents(5)` charge encore 5 événements complets alors que la home ne s'en sert plus que pour tester `length === 0` dans le garde-fou de maintenance. Coût faible, la requête ne tourne qu'à la régénération ISR toutes les 2 h, mais c'est du poids mort. À remplacer par un comptage `head: true` au prochain passage sur `page.tsx`. Owner Claude, butoir 30/09/2026, sinon `ABANDONED`.
 - **Relevé J+14** de l'instrumentation, owner Claude : taux de clic du rail par service et contrôle de non-régression sur explore, bus et plages depuis la home. Seuil d'alerte et décision écrits en section 7 de la spec.
 - **Photo van** dédiée, owner Kami, butoir 15/08/2026. Le catalogue pointe `ferry.jpg` en attendant : un seul chemin à changer dans `home-services.ts`.

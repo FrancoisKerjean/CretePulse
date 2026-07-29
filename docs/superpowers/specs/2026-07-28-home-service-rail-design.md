@@ -211,6 +211,15 @@ Variable **non** préfixée `NEXT_PUBLIC_` : elle est lue côté serveur et le
 résultat descend en prop. Absente ou différente de `"on"` = bloc masqué. Défaut
 en production au lancement : absente, donc trois services affichés.
 
+**Piège opérationnel, à connaître avant de compter dessus.** Changer la valeur
+dans le tableau de bord Vercel ne suffit pas à allumer le bloc. Les variables
+d'environnement sont figées dans l'image de chaque déploiement : la nouvelle
+valeur ne prend effet qu'au **déploiement suivant**, pas à la prochaine
+régénération ISR. Comme la promotion vers la production est automatique une fois
+par jour à 20h Athènes, le délai réel entre le basculement du flag et son effet
+visible est **jusqu'à 24 heures**, pas les 2 heures que la durée de cache
+laisserait supposer. Pour un allumage immédiat, il faut redéployer.
+
 ## 6. Internationalisation
 
 22 locales dans `src/messages/*.json`, namespace `home` (62 clés en français
