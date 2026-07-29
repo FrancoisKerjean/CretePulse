@@ -27,6 +27,7 @@ export type StaysMetaKey =
   | "approve"
   | "pay"
   | "balance"
+  | "owner"
   | "terms";
 
 export type StaysStrings = {
@@ -128,6 +129,42 @@ export type StaysStrings = {
     errorPayouts: string;
     errorPayment: string;
   };
+  /** Espace privé du propriétaire, servi par jeton. Toujours noindex. */
+  owner: {
+    h1: string;
+    intro: string;
+    arrivalsTitle: string;
+    arrivalsEmpty: string;
+    calendarTitle: string;
+    calendarEmpty: string;
+    originSold: string;
+    originOta: string;
+    originOwner: string;
+    blockTitle: string;
+    blockFrom: string;
+    blockTo: string;
+    blockAction: string;
+    releaseAction: string;
+    priceTitle: string;
+    priceLabel: string;
+    cleaningLabel: string;
+    minNightsLabel: string;
+    statusOnline: string;
+    save: string;
+    saved: string;
+    moneyTitle: string;
+    moneyReceived: string;
+    moneyExpected: string;
+    moneyEmpty: string;
+    colGuest: string;
+    colDates: string;
+    colTotal: string;
+    colCommission: string;
+    colNet: string;
+    icalTitle: string;
+    icalHelp: string;
+    error: string;
+  };
   terms: {
     h1: string;
     paragraphs: Array<{ strong: string; text: string }>;
@@ -160,6 +197,10 @@ export const META: Record<StaysLocale, Record<StaysMetaKey, { title: string; des
       title: "Pay the balance · crete.direct Stays",
       desc: "Settle the remaining 70 % before you arrive.",
     },
+    owner: {
+      title: "Your place · crete.direct Stays",
+      desc: "Manage your listing, your calendar and your earnings.",
+    },
     terms: {
       title: "Terms · crete.direct Stays",
       desc: "crete.direct acts as a technical intermediary between owner and traveller. Commission, cancellation policy and responsibilities.",
@@ -189,6 +230,10 @@ export const META: Record<StaysLocale, Record<StaysMetaKey, { title: string; des
     balance: {
       title: "Réglez le solde · crete.direct Stays",
       desc: "Réglez les 70 % restants avant votre arrivée.",
+    },
+    owner: {
+      title: "Votre logement · crete.direct Stays",
+      desc: "Gérez votre annonce, votre calendrier et vos revenus.",
     },
     terms: {
       title: "Conditions · crete.direct Stays",
@@ -220,6 +265,10 @@ export const META: Record<StaysLocale, Record<StaysMetaKey, { title: string; des
       title: "Restbetrag zahlen · crete.direct Stays",
       desc: "Begleichen Sie die restlichen 70 % vor Ihrer Anreise.",
     },
+    owner: {
+      title: "Ihre Unterkunft · crete.direct Stays",
+      desc: "Verwalten Sie Unterkunft, Kalender und Einnahmen.",
+    },
     terms: {
       title: "Bedingungen · crete.direct Stays",
       desc: "crete.direct handelt als technischer Vermittler zwischen Eigentümer und Reisendem. Provision, Stornierung und Verantwortlichkeiten.",
@@ -249,6 +298,10 @@ export const META: Record<StaysLocale, Record<StaysMetaKey, { title: string; des
     balance: {
       title: "Πληρωμή υπολοίπου · crete.direct Stays",
       desc: "Εξοφλήστε το υπόλοιπο 70 % πριν την άφιξή σας.",
+    },
+    owner: {
+      title: "Το κατάλυμά σας · crete.direct Stays",
+      desc: "Διαχειριστείτε αγγελία, ημερολόγιο και έσοδα.",
     },
     terms: {
       title: "Όροι · crete.direct Stays",
@@ -371,6 +424,41 @@ export const L: Record<StaysLocale, StaysStrings> = {
         "Payouts are not open yet. Your request is safe: we come back to you as soon as your payout account can be created.",
       errorPayment:
         "Payment is temporarily unavailable. Try again in a few minutes; if it persists, write to contact@crete.direct.",
+    },
+    owner: {
+      h1: "Your place on crete.direct",
+      intro: "Everything about your listing, in one page. No account, no password: keep this link.",
+      arrivalsTitle: "Arrivals",
+      arrivalsEmpty: "No confirmed stay yet.",
+      calendarTitle: "Booked nights",
+      calendarEmpty: "Every night is open.",
+      originSold: "sold here",
+      originOta: "blocked by your calendar",
+      originOwner: "blocked by you",
+      blockTitle: "Block your own dates",
+      blockFrom: "From",
+      blockTo: "To",
+      blockAction: "Block",
+      releaseAction: "Release",
+      priceTitle: "Your price",
+      priceLabel: "Net price per night",
+      cleaningLabel: "Cleaning fee, once per stay",
+      minNightsLabel: "Minimum nights",
+      statusOnline: "Listing online",
+      save: "Save",
+      saved: "Saved.",
+      moneyTitle: "Your earnings",
+      moneyReceived: "Received",
+      moneyExpected: "Coming",
+      moneyEmpty: "Nothing yet.",
+      colGuest: "Guest",
+      colDates: "Dates",
+      colTotal: "Guest pays",
+      colCommission: "Commission",
+      colNet: "You get",
+      icalTitle: "Your calendar",
+      icalHelp: "Paste this link into Airbnb or Booking so they see the nights sold here.",
+      error: "Something went wrong. Please try again.",
     },
     terms: {
       h1: "Terms · crete.direct Stays",
@@ -511,6 +599,41 @@ export const L: Record<StaysLocale, StaysStrings> = {
         "Les versements ne sont pas encore ouverts. Votre demande est conservée : nous revenons vers vous dès que votre compte de versement peut être créé.",
       errorPayment:
         "Le paiement est momentanément indisponible. Réessayez dans quelques minutes ; si cela persiste, écrivez à contact@crete.direct.",
+    },
+    owner: {
+      h1: "Votre logement sur crete.direct",
+      intro: "Tout ce qui concerne votre annonce, sur une page. Sans compte ni mot de passe : gardez ce lien.",
+      arrivalsTitle: "Arrivées",
+      arrivalsEmpty: "Aucun séjour confirmé pour l'instant.",
+      calendarTitle: "Nuits occupées",
+      calendarEmpty: "Toutes les nuits sont ouvertes.",
+      originSold: "vendue ici",
+      originOta: "bloquée par votre calendrier",
+      originOwner: "bloquée par vous",
+      blockTitle: "Bloquer vos dates",
+      blockFrom: "Du",
+      blockTo: "Au",
+      blockAction: "Bloquer",
+      releaseAction: "Libérer",
+      priceTitle: "Votre prix",
+      priceLabel: "Prix net par nuit",
+      cleaningLabel: "Frais de ménage, une fois par séjour",
+      minNightsLabel: "Minimum de nuits",
+      statusOnline: "Annonce en ligne",
+      save: "Enregistrer",
+      saved: "Enregistré.",
+      moneyTitle: "Vos revenus",
+      moneyReceived: "Reçu",
+      moneyExpected: "À venir",
+      moneyEmpty: "Rien pour l'instant.",
+      colGuest: "Voyageur",
+      colDates: "Dates",
+      colTotal: "Le voyageur paie",
+      colCommission: "Commission",
+      colNet: "Vous touchez",
+      icalTitle: "Votre calendrier",
+      icalHelp: "Collez ce lien dans Airbnb ou Booking pour qu'ils voient les nuits vendues ici.",
+      error: "Une erreur est survenue. Réessayez.",
     },
     terms: {
       h1: "Conditions · crete.direct Stays",
@@ -654,6 +777,41 @@ export const L: Record<StaysLocale, StaysStrings> = {
       errorPayment:
         "Die Zahlung ist vorübergehend nicht verfügbar. Bitte in einigen Minuten erneut versuchen; bei anhaltendem Fehler an contact@crete.direct schreiben.",
     },
+    owner: {
+      h1: "Ihre Unterkunft auf crete.direct",
+      intro: "Alles zu Ihrer Unterkunft auf einer Seite. Ohne Konto und ohne Passwort: bewahren Sie diesen Link auf.",
+      arrivalsTitle: "Anreisen",
+      arrivalsEmpty: "Noch kein bestätigter Aufenthalt.",
+      calendarTitle: "Belegte Nächte",
+      calendarEmpty: "Alle Nächte sind frei.",
+      originSold: "hier verkauft",
+      originOta: "von Ihrem Kalender belegt",
+      originOwner: "von Ihnen belegt",
+      blockTitle: "Eigene Daten sperren",
+      blockFrom: "Von",
+      blockTo: "Bis",
+      blockAction: "Sperren",
+      releaseAction: "Freigeben",
+      priceTitle: "Ihr Preis",
+      priceLabel: "Nettopreis pro Nacht",
+      cleaningLabel: "Reinigungsgebühr, einmal pro Aufenthalt",
+      minNightsLabel: "Mindestnächte",
+      statusOnline: "Unterkunft online",
+      save: "Speichern",
+      saved: "Gespeichert.",
+      moneyTitle: "Ihre Einnahmen",
+      moneyReceived: "Erhalten",
+      moneyExpected: "Ausstehend",
+      moneyEmpty: "Noch nichts.",
+      colGuest: "Gast",
+      colDates: "Daten",
+      colTotal: "Gast zahlt",
+      colCommission: "Provision",
+      colNet: "Sie erhalten",
+      icalTitle: "Ihr Kalender",
+      icalHelp: "Fügen Sie diesen Link in Airbnb oder Booking ein, damit die hier verkauften Nächte sichtbar sind.",
+      error: "Es ist ein Fehler aufgetreten. Bitte erneut versuchen.",
+    },
     terms: {
       h1: "Bedingungen · crete.direct Stays",
       paragraphs: [
@@ -794,6 +952,41 @@ export const L: Record<StaysLocale, StaysStrings> = {
         "Οι πληρωμές προς τους ιδιοκτήτες δεν έχουν ενεργοποιηθεί ακόμη. Το αίτημά σας διατηρείται: επικοινωνούμε μαζί σας μόλις δημιουργηθεί ο λογαριασμός πληρωμών.",
       errorPayment:
         "Η πληρωμή δεν είναι προσωρινά διαθέσιμη. Δοκιμάστε ξανά σε λίγα λεπτά· αν επιμείνει, γράψτε στο contact@crete.direct.",
+    },
+    owner: {
+      h1: "Το κατάλυμά σας στο crete.direct",
+      intro: "Όλα για την αγγελία σας, σε μία σελίδα. Χωρίς λογαριασμό και κωδικό: κρατήστε αυτόν τον σύνδεσμο.",
+      arrivalsTitle: "Αφίξεις",
+      arrivalsEmpty: "Καμία επιβεβαιωμένη διαμονή ακόμη.",
+      calendarTitle: "Κλεισμένες νύχτες",
+      calendarEmpty: "Όλες οι νύχτες είναι ελεύθερες.",
+      originSold: "πωλήθηκε εδώ",
+      originOta: "δεσμευμένη από το ημερολόγιό σας",
+      originOwner: "δεσμευμένη από εσάς",
+      blockTitle: "Δεσμεύστε τις δικές σας ημερομηνίες",
+      blockFrom: "Από",
+      blockTo: "Έως",
+      blockAction: "Δέσμευση",
+      releaseAction: "Αποδέσμευση",
+      priceTitle: "Η τιμή σας",
+      priceLabel: "Καθαρή τιμή ανά νύχτα",
+      cleaningLabel: "Χρέωση καθαρισμού, μία φορά ανά διαμονή",
+      minNightsLabel: "Ελάχιστες νύχτες",
+      statusOnline: "Αγγελία σε λειτουργία",
+      save: "Αποθήκευση",
+      saved: "Αποθηκεύτηκε.",
+      moneyTitle: "Τα έσοδά σας",
+      moneyReceived: "Εισπράχθηκαν",
+      moneyExpected: "Αναμένονται",
+      moneyEmpty: "Τίποτα ακόμη.",
+      colGuest: "Επισκέπτης",
+      colDates: "Ημερομηνίες",
+      colTotal: "Πληρώνει ο επισκέπτης",
+      colCommission: "Προμήθεια",
+      colNet: "Λαμβάνετε",
+      icalTitle: "Το ημερολόγιό σας",
+      icalHelp: "Επικολλήστε αυτόν τον σύνδεσμο στο Airbnb ή στο Booking για να βλέπουν τις νύχτες που πωλήθηκαν εδώ.",
+      error: "Παρουσιάστηκε σφάλμα. Δοκιμάστε ξανά.",
     },
     terms: {
       h1: "Όροι · crete.direct Stays",

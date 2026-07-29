@@ -173,3 +173,37 @@ function addDay(iso: string): string {
   const t = new Date(iso + "T00:00:00Z").getTime() + 86_400_000;
   return new Date(t).toISOString().slice(0, 10);
 }
+
+/** Proprietaire identifie par le hash de son jeton d'espace. */
+export async function getOwnerByTokenHash(
+  hash: string,
+): Promise<{ id: number; name: string | null; email: string } | null> {
+  const { data } = await supabaseAdmin
+    .from("stay_owners")
+    .select("id, name, email")
+    .eq("owner_token_hash", hash)
+    .maybeSingle();
+  return data ?? null;
+}
+
+/** Annonces d'un proprietaire, publiees ou non : il doit voir ce qu'il a retire. */
+export async function listingsForOwner(ownerId: number): Promise<StayListing[]> {
+  const { data } = await supabaseAdmin
+    .from("stay_listings")
+    .select("*")
+    .eq("owner_id", ownerId)
+    .order("id");
+  return (data ?? []) as StayListing[];
+}
+
+/** Nuits occupees d'une annonce, avec leur origine. */
+export async function availabilityForListing(
+  listingId: number,
+): Promise<Array<{ date: string; status: string }>> {
+  const { data } = await supabaseAdmin
+    .from("stay_availability")
+    .select("date, status")
+    .eq("listing_id", listingId)
+    .order("date");
+  return (data ?? []) as Array<{ date: string; status: string }>;
+}
