@@ -16,16 +16,30 @@ export async function upsertOwnerByEmail(
   email: string,
   name: string | null,
   phone: string | null,
+  /** Langue de la page ou l'annonce a ete deposee. Porte tous ses emails ensuite. */
+  locale: string | null = null,
 ): Promise<StayOwner> {
   const { data: existing } = await supabaseAdmin
     .from("stay_owners")
     .select("*")
     .eq("email", email)
     .maybeSingle();
-  if (existing) return existing as StayOwner;
+  if (existing) {
+    // On complete une langue manquante, jamais on ne remplace celle qu'il a
+    // deja : un proprietaire grec qui passe une fois par la page anglaise ne
+    // doit pas se retrouver notifie en anglais pour toujours.
+    if (locale && !existing.locale) {
+      await supabaseAdmin
+        .from("stay_owners")
+        .update({ locale })
+        .eq("id", existing.id);
+      return { ...(existing as StayOwner), locale };
+    }
+    return existing as StayOwner;
+  }
   const { data, error } = await supabaseAdmin
     .from("stay_owners")
-    .insert({ email, name, phone })
+    .insert({ email, name, phone, locale })
     .select("*")
     .single();
   if (error) throw new Error(error.message);

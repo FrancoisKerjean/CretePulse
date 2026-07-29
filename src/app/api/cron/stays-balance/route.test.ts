@@ -7,7 +7,8 @@ const { from, update } = vi.hoisted(() => {
 const sendGuestBalanceDue = vi.hoisted(() => vi.fn(async () => {}));
 
 vi.mock("@/lib/supabase-admin", () => ({ supabaseAdmin: { from } }));
-vi.mock("@/lib/stays/emails", () => ({
+vi.mock("@/lib/stays/emails", async (orig: () => Promise<Record<string, unknown>>) => ({
+  ...(await orig()),
   sendGuestBalanceDue: (...a: unknown[]) => sendGuestBalanceDue(...a),
 }));
 vi.mock("@/lib/stays/tokens", () => ({
@@ -37,6 +38,7 @@ function oneDueRequest() {
                     listing_id: 3,
                     date_from: "2026-08-10",
                     balance_amount: 514.5,
+                    locale: "de",
                   },
                 ],
               }),
@@ -83,13 +85,17 @@ describe("GET /api/cron/stays-balance", () => {
     expect(update).toHaveBeenCalledWith(
       expect.objectContaining({ balance_token_hash: "hash(tok-plain)" }),
     );
+    // La demande de solde part dans la langue du voyageur, et la page de paiement
+    // avec : un lien /fr sur un voyageur allemand casse le tunnel a la derniere
+    // etape, celle ou l'argent arrive.
     expect(sendGuestBalanceDue).toHaveBeenCalledWith(
       "g@example.com",
       expect.objectContaining({
         listingTitle: "Villa Danae",
         amountEur: 514.5,
-        payUrl: "https://crete.direct/fr/stays/balance/tok-plain",
+        payUrl: "https://crete.direct/de/stays/balance/tok-plain",
       }),
+      "de",
     );
   });
 

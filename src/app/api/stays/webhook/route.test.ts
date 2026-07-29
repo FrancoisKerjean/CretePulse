@@ -1,10 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { constructEvent, insert, rpc, maybeSingle, refundsCreate } = vi.hoisted(() => ({
+const { constructEvent, insert, rpc, maybeSingle, requestMaybeSingle, refundsCreate } = vi.hoisted(() => ({
   constructEvent: vi.fn(),
   insert: vi.fn(async () => ({ error: null })),
   rpc: vi.fn(async () => ({ data: [{ id: 5, guest_email: "j@x.com", listing_id: 9 }], error: null })),
   maybeSingle: vi.fn(async () => ({ data: { title: "Villa" } })),
+  // Lectures sur stay_requests : la locale du voyageur, et la demande relue sur
+  // le chemin de collision. Une file distincte de celle des annonces et des
+  // proprietaires, sinon l'ordre des mocks depend de l'ordre des requetes.
+  requestMaybeSingle: vi.fn(async () => ({
+    data: { locale: "de" } as Record<string, unknown> | null,
+  })),
   refundsCreate: vi.fn(async () => ({ id: "re_1" })),
 }));
 vi.mock("@/lib/stays/stripe-helpers", async (orig: () => Promise<Record<string, unknown>>) => {
@@ -23,9 +29,13 @@ vi.mock("@/lib/stays/telegram", () => ({
 }));
 vi.mock("@/lib/supabase-admin", () => ({
   supabaseAdmin: {
-    from: (t: string) => t === "stripe_webhook_events"
-      ? { insert }
-      : { select: () => ({ eq: () => ({ maybeSingle }) }) },
+    from: (t: string) => {
+      if (t === "stripe_webhook_events") return { insert };
+      if (t === "stay_requests") {
+        return { select: () => ({ eq: () => ({ maybeSingle: requestMaybeSingle }) }) };
+      }
+      return { select: () => ({ eq: () => ({ maybeSingle }) }) };
+    },
     rpc,
   },
 }));
@@ -33,7 +43,8 @@ const sendGuestConfirmed = vi.fn(async () => {});
 const sendGuestConflict = vi.fn(async () => {});
 const sendOwnerBooked = vi.fn(async () => {});
 const sendGuestBalancePaid = vi.fn(async () => {});
-vi.mock("@/lib/stays/emails", () => ({
+vi.mock("@/lib/stays/emails", async (orig: () => Promise<Record<string, unknown>>) => ({
+  ...(await orig()),
   sendGuestConfirmed: (...a: unknown[]) => sendGuestConfirmed(...a),
   sendGuestConflict: (...a: unknown[]) => sendGuestConflict(...a),
   sendOwnerBooked: (...a: unknown[]) => sendOwnerBooked(...a),
@@ -113,7 +124,7 @@ describe("POST /api/stays/webhook", () => {
       .mockResolvedValueOnce({
         data: { title: "Villa Danae", owner_id: 3, cleaning_fee_eur: 60, commission_rate: 5 },
       })
-      .mockResolvedValueOnce({ data: { email: "owner@x.com" } });
+      .mockResolvedValueOnce({ data: { email: "owner@x.com", locale: "el" } });
 
     await POST(evt("ev_owner") as never);
 
@@ -126,18 +137,21 @@ describe("POST /api/stays/webhook", () => {
         // 100 EUR x 7 nuits + 60 de menage
         ownerNetEur: 760,
       }),
+      // Le proprietaire lit sa langue, le voyageur la sienne : deux locales
+      // distinctes dans le meme evenement.
+      "el",
     );
+    expect(sendGuestConfirmed).toHaveBeenCalledWith("j@x.com", "Villa Danae", "de");
   });
 
   // Les dates ont ete prises entre l'acceptation et le paiement : la contrainte GIST
   // leve 23P01. L'argent est deja encaisse, on ne peut pas se contenter d'un 200 muet.
   it("rembourse, previent le voyageur et alerte quand les dates sont parties", async () => {
     rpc.mockResolvedValueOnce({ data: null, error: { code: "23P01", message: "conflict" } });
-    maybeSingle
-      .mockResolvedValueOnce({
-        data: { guest_email: "j@x.com", listing_id: 9, deposit_amount: 220.5 },
-      })
-      .mockResolvedValueOnce({ data: { title: "Villa Danae" } });
+    requestMaybeSingle.mockResolvedValueOnce({
+      data: { guest_email: "j@x.com", listing_id: 9, deposit_amount: 220.5, locale: "de" },
+    });
+    maybeSingle.mockResolvedValueOnce({ data: { title: "Villa Danae" } });
 
     const res = await POST(evt("ev_conflict") as never);
 
@@ -154,6 +168,7 @@ describe("POST /api/stays/webhook", () => {
     expect(sendGuestConflict).toHaveBeenCalledWith(
       "j@x.com",
       expect.objectContaining({ listingTitle: "Villa Danae", amountEur: 220.5 }),
+      "de",
     );
     expect(notifyTelegram).toHaveBeenCalledWith(expect.stringMatching(/collision/i));
     expect(sendGuestConfirmed).not.toHaveBeenCalled();
@@ -162,11 +177,10 @@ describe("POST /api/stays/webhook", () => {
   it("signale l echec du remboursement au lieu de le passer sous silence", async () => {
     rpc.mockResolvedValueOnce({ data: null, error: { code: "23P01", message: "conflict" } });
     refundsCreate.mockRejectedValueOnce(new Error("stripe down"));
-    maybeSingle
-      .mockResolvedValueOnce({
-        data: { guest_email: "j@x.com", listing_id: 9, deposit_amount: 220.5 },
-      })
-      .mockResolvedValueOnce({ data: { title: "Villa Danae" } });
+    requestMaybeSingle.mockResolvedValueOnce({
+      data: { guest_email: "j@x.com", listing_id: 9, deposit_amount: 220.5, locale: "fr" },
+    });
+    maybeSingle.mockResolvedValueOnce({ data: { title: "Villa Danae" } });
 
     const res = await POST(evt("ev_conflict_2") as never);
 
@@ -201,7 +215,7 @@ describe("POST /api/stays/webhook", () => {
       p_request_id: 5,
       p_payment_intent_id: "pi_b",
     });
-    expect(sendGuestBalancePaid).toHaveBeenCalledWith("j@x.com", "Villa Danae");
+    expect(sendGuestBalancePaid).toHaveBeenCalledWith("j@x.com", "Villa Danae", "de");
     expect(sendOwnerBooked).not.toHaveBeenCalled();
   });
 

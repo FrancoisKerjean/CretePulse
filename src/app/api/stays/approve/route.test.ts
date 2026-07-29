@@ -13,7 +13,10 @@ vi.mock("@/lib/stays/stripe-helpers", () => ({
   createConnectOnboardingLink: (...a: unknown[]) => createConnectOnboardingLink(...a),
 }));
 const sendGuestApproved = vi.fn(async () => {});
-vi.mock("@/lib/stays/emails", () => ({ sendGuestApproved: (...a: unknown[]) => sendGuestApproved(...a) }));
+vi.mock("@/lib/stays/emails", async (orig: () => Promise<Record<string, unknown>>) => ({
+  ...(await orig()),
+  sendGuestApproved: (...a: unknown[]) => sendGuestApproved(...a),
+}));
 vi.mock("@/lib/stays/tokens", () => ({
   newToken: () => "pay-plain",
   hashToken: (t: string) => `hash(${t})`,
@@ -51,6 +54,25 @@ describe("POST /api/stays/approve", () => {
     const json = await res.json();
     expect(json.kycUrl).toBe("https://connect/x");
     expect(sendGuestApproved).not.toHaveBeenCalled();
+  });
+
+  // Le voyageur a demande dans sa langue : l'acceptation, la page de paiement et
+  // l'email doivent rester dans la meme langue.
+  it("ecrit au voyageur dans sa langue et lui donne une page de paiement dans sa langue", async () => {
+    getRequestByApproveHash.mockResolvedValueOnce({ id: 5, listing_id: 9, status: "pending", guest_email: "j@x.com", date_from: "2026-07-01", date_to: "2026-07-08", locale: "de" });
+    getListingById.mockResolvedValueOnce({ id: 9, owner_id: 1, title: "Villa", cleaning_fee_eur: 0, commission_rate: 5 });
+    from.mockImplementation((table: string) => {
+      if (table === "stay_owners") {
+        return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { id: 1, email: "o@x.com", stripe_connect_account_id: "acct_1" } }) }) }) };
+      }
+      return chainUpdate();
+    });
+    await POST(req({ token: "app-plain", action: "accept", price: 700 }) as never);
+    expect(sendGuestApproved).toHaveBeenCalledWith(
+      "j@x.com",
+      expect.objectContaining({ payUrl: "https://crete.direct/de/stays/pay/pay-plain" }),
+      "de",
+    );
   });
 
   it("approves + emails guest when owner already onboarded", async () => {

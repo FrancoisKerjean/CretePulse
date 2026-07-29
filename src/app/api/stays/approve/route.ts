@@ -3,9 +3,9 @@ import { getRequestByApproveHash, getListingById } from "@/lib/stays/db";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { createConnectOnboardingLink } from "@/lib/stays/stripe-helpers";
 import { classifyStripeFailure, stripeLogFields } from "@/lib/stripe-errors";
-import { sendGuestApproved } from "@/lib/stays/emails";
+import { sendGuestApproved, pickEmailLocale, fallbackListingTitle } from "@/lib/stays/emails";
 import { computeQuote } from "@/lib/stays/pricing";
-import { newToken, hashToken } from "@/lib/stays/tokens";
+import { newToken, hashToken, siteBase } from "@/lib/stays/tokens";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const body = await request.json().catch(() => ({}));
@@ -84,13 +84,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     commission_eur: quote.commissionEur,
   }).eq("id", req.id);
 
-  const payUrl = `https://crete.direct/fr/stays/pay/${payToken}`;
-  await sendGuestApproved(req.guest_email, {
-    listingTitle: listing.title ?? "votre séjour",
-    guestTotalEur: quote.guestTotalEur,
-    depositEur: quote.depositEur,
-    payUrl,
-  });
+  // La langue posee a la demande suit le voyageur jusqu'a la page de paiement :
+  // l'email et la page qu'il ouvre doivent parler la meme.
+  const locale = pickEmailLocale(
+    (req as { locale?: string | null }).locale ?? null,
+  );
+  const payUrl = `${siteBase()}/${locale}/stays/pay/${payToken}`;
+  await sendGuestApproved(
+    req.guest_email,
+    {
+      listingTitle: listing.title ?? fallbackListingTitle(locale),
+      guestTotalEur: quote.guestTotalEur,
+      depositEur: quote.depositEur,
+      payUrl,
+    },
+    locale,
+  );
 
   return NextResponse.json({ ok: true, approved: true });
 }

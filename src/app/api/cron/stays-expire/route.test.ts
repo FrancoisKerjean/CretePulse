@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const sendGuestExpired = vi.fn(async () => {});
-vi.mock("@/lib/stays/emails", () => ({
+vi.mock("@/lib/stays/emails", async (orig: () => Promise<Record<string, unknown>>) => ({
+  ...(await orig()),
   sendGuestExpired: (...a: unknown[]) => sendGuestExpired(...a),
 }));
 const { from } = vi.hoisted(() => ({ from: vi.fn() }));
@@ -68,6 +69,22 @@ describe("GET /api/cron/stays-expire", () => {
     // pourrait accepter un sejour dont le voyageur a ete prevenu du contraire.
     expect(updates[0].approve_token_hash).toBeNull();
     expect(sendGuestExpired).toHaveBeenCalledOnce();
+    // Dans la langue de la demande, pas dans celle du serveur.
+    expect(sendGuestExpired).toHaveBeenCalledWith(
+      "g@example.com",
+      expect.objectContaining({ listingTitle: "Villa Danae" }),
+      "fr",
+    );
+  });
+
+  it("ecrit en anglais quand la demande n a pas de locale", async () => {
+    wiring([{ ...OLD, locale: null }]);
+    await GET(req() as never);
+    expect(sendGuestExpired).toHaveBeenCalledWith(
+      "g@example.com",
+      expect.anything(),
+      "en",
+    );
   });
 
   it("ne regarde que les demandes plus vieilles que le delai annonce", async () => {

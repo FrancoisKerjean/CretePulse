@@ -11,7 +11,15 @@ const BUTTON =
 
 type Note = { tone: "info" | "ok" | "error"; text: string } | null;
 
-export default function NewListingWizard({ strings }: { strings: StaysStrings["wizard"] }) {
+export default function NewListingWizard({
+  strings,
+  locale,
+}: {
+  strings: StaysStrings["wizard"];
+  /** Langue de la page. Elle devient celle du proprietaire, donc celle de son
+   *  accueil et de toutes ses notifications de demande. */
+  locale: string;
+}) {
   const [url, setUrl] = useState("");
   const [email, setEmail] = useState("");
   const [price, setPrice] = useState("");
@@ -34,6 +42,7 @@ export default function NewListingWizard({ strings }: { strings: StaysStrings["w
           airbnbUrl: url,
           ownerEmail: email,
           basePriceEur: Number(price),
+          locale,
           website: "",
         }),
       });
@@ -60,7 +69,7 @@ export default function NewListingWizard({ strings }: { strings: StaysStrings["w
       const r = await fetch("/api/stays/publish", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ slug, icalUrl: ical, token: pubToken }),
+        body: JSON.stringify({ slug, icalUrl: ical, token: pubToken, locale }),
       });
       const j = await r.json();
       if (j.ok) {

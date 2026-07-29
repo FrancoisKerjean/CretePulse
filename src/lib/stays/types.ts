@@ -18,6 +18,8 @@ export interface StayOwner {
   phone: string | null;
   stripe_connect_account_id: string | null;
   kyc_status: "none" | "pending" | "complete";
+  /** Langue de ses emails, posee au depot de l'annonce (en/fr/de/el). */
+  locale: string | null;
   created_at: string;
 }
 
@@ -61,6 +63,8 @@ export interface StayRequest {
   pax: number | null;
   message: string | null;
   status: RequestStatus;
+  /** Langue de la page ou la demande a ete faite (en/fr/de/el). */
+  locale: string | null;
   quoted_price_eur: number | null;
   quoted_at: string | null;
   approve_token_hash: string | null;

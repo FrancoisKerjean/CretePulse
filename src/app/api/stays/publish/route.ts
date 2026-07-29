@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getListingBySlug, publishListing } from "@/lib/stays/db";
 import { syncListingFromIcal } from "@/lib/stays/ical-apply";
 import { ensureOwnerToken, ownerSpaceUrl } from "@/lib/stays/owner-tokens";
-import { sendOwnerWelcome } from "@/lib/stays/emails";
+import { sendOwnerWelcome, pickEmailLocale } from "@/lib/stays/emails";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { siteBase } from "@/lib/stays/tokens";
 import { hashToken } from "@/lib/stays/tokens";
@@ -55,17 +55,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   // Accueil du proprietaire : son espace n'existe que s'il en recoit le lien.
   // Le jeton est cree une seule fois ; une republication ne le regenere pas et
   // ne renvoie donc pas d'email, ce qui evite de perimer un lien deja garde.
-  const locale = typeof body.locale === "string" ? body.locale : "en";
+  //
+  // La langue est celle du proprietaire, posee au depot de l'annonce. La page de
+  // publication ne sert que de repli : un proprietaire grec qui publie depuis un
+  // onglet francais doit recevoir son accueil en grec.
   let spaceUrl: string | null = null;
   try {
     const ownerToken = await ensureOwnerToken(listing.owner_id);
     if (ownerToken) {
-      spaceUrl = ownerSpaceUrl(ownerToken, locale);
       const { data: owner } = await supabaseAdmin
         .from("stay_owners")
-        .select("name, email")
+        .select("name, email, locale")
         .eq("id", listing.owner_id)
         .maybeSingle();
+      const locale = pickEmailLocale(
+        owner?.locale ?? (typeof body.locale === "string" ? body.locale : null),
+      );
+      spaceUrl = ownerSpaceUrl(ownerToken, locale);
       if (owner?.email) {
         await sendOwnerWelcome(
           owner.email,

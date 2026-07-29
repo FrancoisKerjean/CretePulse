@@ -2,7 +2,7 @@
 // c'est `balance_requested_at` qui fait office de verrou.
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { sendGuestBalanceDue } from "@/lib/stays/emails";
+import { sendGuestBalanceDue, pickEmailLocale, fallbackListingTitle } from "@/lib/stays/emails";
 import { newToken, hashToken, siteBase } from "@/lib/stays/tokens";
 import { assertCron } from "@/lib/cron-auth";
 
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   const { data } = await supabaseAdmin
     .from("stay_requests")
-    .select("id, guest_email, listing_id, date_from, balance_amount")
+    .select("id, guest_email, listing_id, date_from, balance_amount, locale")
     .eq("status", "deposit_paid")
     .is("balance_requested_at", null)
     .lte("date_from", cutoff);
@@ -47,12 +47,19 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       })
       .eq("id", r.id);
 
-    await sendGuestBalanceDue(r.guest_email, {
-      listingTitle: listing?.title ?? "votre séjour",
-      dateFrom: r.date_from,
-      amountEur: Number(r.balance_amount) || 0,
-      payUrl: `${siteBase()}/fr/stays/balance/${token}`,
-    });
+    // La langue du voyageur porte l'email ET la page de paiement du solde : le
+    // dernier geste du tunnel est aussi celui ou l'argent arrive.
+    const locale = pickEmailLocale(r.locale ?? null);
+    await sendGuestBalanceDue(
+      r.guest_email,
+      {
+        listingTitle: listing?.title ?? fallbackListingTitle(locale),
+        dateFrom: r.date_from,
+        amountEur: Number(r.balance_amount) || 0,
+        payUrl: `${siteBase()}/${locale}/stays/balance/${token}`,
+      },
+      locale,
+    );
     sent++;
   }
 

@@ -9,7 +9,7 @@
 // que ne rien promettre.
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { sendGuestExpired } from "@/lib/stays/emails";
+import { sendGuestExpired, pickEmailLocale, fallbackListingTitle } from "@/lib/stays/emails";
 
 export const EXPIRY_DAYS = 7;
 
@@ -19,6 +19,7 @@ interface Row {
   guest_email: string;
   date_from: string;
   date_to: string;
+  locale: string | null;
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const cutoff = new Date(Date.now() - EXPIRY_DAYS * 86_400_000).toISOString();
   const { data, error } = await supabaseAdmin
     .from("stay_requests")
-    .select("id, listing_id, guest_email, date_from, date_to")
+    .select("id, listing_id, guest_email, date_from, date_to, locale")
     .eq("status", "pending")
     .lt("created_at", cutoff);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -60,11 +61,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         .select("title")
         .eq("id", row.listing_id)
         .maybeSingle();
-      await sendGuestExpired(row.guest_email, {
-        listingTitle: listing?.title ?? "votre séjour",
-        dateFrom: row.date_from,
-        dateTo: row.date_to,
-      });
+      const locale = pickEmailLocale(row.locale);
+      await sendGuestExpired(
+        row.guest_email,
+        {
+          listingTitle: listing?.title ?? fallbackListingTitle(locale),
+          dateFrom: row.date_from,
+          dateTo: row.date_to,
+        },
+        locale,
+      );
     } catch (e) {
       // L'etat en base prime sur la notification : la demande EST expiree, un
       // email refuse ne doit pas empecher les suivantes.

@@ -1,13 +1,27 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import {
+  EMAIL_LOCALES,
+  pickEmailLocale,
+  fallbackListingTitle,
   ownerRequestSubject,
   ownerRequestBody,
   guestApprovedSubject,
+  guestApprovedBody,
   guestReceivedSubject,
   guestReceivedBody,
   guestConflictSubject,
   guestConflictBody,
+  guestConfirmedSubject,
+  guestConfirmedBody,
+  guestBalanceDueSubject,
+  guestBalanceDueBody,
+  guestBalancePaidSubject,
+  guestBalancePaidBody,
+  guestExpiredSubject,
+  guestExpiredBody,
+  ownerBookedSubject,
+  ownerBookedBody,
   ownerWelcomeBody,
   ownerWelcomeSubject,
   ownerWelcomeHtml,
@@ -35,30 +49,32 @@ describe("fiabilite des envois", () => {
 
 describe("email builders", () => {
   it("owner request subject names the dates", () => {
-    expect(ownerRequestSubject("2026-07-01", "2026-07-08")).toContain("2026-07-01");
+    expect(ownerRequestSubject("2026-07-01", "2026-07-08", "fr")).toContain("2026-07-01");
   });
   it("owner request body embeds the approve link", () => {
-    const html = ownerRequestBody({
-      guestName: "Jane",
-      dateFrom: "2026-07-01",
-      dateTo: "2026-07-08",
-      pax: 2,
-      approveUrl: "https://crete.direct/fr/stays/approve/tok-1",
-    });
+    const html = ownerRequestBody(
+      {
+        guestName: "Jane",
+        dateFrom: "2026-07-01",
+        dateTo: "2026-07-08",
+        pax: 2,
+        approveUrl: "https://crete.direct/fr/stays/approve/tok-1",
+      },
+      "fr",
+    );
     expect(html).toContain("https://crete.direct/fr/stays/approve/tok-1");
     expect(html).toContain("Jane");
   });
   it("guest approved subject is celebratory", () => {
-    expect(guestApprovedSubject("Sea view villa")).toContain("Sea view villa");
+    expect(guestApprovedSubject("Sea view villa", "fr")).toContain("Sea view villa");
   });
 
   it("accuse reception de la demande au voyageur", () => {
-    expect(guestReceivedSubject("Villa Danae")).toContain("Villa Danae");
-    const html = guestReceivedBody({
-      listingTitle: "Villa Danae",
-      dateFrom: "2026-08-01",
-      dateTo: "2026-08-08",
-    });
+    expect(guestReceivedSubject("Villa Danae", "fr")).toContain("Villa Danae");
+    const html = guestReceivedBody(
+      { listingTitle: "Villa Danae", dateFrom: "2026-08-01", dateTo: "2026-08-08" },
+      "fr",
+    );
     expect(html).toContain("2026-08-01");
     expect(html).toMatch(/rien n'est prélevé/i);
     // Le délai est désormais TENU par /api/cron/stays-expire, livré le 30/07.
@@ -68,10 +84,204 @@ describe("email builders", () => {
   });
 
   it("annonce le remboursement integral au voyageur", () => {
-    expect(guestConflictSubject("Villa Danae")).toContain("Villa Danae");
-    const html = guestConflictBody({ listingTitle: "Villa Danae", amountEur: 220.5 });
+    expect(guestConflictSubject("Villa Danae", "fr")).toContain("Villa Danae");
+    const html = guestConflictBody(
+      { listingTitle: "Villa Danae", amountEur: 220.5 },
+      "fr",
+    );
     expect(html).toContain("220.50");
     expect(html).toMatch(/rembours/i);
+  });
+});
+
+// ── Quatre langues ──────────────────────────────────────────────────────────
+// Les pages /stays servent en/fr/de/el, les emails partaient en francais seul :
+// un voyageur allemand recevait du francais. Chaque email est desormais un
+// dictionnaire par locale, avec repli anglais, sur le patron de ownerWelcome.
+
+/** Un cas par email : de quoi construire un sujet et un corps dans une locale. */
+const CASES = [
+  {
+    name: "ownerRequest",
+    subject: (l: string) => ownerRequestSubject("2026-08-01", "2026-08-08", l),
+    body: (l: string) =>
+      ownerRequestBody(
+        {
+          guestName: "Jane",
+          dateFrom: "2026-08-01",
+          dateTo: "2026-08-08",
+          pax: 2,
+          approveUrl: "https://crete.direct/fr/stays/approve/tok",
+        },
+        l,
+      ),
+    mustContain: ["Jane", "https://crete.direct/fr/stays/approve/tok"],
+  },
+  {
+    name: "guestReceived",
+    subject: (l: string) => guestReceivedSubject("Villa Danae", l),
+    body: (l: string) =>
+      guestReceivedBody(
+        { listingTitle: "Villa Danae", dateFrom: "2026-08-01", dateTo: "2026-08-08" },
+        l,
+      ),
+    mustContain: ["Villa Danae", "2026-08-01", "2026-08-08"],
+  },
+  {
+    name: "guestApproved",
+    subject: (l: string) => guestApprovedSubject("Villa Danae", l),
+    body: (l: string) =>
+      guestApprovedBody(
+        {
+          listingTitle: "Villa Danae",
+          guestTotalEur: 735,
+          depositEur: 220.5,
+          payUrl: "https://crete.direct/fr/stays/pay/tok",
+        },
+        l,
+      ),
+    mustContain: ["735.00", "220.50", "https://crete.direct/fr/stays/pay/tok"],
+  },
+  {
+    name: "guestConfirmed",
+    subject: (l: string) => guestConfirmedSubject("Villa Danae", l),
+    body: (l: string) => guestConfirmedBody("Villa Danae", l),
+    mustContain: ["Villa Danae"],
+  },
+  {
+    name: "guestConflict",
+    subject: (l: string) => guestConflictSubject("Villa Danae", l),
+    body: (l: string) => guestConflictBody({ listingTitle: "Villa Danae", amountEur: 220.5 }, l),
+    mustContain: ["Villa Danae", "220.50"],
+  },
+  {
+    name: "guestBalanceDue",
+    subject: (l: string) => guestBalanceDueSubject("Villa Danae", l),
+    body: (l: string) =>
+      guestBalanceDueBody(
+        {
+          listingTitle: "Villa Danae",
+          dateFrom: "2026-08-01",
+          amountEur: 514.5,
+          payUrl: "https://crete.direct/fr/stays/balance/tok",
+        },
+        l,
+      ),
+    mustContain: ["514.50", "https://crete.direct/fr/stays/balance/tok"],
+  },
+  {
+    name: "guestBalancePaid",
+    subject: (l: string) => guestBalancePaidSubject("Villa Danae", l),
+    body: (l: string) => guestBalancePaidBody("Villa Danae", l),
+    mustContain: ["Villa Danae"],
+  },
+  {
+    name: "guestExpired",
+    subject: (l: string) => guestExpiredSubject("Villa Danae", l),
+    body: (l: string) =>
+      guestExpiredBody(
+        { listingTitle: "Villa Danae", dateFrom: "2026-08-01", dateTo: "2026-08-08" },
+        l,
+      ),
+    mustContain: ["Villa Danae", "2026-08-01"],
+  },
+  {
+    name: "ownerBooked",
+    subject: (l: string) => ownerBookedSubject("2026-08-01", "2026-08-08", l),
+    body: (l: string) =>
+      ownerBookedBody(
+        {
+          listingTitle: "Villa Danae",
+          guestName: "Jane",
+          guestEmail: "jane@example.com",
+          guestPhone: "+33600000000",
+          dateFrom: "2026-08-01",
+          dateTo: "2026-08-08",
+          ownerNetEur: 700,
+          depositEur: 220.5,
+        },
+        l,
+      ),
+    mustContain: ["jane@example.com", "700.00"],
+  },
+] as const;
+
+describe("choix de la locale d un email", () => {
+  it("garde les quatre langues redigees", () => {
+    expect([...EMAIL_LOCALES]).toEqual(["en", "fr", "de", "el"]);
+  });
+
+  it("retombe sur l anglais pour une locale non redigee", () => {
+    expect(pickEmailLocale("ru")).toBe("en");
+    expect(pickEmailLocale("it")).toBe("en");
+    expect(pickEmailLocale("")).toBe("en");
+    expect(pickEmailLocale(null)).toBe("en");
+    expect(pickEmailLocale(undefined)).toBe("en");
+  });
+
+  it("respecte une locale redigee", () => {
+    expect(pickEmailLocale("fr")).toBe("fr");
+    expect(pickEmailLocale("de")).toBe("de");
+    expect(pickEmailLocale("el")).toBe("el");
+    expect(pickEmailLocale("en")).toBe("en");
+  });
+});
+
+describe.each(CASES)("email $name en quatre langues", (c) => {
+  it("existe dans les quatre langues, jamais deux fois le meme texte", () => {
+    const bodies = EMAIL_LOCALES.map((l) => c.body(l));
+    expect(new Set(bodies).size).toBe(EMAIL_LOCALES.length);
+    const subjects = EMAIL_LOCALES.map((l) => c.subject(l));
+    expect(new Set(subjects).size).toBe(EMAIL_LOCALES.length);
+  });
+
+  it("ecrit vraiment du grec en el", () => {
+    expect(c.body("el")).toMatch(/[Α-Ωα-ωίϊΐόάέύϋΰήώ]/);
+    expect(c.subject("el")).toMatch(/[Α-Ωα-ωίϊΐόάέύϋΰήώ]/);
+  });
+
+  it("retombe sur l anglais pour une langue non redigee", () => {
+    expect(c.body("it")).toBe(c.body("en"));
+    expect(c.subject("it")).toBe(c.subject("en"));
+  });
+
+  it("garde les liens, les montants et les dates dans toutes les langues", () => {
+    for (const l of EMAIL_LOCALES) {
+      const body = c.body(l);
+      for (const needle of c.mustContain) {
+        expect(body, `${c.name} ${l} doit contenir ${needle}`).toContain(needle);
+      }
+    }
+  });
+
+  it("ne contient aucun tiret cadratin", () => {
+    // Gate check:da, regle R11 : le tiret cadratin est banni de toute surface.
+    // Ecrit en echappement unicode, sinon ce test se fait refuser par le gate
+    // qu'il sert justement a doubler.
+    const emDash = "\u2014";
+    for (const l of EMAIL_LOCALES) {
+      expect(c.body(l)).not.toContain(emDash);
+      expect(c.subject(l)).not.toContain(emDash);
+    }
+  });
+
+  it("ne promet aucun revenu garanti", () => {
+    // Regle Kairos : jamais de garantie de revenus dans un texte sortant.
+    for (const l of EMAIL_LOCALES) {
+      expect(c.body(l)).not.toMatch(/garanti|guaranteed|garantiert|εγγυημ/i);
+    }
+  });
+});
+
+describe("titre de repli quand l annonce n a pas de nom", () => {
+  // Un titre de repli francais glisse dans un email allemand est exactement le
+  // defaut qu on corrige : le repli est traduit lui aussi.
+  it("est ecrit dans chacune des quatre langues", () => {
+    const titles = EMAIL_LOCALES.map((l) => fallbackListingTitle(l));
+    expect(new Set(titles).size).toBe(EMAIL_LOCALES.length);
+    expect(fallbackListingTitle("fr")).toMatch(/séjour/i);
+    expect(fallbackListingTitle("el")).toMatch(/[Α-Ωα-ω]/);
+    expect(fallbackListingTitle("ru")).toBe(fallbackListingTitle("en"));
   });
 });
 
@@ -146,13 +356,24 @@ describe("mise en forme HTML de l accueil", () => {
 });
 
 describe("coherence entre l accuse de reception et le cron d expiration", () => {
-  it("annonce le meme delai que celui applique par le cron", async () => {
+  it("annonce le meme delai que celui applique par le cron, dans les quatre langues", async () => {
     // Promettre un delai qu on ne tient pas est pire que ne rien promettre :
-    // ce test casse si l un des deux bouge sans l autre.
+    // ce test casse si l un des deux bouge sans l autre. La verification porte
+    // sur les 4 langues : traduire ne doit pas faire deriver la promesse.
     const { EXPIRY_DAYS } = await import("../../app/api/cron/stays-expire/route");
-    const body = guestReceivedBody({
-      listingTitle: "Villa", dateFrom: "2026-08-01", dateTo: "2026-08-05",
-    });
-    expect(body).toContain(`${EXPIRY_DAYS} jours`);
+    for (const l of EMAIL_LOCALES) {
+      const body = guestReceivedBody(
+        { listingTitle: "Villa", dateFrom: "2026-08-01", dateTo: "2026-08-05" },
+        l,
+      );
+      expect(body, `accuse de reception ${l}`).toContain(String(EXPIRY_DAYS));
+    }
+    // Le francais garde sa formulation exacte, celle que Kami relit.
+    expect(
+      guestReceivedBody(
+        { listingTitle: "Villa", dateFrom: "2026-08-01", dateTo: "2026-08-05" },
+        "fr",
+      ),
+    ).toContain(`${EXPIRY_DAYS} jours`);
   });
 });
