@@ -2,19 +2,18 @@
 // retenus, la commission est prelevee au passage et le solde part chez le loueur
 // a la fermeture du droit au remboursement.
 //
-// CHARGE DE DESTINATION : le paiement va DIRECTEMENT sur le compte Stripe du
-// loueur, commission et option prelevees au passage via `application_fee_amount`.
-// crete.direct ne detient jamais les fonds du loueur.
+// CHARGES SEPAREES : le paiement est encaisse sur le compte plateforme, puis
+// transfere au loueur. Aucun `transfer_data` ici.
 //
-// Deux consequences voulues (decision Kami 29/07/2026, apres un premier jet en
-// charges separees) :
-//  - on peut dire au loueur « c'est votre argent, on n'y touche jamais », et
-//    c'est vrai ;
-//  - crete.direct n'encaisse pas pour le compte d'un tiers, ce qui evite la
-//    qualification de service de paiement.
-// Les fonds restent bloques chez Stripe parce que le compte connecte est en
-// versement `manual` : le cron declenche le payout 48 h avant la prise, et une
-// annulation avant cette echeance reprend les fonds sans creer de decouvert.
+// Decision Kami 29/07/2026, apres avoir essaye la charge de destination : garder
+// l'argent est le LEVIER D'INSCRIPTION. Une charge de destination exige que le
+// loueur ait deja un compte connecte, donc il faudrait le convaincre d'ouvrir un
+// compte AVANT qu'il ait vu le moindre euro. En encaissant d'abord, on inverse le
+// rapport : « votre argent vous attend, ouvrez votre compte pour le recevoir ».
+//
+// Contrepartie assumee : crete.direct porte les fonds entre l'encaissement et le
+// versement, ce qui est une position d'encaisseur au sens comptable. Question
+// ouverte pour Stelios.
 //
 // Plan : docs/superpowers/plans/2026-07-29-car-rental-tunnel-voyageur.md
 import type Stripe from "stripe";
@@ -79,9 +78,7 @@ export interface BookingCheckoutInput {
   dateTo: string;
   bookingToken: string;
   locale: string;
-  /** Compte Stripe Express du loueur. Sans lui, pas de paiement possible. */
-  connectAccountId: string;
-  /** Taux de commission du loueur, en fraction. */
+  /** Taux de commission du loueur, en fraction. Sert au calcul de repartition. */
   partnerRate?: number;
 }
 
@@ -92,11 +89,6 @@ export function buildBookingCheckoutParams(
   input: BookingCheckoutInput,
 ): Stripe.Checkout.SessionCreateParams {
   const base = siteBase();
-  const breakdown = bookingBreakdownCents({
-    quotedPriceEur: input.quotedPriceEur,
-    hasOption: input.hasOption,
-    partnerRate: input.partnerRate ?? 0.1,
-  });
   const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
     {
       price_data: {
@@ -131,10 +123,9 @@ export function buildBookingCheckoutParams(
     payment_method_types: ["card"],
     line_items: lineItems,
     payment_intent_data: {
-      // L'argent atterrit sur le compte du loueur ; crete.direct ne preleve que
-      // sa commission et le prix de l'option.
-      transfer_data: { destination: input.connectAccountId },
-      application_fee_amount: breakdown.applicationFeeCents,
+      // Ni transfer_data ni application_fee : l'argent reste sur le compte
+      // plateforme jusqu'au transfert, qui n'a lieu que si le loueur a ouvert
+      // son compte. C'est ce qui le pousse a le faire.
       // Compte plateforme partage (NovAI, descripteur par defaut "NOVAI").
       statement_descriptor_suffix: "CRETE DIRECT",
     },

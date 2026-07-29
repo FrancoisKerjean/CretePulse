@@ -60,27 +60,21 @@ describe("POST /api/car-rental/booking/cancel", () => {
     // ne permet aucun reglage fin, une retenue partielle laisserait des centimes
     // indus chez le loueur comme chez nous.
     expect(json.refundedEur).toBe(315);
+    // Aucun reverse_transfer : rien n a ete transfere, les fonds sont chez nous.
     expect(refundsCreate).toHaveBeenCalledWith({
       payment_intent: "pi_b1",
       amount: 31_500,
-      reverse_transfer: true,
-      refund_application_fee: true,
     });
     expect(updates[0].booking_status).toBe("refunded");
     expect(updates[0].refund_amount_eur).toBe(315);
     expect(updates[0].cancelled_at).toBeTruthy();
   });
 
-  it("reprend au loueur ce qui lui avait ete credite", async () => {
+  it("ne reprend rien au loueur : il n a encore rien recu", async () => {
     wiring();
     await POST(req() as never);
-    // L argent etait deja sur SON compte, mais bloque en versement manual : la
-    // reprise ne peut donc pas lui creer de decouvert.
-    const call = refundsCreate.mock.calls[0][0] as unknown as {
-      reverse_transfer: boolean; refund_application_fee: boolean;
-    };
-    expect(call.reverse_transfer).toBe(true);
-    expect(call.refund_application_fee).toBe(true);
+    const call = refundsCreate.mock.calls[0][0] as unknown as Record<string, unknown>;
+    expect(call.reverse_transfer).toBeUndefined();
   });
 
   it("annule sans rembourser quand l option n a pas ete prise", async () => {

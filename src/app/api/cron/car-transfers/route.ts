@@ -1,9 +1,9 @@
 // Versement differe aux loueurs. Une passe quotidienne : chaque location payee
-// dont l'echeance est atteinte declenche le PAYOUT du compte du loueur.
+// dont l'echeance est atteinte recoit son transfert, prix moins commission.
 //
-// L'argent est deja chez lui depuis le paiement (charge de destination) ; il est
-// simplement bloque, son compte etant en versement `manual`. On ne transfere
-// donc rien, on libere.
+// Les fonds sont sur le compte plateforme depuis l'encaissement. Un loueur sans
+// compte connecte ne recoit rien et la ligne reste en attente : c'est voulu,
+// c'est ce qui le pousse a terminer son inscription.
 //
 // L'echeance vaut la fermeture du droit au remboursement (booking-policy) : au
 // moment ou l'argent part, le client ne peut plus etre rembourse. Aucune reprise
@@ -84,8 +84,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       continue;
     }
 
-    // Montant deja credite au loueur a l'encaissement : total moins la
-    // commission et l'option, prelevees en application fee.
+    // Ce que touche le loueur : le prix moins la commission. L'option
+    // d'annulation n'entre jamais dedans, elle paie le risque porte par
+    // crete.direct.
     const { partnerPayoutCents } = bookingBreakdownCents({
       quotedPriceEur: Number(row.quoted_price) || 0,
       hasOption: false,
@@ -93,16 +94,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
 
     try {
-      // `stripeAccount` : on agit AU NOM du loueur pour liberer son propre
-      // solde. C'est son argent, on ne fait que lever le blocage.
-      const payout = await stripeClient().payouts.create(
-        {
-          amount: partnerPayoutCents,
-          currency: "eur",
-          metadata: { car_request_id: String(row.id), brand: "crete.direct" },
-        },
-        { stripeAccount: destination },
-      );
+      const payout = await stripeClient().transfers.create({
+        amount: partnerPayoutCents,
+        currency: "eur",
+        destination,
+        metadata: { car_request_id: String(row.id), brand: "crete.direct" },
+      });
       await supabaseAdmin
         .from("car_requests")
         .update({

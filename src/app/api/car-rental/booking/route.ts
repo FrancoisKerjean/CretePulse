@@ -1,5 +1,9 @@
 // Paiement en ligne d'une location acceptee. Le client paie sur crete.direct,
-// les fonds restent sur le compte plateforme jusqu'au versement differe.
+// les fonds restent sur le compte plateforme jusqu'au versement au loueur.
+//
+// On encaisse MEME si le loueur n'a pas encore ouvert son compte Stripe : son
+// argent l'attend, et c'est le levier qui le decide a s'inscrire (decision Kami
+// 29/07/2026).
 //
 // Desarme par defaut : tant que CAR_BOOKING_ENABLED ne vaut pas exactement "on",
 // la route se comporte comme si elle n'existait pas (404). Le code part en
@@ -67,20 +71,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       .select();
   };
 
-  // Charge de destination : sans compte de versement chez le loueur, il n'y a
-  // nulle part ou envoyer l'argent. Mieux vaut refuser le paiement que
-  // l'encaisser et le bloquer.
-  if (!partner?.stripe_connect_account_id || partner.kyc_status !== "complete") {
-    console.error("[car/booking] loueur sans compte de versement pret", {
+  // Charges separees : on encaisse MEME si le loueur n'a pas encore de compte de
+  // versement. Son argent l'attendra, et c'est ce qui le decidera a s'inscrire.
+  // Le cron garde les fonds et le signale tant qu'il n'est pas pret.
+  if (!partner?.stripe_connect_account_id) {
+    console.info("[car/booking] loueur pas encore onboarde, fonds conserves", {
       requestId: row.id,
       partnerId: row.quoted_by_partner_id,
-      kyc: partner?.kyc_status,
     });
-    await releaseLock();
-    return NextResponse.json(
-      { ok: false, code: "payouts_unavailable", error: "Ce loueur ne peut pas encore encaisser en ligne." },
-      { status: 503 },
-    );
   }
 
   const quotedPriceEur = Number(row.quoted_price) || 0;
@@ -98,8 +96,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         dateTo: row.date_to,
         bookingToken: token,
         locale,
-        connectAccountId: partner.stripe_connect_account_id,
-        partnerRate: Number(partner.commission) || 0.1,
+        partnerRate: Number(partner?.commission) || 0.1,
       }),
     );
   } catch (err) {

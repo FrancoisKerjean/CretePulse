@@ -20,7 +20,7 @@ conclues hors ligne. Il est désarmé (`CAR_COMMISSION_ENABLED`).
 
 | Décision | Valeur | Où elle vit |
 |---|---|---|
-| Flux de fonds | **Charge de destination** : l'argent va droit sur le compte du loueur, bloqué par un versement `manual`, libéré à la fermeture du droit au remboursement | `car-booking.ts` |
+| Flux de fonds | **Charges séparées** : encaissement sur le compte plateforme, transfert au loueur à la fermeture du droit au remboursement. On encaisse **même si le loueur n'a pas encore de compte** : son argent l'attend | `car-booking.ts` |
 | Option d'annulation | 5 €, remboursement **de la totalité, option comprise**, jusqu'à 48 h avant, **rien sans l'option** | `booking-policy.ts` |
 | Seuil unique | `TRANSFER_LEAD_HOURS === REFUND_WINDOW_HOURS` : aucune fenêtre de reprise de fonds | gate `check:booking-policy` |
 | Vocabulaire | « option d'annulation », **jamais « assurance »** (activité réglementée) | `booking-policy.ts` |
@@ -172,3 +172,35 @@ le mieux.
 
 **Le gate `check:car-booking` a été inversé** : il exigeait l'absence de `transfer_data`, il
 exige maintenant sa présence et vérifie que payout + application fee = total, au centime.
+
+
+## Arbitrage final du 29/07/2026 23:15 — retour aux charges séparées
+
+Trois itérations sur ce flux dans la même journée. La dernière est la bonne, et
+c'est une décision commerciale, pas technique.
+
+**Ce qui a tranché** (Kami) : « on force les gens à s'inscrire, ils le feront pour
+récupérer leur argent. »
+
+La charge de destination exige que le loueur ait **déjà** un compte connecté :
+Stripe refuse d'encaisser sinon. Il faudrait donc convaincre chaque loueur d'ouvrir
+un compte Stripe **avant** qu'il ait vu le moindre euro. Un partenaire sans preuve
+de revenu n'a aucune raison de faire cet effort, et le tunnel ne démarrerait jamais.
+
+En encaissant d'abord, le rapport s'inverse : on n'a plus rien à demander, on
+annonce. « 279 € vous attendent, ouvrez votre compte pour les recevoir. » Le levier
+est dans l'argent, pas dans l'email.
+
+**Ce qu'on accepte en échange** : crete.direct porte les fonds entre l'encaissement
+et le versement. C'est une position d'encaisseur au sens comptable, et la question
+de la qualification en service de paiement reste ouverte. ⛔ **À poser à Stelios**,
+en même temps que celle de Stays et de l'IKE. Owner Kami, butoir 15/08/2026.
+
+**Ce qui reste vrai des deux tentatives précédentes** : le seuil unique à 48 h,
+l'invariant « aucune fenêtre de reprise de fonds », le remboursement intégral option
+comprise, la machine d'états, les pages et le webhook. Seule la plomberie a bougé.
+
+**Le remboursement intégral n'est plus une contrainte technique** : sans
+`reverse_transfer`, on pourrait retenir les 5 €. On garde « tout est rendu » par
+choix produit, parce que ça se dit mieux et que l'option reste rentable sur ceux
+qui n'annulent pas.

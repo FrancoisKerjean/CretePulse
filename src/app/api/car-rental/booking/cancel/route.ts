@@ -1,15 +1,14 @@
 // Annulation d'une location payee en ligne.
 //
-// L'argent est sur le compte du loueur depuis le paiement, mais bloque : son
-// compte est en versement `manual` et le payout n'a pas encore ete declenche.
-// Le remboursement reprend donc le transfert ET la commission, sans creer le
-// moindre decouvert chez lui. Une fois le payout parti (`transferred`),
-// l'annulation est refusee : la fenetre de remboursement est fermee par
-// construction, les deux seuils etant egaux.
+// Les fonds n'ont pas encore quitte le compte plateforme : le remboursement est
+// un simple `refunds.create`, SANS `reverse_transfer`, puisqu'il n'y a rien a
+// reprendre au loueur. C'est tout l'interet d'encaisser d'abord. Une fois le
+// transfert parti (`transferred`), l'annulation est refusee : la fenetre de
+// remboursement est fermee par construction, les deux seuils etant egaux.
 //
-// Stripe reverse proportionnellement au montant rembourse, sans reglage fin.
-// On rembourse donc la TOTALITE, option comprise : c'est la seule regle qui
-// tombe juste au centime des deux cotes.
+// On rembourse la TOTALITE, option comprise. Ce n'est plus une contrainte
+// technique mais un choix produit : « annulation dans les delais, tout est
+// rendu » se dit mieux, et l'option reste rentable sur ceux qui n'annulent pas.
 //
 // Plan : docs/superpowers/plans/2026-07-29-car-rental-tunnel-voyageur.md
 import { NextRequest, NextResponse } from "next/server";
@@ -58,10 +57,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const refund = await stripeClient().refunds.create({
         payment_intent: row.booking_payment_intent_id,
         amount: Math.round(refundEur * 100),
-        // Reprend au loueur ce qui lui avait ete credite, et rend la commission.
-        // Les fonds etant encore bloques sur son solde, la reprise est indolore.
-        reverse_transfer: true,
-        refund_application_fee: true,
       });
       await supabaseAdmin
         .from("car_requests")

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const payoutsCreate = vi.fn(async () => ({ id: "po_1" }));
 vi.mock("@/lib/stays/stripe-helpers", () => ({
-  stripeClient: () => ({ payouts: { create: payoutsCreate } }),
+  stripeClient: () => ({ transfers: { create: payoutsCreate } }),
 }));
 const { from } = vi.hoisted(() => ({ from: vi.fn() }));
 vi.mock("@/lib/supabase-admin", () => ({ supabaseAdmin: { from } }));
@@ -67,16 +67,13 @@ describe("GET /api/cron/car-transfers", () => {
 
     expect(res.status).toBe(200);
     expect((await res.json()).transferred).toBe(1);
-    // 310 EUR moins 10 % = 279 EUR, deja credites au loueur a l encaissement.
-    // On libere son solde en agissant EN SON NOM : c est son argent.
-    expect(payoutsCreate).toHaveBeenCalledWith(
-      {
-        amount: 27_900,
-        currency: "eur",
-        metadata: { car_request_id: "25", brand: "crete.direct" },
-      },
-      { stripeAccount: "acct_z" },
-    );
+    // 310 EUR moins 10 % = 279 EUR. L option d annulation n entre jamais ici.
+    expect(payoutsCreate).toHaveBeenCalledWith({
+      amount: 27_900,
+      currency: "eur",
+      destination: "acct_z",
+      metadata: { car_request_id: "25", brand: "crete.direct" },
+    });
     expect(updates[0].transfer_id).toBe("po_1");
     expect(updates[0].booking_status).toBe("transferred");
     expect(updates[0].transferred_at).toBeTruthy();

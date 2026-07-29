@@ -30,19 +30,20 @@ const noOpt = bookingBreakdownCents({ quotedPriceEur: 310, hasOption: false, par
 ok("l option ne change pas le payout loueur", withOpt.partnerPayoutCents === noOpt.partnerPayoutCents);
 ok("l option vaut bien 5 EUR", withOpt.optionCents === Math.round(CANCELLATION_OPTION_EUR * 100));
 
-// Invariant 3 : CHARGE DE DESTINATION. L'argent doit partir droit sur le compte
-// du loueur, sans quoi crete.direct detiendrait les fonds d'un tiers, ce que ce
-// modele existe precisement pour eviter (decision Kami 29/07/2026).
+// Invariant 3 : CHARGES SEPAREES. Aucun transfer_data ni application_fee : on
+// encaisse d'abord, on transfere ensuite. C'est ce qui permet d'encaisser pour un
+// loueur pas encore inscrit, et donc de lui donner une raison de s'inscrire
+// (decision Kami 29/07/2026).
 const p = buildBookingCheckoutParams({
   requestId: 1, customerEmail: "x@y.z", quotedPriceEur: 310, hasOption: true,
   partnerName: "P", carLabel: "City car", dateFrom: "2026-09-25", dateTo: "2026-10-09",
-  bookingToken: "tok", locale: "fr", connectAccountId: "acct_test", partnerRate: 0.1,
+  bookingToken: "tok", locale: "fr", partnerRate: 0.1,
 });
-ok("l argent va sur le compte du loueur", p.payment_intent_data.transfer_data?.destination === "acct_test");
-ok("commission + option prelevees en application fee", p.payment_intent_data.application_fee_amount === 3600);
+ok("aucun transfer_data : les fonds restent sur la plateforme", p.payment_intent_data.transfer_data === undefined);
+ok("aucun application_fee_amount", p.payment_intent_data.application_fee_amount === undefined);
 ok("discriminants webhook presents", p.metadata.payment_type === "car_booking" && p.metadata.brand === "crete.direct");
 
-// Invariant 3bis : ce que preleve crete.direct plus ce que garde le loueur fait
+// Invariant 3bis : ce que garde crete.direct plus ce qui revient au loueur fait
 // exactement le total paye. Un ecart ici, c'est de l'argent qui disparait.
 for (const [price, rate, hasOption] of [[310, 0.1, true], [89.9, 0.1, false], [1250.55, 0.12, true]]) {
   const b = bookingBreakdownCents({ quotedPriceEur: price, hasOption, partnerRate: rate });
