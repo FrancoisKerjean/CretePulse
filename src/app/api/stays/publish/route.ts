@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getListingBySlug, publishListing } from "@/lib/stays/db";
 import { syncListingFromIcal } from "@/lib/stays/ical-apply";
+import { ensureOwnerToken, ownerSpaceUrl } from "@/lib/stays/owner-tokens";
+import { sendOwnerWelcome } from "@/lib/stays/emails";
+import { supabaseAdmin } from "@/lib/supabase-admin";
+import { siteBase } from "@/lib/stays/tokens";
 import { hashToken } from "@/lib/stays/tokens";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -48,5 +52,37 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.error("[stays/publish] synchronisation iCal echouee", { listingId: listing.id, error: e });
   }
 
-  return NextResponse.json({ ok: true, status: "published", sync });
+  // Accueil du proprietaire : son espace n'existe que s'il en recoit le lien.
+  // Le jeton est cree une seule fois ; une republication ne le regenere pas et
+  // ne renvoie donc pas d'email, ce qui evite de perimer un lien deja garde.
+  const locale = typeof body.locale === "string" ? body.locale : "en";
+  let spaceUrl: string | null = null;
+  try {
+    const ownerToken = await ensureOwnerToken(listing.owner_id);
+    if (ownerToken) {
+      spaceUrl = ownerSpaceUrl(ownerToken, locale);
+      const { data: owner } = await supabaseAdmin
+        .from("stay_owners")
+        .select("name, email")
+        .eq("id", listing.owner_id)
+        .maybeSingle();
+      if (owner?.email) {
+        await sendOwnerWelcome(
+          owner.email,
+          {
+            ownerName: owner.name ?? "",
+            listingTitle: listing.title ?? slug,
+            spaceUrl,
+            icalExportUrl: `${siteBase()}/api/stays/ical/${slug}`,
+          },
+          locale,
+        );
+      }
+    }
+  } catch (e) {
+    // L'annonce est publiee : un accueil rate ne doit pas la faire echouer.
+    console.error("[stays/publish] accueil proprietaire echoue", { listingId: listing.id, error: e });
+  }
+
+  return NextResponse.json({ ok: true, status: "published", sync, spaceUrl });
 }

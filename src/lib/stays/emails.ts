@@ -197,3 +197,124 @@ export async function sendGuestConfirmed(
     `<div style="font-family:Inter,Arial,sans-serif">Votre acompte est reçu, votre séjour est confirmé. Vous recevrez la demande de solde 14 jours avant l'arrivée.</div>`,
   );
 }
+
+// ── Email d'accueil du propriétaire ──────────────────────────────────────────
+// Premier contact après la publication. Il porte le lien de l'espace, qui EST
+// l'accès : pas de compte, pas de mot de passe, on le dit explicitement.
+// Quatre langues, comme le reste de /stays.
+
+export interface OwnerWelcome {
+  ownerName: string;
+  listingTitle: string;
+  spaceUrl: string;
+  icalExportUrl: string;
+}
+
+type WelcomeLocale = "en" | "fr" | "de" | "el";
+const pickWelcome = (l: string): WelcomeLocale =>
+  (["en", "fr", "de", "el"] as const).includes(l as WelcomeLocale) ? (l as WelcomeLocale) : "en";
+
+const WELCOME: Record<WelcomeLocale, (o: OwnerWelcome) => string[]> = {
+  en: (o) => [
+    `Hi ${o.ownerName || "there"},`,
+    ``,
+    `${o.listingTitle} is online on crete.direct.`,
+    ``,
+    `Here is your space. Keep this link, it is your access: there is no account and no password.`,
+    o.spaceUrl,
+    ``,
+    `You will find your arrivals, your calendar, your price and what you earn on each stay.`,
+    ``,
+    `One thing to do now: paste this calendar link into Airbnb or Booking, so they block the nights sold here.`,
+    o.icalExportUrl,
+    ``,
+    `Any question, just reply to this email.`,
+  ],
+  fr: (o) => [
+    `Bonjour ${o.ownerName || ""},`.trim(),
+    ``,
+    `${o.listingTitle} est en ligne sur crete.direct.`,
+    ``,
+    `Voici votre espace. Conservez ce lien, c'est votre accès : il n'y a ni compte ni mot de passe.`,
+    o.spaceUrl,
+    ``,
+    `Vous y trouverez vos arrivées, votre calendrier, votre prix et ce que vous touchez sur chaque séjour.`,
+    ``,
+    `Une chose à faire maintenant : collez ce lien de calendrier dans Airbnb ou Booking, pour qu'ils bloquent les nuits vendues ici.`,
+    o.icalExportUrl,
+    ``,
+    `Une question, répondez simplement à ce message.`,
+  ],
+  de: (o) => [
+    `Hallo ${o.ownerName || ""},`.trim(),
+    ``,
+    `${o.listingTitle} ist auf crete.direct online.`,
+    ``,
+    `Hier ist Ihr Bereich. Bewahren Sie diesen Link auf, er ist Ihr Zugang: es gibt kein Konto und kein Passwort.`,
+    o.spaceUrl,
+    ``,
+    `Dort finden Sie Ihre Anreisen, Ihren Kalender, Ihren Preis und Ihre Einnahmen pro Aufenthalt.`,
+    ``,
+    `Eine Sache jetzt: fügen Sie diesen Kalenderlink in Airbnb oder Booking ein, damit die hier verkauften Nächte gesperrt werden.`,
+    o.icalExportUrl,
+    ``,
+    `Bei Fragen antworten Sie einfach auf diese E-Mail.`,
+  ],
+  el: (o) => [
+    `Γεια σας ${o.ownerName || ""},`.trim(),
+    ``,
+    `Το ${o.listingTitle} είναι online στο crete.direct.`,
+    ``,
+    `Αυτός είναι ο χώρος σας. Κρατήστε αυτόν τον σύνδεσμο, είναι η πρόσβασή σας: δεν υπάρχει λογαριασμός ούτε κωδικός.`,
+    o.spaceUrl,
+    ``,
+    `Θα βρείτε τις αφίξεις σας, το ημερολόγιο, την τιμή σας και τα έσοδα κάθε διαμονής.`,
+    ``,
+    `Ένα πράγμα τώρα: επικολλήστε αυτόν τον σύνδεσμο ημερολογίου στο Airbnb ή στο Booking, ώστε να δεσμεύονται οι νύχτες που πωλούνται εδώ.`,
+    o.icalExportUrl,
+    ``,
+    `Για οποιαδήποτε απορία, απαντήστε σε αυτό το μήνυμα.`,
+  ],
+};
+
+const WELCOME_SUBJECT: Record<WelcomeLocale, (t: string) => string> = {
+  en: (t) => `${t} is online, here is your space`,
+  fr: (t) => `${t} est en ligne, voici votre espace`,
+  de: (t) => `${t} ist online, hier ist Ihr Bereich`,
+  el: (t) => `Το ${t} είναι online, ο χώρος σας`,
+};
+
+export function ownerWelcomeSubject(listingTitle: string, locale: string): string {
+  return WELCOME_SUBJECT[pickWelcome(locale)](listingTitle);
+}
+
+export function ownerWelcomeBody(o: OwnerWelcome, locale: string): string {
+  return WELCOME[pickWelcome(locale)](o).join("\n");
+}
+
+/** Le corps est ecrit en lignes : `send()` envoie du HTML, sans conversion tout
+ *  arriverait en un seul bloc illisible. Les URL deviennent des liens cliquables,
+ *  c'est le geste attendu sur les deux liens du message. */
+export function ownerWelcomeHtml(o: OwnerWelcome, locale: string): string {
+  const lines = ownerWelcomeBody(o, locale).split("\n");
+  const body = lines
+    .map((line) => {
+      if (line === "") return "";
+      if (/^https?:\/\//.test(line)) {
+        return `<p style="margin:0 0 12px"><a href="${line}" style="color:#008C9E;word-break:break-all">${line}</a></p>`;
+      }
+      return `<p style="margin:0 0 12px">${line}</p>`;
+    })
+    .join("");
+  return `<div style="font-family:Inter,Arial,sans-serif;color:#0B3954;line-height:1.55">${body}</div>`;
+}
+
+/** Envoi de l'accueil. `send()` avale les erreurs et les journalise : une
+ *  publication reussie ne doit pas echouer parce qu'un email est refuse. */
+export async function sendOwnerWelcome(
+  ownerEmail: string,
+  o: OwnerWelcome,
+  locale: string,
+): Promise<void> {
+  await send(ownerEmail, ownerWelcomeSubject(o.listingTitle, locale), ownerWelcomeHtml(o, locale));
+}

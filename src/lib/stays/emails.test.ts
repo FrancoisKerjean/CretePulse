@@ -8,6 +8,9 @@ import {
   guestReceivedBody,
   guestConflictSubject,
   guestConflictBody,
+  ownerWelcomeBody,
+  ownerWelcomeSubject,
+  ownerWelcomeHtml,
 } from "./emails";
 
 describe("cloisonnement crete.direct", () => {
@@ -67,5 +70,75 @@ describe("email builders", () => {
     const html = guestConflictBody({ listingTitle: "Villa Danae", amountEur: 220.5 });
     expect(html).toContain("220.50");
     expect(html).toMatch(/rembours/i);
+  });
+});
+
+describe("email d accueil du proprietaire", () => {
+  const o = {
+    ownerName: "Maria",
+    listingTitle: "Villa Danae",
+    spaceUrl: "https://crete.direct/fr/stays/owner/tok-123",
+    icalExportUrl: "https://crete.direct/api/stays/ical/villa-danae",
+  };
+
+  it("donne le lien de l espace et dit qu il ne faut pas le perdre", () => {
+    const body = ownerWelcomeBody(o, "fr");
+    expect(body).toContain(o.spaceUrl);
+    // Sans compte ni mot de passe, ce lien EST l acces : le dire explicitement.
+    expect(body).toMatch(/gardez|conservez/i);
+  });
+
+  it("donne le lien iCal a coller dans Airbnb", () => {
+    const body = ownerWelcomeBody(o, "fr");
+    expect(body).toContain(o.icalExportUrl);
+    expect(body).toMatch(/airbnb/i);
+  });
+
+  it("existe dans les quatre langues, sans retomber sur l anglais par accident", () => {
+    const fr = ownerWelcomeBody(o, "fr");
+    const de = ownerWelcomeBody(o, "de");
+    const el = ownerWelcomeBody(o, "el");
+    expect(fr).not.toBe(de);
+    expect(de).not.toBe(el);
+    expect(el).toMatch(/[Α-Ωα-ω]/);
+  });
+
+  it("retombe sur l anglais pour une langue non redigee", () => {
+    expect(ownerWelcomeBody(o, "it")).toBe(ownerWelcomeBody(o, "en"));
+  });
+
+  it("nomme le logement dans le sujet", () => {
+    expect(ownerWelcomeSubject("Villa Danae", "fr")).toContain("Villa Danae");
+  });
+
+  it("ne promet aucun revenu", () => {
+    // Regle Kairos : jamais de garantie de revenus dans un texte sortant.
+    for (const l of ["en", "fr", "de", "el"]) {
+      expect(ownerWelcomeBody(o, l)).not.toMatch(/garanti|guaranteed|garantiert/i);
+    }
+  });
+});
+
+describe("mise en forme HTML de l accueil", () => {
+  const o = {
+    ownerName: "Maria", listingTitle: "Villa Danae",
+    spaceUrl: "https://crete.direct/fr/stays/owner/tok",
+    icalExportUrl: "https://crete.direct/api/stays/ical/villa",
+  };
+
+  it("rend chaque ligne en paragraphe, pas un bloc illisible", () => {
+    // send() envoie du HTML : sans conversion, tout le message arriverait colle.
+    const html = ownerWelcomeHtml(o, "fr");
+    expect(html.match(/<p /g)?.length ?? 0).toBeGreaterThan(4);
+  });
+
+  it("rend les deux liens cliquables", () => {
+    const html = ownerWelcomeHtml(o, "fr");
+    expect(html).toContain(`href="${o.spaceUrl}"`);
+    expect(html).toContain(`href="${o.icalExportUrl}"`);
+  });
+
+  it("ne laisse aucune ligne vide produire un paragraphe fantome", () => {
+    expect(ownerWelcomeHtml(o, "fr")).not.toContain("<p style=\"margin:0 0 12px\"></p>");
   });
 });
