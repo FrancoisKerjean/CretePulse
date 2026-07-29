@@ -1823,11 +1823,44 @@ comme « aucun propriétaire encore » alors que cela voulait dire « pas de pla
 Connect ». À faire sur dashboard.stripe.com/connect.
 
 **Dettes ouvertes constatées pendant le smoke** (aucune ne bloque la mise en service)
-1. `/api/stays/approve` renvoie un 500 brut quand Stripe refuse la création du compte :
-   le propriétaire mérite un message lisible.
-2. `/api/stays/pay-balance` renvoie un 500 à corps vide sur erreur Stripe.
+1. ✅ FERMÉE 29/07 08:45 (`b5bae6c`) : `/api/stays/approve` renvoyait un 500 brut quand
+   Stripe refuse la création du compte.
+2. ✅ FERMÉE 29/07 08:45 (`b5bae6c`) : `/api/stays/pay-balance` renvoyait un 500 à corps
+   vide sur erreur Stripe.
 3. Corrigé dans la foulée : `send()` ignorait le `error` renvoyé par Resend, donc un
    email refusé disparaissait sans trace (commit `a4b3c96`).
+
+### Habillage des pannes Stripe, 29/07/2026 08:45
+
+[FACT 2026-07-29 source: master `b5bae6c`, CI checks run `30425617740` success, 247 tests
+vitest, `npm run check` exit 0, smoke 32/32 contre la base de production]
+
+`src/lib/stays/stripe-errors.ts` classe la panne en `payouts_unavailable` (503) ou
+`payment_provider` (502). Le navigateur reçoit une phrase écrite par nous plus un code
+machine, localisé en en/fr/de/el par `ApprovePanel` et `BalanceButton` ; le serveur
+journalise `stripeType`, `stripeStatus`, `stripeRequestId`. Sur échec l'état métier ne
+bouge pas : la demande reste `pending` côté approve, aucun compte Connect fantôme n'est
+écrit sur le propriétaire.
+
+L'invariant d'encaissement passe désormais par `balanceApplicationFeeCents()`
+(`src/lib/stays/pricing.ts`), appelée par `/api/stays/pay-balance` **et** par le gate
+`check:stays` : casser la formule dans la route fait tomber la CI (vérifié par mutation).
+Le gate couvre 4 jeux de tarifs non ronds et le second invariant acompte + solde = total
+voyageur.
+
+Chaîne rejouée bout en bout contre la base de production (serveur Next local, secret
+webhook local, Resend inerte, 0 email réel) : 422 min_nights, demande, 503 lisible sur
+propriétaire sans versement, acceptation, devis 220,50 / 514,50 / commission 35, acompte
+→ `deposit_paid` + 7 nuits, `duplicate` sur rejeu, `ignored` sur événement IEUF, 409 sur
+re-demande, `/api/stays/pay-balance` → **502 réel journalisé `req_KRd43snT810JEA`**, solde
+→ `confirmed`. Instantané avant/après identique : owners 1, listings 3, requests 0,
+availability 0, webhook_events 0.
+
+**Reste ouvert** : `/api/stays/pay` (l'acompte) n'a pas reçu le même habillage. À traiter
+quand Connect sera ouvert et que l'endpoint sera réellement appelable.
+
+**Sonde Connect du 29/07 08:00** : `POST /v1/accounts` répond toujours `400 You can only
+create new accounts if you've signed up for Connect`, requestId `req_LTgM8Q2P3wMWA8`.
 
 - [x] **Step 4 bis: Réactiver l'endpoint, APRÈS le déploiement** ✅ FAIT 29/07, après le 200 vérifié
 
