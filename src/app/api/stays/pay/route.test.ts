@@ -52,6 +52,48 @@ describe("POST /api/stays/pay", () => {
     expect(res.status).toBe(404);
   });
 
+  it("502 lisible quand Stripe refuse la session d acompte", async () => {
+    getRequestByPayHash.mockResolvedValueOnce({ id: 5, listing_id: 9, status: "approved", quoted_price_eur: 700, guest_email: "j@x.com", date_from: "2026-07-01", date_to: "2026-07-08" });
+    getListingById.mockResolvedValueOnce({ id: 9, owner_id: 1, title: "Villa", cleaning_fee_eur: 0, commission_rate: 5 });
+    from.mockImplementationOnce(() => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { stripe_connect_account_id: "acct_1", kyc_status: "complete" } }) }) }) }));
+    sessionsCreate.mockRejectedValueOnce(
+      Object.assign(new Error("No such destination: acct_1TDPicEQ3UQbwGzY"), {
+        type: "invalid_request_error", statusCode: 400, requestId: "req_pay_1",
+      }) as never,
+    );
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await POST(req({ token: "pay-plain", locale: "fr" }) as never);
+
+    expect(res.status).toBe(502);
+    const json = await res.json();
+    expect(json.ok).toBe(false);
+    expect(json.code).toBe("payment_provider");
+    expect(String(json.error).length).toBeGreaterThan(20);
+    expect(JSON.stringify(json)).not.toMatch(/stripe|acct_|No such destination/i);
+    expect(JSON.stringify(errSpy.mock.calls)).toContain("req_pay_1");
+    // Pas de session en base pour une session qui n'existe pas : seule la lecture
+    // du proprietaire a touche supabase.
+    expect(from).toHaveBeenCalledTimes(1);
+    errSpy.mockRestore();
+  });
+
+  it("503 lisible quand la plateforme Connect n est pas activee", async () => {
+    getRequestByPayHash.mockResolvedValueOnce({ id: 5, listing_id: 9, status: "approved", quoted_price_eur: 700, guest_email: "j@x.com", date_from: "2026-07-01", date_to: "2026-07-08" });
+    getListingById.mockResolvedValueOnce({ id: 9, owner_id: 1, title: "Villa", cleaning_fee_eur: 0, commission_rate: 5 });
+    from.mockImplementationOnce(() => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { stripe_connect_account_id: "acct_1", kyc_status: "complete" } }) }) }) }));
+    sessionsCreate.mockRejectedValueOnce(
+      new Error("You can only create new accounts if you've signed up for Connect, which you can do at https://dashboard.stripe.com/connect.") as never,
+    );
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await POST(req({ token: "pay-plain", locale: "fr" }) as never);
+
+    expect(res.status).toBe(503);
+    expect((await res.json()).code).toBe("payouts_unavailable");
+    errSpy.mockRestore();
+  });
+
   it("409 when the owner KYC is not complete", async () => {
     getRequestByPayHash.mockResolvedValueOnce({ id: 5, listing_id: 9, status: "approved", quoted_price_eur: 700, guest_email: "j@x.com", date_from: "2026-07-01", date_to: "2026-07-08" });
     getListingById.mockResolvedValueOnce({ id: 9, owner_id: 1, title: "Villa", cleaning_fee_eur: 0, commission_rate: 5 });

@@ -5,6 +5,7 @@ import { CAR_CHILD_SEAT_LABELS_PARTNER, type CarChildSeatKey } from "@/lib/car-c
 import { sharedOfferCopy } from "@/lib/car-offer-copy";
 import { affiliateClass } from "@/lib/affiliate";
 import { assertSent, reportSend } from "./resend-response";
+import { commissionRequestSubject, commissionRequestBody, type CommissionMail } from "./car-commission";
 import type { NewsletterDigest, NewsletterLang } from "./newsletter";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -1802,5 +1803,26 @@ export async function sendActivityLeadKamiSummary(
     }), "synthese Kami lead activite");
   } catch (e) {
     console.error("[sendActivityLeadKamiSummary] échec:", e);
+  }
+}
+
+/** Demande de reglement de la commission au loueur, declenchee au passage en
+ *  « rented » par le back-office. `reportSend` et non `assertSent` : la session
+ *  Stripe existe deja quand on arrive ici, un echec d'email ne doit pas annuler
+ *  la facturation. Il est journalise, et le lien reste lisible dans /admin/car-rental. */
+export async function sendPartnerCommissionRequest(
+  partnerEmail: string,
+  m: CommissionMail,
+): Promise<void> {
+  try {
+    reportSend(await resend.emails.send({
+      from: FROM_EMAIL,
+      to: partnerEmail,
+      replyTo: "hello@crete.direct",
+      subject: commissionRequestSubject(m),
+      text: commissionRequestBody(m),
+    }), "demande de commission loueur");
+  } catch (e) {
+    console.error("[sendPartnerCommissionRequest] échec:", e);
   }
 }

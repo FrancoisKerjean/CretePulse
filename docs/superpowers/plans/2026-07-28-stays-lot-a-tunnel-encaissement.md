@@ -1856,8 +1856,13 @@ re-demande, `/api/stays/pay-balance` → **502 réel journalisé `req_KRd43snT81
 → `confirmed`. Instantané avant/après identique : owners 1, listings 3, requests 0,
 availability 0, webhook_events 0.
 
-**Reste ouvert** : `/api/stays/pay` (l'acompte) n'a pas reçu le même habillage. À traiter
-quand Connect sera ouvert et que l'endpoint sera réellement appelable.
+**Complété 29/07 10:55 (`a8b8fc9`)** : `/api/stays/pay` (l'acompte) a reçu le même
+habillage. Les trois endpoints qui appellent Stripe en synchrone passent maintenant par
+`stripe-errors.ts`, aucun ne peut plus sortir un 500 brut. Sur échec, la demande reste
+`approved` et sans `stripe_session_id` : le même lien de paiement reste utilisable sans
+repasser par une acceptation. Preuve en live dans le smoke étendu (36 assertions, 0 échec) :
+`/api/stays/pay` → **502 réel journalisé `req_30qc69oyPVqKm4`**, corps sans le moindre
+fragment Stripe, demande inchangée en base.
 
 **Sonde Connect du 29/07 08:00** : `POST /v1/accounts` répond toujours `400 You can only
 create new accounts if you've signed up for Connect`, requestId `req_LTgM8Q2P3wMWA8`.

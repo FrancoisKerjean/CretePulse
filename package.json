@@ -19,6 +19,7 @@
     "check:activity-catalog": "node --experimental-strip-types scripts/check-activity-catalog.mjs",
     "check:activity-quotes": "node --experimental-strip-types scripts/check-activity-quotes.mjs",
     "check:activity-lead": "node --experimental-strip-types scripts/check-activity-lead.mjs",
+    "check:car-commission": "node --experimental-strip-types scripts/check-car-commission.mjs",
     "check:car-admin": "node --experimental-strip-types scripts/check-car-admin.mjs",
     "check:car-monitoring": "node --experimental-strip-types scripts/check-car-monitoring.mjs",
     "check:activity-monitoring": "node --experimental-strip-types scripts/check-activity-monitoring.mjs",
@@ -38,7 +39,7 @@
     "check:home-services": "node --experimental-strip-types scripts/check-home-services.mjs",
     "check:island-now": "node --experimental-strip-types scripts/check-island-now.mjs",
     "check:hero-links": "node --experimental-strip-types scripts/check-hero-links.mjs",
-    "check": "npm run check:retention && npm run check:boarding && npm run check:nearest-stop && npm run check:swim-near && npm run check:geo && npm run check:car-partners && npm run check:car-lead && npm run check:car-demand && npm run check:car-admin && npm run check:car-monitoring && npm run check:bus-select && npm run check:citybus-engine && npm run check:stop-departures && npm run check:projet-copy && npm run check:projet-lead && npm run check:stays && npm run check:home-services && npm run check:island-now && npm run check:hero-links && npm run check:da && npm run check:i18n && tsc --noEmit",
+    "check": "npm run check:retention && npm run check:boarding && npm run check:nearest-stop && npm run check:swim-near && npm run check:geo && npm run check:car-partners && npm run check:car-lead && npm run check:car-demand && npm run check:car-admin && npm run check:car-commission && npm run check:car-monitoring && npm run check:bus-select && npm run check:citybus-engine && npm run check:stop-departures && npm run check:projet-copy && npm run check:projet-lead && npm run check:stays && npm run check:home-services && npm run check:island-now && npm run check:hero-links && npm run check:da && npm run check:i18n && tsc --noEmit",
     "seed:activity-catalog": "node scripts/seed-activity-catalog.mjs",
     "test:affiliate": "node --test --experimental-strip-types src/lib/affiliate.test.ts"
   },

@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestByBalanceHash, getListingById } from "@/lib/stays/db";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { buildBalanceCheckoutParams, stripeClient } from "@/lib/stays/stripe-helpers";
-import { classifyStripeFailure, stripeLogFields } from "@/lib/stays/stripe-errors";
+import { classifyStripeFailure, stripeLogFields } from "@/lib/stripe-errors";
 import { computeQuote, balanceApplicationFeeCents } from "@/lib/stays/pricing";
 import { hashToken } from "@/lib/stays/tokens";
 
