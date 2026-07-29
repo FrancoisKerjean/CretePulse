@@ -26,6 +26,21 @@ import { type Guide, getLocalizedGuideField } from "@/lib/guides";
 import { ServiceRail } from "@/components/home/ServiceRail";
 import { IslandBarometer } from "@/components/home/IslandBarometer";
 import type { HomeService } from "@/lib/home-services";
+import { swimHref } from "@/lib/hero-links";
+import { ChevronRight } from "lucide-react";
+
+// Zones cliquables du hero portées par ce composant. Le baromètre suit le même
+// event avec ses propres zones. Spec : docs/superpowers/specs/2026-07-29-hero-clickable-design.md
+function trackHero(zone: "badge" | "swim") {
+  (window as unknown as { plausible?: (e: string, o?: { props?: Record<string, string> }) => void })
+    .plausible?.("hero_click", { props: { zone } });
+}
+
+// Chevron du hero : révélé au survol sur pointeur fin, permanent sur tactile.
+const HERO_CHEVRON =
+  "w-4 h-4 shrink-0 transition-all duration-200 opacity-0 -translate-x-1 " +
+  "group-hover/hero:opacity-100 group-hover/hero:translate-x-0 " +
+  "[@media(hover:none)]:opacity-60 [@media(hover:none)]:translate-x-0";
 
 function timeAgo(dateStr: string): string {
   const diffMs = Date.now() - new Date(dateStr).getTime();
@@ -182,6 +197,9 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
     ? { name: swimPick.name, lat: swimPick.lat, lng: swimPick.lng }
     : null;
 
+  // La phrase du hero nomme une plage : elle mène à sa fiche, pas à la liste.
+  const swimLink = swimPick ? swimHref(swimPick.slug) : null;
+
   const TOOLS = [
     { href: "/buses", icon: CiBus, title: t("tools.buses"), line: t("tools.busesLine") },
     { href: "/beaches/today", icon: CiWave, title: t("tools.swim"), line: t("tools.swimLine") },
@@ -205,20 +223,37 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
         <div className="relative max-w-6xl mx-auto px-4 grid lg:grid-cols-2 gap-11 items-center">
           <div>
             <BlurFade delay={0.05}>
-              <span className="inline-flex items-center gap-2 bg-white/72 rounded-full px-4 py-2 text-[13px] font-heading font-semibold text-sea">
+              {/* Le badge dit « live » : il mène à la carte des bus suivis en direct. */}
+              <Link
+                href="/live"
+                onClick={() => trackHero("badge")}
+                className="group/hero inline-flex items-center gap-2 bg-white/72 hover:bg-white/90 rounded-full px-4 py-2 text-[13px] font-heading font-semibold text-sea no-underline transition-colors"
+              >
                 <span className="w-2 h-2 rounded-full bg-ok shadow-[0_0_0_4px_rgba(20,184,107,.25)]" />
                 {greekGreeting()} {dateLabel} · {t("liveFromIsland")}
-              </span>
+                <ChevronRight className={HERO_CHEVRON} aria-hidden />
+              </Link>
               <h1 className="font-heading font-extrabold text-4xl md:text-[54px] leading-[1.06] tracking-tight text-text mt-4 mb-3">
                 {t("heroMain.pre")}
                 <br />
                 <span className="text-white [text-shadow:0_2px_18px_rgba(11,94,120,.35)]">{t("heroMain.hl")}</span>
               </h1>
-              <p className="text-base text-[rgba(11,57,84,.78)] max-w-md leading-relaxed mb-6">
-                {swimPick
-                  ? t("heroToday", { rating: t(`ratings.${swimPick.rating}`), name: swimPick.name })
-                  : t("heroSub")}
-              </p>
+              {swimPick && swimLink ? (
+                <Link
+                  href={swimLink}
+                  onClick={() => trackHero("swim")}
+                  className="group/hero block max-w-md mb-6 text-base text-[rgba(11,57,84,.78)] hover:text-sea leading-relaxed no-underline transition-colors"
+                >
+                  {t("heroToday", { rating: t(`ratings.${swimPick.rating}`), name: swimPick.name })}
+                  <ChevronRight className={`${HERO_CHEVRON} inline-block align-[-3px] ml-1 text-sea`} aria-hidden />
+                </Link>
+              ) : (
+                <p className="text-base text-[rgba(11,57,84,.78)] max-w-md leading-relaxed mb-6">
+                  {swimPick
+                    ? t("heroToday", { rating: t(`ratings.${swimPick.rating}`), name: swimPick.name })
+                    : t("heroSub")}
+                </p>
+              )}
               <IslandBarometer
                 seaTemp={swimPick?.seaTemp ?? null}
                 windSpeed={swimPick?.windSpeed ?? null}
