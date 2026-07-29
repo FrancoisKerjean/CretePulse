@@ -4,6 +4,7 @@ import { inclusionLabels, insuranceSummary } from "@/lib/car-inclusions";
 import { CAR_CHILD_SEAT_LABELS_PARTNER, type CarChildSeatKey } from "@/lib/car-child-seats";
 import { sharedOfferCopy } from "@/lib/car-offer-copy";
 import { affiliateClass } from "@/lib/affiliate";
+import { assertSent, reportSend } from "./resend-response";
 import type { NewsletterDigest, NewsletterLang } from "./newsletter";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -96,12 +97,14 @@ export async function sendConfirmationEmail(email: string, token: string, locale
   const confirmUrl = `${baseUrl}/api/newsletter/confirm?token=${token}`;
   const lang = ["en", "fr", "de", "el"].includes(locale) ? locale : "en";
 
-  await resend.emails.send({
+  // Sans ce lien, l'abonne reste bloque en non-confirme et ne recoit jamais
+  // rien : un refus doit remonter, pas passer pour un envoi reussi.
+  assertSent(await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
     subject: CONFIRM_SUBJECTS[lang] || CONFIRM_SUBJECTS.en,
     html: confirmBody(confirmUrl, lang),
-  });
+  }), "confirmation newsletter");
 }
 
 const WELCOME_SUBJECTS: Record<string, string> = {
@@ -170,12 +173,12 @@ function welcomeBody(lang: string): string {
 export async function sendWelcomeEmail(email: string, locale: string) {
   const lang = ["en", "fr", "de", "el"].includes(locale) ? locale : "en";
 
-  await resend.emails.send({
+  assertSent(await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
     subject: WELCOME_SUBJECTS[lang] || WELCOME_SUBJECTS.en,
     html: welcomeBody(lang),
-  });
+  }), "bienvenue newsletter");
 }
 
 // =============================================================================
@@ -592,13 +595,13 @@ export async function sendCarLeadEmail(partner: CarLeadPartner, lead: CarLead, q
       ``,
       `Prochaine étape : ${partner.name} répond son prix → transmettre au client → si OK, mise en relation.`,
     ];
-    await resend.emails.send({
+    reportSend(await resend.emails.send({
       from: FROM_EMAIL,
       to: RELAY_EMAIL,
       replyTo: lead.customerEmail,
       subject: `[Lead voiture · suivi] ${subject}`,
       text: followUp.join("\n"),
-    });
+    }), "suivi Kami lead voiture");
   } catch (e) {
     console.error("[sendCarLeadEmail] suivi Kami échoué:", e);
   }
@@ -678,10 +681,10 @@ export async function sendLeadKamiSummary(lead: CarLead, partnerNames: string[])
     `Premier qui soumet son prix gagne. Le client reçoit l'offre automatiquement ; tu es en copie à l'acceptation.`,
   ];
   try {
-    await resend.emails.send({
+    reportSend(await resend.emails.send({
       from: FROM_EMAIL, to: RELAY_EMAIL, replyTo: lead.customerEmail,
       subject: `[Lead voiture · suivi] ${subject}`, text: lines.join("\n"),
-    });
+    }), "synthese Kami lead voiture");
   } catch (e) { console.error("[sendLeadKamiSummary] échec:", e); }
 }
 
@@ -929,13 +932,16 @@ export async function sendConnectionEmails(opts: {
     ${insLines.length ? `<div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 18px;"><p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${insHeading[l] ?? insHeading.en}</p><p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">${insLines.map((x) => `• ${x}`).join("<br>")}</p></div>` : ""}
     <p style="margin:0; color:${C.faint}; font-size:12px; line-height:1.6;">${c.foot}</p>
   `;
-  await resend.emails.send({
+  // Symetrique de r1 : sans cet email le client n'a jamais les coordonnees du
+  // loueur, alors que le loueur, lui, a deja les siennes. La reservation est
+  // acceptee des deux cotes et personne ne peut se joindre.
+  assertSent(await resend.emails.send({
     from: FROM_EMAIL,
     to: customer.email,
     replyTo: RELAY_EMAIL,
     subject: CONNECT_SUBJECT[l],
     html: kalimeraShell(inner),
-  });
+  }), "mise en relation client voiture");
 }
 
 // ── Sélection Match Swipe (« Le Tinder de la Crète ») ──────────────────────
@@ -1045,12 +1051,13 @@ export async function sendReviewConfirmationEmail(opts: {
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://crete.direct";
   const confirmUrl = `${base}/api/reviews/confirm?token=${encodeURIComponent(opts.confirmToken)}`;
   const deleteUrl  = `${base}/api/reviews/delete?token=${encodeURIComponent(opts.deleteToken)}`;
-  await resend.emails.send({
+  // Double opt-in : sans cet email l'avis reste en attente indefiniment.
+  assertSent(await resend.emails.send({
     from: `crete.direct <${process.env.RESEND_FROM ?? "noreply@crete.direct"}>`,
     to: opts.email,
     subject: REVIEW_SUBJECT[l],
     text: REVIEW_BODY[l](opts.placeName, confirmUrl, deleteUrl),
-  });
+  }), "confirmation avis");
 }
 
 // ── Cron silence >24h : aucune agence n'a encore soumis de prix ─────────────
@@ -1749,13 +1756,13 @@ export async function sendActivityConnectionEmails(opts: {
     </div>
     <p style="margin:0; color:${C.faint}; font-size:12px; line-height:1.6;">${c.foot}</p>
   `;
-  await resend.emails.send({
+  assertSent(await resend.emails.send({
     from: FROM_EMAIL,
     to: customer.email,
     replyTo: RELAY_EMAIL,
     subject: ACT_CONNECT_SUBJECT[l],
     html: kalimeraShell(inner),
-  });
+  }), "mise en relation client activite");
 }
 
 // ── Synthèse lead activités à Kami ────────────────────────────────────────────
@@ -1786,13 +1793,13 @@ export async function sendActivityLeadKamiSummary(
     `Premier qui soumet son prix gagne. Le client reçoit l'offre automatiquement ; tu es en copie à l'acceptation.`,
   ];
   try {
-    await resend.emails.send({
+    reportSend(await resend.emails.send({
       from: FROM_EMAIL,
       to: RELAY_EMAIL,
       replyTo: lead.customerEmail,
       subject: `[Lead activité · suivi] ${subject}`,
       text: lines.join("\n"),
-    });
+    }), "synthese Kami lead activite");
   } catch (e) {
     console.error("[sendActivityLeadKamiSummary] échec:", e);
   }
