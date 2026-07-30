@@ -5,7 +5,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestByBalanceHash, getListingById } from "@/lib/stays/db";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { buildBalanceCheckoutParams, stripeClient } from "@/lib/stays/stripe-helpers";
-import { computeQuote } from "@/lib/stays/pricing";
+import { classifyStripeFailure, stripeLogFields } from "@/lib/stripe-errors";
+import { computeQuote, balanceApplicationFeeCents } from "@/lib/stays/pricing";
 import { hashToken } from "@/lib/stays/tokens";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -40,25 +41,40 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   });
 
   // La commission totale du sejour vaut commissionEur. L'acompte en a deja preleve
-  // sa part (applicationFeeCents), le solde porte exactement le reste : la somme des
-  // deux frais d'application egale la commission, au centime.
-  const balanceFeeCents =
-    Math.round(quote.commissionEur * 100) - quote.applicationFeeCents;
+  // sa part (applicationFeeCents), le solde porte exactement le reste. La formule
+  // vit dans pricing.ts, ou le gate CI check:stays la verifie.
+  const balanceFeeCents = balanceApplicationFeeCents(quote);
 
-  const session = await stripeClient().checkout.sessions.create(
-    buildBalanceCheckoutParams({
-      listingTitle: listing.title ?? "Séjour",
-      dateFrom: req.date_from,
-      dateTo: req.date_to,
-      balanceEur: quote.balanceEur,
-      applicationFeeCents: balanceFeeCents,
-      connectAccountId: owner.stripe_connect_account_id,
-      guestEmail: req.guest_email,
+  let session: { url: string | null };
+  try {
+    session = await stripeClient().checkout.sessions.create(
+      buildBalanceCheckoutParams({
+        listingTitle: listing.title ?? "Séjour",
+        dateFrom: req.date_from,
+        dateTo: req.date_to,
+        balanceEur: quote.balanceEur,
+        applicationFeeCents: balanceFeeCents,
+        connectAccountId: owner.stripe_connect_account_id,
+        guestEmail: req.guest_email,
+        requestId: req.id,
+        balanceToken: token,
+        locale,
+      }),
+    );
+  } catch (err) {
+    // La demande reste `deposit_paid`, le jeton de solde reste valide : le
+    // voyageur peut relancer le paiement sans repasser par le cron.
+    const failure = classifyStripeFailure(err);
+    console.error("[stays/pay-balance] session de solde refusee", {
       requestId: req.id,
-      balanceToken: token,
-      locale,
-    }),
-  );
+      failure: failure.code,
+      ...stripeLogFields(err),
+    });
+    return NextResponse.json(
+      { ok: false, code: failure.code, error: failure.message },
+      { status: failure.status },
+    );
+  }
 
   await supabaseAdmin
     .from("stay_requests")

@@ -22,6 +22,10 @@ export default function BalanceButton(
         window.location.href = j.url;
         return;
       }
+      if (j.code === "payouts_unavailable" || j.code === "payment_provider") {
+        setError(j.code === "payouts_unavailable" ? strings.errorPayouts : strings.errorPayment);
+        return;
+      }
       setError(`${strings.error} : ${j.error ?? ""}`);
     } catch {
       setError(strings.error);

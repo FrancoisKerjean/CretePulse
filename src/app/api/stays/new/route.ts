@@ -3,6 +3,7 @@ import { scrapeAirbnbUrl } from "@/lib/stays/airbnb-scrape";
 import { upsertOwnerByEmail, createDraftListing, slugify } from "@/lib/stays/db";
 import { randomUUID } from "node:crypto";
 import { newToken, hashToken } from "@/lib/stays/tokens";
+import { pickEmailLocale } from "@/lib/stays/emails";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const body = await request.json().catch(() => ({}));
@@ -19,10 +20,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   const scrape = await scrapeAirbnbUrl(airbnbUrl);
+  // La langue de la page ou il depose son annonce est celle de tous ses emails,
+  // a commencer par l'accueil envoye a la publication.
   const owner = await upsertOwnerByEmail(
     ownerEmail,
     typeof body.ownerName === "string" ? body.ownerName : null,
     typeof body.ownerPhone === "string" ? body.ownerPhone : null,
+    pickEmailLocale(typeof body.locale === "string" ? body.locale : null),
   );
 
   const title = scrape.data.title ?? (typeof body.title === "string" ? body.title : "Logement");

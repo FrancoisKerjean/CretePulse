@@ -41,6 +41,27 @@ describe("POST /api/stays/new", () => {
     expect(json.publishToken).toBeTruthy();
   });
 
+  // Sans cette locale, l'email d'accueil du proprietaire part en anglais quelle
+  // que soit la page ou il a depose son annonce.
+  it("retient la langue de la page pour le proprietaire", async () => {
+    await POST(req({
+      airbnbUrl: "https://www.airbnb.com/rooms/123",
+      ownerEmail: "o@x.com",
+      basePriceEur: 100,
+      locale: "de",
+    }) as never);
+    expect(upsertOwnerByEmail).toHaveBeenCalledWith("o@x.com", null, null, "de");
+  });
+
+  it("retombe sur l anglais quand la page n a pas de langue redigee", async () => {
+    await POST(req({
+      airbnbUrl: "https://www.airbnb.com/rooms/123",
+      ownerEmail: "o@x.com",
+      locale: "ru",
+    }) as never);
+    expect(upsertOwnerByEmail).toHaveBeenCalledWith("o@x.com", null, null, "en");
+  });
+
   it("rejects a missing URL", async () => {
     const res = await POST(req({ ownerEmail: "o@x.com" }) as never);
     expect(res.status).toBe(422);

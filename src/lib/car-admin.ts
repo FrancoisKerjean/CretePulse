@@ -39,9 +39,16 @@ export interface AdminRequest {
   final_amount_eur?: number | null;
   commission_eur?: number | null;
   commission_paid_at?: string | null;
+  /** Facture partie chez le loueur, pas encore reglee (migration 20260729). */
+  commission_requested_at?: string | null;
   admin_note?: string | null;
   client_relanced_at?: string | null;
   client_relance_count?: number;
+  // Tunnel voyageur (migration car booking) : optionnelles comme ci-dessus.
+  booking_status?: string | null;
+  booking_amount_eur?: number | null;
+  transfer_id?: string | null;
+  refund_amount_eur?: number | null;
 }
 
 export interface AdminPartner {
@@ -58,10 +65,94 @@ export interface AdminPartner {
   // Colonne recrutement ajoutée en SQL direct sur le VPS (non versionnée) :
   // affichée si présente, ignorée sinon.
   outreach_status?: string | null;
+  // Compte de versement Stripe Connect (migration 20260730_car_booking).
+  // Sans lui, le cron de versement garde les fonds du client et le signale.
+  stripe_connect_account_id?: string | null;
+  kyc_status?: string | null;
+  // Note Google (migration 20260730_partner_google_rating), relevée par
+  // Places API. `google_rating_at` sans note = fiche cherchée, non trouvée.
+  google_place_id?: string | null;
+  google_rating?: number | null;
+  google_rating_count?: number | null;
+  google_maps_url?: string | null;
+  google_rating_at?: string | null;
 }
 
 export const OUTCOMES = ["rented", "lost"] as const;
 export type Outcome = (typeof OUTCOMES)[number];
+
+// ── Etat de reservation voyageur (colonnes booking_*) ───────────────────────
+// Le tunnel voiture encaisse le voyageur meme quand le loueur n'a pas de compte
+// connecte : l'argent attend sur la plateforme, et c'est ce qui decide le loueur
+// a s'inscrire. Le back-office doit donc dire ou en est cet argent, sinon un
+// versement en attente ou un remboursement reste invisible.
+
+export interface BookingRow {
+  booking_status?: string | null;
+  booking_amount_eur?: number | null;
+  transfer_id?: string | null;
+  refund_amount_eur?: number | null;
+}
+
+export interface BookingState {
+  label: string;
+  /** neutral : rien a surveiller · warn : de l'argent attend · ok : verse · alert : rendu. */
+  tone: "neutral" | "warn" | "ok" | "alert";
+  /** Le voyageur a effectivement paye et n'a pas ete rembourse. */
+  paid: boolean;
+  /** Le loueur a recu son virement. */
+  transferred: boolean;
+}
+
+const money = (n: number | null | undefined): string => (Number(n) || 0).toFixed(2);
+
+/**
+ * Lecture de l'etat de reservation d'une demande. `null` quand le voyageur n'a
+ * rien engage : la ligne de demande n'affiche alors aucun badge.
+ */
+export function bookingState(row: BookingRow): BookingState | null {
+  const status = row.booking_status;
+  if (!status) return null;
+
+  if (status === "pending_payment") {
+    return {
+      label: `paiement en cours ${money(row.booking_amount_eur)} €`,
+      tone: "neutral",
+      paid: false,
+      transferred: false,
+    };
+  }
+
+  if (status === "paid") {
+    const transferred = Boolean(row.transfer_id);
+    return {
+      label: transferred
+        ? `paye ${money(row.booking_amount_eur)} €, verse au loueur`
+        : `paye ${money(row.booking_amount_eur)} €, versement en attente`,
+      // Tant que le virement n'est pas parti, l'argent dort sur la plateforme :
+      // c'est un fait a surveiller, pas un succes acquis.
+      tone: transferred ? "ok" : "warn",
+      paid: true,
+      transferred,
+    };
+  }
+
+  if (status === "refunded") {
+    return {
+      label: `rembourse ${money(row.refund_amount_eur)} € sur ${money(row.booking_amount_eur)} €`,
+      tone: "alert",
+      paid: false,
+      transferred: Boolean(row.transfer_id),
+    };
+  }
+
+  if (status === "cancelled") {
+    return { label: "annule sans paiement", tone: "neutral", paid: false, transferred: false };
+  }
+
+  // Statut inconnu : on l'affiche brut plutot que de le faire disparaitre.
+  return { label: status, tone: "neutral", paid: false, transferred: false };
+}
 
 /** Commission en euros, arrondie au centime (EPSILON contre le demi-centime
  *  flottant qui arrondirait vers le bas). */

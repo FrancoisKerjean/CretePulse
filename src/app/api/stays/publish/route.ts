@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getListingBySlug, publishListing } from "@/lib/stays/db";
-import { parseICalText } from "@/lib/stays/ical";
+import { syncListingFromIcal } from "@/lib/stays/ical-apply";
+import { ensureOwnerToken, ownerSpaceUrl } from "@/lib/stays/owner-tokens";
+import { sendOwnerWelcome, pickEmailLocale } from "@/lib/stays/emails";
+import { supabaseAdmin } from "@/lib/supabase-admin";
+import { siteBase } from "@/lib/stays/tokens";
 import { hashToken } from "@/lib/stays/tokens";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -22,12 +26,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 403 });
   }
 
+  let text: string;
   try {
     const res = await fetch(icalUrl);
     if (!res.ok) throw new Error("fetch failed");
-    const text = await res.text();
-    const events = parseICalText(text);
-    void events;
+    text = await res.text();
   } catch {
     return NextResponse.json(
       { ok: false, error: "Could not read the private iCal" },
@@ -36,5 +39,56 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   await publishListing(listing.id, icalUrl);
-  return NextResponse.json({ ok: true, status: "published" });
+
+  // Le flux etait lu puis jete : une annonce publiee arrivait avec un calendrier
+  // vide, et le proprietaire reste sur Airbnb louait deux fois les memes nuits.
+  // On ecrit desormais les nuits OTA des la publication.
+  let sync = { blocked: 0, released: 0 };
+  try {
+    sync = await syncListingFromIcal(listing.id, text);
+  } catch (e) {
+    // L'annonce est publiee, c'est un fait. Une synchro ratee se rattrape au
+    // passage suivant du cron ; la faire echouer ici perdrait la publication.
+    console.error("[stays/publish] synchronisation iCal echouee", { listingId: listing.id, error: e });
+  }
+
+  // Accueil du proprietaire : son espace n'existe que s'il en recoit le lien.
+  // Le jeton est cree une seule fois ; une republication ne le regenere pas et
+  // ne renvoie donc pas d'email, ce qui evite de perimer un lien deja garde.
+  //
+  // La langue est celle du proprietaire, posee au depot de l'annonce. La page de
+  // publication ne sert que de repli : un proprietaire grec qui publie depuis un
+  // onglet francais doit recevoir son accueil en grec.
+  let spaceUrl: string | null = null;
+  try {
+    const ownerToken = await ensureOwnerToken(listing.owner_id);
+    if (ownerToken) {
+      const { data: owner } = await supabaseAdmin
+        .from("stay_owners")
+        .select("name, email, locale")
+        .eq("id", listing.owner_id)
+        .maybeSingle();
+      const locale = pickEmailLocale(
+        owner?.locale ?? (typeof body.locale === "string" ? body.locale : null),
+      );
+      spaceUrl = ownerSpaceUrl(ownerToken, locale);
+      if (owner?.email) {
+        await sendOwnerWelcome(
+          owner.email,
+          {
+            ownerName: owner.name ?? "",
+            listingTitle: listing.title ?? slug,
+            spaceUrl,
+            icalExportUrl: `${siteBase()}/api/stays/ical/${slug}`,
+          },
+          locale,
+        );
+      }
+    }
+  } catch (e) {
+    // L'annonce est publiee : un accueil rate ne doit pas la faire echouer.
+    console.error("[stays/publish] accueil proprietaire echoue", { listingId: listing.id, error: e });
+  }
+
+  return NextResponse.json({ ok: true, status: "published", sync, spaceUrl });
 }

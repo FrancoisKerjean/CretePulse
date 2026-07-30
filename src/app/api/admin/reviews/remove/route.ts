@@ -3,10 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { getClientIp, hashToken } from "@/lib/reviews/sec";
+import { isAdminSecret } from "@/lib/admin-secret";
 
 export async function POST(req: NextRequest) {
   const secret = req.nextUrl.searchParams.get("secret") ?? "";
-  if (secret !== process.env.REVIEWS_ADMIN_SECRET) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!isAdminSecret(secret, process.env.REVIEWS_ADMIN_SECRET)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   let body: Record<string, unknown>;
   try { body = await req.json(); } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
   const id = Number(body.id);

@@ -1,7 +1,7 @@
 // Vue Demandes : cartes empilées (mobile-first), filtres par query string,
 // écritures par forms natifs bindés aux server actions (zéro client JS).
 import {
-  requestCommission, buildCarWaMessage, waHref,
+  requestCommission, buildCarWaMessage, waHref, bookingState,
   type AdminPartner, type AdminRequest,
 } from "@/lib/car-admin";
 import {
@@ -17,6 +17,29 @@ import { insuranceSummary, inclusionLabels } from "@/lib/car-inclusions";
 import { setOutcome, setCommissionPaid, saveNote, cancelRequest } from "./actions";
 
 const PAGE_SIZE = 50;
+
+/**
+ * Etat de l'argent du voyageur sur une demande. Rien ne l'affichait : une
+ * reservation payee dont le versement au loueur n'est pas parti se lisait comme
+ * une demande ordinaire. La logique est pure et testee (check:car-admin), ici on
+ * ne fait que l'habiller.
+ */
+const BOOKING_TONE: Record<"neutral" | "warn" | "ok" | "alert", string> = {
+  neutral: "border border-border bg-white text-text-muted",
+  warn: "border border-sun bg-white font-bold text-text",
+  ok: "bg-ok font-bold text-white",
+  alert: "border border-terracotta bg-terracotta-faint font-bold text-text",
+};
+
+function bookingBadge(r: AdminRequest) {
+  const state = bookingState(r);
+  if (!state) return null;
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-xs ${BOOKING_TONE[state.tone]}`}>
+      {state.label}
+    </span>
+  );
+}
 
 /** Option de devis (variante) telle que lue par la page admin. */
 export type AdminQuoteOption = {
@@ -310,7 +333,17 @@ export function RequestsTable({
                 {statusBadge(r.status)}
                 {closureReasonBadge(r.closure_reason)}
                 {outcomeBadge(r.outcome)}
-                {r.commission_paid_at ? <span className="rounded-full bg-ok px-2 py-0.5 text-xs font-bold text-white">commission encaissée</span> : null}
+                {r.commission_paid_at ? (
+                  <span className="rounded-full bg-ok px-2 py-0.5 text-xs font-bold text-white">commission encaissée</span>
+                ) : r.commission_requested_at ? (
+                  // Facture partie mais non réglée : sans cette mention, une
+                  // commission due restait invisible tant qu'on ne lisait pas la base.
+                  <span className="rounded-full border border-border px-2 py-0.5 text-xs font-bold text-text-muted">
+                    commission demandée le{" "}
+                    {new Date(r.commission_requested_at).toLocaleDateString("fr-FR", { timeZone: "Europe/Athens" })}
+                  </span>
+                ) : null}
+                {bookingBadge(r)}
                 <span className="ml-auto text-xs text-text-muted">{invitesByRequest.get(r.id) ?? 0} loueur(s) invité(s)</span>
               </div>
 

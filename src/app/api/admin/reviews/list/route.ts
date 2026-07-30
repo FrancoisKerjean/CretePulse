@@ -1,10 +1,11 @@
 // src/app/api/admin/reviews/list/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
+import { isAdminSecret } from "@/lib/admin-secret";
 
 export async function GET(req: NextRequest) {
   const secret = req.nextUrl.searchParams.get("secret") ?? "";
-  if (!secret || secret !== process.env.REVIEWS_ADMIN_SECRET) {
+  if (!isAdminSecret(secret, process.env.REVIEWS_ADMIN_SECRET)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   // Quarantined first, then heavily-reported published.

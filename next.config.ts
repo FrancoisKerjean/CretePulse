@@ -1,8 +1,17 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+
+// Racine Turbopack epinglee au depot. Sans cela, Next remonte jusqu'au premier
+// lockfile trouve : en local, `C:\Users\fkerj` en porte un (monorepo perso du
+// home), Turbopack prend le home pour racine de workspace et `next dev` sert un
+// 404 sur TOUTES les routes API. Sur Vercel le depot est cloné seul, la valeur
+// est donc identique et le build ne change pas.
+const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
 const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
@@ -12,6 +21,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  turbopack: { root: projectRoot },
   images: {
     // Optimisation activée (AVIF/WebP + resize) — gain ~3-4x sur les images.
     // Coût Vercel à l'usage, borné (transformations cachées 31j). Surveillé.

@@ -87,6 +87,7 @@ export default async function StayDetailPage(
             strings={t.form}
             unavailable={unavailable}
             minNights={minNights}
+            locale={pickStaysLocale(locale)}
           />
 
           <div className="mt-5">

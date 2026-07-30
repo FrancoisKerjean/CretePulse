@@ -16,16 +16,30 @@ export async function upsertOwnerByEmail(
   email: string,
   name: string | null,
   phone: string | null,
+  /** Langue de la page ou l'annonce a ete deposee. Porte tous ses emails ensuite. */
+  locale: string | null = null,
 ): Promise<StayOwner> {
   const { data: existing } = await supabaseAdmin
     .from("stay_owners")
     .select("*")
     .eq("email", email)
     .maybeSingle();
-  if (existing) return existing as StayOwner;
+  if (existing) {
+    // On complete une langue manquante, jamais on ne remplace celle qu'il a
+    // deja : un proprietaire grec qui passe une fois par la page anglaise ne
+    // doit pas se retrouver notifie en anglais pour toujours.
+    if (locale && !existing.locale) {
+      await supabaseAdmin
+        .from("stay_owners")
+        .update({ locale })
+        .eq("id", existing.id);
+      return { ...(existing as StayOwner), locale };
+    }
+    return existing as StayOwner;
+  }
   const { data, error } = await supabaseAdmin
     .from("stay_owners")
-    .insert({ email, name, phone })
+    .insert({ email, name, phone, locale })
     .select("*")
     .single();
   if (error) throw new Error(error.message);
@@ -172,4 +186,38 @@ export async function bookedRangesForListing(listingId: number): Promise<DateRan
 function addDay(iso: string): string {
   const t = new Date(iso + "T00:00:00Z").getTime() + 86_400_000;
   return new Date(t).toISOString().slice(0, 10);
+}
+
+/** Proprietaire identifie par le hash de son jeton d'espace. */
+export async function getOwnerByTokenHash(
+  hash: string,
+): Promise<{ id: number; name: string | null; email: string } | null> {
+  const { data } = await supabaseAdmin
+    .from("stay_owners")
+    .select("id, name, email")
+    .eq("owner_token_hash", hash)
+    .maybeSingle();
+  return data ?? null;
+}
+
+/** Annonces d'un proprietaire, publiees ou non : il doit voir ce qu'il a retire. */
+export async function listingsForOwner(ownerId: number): Promise<StayListing[]> {
+  const { data } = await supabaseAdmin
+    .from("stay_listings")
+    .select("*")
+    .eq("owner_id", ownerId)
+    .order("id");
+  return (data ?? []) as StayListing[];
+}
+
+/** Nuits occupees d'une annonce, avec leur origine. */
+export async function availabilityForListing(
+  listingId: number,
+): Promise<Array<{ date: string; status: string }>> {
+  const { data } = await supabaseAdmin
+    .from("stay_availability")
+    .select("date, status")
+    .eq("listing_id", listingId)
+    .order("date");
+  return (data ?? []) as Array<{ date: string; status: string }>;
 }

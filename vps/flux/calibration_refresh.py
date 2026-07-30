@@ -14,8 +14,8 @@ from db import connect
 
 SEED_FROM_HCAA_SQL = """
 insert into flux_calibration
-  (month, airport, direction, pax_official, flights_official, coef, method, source_url)
-select make_date(h.year, h.month, 1), h.airport_iata, d.direction,
+  (month, scope, airport, direction, pax_official, flights_official, coef, method, source_url)
+select make_date(h.year, h.month, 1), 'airport', h.airport_iata, d.direction,
        case d.direction when 'arrival' then h.pax_disembark else h.pax_embark end,
        h.aircraft_total / 2,
        (case d.direction when 'arrival' then h.pax_disembark else h.pax_embark end)::double precision
@@ -24,7 +24,7 @@ select make_date(h.year, h.month, 1), h.airport_iata, d.direction,
 from hcaa_crete_monthly h
 cross join (values ('arrival'), ('departure')) as d(direction)
 where h.airport_iata in ('HER', 'CHQ') and h.aircraft_total > 0
-on conflict (month, airport, direction) do update set
+on conflict (month, scope, airport, direction) do update set
   pax_official = excluded.pax_official,
   flights_official = excluded.flights_official,
   coef = case when flux_calibration.method = 'measured' then flux_calibration.coef else excluded.coef end,
@@ -39,11 +39,11 @@ with counted as (
   from flux_flight_arrivals
   group by 1, 2, 3
 )
-insert into flux_calibration (month, airport, direction, flights_counted, method)
-select month, airport, direction, flights, 'counted-only'
+insert into flux_calibration (month, scope, airport, direction, flights_counted, method)
+select month, 'airport', airport, direction, flights, 'counted-only'
 from counted
 where days_seen = extract(day from (month + interval '1 month' - interval '1 day'))
-on conflict (month, airport, direction) do update set
+on conflict (month, scope, airport, direction) do update set
   flights_counted = excluded.flights_counted,
   coef = case when flux_calibration.pax_official is not null
               then flux_calibration.pax_official::double precision

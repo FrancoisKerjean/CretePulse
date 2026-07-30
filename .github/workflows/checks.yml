@@ -21,3 +21,8 @@ jobs:
       # dans le runner sans exiger un lockfile parfait.
       - run: npm install --no-audit --no-fund
       - run: npm run check
+      # Les 300+ tests vitest ne tournaient PAS en CI (constat 29/07/2026) : seuls
+      # les gates `check:*` et tsc etaient executes. Des invariants qui ne vivent
+      # que dans les tests, comme l'interrupteur d'armement de la facturation
+      # commission, n'etaient donc proteges par rien d'automatique.
+      - run: npm test

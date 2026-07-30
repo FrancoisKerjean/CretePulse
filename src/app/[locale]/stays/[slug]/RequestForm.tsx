@@ -22,11 +22,15 @@ export default function RequestForm({
   strings,
   unavailable,
   minNights,
+  locale,
 }: {
   slug: string;
   strings: StaysStrings["form"];
   unavailable: string[];
   minNights: number;
+  /** Langue de la page. Voyage avec la demande : tous les emails du sejour,
+   *  jusqu'au solde, partiront dans cette langue. */
+  locale: string;
 }) {
   const [f, setF] = useState({
     guestName: "",
@@ -58,7 +62,7 @@ export default function RequestForm({
       const r = await fetch("/api/stays/request", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ ...f, pax: Number(f.pax), slug, website: "" }),
+        body: JSON.stringify({ ...f, pax: Number(f.pax), slug, locale, website: "" }),
       });
       const j = await r.json();
       setState(j.ok ? "sent" : "error");

@@ -18,13 +18,15 @@ create table if not exists public.flux_calibration (
   method text not null,              -- 'hcaa-movements' | 'measured'
   source_url text,
   updated_at timestamptz not null default now(),
+  -- Elargie le 29/07/2026 : HER designe un aeroport ET un port, c'est scope
+  -- qui les distingue (cf 20260729c_flux_ferry.sql).
   unique (month, airport, direction)
 );
 
 -- Seed initial depuis la table officielle (re-runnable, aussi execute par calibration_refresh.py).
 insert into public.flux_calibration
-  (month, airport, direction, pax_official, flights_official, coef, method, source_url)
-select make_date(h.year, h.month, 1), h.airport_iata, d.direction,
+  (month, scope, airport, direction, pax_official, flights_official, coef, method, source_url)
+select make_date(h.year, h.month, 1), 'airport', h.airport_iata, d.direction,
        case d.direction when 'arrival' then h.pax_disembark else h.pax_embark end,
        h.aircraft_total / 2,
        (case d.direction when 'arrival' then h.pax_disembark else h.pax_embark end)::double precision
@@ -33,7 +35,7 @@ select make_date(h.year, h.month, 1), h.airport_iata, d.direction,
 from public.hcaa_crete_monthly h
 cross join (values ('arrival'), ('departure')) as d(direction)
 where h.airport_iata in ('HER', 'CHQ') and h.aircraft_total > 0
-on conflict (month, airport, direction) do update set
+on conflict (month, scope, airport, direction) do update set
   pax_official = excluded.pax_official,
   flights_official = excluded.flights_official,
   coef = case when flux_calibration.method = 'measured' then flux_calibration.coef else excluded.coef end,

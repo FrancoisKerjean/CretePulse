@@ -5,6 +5,7 @@
 // the last 3 days is skipped (guards against at-least-once cron retries).
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
+import { assertCron } from "@/lib/cron-auth";
 import { buildSwimToday } from "@/lib/swim-today";
 import { getUpcomingEvents } from "@/lib/events";
 import {
@@ -30,11 +31,11 @@ interface SubscriberRow {
 }
 
 export async function GET(req: NextRequest) {
-  // Fail-closed: reject when the secret is unset or the header does not match.
-  const secret = process.env.CRON_SECRET;
-  if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  // Fail-closed ET temps constant : le `!==` precedent court-circuitait au
+  // premier octet different, le temps de reponse fuitait la longueur du
+  // prefixe correct. assertCron est le helper deja utilise par les autres crons.
+  const unauthorized = assertCron(req);
+  if (unauthorized) return unauthorized;
 
   // Athens calendar day drives the 7-day event window.
   const athensToday = new Date(
