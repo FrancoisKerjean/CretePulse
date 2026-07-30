@@ -4,6 +4,7 @@ import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { validateCarLead, carPickupLabel, carTypeLabelWithExamples } from "@/lib/car-lead";
 import { newToken, hashToken, siteBase } from "@/lib/car-quote";
 import { partnersForZone } from "@/lib/car-partners-db";
+import { notifyOps, echeance } from "@/lib/ops-notify";
 import type { CarLead } from "@/lib/email";
 
 // Anti-abus : plafonds de demandes par IP. Un fan-out = N emails à de vrais
@@ -113,6 +114,22 @@ export async function POST(request: NextRequest) {
 
   if (sentNames.length === 0) {
     await supabase.from("car_requests").update({ status: "email_failed" }).eq("id", requestId);
+
+    // Cas le plus couteux du tunnel et le seul qui n'alertait PERSONNE : un
+    // voyageur a demande une voiture, aucun loueur n'a pu etre joint, il recoit
+    // un « no agency » et l'affaire est perdue si personne ne reprend la main.
+    void notifyOps({
+      title: "Demande voiture SANS loueur joignable",
+      lines: [
+        `${lead.pickupLabel} · ${lead.dateFrom} au ${lead.dateTo}`,
+        `${row.customer_name || "client"} · ${row.customer_email}`,
+        `${partners.length} loueur(s) dans la zone, aucun email parti`,
+      ],
+      action: "contacter un loueur à la main, le voyageur a reçu un refus",
+      due: echeance(0),
+      url: `${siteBase()}/admin/car-rental`,
+    });
+
     const fb = partners[0];
     try {
       await sendCustomerRequestReceived({
@@ -124,6 +141,20 @@ export async function POST(request: NextRequest) {
     } catch (e) { console.error("[car-rental/submit] ack email (no agency) failed:", e); }
     return NextResponse.json({ ok: false, fallbackWhatsapp: fb.whatsapp ?? fb.phone });
   }
+
+  // L'email recap a Kami existait deja, mais un email se noie : une demande
+  // entrante est exactement ce que le canal ACTION doit porter.
+  void notifyOps({
+    title: "Demande voiture entrante",
+    lines: [
+      `${lead.pickupLabel} · ${lead.dateFrom} au ${lead.dateTo} · ${lead.carTypeLabel}`,
+      `${row.customer_name || "client"} · ${row.customer_email}`,
+      `${sentNames.length} loueur(s) sollicité(s) : ${sentNames.slice(0, 4).join(", ")}`,
+    ],
+    action: "rien pour l'instant, les devis arrivent. Relancer si silence à J+2",
+    due: echeance(2),
+    url: `${siteBase()}/admin/car-rental`,
+  });
 
   await sendLeadKamiSummary(lead, sentNames);
   try {
