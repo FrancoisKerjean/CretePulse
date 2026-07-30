@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
   // arrive. Un devis, c'est une offre qui attend une decision, donc ca sonne.
   // Best-effort volontaire : un echec Telegram ne doit pas perdre le devis.
   void notifyOps({
-    title: `Devis voiture reçu — ${partner.name}`,
+    title: `Devis voiture reçu · ${partner.name}`,
     lines: [
       `${carPickupLabel(req.pickup_slug)} · ${req.customer_name || "client"}`,
       options.length > 1

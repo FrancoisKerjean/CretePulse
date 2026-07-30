@@ -6,7 +6,7 @@
 // l'écosystème à volume était muet là où de l'argent attend une action.
 //
 // Deux configurations sont acceptées, dans cet ordre :
-//   1. le groupe forum unifié — TG_OPS_TOKEN + TG_OPS_CHAT_ID (+ TG_OPS_THREAD_ACTION),
+//   1. le groupe forum unifié : TG_OPS_TOKEN + TG_OPS_CHAT_ID (+ TG_OPS_THREAD_ACTION),
 //      qui pose le message dans le sujet ACTION, avec le reste de l'écosystème ;
 //   2. l'ancien couple TELEGRAM_BOT_TOKEN + TG_CHAT_ID, déjà en place, pour que
 //      la bascule ne casse rien tant que les variables Vercel ne sont pas posées.

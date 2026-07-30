@@ -100,7 +100,7 @@ describe("notifyOps", () => {
     const spy = mockFetch();
 
     await notifyOps({
-      title: "Devis reçu — Zorbas Rent a Car",
+      title: "Devis reçu · Zorbas Rent a Car",
       lines: ["Heraklion · 3 jours", "145 EUR · 2 options"],
       action: "vérifier l'offre dans le cockpit",
       due: "31/07",
@@ -108,7 +108,7 @@ describe("notifyOps", () => {
     });
 
     const texte = payloadOf(spy).text as string;
-    expect(texte).toContain("Devis reçu — Zorbas Rent a Car");
+    expect(texte).toContain("Devis reçu · Zorbas Rent a Car");
     expect(texte).toContain("Heraklion · 3 jours");
     expect(texte).toContain("vérifier l'offre dans le cockpit");
     expect(texte).toContain("31/07");

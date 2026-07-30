@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
   // Meme trou que sur le devis voiture : la route notifiait le client et
   // personne d'autre. Un devis prestataire attend un arbitrage, donc ca sonne.
   void notifyOps({
-    title: `Devis activité reçu — ${partner.name}`,
+    title: `Devis activité reçu · ${partner.name}`,
     lines: [
       `${categoryLabel(req.category_slug, "fr")} · ${cityLabel(req.city, "fr")}`,
       `${price} EUR${details ? " · " + details : ""}`,
