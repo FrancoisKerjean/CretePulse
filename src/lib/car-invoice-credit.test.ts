@@ -9,6 +9,11 @@ vi.mock("./email", () => ({
   sendPartnerCommissionRequest: (...a: unknown[]) => sendPartnerCommissionRequest(...a),
 }));
 
+const sessionsExpire = vi.fn(async () => ({ id: "cs_open_1", status: "expired" }));
+vi.mock("./stays/stripe-helpers", () => ({
+  stripeClient: () => ({ checkout: { sessions: { expire: sessionsExpire } } }),
+}));
+
 const INVOICE = {
   id: 7,
   number: "CD-2026-0007",
@@ -43,7 +48,12 @@ vi.mock("./supabase-admin", () => ({ supabaseAdmin: { from } }));
 import { creditCommissionInvoice, resendCommissionInvoice } from "./car-invoice-credit";
 
 const PARTNER = { id: 111, name: "Zorbas Rent a Car", email: "info@zorbas.gr" };
-const REQUEST = { id: 42, date_from: "2026-08-01", date_to: "2026-08-08" };
+const REQUEST = {
+  id: 42,
+  date_from: "2026-08-01",
+  date_to: "2026-08-08",
+  commission_session_id: "cs_open_1",
+};
 
 interface Wiring {
   tables: string[];
@@ -98,6 +108,7 @@ beforeEach(() => {
   rotateInvoiceToken.mockImplementation(async () => `tok_neuf_${++tokenSeq}`);
   sendCreditNote.mockResolvedValue(true);
   sendPartnerCommissionRequest.mockResolvedValue(true);
+  sessionsExpire.mockResolvedValue({ id: "cs_open_1", status: "expired" });
 });
 
 describe("creditCommissionInvoice", () => {
@@ -174,6 +185,54 @@ describe("creditCommissionInvoice", () => {
     expect(w.updates.find((u) => "outcome" in u)).toMatchObject({ outcome: "lost" });
     expect(sendCreditNote).not.toHaveBeenCalled();
     expect(err).toHaveBeenCalled();
+    err.mockRestore();
+  });
+
+  it("tue la session Stripe encore ouverte et vide commission_session_id", async () => {
+    // Cas reel : le loueur a clique « Pay by card », la session s est ouverte
+    // (24 h de vie), il n a pas abouti. La location est annulee, l avoir part.
+    // S il revient sur son onglet et paie, l argent est encaisse sur une facture
+    // annulee et personne n apprend qu il faut rembourser.
+    const w = wiring();
+    await creditCommissionInvoice(42, "location annulee");
+
+    expect(sessionsExpire).toHaveBeenCalledWith("cs_open_1");
+    expect(w.updates.find((u) => "outcome" in u)).toMatchObject({ commission_session_id: null });
+  });
+
+  it("expire la session AVANT d ecrire l avoir", async () => {
+    // Entre les deux, une session vivante encaisserait sur une facture qu on
+    // vient d annuler. La fenetre doit etre la plus courte possible.
+    wiring();
+    await creditCommissionInvoice(42, "location annulee");
+
+    expect(sessionsExpire.mock.invocationCallOrder[0]).toBeLessThan(
+      creditInvoice.mock.invocationCallOrder[0],
+    );
+  });
+
+  it("aucune session ouverte : Stripe n est pas derange", async () => {
+    wiring({ request: { ...REQUEST, commission_session_id: null } });
+    const res = await creditCommissionInvoice(42, "location annulee");
+
+    expect(sessionsExpire).not.toHaveBeenCalled();
+    expect(res).toMatchObject({ creditNumber: "CD-2026-0007-A" });
+  });
+
+  it("Stripe refuse l expiration : l avoir est emis quand meme", async () => {
+    // Session deja expiree, deja consommee, ou API muette. L avoir est un acte
+    // comptable : il ne depend pas de la sante de Stripe. On journalise et on
+    // continue.
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    sessionsExpire.mockRejectedValueOnce(new Error("No such checkout.session"));
+    const w = wiring();
+
+    const res = await creditCommissionInvoice(42, "location annulee");
+
+    expect(res).toMatchObject({ creditNumber: "CD-2026-0007-A", notified: true });
+    expect(creditInvoice).toHaveBeenCalledOnce();
+    expect(w.updates.find((u) => "outcome" in u)).toMatchObject({ commission_session_id: null });
+    expect(JSON.stringify(err.mock.calls)).toContain("cs_open_1");
     err.mockRestore();
   });
 });

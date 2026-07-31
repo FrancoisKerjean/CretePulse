@@ -254,6 +254,17 @@ describe("ensureCommissionCheckout", () => {
     expect(sessionsCreate).not.toHaveBeenCalled();
   });
 
+  it("demande passee en perdue : plus rien a payer, avoir ou pas", async () => {
+    // Le bouton « Perdu » du back-office n emet aucun avoir (une piece
+    // comptable n est pas un effet de bord d un clic de statut). Sans cette
+    // garde, le lien de paiement deja parti par email reste vivant et encaisse
+    // la commission d une location qui n a pas eu lieu.
+    wiring({ request: { ...REQUEST, outcome: "lost" } });
+    expect(await ensureCommissionCheckout("tok")).toEqual({ error: "request_lost" });
+    expect(sessionsCreate).not.toHaveBeenCalled();
+    expect(sessionsRetrieve).not.toHaveBeenCalled();
+  });
+
   it("cas nominal : la session nait au clic et son id est note sur la demande", async () => {
     const updates = wiring();
     const res = await ensureCommissionCheckout("tok");

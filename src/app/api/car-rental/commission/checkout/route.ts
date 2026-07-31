@@ -12,6 +12,7 @@ const STATUS: Record<string, number> = {
   not_found: 404,
   already_paid: 409,
   credited: 409,
+  request_lost: 409,
 };
 
 export async function POST(request: NextRequest) {

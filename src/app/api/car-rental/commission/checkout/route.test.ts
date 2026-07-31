@@ -43,6 +43,13 @@ describe("POST /api/car-rental/commission/checkout", () => {
     expect(res.status).toBe(409);
   });
 
+  it("refuse de payer la commission d une location annulee", async () => {
+    ensureCommissionCheckout.mockResolvedValue({ error: "request_lost" });
+    const { POST } = await import("./route");
+    const res = await POST(post("abc"));
+    expect(res.status).toBe(409);
+  });
+
   // Un formulaire sans jeton ne doit jamais atteindre Stripe : sinon chaque POST
   // nu declencherait une lecture base pour rien.
   it("rend 400 et ne touche a rien quand le jeton manque", async () => {

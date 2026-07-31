@@ -35,7 +35,17 @@ const INVOICE = {
   credit_reason: null,
 };
 
-function wiring(invoice: Record<string, unknown> | null = INVOICE) {
+const REQUEST = {
+  date_from: "2026-08-10",
+  date_to: "2026-08-14",
+  pickup_slug: "heraklion-airport",
+  outcome: "rented",
+};
+
+function wiring(
+  invoice: Record<string, unknown> | null = INVOICE,
+  request: Record<string, unknown> = REQUEST,
+) {
   invoiceByToken.mockResolvedValue(invoice);
   from.mockImplementation((table: string) => ({
     select: () => ({
@@ -44,7 +54,7 @@ function wiring(invoice: Record<string, unknown> | null = INVOICE) {
           data:
             table === "car_partners"
               ? { name: "Luxtrans Crete", email: "info@luxtrans.gr" }
-              : { date_from: "2026-08-10", date_to: "2026-08-14", pickup_slug: "heraklion-airport" },
+              : request,
         }),
       }),
     }),
@@ -125,6 +135,44 @@ describe("page facture · coordonnees bancaires", () => {
     const html = await render();
     expect(html).not.toContain(IBAN);
     expect(html).not.toContain(BIC);
+  });
+
+  it("une location annulee ne montre ni bouton de paiement ni IBAN", async () => {
+    // Le back-office a clique « Perdu ». Le loueur a deja son email avec le
+    // lien : la page doit lui dire pourquoi il n y a rien a payer, plutot que
+    // de lui presenter un bouton qui encaisserait une location inexistante.
+    process.env.NOVAI_IBAN = IBAN;
+    process.env.NOVAI_BIC = BIC;
+    wiring(INVOICE, { ...REQUEST, outcome: "lost" });
+
+    const html = await render();
+    expect(html).toContain("This rental was cancelled. Nothing to pay.");
+    expect(html).not.toContain("by card");
+    expect(html).not.toContain(IBAN);
+    expect(html).not.toContain(BIC);
+  });
+
+  it("l avoir prime sur la location annulee : son numero reste affiche", async () => {
+    // Emettre l avoir repasse la demande en « perdue ». Le message le plus
+    // informe est celui qui porte le numero de la piece comptable.
+    wiring(
+      { ...INVOICE, credited_at: "2026-08-11T09:00:00.000Z", credit_number: "F-2026-0004-A" },
+      { ...REQUEST, outcome: "lost" },
+    );
+
+    const html = await render();
+    expect(html).toContain("F-2026-0004-A");
+    expect(html).not.toContain("This rental was cancelled");
+  });
+
+  it("un paiement deja encaisse prime sur la location annulee", async () => {
+    // Sinon la page dirait « rien a payer » a un loueur qui a paye, et le
+    // suivi interne perdrait la seule trace visible de son virement.
+    wiring({ ...INVOICE, paid_at: "2026-08-11T09:00:00.000Z" }, { ...REQUEST, outcome: "lost" });
+
+    const html = await render();
+    expect(html).toContain("Paid on 2026-08-11");
+    expect(html).not.toContain("This rental was cancelled");
   });
 
   it("aucune coordonnee bancaire n est ecrite en dur dans la page", async () => {

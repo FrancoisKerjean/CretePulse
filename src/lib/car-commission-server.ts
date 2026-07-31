@@ -175,10 +175,14 @@ export async function ensureCommissionCheckout(
 
   const { data: req } = await supabaseAdmin
     .from("car_requests")
-    .select("id, date_from, date_to, commission_session_id")
+    .select("id, outcome, date_from, date_to, commission_session_id")
     .eq("id", invoice.request_id)
     .maybeSingle();
   if (!req) return { error: "not_found" };
+  // Le bouton « Perdu » du back-office n emet aucun avoir : emettre une piece
+  // comptable est une decision, pas un effet de bord d un clic de statut. Le
+  // lien de paiement deja parti par email doit quand meme cesser d encaisser.
+  if (req.outcome === "lost") return { error: "request_lost" };
 
   const { data: partner } = await supabaseAdmin
     .from("car_partners")

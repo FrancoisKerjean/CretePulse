@@ -10,6 +10,7 @@ import {
   invoiceByToken,
   markInvoiceSent,
   markInvoicePaid,
+  markInvoiceUnpaid,
   creditInvoice,
   rotateInvoiceToken,
 } from "./car-invoice-server";
@@ -250,17 +251,64 @@ describe("marquages", () => {
     expect(typeof w.updates[0].sent_at).toBe("string");
   });
 
-  it("ne marque le paiement que si paid_at est encore vide", async () => {
+  it("ne marque le paiement que si paid_at est encore vide et la facture non avoiree", async () => {
     // Sans le garde `is(paid_at, null)`, un second webhook Stripe ecraserait la
-    // date du premier paiement.
-    const w = wiring();
+    // date du premier paiement. Sans `is(credited_at, null)`, un paiement arrive
+    // apres l avoir marquerait payee une facture annulee.
+    const w = wiring({ selects: [{ data: INVOICE }] });
     await markInvoicePaid(39);
 
     expect(w.filters).toEqual([
+      ["request_id", 39], // lecture prealable
       ["request_id", 39],
       ["paid_at", null],
+      ["credited_at", null],
     ]);
     expect(typeof w.updates[0].paid_at).toBe("string");
+  });
+
+  it("ne marque JAMAIS payee une facture avoiree, et le hurle", async () => {
+    // Cas reel : la session Stripe est restee ouverte dans un onglet, l avoir a
+    // ete emis entre-temps, le loueur paie quand meme. L argent EST encaisse.
+    // Se contenter d ignorer le webhook laisserait un remboursement du que
+    // personne n apprendrait jamais.
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const w = wiring({
+      selects: [
+        {
+          data: {
+            ...INVOICE,
+            credited_at: "2026-08-02T10:00:00Z",
+            credit_number: "NOVAI-CD-2026-004-A",
+          },
+        },
+      ],
+    });
+
+    await markInvoicePaid(39);
+
+    expect(w.updates).toHaveLength(0);
+    const logged = JSON.stringify(err.mock.calls);
+    expect(logged).toContain("NOVAI-CD-2026-004");
+    expect(logged).toMatch(/REMBOURSEMENT/i);
+    err.mockRestore();
+  });
+
+  it("une demande sans facture ne fait rien echouer", async () => {
+    // Commission encaissee sur une demande anterieure au systeme de
+    // facturation : il n y a aucune ligne a toucher, ce n est pas une erreur.
+    wiring({ selects: [{ data: null }] });
+    await expect(markInvoicePaid(999)).resolves.toBeUndefined();
+  });
+
+  it("markInvoiceUnpaid repasse la facture en due sur request_id", async () => {
+    // Symetrique de markInvoicePaid : le bouton du back-office bascule dans les
+    // deux sens, la facture doit suivre dans les deux sens.
+    const w = wiring();
+    await markInvoiceUnpaid(39);
+
+    expect(w.updates[0]).toEqual({ paid_at: null });
+    expect(w.filters).toEqual([["request_id", 39]]);
   });
 
   it("l avoir porte le numero de sa facture suffixe -A et ne s applique qu une fois", async () => {

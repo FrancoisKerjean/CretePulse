@@ -58,12 +58,23 @@ export default async function InvoicePage({
 
   const { data: req } = await supabaseAdmin
     .from("car_requests")
-    .select("date_from, date_to, pickup_slug")
+    .select("date_from, date_to, pickup_slug, outcome")
     .eq("id", invoice.request_id)
     .maybeSingle();
 
   const pickup = req?.pickup_slug ? carPickupLabel(req.pickup_slug as string) : "";
-  const state = invoice.credited_at ? "credited" : invoice.paid_at ? "paid" : "due";
+  // Ordre du plus informe au moins informe : l avoir porte un numero de piece,
+  // le paiement une date, la location annulee n a que son motif. Le bouton
+  // « Perdu » du back-office n emet aucun avoir, mais il doit couper le
+  // paiement : sinon le lien deja parti par email encaisse une location qui n a
+  // pas eu lieu.
+  const state = invoice.credited_at
+    ? "credited"
+    : invoice.paid_at
+      ? "paid"
+      : req?.outcome === "lost"
+        ? "lost"
+        : "due";
   const bank = bankDetails();
 
   return (
@@ -123,6 +134,11 @@ export default async function InvoicePage({
       {state === "paid" && (
         <p className="mb-6 rounded-xl bg-ok/10 px-5 py-3 font-bold text-ok">
           Paid on {day(invoice.paid_at as string)}. Nothing left to do.
+        </p>
+      )}
+      {state === "lost" && (
+        <p className="mb-6 rounded-xl border border-border bg-surface px-5 py-3 font-bold text-text-muted">
+          This rental was cancelled. Nothing to pay.
         </p>
       )}
       {state === "credited" && (

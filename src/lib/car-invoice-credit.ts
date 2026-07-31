@@ -12,6 +12,36 @@ import {
 } from "./car-invoice-server";
 import { sendCreditNote, sendPartnerCommissionRequest } from "./email";
 import { siteBase } from "./car-commission";
+import { stripeClient } from "./stays/stripe-helpers";
+
+/**
+ * Tue le lien de paiement vivant d une demande : la session Checkout ouverte au
+ * dernier clic du loueur vit 24 h, et elle survit a l avoir comme au bouton
+ * « Perdu ». Sans expiration, un onglet reste ouvert chez le loueur et encaisse
+ * de l argent sur une location qui n aura pas lieu.
+ *
+ * Un echec Stripe (session deja expiree, deja consommee, API muette) est
+ * journalise et ne bloque RIEN : l avoir est un acte comptable, il ne depend
+ * pas de la sante de Stripe.
+ */
+export async function expireCommissionSession(requestId: number): Promise<void> {
+  const { data: req } = await supabaseAdmin
+    .from("car_requests")
+    .select("commission_session_id")
+    .eq("id", requestId)
+    .maybeSingle();
+  const sessionId = (req?.commission_session_id as string | null) ?? null;
+  if (!sessionId) return;
+  try {
+    await stripeClient().checkout.sessions.expire(sessionId);
+  } catch (err) {
+    console.error("[car/commission] expiration de session refusee par Stripe", {
+      requestId,
+      sessionId,
+      err,
+    });
+  }
+}
 
 /**
  * Avoir la facture d une demande : la location n a finalement pas eu lieu.
@@ -29,6 +59,11 @@ export async function creditCommissionInvoice(
   // code, et un avoir sur de l argent encaisse ferait mentir la compta.
   if (invoice.paid_at) return { error: "already_paid" };
 
+  // AVANT d ecrire l avoir : entre les deux, une session encore ouverte
+  // encaisserait sur une facture qu on vient d annuler, et la page dirait
+  // « Cancelled by credit note » sur de l argent reellement recu.
+  await expireCommissionSession(requestId);
+
   const creditNumber = await creditInvoice(invoice.id, invoice.number, reason);
 
   await supabaseAdmin
@@ -38,6 +73,8 @@ export async function creditCommissionInvoice(
       outcome_at: new Date().toISOString(),
       // une demande reperdue n a plus de commission encaissable
       commission_paid_at: null,
+      // le lien de paiement est mort : on ne le reproposera pas au clic suivant
+      commission_session_id: null,
     })
     .eq("id", requestId)
     .select();

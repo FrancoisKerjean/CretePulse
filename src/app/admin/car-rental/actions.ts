@@ -10,7 +10,12 @@ import { isCarAdmin } from "@/lib/car-admin-auth";
 import { OUTCOMES, commissionEur, validatePartnerUpdate, ZONE_IDS } from "@/lib/car-admin";
 import { canCancelRequest } from "@/lib/car-quotes";
 import { requestCommission } from "@/lib/car-commission-server";
-import { creditCommissionInvoice, resendCommissionInvoice } from "@/lib/car-invoice-credit";
+import {
+  creditCommissionInvoice,
+  resendCommissionInvoice,
+  expireCommissionSession,
+} from "@/lib/car-invoice-credit";
+import { markInvoicePaid, markInvoiceUnpaid } from "@/lib/car-invoice-server";
 import { startPartnerOnboarding, refreshPartnerKyc } from "@/lib/car-connect-server";
 import { refreshPartnerRating } from "@/lib/google-rating-server";
 
@@ -73,6 +78,13 @@ export async function setOutcome(id: number, formData: FormData) {
     }
   }
 
+  // Location perdue : le lien de paiement encore vivant doit mourir. La page
+  // facture et la route de paiement lisent maintenant `outcome`, mais une
+  // session Checkout déjà ouverte dans un onglet du loueur ne repasse par
+  // aucune des deux — elle vit 24 h chez Stripe. AUCUN avoir n'est émis ici :
+  // émettre une pièce comptable est une décision, pas un effet de bord.
+  if (outcome === "lost") await expireCommissionSession(id);
+
   revalidatePath(PATH);
 }
 
@@ -134,13 +146,27 @@ export async function resendInvoiceAction(id: number) {
   revalidatePath(PATH);
 }
 
-/** Bascule commission encaissée / due. */
+/**
+ * Bascule commission encaissée / due.
+ *
+ * Porte les DEUX états, car ils n'en font qu'un : `car_requests` sert le suivi
+ * interne, `car_commission_invoices` sert la page que le loueur a sous les yeux.
+ * Ce bouton est la seule réconciliation du virement bancaire — le canal que
+ * l'email met en avant, et le seul sans webhook. Sans l'écriture sur la
+ * facture, la page garderait son bouton « Pay by card » sur de l'argent déjà
+ * reçu, et le loueur paierait une seconde fois.
+ *
+ * Une demande antérieure au système de facturation n'a pas de facture : les
+ * deux marquages ne touchent alors aucune ligne, ce n'est pas une erreur.
+ */
 export async function setCommissionPaid(id: number, paid: boolean) {
   await guard();
   const { error } = await supabase.from("car_requests")
     .update({ commission_paid_at: paid ? new Date().toISOString() : null })
     .eq("id", id).eq("outcome", "rented");
   if (error) throw new Error(error.message);
+  if (paid) await markInvoicePaid(id);
+  else await markInvoiceUnpaid(id);
   revalidatePath(PATH);
 }
 

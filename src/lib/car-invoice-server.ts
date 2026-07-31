@@ -120,12 +120,54 @@ export async function rotateInvoiceToken(id: number): Promise<string> {
   return token;
 }
 
+/**
+ * Marque payee la facture d une demande. Appelee par le webhook Stripe ET par
+ * le bouton « commission encaissee » du back-office : le virement bancaire n a
+ * pas de webhook, et c est pourtant le canal que l email met en avant.
+ *
+ * Une facture avoiree n est JAMAIS marquee payee : l avoir a dit au loueur
+ * qu il n avait rien a payer. Si de l argent arrive quand meme, il faut le
+ * rembourser, et personne ne l apprendra si on se contente d ignorer.
+ */
 export async function markInvoicePaid(requestId: number): Promise<void> {
+  const invoice = await invoiceForRequest(requestId);
+  if (invoice?.credited_at) {
+    console.error(
+      "[car/commission] PAIEMENT RECU SUR FACTURE AVOIREE : REMBOURSEMENT A FAIRE A LA MAIN",
+      {
+        requestId,
+        invoice: invoice.number,
+        creditNumber: invoice.credit_number,
+        amountEur: invoice.amount_eur,
+      },
+    );
+    return;
+  }
+  // Les deux gardes SQL doublent la lecture ci-dessus : entre les deux, un avoir
+  // peut etre emis, et `is(paid_at, null)` empeche un second webhook d ecraser
+  // la date du premier paiement.
   await supabaseAdmin
     .from("car_commission_invoices")
     .update({ paid_at: new Date().toISOString() })
     .eq("request_id", requestId)
     .is("paid_at", null)
+    .is("credited_at", null)
+    .select();
+}
+
+/**
+ * Symetrique de markInvoicePaid : la commission redevient due. Le bouton du
+ * back-office bascule dans les deux sens, l etat de la facture doit suivre dans
+ * les deux sens, sinon la page resterait bloquee sur « paid ».
+ *
+ * Aucune ligne touchee quand la demande n a pas de facture (commission
+ * anterieure au systeme de facturation) : ce n est pas une erreur.
+ */
+export async function markInvoiceUnpaid(requestId: number): Promise<void> {
+  await supabaseAdmin
+    .from("car_commission_invoices")
+    .update({ paid_at: null })
+    .eq("request_id", requestId)
     .select();
 }
 
