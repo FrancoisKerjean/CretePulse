@@ -1697,10 +1697,21 @@ Sinon, facture manuelle pour `id=39` et armement pour le départ du 08/09.
 
 Pour armer :
 ```bash
-vercel env add CAR_COMMISSION_ENABLED production   # valeur exacte : on
+vercel env add NOVAI_IBAN production                # valeur : cf. facture PDF NovAI ou Qonto
+vercel env add NOVAI_BIC production                 # valeur : cf. facture PDF NovAI ou Qonto
 vercel env add COMMISSION_INVOICING_START production   # valeur : 2026-08-05
+vercel env add CAR_COMMISSION_ENABLED production    # valeur exacte : on
 ```
-⛔ **Puis redéployer** : la variable est figée dans l'image du déploiement.
+⛔ **Puis redéployer** : les variables sont figées dans l'image du déploiement.
+
+⛔ **L'ordre compte.** `CAR_COMMISSION_ENABLED` se pose en DERNIER. Poser l'interrupteur avant
+les coordonnées bancaires ferait partir une facture dont la page affiche encore son texte de
+repli, alors que l'email promet un IBAN. La facture serait exacte mais impayable au virement,
+et une facture partie ne se corrige pas.
+
+⚠️ **Aucune coordonnée bancaire n'est ni ne doit être dans le dépôt.** Une garde de test relit
+`src/app/[locale]/invoice/[token]/page.tsx` et refuse toute chaîne de forme IBAN : elle
+échouera si quelqu'un les y écrit un jour.
 
 ---
 
