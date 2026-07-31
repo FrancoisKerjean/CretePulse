@@ -134,6 +134,130 @@ export function invoiceAdminState(
   };
 }
 
+// ── Identite de facturation du loueur ────────────────────────────────────────
+
+/** Colonnes d identite legale de `car_partners`, telles que la base les rend. */
+export interface PartnerLegalRow {
+  /** Nom commercial, deja present avant l identite legale. Jamais une raison sociale. */
+  name?: string | null;
+  legal_name?: string | null;
+  legal_form?: string | null;
+  address_line?: string | null;
+  postal_code?: string | null;
+  city?: string | null;
+  country?: string | null;
+  vat_id?: string | null;
+  /** Date de la verification VIES, quand elle a REELLEMENT eu lieu. */
+  vat_verified_at?: string | null;
+}
+
+export interface BillingIdentity {
+  legalName: string;
+  /** Optionnelle : imprimee si connue, tue sinon. */
+  legalForm: string | null;
+  addressLine: string;
+  postalCode: string;
+  city: string;
+  country: string;
+  vatId: string;
+  vatVerifiedAt: string | null;
+}
+
+export type BillingIdentityResult =
+  | { ok: true; identity: BillingIdentity }
+  | { ok: false; missing: string[] };
+
+/**
+ * Champs SANS lesquels aucune facture ne peut etre emise, dans l ordre ou le
+ * bloc client les imprime.
+ *
+ * ⛔ `vat_id` est le champ pivot : NovAI est francaise, le loueur est grec, donc
+ * la commission est une prestation de services intra-UE autoliquidee par le
+ * preneur. La mention d autoliquidation n a aucun sens sans le numero de TVA du
+ * client, et la declaration europeenne de services ne peut pas etre deposee sans
+ * lui.
+ *
+ * Les quatre lignes d adresse suivent la meme logique : le nom et l adresse
+ * COMPLETE du client sont des mentions obligatoires de toute facture. Une
+ * adresse amputee de sa ville ou de son code postal n identifie pas le preneur.
+ *
+ * ⛔ `legal_form` n est PAS dans cette liste, et c est deliberé : la forme
+ * juridique est le plus souvent deja portee par la raison sociale (« Lux Trans
+ * IKE »), aucune mention obligatoire n en depend, et l exiger bloquerait la
+ * facturation d un loueur parfaitement identifie. Meme raisonnement pour
+ * `vat_verified_at`, qui date une verification VIES et ne conditionne pas la
+ * conformite de la piece.
+ */
+const REQUIRED_BILLING_FIELDS = [
+  "legal_name",
+  "address_line",
+  "postal_code",
+  "city",
+  "country",
+  "vat_id",
+] as const;
+
+const trimmed = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
+
+/**
+ * Forme d un identifiant TVA intracommunautaire : deux lettres de pays, puis 6 a
+ * 13 caracteres alphanumeriques dont AU MOINS SIX CHIFFRES (EL801122501,
+ * FR45994765857, IE1234567FA, NL123456789B01).
+ *
+ * Le plancher de six chiffres n est pas decoratif : sans lui, « a demander »
+ * devient « ADEMANDER » une fois les espaces retires, et passe pour un numero.
+ * Aucun identifiant TVA de l Union n a un corps sans chiffres.
+ *
+ * ⛔ Ce n est PAS une validation VIES, et ca ne pretend pas l etre : le seul but
+ * est d ecarter le fourre-tout saisi a la place du numero (« N/A », « - », un
+ * numero grec sans son prefixe). Une facture qui PORTE une mention
+ * d autoliquidation avec un identifiant inexploitable est pire qu une facture
+ * jamais emise. La verification VIES reste un geste humain, trace par
+ * `vat_verified_at`.
+ */
+const VAT_ID_SHAPE = /^[A-Z]{2}(?=(?:[A-Z0-9]*\d){6})[A-Z0-9]{6,13}$/;
+
+const normalizeVatId = (v: unknown): string => trimmed(v).replace(/\s+/g, "").toUpperCase();
+
+/**
+ * Identite de facturation d un loueur : soit elle est complete, soit elle dit ce
+ * qui manque. Pure, donc verifiable sans base.
+ *
+ * ⛔ Appelee AVANT toute ecriture par le cron de facturation : une ligne dont le
+ * loueur est incomplet doit sortir du lot sans avoir bascule en « rented »,
+ * sinon le filtre d idempotence la retire definitivement et la location ne sera
+ * jamais facturee, meme une fois la fiche remplie.
+ */
+export function partnerBillingIdentity(
+  partner: PartnerLegalRow | null | undefined,
+): BillingIdentityResult {
+  const p = partner ?? {};
+  const vatId = normalizeVatId(p.vat_id);
+
+  const missing = REQUIRED_BILLING_FIELDS.filter((field) =>
+    field === "vat_id" ? !VAT_ID_SHAPE.test(vatId) : !trimmed(p[field]),
+  );
+  if (missing.length > 0) return { ok: false, missing: [...missing] };
+
+  return {
+    ok: true,
+    identity: {
+      legalName: trimmed(p.legal_name),
+      legalForm: trimmed(p.legal_form) || null,
+      addressLine: trimmed(p.address_line),
+      postalCode: trimmed(p.postal_code),
+      city: trimmed(p.city),
+      country: trimmed(p.country),
+      vatId,
+      vatVerifiedAt: trimmed(p.vat_verified_at) || null,
+    },
+  };
+}
+
+/** Colonnes a selectionner partout ou l identite de facturation est requise. */
+export const PARTNER_IDENTITY_COLS =
+  "legal_name, legal_form, address_line, postal_code, city, country, vat_id, vat_verified_at";
+
 export interface CreditMail {
   creditNumber: string;
   number: string;

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apercu - facture de commission conforme intra-UE</title>
+<!--
+  APERCU DE RELECTURE, PAS UN COMPOSANT. Ce fichier n'est importe par rien.
+  Il est GENERE en rendant le vrai composant src/app/[locale]/invoice/[token]/page.tsx :
+  ce qui est ci-dessous est exactement ce que le loueur recoit, pas une copie a la main.
+  Tokens Kalimera resolus a la main, comme docs/mockups/facture-commission.html.
+  Donnees : facture NOVAI-CD-2026-004, Lux Trans IKE (cretecar.rent), TVA EL801122501,
+  Heraklion, location 39 du 30/07 au 11/08/2026, base 680.00 EUR, taux 10 %, commission 68.00 EUR.
+  Valeurs reprises de la facture validee par le comptable, docs/facture-novai-luxtrans-2026-003.html.
+  AUCUNE coordonnee bancaire ici : elles ne vivent que dans l'environnement, jamais dans le depot.
+  C'est pourquoi le bloc « Bank transfer » montre son texte de repli.
+-->
+<style>
+  :root {
+    --night:#07374A; --lagoon-deep:#008C9E; --muted:#5C7886; --border:#DCE9EE;
+    --surface:#F6FBFC; --ok:#14B86B; --white:#fff;
+  }
+  *{box-sizing:border-box}
+  /* Preflight Tailwind : sans lui les blocs d adresse s aerent tout seuls et la
+     planche montre une page qui n existe pas. */
+  main p,main h1,main dl,main dd,main dt{margin:0}
+  main table{margin-bottom:.5rem}
+  body{margin:0;background:#E9F1F4;color:var(--night);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+  .rail{max-width:52rem;margin:0 auto;padding:28px 16px 64px}
+  .rail>h1{font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:0 0 6px}
+  .rail>p.note{margin:0 0 24px;color:var(--muted);font-size:13px;line-height:1.6}
+  .state-label{margin:34px 0 10px;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--lagoon-deep)}
+  .viewport{background:var(--surface);border-radius:8px;border:1px solid #d9e6ea;overflow:hidden}
+  main{background:var(--surface)}
+  /* Utilitaires Tailwind utilises par la page, resolus */
+  .mx-auto{margin-left:auto;margin-right:auto}
+  .max-w-2xl{max-width:42rem}
+  .px-5{padding-left:1.25rem;padding-right:1.25rem}
+  .px-4{padding-left:1rem;padding-right:1rem}
+  .py-10{padding-top:2.5rem;padding-bottom:2.5rem}
+  .py-3{padding-top:.75rem;padding-bottom:.75rem}
+  .py-2{padding-top:.5rem;padding-bottom:.5rem}
+  .p-5{padding:1.25rem}
+  .pt-2{padding-top:.5rem}
+  .mb-8{margin-bottom:2rem}.mb-6{margin-bottom:1.5rem}.mb-2{margin-bottom:.5rem}
+  .mt-2{margin-top:.5rem}.mt-4{margin-top:1rem}
+  .text-night{color:var(--night)}
+  .text-lagoon-deep{color:var(--lagoon-deep)}
+  .text-text-muted{color:var(--muted)}
+  .text-white{color:#fff}
+  .text-ok{color:var(--ok)}
+  .bg-ok\/10{background:rgba(20,184,107,.1)}
+  .bg-white{background:#fff}
+  .bg-surface{background:var(--surface)}
+  .bg-lagoon-deep{background:var(--lagoon-deep)}
+  .border{border-width:1px;border-style:solid}
+  .border-b{border-bottom-width:1px;border-bottom-style:solid}
+  .border-border{border-color:var(--border)}
+  .rounded-2xl{border-radius:25.2px}.rounded-xl{border-radius:19.6px}
+  .text-xs{font-size:.75rem;line-height:1rem}
+  .text-sm{font-size:.875rem;line-height:1.25rem}
+  .text-2xl{font-size:1.5rem;line-height:2rem}
+  .font-bold{font-weight:700}.font-extrabold{font-weight:800}
+  .font-heading{font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;letter-spacing:-.01em}
+  .font-data{font-variant-numeric:tabular-nums;letter-spacing:.01em}
+  .uppercase{text-transform:uppercase}
+  .tracking-widest{letter-spacing:.1em}
+  .italic{font-style:italic}.not-italic{font-style:normal}
+  .leading-relaxed{line-height:1.625}
+  .text-right{text-align:right}.text-center{text-align:center}
+  .w-full{width:100%}
+  .grid{display:grid}.gap-4{gap:1rem}.gap-x-4{column-gap:1rem}.gap-y-1{row-gap:.25rem}
+  .grid-cols-\[auto_1fr\]{grid-template-columns:auto 1fr}
+  .space-y-2>*+*{margin-top:.5rem}
+  table{border-collapse:collapse}
+  button{border:0;font:inherit;cursor:pointer}
+  @media (min-width:640px){.sm\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<div class="rail">
+  <h1>Facture de commission loueur - conformite intra-UE</h1>
+  <p class="note">
+    NovAI (France) facture une commission a un loueur grec : prestation de services intra-UE,
+    autoliquidee par le preneur. La piece porte le numero de TVA du client, la ligne
+    « VAT &euro;0.00 &mdash; reverse charge », l'article 44 et l'article 196 de la directive
+    2006/112/CE, l'article 283-2 du CGI, et la forme COMPLETE du 293 B. La mention domestique
+    « VAT not applicable, article 293 B » qui figurait ici etait fausse sur cette operation.
+  </p>
+
+  <div class="state-label">1. Identite client complete - facture due</div>
+  <div class="viewport"><main class="mx-auto max-w-2xl px-5 py-10 text-night"><style>@media print {
+  body > *:not(main) { display: none !important; }
+  main { max-width: none; padding: 0; }
+  a[href]:after { content: none !important; }
+}</style><header class="mb-8"><p class="text-xs font-bold uppercase tracking-widest text-lagoon-deep">Invoice</p><h1 class="font-heading text-2xl font-extrabold">NOVAI-CD-2026-004</h1><p class="text-sm text-text-muted">Issued 2026-07-30 · payment due on receipt</p></header><section class="mb-6 grid gap-4 sm:grid-cols-2"><div class="rounded-2xl border border-border bg-white p-5 text-sm"><p class="mb-2 text-xs font-bold uppercase tracking-widest text-text-muted">Supplier</p><p class="font-bold">NovAI</p><p>SAS with a share capital of €50</p><p>Trade register: RCS Brest 994 765 857</p><p>SIRET 99476585700010</p><p>15 Rue Berthollet, 29200 Brest, France</p><p>President: François Camille Kerjean</p><p>contact@nov-ai.xyz</p><p class="mt-2 font-data font-bold">VAT ID · FR45994765857</p></div><div class="rounded-2xl border border-border bg-white p-5 text-sm"><p class="mb-2 text-xs font-bold uppercase tracking-widest text-text-muted">Customer</p><p class="font-bold">Lux Trans IKE</p><p>Private company (IKE), Greece</p><p>1922 Street, No 10</p><p>71601 Heraklion, Greece</p><p>Trading as cretecar.rent</p><p class="text-text-muted">info@cretecar.rent</p><p class="mt-2 font-data font-bold">VAT ID · EL801122501</p></div></section><table class="mb-2 w-full text-sm"><tbody><tr class="border-b border-border"><td class="py-2">Commission on rental 39 · 2026-07-30 → 2026-08-11 · Heraklion Airport<br/><span class="text-text-muted">€680.00 quoted and accepted · 10%</span></td><td class="py-2 text-right font-bold">€68.00</td></tr><tr class="border-b border-border"><td class="py-2">Total excluding VAT</td><td class="py-2 text-right">€68.00</td></tr><tr class="border-b border-border"><td class="py-2">VAT</td><td class="py-2 text-right">€0.00 — reverse charge</td></tr><tr><td class="py-2 font-bold">Total due</td><td class="py-2 text-right font-extrabold">€68.00</td></tr></tbody></table><p class="mb-6 rounded-xl border border-border bg-surface px-4 py-3 text-xs italic leading-relaxed text-text-muted">VAT reverse charge. The supply of services is located in the customer&#x27;s member state under Article 44 of Council Directive 2006/112/EC; VAT is to be accounted for by the recipient under Article 196 of the same Directive.<br/><span class="not-italic">Autoliquidation par le preneur — article 283-2 du CGI et article 196 de la directive 2006/112/CE.</span></p><form class="mb-6" action="/api/car-rental/commission/checkout" method="post"><input type="hidden" name="token" value="tok"/><button type="submit" class="w-full rounded-xl bg-lagoon-deep px-5 py-3 font-bold text-white">Pay €68.00 by card</button></form><section class="mb-6 rounded-2xl border border-border bg-surface p-5 text-sm"><p class="mb-2 font-bold">Bank transfer</p><p class="text-text-muted">Prefer a transfer? Reply to the invoice email and we send you the bank details. Always use the reference NOVAI-CD-2026-004.</p></section><footer class="space-y-2 text-xs leading-relaxed text-text-muted"><p><span class="font-bold">VAT identification.</span> Both VAT numbers shown above were verified against the European Commission VIES database on 2026-07-30 and returned as valid. NovAI applies the French small business VAT exemption (article 293 B of the French Tax Code) to its domestic transactions; the present supply is an intra-Community supply of services and falls outside the scope of French VAT.</p><p><span class="font-bold">Late payment.</span> In accordance with articles L441-10 and D441-5 of the French Commercial Code, late payment gives rise to penalties calculated at three times the French legal interest rate, plus a fixed recovery indemnity of €40, with no reminder required. No discount is granted for early payment.</p><p><span class="font-bold">Commission.</span> 10% of the rental value, payable per completed introduction, as set out in the crete.direct partner terms accepted by the customer. crete.direct is a trading name operated by SAS NovAI.</p><p class="pt-2 text-center italic">NovAI SAS — Simplified joint-stock company — RCS Brest 994 765 857 — Share capital €50 — Registered office: 15 Rue Berthollet, 29200 Brest, France</p></footer></main></div>
+
+  <div class="state-label">2. Identite client perdue apres emission - rien n'est emis</div>
+  <p class="note">
+    Etat inatteignable par construction (la garde du cron refuse de facturer un loueur
+    incomplet), mais une fiche peut etre videe APRES coup. La page ne sert alors ni mention
+    fiscale invalide, ni demande de paiement.
+  </p>
+  <div class="viewport"><main class="mx-auto max-w-2xl px-5 py-10 text-night"><style>@media print {
+  body > *:not(main) { display: none !important; }
+  main { max-width: none; padding: 0; }
+  a[href]:after { content: none !important; }
+}</style><p class="text-xs font-bold uppercase tracking-widest text-lagoon-deep">Invoice</p><h1 class="font-heading text-2xl font-extrabold">NOVAI-CD-2026-004</h1><p class="mt-4 rounded-2xl border border-border bg-surface p-5 text-sm">This invoice cannot be issued: the customer details it must carry are missing from our records. Nothing is payable on this page. Please reply to the invoice email, or write to contact@nov-ai.xyz quoting NOVAI-CD-2026-004, and we will reissue it.</p></main></div>
+</div>
+</body>
+</html>

@@ -5,18 +5,28 @@
 // page (Ctrl+P). D ou le bloc @media print plus bas, qui retire le chrome du
 // site (header, footer, tab bar mobile, bandeaux) pour ne laisser que la
 // facture. Sans lui, le PDF sort avec la navigation du site dessus.
+//
+// ⛔ TOUTES les mentions legales de cette page sont RECOPIEES de la facture
+// validee par le comptable, `docs/facture-novai-luxtrans-2026-003.html`
+// (NOVAI-2026-003, Lux Trans IKE). Aucune n a ete redigee ici, et aucune ne doit
+// l etre : NovAI est francaise, le loueur est grec, la commission est une
+// prestation de services intra-UE autoliquidee par le preneur. La mention
+// domestique « VAT not applicable, article 293 B » que portait cette page etait
+// fausse sur cette operation.
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import { invoiceByToken } from "@/lib/car-invoice-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { carPickupLabel } from "@/lib/car-lead";
-import { ratePercentLabel } from "@/lib/car-invoice";
+import { ratePercentLabel, partnerBillingIdentity, PARTNER_IDENTITY_COLS } from "@/lib/car-invoice";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
-const EUR = (n: number) => `${Number(n).toFixed(2)} EUR`;
+// Format du gabarit comptable. Un seul format sur toute la piece : « 68.00 EUR »
+// a cote de « €0.00 — reverse charge » se lit comme deux devises.
+const EUR = (n: number) => `€${Number(n).toFixed(2)}`;
 const day = (iso: string) => new Date(iso).toISOString().slice(0, 10);
 
 /**
@@ -53,9 +63,46 @@ export default async function InvoicePage({
 
   const { data: partner } = await supabaseAdmin
     .from("car_partners")
-    .select("name, email")
+    .select(`name, email, ${PARTNER_IDENTITY_COLS}`)
     .eq("id", invoice.partner_id)
     .maybeSingle();
+
+  const billing = partnerBillingIdentity(partner);
+
+  /**
+   * Identite du client incomplete : par construction impossible, la garde du
+   * cron refuse de facturer un loueur qui n a pas la sienne. Mais une fiche peut
+   * etre videe APRES l emission, et une facture privee du nom, de l adresse ou
+   * du numero de TVA de son client n est pas une facture — la mention
+   * d autoliquidation n a plus de destinataire identifie.
+   *
+   * Servir le document ampute mettrait une piece fausse chez une vraie
+   * entreprise. Un notFound() nu ferait croire a un lien casse et cacherait la
+   * cause. La page dit donc exactement ce qui se passe, ne porte aucune mention
+   * fiscale (elles seraient invalides), et ne reclame pas d argent : on ne fait
+   * pas payer contre un document qu on ne peut pas emettre.
+   */
+  if (!billing.ok) {
+    console.error("[invoice] identite legale du client incomplete, facture non affichable", {
+      invoice: invoice.number,
+      partnerId: invoice.partner_id,
+      missing: billing.missing,
+    });
+    return (
+      <main className="mx-auto max-w-2xl px-5 py-10 text-night">
+        <style dangerouslySetInnerHTML={{ __html: PRINT_CSS }} />
+        <p className="text-xs font-bold uppercase tracking-widest text-lagoon-deep">Invoice</p>
+        <h1 className="font-heading text-2xl font-extrabold">{invoice.number}</h1>
+        <p className="mt-4 rounded-2xl border border-border bg-surface p-5 text-sm">
+          This invoice cannot be issued: the customer details it must carry are missing from our
+          records. Nothing is payable on this page. Please reply to the invoice email, or write to
+          contact@nov-ai.xyz quoting {invoice.number}, and we will reissue it.
+        </p>
+      </main>
+    );
+  }
+
+  const client = billing.identity;
 
   const { data: req } = await supabaseAdmin
     .from("car_requests")
@@ -77,6 +124,14 @@ export default async function InvoicePage({
         ? "lost"
         : "due";
   const bank = bankDetails();
+  const ratePct = ratePercentLabel(Number(invoice.rate));
+  // Le nom commercial n a d interet que s il differe de la raison sociale : le
+  // loueur signe ses emails « cretecar.rent », la facture est adressee a la
+  // personne morale, et le rapprochement doit se lire sans effort.
+  const tradingName =
+    partner?.name && partner.name.trim() && partner.name.trim() !== client.legalName
+      ? partner.name.trim()
+      : null;
 
   return (
     <main className="mx-auto max-w-2xl px-5 py-10 text-night">
@@ -90,16 +145,37 @@ export default async function InvoicePage({
         </p>
       </header>
 
-      <section className="mb-6 rounded-2xl border border-border bg-white p-5 text-sm">
-        <p className="font-bold">SAS NovAI</p>
-        <p>15 rue Berthollet, 29200 Brest, France</p>
-        <p>SIREN 994 765 857 · VAT FR45994765857</p>
-        <p className="mt-3 text-text-muted">Billed to</p>
-        <p className="font-bold">{partner?.name}</p>
-        {partner?.email ? <p className="text-text-muted">{partner.email}</p> : null}
+      <section className="mb-6 grid gap-4 sm:grid-cols-2">
+        <div className="rounded-2xl border border-border bg-white p-5 text-sm">
+          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-text-muted">
+            Supplier
+          </p>
+          <p className="font-bold">NovAI</p>
+          <p>SAS with a share capital of €50</p>
+          <p>Trade register: RCS Brest 994 765 857</p>
+          <p>SIRET 99476585700010</p>
+          <p>15 Rue Berthollet, 29200 Brest, France</p>
+          <p>President: François Camille Kerjean</p>
+          <p>contact@nov-ai.xyz</p>
+          <p className="mt-2 font-data font-bold">VAT ID · FR45994765857</p>
+        </div>
+        <div className="rounded-2xl border border-border bg-white p-5 text-sm">
+          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-text-muted">
+            Customer
+          </p>
+          <p className="font-bold">{client.legalName}</p>
+          {client.legalForm ? <p>{client.legalForm}</p> : null}
+          <p>{client.addressLine}</p>
+          <p>
+            {client.postalCode} {client.city}, {client.country}
+          </p>
+          {tradingName ? <p>Trading as {tradingName}</p> : null}
+          {partner?.email ? <p className="text-text-muted">{partner.email}</p> : null}
+          <p className="mt-2 font-data font-bold">VAT ID · {client.vatId}</p>
+        </div>
       </section>
 
-      <table className="mb-6 w-full text-sm">
+      <table className="mb-2 w-full text-sm">
         <tbody>
           <tr className="border-b border-border">
             <td className="py-2">
@@ -108,11 +184,18 @@ export default async function InvoicePage({
               {pickup ? ` · ${pickup}` : ""}
               <br />
               <span className="text-text-muted">
-                {EUR(invoice.base_amount_eur)} quoted and accepted ·{" "}
-                {ratePercentLabel(Number(invoice.rate))}%
+                {EUR(invoice.base_amount_eur)} quoted and accepted · {ratePct}%
               </span>
             </td>
             <td className="py-2 text-right font-bold">{EUR(invoice.amount_eur)}</td>
+          </tr>
+          <tr className="border-b border-border">
+            <td className="py-2">Total excluding VAT</td>
+            <td className="py-2 text-right">{EUR(invoice.amount_eur)}</td>
+          </tr>
+          <tr className="border-b border-border">
+            <td className="py-2">VAT</td>
+            <td className="py-2 text-right">€0.00 — reverse charge</td>
           </tr>
           <tr>
             <td className="py-2 font-bold">Total due</td>
@@ -120,6 +203,20 @@ export default async function InvoicePage({
           </tr>
         </tbody>
       </table>
+
+      {/* Mention d autoliquidation, recopiee du gabarit comptable. */}
+      {/* Bordure ET fond : `bg-surface` seul se confond avec le fond de page, la
+          mention flottait au milieu de rien (defaut vu sur la planche). */}
+      <p className="mb-6 rounded-xl border border-border bg-surface px-4 py-3 text-xs italic leading-relaxed text-text-muted">
+        {
+          "VAT reverse charge. The supply of services is located in the customer's member state under Article 44 of Council Directive 2006/112/EC; VAT is to be accounted for by the recipient under Article 196 of the same Directive."
+        }
+        <br />
+        <span className="not-italic">
+          Autoliquidation par le preneur — article 283-2 du CGI et article 196 de la directive
+          2006/112/CE.
+        </span>
+      </p>
 
       {state === "due" && (
         <form action="/api/car-rental/commission/checkout" method="post" className="mb-6">
@@ -177,12 +274,37 @@ export default async function InvoicePage({
         </section>
       )}
 
-      <footer className="text-xs leading-relaxed text-text-muted">
-        <p>VAT not applicable, article 293 B of the French General Tax Code.</p>
+      <footer className="space-y-2 text-xs leading-relaxed text-text-muted">
         <p>
-          Late payment gives rise to penalties at three times the French legal interest rate plus a
-          fixed recovery indemnity of 40 EUR, with no reminder required (articles L441-10 and D441-5
-          of the French Commercial Code). No discount for early payment.
+          <span className="font-bold">VAT identification.</span>{" "}
+          {/* ⛔ La phrase VIES n est imprimee QUE si une verification a
+              reellement eu lieu et a ete datee sur la fiche loueur : affirmer une
+              verification qui n a pas eu lieu serait un mensonge sur une piece
+              comptable. Le reste de la mention, lui, ne depend d aucun controle. */}
+          {client.vatVerifiedAt ? (
+            <>
+              Both VAT numbers shown above were verified against the European Commission VIES
+              database on {client.vatVerifiedAt} and returned as valid.{" "}
+            </>
+          ) : null}
+          NovAI applies the French small business VAT exemption (article 293 B of the French Tax
+          Code) to its domestic transactions; the present supply is an intra-Community supply of
+          services and falls outside the scope of French VAT.
+        </p>
+        <p>
+          <span className="font-bold">Late payment.</span> In accordance with articles L441-10 and
+          D441-5 of the French Commercial Code, late payment gives rise to penalties calculated at
+          three times the French legal interest rate, plus a fixed recovery indemnity of €40, with
+          no reminder required. No discount is granted for early payment.
+        </p>
+        <p>
+          <span className="font-bold">Commission.</span> {ratePct}% of the rental value, payable per
+          completed introduction, as set out in the crete.direct partner terms accepted by the
+          customer. crete.direct is a trading name operated by SAS NovAI.
+        </p>
+        <p className="pt-2 text-center italic">
+          NovAI SAS — Simplified joint-stock company — RCS Brest 994 765 857 — Share capital €50 —
+          Registered office: 15 Rue Berthollet, 29200 Brest, France
         </p>
       </footer>
     </main>

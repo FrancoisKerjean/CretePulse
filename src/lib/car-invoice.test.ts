@@ -6,6 +6,7 @@ import {
   creditMailBody,
   invoiceAdminState,
   ratePercentLabel,
+  partnerBillingIdentity,
   type InvoiceCandidate,
 } from "./car-invoice";
 
@@ -220,5 +221,134 @@ describe("ratePercentLabel", () => {
   it("un taux absent ou aberrant ne casse pas la facture", () => {
     expect(ratePercentLabel(0)).toBe("0");
     expect(ratePercentLabel(Number.NaN)).toBe("0");
+  });
+});
+
+// ── Identite de facturation du loueur ────────────────────────────────────────
+// NovAI est francaise, le loueur est grec : la commission est une prestation de
+// services intra-UE, autoliquidee par le preneur. Cette mention EXIGE le numero
+// de TVA du client sur la piece, et l adresse complete du client est une mention
+// obligatoire de toute facture. Un loueur dont l identite legale est incomplete
+// ne peut donc pas etre facture : mieux vaut ne rien emettre qu emettre une
+// piece fausse chez une vraie entreprise.
+
+const IDENTITY = {
+  name: "cretecar.rent",
+  legal_name: "Lux Trans IKE",
+  legal_form: "Private company (IKE), Greece",
+  address_line: "1922 Street, No 10",
+  postal_code: "71601",
+  city: "Heraklion",
+  country: "Greece",
+  vat_id: "EL801122501",
+  vat_verified_at: "2026-07-30",
+};
+
+describe("partnerBillingIdentity", () => {
+  it("rend l identite complete quand tout est renseigne", () => {
+    const res = partnerBillingIdentity(IDENTITY);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.identity).toEqual({
+      legalName: "Lux Trans IKE",
+      legalForm: "Private company (IKE), Greece",
+      addressLine: "1922 Street, No 10",
+      postalCode: "71601",
+      city: "Heraklion",
+      country: "Greece",
+      vatId: "EL801122501",
+      vatVerifiedAt: "2026-07-30",
+    });
+  });
+
+  it("refuse un loueur sans numero de TVA, le champ le plus indispensable", () => {
+    // Sans lui la mention d autoliquidation est impossible a porter, et la
+    // declaration europeenne de services ne peut pas etre deposee.
+    const res = partnerBillingIdentity({ ...IDENTITY, vat_id: null });
+    expect(res).toEqual({ ok: false, missing: ["vat_id"] });
+  });
+
+  it.each([
+    ["legal_name", { legal_name: null }],
+    ["address_line", { address_line: null }],
+    ["postal_code", { postal_code: null }],
+    ["city", { city: null }],
+    ["country", { country: null }],
+  ])("refuse un loueur sans %s : mention obligatoire de la facture", (field, patch) => {
+    const res = partnerBillingIdentity({ ...IDENTITY, ...patch });
+    expect(res).toEqual({ ok: false, missing: [field] });
+  });
+
+  it("la forme juridique n est PAS exigee : elle est souvent dans la raison sociale", () => {
+    // « Lux Trans IKE » porte deja son IKE. Exiger la colonne bloquerait la
+    // facturation d un loueur parfaitement identifiable, alors qu aucune mention
+    // obligatoire ne manque. La page l imprime si elle existe, et se tait sinon.
+    const res = partnerBillingIdentity({ ...IDENTITY, legal_form: null });
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.identity.legalForm).toBeNull();
+  });
+
+  it("la date de verification VIES n est pas exigee non plus", () => {
+    // Elle ne conditionne pas la conformite de la piece : elle date une
+    // verification qui a REELLEMENT eu lieu, et la page ne l affirme que dans ce
+    // cas. Aucune verification enregistree = la phrase ne s imprime pas.
+    const res = partnerBillingIdentity({ ...IDENTITY, vat_verified_at: null });
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.identity.vatVerifiedAt).toBeNull();
+  });
+
+  it("liste TOUT ce qui manque, dans l ordre du bloc client", () => {
+    // Un motif qui ne dit qu un champ ferait faire trois allers-retours a qui
+    // remplit la fiche.
+    expect(partnerBillingIdentity({})).toEqual({
+      ok: false,
+      missing: ["legal_name", "address_line", "postal_code", "city", "country", "vat_id"],
+    });
+  });
+
+  it("un loueur absent est incomplet, pas une exception", () => {
+    expect(partnerBillingIdentity(null).ok).toBe(false);
+    expect(partnerBillingIdentity(undefined).ok).toBe(false);
+  });
+
+  it("une valeur faite d espaces ne compte pas comme renseignee", () => {
+    const res = partnerBillingIdentity({ ...IDENTITY, city: "   " });
+    expect(res).toEqual({ ok: false, missing: ["city"] });
+  });
+
+  it("rogne les espaces autour des valeurs gardees", () => {
+    const res = partnerBillingIdentity({ ...IDENTITY, city: "  Heraklion  " });
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.identity.city).toBe("Heraklion");
+  });
+
+  it.each(["N/A", "-", "TBD", "a demander", "801122501", "EL"])(
+    "traite un numero de TVA bidon (%s) comme absent",
+    (vat) => {
+      // Un fourre-tout saisi a la place du numero produirait une facture qui
+      // PORTE une mention d autoliquidation sans identifiant valide : pire
+      // qu une facture non emise.
+      const res = partnerBillingIdentity({ ...IDENTITY, vat_id: vat });
+      expect(res).toEqual({ ok: false, missing: ["vat_id"] });
+    },
+  );
+
+  it.each(["IE1234567FA", "NL123456789B01", "FR45994765857"])(
+    "accepte les autres formes de l Union (%s), pas seulement la grecque",
+    (vat) => {
+      // Le controle de forme ne doit pas se resserrer sur EL + 9 chiffres : un
+      // loueur immatricule ailleurs dans l Union se ferait refuser sans motif.
+      expect(partnerBillingIdentity({ ...IDENTITY, vat_id: vat }).ok).toBe(true);
+    },
+  );
+
+  it("accepte un numero de TVA ecrit avec des espaces, et le normalise", () => {
+    const res = partnerBillingIdentity({ ...IDENTITY, vat_id: " el 801122501 " });
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.identity.vatId).toBe("EL801122501");
   });
 });

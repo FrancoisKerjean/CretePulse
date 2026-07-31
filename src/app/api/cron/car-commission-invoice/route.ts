@@ -4,7 +4,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { assertCron } from "@/lib/cron-auth";
-import { isInvoiceable, invoiceAmounts, type InvoiceCandidate } from "@/lib/car-invoice";
+import {
+  isInvoiceable,
+  invoiceAmounts,
+  partnerBillingIdentity,
+  PARTNER_IDENTITY_COLS,
+  type InvoiceCandidate,
+} from "@/lib/car-invoice";
 import { requestCommission } from "@/lib/car-commission-server";
 
 export const dynamic = "force-dynamic";
@@ -66,7 +72,7 @@ export async function GET(request: NextRequest) {
 
     const { data: partner } = await supabase
       .from("car_partners")
-      .select("commission")
+      .select(`commission, ${PARTNER_IDENTITY_COLS}`)
       .eq("id", row.quoted_by_partner_id as number)
       .maybeSingle();
     if (!partner) { skipped.push({ id: row.id, reason: "partner_not_found" }); continue; }
@@ -78,6 +84,29 @@ export async function GET(request: NextRequest) {
     const rate = Number(partner.commission);
     if (!Number.isFinite(rate) || rate <= 0) {
       skipped.push({ id: row.id, reason: "no_commission_rate" });
+      continue;
+    }
+
+    // ⛔ Identite legale du loueur, verifiee AVANT toute ecriture, et notamment
+    // avant la bascule en « rented ». Deux raisons, dans cet ordre :
+    //
+    // 1. NovAI est francaise, le loueur est grec : la commission est une
+    //    prestation de services intra-UE, autoliquidee par le preneur. La piece
+    //    DOIT porter le numero de TVA du client et son adresse complete. Sans
+    //    elles, ce qui partirait chez une vraie entreprise ne serait pas une
+    //    facture. Mieux vaut ne rien emettre.
+    // 2. `outcome IS NULL` EST le filtre d idempotence de ce cron. Ecarter la
+    //    ligne APRES la bascule la sortirait DEFINITIVEMENT du lot : la location
+    //    ne serait jamais facturee, meme une fois la fiche loueur remplie. Ici,
+    //    elle ressortira d elle-meme au passage suivant.
+    const identity = partnerBillingIdentity(partner);
+    if (!identity.ok) {
+      console.error("[car/commission-cron] identite legale du loueur incomplete, rien n est emis", {
+        requestId: row.id,
+        partnerId: row.quoted_by_partner_id,
+        missing: identity.missing,
+      });
+      skipped.push({ id: row.id, reason: "partner_identity_incomplete" });
       continue;
     }
 

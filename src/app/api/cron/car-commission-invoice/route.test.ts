@@ -33,18 +33,36 @@ const ELIGIBLE = {
   quoted_price: 310,
 };
 
+/**
+ * Identite legale complete d un loueur grec. Sans elle, aucune facture ne peut
+ * porter la mention d autoliquidation intra-UE, donc aucune facture ne part.
+ */
+const IDENTITY = {
+  legal_name: "Lux Trans IKE",
+  legal_form: "Private company (IKE), Greece",
+  address_line: "1922 Street, No 10",
+  postal_code: "71601",
+  city: "Heraklion",
+  country: "Greece",
+  vat_id: "EL801122501",
+  vat_verified_at: "2026-07-30",
+};
+
+type PartnerMock = (Record<string, unknown> & { commission: number | null }) | null;
+
 interface Wiring {
   rows?: Array<Record<string, unknown>>;
-  partner?: { commission: number | null } | null;
+  partner?: PartnerMock;
 }
 
 function wiring(w: Wiring = {}) {
   const rows = w.rows ?? [ELIGIBLE];
-  const partner: { commission: number | null } | null =
-    w.partner === undefined ? { commission: 0.1 } : w.partner;
+  const partner: PartnerMock =
+    w.partner === undefined ? { commission: 0.1, ...IDENTITY } : w.partner;
   const updates: Array<Record<string, unknown>> = [];
   const filters: string[] = [];
   let selected = "";
+  let partnerCols = "";
 
   update.mockImplementation((patch: Record<string, unknown>) => {
     updates.push(patch);
@@ -84,13 +102,16 @@ function wiring(w: Wiring = {}) {
     // tomberait sur le `throw` ci-dessous.
     if (table === "car_partners") {
       return {
-        select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: partner }) }) }),
+        select: (cols: string) => {
+          partnerCols = cols;
+          return { eq: () => ({ maybeSingle: async () => ({ data: partner }) }) };
+        },
       };
     }
     throw new Error(`table inattendue: ${table}`);
   });
 
-  return { updates, filters, selected: () => selected };
+  return { updates, filters, selected: () => selected, partnerCols: () => partnerCols };
 }
 
 describe("GET /api/cron/car-commission-invoice", () => {
@@ -268,6 +289,94 @@ describe("GET /api/cron/car-commission-invoice", () => {
     });
     expect(update).not.toHaveBeenCalled();
     expect(requestCommission).not.toHaveBeenCalled();
+  });
+
+  // ── L identite legale du loueur ────────────────────────────────────────────
+  // NovAI est francaise, le loueur est grec : la commission est une prestation
+  // de services intra-UE, autoliquidee par le preneur. La piece DOIT porter le
+  // numero de TVA du client et son adresse complete. Mieux vaut ne pas facturer
+  // que d emettre une facture fausse chez une vraie entreprise.
+
+  it.each([
+    ["sans numero de TVA", { vat_id: null }],
+    ["sans raison sociale", { legal_name: null }],
+    ["sans adresse", { address_line: null }],
+    ["sans code postal", { postal_code: null }],
+    ["sans ville", { city: null }],
+    ["sans pays", { country: null }],
+    ["dont le numero de TVA est un fourre-tout", { vat_id: "N/A" }],
+  ])("n emet AUCUNE facture pour un loueur %s", async (_label, patch) => {
+    process.env.CAR_COMMISSION_ENABLED = "on";
+    wiring({ partner: { commission: 0.1, ...IDENTITY, ...patch } });
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { GET } = await import("./route");
+    const res = await GET(authed());
+
+    expect(await res.json()).toMatchObject({
+      invoiced: 0,
+      skipped: [{ id: 42, reason: "partner_identity_incomplete" }],
+    });
+    expect(requestCommission).not.toHaveBeenCalled();
+    // Le motif rendu est stable et court : c est le journal qui dit QUEL champ
+    // manque, sinon il faut relire la fiche loueur pour le savoir.
+    expect(JSON.stringify(errSpy.mock.calls)).toContain(Object.keys(patch)[0]);
+    errSpy.mockRestore();
+  });
+
+  it("ecarte AVANT toute ecriture : la ligne reste facturable une fois la fiche remplie", async () => {
+    // ⛔ Le point le plus important de cette garde. `outcome IS NULL` EST le
+    // filtre d idempotence : si la ligne basculait en « rented » avant d etre
+    // ecartee, elle sortirait DEFINITIVEMENT du lot et la location ne serait
+    // jamais facturee, meme apres correction de la fiche loueur.
+    process.env.CAR_COMMISSION_ENABLED = "on";
+    wiring({ partner: { commission: 0.1, ...IDENTITY, vat_id: null } });
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { GET } = await import("./route");
+    await GET(authed());
+
+    expect(update).not.toHaveBeenCalled();
+    errSpy.mockRestore();
+  });
+
+  it("va chercher l identite legale dans la meme lecture que le taux", async () => {
+    // Une colonne oubliee dans le select rendrait `undefined` cote guarde, et la
+    // garde bloquerait TOUT en silence, y compris les loueurs en regle.
+    process.env.CAR_COMMISSION_ENABLED = "on";
+    const { partnerCols } = wiring();
+    const { GET } = await import("./route");
+    await GET(authed());
+
+    for (const col of [
+      "commission",
+      "legal_name",
+      "address_line",
+      "postal_code",
+      "city",
+      "country",
+      "vat_id",
+    ]) {
+      expect(partnerCols()).toContain(col);
+    }
+  });
+
+  it("facture normalement un loueur dont l identite legale est complete", async () => {
+    process.env.CAR_COMMISSION_ENABLED = "on";
+    wiring();
+    const { GET } = await import("./route");
+    const res = await GET(authed());
+
+    expect(await res.json()).toMatchObject({ invoiced: 1, skipped: [] });
+  });
+
+  it("la forme juridique absente n empeche pas de facturer", async () => {
+    // Elle est le plus souvent dans la raison sociale (« Lux Trans IKE ») et
+    // aucune mention obligatoire n en depend.
+    process.env.CAR_COMMISSION_ENABLED = "on";
+    wiring({ partner: { commission: 0.1, ...IDENTITY, legal_form: null, vat_verified_at: null } });
+    const { GET } = await import("./route");
+    const res = await GET(authed());
+
+    expect(await res.json()).toMatchObject({ invoiced: 1, skipped: [] });
   });
 
   it("porte le code d echec reel quand la facturation elle-meme echoue", async () => {

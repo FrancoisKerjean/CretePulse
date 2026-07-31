@@ -42,19 +42,35 @@ const REQUEST = {
   outcome: "rented",
 };
 
+/**
+ * Loueur grec dont l identite legale est COMPLETE : c est la seule situation
+ * dans laquelle une facture peut exister, la garde du cron s en assure en amont.
+ * Valeurs reprises de la facture validee par le comptable (NOVAI-2026-003).
+ */
+const PARTNER = {
+  name: "cretecar.rent",
+  email: "info@cretecar.rent",
+  legal_name: "Lux Trans IKE",
+  legal_form: "Private company (IKE), Greece",
+  address_line: "1922 Street, No 10",
+  postal_code: "71601",
+  city: "Heraklion",
+  country: "Greece",
+  vat_id: "EL801122501",
+  vat_verified_at: "2026-07-30",
+};
+
 function wiring(
   invoice: Record<string, unknown> | null = INVOICE,
   request: Record<string, unknown> = REQUEST,
+  partner: Record<string, unknown> | null = PARTNER,
 ) {
   invoiceByToken.mockResolvedValue(invoice);
   from.mockImplementation((table: string) => ({
     select: () => ({
       eq: () => ({
         maybeSingle: async () => ({
-          data:
-            table === "car_partners"
-              ? { name: "Luxtrans Crete", email: "info@luxtrans.gr" }
-              : request,
+          data: table === "car_partners" ? partner : request,
         }),
       }),
     }),
@@ -184,7 +200,10 @@ describe("page facture · coordonnees bancaires", () => {
     const html = await render();
     expect(html).toContain("7.5%");
     expect(html).not.toContain("8%");
-    expect(html).toContain("15.00 EUR");
+    // Montants au format du gabarit comptable (« €68.00 »), le meme que la ligne
+    // de TVA « €0.00 — reverse charge » : deux formats sur une meme piece se
+    // lisent comme deux devises.
+    expect(html).toContain("€15.00");
   });
 
   it("un taux entier reste ecrit sans decimale", async () => {
@@ -205,4 +224,174 @@ describe("page facture · coordonnees bancaires", () => {
     const src = readFileSync(new URL("./page.tsx", import.meta.url), "utf8");
     expect(src).not.toMatch(/[A-Z]{2}\d{2}[A-Z0-9]{10,}/);
   });
+});
+
+// ── Mentions legales et bloc client ──────────────────────────────────────────
+// NovAI est francaise, le loueur est grec : la commission est une prestation de
+// services intra-UE, autoliquidee par le preneur. La page tient lieu de facture
+// (aucun PDF n est genere), elle porte donc TOUTES les mentions de la piece
+// validee par le comptable, `docs/facture-novai-luxtrans-2026-003.html`.
+// ⛔ Aucune de ces phrases n a ete redigee ici : elles sont recopiees.
+
+describe("page facture · mentions intra-UE", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    delete process.env.NOVAI_IBAN;
+    delete process.env.NOVAI_BIC;
+  });
+
+  it("imprime l identite legale complete du client", async () => {
+    wiring();
+    const html = await render();
+
+    expect(html).toContain("Lux Trans IKE");
+    expect(html).toContain("Private company (IKE), Greece");
+    expect(html).toContain("1922 Street, No 10");
+    expect(html).toContain("71601 Heraklion, Greece");
+    expect(html).toContain("EL801122501");
+  });
+
+  it("distingue le nom commercial de la raison sociale", async () => {
+    // Le loueur signe ses emails « cretecar.rent », mais la facture est adressee
+    // a la personne morale. Les deux doivent apparaitre, sans se confondre.
+    wiring();
+    const html = await render();
+    expect(html).toContain("Trading as cretecar.rent");
+  });
+
+  it("ne repete pas le nom commercial quand il est identique a la raison sociale", async () => {
+    wiring(INVOICE, REQUEST, { ...PARTNER, name: "Lux Trans IKE" });
+    const html = await render();
+    expect(html).not.toContain("Trading as");
+  });
+
+  it("imprime la forme juridique seulement quand elle est connue", async () => {
+    wiring(INVOICE, REQUEST, { ...PARTNER, legal_form: null });
+    const html = await render();
+    expect(html).toContain("Lux Trans IKE");
+    expect(html).not.toContain("Private company");
+  });
+
+  it("porte la ligne de TVA a zero et l autoliquidation", async () => {
+    wiring();
+    const html = await render();
+    expect(html).toContain("€0.00 — reverse charge");
+  });
+
+  it("porte l article 44 et l article 196 de la directive 2006/112/CE", async () => {
+    wiring();
+    const html = await render();
+    expect(html).toContain(
+      "The supply of services is located in the customer&#x27;s member state under Article 44 of Council Directive 2006/112/EC; VAT is to be accounted for by the recipient under Article 196 of the same Directive.",
+    );
+  });
+
+  it("porte l autoliquidation en francais, article 283-2 du CGI", async () => {
+    wiring();
+    const html = await render();
+    expect(html).toContain(
+      "Autoliquidation par le preneur — article 283-2 du CGI et article 196 de la directive 2006/112/CE.",
+    );
+  });
+
+  it("porte le 293 B DANS SA FORME COMPLETE, jamais la mention domestique nue", async () => {
+    // ⛔ « VAT not applicable, article 293 B » tout court est la mention reservee
+    // aux operations FRANCAISES. Sur une prestation intra-UE elle est fausse :
+    // c est le defaut que ce chantier corrige.
+    wiring();
+    const html = await render();
+
+    expect(html).toContain(
+      "NovAI applies the French small business VAT exemption (article 293 B of the French Tax Code) to its domestic transactions; the present supply is an intra-Community supply of services and falls outside the scope of French VAT.",
+    );
+    expect(html).not.toContain("VAT not applicable, article 293 B");
+  });
+
+  it("n affirme une verification VIES que si elle a eu lieu", async () => {
+    // ⛔ Ecrire « verifie contre VIES » sur une facture generee alors qu aucune
+    // verification n a eu lieu serait une affirmation fausse. La phrase du
+    // gabarit ne s imprime qu avec la date de la verification reelle.
+    wiring();
+    const withCheck = await render();
+    expect(withCheck).toContain(
+      "Both VAT numbers shown above were verified against the European Commission VIES database on 2026-07-30 and returned as valid.",
+    );
+
+    vi.clearAllMocks();
+    wiring(INVOICE, REQUEST, { ...PARTNER, vat_verified_at: null });
+    const without = await render();
+    expect(without).not.toContain("VIES");
+    // Le reste de la mention, lui, ne depend d aucune verification.
+    expect(without).toContain("falls outside the scope of French VAT");
+  });
+
+  it("porte la mention de retard de paiement du gabarit", async () => {
+    wiring();
+    const html = await render();
+    expect(html).toContain(
+      "In accordance with articles L441-10 and D441-5 of the French Commercial Code, late payment gives rise to penalties calculated at three times the French legal interest rate, plus a fixed recovery indemnity of €40, with no reminder required. No discount is granted for early payment.",
+    );
+  });
+
+  it("porte la mention de commission, au taux reellement facture", async () => {
+    wiring();
+    const html = await render();
+    expect(html).toContain(
+      "10% of the rental value, payable per completed introduction, as set out in the crete.direct partner terms accepted by the customer. crete.direct is a trading name operated by SAS NovAI.",
+    );
+  });
+
+  it("porte le pied de page societe", async () => {
+    wiring();
+    const html = await render();
+    expect(html).toContain(
+      "NovAI SAS — Simplified joint-stock company — RCS Brest 994 765 857 — Share capital €50 — Registered office: 15 Rue Berthollet, 29200 Brest, France",
+    );
+  });
+
+  it("porte le numero de TVA du fournisseur", async () => {
+    wiring();
+    const html = await render();
+    expect(html).toContain("FR45994765857");
+  });
+});
+
+describe("page facture · identite client perdue", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env.NOVAI_IBAN = IBAN;
+    process.env.NOVAI_BIC = BIC;
+  });
+
+  afterEach(() => {
+    delete process.env.NOVAI_IBAN;
+    delete process.env.NOVAI_BIC;
+  });
+
+  it.each([
+    ["le loueur a ete efface", null],
+    ["son numero de TVA a disparu", { vat_id: null }],
+    ["son adresse a disparu", { city: null }],
+  ])(
+    "n affiche AUCUNE facture quand %s, et le dit franchement",
+    async (_label, patch) => {
+      // Etat inatteignable par construction : la garde du cron refuse de
+      // facturer un loueur incomplet. Mais une fiche peut etre videe APRES
+      // l emission, et une facture privee de l identite de son client n est pas
+      // une facture. Servir le document ampute mettrait une piece fausse chez
+      // une vraie entreprise ; un 404 nu ferait croire a un lien casse. La page
+      // dit donc ce qui se passe, et ne reclame rien.
+      wiring(INVOICE, REQUEST, patch === null ? null : { ...PARTNER, ...patch });
+      const html = await render();
+
+      expect(html).toContain("F-2026-0004");
+      expect(html).toContain("cannot be issued");
+      // Ni mention fiscale (elles seraient invalides), ni demande d argent.
+      expect(html).not.toContain("reverse charge");
+      expect(html).not.toContain("293 B");
+      expect(html).not.toContain("by card");
+      expect(html).not.toContain(IBAN);
+      expect(html).not.toContain("Total due");
+    },
+  );
 });
