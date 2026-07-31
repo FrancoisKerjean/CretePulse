@@ -427,8 +427,15 @@ export interface CommissionMail {
   dateFrom: string;
   dateTo: string;
   payUrl: string;
-  /** Numero de la facture. Le loueur en a besoin pour son rapprochement. */
-  invoiceNumber: string;
+  /**
+   * Numero de la facture, pour le rapprochement comptable du loueur.
+   * ⛔ OPTIONNEL a dessein, et ce n est pas de la mollesse de typage : le rendre
+   * obligatoire ici casserait `car-commission-server.ts`, qui ne connaitra le
+   * numero qu apres la tache 6. Chaque tache doit passer `tsc`, donc aucune ne
+   * peut laisser le depot invalide pour la suivante. La ligne « Invoice: » n est
+   * rendue que si le numero est present, et la tache 6 le fournit toujours.
+   */
+  invoiceNumber?: string;
 }
 ```
 
@@ -441,7 +448,7 @@ export function commissionRequestBody(m: CommissionMail): string {
     ``,
     `Your rental ${m.dateFrom} to ${m.dateTo} starts today, so here is the commission invoice.`,
     ``,
-    `Invoice: ${m.invoiceNumber}`,
+    ...(m.invoiceNumber ? [`Invoice: ${m.invoiceNumber}`] : []),
     `Rental reference: ${m.requestId}`,
     // ⛔ « quoted and accepted », jamais « collected » : au premier jour de
     // location nous ignorons ce que le loueur a encaisse.
@@ -494,9 +501,9 @@ export function creditMailBody(m: CreditMail): string {
 - [ ] **Step 4: Vérifier**
 
 Run: `npx vitest run && npx tsc --noEmit`
-Expected: PASS. ⛔ `tsc` va signaler tous les appelants de `CommissionMail` qui ne
-passent pas encore `invoiceNumber` : c'est voulu, la tâche 6 les corrige. S'il reste des
-erreurs ailleurs que dans `car-commission-server.ts`, les traiter ici.
+Expected: PASS, **0 erreur**. Le champ étant optionnel, aucun appelant existant ne casse.
+⛔ Si `tsc` signale quoi que ce soit, ne pas le contourner : le champ a été rendu
+obligatoire par erreur.
 
 - [ ] **Step 5: Commit**
 
