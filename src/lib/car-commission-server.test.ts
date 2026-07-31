@@ -206,6 +206,28 @@ describe("requestCommission", () => {
     expect(sendPartnerCommissionRequest).not.toHaveBeenCalled();
   });
 
+  it("le verrou refuse par la base : un vrai refus PostgREST n est pas une concurrence gagnee", async () => {
+    // `!locked` se lit exactement comme un verrou deja pris par un autre appel.
+    // Un refus reel (droits, contrainte, panne reseau) doit rester distinguable :
+    // "already_requested" dirait a tort qu il n y a rien a faire, alors que la
+    // facturation ne fonctionne plus du tout.
+    const updates = wiring({
+      updateError: (patch) =>
+        typeof patch.commission_requested_at === "string" ? { message: "permission denied" } : null,
+    });
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await requestCommission(42);
+
+    expect(res).toMatchObject({ status: "failed", code: "lock_write_failed" });
+    expect(createInvoiceForRequest).not.toHaveBeenCalled();
+    expect(sendPartnerCommissionRequest).not.toHaveBeenCalled();
+    // Le verrou n a jamais ete pose : pas de releaseLock, donc un seul update tente.
+    expect(updates).toHaveLength(1);
+    expect(JSON.stringify(errSpy.mock.calls)).toContain("permission denied");
+    errSpy.mockRestore();
+  });
+
   it("ne facture pas une location perdue", async () => {
     wiring({ request: { ...REQUEST, outcome: "lost" } });
     const res = await requestCommission(42);

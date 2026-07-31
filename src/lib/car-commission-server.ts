@@ -73,12 +73,24 @@ export async function requestCommission(requestId: number): Promise<CommissionOu
   // NULL a maintenant, et seul l'appel qui remporte l'update continue. Sans lui,
   // deux clics sur « louée » creeraient deux sessions et le loueur recevrait deux
   // demandes pour la meme location.
-  const { data: locked } = await supabaseAdmin
+  const { data: locked, error: lockError } = await supabaseAdmin
     .from("car_requests")
     .update({ commission_requested_at: new Date().toISOString() })
     .eq("id", requestId)
     .is("commission_requested_at", null)
     .select();
+  if (lockError) {
+    // Distinct d'un verrou deja pris : ici la base a REFUSE l ecriture (droits,
+    // contrainte, panne reseau), le verrou n a jamais ete pose. Rendre
+    // "already_requested" dirait a tort qu une autre execution a pris le relai
+    // et qu il n y a rien a faire, alors que la facturation ne fonctionne plus
+    // du tout. On ne relache rien : il n y a rien a relacher.
+    console.error("[car/commission] verrou non pose : refus de la base par le PostgREST", {
+      requestId,
+      error: lockError.message,
+    });
+    return { status: "failed", code: "lock_write_failed" };
+  }
   if (!locked || locked.length === 0) return { status: "already_requested" };
 
   const { data: partner } = await supabaseAdmin
