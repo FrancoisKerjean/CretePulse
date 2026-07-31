@@ -53,17 +53,34 @@ Décisions déjà prises le 29/07 et **conservées telles quelles** :
 
 Quotidien, **05:00 UTC**, 7ᵉ entrée de `vercel.json`.
 
+⛔ **Première instruction du cron : `assertCron(request)`**, comme les six crons existants
+(`@/lib/cron-auth`). **Deuxième : la garde d'armement `CAR_COMMISSION_ENABLED === "on"`,
+qui rend immédiatement sans rien lire ni écrire.** Voir « Piège de l'interrupteur » ci-dessous.
+
 Sélection :
 
 ```
 accepted_at IS NOT NULL
+AND outcome IS NULL                           -- ⛔ voir ci-dessous
 AND date_from <= CURRENT_DATE
 AND date_from >= COMMISSION_INVOICING_START   -- borne de mise en service
 AND booking_paid_at IS NULL
 AND quoted_by_partner_id IS NOT NULL
-AND commission_requested_at IS NULL
 AND quoted_price IS NOT NULL
+AND NOT EXISTS (SELECT 1 FROM car_commission_invoices i WHERE i.request_id = car_requests.id)
 ```
+
+⛔ **`outcome IS NULL` n'est pas décoratif.** Une location que l'admin a marquée `lost`
+— annulée, voyageur jamais venu — garde son `accepted_at` et sa `date_from` passée. Sans
+ce filtre, le cron la ressuscite en `rented` et facture un loueur pour une location dont
+on sait déjà qu'elle n'a pas eu lieu.
+
+⛔ **Le `NOT EXISTS` sur la facture est le vrai filtre d'idempotence, pas
+`commission_requested_at IS NULL`.** `requestCommission` **relâche son verrou** en cas
+d'échec (`releaseLock`) : la ligne redevient donc éligible, ce qui est voulu pour
+réessayer, mais l'insertion buterait alors sur `request_id UNIQUE`. Comportement attendu
+sur une facture déjà en table et jamais envoyée (`sent_at IS NULL`) : **réutiliser la
+facture existante et retenter l'envoi**, jamais en créer une seconde, jamais échouer.
 
 ⛔ **`<=` et non `=`.** Avec l'égalité, une seule journée de panne du cron perd la
 facture définitivement, sans trace. Le `<=` fait du cron son propre rattrapage.
@@ -89,12 +106,30 @@ puis appelle `requestCommission(id)`. L'ordre compte : `shouldRequestCommission`
 vérifié. C'est assumé : c'est la contrepartie de la décision « facture au J1, avoir
 si ça n'a pas roulé », et `shouldRequestCommission` exige `outcome === 'rented'`.
 
+### 2bis. ⛔ Le piège de l'interrupteur — le défaut le plus grave de ce design
+
+`CAR_COMMISSION_ENABLED` n'est testé **que** dans `requestCommission`, en toute première
+ligne, précisément pour que rien ne soit tenté ni écrit quand le système est éteint.
+
+Or le cron écrit `outcome`, `final_amount_eur` et `commission_eur` **avant** cet appel.
+Conséquence, avec l'interrupteur éteint — son état par défaut, et son état aujourd'hui :
+aucune facture ne part, mais **toutes les locations en cours sont marquées « louée » avec
+un montant présumé**. Les données sont polluées en silence, et c'est exactement ce que
+l'interrupteur devait empêcher.
+
+**Règle : le cron teste l'armement lui-même, avant sa première lecture.** L'interrupteur
+protège deux appelants distincts, il doit être vérifié par chacun. La garde dans
+`requestCommission` reste, elle ne suffit plus.
+
+⚠️ Corollaire pour le mode d'essai : un cron désarmé ne doit rien écrire du tout, pas même
+un `outcome`. S'il faut voir ce qu'il ferait, c'est par journalisation, jamais par écriture.
+
 ### 3. Table `car_commission_invoices`
 
 | Colonne | Note |
 |---|---|
 | `id` | identity |
-| `number` | `NOVAI-CD-2026-NNN`, **séquence Postgres dédiée** (atomique, pas de course) |
+| `number` | `NOVAI-CD-<année>-NNN`, **séquence Postgres dédiée** (atomique, pas de course) |
 | `request_id` | **UNIQUE**, référence `car_requests` |
 | `partner_id` | référence `car_partners` |
 | `base_amount_eur`, `rate`, `amount_eur` | assiette, taux, commission |
@@ -105,6 +140,12 @@ si ça n'a pas roulé », et `shouldRequestCommission` exige `outcome === 'rente
 ⛔ `request_id UNIQUE` donne une **idempotence structurelle**, en plus du verrou
 applicatif existant : deux exécutions du cron ne peuvent pas produire deux factures,
 même si le verrou est relâché entre-temps.
+
+⛔ **L'année fait partie du numéro, la séquence ne la connaît pas.** Une séquence
+Postgres nue continue de compter au 1er janvier : elle produirait `NOVAI-CD-2026-012`
+en 2027. Le numéro se compose donc de l'année courante **et** d'un compteur remis à 1
+à chaque changement d'année, l'unicité étant garantie par une contrainte sur `number`.
+Un test doit couvrir le passage d'année, sinon le défaut ne se verra que le 1er janvier.
 
 ⛔ **Ordre d'écriture non négociable : numéroter et enregistrer AVANT d'envoyer.**
 `sent_at` ne se remplit que si Resend accepte (lire `{ error }`, l'API ne lève pas sur
@@ -153,6 +194,14 @@ Réutilise `commissionRequestSubject` et `commissionRequestBody`. Deux retouches
   pas ce qui a été encaissé, et écrire le contraire serait faux.
 - `payUrl` pointe vers la page facture, plus vers l'URL Stripe directe.
 
+### 5bis. Webhook — à modifier, il n'est pas complet aujourd'hui
+
+`api/car-rental/commission/webhook` n'écrit que sur `car_requests`
+(`commission_paid_at`, `commission_payment_intent_id`). Il doit désormais écrire aussi
+`paid_at` sur `car_commission_invoices`, sinon la page facture continuera d'afficher
+« due » sur une facture réglée. Ce n'est pas un détail de test : c'est une modification
+de fichier existant, à porter explicitement dans le plan.
+
 ### 6. Avoir
 
 Action dans `/admin/car-rental` : « la location n'a pas eu lieu » → avoir numéroté dans
@@ -174,13 +223,32 @@ pour justifier du code.
 ## Tests (TDD)
 
 - **Sélection** : jour J · en retard · avant `COMMISSION_INVOICING_START` · déjà facturée ·
-  payée en ligne · sans partenaire · sans `quoted_price` · commission sous 0,50 €
+  payée en ligne · sans partenaire · sans `quoted_price` · commission sous 0,50 € ·
+  **`outcome='lost'` déjà posé, la ligne ne doit PAS être reprise**
+- **Interrupteur** : `CAR_COMMISSION_ENABLED` absent, `"true"` ou `"1"` → le cron ne fait
+  **aucune écriture**, y compris aucun `outcome`. Test central, il verrouille le défaut 2bis
+- **Passage d'année** : dernier numéro de N, premier numéro de N+1, le compteur repart à 1
+- **Reprise** : facture en table avec `sent_at IS NULL` → le cron réutilise et renvoie,
+  il ne crée pas de seconde facture et ne lève pas sur `request_id UNIQUE`
 - **Numérotation** : deux appels concurrents rendent deux numéros distincts, aucun trou réutilisé
 - **Idempotence** : deux exécutions du cron le même jour produisent une seule facture
 - **Ordre d'écriture** : Resend échoue → la facture existe, `sent_at` est NULL, elle est renvoyable
 - **Avoir** : montant, numéro dans la même série, état de la demande
 - **Webhook** : `commission_paid_at` sur la demande et `paid_at` sur la facture
 - **Armement** : `CAR_COMMISSION_ENABLED` absent ou `"true"` → le cron n'écrit rien
+
+## À trancher au déploiement, pas au codage
+
+⚠️ **`car_requests id=39` part le 07/08** (Luxtrans, 200 €, commission 20 €) et figure en
+mémoire comme « +20 € Hersonissos à facturer après le 14/08 », c'est-à-dire à la main et
+après la fin de location. **Si le cron est armé avant le 07/08, il la facturera tout seul
+le 07.** Il faut alors renoncer à la facture manuelle, sinon Luxtrans reçoit deux fois la
+même commission. Choisir explicitement : armer après le 07/08, ou armer avant et annuler
+la facture manuelle prévue.
+
+⚠️ **Fuseau.** Le cron est à **05:00 UTC**, soit 08:00 à Athènes : même jour civil des deux
+côtés, `CURRENT_DATE` est donc sans ambiguïté. Déplacer ce cron en soirée UTC casserait
+cette propriété et facturerait un jour trop tôt côté grec.
 
 ## Hors périmètre
 
