@@ -15,22 +15,16 @@ import {
   resendCommissionInvoice,
   expireCommissionSession,
 } from "@/lib/car-invoice-credit";
-import { markInvoicePaid, markInvoiceUnpaid } from "@/lib/car-invoice-server";
+import { markInvoicePaid, markInvoiceUnpaid, assertWritten } from "@/lib/car-invoice-server";
 import { startPartnerOnboarding, refreshPartnerKyc } from "@/lib/car-connect-server";
 import { refreshPartnerRating } from "@/lib/google-rating-server";
+import { PARTNER_IDENTITY_COLS } from "@/lib/car-invoice";
+import {
+  buildIdentityPatch, todayAthens, IDENTITY_TEXT_FIELDS, type IdentityTextField,
+} from "@/lib/car-partner-identity";
+import { commissionOutcomeMessage, missingIdentityLabels } from "@/lib/car-commission-catchup";
 
 const PATH = "/admin/car-rental";
-
-/** Traduction lisible des champs rendus par `partnerBillingIdentity` (car-invoice.ts),
- *  pour l'écran quand la facturation est bloquée par une fiche loueur incomplète. */
-const BILLING_FIELD_LABELS: Record<string, string> = {
-  legal_name: "raison sociale",
-  address_line: "adresse",
-  postal_code: "code postal",
-  city: "ville",
-  country: "pays",
-  vat_id: "numéro de TVA intracommunautaire",
-};
 
 async function guard() {
   if (!(await isCarAdmin())) throw new Error("Forbidden");
@@ -92,7 +86,7 @@ export async function setOutcome(id: number, formData: FormData) {
       // aucune facture n'est partie, au lieu de rester muet ou d'afficher une
       // panne — ce n'en est pas une, c'est un état normal tant que la fiche
       // partenaire n'a pas été complétée.
-      const missing = result.missing.map((f) => BILLING_FIELD_LABELS[f] ?? f).join(", ");
+      const missing = missingIdentityLabels(result.missing).join(", ");
       redirect(
         `${PATH}?error=${encodeURIComponent(
           `Location marquée louée, mais la facturation de la commission est bloquée : fiche loueur incomplète (${missing}). Complétez la fiche partenaire pour permettre l'émission de la facture.`,
@@ -139,6 +133,30 @@ export async function creditInvoiceAction(id: number, formData: FormData) {
       `${PATH}?error=${encodeURIComponent(`Avoir ${res.creditNumber} émis, mais le loueur n'a pas été prévenu par email : faites-le à la main`)}`,
     );
   }
+  revalidatePath(PATH);
+}
+
+/**
+ * Émet la facture d'une location restée en souffrance (bouton « Émettre la
+ * facture »).
+ *
+ * ⛔ Sans ce geste, le travail est perdu en silence : `setOutcome` bascule la
+ * demande en « rented » AVANT de facturer, et si la facturation refuse (fiche
+ * loueur incomplète, loueur sans email, refus Stripe), la ligne porte
+ * `outcome = 'rented'` sans facture. Le cron ne la reprendra JAMAIS, il ne
+ * filtre que sur `outcome IS NULL`. Compléter la fiche du loueur après coup ne
+ * déclenchait donc rien.
+ *
+ * Aucune garde n'est contournée : l'action rappelle `requestCommission`, qui
+ * repose son verrou, revérifie l'identité du loueur et l'armement. Elle ne fait
+ * que rendre lisible ce qu'il répond.
+ */
+export async function emitInvoiceAction(id: number) {
+  await guard();
+  const message = commissionOutcomeMessage(await requestCommission(id));
+  // Succès : aucun bandeau. La facture et son numéro apparaissent d'eux-mêmes
+  // sur la ligne, redire à l'écran ce qu'il montre déjà est du bruit.
+  if (message) redirect(`${PATH}?error=${encodeURIComponent(message)}`);
   revalidatePath(PATH);
 }
 
@@ -256,6 +274,49 @@ export async function updatePartner(id: number, formData: FormData) {
       : {}),
   }).eq("id", id);
   if (error) throw new Error(error.message);
+  revalidatePath(PATH);
+}
+
+/**
+ * Identité légale du loueur : raison sociale, adresse complète, numéro de TVA
+ * intracommunautaire (formulaire de la fiche partenaire).
+ *
+ * Ces colonnes existaient sans qu'aucun écran ne les écrive : dix loueurs
+ * actifs, un seul renseigné à la main en SQL. La garde `partnerBillingIdentity`
+ * refuse de facturer les neuf autres, et c'est ici qu'on les débloque.
+ *
+ * L'enregistrement PARTIEL est accepté volontairement : une fiche à moitié
+ * remplie est un état normal (on connaît l'adresse, on attend le numéro de
+ * TVA). C'est la garde, au moment de facturer, qui dit ce qui manque — pas le
+ * formulaire, qui refuserait alors d'enregistrer un travail déjà fait.
+ *
+ * ⛔ `vat_verified_at` n'est PAS écrit comme les autres : voir
+ * `resolveVatVerifiedAt`. La page facture imprime, si et seulement si cette
+ * colonne est remplie, « verified against the European Commission VIES database
+ * on <date> and returned as valid ».
+ */
+export async function updatePartnerIdentity(id: number, formData: FormData) {
+  await guard();
+  // Lecture AVANT écriture : sans l'état actuel, une attestation VIES réelle
+  // serait re-datée à chaque enregistrement du formulaire, et un changement de
+  // numéro de TVA garderait la vérification de l'ancien.
+  const { data: current } = await supabase.from("car_partners")
+    .select(PARTNER_IDENTITY_COLS).eq("id", id).maybeSingle();
+
+  const values: Partial<Record<IdentityTextField, string>> = {};
+  for (const field of IDENTITY_TEXT_FIELDS) values[field] = String(formData.get(field) ?? "").slice(0, 200);
+
+  const patch = buildIdentityPatch({
+    values,
+    vatVerified: formData.get("vatVerified") === "on",
+    current,
+    today: todayAthens(),
+  });
+
+  const { error } = await supabase.from("car_partners").update(patch).eq("id", id).select();
+  // Refusée en silence, la fiche s'afficherait complète alors que rien n'est
+  // écrit, et la facturation resterait bloquée sans que personne comprenne.
+  assertWritten("updatePartnerIdentity", id, error);
   revalidatePath(PATH);
 }
 

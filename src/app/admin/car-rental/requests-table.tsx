@@ -15,9 +15,10 @@ import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { canCancelRequest } from "@/lib/car-quotes";
 import { insuranceSummary, inclusionLabels } from "@/lib/car-inclusions";
 import { invoiceAdminState, type AdminInvoiceRow } from "@/lib/car-invoice";
+import { commissionCatchUp, missingIdentityLabels } from "@/lib/car-commission-catchup";
 import {
   setOutcome, setCommissionPaid, saveNote, cancelRequest,
-  creditInvoiceAction, resendInvoiceAction,
+  creditInvoiceAction, resendInvoiceAction, emitInvoiceAction,
 } from "./actions";
 
 const PAGE_SIZE = 50;
@@ -343,7 +344,24 @@ export function RequestsTable({
             { status: r.status, client_relanced_at: r.client_relanced_at ?? null, client_relance_count: r.client_relance_count ?? 0 },
             now,
           );
-          const inv = invoiceAdminState(invoicesByRequest.get(r.id));
+          const invoice = invoicesByRequest.get(r.id);
+          const inv = invoiceAdminState(invoice);
+          // Facture restée en souffrance : la location est « louée » et aucune
+          // facture n'existe. Le cron ne repassera jamais dessus (il ne prend
+          // que `outcome IS NULL`), ce bouton est le seul rattrapage.
+          const catchUp = commissionCatchUp(
+            {
+              id: r.id,
+              outcome: r.outcome ?? null,
+              commission_eur: r.commission_eur ?? null,
+              commission_paid_at: r.commission_paid_at ?? null,
+              commission_session_id: r.commission_session_id ?? null,
+              quoted_by_partner_id: r.quoted_by_partner_id,
+              commission_requested_at: r.commission_requested_at ?? null,
+            },
+            invoice,
+            winner,
+          );
           const expMs = offerExpiresAt(r.quoted_at, r.date_from);
           const startPassed = new Date(r.date_from + "T00:00:00").getTime() < now;
           return (
@@ -481,6 +499,37 @@ export function RequestsTable({
                     </div>
                   </details>
                 )}
+                {/* Émission d'une facture restée en souffrance. `setOutcome`
+                    bascule en « louée » AVANT de facturer : si la facturation a
+                    été refusée (fiche loueur incomplète, loueur sans email, refus
+                    Stripe), la demande porte `rented` sans facture et le cron ne
+                    la reprendra JAMAIS. Quand la fiche est encore incomplète on
+                    n'affiche PAS le bouton — il serait refusé, et un bouton qui
+                    ment est pire qu'une phrase qui explique : on donne le lien
+                    vers la fiche à compléter.
+                    Placé AVANT « Commission encaissée » : on émet une facture
+                    avant de l'encaisser, l'ordre inverse se lisait à l'envers
+                    (défaut trouvé sur la planche, invisible des tests). */}
+                {catchUp?.kind === "emit" ? (
+                  <form action={emitInvoiceAction.bind(null, r.id)}>
+                    <button className="rounded-full bg-sea px-3 py-1 text-sm font-bold text-white">
+                      Émettre la facture
+                    </button>
+                  </form>
+                ) : catchUp?.kind === "identity_incomplete" ? (
+                  <span className="text-sm text-terracotta">
+                    Facture non émise : fiche loueur incomplète ({missingIdentityLabels(catchUp.missing).join(", ")}).{" "}
+                    <a href={`/admin/car-rental?tab=partners&q=${encodeURIComponent(winner?.name ?? "")}`}
+                       className="font-bold text-sea underline">
+                      Compléter la fiche de {winner?.name}
+                    </a>
+                  </span>
+                ) : catchUp?.kind === "locked" ? (
+                  <span className="text-sm text-terracotta">
+                    Facture bloquée : le verrou de facturation est posé alors qu&apos;aucune facture n&apos;existe.
+                    Aucun clic ne débloque : il faut remettre <span className="font-data">commission_requested_at</span> à NULL en base.
+                  </span>
+                ) : null}
                 {r.outcome === "rented" ? (
                   <form action={setCommissionPaid.bind(null, r.id, !r.commission_paid_at)}>
                     <button className={`rounded-full px-3 py-1 text-sm font-bold ${r.commission_paid_at ? "border border-border bg-white" : "bg-sun text-night"}`}>

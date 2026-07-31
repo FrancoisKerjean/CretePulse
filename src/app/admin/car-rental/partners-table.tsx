@@ -8,12 +8,17 @@
 import { partnerStats, ZONE_IDS, type AdminPartner, type AdminRequest } from "@/lib/car-admin";
 import { partnerPerf, type MonitorInvite } from "@/lib/car-monitoring";
 import { formatRating } from "@/lib/google-rating";
+import { identityFormFields, identityStatus } from "@/lib/car-partner-identity";
 import {
   togglePartnerActive, updatePartner, openPartnerOnboarding, refreshPartnerConnect,
-  refreshPartnerRatingAction,
+  refreshPartnerRatingAction, updatePartnerIdentity,
 } from "./actions";
 
 const BASE = "/admin/car-rental";
+
+/** Vérificateur VIES de la Commission européenne : le seul contrôle qui donne
+ *  le droit d'imprimer la phrase de vérification sur la facture. */
+const VIES_URL = "https://ec.europa.eu/taxation_customs/vies/";
 
 function outreachBadge(status?: string | null) {
   if (!status) return null;
@@ -49,6 +54,29 @@ function ratingBadge(p: AdminPartner) {
     );
   }
   return null;
+}
+
+/**
+ * Facturable, ou pas. Ce badge existe pour répondre d'un coup d'œil à la seule
+ * question qui compte sur ce registre : lesquels de mes loueurs bloqueraient
+ * l'émission d'une facture de commission ?
+ *
+ * Réservé aux loueurs ACTIFS, comme l'alerte rouge de `declined` : un prospect
+ * jamais recruté n'a aucune raison d'avoir une identité légale renseignée, et
+ * teindre en rouge cinquante lignes de prospection noierait les vrais blocages.
+ */
+function billingBadge(p: AdminPartner) {
+  if (!p.active) return null;
+  const st = identityStatus(p);
+  return st.complete ? (
+    <span className="rounded-full border border-ok px-2 py-0.5 text-xs font-bold text-ok" title="Identité légale complète : une facture de commission peut être émise">
+      facturable
+    </span>
+  ) : (
+    <span className="rounded-full bg-terracotta px-2 py-0.5 text-xs font-bold text-white" title={`Aucune facture émissible : manque ${st.missingLabels.join(", ")}`}>
+      identité incomplète
+    </span>
+  );
 }
 
 export function PartnersTable({
@@ -128,6 +156,7 @@ export function PartnersTable({
           const st = statsById.get(p.id)!;
           const perf = partnerPerf(p.id, monitorByPartner);
           const declined = p.outreach_status === "declined";
+          const identity = identityStatus(p);
           return (
             <details key={p.id} className={`rounded-2xl border bg-white ${declined ? "border-terracotta" : "border-border"}`}>
               <summary className="flex cursor-pointer flex-wrap items-center gap-2 p-3 text-sm">
@@ -136,6 +165,7 @@ export function PartnersTable({
                   ? <span className="rounded-full bg-ok px-2 py-0.5 text-xs font-bold text-white">actif</span>
                   : <span className="rounded-full border border-border px-2 py-0.5 text-xs text-text-muted">inactif</span>}
                 {outreachBadge(p.outreach_status)}
+                {billingBadge(p)}
                 {ratingBadge(p)}
                 <span className="text-xs text-text-muted">
                   {p.zone_ids.length} zone(s) · {Math.round(p.commission * 10000) / 100} %
@@ -227,6 +257,74 @@ export function PartnersTable({
                   {perf.responseRate != null ? ` · réponse ${Math.round(perf.responseRate * 100)} %` : ""}
                   {perf.avgResponseHours != null ? ` · délai moy ${perf.avgResponseHours.toFixed(1)}h` : ""}
                 </div>
+
+                {/* Identité légale de facturation. La commission facturée à un
+                    loueur grec est une prestation intra-UE : sans le nom, l'adresse
+                    complète et le numéro de TVA du preneur, la facture est
+                    juridiquement fausse, et la garde refuse de l'émettre. Les
+                    colonnes existaient, rien ne les écrivait : ce formulaire est le
+                    seul chemin. Replié par défaut, il est long et ne se remplit
+                    qu'une fois par loueur. */}
+                <details className="mt-2 border-t border-border pt-2" open={p.active && !identity.complete}>
+                  <summary className="cursor-pointer text-xs text-text-muted">
+                    identité de facturation ·{" "}
+                    {identity.complete
+                      ? <span className="font-bold text-ok">complète</span>
+                      : <span className="font-bold text-terracotta">manque {identity.missingLabels.join(", ")}</span>}
+                  </summary>
+                  <form action={updatePartnerIdentity.bind(null, p.id)} className="mt-2">
+                    <div className="grid gap-2 sm:grid-cols-3">
+                      {identityFormFields().map((f) => (
+                        <label key={f.name} className="flex flex-col gap-0.5 text-xs text-text-muted">
+                          <span>
+                            {f.label}
+                            {f.required
+                              ? <span className="font-bold text-terracotta" title="Sans ce champ, aucune facture n'est émise"> *</span>
+                              : <span className="text-text-light"> (facultatif)</span>}
+                          </span>
+                          <input name={f.name} defaultValue={(p[f.name] as string | null) ?? ""} maxLength={200}
+                                 placeholder={f.placeholder} aria-label={f.label}
+                                 className="rounded-lg border border-border bg-white px-2 py-1 text-sm text-text" />
+                        </label>
+                      ))}
+                    </div>
+                    <p className="mt-1 text-xs text-text-muted">
+                      <span className="font-bold text-terracotta">*</span> mentions obligatoires d&apos;une facture
+                      intra-UE : sans elles, aucune facture de commission n&apos;est émise pour ce loueur.
+                      Enregistrement partiel accepté.
+                    </p>
+
+                    {/* ⛔ vat_verified_at n'est PAS un champ comme les autres : cocher
+                        cette case fait IMPRIMER sur la facture une phrase qui affirme
+                        qu'un contrôle VIES a eu lieu. La cocher sans avoir fait le
+                        contrôle fabrique un mensonge sur une pièce comptable. D'où le
+                        libellé au passé, le lien vers le vérificateur, et la citation
+                        exacte de la phrase qui s'imprimera. */}
+                    <div className="mt-2 rounded-xl border border-sun bg-sand/40 p-2">
+                      <label className="flex items-start gap-2 text-xs text-text">
+                        <input type="checkbox" name="vatVerified" defaultChecked={!!p.vat_verified_at} className="mt-0.5" />
+                        <span>
+                          <span className="font-bold">
+                            J&apos;ai vérifié ce numéro sur <a href={VIES_URL} target="_blank" rel="noreferrer" className="text-sea underline">VIES</a> et il est valide.
+                          </span>
+                          <br />
+                          La facture imprimera alors, mot pour mot : «&nbsp;verified against the European
+                          Commission VIES database on {p.vat_verified_at ?? "<date du jour>"} and returned as
+                          valid&nbsp;». Ne cochez que si le contrôle a réellement eu lieu.
+                          {p.vat_verified_at
+                            ? <> Vérification attestée le <span className="font-data font-bold">{p.vat_verified_at}</span> ; décocher la retire.</>
+                            : <> Cocher la datera du jour.</>}
+                          <br />
+                          Changer le numéro de TVA retire l&apos;attestation : le contrôle portait sur l&apos;ancien.
+                        </span>
+                      </label>
+                    </div>
+
+                    <button className="mt-2 rounded-full bg-sea px-3 py-1 text-sm font-bold text-white">
+                      Enregistrer l&apos;identité
+                    </button>
+                  </form>
+                </details>
 
                 <form action={updatePartner.bind(null, p.id)} className="mt-3 flex flex-wrap items-center gap-3 border-t border-border pt-3">
                   {ZONE_IDS.map((z) => (

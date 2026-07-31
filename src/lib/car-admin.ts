@@ -41,6 +41,9 @@ export interface AdminRequest {
   commission_paid_at?: string | null;
   /** Facture partie chez le loueur, pas encore reglee (migration 20260729). */
   commission_requested_at?: string | null;
+  /** Session Checkout ouverte par le loueur depuis sa page facture : elle nait
+   *  a son clic, donc une demande qui en porte une a forcement recu sa facture. */
+  commission_session_id?: string | null;
   admin_note?: string | null;
   client_relanced_at?: string | null;
   client_relance_count?: number;
@@ -76,6 +79,21 @@ export interface AdminPartner {
   google_rating_count?: number | null;
   google_maps_url?: string | null;
   google_rating_at?: string | null;
+  // Identite legale de facturation (migration 20260801_car_partners_legal_identity).
+  // Sans elle, aucune facture de commission conforme n est emise pour ce loueur :
+  // la garde est `partnerBillingIdentity` (car-invoice.ts), l ecran de saisie est
+  // le formulaire « identite de facturation » de la vue Partenaires. La forme est
+  // celle de `PartnerLegalRow`, volontairement structurelle : car-admin.ts reste
+  // node-safe et n importe rien de la couche facture.
+  legal_name?: string | null;
+  legal_form?: string | null;
+  address_line?: string | null;
+  postal_code?: string | null;
+  city?: string | null;
+  country?: string | null;
+  vat_id?: string | null;
+  /** Date de la verification VIES, quand elle a REELLEMENT eu lieu. */
+  vat_verified_at?: string | null;
 }
 
 export const OUTCOMES = ["rented", "lost"] as const;
