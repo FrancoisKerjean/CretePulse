@@ -82,6 +82,9 @@ Pour chaque ligne retenue, le cron reproduit ce que fait `setOutcome` :
   du jour, l'édition ultérieure du taux ne réécrit pas l'historique facturable
 - `outcome = 'rented'`, `outcome_at = now()`
 
+puis appelle `requestCommission(id)`. L'ordre compte : `shouldRequestCommission` exige
+`outcome === 'rented'`, donc la bascule précède l'appel, dans la même passe.
+
 ⚠️ Marquer « louée » le jour du départ affirme quelque chose qui n'est pas encore
 vérifié. C'est assumé : c'est la contrepartie de la décision « facture au J1, avoir
 si ça n'a pas roulé », et `shouldRequestCommission` exige `outcome === 'rented'`.
@@ -118,8 +121,29 @@ et le bouton de paiement.
 
 ⛔ **La session Stripe Checkout se crée au clic sur cette page, jamais dans le cron.**
 Une session expire en 24 h : celle créée à 5 h du matin serait morte avant que le loueur
-ouvre son courrier. C'est le seul écart avec le flux actuel de `requestCommission`, qui
-crée la session dans la foulée parce qu'il est déclenché par un clic humain synchrone.
+ouvre son courrier.
+
+### 4bis. Conséquence sur `requestCommission` — à ne pas manquer
+
+La règle ci-dessus **contredit le comportement actuel** de `requestCommission`, qui pose
+le verrou, crée la session Stripe et envoie l'email d'un seul tenant. C'est cohérent
+tant que le déclencheur est un clic humain synchrone ; ça ne l'est plus avec un cron
+nocturne.
+
+`requestCommission` est donc **scindé en deux**, sans changer ses gardes :
+
+- `requestCommission()` — verrou, snapshot, **création de la facture**, email vers la
+  page facture. Ne parle plus à Stripe.
+- `ensureCommissionCheckout(invoiceToken)` — appelée par la page au clic, crée la session
+  et écrit `commission_session_id` / `commission_payment_intent_id`. Réutilise une
+  session existante si elle n'a pas expiré.
+
+⛔ **Les deux chemins convergent** : le clic « louée » du back-office et le cron appellent
+la même fonction et produisent la même facture. Il ne doit pas exister deux façons de
+facturer un loueur.
+
+⚠️ L'unicité `car_requests_commission_session_idx` posée le 29/07 reste valide : elle
+porte sur `commission_session_id`, désormais écrit par `ensureCommissionCheckout`.
 
 ### 5. Email
 
@@ -165,4 +189,8 @@ pour justifier du code.
   le gabarit HTML est déjà écrit.
 - Relance des factures impayées.
 - Remboursement Stripe automatique sur avoir.
+- **Régularisation d'écart entre le devis et le montant réellement encaissé.** Si un
+  loueur signale avoir facturé autre chose que le devis, l'ajustement se fait à la main
+  (avoir puis nouvelle facture). Aucune mécanique automatique de rattrapage : ce cas
+  ne s'est jamais présenté et l'automatiser d'avance serait de la spéculation.
 - Facturation des verticales activités et van, qui ont leurs propres modèles.
