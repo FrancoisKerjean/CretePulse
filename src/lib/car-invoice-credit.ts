@@ -9,6 +9,7 @@ import {
   creditInvoice,
   markInvoiceSent,
   rotateInvoiceToken,
+  assertWritten,
 } from "./car-invoice-server";
 import { sendCreditNote, sendPartnerCommissionRequest } from "./email";
 import { siteBase } from "./car-commission";
@@ -71,18 +72,34 @@ export async function creditCommissionInvoice(
 
   const creditNumber = await creditInvoice(invoice.id, invoice.number, reason);
 
-  await supabaseAdmin
-    .from("car_requests")
-    .update({
-      outcome: "lost",
-      outcome_at: new Date().toISOString(),
-      // une demande reperdue n a plus de commission encaissable
-      commission_paid_at: null,
-      // le lien de paiement est mort : on ne le reproposera pas au clic suivant
-      commission_session_id: null,
-    })
-    .eq("id", requestId)
-    .select();
+  // A ce point, l avoir EST deja en base : creditInvoice a leve si la base
+  // l avait refuse. Un refus ICI ne peut plus etre repare en rejouant cette
+  // fonction : le garde `credited_at` ci-dessus bloque tout second passage sur
+  // `already_credited`. Lever ferait donc perdre le seul geste qui reste
+  // possible, prevenir le loueur, sans rien reparer en echange. On journalise
+  // fort pour une correction manuelle de `car_requests`, et on continue :
+  // l ecran restera « louee » avec une commission a tort encaissable jusqu a
+  // cette correction, mais ce n est plus invisible.
+  try {
+    const { error: outcomeError } = await supabaseAdmin
+      .from("car_requests")
+      .update({
+        outcome: "lost",
+        outcome_at: new Date().toISOString(),
+        // une demande reperdue n a plus de commission encaissable
+        commission_paid_at: null,
+        // le lien de paiement est mort : on ne le reproposera pas au clic suivant
+        commission_session_id: null,
+      })
+      .eq("id", requestId)
+      .select();
+    assertWritten("creditCommissionInvoice:outcome", requestId, outcomeError);
+  } catch (err) {
+    console.error(
+      "[car/commission] avoir emis mais etat de la demande non mis a jour : intervention manuelle requise sur car_requests",
+      { requestId, invoice: invoice.number, creditNumber, err },
+    );
+  }
 
   const { data: partner } = await supabaseAdmin
     .from("car_partners")

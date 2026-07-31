@@ -339,6 +339,37 @@ describe("GET /api/cron/car-commission-invoice", () => {
     expect(requestCommission).toHaveBeenNthCalledWith(2, 43);
   });
 
+  it("bascule outcome=rented refusee par la base : la ligne est journalisee et sautee, la boucle continue", async () => {
+    // Auto-guerissant au passage suivant (outcome reste NULL, la ligne ressort
+    // du meme filtre demain), mais appeler quand meme requestCommission
+    // produirait un motif opaque `commission_failed:skipped` qui fait chercher
+    // au mauvais endroit : on croirait a une regle metier, pas a un refus base.
+    process.env.CAR_COMMISSION_ENABLED = "on";
+    const { updates } = wiring({ rows: [ELIGIBLE, { ...ELIGIBLE, id: 43 }] });
+    // La PREMIERE ligne echoue sur l update outcome, la seconde doit quand meme
+    // etre traitee normalement : mockImplementationOnce prend le pas sur le
+    // mockImplementation par defaut pose par wiring(), pour ce seul appel.
+    update.mockImplementationOnce((patch: Record<string, unknown>) => {
+      updates.push(patch);
+      return { eq: () => ({ select: async () => ({ data: null, error: { message: "permission denied" } }) }) };
+    });
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const { GET } = await import("./route");
+    const res = await GET(authed());
+
+    expect(await res.json()).toMatchObject({
+      invoiced: 1,
+      skipped: [{ id: 42, reason: "outcome_update_failed" }],
+    });
+    // requestCommission n a jamais lu outcome === "rented" pour la ligne 42 :
+    // l appeler aurait ete pour rien, shouldRequestCommission rend "skipped".
+    expect(requestCommission).toHaveBeenCalledTimes(1);
+    expect(requestCommission).toHaveBeenCalledWith(43);
+    expect(JSON.stringify(errSpy.mock.calls)).toContain("permission denied");
+    errSpy.mockRestore();
+  });
+
   it("ne facture rien quand la requete ne remonte aucune ligne", async () => {
     process.env.CAR_COMMISSION_ENABLED = "on";
     wiring({ rows: [] });

@@ -15,7 +15,12 @@ import {
   siteBase,
   type CommissionCandidate,
 } from "./car-commission";
-import { createInvoiceForRequest, markInvoiceSent, invoiceByToken } from "./car-invoice-server";
+import {
+  createInvoiceForRequest,
+  markInvoiceSent,
+  invoiceByToken,
+  assertWritten,
+} from "./car-invoice-server";
 import { classifyStripeFailure, stripeLogFields } from "./stripe-errors";
 
 /**
@@ -83,11 +88,28 @@ export async function requestCommission(requestId: number): Promise<CommissionOu
     .maybeSingle();
 
   const releaseLock = async () => {
-    await supabaseAdmin
-      .from("car_requests")
-      .update({ commission_requested_at: null })
-      .eq("id", requestId)
-      .select();
+    // Appelee UNIQUEMENT depuis des chemins d echec deja journalises. Lever ici
+    // remplacerait le motif reel (le pourquoi de l echec original, le plus
+    // informatif) par un simple « releaseLock refuse », et ferait planter
+    // l appelant : le cron appelle requestCommission ligne par ligne SANS
+    // try/catch, une exception ici ferait tomber toutes les lignes suivantes.
+    // Le cout d un verrou non libere est visible et rattrapable a la main
+    // (`already_requested` bloquant jusqu a reset manuel) : moins grave qu un
+    // diagnostic ecrase ou qu une boucle interrompue. On journalise a part et
+    // on ne leve pas.
+    try {
+      const { error } = await supabaseAdmin
+        .from("car_requests")
+        .update({ commission_requested_at: null })
+        .eq("id", requestId)
+        .select();
+      assertWritten("releaseLock", requestId, error);
+    } catch (err) {
+      console.error(
+        "[car/commission] verrou non libere : la demande restera bloquee en already_requested jusqu a intervention manuelle",
+        { requestId, err },
+      );
+    }
   };
 
   if (!partner?.email) {
@@ -239,11 +261,34 @@ export async function ensureCommissionCheckout(
     return { error: failure.code };
   }
 
-  await supabaseAdmin
+  const { error: sessionError } = await supabaseAdmin
     .from("car_requests")
     .update({ commission_session_id: session.id })
     .eq("id", invoice.request_id)
     .select();
+
+  if (sessionError) {
+    // La session Stripe EXISTE deja et vit 24 h : c est fait, irreversible sans
+    // appeler Stripe. Sans son id en base, expireCommissionSession (appelee a
+    // l emission d un avoir et au bouton « Perdu ») ne peut expirer QUE la
+    // session enregistree : ce lien resterait vivant et non trace, rouvrant
+    // exactement le defaut qu on vient de fermer. On ne peut donc pas rendre
+    // cette url au loueur : on tente de tuer la session nous-memes avant de
+    // rendre une erreur.
+    console.error(
+      "[car/commission] session Stripe creee mais non enregistree, expiration de secours",
+      { invoice: invoice.number, sessionId: session.id, error: sessionError.message },
+    );
+    try {
+      await stripeClient().checkout.sessions.expire(session.id);
+    } catch (err) {
+      console.error(
+        "[car/commission] expiration de secours refusee : session Stripe potentiellement vivante et non tracee",
+        { invoice: invoice.number, sessionId: session.id, err },
+      );
+    }
+    return { error: "session_not_recorded" };
+  }
 
   return session.url ? { url: session.url } : { error: "session_without_url" };
 }

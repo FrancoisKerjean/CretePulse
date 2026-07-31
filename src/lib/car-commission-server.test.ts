@@ -2,9 +2,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const sessionsCreate = vi.fn(async () => ({ id: "cs_live_1", url: "https://checkout/commission" }));
 const sessionsRetrieve = vi.fn(async () => ({ status: "open", url: "https://checkout.stripe.com/old" }));
+const sessionsExpire = vi.fn(async () => ({ id: "cs_live_1", status: "expired" }));
 vi.mock("./stays/stripe-helpers", () => ({
   stripeClient: () => ({
-    checkout: { sessions: { create: sessionsCreate, retrieve: sessionsRetrieve } },
+    checkout: { sessions: { create: sessionsCreate, retrieve: sessionsRetrieve, expire: sessionsExpire } },
   }),
 }));
 // Resend accepte par defaut : le refus a son propre test, et il doit rester
@@ -40,6 +41,12 @@ vi.mock("./car-invoice-server", () => ({
   createInvoiceForRequest: (...a: unknown[]) => createInvoiceForRequest(...a),
   markInvoiceSent: (...a: unknown[]) => markInvoiceSent(...a),
   invoiceByToken: (...a: unknown[]) => invoiceByToken(...a),
+  // Meme contrat que le vrai assertWritten : zero ligne touchee est un succes,
+  // seule une erreur PostgREST leve.
+  assertWritten: (op: string, id: number, error: { message: string } | null) => {
+    if (!error) return;
+    throw new Error(`${op}(${id}) refuse par la base: ${error.message}`);
+  },
 }));
 
 const { from } = vi.hoisted(() => ({ from: vi.fn() }));
@@ -55,7 +62,15 @@ const REQUEST = {
 const PARTNER = { id: 111, name: "Zorbas Rent a Car", email: "info@zorbas.gr" };
 
 /** Verrou pris : l'update conditionnel renvoie la ligne. */
-function wiring(opts: { lockRows?: unknown[]; request?: unknown; partner?: unknown } = {}) {
+function wiring(
+  opts: {
+    lockRows?: unknown[];
+    request?: unknown;
+    partner?: unknown;
+    /** Injecte une erreur PostgREST sur l update dont le patch matche. */
+    updateError?: (patch: Record<string, unknown>) => { message: string } | null;
+  } = {},
+) {
   const updates: Array<Record<string, unknown>> = [];
   from.mockImplementation((table: string) => {
     if (table === "car_requests") {
@@ -63,10 +78,13 @@ function wiring(opts: { lockRows?: unknown[]; request?: unknown; partner?: unkno
         select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: opts.request ?? REQUEST }) }) }),
         update: (patch: Record<string, unknown>) => {
           updates.push(patch);
+          const error = opts.updateError?.(patch) ?? null;
           return {
             eq: () => ({
-              is: () => ({ select: async () => ({ data: opts.lockRows ?? [{ id: 42 }], error: null }) }),
-              select: async () => ({ data: [{ id: 42 }], error: null }),
+              is: () => ({
+                select: async () => ({ data: error ? null : (opts.lockRows ?? [{ id: 42 }]), error }),
+              }),
+              select: async () => ({ data: error ? null : [{ id: 42 }], error }),
             }),
           };
         },
@@ -216,6 +234,38 @@ describe("requestCommission", () => {
     errSpy.mockRestore();
   });
 
+  it("verrou non libere : journalise sans remplacer l erreur d origine, la fonction ne leve pas", async () => {
+    // releaseLock() est appelee depuis un chemin d echec DEJA journalise : lever
+    // ici ecraserait le motif reel (numerotation impossible) par « releaseLock
+    // refuse », et ferait en plus planter l appelant. Le cron appelle
+    // requestCommission ligne par ligne SANS try/catch : une exception ici
+    // ferait tomber toutes les lignes suivantes.
+    const updates = wiring({
+      updateError: (patch) =>
+        patch.commission_requested_at === null ? { message: "permission denied" } : null,
+    });
+    createInvoiceForRequest.mockRejectedValueOnce(new Error("numerotation impossible") as never);
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await requestCommission(42);
+
+    expect(res).toMatchObject({ status: "failed", code: "invoice_creation_failed" });
+    expect(updates.some((u) => u.commission_requested_at === null)).toBe(true);
+    // Le motif d origine reste present et lisible, pas remplace.
+    const originalLog = errSpy.mock.calls.find(
+      (call) => (call[1] as { err?: Error })?.err?.message === "numerotation impossible",
+    );
+    expect(originalLog).toBeTruthy();
+    // Le refus du verrou est journalise a part, distinctement (l Error n est
+    // pas serialisable par JSON.stringify : on lit l objet reel).
+    const lockLog = errSpy.mock.calls.find(
+      (call) => (call[1] as { err?: Error })?.err?.message?.includes("permission denied"),
+    );
+    expect(lockLog).toBeTruthy();
+    expect(lockLog?.[0]).toContain("verrou non libere");
+    errSpy.mockRestore();
+  });
+
   it("l enregistrement de l envoi refuse ne passe pas pour un succes", async () => {
     // markInvoiceSent leve maintenant quand PostgREST refuse l ecriture. L email
     // EST parti, mais sent_at reste vide : la facture s affichera « jamais
@@ -311,6 +361,26 @@ describe("ensureCommissionCheckout", () => {
     const res = await ensureCommissionCheckout("tok");
     expect(res).toEqual({ url: "https://checkout/commission" });
     expect(sessionsCreate).toHaveBeenCalledOnce();
+  });
+
+  it("session Stripe creee mais non enregistree : elle est expiree, l url n est jamais rendue", async () => {
+    // La session Stripe existe deja et vit 24 h. Sans son id en base, ni un
+    // avoir ni le bouton « Perdu » ne peuvent plus l expirer : elle
+    // continuerait d encaisser sur une location qu on croit close. On ne peut
+    // pas rendre l url dans cet etat : ce serait rouvrir exactement le defaut
+    // qu expireCommissionSession existe pour fermer.
+    const updates = wiring({
+      updateError: (patch) => ("commission_session_id" in patch ? { message: "permission denied" } : null),
+    });
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await ensureCommissionCheckout("tok");
+
+    expect(res).toEqual({ error: "session_not_recorded" });
+    expect(sessionsExpire).toHaveBeenCalledWith("cs_live_1");
+    expect(updates.some((u) => u.commission_session_id === "cs_live_1")).toBe(true);
+    expect(JSON.stringify(errSpy.mock.calls)).toContain("permission denied");
+    errSpy.mockRestore();
   });
 
   it("Stripe refuse au clic : le code de panne remonte, rien n est note", async () => {

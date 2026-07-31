@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
     if (!amounts) { skipped.push({ id: row.id, reason: "below_minimum" }); continue; }
 
     // Bascule AVANT l appel : shouldRequestCommission exige outcome === "rented".
-    await supabase
+    const { error: outcomeError } = await supabase
       .from("car_requests")
       .update({
         outcome: "rented",
@@ -95,6 +95,22 @@ export async function GET(request: NextRequest) {
       })
       .eq("id", row.id)
       .select();
+
+    if (outcomeError) {
+      // Auto-guerissant au passage suivant : `outcome` reste NULL, la ligne
+      // ressort du meme filtre demain (voir la note plus haut). Mais appeler
+      // quand meme requestCommission ici serait pour rien (shouldRequestCommission
+      // exige outcome === "rented", donc "skipped"), et journaliserait un motif
+      // opaque `commission_failed:skipped` qui fait chercher une regle metier
+      // la ou il y a un refus base. Une ligne en echec ne doit pas faire tomber
+      // les suivantes : on journalise le vrai motif et on continue la boucle.
+      console.error("[car/commission-cron] bascule outcome=rented refusee par la base", {
+        requestId: row.id,
+        error: outcomeError.message,
+      });
+      skipped.push({ id: row.id, reason: "outcome_update_failed" });
+      continue;
+    }
 
     const res = await requestCommission(row.id);
     if (res.status === "requested") invoiced += 1;

@@ -106,7 +106,7 @@ export async function createInvoiceForRequest(
  * ⛔ Zero ligne touchee n est PAS une erreur : une demande anterieure au systeme
  * de facturation n a pas de facture, `error` reste nul et l appel aboutit.
  */
-function assertWritten(op: string, id: number, error: { message: string } | null): void {
+export function assertWritten(op: string, id: number, error: { message: string } | null): void {
   if (!error) return;
   throw new Error(`${op}(${id}) refuse par la base: ${error.message}`);
 }

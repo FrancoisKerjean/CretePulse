@@ -40,6 +40,12 @@ vi.mock("./car-invoice-server", () => ({
   creditInvoice: (...a: unknown[]) => creditInvoice(...(a as [number, string, string])),
   markInvoiceSent: (...a: unknown[]) => markInvoiceSent(...a),
   rotateInvoiceToken: (...a: unknown[]) => rotateInvoiceToken(...a),
+  // Meme contrat que le vrai assertWritten : zero ligne touchee est un succes,
+  // seule une erreur PostgREST leve.
+  assertWritten: (op: string, id: number, error: { message: string } | null) => {
+    if (!error) return;
+    throw new Error(`${op}(${id}) refuse par la base: ${error.message}`);
+  },
 }));
 
 const { from } = vi.hoisted(() => ({ from: vi.fn() }));
@@ -67,7 +73,14 @@ interface Wiring {
  * FORME de la chaine fait partie de ce que le test verifie. Une lecture passe
  * par `select().eq().maybeSingle()`, une ecriture par `update().eq().select()`.
  */
-function wiring(opts: { partner?: unknown; request?: unknown } = {}): Wiring {
+function wiring(
+  opts: {
+    partner?: unknown;
+    request?: unknown;
+    /** Injecte une erreur PostgREST sur l update `car_requests` qui repasse la demande en perdue. */
+    outcomeUpdateError?: { message: string } | null;
+  } = {},
+): Wiring {
   const w: Wiring = { tables: [], filters: [], updates: [] };
   from.mockImplementation((table: string) => {
     w.tables.push(table);
@@ -91,7 +104,8 @@ function wiring(opts: { partner?: unknown; request?: unknown } = {}): Wiring {
         return {
           eq: (col: string, val: unknown) => {
             w.filters.push([col, val]);
-            return { select: async () => ({ data: [{ id: 42 }], error: null }) };
+            const error = "outcome" in patch ? (opts.outcomeUpdateError ?? null) : null;
+            return { select: async () => ({ data: error ? null : [{ id: 42 }], error }) };
           },
         };
       },
@@ -234,6 +248,32 @@ describe("creditCommissionInvoice", () => {
     );
     expect(sendCreditNote).not.toHaveBeenCalled();
     expect(w.updates.find((u) => "outcome" in u)).toBeUndefined();
+  });
+
+  it("etat de la demande non mis a jour : l avoir existe deja, le loueur est quand meme prevenu", async () => {
+    // creditInvoice a deja reussi : la piece comptable est irreversible et deja
+    // en base a ce point. Rejouer creditCommissionInvoice est bloque par le
+    // garde `already_credited` (test ci-dessus), donc une exception ICI ne
+    // reparerait rien et empecherait en plus le seul geste qui reste possible :
+    // prevenir le loueur. On journalise fort pour une correction manuelle de
+    // car_requests, et on continue.
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const w = wiring({ outcomeUpdateError: { message: "permission denied" } });
+
+    const res = await creditCommissionInvoice(42, "location annulee");
+
+    expect(res).toEqual({ creditNumber: "CD-2026-0007-A", notified: true });
+    expect(creditInvoice).toHaveBeenCalledOnce();
+    expect(sendCreditNote).toHaveBeenCalledOnce();
+    expect(w.updates.find((u) => "outcome" in u)).toMatchObject({ outcome: "lost" });
+    // L Error n est pas serialisable par JSON.stringify (pas de proprietes
+    // enumerables) : on verifie l objet reellement journalise, pas sa forme JSON.
+    const logged = err.mock.calls.find(
+      (call) => (call[1] as { err?: Error })?.err?.message?.includes("permission denied"),
+    );
+    expect(logged).toBeTruthy();
+    expect(JSON.stringify(err.mock.calls)).toContain("CD-2026-0007-A");
+    err.mockRestore();
   });
 
   it("Stripe refuse l expiration : l avoir est emis quand meme", async () => {
