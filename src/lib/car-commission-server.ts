@@ -10,8 +10,10 @@ import { sendPartnerCommissionRequest } from "./email";
 import {
   shouldRequestCommission,
   buildCommissionCheckoutParams,
+  siteBase,
   type CommissionCandidate,
 } from "./car-commission";
+import { createInvoiceForRequest, markInvoiceSent, invoiceByToken } from "./car-invoice-server";
 import { classifyStripeFailure, stripeLogFields } from "./stripe-errors";
 
 /**
@@ -29,7 +31,7 @@ function commissionEnabled(): boolean {
 }
 
 export type CommissionOutcome =
-  | { status: "requested"; sessionId: string; url: string | null }
+  | { status: "requested"; invoiceNumber: string }
   /** Interrupteur eteint : rien n'a ete tente, rien n'a ete ecrit. */
   | { status: "disabled" }
   /** Rien a facturer : pas louee, deja reglee, montant sous le minimum Stripe. */
@@ -104,35 +106,124 @@ export async function requestCommission(requestId: number): Promise<CommissionOu
     dateTo: row.date_to,
   };
 
+  const amounts = {
+    base: Number(row.final_amount_eur) || 0,
+    rate: 0,
+    amount: row.commission_eur as number,
+  };
+  amounts.rate = amounts.base > 0 ? amounts.amount / amounts.base : 0;
+
+  let created;
+  try {
+    created = await createInvoiceForRequest({
+      requestId: row.id,
+      partnerId: row.quoted_by_partner_id as number,
+      base: amounts.base,
+      rate: amounts.rate,
+      amount: amounts.amount,
+    });
+  } catch (err) {
+    console.error("[car/commission] facture impossible", { requestId, err });
+    await releaseLock();
+    return { status: "failed", code: "invoice_creation_failed" };
+  }
+
+  // Une facture reutilisee n a plus son token en clair : elle a deja ete envoyee
+  // une fois, le renvoi se fait depuis le back-office.
+  if (created.reused && created.invoice.sent_at) {
+    return { status: "already_requested" };
+  }
+  if (!created.token) {
+    console.error("[car/commission] facture sans token exploitable", { requestId });
+    return { status: "failed", code: "invoice_without_token" };
+  }
+
+  const invoiceUrl = `${siteBase()}/en/invoice/${created.token}`;
+  const ok = await sendPartnerCommissionRequest(partner.email, {
+    ...mailBase,
+    payUrl: invoiceUrl,
+    invoiceNumber: created.invoice.number,
+  });
+
+  if (!ok) {
+    // La facture EXISTE et porte son numero : on ne la detruit pas, on la laisse
+    // avec sent_at NULL, renvoyable depuis le back-office. Une facture numerotee
+    // non envoyee se rattrape ; une facture envoyee non enregistree est perdue.
+    console.error("[car/commission] facture creee mais email refuse", {
+      requestId,
+      invoice: created.invoice.number,
+    });
+    return { status: "failed", code: "invoice_mail_refused" };
+  }
+
+  await markInvoiceSent(created.invoice.id);
+  return { status: "requested", invoiceNumber: created.invoice.number };
+}
+
+/**
+ * Cree la session Stripe au moment ou le loueur ouvre sa facture et clique.
+ * Appelee par la route de paiement, jamais par le cron : une session expire en
+ * 24 h. Reutilise la session deja enregistree si elle est encore ouverte.
+ */
+export async function ensureCommissionCheckout(
+  token: string,
+): Promise<{ url: string } | { error: string }> {
+  const invoice = await invoiceByToken(token);
+  if (!invoice) return { error: "not_found" };
+  if (invoice.paid_at) return { error: "already_paid" };
+  if (invoice.credited_at) return { error: "credited" };
+
+  const { data: req } = await supabaseAdmin
+    .from("car_requests")
+    .select("id, date_from, date_to, commission_session_id")
+    .eq("id", invoice.request_id)
+    .maybeSingle();
+  if (!req) return { error: "not_found" };
+
+  const { data: partner } = await supabaseAdmin
+    .from("car_partners")
+    .select("name, email")
+    .eq("id", invoice.partner_id)
+    .maybeSingle();
+  if (!partner?.email) return { error: "partner_without_email" };
+
+  if (req.commission_session_id) {
+    try {
+      const existing = await stripeClient().checkout.sessions.retrieve(req.commission_session_id);
+      if (existing.status === "open" && existing.url) return { url: existing.url };
+    } catch {
+      // Session introuvable ou expiree : on en cree une neuve juste apres.
+    }
+  }
+
   let session: { id: string; url: string | null };
   try {
     session = await stripeClient().checkout.sessions.create(
-      buildCommissionCheckoutParams({ ...mailBase, partnerEmail: partner.email }),
+      buildCommissionCheckoutParams({
+        requestId: invoice.request_id,
+        partnerName: partner.name ?? "",
+        partnerEmail: partner.email,
+        commissionEur: Number(invoice.amount_eur),
+        finalAmountEur: Number(invoice.base_amount_eur),
+        dateFrom: req.date_from,
+        dateTo: req.date_to,
+      }),
     );
   } catch (err) {
     const failure = classifyStripeFailure(err);
-    console.error("[car/commission] session de commission refusee", {
-      requestId,
-      partnerId: partner.id,
+    console.error("[car/commission] session refusee au clic", {
+      invoice: invoice.number,
       failure: failure.code,
       ...stripeLogFields(err),
     });
-    // Le verrou est relache : sans cela la location resterait facturable a vie
-    // sans que personne ne puisse relancer.
-    await releaseLock();
-    return { status: "failed", code: failure.code };
+    return { error: failure.code };
   }
 
   await supabaseAdmin
     .from("car_requests")
     .update({ commission_session_id: session.id })
-    .eq("id", requestId)
+    .eq("id", invoice.request_id)
     .select();
 
-  await sendPartnerCommissionRequest(partner.email, {
-    ...mailBase,
-    payUrl: session.url ?? "",
-  });
-
-  return { status: "requested", sessionId: session.id, url: session.url };
+  return session.url ? { url: session.url } : { error: "session_without_url" };
 }

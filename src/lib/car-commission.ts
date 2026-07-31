@@ -90,7 +90,7 @@ export interface CommissionCheckoutInput {
   dateTo: string;
 }
 
-const siteBase = (): string =>
+export const siteBase = (): string =>
   process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 export function buildCommissionCheckoutParams(
