@@ -4,6 +4,7 @@ import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { carPickupLabel, carTypeLabelWithExamples } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { hashToken } from "@/lib/car-quote";
+import { rentalDays } from "@/lib/car-pricing";
 import { childSeatLabels } from "@/lib/car-child-seats";
 import { QuoteForm } from "./QuoteForm";
 
@@ -56,6 +57,10 @@ export default async function CarQuotePage({ params }: { params: Promise<{ local
 
   const ct = CAR_TYPES_DATA.find((c) => c.id === row.car_type);
   const carTypeLabel = carTypeLabelWithExamples(ct, "en", row.car_type);
+  // Les dates etaient affichees, la duree non : le loueur devait la calculer de
+  // tete pour convertir son tarif journalier en total. C'est ce calcul implicite
+  // qui a produit un devis de 2 jours envoye sur une demande de 7 (30/07/2026).
+  const days = rentalDays(row.date_from, row.date_to);
 
   return (
     <main style={shell}>
@@ -63,13 +68,14 @@ export default async function CarQuotePage({ params }: { params: Promise<{ local
         <p style={{ margin: "0 0 4px", color: "#008C9E", fontSize: 13, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase" }}>crete · direct</p>
         <h1 style={{ margin: "0 0 6px", fontSize: 21, color: "#0B3954" }}>New rental request</h1>
         <p style={{ margin: "0 0 20px", color: "#5C7886", fontSize: 14, lineHeight: 1.6 }}>
-          A customer requested a car through crete.direct. Enter your total price below and it goes straight to them. Referral commission is 10%.
+          A customer requested a car through crete.direct. Enter your total price for the whole period below: it goes straight to them as a firm price for these dates, so please check them before sending. Referral commission is 10%.
         </p>
 
         <div style={{ background: "#F6FBFC", border: "1px solid #DCE9EE", borderRadius: 14, padding: "14px 16px", marginBottom: 22, color: "#0B3954", fontSize: 14, lineHeight: 1.8 }}>
           <div><strong>Pickup / drop-off:</strong> {carPickupLabel(row.pickup_slug)}</div>
           <div><strong>Arrival:</strong> {row.date_from}{row.time_from ? ` at ${row.time_from}` : ""}</div>
           <div><strong>Departure:</strong> {row.date_to}{row.time_to ? ` at ${row.time_to}` : ""}</div>
+          <div><strong>Duration:</strong> {days} {days > 1 ? "days" : "day"}</div>
           <div><strong>Car type:</strong> {carTypeLabel}</div>
           <div><strong>People:</strong> {row.pax ?? "-"}</div>
           {row.insurance && INSURANCE_LABEL[row.insurance] ? <div><strong>Insurance:</strong> {INSURANCE_LABEL[row.insurance]}</div> : null}
@@ -90,7 +96,7 @@ export default async function CarQuotePage({ params }: { params: Promise<{ local
                 You already sent an offer for this request. You can send more options or update it below · your new submission replaces the previous one.
               </p>
             ) : null}
-            <QuoteForm token={token} locale={locale}
+            <QuoteForm token={token} locale={locale} days={days}
               defaultInsuranceType={partnerDefaults?.default_insurance_type ?? null}
               defaultExcessEur={partnerDefaults?.default_excess_eur ?? null}
               defaultZeroExcessUpsellEurDay={partnerDefaults?.default_zero_excess_upsell_eur_day ?? null}

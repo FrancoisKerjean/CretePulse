@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CAR_INCLUSION_KEYS, CAR_INCLUSION_LABELS_PARTNER, CAR_INSURANCE_LABELS_PARTNER } from "@/lib/car-inclusions";
+import { perDayAmount } from "@/lib/car-pricing";
 
 // Copy i18n du bouton de désistement loueur (le reste du form reste EN : les
 // loueurs sont des pros locaux, l'anglais suffit — cf sendAgencyQuoteRequest).
@@ -28,12 +29,14 @@ const emptyOption = (): OptionDraft => ({ price: "", carModel: "", gearbox: "", 
 export function QuoteForm({
   token,
   locale = "en",
+  days,
   defaultInsuranceType = null,
   defaultExcessEur = null,
   defaultZeroExcessUpsellEurDay = null,
 }: {
   token: string;
   locale?: string;
+  days: number;
   defaultInsuranceType?: string | null;
   defaultExcessEur?: number | null;
   defaultZeroExcessUpsellEurDay?: number | null;
@@ -140,6 +143,14 @@ export function QuoteForm({
               style={{ flex: 1, padding: "12px 14px", fontSize: 18, borderRadius: 10, border: "1px solid #DCE9EE", outline: "none" }}
             />
           </div>
+          {/* Le loueur saisit un TOTAL et raisonne en journalier : on lui rend la
+              division pendant qu'il tape, plutot que de la lui laisser de tete.
+              Muet tant que le champ est vide, pour ne pas afficher un repere faux. */}
+          {perDayAmount(Number(o.price), days) != null && (
+            <p style={{ margin: "-4px 0 0", color: "#5C7886", fontSize: 13, lineHeight: 1.5 }}>
+              €{o.price} for {days} {days > 1 ? "days" : "day"} = <strong style={{ color: "#0B3954" }}>€{perDayAmount(Number(o.price), days)} per day</strong>
+            </p>
+          )}
           <label style={{ fontSize: 14, fontWeight: 600, color: "#0B3954" }}>Car model offered (optional)</label>
           <input
             type="text" value={o.carModel} onChange={(e) => patch(i, { carModel: e.target.value })}

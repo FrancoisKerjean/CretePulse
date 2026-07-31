@@ -57,6 +57,19 @@ export function rentalDays(dateFrom: string, dateTo: string): number {
 }
 
 /**
+ * Prix par jour d'un total saisi, arrondi au dixieme. Sert a renvoyer au loueur
+ * ce qu'il est en train de vendre pendant qu'il tape son prix : il saisit un
+ * TOTAL et raisonne en journalier, ecart d'ou naissent les erreurs de duree.
+ * Retourne null sur une saisie inexploitable (l'appelant n'affiche rien plutot
+ * que d'afficher un repere faux).
+ */
+export function perDayAmount(totalPrice: number, days: number): number | null {
+  if (!Number.isFinite(totalPrice) || totalPrice <= 0) return null;
+  if (!Number.isInteger(days) || days < 1) return null;
+  return Math.round((totalPrice / days) * 10) / 10;
+}
+
+/**
  * Estimation indicative pour une categorie + une periode. Retourne null si la
  * categorie est inconnue ou la date de debut invalide (l'appelant n'affiche rien).
  */
