@@ -48,9 +48,16 @@ begin
   values (y, 1)
   on conflict (year) do update set last_seq = c.last_seq + 1
   returning c.last_seq into s;
-  return prefix || '-' || y::text || '-' || lpad(s::text, 3, '0');
+  -- greatest(3, length(...)) : sans lui, lpad TRONQUE par la gauche au-dela de 999
+  -- et fabrique une collision silencieuse (ex. lpad('1000', 3, '0') = '100').
+  return prefix || '-' || y::text || '-' || lpad(s::text, greatest(3, length(s::text)), '0');
 end;
 $$;
+
+-- Sans ce revoke, EXECUTE est accorde a PUBLIC par defaut a la creation d'une fonction :
+-- le role anon pourrait appeler ce RPC sans authentification et bruler des numeros de facture.
+revoke execute on function public.next_car_invoice_number(text) from public;
+grant execute on function public.next_car_invoice_number(text) to service_role;
 
 -- PostgREST self-hosted : sans ce reload, la table reste invisible du client.
 notify pgrst, 'reload schema';
