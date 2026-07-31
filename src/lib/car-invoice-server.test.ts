@@ -11,6 +11,7 @@ import {
   markInvoiceSent,
   markInvoicePaid,
   creditInvoice,
+  rotateInvoiceToken,
 } from "./car-invoice-server";
 
 const INVOICE = {
@@ -276,5 +277,41 @@ describe("marquages", () => {
       ["id", 7],
       ["credited_at", null],
     ]);
+  });
+});
+
+describe("rotateInvoiceToken", () => {
+  it("ecrit un nouveau hash et rend le jeton en clair, sur l id de la facture", async () => {
+    // Le jeton est stocke hache donc jamais relisible : un renvoi ne peut pas
+    // reutiliser l ancien lien, il doit en fabriquer un neuf.
+    const w = wiring();
+    const token = await rotateInvoiceToken(7);
+
+    expect(typeof token).toBe("string");
+    expect(token.length).toBeGreaterThan(16);
+    expect(w.updates[0]).toEqual({ token_hash: hashToken(token) });
+    expect(w.updates[0]).not.toHaveProperty("token");
+    expect(w.filters).toEqual([["id", 7]]);
+  });
+
+  it("ne touche jamais au numero de facture", async () => {
+    // Exigence comptable : une piece emise garde son numero, quel que soit le
+    // nombre de renvois.
+    const w = wiring();
+    await rotateInvoiceToken(7);
+    await rotateInvoiceToken(7);
+
+    for (const patch of w.updates) {
+      expect(patch).not.toHaveProperty("number");
+      expect(patch).not.toHaveProperty("credit_number");
+    }
+    expect(w.tables).toEqual(["car_commission_invoices", "car_commission_invoices"]);
+  });
+
+  it("rend un jeton different a chaque rotation", async () => {
+    wiring();
+    const a = await rotateInvoiceToken(7);
+    const b = await rotateInvoiceToken(7);
+    expect(a).not.toBe(b);
   });
 });

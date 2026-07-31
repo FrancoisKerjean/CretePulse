@@ -103,6 +103,23 @@ export async function markInvoiceSent(id: number): Promise<void> {
     .select();
 }
 
+/**
+ * Regenere le jeton d une facture et rend le nouveau en clair. Le jeton est
+ * stocke hache donc jamais relisible : un renvoi ne peut pas reutiliser
+ * l ancien lien, il doit en fabriquer un neuf. Remplacer le hash invalide au
+ * passage un lien qui aurait pu s egarer. Le NUMERO de facture, lui, ne change
+ * jamais : c est une piece comptable.
+ */
+export async function rotateInvoiceToken(id: number): Promise<string> {
+  const token = newToken();
+  await supabaseAdmin
+    .from("car_commission_invoices")
+    .update({ token_hash: hashToken(token) })
+    .eq("id", id)
+    .select();
+  return token;
+}
+
 export async function markInvoicePaid(requestId: number): Promise<void> {
   await supabaseAdmin
     .from("car_commission_invoices")

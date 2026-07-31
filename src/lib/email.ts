@@ -6,6 +6,7 @@ import { sharedOfferCopy } from "@/lib/car-offer-copy";
 import { affiliateClass } from "@/lib/affiliate";
 import { assertSent, reportSend } from "./resend-response";
 import { commissionRequestSubject, commissionRequestBody, type CommissionMail } from "./car-commission";
+import { creditMailBody, type CreditMail } from "./car-invoice";
 import { bookingPaidPartnerBody, bookingPaidCustomerBody, type BookingPaidInfo } from "./car-booking";
 import type { NewsletterDigest, NewsletterLang } from "./newsletter";
 
@@ -1829,6 +1830,27 @@ export async function sendPartnerCommissionRequest(
     return !res.error;
   } catch (e) {
     console.error("[sendPartnerCommissionRequest] échec:", e);
+    return false;
+  }
+}
+
+/**
+ * Avoir : la facture de commission est annulee en totalite. Le loueur doit
+ * l apprendre autrement qu en constatant qu on ne lui reclame plus rien.
+ */
+export async function sendCreditNote(partnerEmail: string, m: CreditMail): Promise<boolean> {
+  try {
+    const res = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: partnerEmail,
+      replyTo: "hello@crete.direct",
+      subject: `crete.direct credit note ${m.creditNumber}`,
+      text: creditMailBody(m),
+    });
+    reportSend(res, "avoir de commission loueur");
+    return !res.error;
+  } catch (e) {
+    console.error("[sendCreditNote] échec:", e);
     return false;
   }
 }

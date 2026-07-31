@@ -10,6 +10,7 @@ import { isCarAdmin } from "@/lib/car-admin-auth";
 import { OUTCOMES, commissionEur, validatePartnerUpdate, ZONE_IDS } from "@/lib/car-admin";
 import { canCancelRequest } from "@/lib/car-quotes";
 import { requestCommission } from "@/lib/car-commission-server";
+import { creditCommissionInvoice, resendCommissionInvoice } from "@/lib/car-invoice-credit";
 import { startPartnerOnboarding, refreshPartnerKyc } from "@/lib/car-connect-server";
 import { refreshPartnerRating } from "@/lib/google-rating-server";
 
@@ -72,6 +73,64 @@ export async function setOutcome(id: number, formData: FormData) {
     }
   }
 
+  revalidatePath(PATH);
+}
+
+/**
+ * Annule la facture de commission par un avoir (bouton « avoir »). La location
+ * n'a finalement pas eu lieu : la facture ne se supprime pas, elle s'annule, et
+ * la demande repasse en « perdue ».
+ */
+export async function creditInvoiceAction(id: number, formData: FormData) {
+  await guard();
+  const reason = String(formData.get("reason") ?? "").trim().slice(0, 300);
+  if (!reason) {
+    redirect(`${PATH}?error=${encodeURIComponent("Motif requis pour émettre un avoir")}`);
+  }
+  const res = await creditCommissionInvoice(id, reason);
+  if ("error" in res) {
+    const message =
+      res.error === "no_invoice"
+        ? "Aucune facture de commission sur cette demande"
+        : res.error === "already_credited"
+          ? "Facture déjà annulée par un avoir"
+          : "Facture déjà réglée : le remboursement Stripe se fait à la main, aucun avoir n'est émis";
+    redirect(`${PATH}?error=${encodeURIComponent(message)}`);
+  }
+  // L'avoir existe même quand le loueur n'a pas d'email : c'est la
+  // notification qui manque, et elle demande alors une main humaine.
+  if (!res.notified) {
+    redirect(
+      `${PATH}?error=${encodeURIComponent(`Avoir ${res.creditNumber} émis, mais le loueur n'a pas été prévenu par email : faites-le à la main`)}`,
+    );
+  }
+  revalidatePath(PATH);
+}
+
+/**
+ * Renvoie une facture dont l'email a été refusé (bouton « renvoyer »). Le cron
+ * ne repassera jamais dessus : il tranche l'issue AVANT de facturer, la ligne
+ * sort donc de son filtre dès le lendemain. Le lien de paiement est régénéré,
+ * le numéro de facture ne bouge pas.
+ */
+export async function resendInvoiceAction(id: number) {
+  await guard();
+  const res = await resendCommissionInvoice(id);
+  if ("error" in res) {
+    const message =
+      res.error === "no_invoice"
+        ? "Aucune facture de commission sur cette demande"
+        : res.error === "no_request"
+          ? "Demande introuvable"
+          : res.error === "already_paid"
+            ? "Facture déjà réglée, rien à renvoyer"
+            : res.error === "already_credited"
+              ? "Facture annulée par un avoir, rien à renvoyer"
+              : res.error === "partner_without_email"
+                ? "Loueur sans email : impossible de lui renvoyer sa facture"
+                : "Resend a refusé l'envoi, réessayez dans quelques minutes";
+    redirect(`${PATH}?error=${encodeURIComponent(message)}`);
+  }
   revalidatePath(PATH);
 }
 
