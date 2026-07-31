@@ -18,6 +18,19 @@ export const metadata: Metadata = { robots: { index: false, follow: false } };
 const EUR = (n: number) => `${Number(n).toFixed(2)} EUR`;
 const day = (iso: string) => new Date(iso).toISOString().slice(0, 10);
 
+/**
+ * Coordonnees bancaires, lues de l environnement et de NULLE PART ailleurs :
+ * aucun IBAN ne vit dans le depot. Les deux valeurs vont ensemble, un IBAN sans
+ * BIC n est pas un virement executable — moitie de coordonnees affichee comme
+ * si elle etait complete ferait rater le paiement. Absentes, la page garde son
+ * texte de repli et l echange se fait par email.
+ */
+function bankDetails(): { iban: string; bic: string } | null {
+  const iban = (process.env.NOVAI_IBAN ?? "").trim();
+  const bic = (process.env.NOVAI_BIC ?? "").trim();
+  return iban && bic ? { iban, bic } : null;
+}
+
 // Le chrome du site est enfant direct de <body>, la facture est le <main> :
 // tout ce qui n est pas le main disparait a l impression.
 const PRINT_CSS = `@media print {
@@ -51,6 +64,7 @@ export default async function InvoicePage({
 
   const pickup = req?.pickup_slug ? carPickupLabel(req.pickup_slug as string) : "";
   const state = invoice.credited_at ? "credited" : invoice.paid_at ? "paid" : "due";
+  const bank = bankDetails();
 
   return (
     <main className="mx-auto max-w-2xl px-5 py-10 text-night">
@@ -123,10 +137,26 @@ export default async function InvoicePage({
       {state === "due" && (
         <section className="mb-6 rounded-2xl border border-border bg-surface p-5 text-sm">
           <p className="mb-2 font-bold">Bank transfer</p>
-          <p className="text-text-muted">
-            Prefer a transfer? Reply to the invoice email and we send you the bank details. Always
-            use the reference {invoice.number}.
-          </p>
+          {bank ? (
+            <>
+              <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+                <dt className="text-text-muted">Account holder</dt>
+                <dd className="font-bold">SAS NovAI</dd>
+                <dt className="text-text-muted">IBAN</dt>
+                <dd className="font-data font-bold">{bank.iban}</dd>
+                <dt className="text-text-muted">BIC</dt>
+                <dd className="font-data font-bold">{bank.bic}</dd>
+              </dl>
+              <p className="mt-2 text-text-muted">
+                Always use the reference {invoice.number}.
+              </p>
+            </>
+          ) : (
+            <p className="text-text-muted">
+              Prefer a transfer? Reply to the invoice email and we send you the bank details. Always
+              use the reference {invoice.number}.
+            </p>
+          )}
         </section>
       )}
 

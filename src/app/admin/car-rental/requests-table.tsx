@@ -14,7 +14,11 @@ import { carPickupLabel } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { canCancelRequest } from "@/lib/car-quotes";
 import { insuranceSummary, inclusionLabels } from "@/lib/car-inclusions";
-import { setOutcome, setCommissionPaid, saveNote, cancelRequest } from "./actions";
+import { invoiceAdminState, type AdminInvoiceRow } from "@/lib/car-invoice";
+import {
+  setOutcome, setCommissionPaid, saveNote, cancelRequest,
+  creditInvoiceAction, resendInvoiceAction,
+} from "./actions";
 
 const PAGE_SIZE = 50;
 
@@ -40,6 +44,20 @@ function bookingBadge(r: AdminRequest) {
     </span>
   );
 }
+
+/**
+ * Etat de la facture de commission. Le ton `alert` est reserve a l envoi jamais
+ * parti : la facture existe et porte son numero, mais l email a ete refuse et le
+ * cron ne repassera JAMAIS dessus (il tranche l issue avant de facturer, la
+ * ligne sort de son filtre des le lendemain). Le bouton « renvoyer » est le seul
+ * rattrapage, il doit donc se voir.
+ */
+const INVOICE_TONE: Record<"alert" | "due" | "ok" | "muted", string> = {
+  alert: "border border-terracotta bg-terracotta-faint font-bold text-terracotta",
+  due: "border border-border bg-white text-text-muted",
+  ok: "bg-ok font-bold text-white",
+  muted: "border border-border bg-white text-text-light line-through",
+};
 
 /** Option de devis (variante) telle que lue par la page admin. */
 export type AdminQuoteOption = {
@@ -235,13 +253,14 @@ function OptionsDetail({ options, request }: { options: AdminQuoteOption[]; requ
 }
 
 export function RequestsTable({
-  requests, partnersById, invitesByRequest, monitorByRequest, optionsByRequest, statusFilter, partnerFilter, page,
+  requests, partnersById, invitesByRequest, monitorByRequest, optionsByRequest, invoicesByRequest, statusFilter, partnerFilter, page,
 }: {
   requests: AdminRequest[];
   partnersById: Map<number, AdminPartner>;
   invitesByRequest: Map<number, number>;
   monitorByRequest: Map<number, MonitorInvite[]>;
   optionsByRequest: Map<number, AdminQuoteOption[]>;
+  invoicesByRequest: Map<number, AdminInvoiceRow>;
   statusFilter: string;
   partnerFilter: string;
   page: number;
@@ -324,6 +343,7 @@ export function RequestsTable({
             { status: r.status, client_relanced_at: r.client_relanced_at ?? null, client_relance_count: r.client_relance_count ?? 0 },
             now,
           );
+          const inv = invoiceAdminState(invoicesByRequest.get(r.id));
           const expMs = offerExpiresAt(r.quoted_at, r.date_from);
           const startPassed = new Date(r.date_from + "T00:00:00").getTime() < now;
           return (
@@ -344,6 +364,13 @@ export function RequestsTable({
                   </span>
                 ) : null}
                 {bookingBadge(r)}
+                {/* Numéro ET état de la facture : où en est l'argent, d'un coup
+                    d'œil, sans ouvrir la base. */}
+                {inv ? (
+                  <span className={`rounded-full px-2 py-0.5 text-xs ${INVOICE_TONE[inv.tone]}`}>
+                    <span className="font-data">{inv.number}</span> · {inv.label}
+                  </span>
+                ) : null}
                 <span className="ml-auto text-xs text-text-muted">{invitesByRequest.get(r.id) ?? 0} loueur(s) invité(s)</span>
               </div>
 
@@ -460,6 +487,40 @@ export function RequestsTable({
                       {r.commission_paid_at ? "Repasser en due" : "Commission encaissée"}
                     </button>
                   </form>
+                ) : null}
+                {/* Renvoi de facture. Un envoi Resend refusé laisse la facture
+                    numérotée avec sent_at NULL, et le cron ne la reprendra
+                    jamais : il filtre sur outcome IS NULL alors que la bascule
+                    en « rented » a déjà eu lieu. Ce bouton est le SEUL
+                    rattrapage. Un loueur sans email le verrait refuser, on ne
+                    l'affiche donc pas et on dit pourquoi. */}
+                {inv?.canResend ? (
+                  winner?.email ? (
+                    <form action={resendInvoiceAction.bind(null, r.id)}>
+                      <button className={`rounded-full px-3 py-1 text-sm font-bold ${inv.tone === "alert" ? "bg-terracotta text-white" : "border border-border bg-white"}`}>
+                        {inv.tone === "alert" ? "Renvoyer la facture" : "Renvoyer"}
+                      </button>
+                    </form>
+                  ) : (
+                    <span className="text-sm text-terracotta">
+                      Facture non renvoyable : loueur sans email
+                    </span>
+                  )
+                ) : null}
+                {/* Avoir : la facture ne se supprime pas, elle s'annule, et la
+                    demande repasse en « perdue ». Repliée pour éviter le clic
+                    accidentel, motif obligatoire (l'action le refuse sinon). */}
+                {inv?.canCredit ? (
+                  <details className="text-sm">
+                    <summary className="cursor-pointer text-text-muted underline">émettre un avoir</summary>
+                    <form action={creditInvoiceAction.bind(null, r.id)} className="mt-2 flex flex-wrap items-center gap-1.5">
+                      <input name="reason" required maxLength={300} placeholder="Motif de l'avoir…"
+                             className="w-56 rounded-lg border border-border px-2 py-1 text-sm" aria-label="Motif de l'avoir" />
+                      <button className="rounded-full border border-terracotta bg-white px-3 py-1 text-sm font-bold text-terracotta">
+                        Annuler {inv.number} par un avoir
+                      </button>
+                    </form>
+                  </details>
                 ) : null}
                 {relayWaLink(r, relayPartner)}
                 <form action={saveNote.bind(null, r.id)} className="flex min-w-56 flex-1 items-center gap-1.5">

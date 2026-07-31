@@ -4,6 +4,7 @@ import {
   invoiceAmounts,
   creditNumberFor,
   creditMailBody,
+  invoiceAdminState,
   type InvoiceCandidate,
 } from "./car-invoice";
 
@@ -94,5 +95,86 @@ describe("creditMailBody", () => {
     expect(body).toContain("NOVAI-CD-2026-004");
     expect(body).toContain("rental did not take place");
     expect(body).toContain("nothing to pay");
+  });
+});
+
+// ── Etat d une facture vu du back-office ─────────────────────────────────────
+// Le back-office affiche deux boutons (avoir, renvoi) et un etat. Les conditions
+// d affichage vivent ici, pures, plutot que dans le JSX : un bouton qui
+// s affiche alors que l action le refusera est un mensonge d interface, et un
+// bouton absent alors que l action marcherait est un rattrapage perdu.
+describe("invoiceAdminState", () => {
+  const SENT = {
+    number: "NOVAI-CD-2026-004",
+    sent_at: "2026-08-10T05:00:00.000Z",
+    paid_at: null,
+    credited_at: null,
+    credit_number: null,
+  };
+
+  it("rend null quand aucune facture n existe : rien a montrer, rien a cliquer", () => {
+    expect(invoiceAdminState(null)).toBeNull();
+    expect(invoiceAdminState(undefined)).toBeNull();
+  });
+
+  it("signale en ALERTE une facture jamais envoyee, et ouvre les deux gestes", () => {
+    // sent_at NULL : la facture porte son numero mais l email n est jamais parti,
+    // et le cron ne repassera jamais dessus. C est l etat qui appelle une action.
+    const s = invoiceAdminState({ ...SENT, sent_at: null })!;
+    expect(s.tone).toBe("alert");
+    expect(s.label).toContain("jamais envoyée");
+    expect(s.number).toBe("NOVAI-CD-2026-004");
+    expect(s.canResend).toBe(true);
+    expect(s.canCredit).toBe(true);
+  });
+
+  it("date l envoi d une facture partie mais non reglee, et ouvre les deux gestes", () => {
+    const s = invoiceAdminState(SENT)!;
+    expect(s.tone).toBe("due");
+    expect(s.label).toContain("envoyée le 10/08/2026");
+    expect(s.canResend).toBe(true);
+    expect(s.canCredit).toBe(true);
+  });
+
+  it("ferme les deux gestes sur une facture reglee", () => {
+    // resendCommissionInvoice et creditCommissionInvoice refusent toutes deux
+    // already_paid : afficher le bouton serait promettre un refus.
+    const s = invoiceAdminState({ ...SENT, paid_at: "2026-08-11T09:00:00.000Z" })!;
+    expect(s.tone).toBe("ok");
+    expect(s.label).toContain("payée le 11/08/2026");
+    expect(s.canResend).toBe(false);
+    expect(s.canCredit).toBe(false);
+  });
+
+  it("ferme les deux gestes sur une facture annulee, en nommant l avoir", () => {
+    const s = invoiceAdminState({
+      ...SENT,
+      credited_at: "2026-08-11T09:00:00.000Z",
+      credit_number: "NOVAI-CD-2026-004-A",
+    })!;
+    expect(s.tone).toBe("muted");
+    expect(s.label).toContain("NOVAI-CD-2026-004-A");
+    expect(s.canResend).toBe(false);
+    expect(s.canCredit).toBe(false);
+  });
+
+  it("l avoir prime sur le paiement : une facture avoiree ne se renvoie pas", () => {
+    // Cas theorique (creditCommissionInvoice refuse d avoirer une facture
+    // payee), mais si la base porte les deux, l etat le plus terminal gagne.
+    const s = invoiceAdminState({
+      ...SENT,
+      paid_at: "2026-08-11T09:00:00.000Z",
+      credited_at: "2026-08-12T09:00:00.000Z",
+      credit_number: "NOVAI-CD-2026-004-A",
+    })!;
+    expect(s.tone).toBe("muted");
+    expect(s.canResend).toBe(false);
+    expect(s.canCredit).toBe(false);
+  });
+
+  it("nomme l avoir « avoir » meme quand son numero manque", () => {
+    const s = invoiceAdminState({ ...SENT, credited_at: "2026-08-11T09:00:00.000Z" })!;
+    expect(s.label).toContain("avoir");
+    expect(s.canCredit).toBe(false);
   });
 });

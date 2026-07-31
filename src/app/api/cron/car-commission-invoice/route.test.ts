@@ -37,12 +37,13 @@ interface Wiring {
   rows?: Array<Record<string, unknown>>;
   /** Facture deja en base, par request_id. Absente => pas de facture. */
   invoices?: Record<number, { id: number; sent_at: string | null }>;
-  partner?: { commission: number } | null;
+  partner?: { commission: number | null } | null;
 }
 
 function wiring(w: Wiring = {}) {
   const rows = w.rows ?? [ELIGIBLE];
-  const partner = w.partner === undefined ? { commission: 0.1 } : w.partner;
+  const partner: { commission: number | null } | null =
+    w.partner === undefined ? { commission: 0.1 } : w.partner;
   const invoices = w.invoices ?? {};
   const updates: Array<Record<string, unknown>> = [];
   const filters: string[] = [];
@@ -226,26 +227,84 @@ describe("GET /api/cron/car-commission-invoice", () => {
     expect(requestCommission).not.toHaveBeenCalled();
   });
 
-  it("ecarte une commission sous le minimum encaissable par Stripe", async () => {
+  // ── Les motifs de rejet ────────────────────────────────────────────────────
+  // `skipped` portait des identifiants nus : trois causes tres differentes y
+  // etaient indiscernables. Au premier tir en production, le tableau doit dire
+  // ce qui s est passe, sinon il faut relire la base ligne par ligne.
+
+  it("ecarte une commission sous le minimum encaissable par Stripe, en le disant", async () => {
     process.env.CAR_COMMISSION_ENABLED = "on";
     // 4 EUR a 10 % = 0,40 EUR, sous les 0,50 EUR minimum de Stripe.
     wiring({ rows: [{ ...ELIGIBLE, quoted_price: 4 }] });
     const { GET } = await import("./route");
     const res = await GET(authed());
 
-    expect(await res.json()).toMatchObject({ invoiced: 0, skipped: [42] });
+    expect(await res.json()).toMatchObject({
+      invoiced: 0,
+      skipped: [{ id: 42, reason: "below_minimum" }],
+    });
     expect(update).not.toHaveBeenCalled();
     expect(requestCommission).not.toHaveBeenCalled();
   });
 
-  it("ecarte une location dont le loueur est introuvable", async () => {
+  it("ecarte une location dont le loueur est introuvable, en le disant", async () => {
     process.env.CAR_COMMISSION_ENABLED = "on";
     wiring({ partner: null });
     const { GET } = await import("./route");
     const res = await GET(authed());
 
-    expect(await res.json()).toMatchObject({ invoiced: 0, skipped: [42] });
+    expect(await res.json()).toMatchObject({
+      invoiced: 0,
+      skipped: [{ id: 42, reason: "partner_not_found" }],
+    });
     expect(update).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["nul", null],
+    ["a zero", 0],
+  ])("distingue un taux de commission %s d une commission trop petite", async (_l, commission) => {
+    process.env.CAR_COMMISSION_ENABLED = "on";
+    // Number(null) vaut 0 : sans motif propre, un loueur sans taux configure
+    // partait en « below_minimum » et se lisait comme une petite location.
+    wiring({ partner: { commission } });
+    const { GET } = await import("./route");
+    const res = await GET(authed());
+
+    expect(await res.json()).toMatchObject({
+      invoiced: 0,
+      skipped: [{ id: 42, reason: "no_commission_rate" }],
+    });
+    expect(update).not.toHaveBeenCalled();
+    expect(requestCommission).not.toHaveBeenCalled();
+  });
+
+  it("porte le code d echec reel quand la facturation elle-meme echoue", async () => {
+    process.env.CAR_COMMISSION_ENABLED = "on";
+    requestCommission.mockResolvedValueOnce({ status: "failed", code: "partner_without_email" });
+    wiring();
+    const { GET } = await import("./route");
+    const res = await GET(authed());
+
+    expect(await res.json()).toMatchObject({
+      invoiced: 0,
+      skipped: [{ id: 42, reason: "commission_failed:partner_without_email" }],
+    });
+  });
+
+  it("porte le statut quand requestCommission ne facture pas sans echouer", async () => {
+    process.env.CAR_COMMISSION_ENABLED = "on";
+    // « skipped », « already_requested », « disabled » : pas des echecs, mais pas
+    // des factures non plus. Un identifiant nu ne les distinguait de rien.
+    requestCommission.mockResolvedValueOnce({ status: "already_requested" });
+    wiring();
+    const { GET } = await import("./route");
+    const res = await GET(authed());
+
+    expect(await res.json()).toMatchObject({
+      invoiced: 0,
+      skipped: [{ id: 42, reason: "commission_failed:already_requested" }],
+    });
   });
 
   // ── Idempotence ────────────────────────────────────────────────────────────
@@ -282,7 +341,10 @@ describe("GET /api/cron/car-commission-invoice", () => {
     const { GET } = await import("./route");
     const res = await GET(authed());
 
-    expect(await res.json()).toMatchObject({ invoiced: 1, skipped: [42] });
+    expect(await res.json()).toMatchObject({
+      invoiced: 1,
+      skipped: [{ id: 42, reason: "commission_failed:invoice_mail_refused" }],
+    });
     expect(requestCommission).toHaveBeenNthCalledWith(1, 42);
     expect(requestCommission).toHaveBeenNthCalledWith(2, 43);
   });

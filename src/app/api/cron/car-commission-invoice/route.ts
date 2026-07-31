@@ -46,7 +46,10 @@ export async function GET(request: NextRequest) {
     .gte("date_from", START);
 
   let invoiced = 0;
-  const skipped: number[] = [];
+  // Un identifiant nu ne dit pas POURQUOI la ligne est sortie du lot, et trois
+  // causes tres differentes s y melangeaient. Chaque rejet porte donc son motif,
+  // stable et lisible sans relire la base.
+  const skipped: Array<{ id: number; reason: string }> = [];
 
   for (const row of (rows ?? []) as InvoiceCandidate[]) {
     if (!isInvoiceable(row, today, START)) continue;
@@ -66,15 +69,20 @@ export async function GET(request: NextRequest) {
       .select("commission")
       .eq("id", row.quoted_by_partner_id as number)
       .maybeSingle();
-    if (!partner) { skipped.push(row.id); continue; }
+    if (!partner) { skipped.push({ id: row.id, reason: "partner_not_found" }); continue; }
 
-    // ⚠️ ASSIETTE : le prix du devis accepte, seul montant contractuel connu au
-    // premier jour de location. Point d arbitrage ouvert : en lead_routing
-    // direct la transaction se conclut hors systeme, donc l ecart entre prix
-    // annonce et prix conclu est possible. Une seule expression a changer si la
-    // regle evolue.
-    const amounts = invoiceAmounts(row.quoted_price as number, Number(partner.commission));
-    if (!amounts) { skipped.push(row.id); continue; }
+    // Un taux absent devient 0 en passant par Number(), et une commission de 0
+    // tombe sous le minimum Stripe : le loueur sans taux configure partait donc
+    // en « below_minimum » et se lisait comme une toute petite location. Les deux
+    // causes n appellent pas la meme main, elles ne partagent plus le meme motif.
+    const rate = Number(partner.commission);
+    if (!Number.isFinite(rate) || rate <= 0) {
+      skipped.push({ id: row.id, reason: "no_commission_rate" });
+      continue;
+    }
+
+    const amounts = invoiceAmounts(row.quoted_price as number, rate);
+    if (!amounts) { skipped.push({ id: row.id, reason: "below_minimum" }); continue; }
 
     // Bascule AVANT l appel : shouldRequestCommission exige outcome === "rented".
     await supabase
@@ -90,7 +98,12 @@ export async function GET(request: NextRequest) {
 
     const res = await requestCommission(row.id);
     if (res.status === "requested") invoiced += 1;
-    else skipped.push(row.id);
+    else {
+      // Le code d echec REEL, pas un « ca n a pas marche » : c est lui qui
+      // separe un email refuse par Resend d un loueur sans adresse.
+      const detail = res.status === "failed" ? res.code : res.status;
+      skipped.push({ id: row.id, reason: `commission_failed:${detail}` });
+    }
   }
 
   return NextResponse.json({ invoiced, skipped, today, start: START });
