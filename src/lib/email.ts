@@ -1807,24 +1807,29 @@ export async function sendActivityLeadKamiSummary(
   }
 }
 
-/** Demande de reglement de la commission au loueur, declenchee au passage en
- *  « rented » par le back-office. `reportSend` et non `assertSent` : la session
- *  Stripe existe deja quand on arrive ici, un echec d'email ne doit pas annuler
- *  la facturation. Il est journalise, et le lien reste lisible dans /admin/car-rental. */
+/**
+ * Rend true si Resend a accepte le message. Le retour n est pas cosmetique :
+ * `car_commission_invoices.sent_at` ne doit se remplir que sur un envoi accepte,
+ * sinon une facture jamais partie serait comptee comme envoyee et ne serait
+ * jamais rattrapee. Resend NE LEVE PAS sur refus, d ou la lecture de `error`.
+ */
 export async function sendPartnerCommissionRequest(
   partnerEmail: string,
   m: CommissionMail,
-): Promise<void> {
+): Promise<boolean> {
   try {
-    reportSend(await resend.emails.send({
+    const res = await resend.emails.send({
       from: FROM_EMAIL,
       to: partnerEmail,
       replyTo: "hello@crete.direct",
       subject: commissionRequestSubject(m),
       text: commissionRequestBody(m),
-    }), "demande de commission loueur");
+    });
+    reportSend(res, "demande de commission loueur");
+    return !res.error;
   } catch (e) {
     console.error("[sendPartnerCommissionRequest] échec:", e);
+    return false;
   }
 }
 
