@@ -59,7 +59,21 @@ const REQUEST = {
   commission_session_id: null, quoted_by_partner_id: 111,
   final_amount_eur: 210, date_from: "2026-08-01", date_to: "2026-08-08",
 };
-const PARTNER = { id: 111, name: "Zorbas Rent a Car", email: "info@zorbas.gr" };
+// Identite legale complete par defaut : les tests du chemin nominal ne portent
+// pas sur elle, seuls les tests dedies la font varier.
+const PARTNER = {
+  id: 111,
+  name: "Zorbas Rent a Car",
+  email: "info@zorbas.gr",
+  legal_name: "Zorbas Rent A Car IKE",
+  legal_form: null,
+  address_line: "Leof. Knosou 123",
+  postal_code: "71409",
+  city: "Heraklion",
+  country: "Greece",
+  vat_id: "EL801122501",
+  vat_verified_at: null,
+};
 
 /** Verrou pris : l'update conditionnel renvoie la ligne. */
 function wiring(
@@ -315,6 +329,72 @@ describe("requestCommission", () => {
     expect(createInvoiceForRequest).not.toHaveBeenCalled();
     expect(updates.some((u) => u.commission_requested_at === null)).toBe(true);
     errSpy.mockRestore();
+  });
+
+  // ── Identite legale du loueur : meme garde que le cron, portee ICI pour que
+  // le back-office (setOutcome -> requestCommission) ne puisse pas la
+  // contourner. Un loueur sans identite complete n est pas une panne : c est un
+  // etat normal tant que la fiche n a pas ete remplie, et il ne doit JAMAIS
+  // laisser un verrou pose sur la demande.
+
+  it("n emet aucune facture pour un loueur identifie mais sans identite legale complete, et NE PREND PAS le verrou", async () => {
+    const updates = wiring({ partner: { ...PARTNER, vat_id: null } });
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await requestCommission(42);
+
+    expect(res).toEqual({ status: "partner_identity_incomplete", missing: ["vat_id"] });
+    expect(createInvoiceForRequest).not.toHaveBeenCalled();
+    expect(sendPartnerCommissionRequest).not.toHaveBeenCalled();
+    // Aucune ecriture du tout : rien a relacher, la demande reste facturable
+    // des que la fiche est completee, sans intervention manuelle sur le verrou.
+    expect(updates).toHaveLength(0);
+    expect(JSON.stringify(errSpy.mock.calls)).toContain("vat_id");
+    errSpy.mockRestore();
+  });
+
+  it("liste TOUT ce qui manque, pas seulement le premier champ", async () => {
+    const updates = wiring({ partner: { ...PARTNER, address_line: null, vat_id: null } });
+    const res = await requestCommission(42);
+    expect(res).toEqual({
+      status: "partner_identity_incomplete",
+      missing: ["address_line", "vat_id"],
+    });
+    expect(updates).toHaveLength(0);
+  });
+
+  it("un loueur sans email garde son motif propre : la garde d identite ne l ecrase pas", async () => {
+    // Identite legale complete mais pas d email : c est la garde HISTORIQUE
+    // (partner_without_email, apres verrou) qui doit repondre, pas la nouvelle.
+    const updates = wiring({ partner: { ...PARTNER, email: null } });
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await requestCommission(42);
+    expect(res).toMatchObject({ status: "failed", code: "partner_without_email" });
+    expect(updates.some((u) => u.commission_requested_at === null)).toBe(true);
+    errSpy.mockRestore();
+  });
+
+  it("un loueur introuvable garde lui aussi son motif propre (partner_without_email)", async () => {
+    // `quoted_by_partner_id` orphelin : rien a completer sur une fiche qui
+    // n existe pas. Le chemin historique reste responsable de ce cas.
+    const updates = wiring({ partner: null });
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await requestCommission(42);
+    expect(res).toMatchObject({ status: "failed", code: "partner_without_email" });
+    expect(updates.some((u) => u.commission_requested_at === null)).toBe(true);
+    errSpy.mockRestore();
+  });
+
+  it("une fois la fiche completee, la meme demande se facture normalement", async () => {
+    // Preuve qu aucun verrou ni aucun etat cote base n est reste coince par le
+    // refus precedent : deux appels successifs, le second avec une fiche
+    // complete, aboutit comme si le premier n avait jamais eu lieu.
+    wiring({ partner: { ...PARTNER, vat_id: null } });
+    expect((await requestCommission(42)).status).toBe("partner_identity_incomplete");
+
+    wiring({ partner: PARTNER });
+    const res = await requestCommission(42);
+    expect(res).toMatchObject({ status: "requested" });
   });
 });
 

@@ -21,6 +21,7 @@ import {
   invoiceByToken,
   assertWritten,
 } from "./car-invoice-server";
+import { partnerBillingIdentity, PARTNER_IDENTITY_COLS } from "./car-invoice";
 import { classifyStripeFailure, stripeLogFields } from "./stripe-errors";
 
 /**
@@ -45,6 +46,13 @@ export type CommissionOutcome =
   | { status: "skipped" }
   /** Un autre appel a pris le verrou : la demande est deja partie. */
   | { status: "already_requested" }
+  /**
+   * Loueur identifie mais fiche legale incomplete (raison sociale, adresse,
+   * TVA...). Ce n'est PAS une panne : c'est un etat normal du systeme tant que
+   * la fiche partenaire n'a pas ete completee. `missing` porte les champs a
+   * remplir, dans l'ordre du bloc client de la facture.
+   */
+  | { status: "partner_identity_incomplete"; missing: string[] }
   | { status: "failed"; code: string };
 
 type RequestRow = CommissionCandidate & {
@@ -68,6 +76,40 @@ export async function requestCommission(requestId: number): Promise<CommissionOu
 
   if (!req || !shouldRequestCommission(req as RequestRow)) return { status: "skipped" };
   const row = req as RequestRow;
+
+  // Identite legale du loueur, verifiee ICI, AVANT le verrou : c'est le point
+  // ou convergent les deux appelants (cron et back-office), donc le seul
+  // endroit ou une garde protege les deux a la fois.
+  //
+  // AVANT le verrou et non apres, deliberement : un loueur sans identite
+  // complete n'est pas un accident isole qui justifie de poser puis relacher
+  // un verrou (comme `partner_without_email` plus bas) — c'est un etat qui va
+  // se represente a CHAQUE tentative tant que personne n'a rempli la fiche
+  // (chaque nuit du cron, chaque nouveau clic « louée »). Le lire avant
+  // d'ecrire quoi que ce soit evite un aller-retour pose/relache inutile a
+  // chaque fois, et garantit qu'aucune demande ne peut rester bloquee sur un
+  // verrou coince par ce refus.
+  //
+  // Uniquement si le partenaire EXISTE : un `quoted_by_partner_id` orphelin
+  // (partenaire introuvable) n'a rien a "completer" et reste la responsabilite
+  // du garde-fou historique `partner_without_email` plus bas, apres le
+  // verrou — inchange, pour ne pas casser son contrat (verrou pris puis
+  // relache, deja teste).
+  const { data: partnerForIdentity } = await supabaseAdmin
+    .from("car_partners")
+    .select(PARTNER_IDENTITY_COLS)
+    .eq("id", row.quoted_by_partner_id)
+    .maybeSingle();
+  if (partnerForIdentity) {
+    const identity = partnerBillingIdentity(partnerForIdentity);
+    if (!identity.ok) {
+      console.error(
+        "[car/commission] loueur sans identite legale complete, facturation refusee avant tout verrou",
+        { requestId, partnerId: row.quoted_by_partner_id, missing: identity.missing },
+      );
+      return { status: "partner_identity_incomplete", missing: identity.missing };
+    }
+  }
 
   // Verrou optimiste AVANT l'appel Stripe : `commission_requested_at` passe de
   // NULL a maintenant, et seul l'appel qui remporte l'update continue. Sans lui,

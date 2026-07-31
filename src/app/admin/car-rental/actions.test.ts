@@ -13,7 +13,10 @@ vi.mock("next/navigation", () => ({
   },
 }));
 vi.mock("@/lib/car-admin-auth", () => ({ isCarAdmin: async () => true }));
-vi.mock("@/lib/car-commission-server", () => ({ requestCommission: vi.fn(async () => ({ status: "disabled" })) }));
+const { requestCommission } = vi.hoisted(() => ({
+  requestCommission: vi.fn(async () => ({ status: "disabled" }) as { status: string; code?: string; missing?: string[] }),
+}));
+vi.mock("@/lib/car-commission-server", () => ({ requestCommission }));
 
 const creditCommissionInvoice = vi.fn();
 const resendCommissionInvoice = vi.fn();
@@ -183,5 +186,82 @@ describe("setOutcome · perdu", () => {
     fd.set("outcome", "lost");
     await setOutcome(42, fd);
     expect(creditCommissionInvoice).not.toHaveBeenCalled();
+  });
+});
+
+describe("setOutcome · louee, facturation refusee pour identite incomplete", () => {
+  // La location EST louee : marquer l issue ne doit JAMAIS echouer a cause
+  // d un probleme de facturation, c est un fait constate, la facturation se
+  // rattrape ensuite. Mais l ecran ne doit pas rester muet sur ce refus, ni
+  // afficher une panne : un loueur sans identite legale complete est un etat
+  // normal du systeme tant que la fiche n a pas ete remplie.
+  function rentedForm(amount = "310") {
+    const fd = new FormData();
+    fd.set("outcome", "rented");
+    fd.set("amount", amount);
+    return fd;
+  }
+
+  it("marque quand meme la location louee AVANT d appeler requestCommission", async () => {
+    const w = wiring({ request: { quoted_by_partner_id: 111, commission: 0.1 } });
+    requestCommission.mockResolvedValueOnce({
+      status: "partner_identity_incomplete",
+      missing: ["vat_id"],
+    });
+
+    await expect(setOutcome(42, rentedForm())).rejects.toThrow(/NEXT_REDIRECT:/);
+
+    const req = w.updates.find((u) => u.table === "car_requests");
+    expect(req?.patch.outcome).toBe("rented");
+  });
+
+  it("explique le refus a l ecran, en nommant le champ manquant", async () => {
+    wiring({ request: { quoted_by_partner_id: 111, commission: 0.1 } });
+    requestCommission.mockResolvedValueOnce({
+      status: "partner_identity_incomplete",
+      missing: ["vat_id"],
+    });
+
+    try {
+      await setOutcome(42, rentedForm());
+      throw new Error("aurait du rediriger");
+    } catch (err) {
+      const message = decodeURIComponent(String((err as Error).message));
+      expect(message).toContain("numéro de TVA");
+    }
+  });
+
+  it("liste TOUS les champs manquants, pas seulement le premier", async () => {
+    wiring({ request: { quoted_by_partner_id: 111, commission: 0.1 } });
+    requestCommission.mockResolvedValueOnce({
+      status: "partner_identity_incomplete",
+      missing: ["address_line", "vat_id"],
+    });
+
+    try {
+      await setOutcome(42, rentedForm());
+      throw new Error("aurait du rediriger");
+    } catch (err) {
+      const message = decodeURIComponent(String((err as Error).message));
+      expect(message).toContain("adresse");
+      expect(message).toContain("numéro de TVA");
+    }
+  });
+
+  it("un echec ordinaire (requestCommission failed) reste silencieux comme avant : pas de regression", async () => {
+    // Comportement PRE-EXISTANT, a ne pas casser en ajoutant la nouvelle branche.
+    wiring({ request: { quoted_by_partner_id: 111, commission: 0.1 } });
+    requestCommission.mockResolvedValueOnce({ status: "failed", code: "partner_without_email" });
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(setOutcome(42, rentedForm())).resolves.toBeUndefined();
+    expect(JSON.stringify(errSpy.mock.calls)).toContain("partner_without_email");
+    errSpy.mockRestore();
+  });
+
+  it("un succes normal (requested) ne redirige pas et ne journalise rien", async () => {
+    wiring({ request: { quoted_by_partner_id: 111, commission: 0.1 } });
+    requestCommission.mockResolvedValueOnce({ status: "requested", invoiceNumber: "NOVAI-2026-010" });
+    await expect(setOutcome(42, rentedForm())).resolves.toBeUndefined();
   });
 });

@@ -21,6 +21,17 @@ import { refreshPartnerRating } from "@/lib/google-rating-server";
 
 const PATH = "/admin/car-rental";
 
+/** Traduction lisible des champs rendus par `partnerBillingIdentity` (car-invoice.ts),
+ *  pour l'écran quand la facturation est bloquée par une fiche loueur incomplète. */
+const BILLING_FIELD_LABELS: Record<string, string> = {
+  legal_name: "raison sociale",
+  address_line: "adresse",
+  postal_code: "code postal",
+  city: "ville",
+  country: "pays",
+  vat_id: "numéro de TVA intracommunautaire",
+};
+
 async function guard() {
   if (!(await isCarAdmin())) throw new Error("Forbidden");
 }
@@ -75,6 +86,18 @@ export async function setOutcome(id: number, formData: FormData) {
     const result = await requestCommission(id);
     if (result.status === "failed") {
       console.error("[admin/car-rental] commission non demandée", { id, code: result.code });
+    } else if (result.status === "partner_identity_incomplete") {
+      // La location EST louée (l'update ci-dessus a déjà eu lieu) : ce refus
+      // ne fait pas échouer le marquage, mais l'écran doit dire pourquoi
+      // aucune facture n'est partie, au lieu de rester muet ou d'afficher une
+      // panne — ce n'en est pas une, c'est un état normal tant que la fiche
+      // partenaire n'a pas été complétée.
+      const missing = result.missing.map((f) => BILLING_FIELD_LABELS[f] ?? f).join(", ");
+      redirect(
+        `${PATH}?error=${encodeURIComponent(
+          `Location marquée louée, mais la facturation de la commission est bloquée : fiche loueur incomplète (${missing}). Complétez la fiche partenaire pour permettre l'émission de la facture.`,
+        )}`,
+      );
     }
   }
 
