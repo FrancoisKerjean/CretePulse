@@ -223,13 +223,16 @@
   <p class="state-note">
     La location est « louee », aucune facture n'existe, le loueur est facturable : le bouton apparait.
     Sans lui, cette ligne ne serait JAMAIS facturee — le cron ne prend que <span class="data">outcome
-    IS NULL</span>, et l'issue a deja ete tranchee.
+    IS NULL</span>, et l'issue a deja ete tranchee. <strong>« Commission encaissée » n'apparait pas
+    encore</strong> : aucune facture n'existe sur cette ligne tant que ce bouton n'a pas ete clique, et
+    proposer d'encaisser une commission jamais facturee laisserait <span class="data">car_requests</span>
+    et <span class="data">car_commission_invoices</span> se contredire (correctif du 31/07/2026).
   </p>
   <div class="viewport">
     <div class="card">
       <div class="body" style="border-top:0">
         <div class="req-head">
-          <span class="xs light data">#39 · 28/07/2026 09:14</span>
+          <span class="xs light data">#27 · 28/07/2026 09:14</span>
           <span class="pill pill-status">accepted</span>
           <span class="pill pill-rented">rented</span>
           <span class="xs muted" style="margin-left:auto">4 loueur(s) invité(s)</span>
@@ -242,7 +245,6 @@
         <div class="actions">
           <details class="sm"><summary class="muted" style="text-decoration:underline">corriger l'issue</summary></details>
           <button class="btn btn-sea">Émettre la facture</button>
-          <button class="btn btn-sun">Commission encaissée</button>
           <form style="display:flex;gap:6px;flex:1;min-width:14rem">
             <input type="text" placeholder="Note admin…" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font:inherit;font-size:14px">
             <button class="btn">OK</button>
@@ -255,9 +257,13 @@
   <!-- ─────────────────────────────────────────────────────────────── -->
   <div class="state-label">4 · Onglet Demandes — facture en souffrance, fiche loueur incomplete</div>
   <p class="state-note">
-    Aucun bouton ici : il serait refuse. Un bouton qui ment est pire qu'une phrase qui explique (meme
-    doctrine que <span class="data">invoiceAdminState</span>). On nomme les champs manquants et on donne
-    le lien direct vers la fiche a completer, dans l'onglet Partenaires, filtree sur ce loueur.
+    Aucun bouton d'emission ici : il serait refuse. Un bouton qui ment est pire qu'une phrase qui
+    explique (meme doctrine que <span class="data">invoiceAdminState</span>). On nomme les champs
+    manquants et on donne le lien direct vers la fiche a completer, dans l'onglet Partenaires, filtree
+    sur ce loueur. <strong>« Commission encaissée » ne s'affiche plus non plus</strong> (correctif du
+    31/07/2026) : aucune facture n'existe sur cette ligne, l'encaisser ecrirait
+    <span class="data">commission_paid_at</span> sans aucune contrepartie facturable, et personne ne le
+    verrait.
   </p>
   <div class="viewport">
     <div class="card">
@@ -280,7 +286,6 @@
             numéro de TVA intracommunautaire).
             <a href="#" style="font-weight:700;text-decoration:underline">Compléter la fiche de Zorbas Rent a Car</a>
           </span>
-          <button class="btn btn-sun">Commission encaissée</button>
         </div>
       </div>
     </div>
@@ -293,7 +298,8 @@
     n'existe, donc le verrou a ete pris puis jamais relache. Tant qu'il tient,
     <span class="data">requestCommission</span> rendra <span class="data">already_requested</span> quoi
     qu'on remplisse. Proposer un bouton, ou reclamer « completez la fiche », serait une fausse promesse :
-    on dit exactement ce qu'il faut faire a la main.
+    on dit exactement ce qu'il faut faire a la main. <strong>« Commission encaissée » ne s'affiche pas non
+    plus</strong> (correctif du 31/07/2026) : aucune facture n'existe sur cette ligne.
   </p>
   <div class="viewport">
     <div class="card">
@@ -310,14 +316,46 @@
             Facture bloquée : le verrou de facturation est posé alors qu'aucune facture n'existe.
             Aucun clic ne débloque : il faut remettre <span class="data">commission_requested_at</span> à NULL en base.
           </span>
-          <button class="btn btn-sun">Commission encaissée</button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- ─────────────────────────────────────────────────────────────── -->
-  <div class="state-label">6 · Retour d'un clic sur « Emettre la facture », systeme desarme</div>
+  <div class="state-label">6 · Onglet Demandes — commission encaissee a la main, AVANT le systeme de facturation</div>
+  <p class="state-note">
+    Cas historique (correctif du 31/07/2026) : cette location a ete reglee <strong>a la main, hors
+    systeme</strong>, avant l'existence de la facturation automatisee — <span class="data">commission_paid_at</span>
+    est rempli, mais aucune ligne n'existe dans <span class="data">car_commission_invoices</span>. Masquer
+    completement le bouton rendrait cette ligne muette et interdirait de corriger une saisie faite par
+    erreur : il reste donc visible, mais seulement pour <strong>repasser en due</strong>, jamais pour
+    encaisser une nouvelle commission sans facture.
+  </p>
+  <div class="viewport">
+    <div class="card">
+      <div class="body" style="border-top:0">
+        <div class="req-head">
+          <span class="xs light data">#9 · 03/07/2026 11:20</span>
+          <span class="pill pill-status">accepted</span>
+          <span class="pill pill-rented">rented</span>
+          <span class="pill pill-status">commission encaissée</span>
+          <span class="xs muted" style="margin-left:auto">2 loueur(s) invité(s)</span>
+        </div>
+        <div class="sm" style="margin-top:8px">
+          <strong>Chania</strong> · 2026-07-05 09:00 → 2026-07-12 09:00 · Compact, 2 pax<br>
+          Choisi par le client : <strong>cretecar.rent</strong> · final <strong class="data">250 €</strong>
+          · commission <strong class="data">25.00 €</strong>
+        </div>
+        <div class="actions">
+          <details class="sm"><summary class="muted" style="text-decoration:underline">corriger l'issue</summary></details>
+          <button class="btn">Repasser en due</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <div class="state-label">7 · Retour d'un clic sur « Emettre la facture », systeme desarme</div>
   <p class="state-note">
     Etat NORMAL aujourd'hui. Sans ce bandeau, l'ecran serait rigoureusement identique avant et apres le
     clic, et le silence passerait pour une panne. Un succes, lui, ne dit rien : le numero de facture

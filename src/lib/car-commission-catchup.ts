@@ -59,6 +59,32 @@ export function missingIdentityLabels(missing: string[]): string[] {
   return missing.map((f) => IDENTITY_FIELD_LABELS[f] ?? f);
 }
 
+/**
+ * Faut-il proposer le bouton « Commission encaissée » / « Repasser en due » ?
+ *
+ * Meme doctrine que `commissionCatchUp` / `invoiceAdminState` : un bouton qui
+ * s affiche alors que rien ne se passe derriere est un mensonge d interface.
+ * Sans facture, cocher « encaissee » ecrirait `commission_paid_at` sans
+ * aucune contrepartie facturable (`markInvoicePaid` ne trouve alors aucune
+ * ligne, cf. `setCommissionPaid`) : la demande semblerait reglee alors
+ * qu elle n a jamais ete facturee. Vu sur la planche
+ * `admin-identite-loueur.html`, etats 4 et 5 : fiche loueur incomplete ou
+ * verrou orphelin, et le bouton restait pourtant propose juste en dessous.
+ *
+ * Exception volontaire : une demande dont `commission_paid_at` est DEJA
+ * rempli reste visible, meme sans facture. Des commissions anterieures au
+ * systeme de facturation ont ete reglees a la main, hors systeme (ex.
+ * Luxtrans, juillet 2026) : masquer completement le bouton rendrait ces
+ * lignes muettes et interdirait de corriger une saisie faite par erreur.
+ */
+export function shouldOfferCommissionPaidToggle(
+  request: { outcome?: string | null; commission_paid_at?: string | null },
+  hasInvoice: boolean,
+): boolean {
+  if (request.outcome !== "rented") return false;
+  return hasInvoice || request.commission_paid_at != null;
+}
+
 const FAILURE_MESSAGES: Record<string, string> = {
   partner_without_email:
     "Loueur sans email : sa facture ne peut être envoyée à personne. Renseignez son email, puis réémettez.",

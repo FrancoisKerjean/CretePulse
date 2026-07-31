@@ -15,7 +15,7 @@ import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { canCancelRequest } from "@/lib/car-quotes";
 import { insuranceSummary, inclusionLabels } from "@/lib/car-inclusions";
 import { invoiceAdminState, type AdminInvoiceRow } from "@/lib/car-invoice";
-import { commissionCatchUp, missingIdentityLabels } from "@/lib/car-commission-catchup";
+import { commissionCatchUp, missingIdentityLabels, shouldOfferCommissionPaidToggle } from "@/lib/car-commission-catchup";
 import {
   setOutcome, setCommissionPaid, saveNote, cancelRequest,
   creditInvoiceAction, resendInvoiceAction, emitInvoiceAction,
@@ -530,7 +530,15 @@ export function RequestsTable({
                     Aucun clic ne débloque : il faut remettre <span className="font-data">commission_requested_at</span> à NULL en base.
                   </span>
                 ) : null}
-                {r.outcome === "rented" ? (
+                {/* Sans facture, encaisser n'a pas de contrepartie
+                    (`markInvoicePaid` ne trouve alors aucune ligne) : un
+                    mensonge d'interface deja documente par `invoiceAdminState`
+                    / `commissionCatchUp` (defaut vu sur la planche, etats 4 et
+                    5 : fiche loueur incomplete, verrou orphelin). Exception
+                    volontaire : une commission deja marquee encaissee a la
+                    main hors systeme (ex. Luxtrans, juillet 2026) reste
+                    corrigeable. */}
+                {shouldOfferCommissionPaidToggle(r, inv != null) ? (
                   <form action={setCommissionPaid.bind(null, r.id, !r.commission_paid_at)}>
                     <button className={`rounded-full px-3 py-1 text-sm font-bold ${r.commission_paid_at ? "border border-border bg-white" : "bg-sun text-night"}`}>
                       {r.commission_paid_at ? "Repasser en due" : "Commission encaissée"}

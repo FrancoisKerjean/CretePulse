@@ -5,7 +5,7 @@
 // `outcome IS NULL`. Sans ce geste, completer la fiche du loueur apres coup ne
 // declenche rien et le travail est perdu en silence.
 import { describe, it, expect } from "vitest";
-import { commissionCatchUp, commissionOutcomeMessage } from "./car-commission-catchup";
+import { commissionCatchUp, commissionOutcomeMessage, shouldOfferCommissionPaidToggle } from "./car-commission-catchup";
 
 const RENTED = {
   id: 42,
@@ -146,5 +146,38 @@ describe("commissionOutcomeMessage", () => {
   it("ne laisse aucun code d echec sans message", () => {
     const m = commissionOutcomeMessage({ status: "failed", code: "code_jamais_vu" });
     expect(m).toContain("code_jamais_vu");
+  });
+});
+
+describe("shouldOfferCommissionPaidToggle", () => {
+  // Meme doctrine que invoiceAdminState / commissionCatchUp : un bouton qui
+  // s affiche alors que rien ne se passe derriere (aucune facture, donc
+  // markInvoicePaid ne trouve aucune ligne) est un mensonge d interface. Vu
+  // sur la planche admin-identite-loueur.html, etats 4 et 5 : « Commission
+  // encaissée » restait offert sur une location dont la facturation avait ete
+  // refusee (fiche loueur incomplete, ou verrou orphelin).
+
+  it("jamais hors d une location louee", () => {
+    expect(shouldOfferCommissionPaidToggle({ outcome: null, commission_paid_at: null }, true)).toBe(false);
+    expect(shouldOfferCommissionPaidToggle({ outcome: "lost", commission_paid_at: null }, true)).toBe(false);
+  });
+
+  it("une facture existe : le bouton bascule paye/du, quel que soit l etat courant", () => {
+    expect(shouldOfferCommissionPaidToggle({ outcome: "rented", commission_paid_at: null }, true)).toBe(true);
+    expect(shouldOfferCommissionPaidToggle({ outcome: "rented", commission_paid_at: "2026-08-11T09:00:00.000Z" }, true)).toBe(true);
+  });
+
+  it("aucune facture, jamais encaissee : rien a proposer, ce serait facturer dans le vide", () => {
+    // Etats 4 (fiche loueur incomplete) et 5 (verrou orphelin) de la planche :
+    // aucune facture n existe et rien n a ete saisi a la main.
+    expect(shouldOfferCommissionPaidToggle({ outcome: "rented", commission_paid_at: null }, false)).toBe(false);
+  });
+
+  it("aucune facture mais deja marquee encaissee : reste visible pour corriger une saisie manuelle", () => {
+    // Cas historique : commission facturee a la main hors systeme (Luxtrans,
+    // juillet 2026), commission_paid_at rempli sans jamais avoir eu de facture
+    // dans car_commission_invoices. Masquer completement rendrait la ligne
+    // muette et interdirait de repasser en due une saisie faite par erreur.
+    expect(shouldOfferCommissionPaidToggle({ outcome: "rented", commission_paid_at: "2026-07-15T08:00:00.000Z" }, false)).toBe(true);
   });
 });
