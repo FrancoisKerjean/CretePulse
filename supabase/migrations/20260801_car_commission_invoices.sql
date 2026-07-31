@@ -59,5 +59,19 @@ $$;
 revoke execute on function public.next_car_invoice_number(text) from public;
 grant execute on function public.next_car_invoice_number(text) to service_role;
 
+-- Droits table-level EXPLICITES, convention du depot (cf. 20260612_car_requests.sql).
+-- ⛔ Mesure sur la vraie base apres la creation, avant ce correctif :
+--      car_commission_invoices | anon=r/postgres, authenticated=arwdDxtm/postgres
+--      car_requests            | service_role uniquement
+-- Les tables neuves heritaient donc de droits par defaut qui ouvraient le grand
+-- livre des commissions loueur en LECTURE a `anon` (montants, numeros de facture,
+-- jetons haches, loueur par loueur) et en ECRITURE COMPLETE a `authenticated`,
+-- avec la cle publique embarquee dans le navigateur. Ne jamais creer une table
+-- ici sans ces deux lignes : l'absence de grant n'est pas une absence d'acces.
+revoke all on public.car_commission_invoices from anon, authenticated;
+revoke all on public.car_commission_invoice_counters from anon, authenticated;
+grant select, insert, update on public.car_commission_invoices to service_role;
+grant select, insert, update on public.car_commission_invoice_counters to service_role;
+
 -- PostgREST self-hosted : sans ce reload, la table reste invisible du client.
 notify pgrst, 'reload schema';
