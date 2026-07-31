@@ -11,6 +11,7 @@ import { setRequestLocale } from "next-intl/server";
 import { invoiceByToken } from "@/lib/car-invoice-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { carPickupLabel } from "@/lib/car-lead";
+import { ratePercentLabel } from "@/lib/car-invoice";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -108,7 +109,7 @@ export default async function InvoicePage({
               <br />
               <span className="text-text-muted">
                 {EUR(invoice.base_amount_eur)} quoted and accepted ·{" "}
-                {(Number(invoice.rate) * 100).toFixed(0)}%
+                {ratePercentLabel(Number(invoice.rate))}%
               </span>
             </td>
             <td className="py-2 text-right font-bold">{EUR(invoice.amount_eur)}</td>

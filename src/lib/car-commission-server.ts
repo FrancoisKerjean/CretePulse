@@ -1,6 +1,8 @@
-// Declenchement de la demande de commission. Appele par le back-office au
-// passage d'une location en « rented » (decision Kami 29/07/2026 : automatique,
-// pas de geste manuel).
+// Declenchement de la demande de commission. Deux appelants, meme chemin :
+// - le cron `/api/cron/car-commission-invoice`, declencheur PRINCIPAL, au
+//   premier jour de la location ;
+// - le back-office, au passage manuel d'une location en « rented ».
+// (decision Kami 29/07/2026 : automatique, pas de geste manuel obligatoire).
 //
 // Ce module ne touche jamais l'argent de la location : il vend la commission au
 // loueur, sur le compte plateforme, sans Connect. Voir car-commission.ts.
@@ -156,7 +158,21 @@ export async function requestCommission(requestId: number): Promise<CommissionOu
     return { status: "failed", code: "invoice_mail_refused" };
   }
 
-  await markInvoiceSent(created.invoice.id);
+  try {
+    await markInvoiceSent(created.invoice.id);
+  } catch (err) {
+    // L email EST parti, mais sent_at n a pas pu etre pose : le back-office
+    // affichera « jamais envoyee » sur une facture recue. Rendre « requested »
+    // ferait compter au cron une facture en bon ordre, alors que cet etat
+    // appelle une main humaine — et un clic sur « Renvoyer » enverrait un
+    // SECOND email au loueur.
+    console.error("[car/commission] facture envoyee mais envoi non enregistre", {
+      requestId,
+      invoice: created.invoice.number,
+      err,
+    });
+    return { status: "failed", code: "invoice_sent_not_recorded" };
+  }
   return { status: "requested", invoiceNumber: created.invoice.number };
 }
 

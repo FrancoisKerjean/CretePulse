@@ -219,6 +219,23 @@ describe("creditCommissionInvoice", () => {
     expect(res).toMatchObject({ creditNumber: "CD-2026-0007-A" });
   });
 
+  it("ecriture de l avoir refusee : rien n est notifie, rien n est repasse en perdu", async () => {
+    // creditInvoice leve quand PostgREST refuse. L erreur remonte telle quelle :
+    // sans ca, on rendrait un numero d avoir qui n existe nulle part, la demande
+    // passerait en « perdue » et le loueur recevrait la notification d une piece
+    // comptable inexistante.
+    creditInvoice.mockRejectedValueOnce(
+      new Error("creditInvoice(7) refuse par la base: permission denied") as never,
+    );
+    const w = wiring();
+
+    await expect(creditCommissionInvoice(42, "location annulee")).rejects.toThrow(
+      /refuse par la base/,
+    );
+    expect(sendCreditNote).not.toHaveBeenCalled();
+    expect(w.updates.find((u) => "outcome" in u)).toBeUndefined();
+  });
+
   it("Stripe refuse l expiration : l avoir est emis quand meme", async () => {
     // Session deja expiree, deja consommee, ou API muette. L avoir est un acte
     // comptable : il ne depend pas de la sante de Stripe. On journalise et on
@@ -313,6 +330,38 @@ describe("resendCommissionInvoice", () => {
     expect(await resendCommissionInvoice(42)).toEqual({ error: "partner_without_email" });
     expect(sendPartnerCommissionRequest).not.toHaveBeenCalled();
     expect(markInvoiceSent).not.toHaveBeenCalled();
+  });
+
+  it("rotation du jeton refusee : AUCUN email ne part avec un lien mort", async () => {
+    // rotateInvoiceToken leve quand PostgREST refuse l ecriture. Le jeton rendu
+    // ne correspondrait a rien en base : l email partirait avec un lien qui ne
+    // mene nulle part, et le loueur ne pourrait ni voir ni payer sa facture.
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    rotateInvoiceToken.mockRejectedValueOnce(
+      new Error("rotateInvoiceToken(7) refuse par la base: permission denied") as never,
+    );
+    wiring();
+
+    expect(await resendCommissionInvoice(42)).toEqual({ error: "token_rotation_failed" });
+    expect(sendPartnerCommissionRequest).not.toHaveBeenCalled();
+    expect(markInvoiceSent).not.toHaveBeenCalled();
+    expect(JSON.stringify(err.mock.calls)).toContain("CD-2026-0007");
+    err.mockRestore();
+  });
+
+  it("envoi note refuse : un motif propre, jamais « Resend a refuse »", async () => {
+    // L email EST parti cette fois. Confondre ce cas avec mail_refused ferait
+    // afficher « Resend a refuse l envoi » sur un envoi reussi, et la facture
+    // resterait « jamais envoyee » sans que personne ne sache pourquoi.
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    markInvoiceSent.mockRejectedValueOnce(
+      new Error("markInvoiceSent(7) refuse par la base: permission denied") as never,
+    );
+    wiring();
+
+    expect(await resendCommissionInvoice(42)).toEqual({ error: "sent_not_recorded" });
+    expect(sendPartnerCommissionRequest).toHaveBeenCalledOnce();
+    err.mockRestore();
   });
 
   it("Resend refuse a nouveau : sent_at n est pas mis a jour et l erreur remonte", async () => {

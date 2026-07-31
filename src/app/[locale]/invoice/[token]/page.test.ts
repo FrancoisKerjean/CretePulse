@@ -175,6 +175,30 @@ describe("page facture · coordonnees bancaires", () => {
     expect(html).not.toContain("This rental was cancelled");
   });
 
+  it("n arrondit pas un taux fractionnaire sur la piece comptable", async () => {
+    // 7,5 % s imprimait « 8% » (toFixed(0)) : base x 8 % ne redonne pas le total
+    // affiche juste en dessous, et sur une facture deux nombres qui ne se
+    // recoupent pas, c est une contestation.
+    wiring({ ...INVOICE, base_amount_eur: 200, rate: 0.075, amount_eur: 15 });
+
+    const html = await render();
+    expect(html).toContain("7.5%");
+    expect(html).not.toContain("8%");
+    expect(html).toContain("15.00 EUR");
+  });
+
+  it("un taux entier reste ecrit sans decimale", async () => {
+    // Le bruit du flottant (0.1 * 100 = 10.000000000000002) ne doit pas non plus
+    // apparaitre sur la facture.
+    wiring();
+
+    // Ancre sur le libelle du taux : « 10.0 » nu se retrouverait dans le montant
+    // « 310.00 EUR » de la ligne d a cote.
+    const html = await render();
+    expect(html).toContain("accepted · 10%");
+    expect(html).not.toContain("accepted · 10.0");
+  });
+
   it("aucune coordonnee bancaire n est ecrite en dur dans la page", async () => {
     // Garde de depot : la seule source des coordonnees est l environnement.
     const { readFileSync } = await import("node:fs");

@@ -52,6 +52,23 @@ export function creditNumberFor(invoiceNumber: string): string {
   return `${invoiceNumber}-A`;
 }
 
+/**
+ * Taux de commission en pourcentage, tel qu il s imprime sur la facture.
+ *
+ * ⛔ JAMAIS d arrondi a l entier : `toFixed(0)` transformait 7,5 % en « 8% », et
+ * `base × 8 %` ne redonne pas le total imprime juste en dessous. Sur une piece
+ * comptable, deux nombres qui ne se recoupent pas, c est une contestation.
+ *
+ * Un taux entier reste ecrit sans decimale (« 10% »), un taux fractionnaire
+ * montre la sienne (« 7.5% »). L arrondi au dix-millieme absorbe le bruit du
+ * flottant : `rate` nait d une division (amount / base), et 0.1 × 100 vaut
+ * 10.000000000000002 en JS.
+ */
+export function ratePercentLabel(rate: number): string {
+  const pct = Math.round(Number(rate) * 1e6) / 1e4;
+  return Number.isFinite(pct) ? String(pct) : "0";
+}
+
 /** Colonnes de `car_commission_invoices` dont le back-office a besoin. */
 export interface AdminInvoiceRow {
   number: string;

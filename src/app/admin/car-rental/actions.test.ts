@@ -60,10 +60,21 @@ interface Wiring {
 
 /** Chaine PostgREST modelee a la main : la FORME de la chaine fait partie de ce
  *  que le test verifie. `update().eq()...` est attendu, donc thenable. */
-function wiring(opts: { invoice?: unknown; request?: unknown } = {}): Wiring {
+function wiring(
+  opts: {
+    invoice?: unknown;
+    request?: unknown;
+    /** Refus PostgREST sur les ecritures de la table facture. */
+    invoiceWriteError?: { message: string };
+  } = {},
+): Wiring {
   const w: Wiring = { tables: [], updates: [], filters: [] };
   from.mockImplementation((table: string) => {
     w.tables.push(table);
+    const writeResult = () =>
+      table === "car_commission_invoices" && opts.invoiceWriteError
+        ? { data: null, error: opts.invoiceWriteError }
+        : { data: [], error: null };
     const row = () =>
       table === "car_commission_invoices"
         ? ("invoice" in opts ? opts.invoice : INVOICE)
@@ -79,7 +90,7 @@ function wiring(opts: { invoice?: unknown; request?: unknown } = {}): Wiring {
         return chain;
       },
       maybeSingle: async () => ({ data: row(), error: null }),
-      select: async () => ({ data: [], error: null }),
+      select: async () => writeResult(),
       then: (res: (v: unknown) => unknown, rej: (e: unknown) => unknown) =>
         Promise.resolve({ data: null, error: null }).then(res, rej),
     });
@@ -132,6 +143,18 @@ describe("setCommissionPaid", () => {
     const w = wiring({ invoice: null });
     await expect(setCommissionPaid(42, true)).resolves.toBeUndefined();
     expect(w.updates.some((u) => u.table === "car_requests")).toBe(true);
+  });
+
+  it.each([
+    ["encaissee", true],
+    ["due", false],
+  ])("une ecriture refusee sur la facture (%s) ne passe pas pour un succes", async (_l, paid) => {
+    // Le back-office affichait « commission encaissee » alors que la page du
+    // loueur gardait son bouton « Pay by card » : l erreur PostgREST n etait
+    // jamais lue. Elle remonte maintenant, comme toutes les erreurs de ce
+    // fichier — Next affiche l echec, personne ne croit a un succes.
+    wiring({ invoiceWriteError: { message: "permission denied for table" } });
+    await expect(setCommissionPaid(42, paid)).rejects.toThrow(/permission denied for table/);
   });
 
   it("ne marque payee que sur une demande reellement louee", async () => {

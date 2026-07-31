@@ -216,6 +216,25 @@ describe("requestCommission", () => {
     errSpy.mockRestore();
   });
 
+  it("l enregistrement de l envoi refuse ne passe pas pour un succes", async () => {
+    // markInvoiceSent leve maintenant quand PostgREST refuse l ecriture. L email
+    // EST parti, mais sent_at reste vide : la facture s affichera « jamais
+    // envoyee » au back-office. Rendre « requested » ferait compter au cron une
+    // facture en bon ordre alors qu elle appelle une main humaine.
+    wiring();
+    markInvoiceSent.mockRejectedValueOnce(
+      new Error("markInvoiceSent(7) refuse par la base: permission denied") as never,
+    );
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await requestCommission(42);
+
+    expect(res).toMatchObject({ status: "failed", code: "invoice_sent_not_recorded" });
+    expect(sendPartnerCommissionRequest).toHaveBeenCalledOnce();
+    expect(JSON.stringify(errSpy.mock.calls)).toContain("CD-2026-0007");
+    errSpy.mockRestore();
+  });
+
   it("relache le verrou quand le loueur n a pas d email", async () => {
     const updates = wiring({ partner: null });
     const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});

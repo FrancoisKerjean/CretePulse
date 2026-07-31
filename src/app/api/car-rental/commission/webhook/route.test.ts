@@ -98,6 +98,26 @@ describe("POST /api/car-rental/commission/webhook", () => {
     expect(markInvoicePaidMock).toHaveBeenCalledWith(42);
   });
 
+  it("une facture non marquee payee ne rend JAMAIS 200", async () => {
+    // Stripe a encaisse la carte du loueur. Si markInvoicePaid est refuse par la
+    // base et qu on repond 200, la page facture garde son bouton « Pay by card »
+    // sur de l argent deja recu, et personne ne l apprend jamais : le refus doit
+    // etre bruyant. L evenement est deja au registre, donc la nouvelle tentative
+    // de Stripe ressortira en « duplicate » : pas de tempete de rejeu.
+    constructEvent.mockReturnValueOnce(event(CAR_META));
+    wiring();
+    markInvoicePaidMock.mockRejectedValueOnce(
+      new Error("markInvoicePaid(42) refuse par la base: permission denied"),
+    );
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await POST(req() as never);
+
+    expect(res.status).toBe(500);
+    expect(JSON.stringify(err.mock.calls)).toMatch(/PAIEMENT ENCAISSE/);
+    err.mockRestore();
+  });
+
   it("un evenement d un autre type ne marque pas la facture payee", async () => {
     constructEvent.mockReturnValueOnce({
       id: "evt_other",

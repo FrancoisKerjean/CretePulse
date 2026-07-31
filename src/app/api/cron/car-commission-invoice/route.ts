@@ -34,6 +34,16 @@ export async function GET(request: NextRequest) {
   // cron en soiree UTC facturerait un jour trop tot cote grec.
   const today = new Date().toISOString().slice(0, 10);
 
+  // ⛔ `outcome IS NULL` EST le filtre d idempotence, et le seul. Ce cron tranche
+  // l issue en « rented » AVANT d appeler la facturation, et AUCUN chemin du
+  // depot ne remet `outcome` a NULL : une ligne facturee, ou seulement tentee,
+  // sort donc definitivement du lot des le passage suivant. Corollaire : une
+  // ligne remontee ici n a jamais de facture, il est inutile d aller le
+  // verifier. Si un geste futur remet `outcome` a NULL (bouton « annuler
+  // l issue »), il DEVRA verifier l existence d une facture avant de refacturer.
+  // Ce n est pas `commission_requested_at` qui protege : releaseLock() le remet
+  // a NULL. Le rattrapage d un envoi rate est le bouton « Renvoyer » du
+  // back-office, jamais un second passage du cron.
   const { data: rows } = await supabase
     .from("car_requests")
     .select(
@@ -53,16 +63,6 @@ export async function GET(request: NextRequest) {
 
   for (const row of (rows ?? []) as InvoiceCandidate[]) {
     if (!isInvoiceable(row, today, START)) continue;
-
-    // Deja facturee ET envoyee : on passe. Le NOT EXISTS ne s exprime pas cote
-    // PostgREST, il se fait ici. C est le vrai filtre d idempotence, car
-    // `commission_requested_at` ne peut pas l etre : releaseLock() le remet a NULL.
-    const { data: already } = await supabase
-      .from("car_commission_invoices")
-      .select("id, sent_at")
-      .eq("request_id", row.id)
-      .maybeSingle();
-    if (already?.sent_at) continue;
 
     const { data: partner } = await supabase
       .from("car_partners")

@@ -54,6 +54,8 @@ function wiring(
   opts: {
     selects?: Array<{ data: unknown }>;
     insert?: { data: unknown; error: { message: string } | null };
+    /** Reponse de PostgREST a un UPDATE. Par defaut : accepte, 0 ligne touchee. */
+    write?: { data: unknown; error: { message: string } | null };
   } = {},
 ): Wiring {
   const w: Wiring = { tables: [], filters: [], inserts: [], updates: [] };
@@ -73,8 +75,8 @@ function wiring(
       },
       maybeSingle: async () => nextSelect(),
       // Fin de chaine d un update : PostgREST ne renvoie les lignes touchees
-      // que si `select()` suit.
-      select: async () => ({ data: [], error: null }),
+      // que si `select()` suit. Il ne LEVE jamais, il rend `{ data, error }`.
+      select: async () => opts.write ?? { data: [], error: null },
     };
     return {
       select: () => chain,
@@ -361,5 +363,71 @@ describe("rotateInvoiceToken", () => {
     const a = await rotateInvoiceToken(7);
     const b = await rotateInvoiceToken(7);
     expect(a).not.toBe(b);
+  });
+});
+
+describe("une ecriture refusee ne passe JAMAIS pour un succes", () => {
+  // PostgREST ne LEVE pas sur refus : il rend `{ data, error }`, exactement
+  // comme l API Resend, sur laquelle ce depot a deja paye ce piege (des envois
+  // refuses comptes comme partis). Sans lecture de `error`, une ecriture
+  // refusee — droits, contrainte, panne reseau — est totalement invisible.
+  const REFUS = {
+    data: null,
+    error: { message: "permission denied for table car_commission_invoices" },
+  };
+
+  it.each([
+    ["markInvoiceSent", () => markInvoiceSent(7)],
+    ["markInvoicePaid", () => markInvoicePaid(39)],
+    ["markInvoiceUnpaid", () => markInvoiceUnpaid(39)],
+    ["creditInvoice", () => creditInvoice(7, "NOVAI-CD-2026-004", "annulation")],
+    ["rotateInvoiceToken", () => rotateInvoiceToken(7)],
+  ])("%s leve quand PostgREST refuse l ecriture", async (_label, call) => {
+    wiring({ selects: [{ data: INVOICE }], write: REFUS });
+    await expect(call()).rejects.toThrow(/permission denied for table/);
+  });
+
+  it("markInvoiceSent refuse : la facture n est pas comptee comme partie", async () => {
+    // Consequence concrete : une facture reellement envoyee resterait affichee
+    // « jamais envoyee » au back-office, et quelqu un la renverrait.
+    wiring({ write: REFUS });
+    await expect(markInvoiceSent(7)).rejects.toThrow(/markInvoiceSent/);
+  });
+
+  it("markInvoicePaid refuse : le bloquant du double paiement remonte", async () => {
+    // Le loueur a paye par carte, la page continuerait d afficher « a payer ».
+    // C est le defaut qu on vient de corriger, revenu par un autre chemin.
+    wiring({ selects: [{ data: INVOICE }], write: REFUS });
+    await expect(markInvoicePaid(39)).rejects.toThrow(/markInvoicePaid/);
+  });
+
+  it("rotateInvoiceToken refuse : aucun jeton fantome n est rendu", async () => {
+    // Le jeton rendu a l appelant ne correspondrait a rien en base, et l email
+    // partirait avec un lien mort.
+    wiring({ write: REFUS });
+    await expect(rotateInvoiceToken(7)).rejects.toThrow(/rotateInvoiceToken/);
+  });
+
+  it.each([
+    ["markInvoicePaid", () => markInvoicePaid(999)],
+    ["markInvoiceUnpaid", () => markInvoiceUnpaid(999)],
+  ])("%s : zero ligne touchee n est PAS une erreur", async (_label, call) => {
+    // Commission d une demande anterieure au systeme de facturation : il n y a
+    // aucune ligne a toucher, PostgREST rend `error: null`, tout va bien.
+    wiring({ selects: [{ data: null }], write: { data: [], error: null } });
+    await expect(call()).resolves.toBeUndefined();
+  });
+
+  it("une facture avoiree ne tente aucune ecriture, donc ne leve pas", async () => {
+    // La sortie anticipee de markInvoicePaid precede l update : le refus
+    // simule ne doit pas transformer ce cas en echec.
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const w = wiring({
+      selects: [{ data: { ...INVOICE, credited_at: "2026-08-02T10:00:00Z" } }],
+      write: REFUS,
+    });
+    await expect(markInvoicePaid(39)).resolves.toBeUndefined();
+    expect(w.updates).toHaveLength(0);
+    err.mockRestore();
   });
 });

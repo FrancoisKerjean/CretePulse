@@ -95,12 +95,31 @@ export async function createInvoiceForRequest(
   return { invoice: data as InvoiceRow, token, reused: false };
 }
 
+/**
+ * PostgREST ne LEVE pas sur refus : il rend `{ data, error }`, exactement comme
+ * l API Resend sur laquelle ce depot a deja paye ce piege — des envois refuses
+ * comptes comme partis parce que personne ne lisait `error`. Une ecriture non
+ * verifiee est donc invisible : droits, contrainte ou panne reseau passent pour
+ * un succes. Toute ecriture de ce module passe par ici, et un refus LEVE, comme
+ * le fait deja createInvoiceForRequest.
+ *
+ * ⛔ Zero ligne touchee n est PAS une erreur : une demande anterieure au systeme
+ * de facturation n a pas de facture, `error` reste nul et l appel aboutit.
+ */
+function assertWritten(op: string, id: number, error: { message: string } | null): void {
+  if (!error) return;
+  throw new Error(`${op}(${id}) refuse par la base: ${error.message}`);
+}
+
 export async function markInvoiceSent(id: number): Promise<void> {
-  await supabaseAdmin
+  const { error } = await supabaseAdmin
     .from("car_commission_invoices")
     .update({ sent_at: new Date().toISOString() })
     .eq("id", id)
     .select();
+  // Refuse en silence, une facture reellement partie resterait affichee
+  // « jamais envoyee » au back-office, et quelqu un la renverrait.
+  assertWritten("markInvoiceSent", id, error);
 }
 
 /**
@@ -112,11 +131,14 @@ export async function markInvoiceSent(id: number): Promise<void> {
  */
 export async function rotateInvoiceToken(id: number): Promise<string> {
   const token = newToken();
-  await supabaseAdmin
+  const { error } = await supabaseAdmin
     .from("car_commission_invoices")
     .update({ token_hash: hashToken(token) })
     .eq("id", id)
     .select();
+  // Refuse en silence, le jeton rendu ici ne correspondrait a RIEN en base :
+  // l email de renvoi partirait avec un lien mort.
+  assertWritten("rotateInvoiceToken", id, error);
   return token;
 }
 
@@ -146,13 +168,16 @@ export async function markInvoicePaid(requestId: number): Promise<void> {
   // Les deux gardes SQL doublent la lecture ci-dessus : entre les deux, un avoir
   // peut etre emis, et `is(paid_at, null)` empeche un second webhook d ecraser
   // la date du premier paiement.
-  await supabaseAdmin
+  const { error } = await supabaseAdmin
     .from("car_commission_invoices")
     .update({ paid_at: new Date().toISOString() })
     .eq("request_id", requestId)
     .is("paid_at", null)
     .is("credited_at", null)
     .select();
+  // Refuse en silence, le loueur a paye par carte et la page continue
+  // d afficher « a payer » : il paie une seconde fois.
+  assertWritten("markInvoicePaid", requestId, error);
 }
 
 /**
@@ -164,16 +189,17 @@ export async function markInvoicePaid(requestId: number): Promise<void> {
  * anterieure au systeme de facturation) : ce n est pas une erreur.
  */
 export async function markInvoiceUnpaid(requestId: number): Promise<void> {
-  await supabaseAdmin
+  const { error } = await supabaseAdmin
     .from("car_commission_invoices")
     .update({ paid_at: null })
     .eq("request_id", requestId)
     .select();
+  assertWritten("markInvoiceUnpaid", requestId, error);
 }
 
 export async function creditInvoice(id: number, number: string, reason: string): Promise<string> {
   const creditNumber = creditNumberFor(number);
-  await supabaseAdmin
+  const { error } = await supabaseAdmin
     .from("car_commission_invoices")
     .update({
       credited_at: new Date().toISOString(),
@@ -183,5 +209,8 @@ export async function creditInvoice(id: number, number: string, reason: string):
     .eq("id", id)
     .is("credited_at", null)
     .select();
+  // Refuse en silence, on rendrait un numero d avoir qui n existe nulle part,
+  // et le loueur recevrait la notification d une piece comptable inexistante.
+  assertWritten("creditInvoice", id, error);
   return creditNumber;
 }

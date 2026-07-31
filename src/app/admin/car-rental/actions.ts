@@ -140,7 +140,13 @@ export async function resendInvoiceAction(id: number) {
               ? "Facture annulée par un avoir, rien à renvoyer"
               : res.error === "partner_without_email"
                 ? "Loueur sans email : impossible de lui renvoyer sa facture"
-                : "Resend a refusé l'envoi, réessayez dans quelques minutes";
+                : res.error === "token_rotation_failed"
+                  ? "Le lien de paiement n'a pas pu être régénéré : rien n'a été envoyé, réessayez dans quelques minutes"
+                  // L'email EST parti : dire « Resend a refusé » serait faux, et
+                  // la facture restera pourtant affichée « jamais envoyée ».
+                  : res.error === "sent_not_recorded"
+                    ? "Facture renvoyée au loueur, mais l'envoi n'a pas pu être enregistré : elle restera affichée « jamais envoyée », ne la renvoyez pas une troisième fois"
+                    : "Resend a refusé l'envoi, réessayez dans quelques minutes";
     redirect(`${PATH}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(PATH);

@@ -5,6 +5,7 @@ import {
   creditNumberFor,
   creditMailBody,
   invoiceAdminState,
+  ratePercentLabel,
   type InvoiceCandidate,
 } from "./car-invoice";
 
@@ -176,5 +177,48 @@ describe("invoiceAdminState", () => {
     const s = invoiceAdminState({ ...SENT, credited_at: "2026-08-11T09:00:00.000Z" })!;
     expect(s.label).toContain("avoir");
     expect(s.canCredit).toBe(false);
+  });
+});
+
+describe("ratePercentLabel", () => {
+  // Sur une piece comptable, deux nombres qui ne se recoupent pas, c est une
+  // contestation : la page affichait le taux en toFixed(0), donc un taux de
+  // 7,5 % s imprimait « 8% » juste au-dessus d un total calcule a 7,5 %.
+  it("garde un taux entier propre", () => {
+    expect(ratePercentLabel(0.1)).toBe("10");
+    expect(ratePercentLabel(0.15)).toBe("15");
+    expect(ratePercentLabel(0.2)).toBe("20");
+  });
+
+  it("montre la decimale d un taux fractionnaire au lieu de l arrondir", () => {
+    expect(ratePercentLabel(0.075)).toBe("7.5");
+    expect(ratePercentLabel(0.125)).toBe("12.5");
+    expect(ratePercentLabel(0.0825)).toBe("8.25");
+  });
+
+  it("le taux affiche redonne bien le montant affiche", () => {
+    // Le seul controle qui compte pour le loueur : base x taux = total.
+    for (const [base, rate] of [
+      [210, 0.075],
+      [310, 0.1],
+      [480, 0.125],
+    ] as const) {
+      const shown = Number(ratePercentLabel(rate));
+      expect(Math.round(base * (shown / 100) * 100) / 100).toBe(
+        Math.round(base * rate * 100) / 100,
+      );
+    }
+  });
+
+  it("absorbe le bruit du flottant sans inventer de decimales", () => {
+    // `rate` naît d une division (amount / base) : 0.1 * 100 vaut
+    // 10.000000000000002 en JS, et un String() nu l afficherait tel quel.
+    expect(ratePercentLabel(31 / 310)).toBe("10");
+    expect(ratePercentLabel(31.5 / 210)).toBe("15");
+  });
+
+  it("un taux absent ou aberrant ne casse pas la facture", () => {
+    expect(ratePercentLabel(0)).toBe("0");
+    expect(ratePercentLabel(Number.NaN)).toBe("0");
   });
 });

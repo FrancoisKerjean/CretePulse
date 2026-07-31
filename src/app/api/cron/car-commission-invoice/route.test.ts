@@ -35,8 +35,6 @@ const ELIGIBLE = {
 
 interface Wiring {
   rows?: Array<Record<string, unknown>>;
-  /** Facture deja en base, par request_id. Absente => pas de facture. */
-  invoices?: Record<number, { id: number; sent_at: string | null }>;
   partner?: { commission: number | null } | null;
 }
 
@@ -44,7 +42,6 @@ function wiring(w: Wiring = {}) {
   const rows = w.rows ?? [ELIGIBLE];
   const partner: { commission: number | null } | null =
     w.partner === undefined ? { commission: 0.1 } : w.partner;
-  const invoices = w.invoices ?? {};
   const updates: Array<Record<string, unknown>> = [];
   const filters: string[] = [];
   let selected = "";
@@ -82,15 +79,9 @@ function wiring(w: Wiring = {}) {
         update,
       };
     }
-    if (table === "car_commission_invoices") {
-      return {
-        select: () => ({
-          eq: (_c: string, id: number) => ({
-            maybeSingle: async () => ({ data: invoices[id] ?? null }),
-          }),
-        }),
-      };
-    }
+    // ⛔ Aucune branche `car_commission_invoices` : le cron n a pas a relire la
+    // table des factures, `outcome IS NULL` suffit. Une relecture reintroduite
+    // tomberait sur le `throw` ci-dessous.
     if (table === "car_partners") {
       return {
         select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: partner }) }) }),
@@ -309,27 +300,26 @@ describe("GET /api/cron/car-commission-invoice", () => {
 
   // ── Idempotence ────────────────────────────────────────────────────────────
 
-  it("ignore une location dont la facture est deja PARTIE", async () => {
+  it("l idempotence tient au filtre outcome IS NULL, pas a une relecture des factures", async () => {
+    // ⛔ Ce cron tranche l issue en « rented » AVANT de facturer, et aucun chemin
+    // du depot ne remet `outcome` a NULL : une ligne facturee, ou seulement
+    // tentee, sort definitivement du lot. Une ligne remontee ici n a donc JAMAIS
+    // de facture, et la table des factures n a aucune raison d etre relue.
+    //
+    // Ce test remplace deux cas qui interrogeaient `car_commission_invoices` :
+    // l un decrivait un rattrapage inexistant (une facture reutilisee n a plus
+    // son jeton en clair, requestCommission rend `invoice_without_token` et
+    // n envoie rien — il ne passait que parce que requestCommission est mocke),
+    // l autre couvrait un etat inatteignable. Le vrai rattrapage d un envoi rate
+    // est le bouton « Renvoyer » du back-office.
     process.env.CAR_COMMISSION_ENABLED = "on";
-    wiring({ invoices: { 42: { id: 7, sent_at: "2026-08-10T05:00:00.000Z" } } });
-    const { GET } = await import("./route");
-    const res = await GET(authed());
-
-    expect(await res.json()).toMatchObject({ invoiced: 0, skipped: [] });
-    expect(update).not.toHaveBeenCalled();
-    expect(requestCommission).not.toHaveBeenCalled();
-  });
-
-  it("retente une facture creee mais jamais envoyee", async () => {
-    process.env.CAR_COMMISSION_ENABLED = "on";
-    // sent_at NULL : la facture porte son numero mais l email n est pas parti.
-    // Elle doit repartir, sinon un echec d envoi la condamne pour toujours.
-    wiring({ invoices: { 42: { id: 7, sent_at: null } } });
+    const { filters } = wiring();
     const { GET } = await import("./route");
     const res = await GET(authed());
 
     expect(await res.json()).toMatchObject({ invoiced: 1 });
-    expect(requestCommission).toHaveBeenCalledWith(42);
+    expect(filters).toContain("is:outcome:null");
+    expect(from).not.toHaveBeenCalledWith("car_commission_invoices");
   });
 
   // ── Robustesse ─────────────────────────────────────────────────────────────

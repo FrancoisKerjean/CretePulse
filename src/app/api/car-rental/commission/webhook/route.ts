@@ -103,7 +103,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // degrade que le suivi interne, alors qu'une facture non marquee payee
     // laisserait la page afficher « due » sur un paiement reel, et ferait
     // payer le loueur deux fois.
-    await markInvoicePaid(requestId);
+    //
+    // Un refus de la base leve desormais, et il ne doit JAMAIS sortir en 200 :
+    // un 500 marque la livraison en echec chez Stripe, ce qui est la seule
+    // trace visible depuis l'exterieur. L'evenement etant deja au registre, la
+    // nouvelle tentative ressortira en « duplicate » : aucune tempete de rejeu.
+    try {
+      await markInvoicePaid(requestId);
+    } catch (err) {
+      console.error("[car/commission] PAIEMENT ENCAISSE, FACTURE NON MARQUEE PAYEE", {
+        requestId,
+        err,
+      });
+      return NextResponse.json({ error: "invoice not marked paid" }, { status: 500 });
+    }
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });

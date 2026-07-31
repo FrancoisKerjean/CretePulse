@@ -20,9 +20,12 @@ export interface CommissionCandidate {
 }
 
 /**
- * Garde d'idempotence et de bon sens, appliquee avant tout appel a Stripe.
- * `commission_session_id` non nul veut dire qu'une demande est deja partie :
- * rejouer setOutcome ne doit pas facturer deux fois le meme loueur.
+ * Garde d'idempotence et de bon sens, appliquee avant toute facturation.
+ *
+ * `commission_session_id` non nul veut dire que le loueur a DEJA CLIQUE sur
+ * « Pay by card » depuis sa page facture : la session nait a ce clic, plus a
+ * l'emission. Une demande dans cet etat a donc forcement recu sa facture, et
+ * rejouer la facturation lui en enverrait une seconde.
  */
 export function shouldRequestCommission(req: CommissionCandidate): boolean {
   if (req.outcome !== "rented") return false;
@@ -43,9 +46,10 @@ export interface CommissionMail {
   payUrl: string;
   /**
    * Numero de la facture, pour le rapprochement comptable du loueur.
-   * OPTIONNEL a dessein : le rendre obligatoire casserait
-   * `car-commission-server.ts`, qui ne connaitra le numero qu apres la tache 6.
-   * La ligne « Invoice: » n est rendue que si le numero est present.
+   * Les DEUX appelants le passent aujourd hui (`requestCommission` et
+   * `resendCommissionInvoice`) : il reste optionnel pour que les tests de mise
+   * en forme puissent s en passer, et la ligne « Invoice: » n est rendue que
+   * s il est present.
    */
   invoiceNumber?: string;
 }

@@ -47,6 +47,11 @@ export async function expireCommissionSession(requestId: number): Promise<void> 
  * Avoir la facture d une demande : la location n a finalement pas eu lieu.
  * `notified` dit si le loueur a pu etre prevenu : l avoir est un acte
  * comptable, il existe meme sans email, c est la notification qui manque.
+ *
+ * Un refus de la base sur l ecriture de l avoir LEVE et rien ne suit : sans
+ * cela on rendrait un numero d avoir qui n existe nulle part, la demande
+ * repasserait en « perdue » et le loueur recevrait la notification d une piece
+ * comptable inexistante.
  */
 export async function creditCommissionInvoice(
   requestId: number,
@@ -139,7 +144,20 @@ export async function resendCommissionInvoice(
     .maybeSingle();
   if (!partner?.email) return { error: "partner_without_email" };
 
-  const token = await rotateInvoiceToken(invoice.id);
+  // ⛔ AVANT l email, et le refus arrete tout : un jeton non enregistre ne
+  // correspond a rien en base, l email partirait avec un lien mort et le loueur
+  // ne pourrait ni voir ni payer sa facture.
+  let token: string;
+  try {
+    token = await rotateInvoiceToken(invoice.id);
+  } catch (err) {
+    console.error("[car/commission] rotation du jeton refusee, aucun renvoi", {
+      requestId,
+      invoice: invoice.number,
+      err,
+    });
+    return { error: "token_rotation_failed" };
+  }
 
   const ok = await sendPartnerCommissionRequest(partner.email, {
     requestId,
@@ -162,6 +180,18 @@ export async function resendCommissionInvoice(
     return { error: "mail_refused" };
   }
 
-  await markInvoiceSent(invoice.id);
+  try {
+    await markInvoiceSent(invoice.id);
+  } catch (err) {
+    // L email EST parti cette fois : confondre ce cas avec `mail_refused`
+    // afficherait « Resend a refuse l envoi » sur un envoi reussi. La facture
+    // restera « jamais envoyee » a l ecran, et il faut le dire tel quel.
+    console.error("[car/commission] facture renvoyee mais envoi non enregistre", {
+      requestId,
+      invoice: invoice.number,
+      err,
+    });
+    return { error: "sent_not_recorded" };
+  }
   return { number: invoice.number };
 }
