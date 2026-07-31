@@ -11,6 +11,7 @@ import type Stripe from "stripe";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { stripeClient } from "@/lib/stays/stripe-helpers";
 import { transferDueAt } from "@/lib/booking-policy";
+import { markInvoicePaid } from "@/lib/car-invoice-server";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const sig = request.headers.get("stripe-signature") ?? "";
@@ -95,6 +96,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         commission_payment_intent_id: obj.payment_intent ?? null,
       })
       .eq("id", requestId);
+
+    // La facture porte son propre etat : la page se lit sans jointure. Stripe
+    // a deja encaisse la carte du loueur a ce stade, donc cet appel se fait
+    // MEME SI l'ecriture ci-dessus a echoue : un car_requests en retard ne
+    // degrade que le suivi interne, alors qu'une facture non marquee payee
+    // laisserait la page afficher « due » sur un paiement reel, et ferait
+    // payer le loueur deux fois.
+    await markInvoicePaid(requestId);
+
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }

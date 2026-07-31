@@ -6,6 +6,8 @@ vi.mock("@/lib/stays/stripe-helpers", () => ({
 }));
 const { from } = vi.hoisted(() => ({ from: vi.fn() }));
 vi.mock("@/lib/supabase-admin", () => ({ supabaseAdmin: { from } }));
+const { markInvoicePaidMock } = vi.hoisted(() => ({ markInvoicePaidMock: vi.fn() }));
+vi.mock("@/lib/car-invoice-server", () => ({ markInvoicePaid: markInvoicePaidMock }));
 
 import { POST } from "./route";
 
@@ -66,6 +68,48 @@ describe("POST /api/car-rental/commission/webhook", () => {
     expect(updates[0].commission_payment_intent_id).toBe("pi_1");
   });
 
+  it("marque aussi la facture payee", async () => {
+    // Sans cela la page facture continuerait d afficher « due » sur une facture
+    // reglee, et un loueur consciencieux paierait deux fois.
+    constructEvent.mockReturnValueOnce(event(CAR_META));
+    wiring();
+    const res = await POST(req() as never);
+    expect(res.status).toBe(200);
+    expect(markInvoicePaidMock).toHaveBeenCalledWith(42);
+  });
+
+  it("marque la facture payee meme si l ecriture sur car_requests echoue", async () => {
+    // Stripe a deja encaisse la carte du loueur a ce stade : un echec cote
+    // car_requests degrade seulement le suivi interne, il ne doit jamais
+    // empecher la facture d etre marquee payee (sinon la page facture reste
+    // sur « due » et le loueur paierait deux fois, ce qui est pire qu un
+    // car_requests en retard sur son propre etat).
+    constructEvent.mockReturnValueOnce(event(CAR_META));
+    from.mockImplementation((table: string) => {
+      if (table === "stripe_webhook_events") {
+        return { insert: async () => ({ error: null }) };
+      }
+      return {
+        update: () => ({ eq: async () => ({ error: { message: "db down" } }) }),
+      };
+    });
+    const res = await POST(req() as never);
+    expect(res.status).toBe(500);
+    expect(markInvoicePaidMock).toHaveBeenCalledWith(42);
+  });
+
+  it("un evenement d un autre type ne marque pas la facture payee", async () => {
+    constructEvent.mockReturnValueOnce({
+      id: "evt_other",
+      type: "payment_intent.succeeded",
+      data: { object: { id: "pi_x", payment_intent: "pi_1", metadata: CAR_META } },
+    });
+    wiring();
+    const res = await POST(req() as never);
+    expect(res.status).toBe(200);
+    expect(markInvoicePaidMock).not.toHaveBeenCalled();
+  });
+
   it("ignore un evenement Stays sans rien ecrire", async () => {
     // Le compte est partage : cet endpoint recoit AUSSI les sessions Stays,
     // IEUF, Eleni et Kairos. Un 200 muet, jamais un 4xx qui ferait retenter
@@ -101,6 +145,10 @@ describe("POST /api/car-rental/commission/webhook", () => {
     const res = await POST(req() as never);
     expect((await res.json()).duplicate).toBe(true);
     expect(updates).toHaveLength(0);
+    // Le registre stripe_webhook_events (scope "car") protege aussi l ecriture
+    // de la facture : un evenement deja vu ne doit jamais rappeler
+    // markInvoicePaid une seconde fois.
+    expect(markInvoicePaidMock).not.toHaveBeenCalled();
   });
 
   it("marque une reservation payee et fixe l echeance de versement", async () => {
