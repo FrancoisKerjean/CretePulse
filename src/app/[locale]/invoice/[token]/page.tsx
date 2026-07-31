@@ -179,7 +179,10 @@ export default async function InvoicePage({
         <tbody>
           <tr className="border-b border-border">
             <td className="py-2">
-              Commission on rental {invoice.request_id}
+              {/* « Rental reference », le libelle du gabarit comptable, et non
+                  « rental <id> » : l identifiant est interne, il ne dit rien au
+                  comptable du loueur qui rapproche la piece. */}
+              Commission · rental reference {invoice.request_id}
               {req ? ` · ${req.date_from} → ${req.date_to}` : ""}
               {pickup ? ` · ${pickup}` : ""}
               <br />
