@@ -42,3 +42,31 @@ export function invoiceAmounts(base: number, rate: number): InvoiceAmounts | nul
   if (amount < STRIPE_MIN_CHARGE_EUR) return null;
   return { base, rate, amount };
 }
+
+/**
+ * L avoir porte le numero de sa facture suffixe `-A`. Il ne consomme donc pas
+ * la serie : le rapprochement facture/avoir se lit a l oeil, et un trou dans la
+ * numerotation des factures ne peut pas apparaitre a cause d un avoir.
+ */
+export function creditNumberFor(invoiceNumber: string): string {
+  return `${invoiceNumber}-A`;
+}
+
+export interface CreditMail {
+  creditNumber: string;
+  number: string;
+  partnerName: string;
+  amountEur: number;
+  reason: string;
+}
+
+export function creditMailBody(m: CreditMail): string {
+  return [
+    `Hi ${m.partnerName},`,
+    ``,
+    `Credit note ${m.creditNumber} cancels invoice ${m.number} in full (${m.amountEur.toFixed(2)} EUR).`,
+    `Reason: ${m.reason}.`,
+    ``,
+    `There is nothing to pay for this rental.`,
+  ].join("\n");
+}

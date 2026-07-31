@@ -41,6 +41,13 @@ export interface CommissionMail {
   dateFrom: string;
   dateTo: string;
   payUrl: string;
+  /**
+   * Numero de la facture, pour le rapprochement comptable du loueur.
+   * OPTIONNEL a dessein : le rendre obligatoire casserait
+   * `car-commission-server.ts`, qui ne connaitra le numero qu apres la tache 6.
+   * La ligne « Invoice: » n est rendue que si le numero est present.
+   */
+  invoiceNumber?: string;
 }
 
 // Les loueurs cretois recoivent deja leurs leads en anglais (sendCarLeadEmail).
@@ -54,17 +61,22 @@ export function commissionRequestBody(m: CommissionMail): string {
   return [
     `Hi ${m.partnerName},`,
     ``,
-    `Your rental ${m.dateFrom} to ${m.dateTo} is marked as rented on crete.direct.`,
+    `Your rental ${m.dateFrom} to ${m.dateTo} starts today, so here is the commission invoice.`,
     ``,
+    ...(m.invoiceNumber ? [`Invoice: ${m.invoiceNumber}`] : []),
     `Rental reference: ${m.requestId}`,
-    `Rental amount you collected: ${m.finalAmountEur.toFixed(2)} EUR`,
+    // « quoted and accepted », jamais « collected » : au premier jour de
+    // location nous ignorons ce que le loueur a encaisse.
+    `Rental price quoted and accepted by the traveller: ${m.finalAmountEur.toFixed(2)} EUR`,
     `crete.direct commission: ${m.commissionEur.toFixed(2)} EUR`,
     ``,
-    `Pay the commission here:`,
+    `View and pay the invoice here:`,
     m.payUrl,
     ``,
-    `The payment goes to crete.direct only. Your rental money stays with you, we never touch it.`,
-    `Any question on this line, just reply to this email.`,
+    `You can pay by card on that page, or by bank transfer to the IBAN shown on it.`,
+    `Your rental money stays with you, we never touch it.`,
+    ``,
+    `If this rental did not take place, reply to this email and we will cancel the invoice.`,
   ].join("\n");
 }
 

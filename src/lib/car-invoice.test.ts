@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { isInvoiceable, invoiceAmounts, type InvoiceCandidate } from "./car-invoice";
+import {
+  isInvoiceable,
+  invoiceAmounts,
+  creditNumberFor,
+  creditMailBody,
+  type InvoiceCandidate,
+} from "./car-invoice";
 
 const START = "2026-08-05";
 const TODAY = "2026-08-07";
@@ -66,5 +72,27 @@ describe("invoiceAmounts", () => {
 
   it("rend null sous le minimum encaissable par Stripe", () => {
     expect(invoiceAmounts(4, 0.1)).toBeNull();
+  });
+});
+
+describe("creditNumberFor", () => {
+  it("derive le numero d avoir de la facture, sans consommer la serie", () => {
+    expect(creditNumberFor("NOVAI-CD-2026-004")).toBe("NOVAI-CD-2026-004-A");
+  });
+});
+
+describe("creditMailBody", () => {
+  it("nomme la facture annulee et la raison", () => {
+    const body = creditMailBody({
+      creditNumber: "NOVAI-CD-2026-004-A",
+      number: "NOVAI-CD-2026-004",
+      partnerName: "Luxtrans Crete",
+      amountEur: 20,
+      reason: "rental did not take place",
+    });
+    expect(body).toContain("NOVAI-CD-2026-004-A");
+    expect(body).toContain("NOVAI-CD-2026-004");
+    expect(body).toContain("rental did not take place");
+    expect(body).toContain("nothing to pay");
   });
 });
