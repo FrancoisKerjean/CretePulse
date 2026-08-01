@@ -1,5 +1,5 @@
 // node --experimental-strip-types scripts/check-car-quotes.mjs
-import { sortQuotesByPrice, canPartnerQuote, canCancelRequest, findChosenInvite, partnerNeedsRelance, clientNeedsRelance,
+import { sortQuotesByPrice, canPartnerQuote, canCancelRequest, findChosenInvite, partnerNeedsRelance, isPartnerNudgeHour, clientNeedsRelance,
   clientAutoCloseReason,
   normalizeQuoteOption, normalizeQuoteOptions, bestOption, sortOptionsByPrice, findChosenOption } from "../src/lib/car-quotes.ts";
 
@@ -26,7 +26,24 @@ ok("choix d'une invite inexistante -> null", findChosenInvite([q(1, 300)], 99) =
 const H = 3600000;
 ok("relance loueur due", partnerNeedsRelance({ status: "invited", relanced_at: null }, "quoted", 1751961600000, 1751961600000 - 25 * H));
 ok("pas de relance si deja relance", !partnerNeedsRelance({ status: "invited", relanced_at: "x" }, "quoted", 1751961600000, 1751961600000 - 25 * H));
-ok("pas de relance si <24h", !partnerNeedsRelance({ status: "invited", relanced_at: null }, "quoted", 1751961600000, 1751961600000 - 5 * H));
+// Seuil ramene de 24 h a 2 h le 01/08/2026. Mesure : la 1re offre arrive en
+// <=0,5 h sur toutes les issues ou le client reste, 6,7 h sur les 8 demandes ou
+// il disparait sans jamais trancher. Une relance a H+24 arrivait apres la
+// bataille. Le plafond d'UNE relance par invite ne bouge pas.
+ok("relance loueur due des 3h", partnerNeedsRelance({ status: "invited", relanced_at: null }, "quoted", 1751961600000, 1751961600000 - 3 * H));
+ok("pas de relance si <2h", !partnerNeedsRelance({ status: "invited", relanced_at: null }, "quoted", 1751961600000, 1751961600000 - 1 * H));
+
+// Fenetre d'envoi : un loueur grec ne se releve pas a 3 h du matin. La fenetre
+// porte sur l'heure d'ENVOI, jamais sur le calcul du delai, sinon une demande
+// de nuit perdrait son anciennete.
+const at = (iso) => new Date(iso).getTime();
+ok("fenetre ouverte a 10h Athenes", isPartnerNudgeHour(at("2026-08-01T07:00:00Z")));
+ok("fenetre fermee a 3h Athenes", !isPartnerNudgeHour(at("2026-08-01T00:00:00Z")));
+ok("fenetre fermee a 22h Athenes", !isPartnerNudgeHour(at("2026-08-01T19:00:00Z")));
+ok("fenetre ouverte des 8h Athenes (borne incluse)", isPartnerNudgeHour(at("2026-08-01T05:00:00Z")));
+ok("fenetre fermee a 21h Athenes (borne exclue)", !isPartnerNudgeHour(at("2026-08-01T18:00:00Z")));
+// Heure d'hiver : Athenes passe a UTC+2, la fenetre doit suivre le fuseau reel.
+ok("fenetre suit l'heure d'hiver", isPartnerNudgeHour(at("2026-01-15T07:00:00Z")) && !isPartnerNudgeHour(at("2026-01-15T05:00:00Z")));
 ok("pas de relance si deja chiffre", !partnerNeedsRelance({ status: "quoted", relanced_at: null }, "quoted", 1751961600000, 1751961600000 - 25 * H));
 ok("pas de relance si demande fermee", !partnerNeedsRelance({ status: "invited", relanced_at: null }, "accepted", 1751961600000, 1751961600000 - 25 * H));
 ok("demande annulee = hors relance loueur", !partnerNeedsRelance({ status: "invited", relanced_at: null }, "cancelled", 1751961600000, 1751961600000 - 25 * H));

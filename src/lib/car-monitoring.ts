@@ -2,7 +2,7 @@
 // car-quotes.ts) : classification des invites, état des relances, timeline, KPI,
 // perf loueur. Zéro I/O. Node-safe : importable par scripts/check-car-monitoring.mjs.
 // Réutilise car-quotes.ts et car-offer-expiry.ts (jamais réécrits).
-import { partnerNeedsRelance, clientNeedsRelance } from "./car-quotes.ts";
+import { partnerNeedsRelance, clientNeedsRelance, PARTNER_NUDGE_DELAY_MS } from "./car-quotes.ts";
 
 const HOUR = 3600000;
 
@@ -87,8 +87,11 @@ export function partnerRelanceState(
   if (partnerNeedsRelance({ status: inv.status, relanced_at: inv.relanced_at }, requestStatus, nowMs, createdAtMs)) {
     return { kind: "due" };
   }
-  // Encore invité sur demande ouverte mais <24h : décompte avant éligibilité.
-  const dueAt = createdAtMs + 24 * HOUR;
+  // Encore invité sur demande ouverte mais sous le seuil : décompte avant
+  // éligibilité. Le délai vient de PARTNER_NUDGE_DELAY_MS, jamais d'une copie en
+  // dur : le 01/08/2026 il est passé de 24 h à 2 h et cette ligne avait sa
+  // propre valeur, donc l'écran de suivi annonçait un décompte faux.
+  const dueAt = createdAtMs + PARTNER_NUDGE_DELAY_MS;
   if (dueAt > nowMs && (requestStatus === "sent" || requestStatus === "quoted")) {
     return { kind: "dueInMs", ms: dueAt - nowMs };
   }
