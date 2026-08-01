@@ -2,6 +2,7 @@ import createMiddleware from "next-intl/middleware";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { routing } from "./i18n/routing";
+import { isBlockedCrawler } from "./lib/crawler-policy";
 
 const intlMiddleware = createMiddleware(routing);
 
@@ -43,6 +44,15 @@ function toAsciiPath(pathname: string): string | null {
 // supprimer ce garde et reexporter createMiddleware(routing) directement.
 export default function middleware(request: NextRequest) {
   if (request.headers.get("x-vercel-ip-country") === "CN") {
+    return new NextResponse(null, { status: 403 });
+  }
+  // Blocage des crawlers commerciaux (01/08/2026). Meme logique que le garde CN,
+  // sur le critere user-agent : cf src/lib/crawler-policy.ts pour la liste, la
+  // mesure et ce qui reste volontairement autorise. C'est ICI que le blocage
+  // rapporte, pas dans robots.txt : un 403 rendu par le middleware n'atteint
+  // jamais la page, donc ne declenche ni ecriture ISR ni invocation facturee, et
+  // vaut aussi pour les agents qui ignorent robots.txt.
+  if (isBlockedCrawler(request.headers.get("user-agent"))) {
     return new NextResponse(null, { status: 403 });
   }
   // Un slug non-ASCII casse le header interne x-next-cache-tags de Next -> 500 sur
