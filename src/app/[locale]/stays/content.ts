@@ -50,6 +50,32 @@ export type StaysStrings = {
     unavailableTitle: string;
     unavailableEmpty: string;
   };
+  facts: {
+    guests: string;
+    bedrooms: string;
+    bathrooms: string;
+    area: string;
+    amenities: Record<
+      "pool" | "sea_view" | "ac" | "wifi" | "bbq" | "parking" | "pets",
+      string
+    >;
+  };
+  calendar: {
+    checkIn: string;
+    checkOut: string;
+    nightsTaken: string;
+    minNights: string;
+  };
+  quote: {
+    nights: string;
+    cleaning: string;
+    fee: string;
+    total: string;
+    deposit: string;
+    estimate: string;
+  };
+  rating: { summary: string; source: string };
+  langNote: string;
   form: {
     name: string;
     email: string;
@@ -333,6 +359,40 @@ export const L: Record<StaysLocale, StaysStrings> = {
       unavailableTitle: "Already booked",
       unavailableEmpty: "Every night is open for now.",
     },
+    facts: {
+      guests: "guests",
+      bedrooms: "bedrooms",
+      bathrooms: "bathrooms",
+      area: "sqm",
+      amenities: {
+        pool: "Pool",
+        sea_view: "Sea view",
+        ac: "Air conditioning",
+        wifi: "Wifi",
+        bbq: "Barbecue",
+        parking: "Parking",
+        pets: "Pets allowed",
+      },
+    },
+    calendar: {
+      checkIn: "Arrival",
+      checkOut: "Departure",
+      nightsTaken: "Nights already booked",
+      minNights: "Minimum {n} nights",
+    },
+    quote: {
+      nights: "{price} x {n} nights",
+      cleaning: "Cleaning, once per stay",
+      fee: "Payment fee {rate} %",
+      total: "Total",
+      deposit: "{deposit} today, balance of {balance} fourteen days before arrival",
+      estimate: "Estimate based on the listed rate, confirmed by the owner within 48 hours.",
+    },
+    rating: {
+      summary: "{rating} out of {count} reviews",
+      source: "Rating taken from Airbnb on {date}.",
+    },
+    langNote: "Translated automatically. Original written in {lang} by the owner.",
     form: {
       name: "Full name",
       email: "Email",
@@ -508,6 +568,42 @@ export const L: Record<StaysLocale, StaysStrings> = {
       unavailableTitle: "Nuits deja reservees",
       unavailableEmpty: "Toutes les nuits sont libres pour l instant.",
     },
+    facts: {
+      guests: "voyageurs",
+      bedrooms: "chambres",
+      bathrooms: "salles de bain",
+      area: "m2",
+      amenities: {
+        pool: "Piscine",
+        sea_view: "Vue mer",
+        ac: "Climatisation",
+        wifi: "Wifi",
+        bbq: "Barbecue",
+        parking: "Parking",
+        pets: "Animaux acceptés",
+      },
+    },
+    calendar: {
+      checkIn: "Arrivée",
+      checkOut: "Départ",
+      nightsTaken: "Nuits déjà réservées",
+      minNights: "Minimum {n} nuits",
+    },
+    quote: {
+      nights: "{price} x {n} nuits",
+      cleaning: "Ménage, une fois par séjour",
+      fee: "Frais de paiement {rate} %",
+      total: "Total",
+      deposit: "{deposit} aujourd hui, le solde de {balance} quatorze jours avant l arrivée",
+      estimate:
+        "Estimation sur la base du tarif affiché, confirmée par le propriétaire sous 48 heures.",
+    },
+    rating: {
+      summary: "{rating} sur {count} avis",
+      source: "Note relevée sur Airbnb le {date}.",
+    },
+    langNote:
+      "Traduit automatiquement. Version originale rédigée en {lang} par le propriétaire.",
     form: {
       name: "Nom complet",
       email: "Email",
@@ -683,6 +779,41 @@ export const L: Record<StaysLocale, StaysStrings> = {
       unavailableTitle: "Bereits gebuchte Nachte",
       unavailableEmpty: "Aktuell sind alle Nachte frei.",
     },
+    facts: {
+      guests: "Gäste",
+      bedrooms: "Schlafzimmer",
+      bathrooms: "Badezimmer",
+      area: "qm",
+      amenities: {
+        pool: "Pool",
+        sea_view: "Meerblick",
+        ac: "Klimaanlage",
+        wifi: "WLAN",
+        bbq: "Grill",
+        parking: "Parkplatz",
+        pets: "Haustiere erlaubt",
+      },
+    },
+    calendar: {
+      checkIn: "Anreise",
+      checkOut: "Abreise",
+      nightsTaken: "Bereits gebuchte Nächte",
+      minNights: "Mindestens {n} Nächte",
+    },
+    quote: {
+      nights: "{price} x {n} Nächte",
+      cleaning: "Endreinigung, einmal pro Aufenthalt",
+      fee: "Zahlungsgebühr {rate} %",
+      total: "Gesamt",
+      deposit: "{deposit} heute, Restbetrag von {balance} vierzehn Tage vor Anreise",
+      estimate:
+        "Schätzung auf Basis des angegebenen Preises, vom Gastgeber innerhalb von 48 Stunden bestätigt.",
+    },
+    rating: {
+      summary: "{rating} bei {count} Bewertungen",
+      source: "Bewertung von Airbnb, erhoben am {date}.",
+    },
+    langNote: "Automatisch übersetzt. Original vom Gastgeber auf {lang} verfasst.",
     form: {
       name: "Vollständiger Name",
       email: "E-Mail",
@@ -860,6 +991,41 @@ export const L: Record<StaysLocale, StaysStrings> = {
       unavailableTitle: "Ήδη κλεισμένες νύχτες",
       unavailableEmpty: "Όλες οι νύχτες είναι ελεύθερες προς το παρόν.",
     },
+    facts: {
+      guests: "επισκέπτες",
+      bedrooms: "υπνοδωμάτια",
+      bathrooms: "μπάνια",
+      area: "τ.μ.",
+      amenities: {
+        pool: "Πισίνα",
+        sea_view: "Θέα στη θάλασσα",
+        ac: "Κλιματισμός",
+        wifi: "Wifi",
+        bbq: "Ψησταριά",
+        parking: "Πάρκινγκ",
+        pets: "Δεκτά κατοικίδια",
+      },
+    },
+    calendar: {
+      checkIn: "Άφιξη",
+      checkOut: "Αναχώρηση",
+      nightsTaken: "Ημερομηνίες που είναι ήδη κλεισμένες",
+      minNights: "Ελάχιστο {n} διανυκτερεύσεις",
+    },
+    quote: {
+      nights: "{price} x {n} διανυκτερεύσεις",
+      cleaning: "Καθαρισμός, μία φορά ανά διαμονή",
+      fee: "Χρέωση πληρωμής {rate} %",
+      total: "Σύνολο",
+      deposit: "{deposit} σήμερα, το υπόλοιπο {balance} δεκατέσσερις ημέρες πριν την άφιξη",
+      estimate:
+        "Εκτίμηση με βάση την αναγραφόμενη τιμή, επιβεβαιώνεται από τον ιδιοκτήτη εντός 48 ωρών.",
+    },
+    rating: {
+      summary: "{rating} από {count} κριτικές",
+      source: "Βαθμολογία από το Airbnb, καταγραφή {date}.",
+    },
+    langNote: "Αυτόματη μετάφραση. Το πρωτότυπο γράφτηκε στα {lang} από τον ιδιοκτήτη.",
     form: {
       name: "Ονοματεπώνυμο",
       email: "Email",
