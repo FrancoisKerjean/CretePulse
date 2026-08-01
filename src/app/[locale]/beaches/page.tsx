@@ -1,7 +1,7 @@
 import { getAllBeaches } from "@/lib/beaches";
 import { setRequestLocale } from "next-intl/server";
 import { getLocalizedField, type Locale } from "@/lib/types";
-import { Waves, MapPin, Car, Fish } from "lucide-react";
+import { IconSprite, SpriteIcon } from "@/components/IconSprite";
 import Link from "next/link";
 import { buildAlternates } from "@/lib/seo";
 import { itemListSchema } from "@/lib/schema";
@@ -136,6 +136,11 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
             le hub reste en ISR 24 h) */}
         <BeachesLiveNow locale={locale} />
 
+        {/* Dessins des icones des cartes, declares une fois pour les ~180 plages
+            de la grille. Mesure du 01/08/2026 : ils pesaient 234 Ko recopies,
+            53 % du HTML rendu. Voir src/lib/icon-sprite.ts. */}
+        <IconSprite />
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
           {beaches.map((beach) => {
             const wq = getBathingWaterQuality(beach.latitude, beach.longitude, beach.name_en);
@@ -158,7 +163,7 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
                   {getLocalizedField(beach, "name", loc)}
                 </h2>
                 <div className="flex items-center gap-1 text-xs text-text-muted mt-1">
-                  <MapPin className="w-3 h-3" />
+                  <SpriteIcon name="map-pin" className="w-3 h-3" />
                   {beach.region}
                 </div>
                 <div className="flex flex-wrap items-center gap-2 mt-3">
@@ -170,17 +175,17 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
                   )}
                   {beach.type && (
                     <span className="inline-flex items-center gap-1 text-xs bg-sea-faint text-sea px-2 py-0.5 rounded-full">
-                      <Waves className="w-3 h-3" /> {beach.type}
+                      <SpriteIcon name="waves" className="w-3 h-3" /> {beach.type}
                     </span>
                   )}
                   {beach.parking && (
                     <span className="inline-flex items-center gap-1 text-xs bg-surface text-text-muted px-2 py-0.5 rounded-full">
-                      <Car className="w-3 h-3" /> {beachesLabels.parking}
+                      <SpriteIcon name="car" className="w-3 h-3" /> {beachesLabels.parking}
                     </span>
                   )}
                   {beach.snorkeling && (
                     <span className="inline-flex items-center gap-1 text-xs bg-sea-faint text-sea px-2 py-0.5 rounded-full">
-                      <Fish className="w-3 h-3" /> Snorkeling
+                      <SpriteIcon name="fish" className="w-3 h-3" /> Snorkeling
                     </span>
                   )}
                   {beach.kids_friendly && (
