@@ -383,7 +383,7 @@ export const L: Record<StaysLocale, StaysStrings> = {
     quote: {
       nights: "{price} x {n} nights",
       cleaning: "Cleaning, once per stay",
-      fee: "Payment fee 5 %",
+      fee: "Payment fee {rate} %",
       total: "Total",
       deposit: "{deposit} today, balance of {balance} fourteen days before arrival",
       estimate: "Estimate based on the listed rate, confirmed by the owner within 48 hours.",
@@ -592,7 +592,7 @@ export const L: Record<StaysLocale, StaysStrings> = {
     quote: {
       nights: "{price} x {n} nuits",
       cleaning: "Ménage, une fois par séjour",
-      fee: "Frais de paiement 5 %",
+      fee: "Frais de paiement {rate} %",
       total: "Total",
       deposit: "{deposit} aujourd hui, le solde de {balance} quatorze jours avant l arrivée",
       estimate:
@@ -803,7 +803,7 @@ export const L: Record<StaysLocale, StaysStrings> = {
     quote: {
       nights: "{price} x {n} Nächte",
       cleaning: "Endreinigung, einmal pro Aufenthalt",
-      fee: "Zahlungsgebühr 5 %",
+      fee: "Zahlungsgebühr {rate} %",
       total: "Gesamt",
       deposit: "{deposit} heute, Restbetrag von {balance} vierzehn Tage vor Anreise",
       estimate:
@@ -1015,7 +1015,7 @@ export const L: Record<StaysLocale, StaysStrings> = {
     quote: {
       nights: "{price} x {n} διανυκτερεύσεις",
       cleaning: "Καθαρισμός, μία φορά ανά διαμονή",
-      fee: "Χρέωση πληρωμής 5 %",
+      fee: "Χρέωση πληρωμής {rate} %",
       total: "Σύνολο",
       deposit: "{deposit} σήμερα, το υπόλοιπο {balance} δεκατέσσερις ημέρες πριν την άφιξη",
       estimate:

@@ -2,6 +2,9 @@
 import { useState } from "react";
 import type React from "react";
 import type { StaysStrings } from "../content";
+import { computeQuote } from "@/lib/stays/pricing";
+import Calendar from "./Calendar";
+import QuoteBreakdown from "./QuoteBreakdown";
 
 const FIELD =
   "w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-[15px] text-text outline-none focus:border-lagoon-deep transition-colors";
@@ -20,17 +23,28 @@ function nightsOf(from: string, to: string): string[] {
 export default function RequestForm({
   slug,
   strings,
+  quoteStrings,
+  calendarStrings,
   unavailable,
   minNights,
   locale,
+  basePriceEur,
+  cleaningFeeEur,
+  commissionRate,
 }: {
   slug: string;
   strings: StaysStrings["form"];
+  quoteStrings: StaysStrings["quote"];
+  calendarStrings: StaysStrings["calendar"];
   unavailable: string[];
   minNights: number;
   /** Langue de la page. Voyage avec la demande : tous les emails du sejour,
    *  jusqu'au solde, partiront dans cette langue. */
   locale: string;
+  /** Tarifs de l annonce, passes au devis. Aucun calcul de prix ici. */
+  basePriceEur: number;
+  cleaningFeeEur: number;
+  commissionRate: number;
 }) {
   const [f, setF] = useState({
     guestName: "",
@@ -54,6 +68,19 @@ export default function RequestForm({
     if (nights.some((n) => unavailable.includes(n))) return strings.errorUnavailable;
     return null;
   })();
+
+  // Devis affiche. computeQuote appelle nightsBetween, qui LEVE si la plage est nulle
+  // ou inversee : on ne l appelle que sur deux dates valides et ordonnees.
+  const quote =
+    f.dateFrom && f.dateTo && f.dateTo > f.dateFrom
+      ? computeQuote({
+          basePriceEur,
+          cleaningFeeEur,
+          commissionRate,
+          dateFrom: f.dateFrom,
+          dateTo: f.dateTo,
+        })
+      : null;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -88,6 +115,23 @@ export default function RequestForm({
         aria-hidden="true"
       />
 
+      <Calendar
+        taken={unavailable}
+        from={f.dateFrom}
+        to={f.dateTo}
+        onPick={(dateFrom, dateTo) => setF({ ...f, dateFrom, dateTo })}
+        locale={locale}
+        labels={{ checkIn: calendarStrings.checkIn, checkOut: calendarStrings.checkOut }}
+      />
+
+      {quote && (
+        <QuoteBreakdown
+          quote={quote}
+          commissionRate={commissionRate}
+          strings={quoteStrings}
+        />
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className={LABEL} htmlFor="stay-name">{strings.name}</label>
@@ -96,14 +140,6 @@ export default function RequestForm({
         <div>
           <label className={LABEL} htmlFor="stay-email">{strings.email}</label>
           <input id="stay-email" className={FIELD} required type="email" value={f.guestEmail} onChange={set("guestEmail")} />
-        </div>
-        <div>
-          <label className={LABEL} htmlFor="stay-from">{strings.dateFrom}</label>
-          <input id="stay-from" className={FIELD} required type="date" value={f.dateFrom} onChange={set("dateFrom")} />
-        </div>
-        <div>
-          <label className={LABEL} htmlFor="stay-to">{strings.dateTo}</label>
-          <input id="stay-to" className={FIELD} required type="date" value={f.dateTo} onChange={set("dateTo")} />
         </div>
         <div>
           <label className={LABEL} htmlFor="stay-pax">{strings.pax}</label>
