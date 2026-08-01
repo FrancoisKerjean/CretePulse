@@ -73,6 +73,20 @@ ok("normalizeQuoteOptions non-array -> []", normalizeQuoteOptions("x").length ==
 ok("bestOption = la moins chère", bestOption([{ price: 40 }, { price: 30 }, { price: 35 }]).price === 30);
 ok("bestOption liste vide -> null", bestOption([]) === null);
 
+// Note libre du loueur, nee le 01/08/2026 : Luxtrans n'avait pas la city car
+// demandee, a propose un VW T-Cross, et a du l'expliquer par TROIS emails faute
+// de pouvoir l'ecrire dans son devis.
+ok("note conservee", normalizeQuoteOption({ price: 100, note: "No city car left, this is a SUV" }).note === "No city car left, this is a SUV");
+ok("note vide -> null", normalizeQuoteOption({ price: 100, note: "   " }).note === null);
+ok("note absente -> null", normalizeQuoteOption({ price: 100 }).note === null);
+ok("note tronquee a 140", normalizeQuoteOption({ price: 100, note: "x".repeat(200) }).note.length === 140);
+// ⛔ La note s'affiche au CLIENT : un loueur qui y met ses coordonnees court-circuite
+// la mise en relation, donc la commission. Retire, jamais refuse en silence total.
+ok("email retire de la note", !/@/.test(normalizeQuoteOption({ price: 100, note: "write me at info@cretecar.rent" }).note));
+ok("telephone retire de la note", !/\d{4}/.test(normalizeQuoteOption({ price: 100, note: "call +30 6940160266 now" }).note));
+ok("une date n'est PAS prise pour un telephone", normalizeQuoteOption({ price: 100, note: "available from 2026-08-03" }).note.includes("2026-08-03"));
+ok("un prix reste lisible", normalizeQuoteOption({ price: 580, note: "580 EUR for the week" }).note.includes("580"));
+
 // Une boite de vitesses n'est PAS un modele de voiture. Le libelle partait
 // jusqu'au 01/08/2026 en `[car_model, gearbox].filter(Boolean).join(' · ')` :
 // modele vide, il ne restait que « Manual », affiche au client A LA PLACE du

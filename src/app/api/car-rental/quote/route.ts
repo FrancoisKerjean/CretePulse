@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
       invite_id: inviteRow.id, request_id: req.id, partner_id: invite.partner_id,
       price: o.price, currency: "EUR", car_model: o.car_model, gearbox: o.gearbox, inclusions: o.inclusions,
       insurance_type: o.insurance_type, excess_eur: o.excess_eur, zero_excess_upsell_eur_day: o.zero_excess_upsell_eur_day,
+      note: o.note,
     })),
   );
   if (optErr) {

@@ -92,6 +92,13 @@ function OfferCard({
       {offer.partner_name ? <p style={{ margin: "0 0 12px", color: "#0B3954", fontSize: 14 }}>{c.offerFrom} <strong>{offer.partner_name}</strong> · {c.localAgency}</p> : null}
       {carLine ? <p style={{ margin: "0 0 12px", color: "#0B3954", fontSize: 15, fontWeight: 700 }}>{carLine}</p> : null}
       {gearboxOnly ? <p style={{ margin: "0 0 12px", color: "#5C7886", fontSize: 14 }}>{gearboxOnly}</p> : null}
+      {/* Le mot du loueur. Sans lui, une offre plus chère parce qu'elle porte une
+          catégorie supérieure se lit simplement comme une offre plus chère. */}
+      {offer.note ? (
+        <p style={{ margin: "0 0 12px", padding: "10px 12px", background: "#FFF8E7", border: "1px solid #FFE2A8", borderRadius: 10, color: "#0B3954", fontSize: 14, lineHeight: 1.5 }}>
+          {offer.note}
+        </p>
+      ) : null}
       <p style={{ margin: "0 0 20px", color: "#5C7886", fontSize: 14, lineHeight: 1.6 }}>{c.intro}</p>
 
       <div style={{ background: "#F6FBFC", border: "1px solid #DCE9EE", borderRadius: 14, padding: "14px 16px", marginBottom: 22, color: "#0B3954", fontSize: 14, lineHeight: 1.8 }}>

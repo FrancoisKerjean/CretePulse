@@ -69,6 +69,7 @@ export interface QuoteOption {
   insurance_type: string | null;            // 'all_risk_zero' | 'cdw_excess' | null
   excess_eur: number | null;                // franchise si cdw_excess
   zero_excess_upsell_eur_day: number | null; // surcoût /jour pour passer à zéro franchise
+  note: string | null;          // mot du loueur au client (coordonnées déjà retirées)
   created_at: string | null;    // horodatage de l'option (pour l'expiry)
 }
 
@@ -81,13 +82,39 @@ export interface NormalizedOption {
   insurance_type: string | null;
   excess_eur: number | null;
   zero_excess_upsell_eur_day: number | null;
+  /** Note libre du loueur, affichée au client. Coordonnées retirées. */
+  note: string | null;
 }
 
 /** Valide/normalise une option brute soumise par le loueur. null si le prix est
  *  invalide (hors 1..100000). Les autres champs sont nettoyés silencieusement. */
+/**
+ * Note libre du loueur sur une option, affichée au client.
+ *
+ * Née le 01/08/2026 : Luxtrans n'avait pas la city car demandée, a proposé un VW
+ * T-Cross à 580 € contre 320 € pour une citadine, et a dû l'expliquer par TROIS
+ * emails faute de pouvoir l'écrire dans son devis. Le client, lui, ne voyait
+ * qu'un prix 81 % plus cher sans savoir pourquoi.
+ *
+ * ⛔ Elle s'affiche au client : y laisser un téléphone ou un email permettrait de
+ * court-circuiter la mise en relation, donc la commission. Les deux sont retirés.
+ * Le seuil est de 9 chiffres et non 8, sinon une date ISO (`2026-08-03`, 8
+ * chiffres) serait prise pour un numéro.
+ */
+function normalizeOptionNote(raw: unknown): string | null {
+  if (typeof raw !== "string") return null;
+  const cleaned = raw
+    .replace(/[\w.+-]+@[\w-]+\.[\w.]+/g, " ")
+    .replace(/\+?\d[\d\s().-]{6,}\d/g, (m) => (m.replace(/\D/g, "").length >= 9 ? " " : m))
+    .replace(/\s+/g, " ")
+    .trim();
+  return cleaned ? cleaned.slice(0, 140) : null;
+}
+
 export function normalizeQuoteOption(raw: {
   price?: unknown; carModel?: unknown; gearbox?: unknown; inclusions?: unknown;
   insuranceType?: unknown; excessEur?: unknown; zeroExcessUpsellEurDay?: unknown;
+  note?: unknown;
 }): NormalizedOption | null {
   const price = typeof raw.price === "number" ? raw.price : Number(raw.price);
   if (!Number.isFinite(price) || price <= 0 || price > 100000) return null;
@@ -100,7 +127,8 @@ export function normalizeQuoteOption(raw: {
   const excess_eur = insurance_type === "cdw_excess" && Number.isFinite(excessRaw) && excessRaw >= 0 && excessRaw <= 100000 ? excessRaw : null;
   const upsellRaw = typeof raw.zeroExcessUpsellEurDay === "number" ? raw.zeroExcessUpsellEurDay : Number(raw.zeroExcessUpsellEurDay);
   const zero_excess_upsell_eur_day = Number.isFinite(upsellRaw) && upsellRaw > 0 && upsellRaw <= 10000 ? upsellRaw : null;
-  return { price, car_model, gearbox, inclusions, insurance_type, excess_eur, zero_excess_upsell_eur_day };
+  const note = normalizeOptionNote(raw.note);
+  return { price, car_model, gearbox, inclusions, insurance_type, excess_eur, zero_excess_upsell_eur_day, note };
 }
 
 /** Normalise une liste d'options ; ignore les invalides. Max 6 options gardées. */
