@@ -1,5 +1,5 @@
 // node --experimental-strip-types scripts/check-car-quotes.mjs
-import { sortQuotesByPrice, canPartnerQuote, canCancelRequest, findChosenInvite, partnerNeedsRelance, isPartnerNudgeHour, clientNeedsRelance,
+import { sortQuotesByPrice, canPartnerQuote, canCancelRequest, findChosenInvite, partnerNeedsRelance, isPartnerNudgeHour, quotedModelLabel, clientNeedsRelance,
   clientAutoCloseReason,
   normalizeQuoteOption, normalizeQuoteOptions, bestOption, sortOptionsByPrice, findChosenOption } from "../src/lib/car-quotes.ts";
 
@@ -72,6 +72,17 @@ ok("normalizeQuoteOptions cap à 6", normalizeQuoteOptions(Array.from({ length: 
 ok("normalizeQuoteOptions non-array -> []", normalizeQuoteOptions("x").length === 0);
 ok("bestOption = la moins chère", bestOption([{ price: 40 }, { price: 30 }, { price: 35 }]).price === 30);
 ok("bestOption liste vide -> null", bestOption([]) === null);
+
+// Une boite de vitesses n'est PAS un modele de voiture. Le libelle partait
+// jusqu'au 01/08/2026 en `[car_model, gearbox].filter(Boolean).join(' · ')` :
+// modele vide, il ne restait que « Manual », affiche au client A LA PLACE du
+// modele. Constate en prod sur les demandes 25 (Zorbas) et 33 (Zakros Tours).
+ok("modele + boite", quotedModelLabel("VW Polo", "Automatic") === "VW Polo · Automatic");
+ok("modele seul", quotedModelLabel("VW Polo", null) === "VW Polo");
+ok("boite SEULE ne fait pas un modele", quotedModelLabel(null, "Manual") === null);
+ok("modele vide ne fait pas un modele", quotedModelLabel("   ", "Manual") === null);
+ok("ni modele ni boite", quotedModelLabel(null, null) === null);
+ok("modele espace-entoure nettoye", quotedModelLabel("  Fiat Panda  ", null) === "Fiat Panda");
 
 const opt = (id, invite_id, price) => ({ id, invite_id, partner_id: invite_id, partner_name: `P${invite_id}`, price, currency: "EUR", car_model: null, gearbox: null, inclusions: [], created_at: "2026-07-08T10:00:00Z" });
 ok("sortOptionsByPrice croissant toutes invites confondues", sortOptionsByPrice([opt(1, 10, 40), opt(2, 10, 30), opt(3, 20, 35)]).map((o) => o.id).join() === "2,3,1");

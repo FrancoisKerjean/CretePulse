@@ -161,6 +161,28 @@ export function isPartnerNudgeHour(nowMs: number): boolean {
   return hour >= NUDGE_OPEN_HOUR && hour < NUDGE_CLOSE_HOUR;
 }
 
+/**
+ * Libellé du véhicule d'un devis. Rend `null` tant qu'il n'y a pas de modèle.
+ *
+ * ⛔ Une boîte de vitesses n'est PAS un modèle de voiture. Le libellé se
+ * construisait en `[car_model, gearbox].filter(Boolean).join(" · ")` : quand le
+ * loueur laissait le modèle vide, il ne restait que « Manual », et ce mot partait
+ * à la place du modèle **au client** sur sa page d'offres et dans l'email de mise
+ * en relation. Constaté en production sur les demandes 25 (Zorbas) et 33 (Zakros
+ * Tours) : deux clients sur quatre ont lu « Manual » comme nom de voiture.
+ *
+ * La boîte reste une information utile, mais elle s'affiche sous son propre
+ * intitulé, jamais dans le champ du modèle.
+ */
+export function quotedModelLabel(
+  carModel: string | null | undefined,
+  gearboxLabel: string | null | undefined,
+): string | null {
+  const model = typeof carModel === "string" ? carModel.trim() : "";
+  if (!model) return null;
+  return gearboxLabel ? `${model} · ${gearboxLabel}` : model;
+}
+
 /** Relance loueur : invité, ni chiffré ni désisté, demande ouverte, >2h, jamais relancé. */
 export function partnerNeedsRelance(
   invite: { status: string; relanced_at: string | null },

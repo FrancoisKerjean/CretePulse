@@ -10,10 +10,20 @@ import { isOfferExpired } from "@/lib/car-offer-expiry";
 import { sharedOfferCopy } from "@/lib/car-offer-copy";
 import { requestByClientToken } from "@/lib/car-quotes-db";
 import { rentalDays } from "@/lib/car-pricing";
-import { sortOptionsByPrice } from "@/lib/car-quotes";
+import { sortOptionsByPrice, quotedModelLabel } from "@/lib/car-quotes";
 import type { QuoteOption } from "@/lib/car-quotes";
 
 const GEARBOX_LABEL: Record<string, string> = { automatic: "Automatic", manual: "Manual" };
+
+// Libellé QUALIFIÉ de la boîte, pour les devis sans modèle de voiture. Affiché à
+// la place du modèle, « Manual » tout seul se lit comme un nom de voiture : c'est
+// ce qu'ont vu les clients des demandes 25 et 33. Ici le mot dit ce qu'il est.
+const GEARBOX_ONLY: Record<string, Record<string, string>> = {
+  en: { automatic: "Automatic gearbox", manual: "Manual gearbox" },
+  fr: { automatic: "Boîte automatique", manual: "Boîte manuelle" },
+  de: { automatic: "Automatikgetriebe", manual: "Schaltgetriebe" },
+  el: { automatic: "Αυτόματο κιβώτιο", manual: "Χειροκίνητο κιβώτιο" },
+};
 const INSURANCE_HEADING: Record<string, string> = { en: "Insurance", fr: "Assurance", de: "Versicherung", el: "Ασφάλιση" };
 
 export const dynamic = "force-dynamic";
@@ -67,7 +77,12 @@ function OfferCard({
     request.time_to as string | null,
   );
   const perDay = money(Math.round(offer.price / days), offer.currency ?? "EUR");
-  const carLine = [offer.car_model, offer.gearbox ? GEARBOX_LABEL[offer.gearbox] : null].filter(Boolean).join(" · ");
+  const carLine = quotedModelLabel(offer.car_model, offer.gearbox ? GEARBOX_LABEL[offer.gearbox] : null);
+  // Pas de modèle mais une boîte : on la nomme pour ce qu'elle est plutôt que de
+  // la laisser occuper la ligne du modèle.
+  const gearboxOnly = !carLine && offer.gearbox
+    ? (GEARBOX_ONLY[locale] ?? GEARBOX_ONLY.en)[offer.gearbox] ?? null
+    : null;
 
   return (
     <div style={{ ...card, marginBottom: 20, opacity: expired ? 0.65 : 1 }}>
@@ -76,6 +91,7 @@ function OfferCard({
       <p style={{ margin: "0 0 6px", color: "#5C7886", fontSize: 13 }}>{priceStr} {c.total} · ~{perDay} {c.perDay}</p>
       {offer.partner_name ? <p style={{ margin: "0 0 12px", color: "#0B3954", fontSize: 14 }}>{c.offerFrom} <strong>{offer.partner_name}</strong> · {c.localAgency}</p> : null}
       {carLine ? <p style={{ margin: "0 0 12px", color: "#0B3954", fontSize: 15, fontWeight: 700 }}>{carLine}</p> : null}
+      {gearboxOnly ? <p style={{ margin: "0 0 12px", color: "#5C7886", fontSize: 14 }}>{gearboxOnly}</p> : null}
       <p style={{ margin: "0 0 20px", color: "#5C7886", fontSize: 14, lineHeight: 1.6 }}>{c.intro}</p>
 
       <div style={{ background: "#F6FBFC", border: "1px solid #DCE9EE", borderRadius: 14, padding: "14px 16px", marginBottom: 22, color: "#0B3954", fontSize: 14, lineHeight: 1.8 }}>
