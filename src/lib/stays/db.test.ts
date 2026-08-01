@@ -3,7 +3,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const { from } = vi.hoisted(() => ({ from: vi.fn() }));
 vi.mock("@/lib/supabase-admin", () => ({ supabaseAdmin: { from } }));
 
-import { slugify, upsertOwnerByEmail } from "./db";
+import {
+  slugify,
+  upsertOwnerByEmail,
+  groupRangesByListing,
+  mergeAdjacentRanges,
+} from "./db";
 
 describe("slugify", () => {
   it("lowercases, strips accents, hyphenates", () => {
@@ -57,5 +62,53 @@ describe("upsertOwnerByEmail, langue du proprietaire", () => {
     const owner = await upsertOwnerByEmail("o@x.com", null, null, "de");
     expect(updated).toHaveLength(0);
     expect(owner.locale).toBe("el");
+  });
+});
+
+describe("groupRangesByListing", () => {
+  it("regroupe par listing_id et convertit en DateRange", () => {
+    const rows = [
+      { listing_id: 1, date_from: "2026-08-10", date_to: "2026-08-14" },
+      { listing_id: 2, date_from: "2026-09-01", date_to: "2026-09-03" },
+      { listing_id: 1, date_from: "2026-08-20", date_to: "2026-08-22" },
+    ];
+    expect(groupRangesByListing(rows)).toEqual({
+      1: [
+        { dateFrom: "2026-08-10", dateTo: "2026-08-14" },
+        { dateFrom: "2026-08-20", dateTo: "2026-08-22" },
+      ],
+      2: [{ dateFrom: "2026-09-01", dateTo: "2026-09-03" }],
+    });
+  });
+
+  it("rend un objet vide sur une entree vide ou nulle", () => {
+    expect(groupRangesByListing([])).toEqual({});
+    expect(groupRangesByListing(null)).toEqual({});
+  });
+});
+
+// Le collage des nuits prises n'a qu'UNE definition, partagee par la version mono
+// annonce et la version multi annonces : deux definitions du mot "pris" finiraient
+// par diverger. Convention [) : la nuit D est la plage [D, D+1).
+describe("mergeAdjacentRanges", () => {
+  it("colle deux nuits qui se suivent en une seule plage", () => {
+    expect(
+      mergeAdjacentRanges([
+        { dateFrom: "2026-08-10", dateTo: "2026-08-11" },
+        { dateFrom: "2026-08-11", dateTo: "2026-08-12" },
+      ]),
+    ).toEqual([{ dateFrom: "2026-08-10", dateTo: "2026-08-12" }]);
+  });
+
+  it("ne colle jamais par dessus une nuit libre", () => {
+    expect(
+      mergeAdjacentRanges([
+        { dateFrom: "2026-08-10", dateTo: "2026-08-11" },
+        { dateFrom: "2026-08-12", dateTo: "2026-08-13" },
+      ]),
+    ).toEqual([
+      { dateFrom: "2026-08-10", dateTo: "2026-08-11" },
+      { dateFrom: "2026-08-12", dateTo: "2026-08-13" },
+    ]);
   });
 });
