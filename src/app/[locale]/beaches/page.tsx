@@ -149,47 +149,47 @@ export default async function BeachesPage({ params }: { params: Promise<{ locale
             <Link
               key={beach.slug}
               href={`/${locale}/beaches/${beach.slug}`}
-              className="group rounded-xl border border-border bg-white overflow-hidden hover:border-sea/30 hover:shadow-soft transition-all"
+              className="group beach-card"
             >
               <div className="h-40 overflow-hidden">
                 <BeachImage
                   src={beach.image_url}
                   alt={`${getLocalizedField(beach, "name", loc)} beach, ${regionLabels[beach.region] || beach.region}${beach.type ? `, ${typeLabels[beach.type] || beach.type}` : ""}`}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="beach-card-img"
                 />
               </div>
               <div className="p-4">
                 <h2 className="font-semibold text-lg">
                   {getLocalizedField(beach, "name", loc)}
                 </h2>
-                <div className="flex items-center gap-1 text-xs text-text-muted mt-1">
+                <div className="beach-card-meta">
                   <SpriteIcon name="map-pin" className="w-3 h-3" />
                   {beach.region}
                 </div>
-                <div className="flex flex-wrap items-center gap-2 mt-3">
+                <div className="beach-card-tags">
                   {wq && <WaterQualityBadge wq={wq} locale={locale} variant="pill" />}
                   {crowd && (
-                    <span className={`inline-flex items-center text-xs px-2 py-0.5 rounded-full ${CROWD_STYLES[crowd.band]}`}>
+                    <span className={`pill ${CROWD_STYLES[crowd.band]}`}>
                       {crowdLabels[crowd.band]}
                     </span>
                   )}
                   {beach.type && (
-                    <span className="inline-flex items-center gap-1 text-xs bg-sea-faint text-sea px-2 py-0.5 rounded-full">
+                    <span className="pill bg-sea-faint text-sea">
                       <SpriteIcon name="waves" className="w-3 h-3" /> {beach.type}
                     </span>
                   )}
                   {beach.parking && (
-                    <span className="inline-flex items-center gap-1 text-xs bg-surface text-text-muted px-2 py-0.5 rounded-full">
+                    <span className="pill bg-surface text-text-muted">
                       <SpriteIcon name="car" className="w-3 h-3" /> {beachesLabels.parking}
                     </span>
                   )}
                   {beach.snorkeling && (
-                    <span className="inline-flex items-center gap-1 text-xs bg-sea-faint text-sea px-2 py-0.5 rounded-full">
+                    <span className="pill bg-sea-faint text-sea">
                       <SpriteIcon name="fish" className="w-3 h-3" /> Snorkeling
                     </span>
                   )}
                   {beach.kids_friendly && (
-                    <span className="inline-flex items-center gap-1 text-xs bg-terracotta-faint text-terracotta px-2 py-0.5 rounded-full">
+                    <span className="pill bg-terracotta-faint text-terracotta">
                       {beachesLabels.kidsOk}
                     </span>
                   )}
