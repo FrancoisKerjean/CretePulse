@@ -158,19 +158,6 @@ export function QuoteForm({
             placeholder="e.g. VW Polo 2023"
             style={{ padding: "12px 14px", fontSize: 16, borderRadius: 10, border: "1px solid #DCE9EE", outline: "none" }}
           />
-          {/* Ne dites-le pas par email : le 01/08 un loueur sans la categorie
-              demandee a propose un cran au-dessus et a du l'expliquer en trois
-              messages, pendant que le client ne voyait qu'un prix plus cher. */}
-          <label style={{ fontSize: 14, fontWeight: 600, color: "#0B3954" }}>A word for the customer (optional)</label>
-          <input
-            type="text" maxLength={140} value={o.note} onChange={(e) => patch(i, { note: e.target.value })}
-            placeholder="e.g. no city car left for these dates, this is a SUV"
-            style={{ padding: "12px 14px", fontSize: 16, borderRadius: 10, border: "1px solid #DCE9EE", outline: "none" }}
-          />
-          <p style={{ margin: "-6px 0 0", color: "#94A3B8", fontSize: 12, lineHeight: 1.5 }}>
-            Shown to the customer with your price. Useful when what you offer differs from what was asked.
-            Phone numbers and email addresses are removed.
-          </p>
           <span style={{ fontSize: 14, fontWeight: 600, color: "#0B3954" }}>Gearbox</span>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {GEARBOX_CHOICES.map(([val, lab]) => {
@@ -185,6 +172,22 @@ export function QuoteForm({
               );
             })}
           </div>
+          {/* Placé APRÈS le groupe véhicule, jamais entre le modèle et la boîte :
+              vu à l'oeil le 02/08, il coupait la description du véhicule en deux.
+              Le loueur décrit d'abord ce qu'il propose, puis il en dit un mot.
+              Ne le dites pas par email : le 01/08 un loueur sans la catégorie
+              demandée a proposé un cran au-dessus et l'a expliqué en trois
+              messages, pendant que le client ne voyait qu'un prix plus cher. */}
+          <label style={{ fontSize: 14, fontWeight: 600, color: "#0B3954" }}>A word for the customer (optional)</label>
+          <input
+            type="text" maxLength={140} value={o.note} onChange={(e) => patch(i, { note: e.target.value })}
+            placeholder="e.g. no city car left for these dates, this is a SUV"
+            style={{ padding: "12px 14px", fontSize: 16, borderRadius: 10, border: "1px solid #DCE9EE", outline: "none" }}
+          />
+          <p style={{ margin: "-6px 0 0", color: "#94A3B8", fontSize: 12, lineHeight: 1.5 }}>
+            Shown to the customer with your price. Useful when what you offer differs from what was asked.
+            Phone numbers and email addresses are removed.
+          </p>
           <span style={{ fontSize: 14, fontWeight: 600, color: "#0B3954" }}>Included in the price (optional)</span>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {CAR_INCLUSION_KEYS.map((k) => {
