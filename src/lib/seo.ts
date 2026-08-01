@@ -1,4 +1,4 @@
-import { routing } from "@/i18n/routing";
+import { INDEXABLE_LOCALES } from "@/i18n/routing";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
@@ -21,12 +21,21 @@ export const INDEXABLE_ROBOTS = {
 
 /**
  * Build alternates metadata for hreflang tags.
+ *
+ * Ne declare QUE les locales indexables (cf INDEXABLE_LOCALES). Boucler sur les 22
+ * locales servies annoncait 22 variantes de chaque page a Google : avec 3 705 pages
+ * au sitemap, cela faisait ~81 500 URL declarees, et Google en avait 81 200 dans un
+ * index qu'il a fini par deprecier (chute du 19/07/2026).
+ *
+ * Le `canonical` reste self meme hors perimetre : la page est toujours servie, et un
+ * canonical vers /en contredirait le `noindex` qu'elle recoit par ailleurs.
+ *
  * @param path - The path after locale, e.g. "/beaches/balos" or "" for home
  */
 export function buildAlternates(locale: string, path: string = "") {
   const canonical = `${BASE_URL}/${locale}${path}`;
   const languages: Record<string, string> = {};
-  for (const loc of routing.locales) {
+  for (const loc of INDEXABLE_LOCALES) {
     languages[loc] = `${BASE_URL}/${loc}${path}`;
   }
   languages["x-default"] = `${BASE_URL}/en${path}`;

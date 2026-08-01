@@ -1,7 +1,8 @@
 import createMiddleware from "next-intl/middleware";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { routing } from "./i18n/routing";
+import { routing, isIndexableLocale, localeFromPathname } from "./i18n/routing";
+import { isBlockedCrawler } from "./lib/crawler-policy";
 
 const intlMiddleware = createMiddleware(routing);
 
@@ -45,6 +46,15 @@ export default function middleware(request: NextRequest) {
   if (request.headers.get("x-vercel-ip-country") === "CN") {
     return new NextResponse(null, { status: 403 });
   }
+  // Blocage des crawlers commerciaux (01/08/2026). Meme logique que le garde CN,
+  // sur le critere user-agent : cf src/lib/crawler-policy.ts pour la liste, la
+  // mesure et ce qui reste volontairement autorise. C'est ICI que le blocage
+  // rapporte, pas dans robots.txt : un 403 rendu par le middleware n'atteint
+  // jamais la page, donc ne declenche ni ecriture ISR ni invocation facturee, et
+  // vaut aussi pour les agents qui ignorent robots.txt.
+  if (isBlockedCrawler(request.headers.get("user-agent"))) {
+    return new NextResponse(null, { status: 403 });
+  }
   // Un slug non-ASCII casse le header interne x-next-cache-tags de Next -> 500 sur
   // /explore/[slug] et consorts. On redirige 308 vers la forme ASCII (canonique en
   // base). Couvre les URLs deja indexees par Google + tout futur import non normalise.
@@ -54,7 +64,23 @@ export default function middleware(request: NextRequest) {
     url.pathname = asciiPath;
     return NextResponse.redirect(url, 308);
   }
-  return intlMiddleware(request);
+
+  const response = intlMiddleware(request);
+
+  // Perimetre indexable : en/fr/de/el. Les 18 autres locales restent SERVIES mais
+  // sortent de l'index (decision Francois 01/08/2026 apres l'effondrement du 19/07).
+  //
+  // L'en-tete est le SEUL point de controle possible : 23 templates posent leur propre
+  // cle `robots` dans generateMetadata et ecrasent l'heritage du layout : un noindex
+  // pose la-bas aurait laisse passer toute page oubliee, en silence.
+  //
+  // `follow` conserve : on sort les pages de l'index sans couper la circulation du
+  // maillage interne, comme le lot 1 du 22/07 sur les news.
+  const locale = localeFromPathname(request.nextUrl.pathname);
+  if (locale && !isIndexableLocale(locale)) {
+    response.headers.set("X-Robots-Tag", "noindex, follow");
+  }
+  return response;
 }
 
 // IMPORTANT: matcher MUST exclude sitemap.xml, robots.txt, feed.xml, manifest, icons,
