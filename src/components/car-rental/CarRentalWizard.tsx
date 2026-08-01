@@ -868,6 +868,8 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
               carType={carType}
               dateFrom={dateFrom}
               dateTo={dateTo}
+              timeFrom={timeFrom}
+              timeTo={timeTo}
               locale={locale}
               placement="wizard-step3"
             />
@@ -884,6 +886,8 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
               carType={carType}
               dateFrom={dateFrom}
               dateTo={dateTo}
+              timeFrom={timeFrom}
+              timeTo={timeTo}
               locale={locale}
               placement="wizard-step4"
             />

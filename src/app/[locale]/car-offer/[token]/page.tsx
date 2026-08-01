@@ -9,6 +9,7 @@ import { inclusionLabels, insuranceSummary } from "@/lib/car-inclusions";
 import { isOfferExpired } from "@/lib/car-offer-expiry";
 import { sharedOfferCopy } from "@/lib/car-offer-copy";
 import { requestByClientToken } from "@/lib/car-quotes-db";
+import { rentalDays } from "@/lib/car-pricing";
 import { sortOptionsByPrice } from "@/lib/car-quotes";
 import type { QuoteOption } from "@/lib/car-quotes";
 
@@ -59,7 +60,12 @@ function OfferCard({
   const priceStr = money(offer.price, offer.currency ?? "EUR");
   const incl = inclusionLabels(offer.inclusions ?? null, locale);
   const insLines = insuranceSummary(offer.insurance_type, offer.excess_eur, offer.zero_excess_upsell_eur_day, locale);
-  const days = Math.max(1, Math.round((new Date(request.date_to as string).getTime() - new Date(request.date_from as string).getTime()) / 86400000));
+  const days = rentalDays(
+    request.date_from as string,
+    request.date_to as string,
+    request.time_from as string | null,
+    request.time_to as string | null,
+  );
   const perDay = money(Math.round(offer.price / days), offer.currency ?? "EUR");
   const carLine = [offer.car_model, offer.gearbox ? GEARBOX_LABEL[offer.gearbox] : null].filter(Boolean).join(" · ");
 

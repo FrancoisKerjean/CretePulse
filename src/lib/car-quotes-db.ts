@@ -56,7 +56,7 @@ export async function optionsForRequest(requestId: number): Promise<QuoteOption[
  *  token client. null si introuvable. */
 export async function requestByClientToken(token: string): Promise<{ request: Record<string, unknown>; quotes: QuoteInvite[]; options: QuoteOption[] } | null> {
   const { data: request } = await supabase.from("car_requests")
-    .select("id, status, locale, pickup_slug, date_from, date_to, car_type, customer_name, customer_email, customer_phone")
+    .select("id, status, locale, pickup_slug, date_from, time_from, date_to, time_to, car_type, customer_name, customer_email, customer_phone")
     .eq("accept_token_hash", hashToken(token)).maybeSingle();
   if (!request) return null;
   const quotes = await quotesForRequest(request.id as number);

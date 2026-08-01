@@ -60,7 +60,7 @@ export default async function CarQuotePage({ params }: { params: Promise<{ local
   // Les dates etaient affichees, la duree non : le loueur devait la calculer de
   // tete pour convertir son tarif journalier en total. C'est ce calcul implicite
   // qui a produit un devis de 2 jours envoye sur une demande de 7 (30/07/2026).
-  const days = rentalDays(row.date_from, row.date_to);
+  const days = rentalDays(row.date_from, row.date_to, row.time_from, row.time_to);
 
   return (
     <main style={shell}>

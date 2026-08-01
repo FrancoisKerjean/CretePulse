@@ -47,16 +47,20 @@ export function CarPriceEstimate({
   carType,
   dateFrom,
   dateTo,
+  timeFrom,
+  timeTo,
   locale,
   placement = "wizard",
 }: {
   carType: string;
   dateFrom: string;
   dateTo: string;
+  timeFrom?: string | null;
+  timeTo?: string | null;
   locale: string;
   placement?: string;
 }) {
-  const est = estimateCarPrice(carType, dateFrom, dateTo);
+  const est = estimateCarPrice(carType, dateFrom, dateTo, timeFrom, timeTo);
   const l = L[locale] ?? L.en;
   const season = est?.season;
   const days = est?.days;

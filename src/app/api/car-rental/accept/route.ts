@@ -5,6 +5,7 @@ import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { partnerById } from "@/lib/car-partners-db";
 import { isOfferExpired } from "@/lib/car-offer-expiry";
 import { requestByClientToken } from "@/lib/car-quotes-db";
+import { rentalDays } from "@/lib/car-pricing";
 import { findChosenOption, sortOptionsByPrice } from "@/lib/car-quotes";
 import { startBookingAfterAccept } from "@/lib/car-booking-server";
 
@@ -86,7 +87,12 @@ export async function POST(request: NextRequest) {
   const ct = CAR_TYPES_DATA.find((c) => c.id === row.car_type);
   const carTypeLabel = carTypeLabelWithExamples(ct, "en", row.car_type as string);
   const carTypeLabelClient = carTypeLabelWithExamples(ct, locale, row.car_type as string);
-  const days = Math.max(1, Math.round((new Date(row.date_to as string).getTime() - new Date(row.date_from as string).getTime()) / 86400000));
+  const days = rentalDays(
+    row.date_from as string,
+    row.date_to as string,
+    row.time_from as string | null,
+    row.time_to as string | null,
+  );
   const partnerName = partner?.name ?? chosen.partner_name;
 
   try {
