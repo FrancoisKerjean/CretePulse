@@ -23,16 +23,12 @@ import { CRETE_NEIGHBOURHOODS } from "@/lib/airbnb-mappings";
 import { CRETE_AIRPORTS } from "@/lib/airports";
 import { CAR_LOCATION_SLUGS } from "@/lib/car-locations";
 import { ACTIVITY_CATEGORIES, ACTIVITY_CITIES } from "@/lib/activity-taxonomy";
+import { sitemapUrlEntry, escapeXml, type SitemapEntry } from "@/lib/sitemap-entry";
 
 export const revalidate = 86400;
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
-const LOCALES = [
-  "en", "fr", "de", "el", "it", "nl", "pl", "es", "pt", "ru",
-  "ja", "ko", "zh", "tr", "sv", "da", "no", "fi", "cs", "hu",
-  "ro", "ar",
-] as const;
 
 const STATIC_PAGES = [
   "",
@@ -71,12 +67,7 @@ const AREA_SLUGS = ["chania", "heraklion", "rethymno", "agios-nikolaos", "elound
 const ITINERARY_SLUGS = ["3-days", "5-days", "7-days", "10-days"];
 const ARCH_SLUGS = ["knossos", "phaistos", "spinalonga", "gortyna", "malia-palace", "aptera"];
 
-type Entry = {
-  path: string;
-  changefreq: "daily" | "weekly" | "monthly";
-  priority: number;
-  lastmod?: string;
-};
+type Entry = SitemapEntry;
 
 async function fetchSlugs(table: string, extra?: string): Promise<string[]> {
   try {
@@ -133,34 +124,6 @@ async function fetchSlugsWithDate(
   }
 }
 
-function escapeXml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
-}
-
-function urlEntry(entry: Entry, fallbackLastmod: string): string {
-  const alternates = LOCALES.map(
-    (loc) =>
-      `    <xhtml:link rel="alternate" hreflang="${loc}" href="${escapeXml(`${BASE_URL}/${loc}${entry.path}`)}" />`,
-  ).join("\n");
-  const xDefault = `    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(`${BASE_URL}/en${entry.path}`)}" />`;
-
-  const loc = `${BASE_URL}/en${entry.path}`;
-  const lastmod = entry.lastmod || fallbackLastmod;
-
-  return `  <url>
-    <loc>${escapeXml(loc)}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>${entry.changefreq}</changefreq>
-    <priority>${entry.priority.toFixed(1)}</priority>
-${alternates}
-${xDefault}
-  </url>`;
-}
 
 export async function GET() {
   const entries: Entry[] = [];
@@ -302,7 +265,7 @@ export async function GET() {
   }
 
   const lastmod = new Date().toISOString();
-  const xmlEntries = entries.map((e) => urlEntry(e, lastmod)).join("\n");
+  const xmlEntries = entries.map((e) => sitemapUrlEntry(e, lastmod)).join("\n");
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset
