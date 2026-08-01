@@ -126,7 +126,42 @@ export function findChosenOption(options: QuoteOption[], optionId: number): Quot
   return options.find((o) => o.id === optionId) ?? null;
 }
 
-/** Relance loueur : invité, ni chiffré ni désisté, demande ouverte, >24h, jamais relancé. */
+/**
+ * Délai avant de relancer un loueur muet. Ramené de 24 h à 2 h le 01/08/2026.
+ *
+ * Mesure sur 30 jours (22 demandes) : la première offre arrive en <= 0,5 h sur
+ * TOUTES les issues où le client reste dans le jeu, et en 6,7 h sur les 8
+ * demandes où il disparaît sans jamais trancher. Un client qui attend une
+ * matinée a réservé ailleurs et ne revient pas. Relancer à H+24 arrivait donc
+ * longtemps après la bataille.
+ *
+ * Le plafond d'UNE relance par invite ne bouge pas : c'est le moment qui change,
+ * pas le volume de courrier envoyé aux loueurs.
+ */
+export const PARTNER_NUDGE_DELAY_MS = 2 * HOUR;
+
+/** Heures d'envoi acceptables, à Athènes. Bornes : ouverte incluse, fermée exclue. */
+const NUDGE_OPEN_HOUR = 8;
+const NUDGE_CLOSE_HOUR = 21;
+
+/**
+ * Une relance est-elle envoyable maintenant ? Un loueur ne se relève pas à 3 h
+ * du matin, et un courrier nocturne se lit au mieux le lendemain, au pire agace.
+ *
+ * Ne porte QUE sur l'heure d'envoi, jamais sur le calcul du délai : une demande
+ * déposée la nuit garde son ancienneté et part dès l'ouverture.
+ * `Intl` porte les règles de fuseau, donc le passage à l'heure d'hiver suit tout
+ * seul, sans décalage d'une heure deux fois par an.
+ */
+export function isPartnerNudgeHour(nowMs: number): boolean {
+  const hour = Number(new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Athens", hour: "2-digit", hourCycle: "h23",
+  }).format(new Date(nowMs)));
+  if (!Number.isFinite(hour)) return false;
+  return hour >= NUDGE_OPEN_HOUR && hour < NUDGE_CLOSE_HOUR;
+}
+
+/** Relance loueur : invité, ni chiffré ni désisté, demande ouverte, >2h, jamais relancé. */
 export function partnerNeedsRelance(
   invite: { status: string; relanced_at: string | null },
   requestStatus: string,
@@ -136,7 +171,7 @@ export function partnerNeedsRelance(
   if (invite.status !== "invited") return false;
   if (invite.relanced_at) return false;
   if (!canPartnerQuote(requestStatus)) return false;
-  return nowMs - createdAtMs >= 24 * HOUR;
+  return nowMs - createdAtMs >= PARTNER_NUDGE_DELAY_MS;
 }
 
 /** Relance client : a ≥1 offre (status quoted), non tranché, <2 relances, dernière >24h. */
