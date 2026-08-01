@@ -1,7 +1,7 @@
 import createMiddleware from "next-intl/middleware";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { routing } from "./i18n/routing";
+import { routing, isIndexableLocale, localeFromPathname } from "./i18n/routing";
 import { isBlockedCrawler } from "./lib/crawler-policy";
 
 const intlMiddleware = createMiddleware(routing);
@@ -64,7 +64,23 @@ export default function middleware(request: NextRequest) {
     url.pathname = asciiPath;
     return NextResponse.redirect(url, 308);
   }
-  return intlMiddleware(request);
+
+  const response = intlMiddleware(request);
+
+  // Perimetre indexable : en/fr/de/el. Les 18 autres locales restent SERVIES mais
+  // sortent de l'index (decision Francois 01/08/2026 apres l'effondrement du 19/07).
+  //
+  // L'en-tete est le SEUL point de controle possible : 23 templates posent leur propre
+  // cle `robots` dans generateMetadata et ecrasent l'heritage du layout : un noindex
+  // pose la-bas aurait laisse passer toute page oubliee, en silence.
+  //
+  // `follow` conserve : on sort les pages de l'index sans couper la circulation du
+  // maillage interne, comme le lot 1 du 22/07 sur les news.
+  const locale = localeFromPathname(request.nextUrl.pathname);
+  if (locale && !isIndexableLocale(locale)) {
+    response.headers.set("X-Robots-Tag", "noindex, follow");
+  }
+  return response;
 }
 
 // IMPORTANT: matcher MUST exclude sitemap.xml, robots.txt, feed.xml, manifest, icons,
