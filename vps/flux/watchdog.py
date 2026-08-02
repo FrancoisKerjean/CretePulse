@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sonde des capteurs vols : alerte Telegram des qu'une collecte decroche.
+"""Sonde des capteurs de flux : alerte Telegram des qu'une collecte decroche.
 
 Le capteur HER n'a rien ecrit du 22 au 27/07/2026 alors que le cron tournait
 144 fois par jour. Personne ne l'a vu : log sans horodatage, aucun journal de
@@ -9,6 +9,14 @@ Deux controles, sur la derniere journee de service COMPLETE :
   - fraicheur : un run reussi dans les 45 dernieres minutes (cron toutes les 10)
   - plausibilite : le compte du jour reste dans une bande realiste
 
+Le message porte la NATURE du capteur et la CAUSE de la panne. Le 02/08/2026,
+six capteurs de port muets ont ete annonces « HER arrival, SOU arrival... »
+sous le titre « Capteurs vols », 96 fois de suite, sans jamais dire que GTP
+avait cesse de repondre alors que l'erreur etait ecrite en base a chaque run.
+La cle distingue le port de l'aeroport depuis le premier jour ; le libelle,
+non. Meme lecon que le piege 7 du capteur ferries : une garde posee cote
+calcul ne se propage pas toute seule cote affichage.
+
 Cron : 20 * * * * (toutes les heures).
 """
 import os
@@ -16,6 +24,11 @@ import sys
 from datetime import date, datetime, timedelta, timezone
 
 STALE_AFTER_MIN = 45
+CAUSE_MAX_CHARS = 110
+
+# HER designe un aeroport ET un port : le libelle doit dire lequel.
+NATURES = {"flight_arrivals": "aéroport", "ferry_crossings": "port"}
+SENS = {"arrival": "arrivées", "departure": "départs"}
 
 # Un capteur = (collecteur, noeud, sens). Le collecteur fait partie de la cle
 # parce que HER designe a la fois un aeroport et un port : sans lui, la sonde
@@ -40,17 +53,17 @@ FEEDS = (
     # Bande basse a 0 pour Souda et Sitia : leurs lignes ne partent pas tous les
     # jours, une journee vide y est normale et n'est pas une panne.
     {"collector": "ferry_crossings", "node": "HER", "direction": "arrival",
-     "band": (1, 25), "stale_after_min": 1560, "unit": "traversees"},
+     "band": (1, 25), "stale_after_min": 1560, "unit": "traversées"},
     {"collector": "ferry_crossings", "node": "HER", "direction": "departure",
-     "band": (1, 25), "stale_after_min": 1560, "unit": "traversees"},
+     "band": (1, 25), "stale_after_min": 1560, "unit": "traversées"},
     {"collector": "ferry_crossings", "node": "SOU", "direction": "arrival",
-     "band": (0, 10), "stale_after_min": 1560, "unit": "traversees"},
+     "band": (0, 10), "stale_after_min": 1560, "unit": "traversées"},
     {"collector": "ferry_crossings", "node": "SOU", "direction": "departure",
-     "band": (0, 10), "stale_after_min": 1560, "unit": "traversees"},
+     "band": (0, 10), "stale_after_min": 1560, "unit": "traversées"},
     {"collector": "ferry_crossings", "node": "SIT", "direction": "arrival",
-     "band": (0, 10), "stale_after_min": 1560, "unit": "traversees"},
+     "band": (0, 10), "stale_after_min": 1560, "unit": "traversées"},
     {"collector": "ferry_crossings", "node": "SIT", "direction": "departure",
-     "band": (0, 10), "stale_after_min": 1560, "unit": "traversees"},
+     "band": (0, 10), "stale_after_min": 1560, "unit": "traversées"},
 )
 
 
@@ -58,29 +71,51 @@ def _key(feed):
     return (feed["collector"], feed["node"], feed["direction"])
 
 
-def evaluate(last_ok, daily, now, stale_after_min=None):
+def _cause(last_error, key, seen_at):
+    """Suffixe ' — <cause>' si une erreur POSTERIEURE au dernier succes existe.
+
+    Une erreur anterieure au dernier run reussi est deja reparee : l'afficher
+    ferait accuser la mauvaise cause.
+    """
+    entry = (last_error or {}).get(key)
+    if not entry:
+        return ""
+    failed_at, message = entry
+    if not message or (seen_at is not None and failed_at <= seen_at):
+        return ""
+    text = " ".join(message.split())
+    if len(text) > CAUSE_MAX_CHARS:
+        text = text[:CAUSE_MAX_CHARS - 1] + "…"
+    return f" — {text}"
+
+
+def evaluate(last_ok, daily, now, last_error=None, stale_after_min=None):
     """-> liste de messages d'alerte. Liste vide = tout va bien.
 
-    last_ok : {(collecteur, noeud, sens): datetime du dernier run reussi ou None}
-    daily   : {(collecteur, noeud, sens): mouvements de la derniere journee pleine}
+    last_ok    : {(collecteur, noeud, sens): datetime du dernier run reussi ou None}
+    daily      : {(collecteur, noeud, sens): mouvements de la derniere journee pleine}
+    last_error : {(collecteur, noeud, sens): (datetime du dernier echec, message)}
     """
     alerts = []
     for feed in FEEDS:
         key = _key(feed)
-        label = f"{feed['node']} {feed['direction']}"
+        label = (f"{feed['node']} ({NATURES[feed['collector']]}) "
+                 f"{SENS[feed['direction']]}")
         limit = stale_after_min if stale_after_min is not None else feed["stale_after_min"]
         seen_at = last_ok.get(key)
         if seen_at is None:
-            alerts.append(f"{label} : aucun run reussi enregistre")
+            alerts.append(f"{label} : aucun run réussi enregistré"
+                          + _cause(last_error, key, None))
             continue
         age_min = int((now - seen_at).total_seconds() // 60)
         if age_min > limit:
             hours, minutes = divmod(age_min, 60)
-            alerts.append(f"{label} : muet depuis {hours} h {minutes:02d}")
+            alerts.append(f"{label} : muet depuis {hours} h {minutes:02d}"
+                          + _cause(last_error, key, seen_at))
             continue
         count = daily.get(key)
         if count is None:
-            alerts.append(f"{label} : aucune ligne pour la derniere journee pleine")
+            alerts.append(f"{label} : aucune ligne pour la dernière journée pleine")
             continue
         low, high = feed["band"]
         if not low <= count <= high:
@@ -88,7 +123,37 @@ def evaluate(last_ok, daily, now, stale_after_min=None):
     return alerts
 
 
+def merge_errors(rows):
+    """(collecteur, noeud, sens|None, quand, message) -> {cle capteur: (quand, message)}.
+
+    Le collecteur ferries echoue AVANT de savoir de quel sens il s'agit (GTP
+    injoignable vaut pour le port entier) et journalise direction = NULL. Une
+    erreur de noeud se propage donc a ses deux sens, mais ne recouvre jamais
+    une erreur enregistree sur un sens precis.
+    """
+    node_level, exact = {}, {}
+    for collector, node, direction, failed_at, message in rows:
+        target = exact if direction else node_level
+        key = (collector, node, direction) if direction else (collector, node)
+        if key not in target or failed_at > target[key][0]:
+            target[key] = (failed_at, message)
+    merged = {}
+    for (collector, node), value in node_level.items():
+        for direction in SENS:
+            merged[(collector, node, direction)] = value
+    merged.update(exact)
+    return merged
+
+
 # --- acces base et notification (hors du perimetre teste) --------------------
+
+LAST_ERROR_SQL = """
+select collector, airport, direction, ran_at, error from flux_collector_runs
+where not ok and error is not null
+  and collector in ('flight_arrivals', 'ferry_crossings')
+  and ran_at > now() - interval '30 days'
+order by ran_at;
+"""
 
 LAST_OK_SQL = """
 select collector, airport, direction, max(ran_at) from flux_collector_runs
@@ -126,8 +191,10 @@ def collect(conn, service_day):
         daily = {("flight_arrivals", a, d): n for a, d, n in cur.fetchall()}
         cur.execute(DAILY_FERRIES_SQL, (service_day,))
         daily.update({("ferry_crossings", p, d): n for p, d, n in cur.fetchall()})
+        cur.execute(LAST_ERROR_SQL)
+        last_error = merge_errors(cur.fetchall())
         cur.execute(PRUNE_SQL)  # ~580 runs/jour, on garde 30 jours
-    return last_ok, daily
+    return last_ok, daily, last_error
 
 
 def notify(alerts, service_day):
@@ -135,10 +202,10 @@ def notify(alerts, service_day):
     load_dotenv("/opt/cretepulse/.env")  # TG_TOKEN_CHIEF / TG_CHAT_ID
     sys.path.insert(0, "/opt/kairos-telegram")
     from kairos_telegram import Bot, Priority, send
-    body = (f"Journee de service controlee : {service_day:%d/%m}\n\n"
+    body = (f"Journée de service contrôlée : {service_day:%d/%m}\n\n"
             + "\n".join(f"- {a}" for a in alerts)
             + "\n\nCockpit : https://crete.direct/admin/flux")
-    return send(Bot.CHIEF, "Capteurs vols crete.direct", body,
+    return send(Bot.CHIEF, "Capteurs flux crete.direct", body,
                 priority=Priority.WARNING, msg_type="system")
 
 
@@ -147,10 +214,10 @@ def main():
     service_day = date.today() - timedelta(days=1)
     conn = connect()
     try:
-        last_ok, daily = collect(conn, service_day)
+        last_ok, daily, last_error = collect(conn, service_day)
     finally:
         conn.close()
-    alerts = evaluate(last_ok, daily, datetime.now(timezone.utc))
+    alerts = evaluate(last_ok, daily, datetime.now(timezone.utc), last_error=last_error)
     stamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
     if not alerts:
         print(f"{stamp} [flux_watchdog] {len(FEEDS)} capteurs frais, "

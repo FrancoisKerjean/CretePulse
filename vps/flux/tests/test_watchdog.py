@@ -3,10 +3,14 @@
 Le capteur HER n'a rien ecrit du 22 au 27/07/2026 pendant que le cron tournait
 144 fois par jour. Rien ne l'a signale : log sans horodatage, aucun journal de
 run, code de sortie avale par cron.
+
+Le 02/08/2026 la sonde a fait son travail (elle criait depuis 4 jours) mais son
+message, lui, mentait : titre « Capteurs vols » pour six capteurs de PORT, et
+pas un mot de la cause alors qu'elle etait en base. On repare le message.
 """
 from datetime import datetime, timedelta, timezone
 
-from flux.watchdog import evaluate
+from flux.watchdog import evaluate, merge_errors
 
 NOW = datetime(2026, 7, 29, 12, 0, tzinfo=timezone.utc)
 FLIGHTS = "flight_arrivals"
@@ -34,7 +38,7 @@ def test_capteur_muet_declenche_une_alerte():
     stale = {**FRESH, (FLIGHTS, "HER", "arrival"): NOW - timedelta(hours=5)}
     alerts = evaluate(stale, SANE, NOW)
     assert len(alerts) == 1
-    assert "HER arrival" in alerts[0]
+    assert "HER (aéroport)" in alerts[0]
     assert "5" in alerts[0]  # l'anciennete est dans le message
 
 
@@ -42,7 +46,7 @@ def test_capteur_jamais_vu_declenche_une_alerte():
     never = {**FRESH, (FLIGHTS, "HER", "arrival"): None}
     alerts = evaluate(never, SANE, NOW)
     assert len(alerts) == 1
-    assert "HER arrival" in alerts[0]
+    assert "HER (aéroport)" in alerts[0]
 
 
 def test_retard_court_tolere():
@@ -71,7 +75,7 @@ def test_journee_absente_declenche_une_alerte():
     missing = {k: v for k, v in SANE.items() if k != (FLIGHTS, "HER", "arrival")}
     alerts = evaluate(FRESH, missing, NOW)
     assert len(alerts) == 1
-    assert "HER arrival" in alerts[0]
+    assert "HER (aéroport)" in alerts[0]
 
 
 def test_le_port_et_l_aeroport_d_heraklion_sont_deux_capteurs_distincts():
@@ -83,19 +87,50 @@ def test_le_port_et_l_aeroport_d_heraklion_sont_deux_capteurs_distincts():
     assert "776" in alerts[0]
 
 
-def test_capteur_ferries_muet_declenche_une_alerte():
-    # Le cron ferries est quotidien : une journee sautee est une panne.
-    stale = {**FRESH, (FERRIES, "HER", "arrival"): NOW - timedelta(hours=40)}
+def test_le_libelle_dit_lequel_des_deux_HER_est_en_panne():
+    # Le 02/08/2026, six capteurs de PORT muets ont ete annonces « HER arrival,
+    # SOU arrival, SIT arrival... » sous le titre « Capteurs vols ». Rien dans
+    # le message ne permettait de savoir qu'il s'agissait des ferries. La cle
+    # distingue les deux capteurs depuis le premier jour ; le libelle, non.
+    stale = {**FRESH,
+             (FLIGHTS, "HER", "arrival"): NOW - timedelta(hours=5),
+             (FERRIES, "HER", "arrival"): NOW - timedelta(hours=40)}
     alerts = evaluate(stale, SANE, NOW)
+    assert len(alerts) == 2
+    aeroport = [a for a in alerts if "HER (aéroport)" in a]
+    port = [a for a in alerts if "HER (port)" in a]
+    assert len(aeroport) == 1 and len(port) == 1
+    assert aeroport[0] != port[0]
+
+
+def test_la_cause_de_la_panne_est_dans_l_alerte():
+    # « muet depuis 96 h » repete 96 fois ne dit pas pourquoi, alors que la
+    # cause est ecrite dans flux_collector_runs.error a chaque run rate.
+    stale = {**FRESH, (FERRIES, "HER", "arrival"): NOW - timedelta(hours=40)}
+    errors = {(FERRIES, "HER", "arrival"):
+              (NOW - timedelta(hours=2), "GTP injoignable (HER->) : Max retries exceeded")}
+    alerts = evaluate(stale, SANE, NOW, last_error=errors)
     assert len(alerts) == 1
-    assert "HER arrival" in alerts[0]
+    assert "GTP injoignable" in alerts[0]
 
 
-def test_capteur_ferries_frais_a_vingt_heures_ne_declenche_rien():
-    # A la difference des vols, un ferry collecte une fois par jour : 20 h sans
-    # nouvelle passe est normal, pas une panne.
-    recent = {**FRESH, (FERRIES, "SOU", "arrival"): NOW - timedelta(hours=20)}
-    assert evaluate(recent, SANE, NOW) == []
+def test_une_vieille_erreur_ne_pollue_pas_une_panne_recente():
+    # Une erreur anterieure au dernier succes est deja reparee : l'afficher
+    # ferait accuser la mauvaise cause.
+    stale = {**FRESH, (FERRIES, "SOU", "arrival"): NOW - timedelta(hours=40)}
+    errors = {(FERRIES, "SOU", "arrival"):
+              (NOW - timedelta(days=9), "panne d'hier, corrigee depuis")}
+    alerts = evaluate(stale, SANE, NOW, last_error=errors)
+    assert len(alerts) == 1
+    assert "panne d'hier" not in alerts[0]
+
+
+def test_la_cause_est_tronquee_pour_rester_lisible():
+    # Les traces requests font 400 caracteres : illisible sur un telephone.
+    stale = {**FRESH, (FERRIES, "HER", "arrival"): NOW - timedelta(hours=40)}
+    errors = {(FERRIES, "HER", "arrival"): (NOW - timedelta(hours=2), "X" * 400)}
+    alerts = evaluate(stale, SANE, NOW, last_error=errors)
+    assert len(alerts[0]) < 250
 
 
 def test_comptage_ferries_effondre_declenche_une_alerte():
@@ -104,7 +139,7 @@ def test_comptage_ferries_effondre_declenche_une_alerte():
     collapsed = {**SANE, (FERRIES, "HER", "arrival"): 0}
     alerts = evaluate(FRESH, collapsed, NOW)
     assert len(alerts) == 1
-    assert "traversees" in alerts[0]
+    assert "traversées" in alerts[0]
 
 
 def test_comptage_ferries_gonfle_declenche_une_alerte():
@@ -114,6 +149,25 @@ def test_comptage_ferries_gonfle_declenche_une_alerte():
     alerts = evaluate(FRESH, inflated, NOW)
     assert len(alerts) == 1
     assert "60" in alerts[0]
+
+
+def test_une_panne_de_port_vaut_pour_ses_deux_sens():
+    # Le collecteur ferries journalise son echec au niveau du PORT : GTP tombe
+    # avant qu'on sache de quel sens il s'agit, donc direction est NULL. Sans
+    # propagation, la cause reste invisible sur les deux capteurs du port.
+    rows = [("ferry_crossings", "HER", None, NOW, "GTP injoignable")]
+    errors = merge_errors(rows)
+    assert errors[("ferry_crossings", "HER", "arrival")] == (NOW, "GTP injoignable")
+    assert errors[("ferry_crossings", "HER", "departure")] == (NOW, "GTP injoignable")
+
+
+def test_une_erreur_de_sens_precis_prime_sur_celle_du_noeud():
+    older = NOW - timedelta(hours=3)
+    rows = [("ferry_crossings", "HER", None, older, "panne generale"),
+            ("ferry_crossings", "HER", "arrival", NOW, "parseur casse a l'arrivee")]
+    errors = merge_errors(rows)
+    assert errors[("ferry_crossings", "HER", "arrival")][1] == "parseur casse a l'arrivee"
+    assert errors[("ferry_crossings", "HER", "departure")][1] == "panne generale"
 
 
 def test_plusieurs_pannes_plusieurs_alertes():
