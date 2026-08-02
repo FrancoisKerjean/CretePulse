@@ -5,6 +5,7 @@ import { hashToken, siteBase, resolveClientToken } from "@/lib/car-quote";
 import { partnerById } from "@/lib/activity-partners-db";
 import { isActivityInclusionKey } from "@/lib/activity-inclusions";
 import { canPartnerQuote } from "@/lib/activity-quotes";
+import { notifyOps, echeance } from "@/lib/ops-notify";
 
 // Un prestataire soumet son prix (page /activity-quote/{token}). Modèle multi-devis : le
 // devis est écrit sur l'invite de CE prestataire (pas de course, pas de gagnant
@@ -75,6 +76,21 @@ export async function POST(request: NextRequest) {
   }
 
   const locale = req.locale || "en";
+
+  // Meme trou que sur le devis voiture : la route notifiait le client et
+  // personne d'autre. Un devis prestataire attend un arbitrage, donc ca sonne.
+  void notifyOps({
+    title: `Devis activité reçu · ${partner.name}`,
+    lines: [
+      `${categoryLabel(req.category_slug, "fr")} · ${cityLabel(req.city, "fr")}`,
+      `${price} EUR${details ? " · " + details : ""}`,
+      req.status === "sent" ? "premier devis sur cette demande" : "",
+    ],
+    action: "vérifier l'offre et relancer les prestataires muets",
+    due: echeance(1),
+    url: `${siteBase()}/admin/activities`,
+  });
+
   try {
     const { sendActivityCustomerNewOffer } = await import("@/lib/email");
     await sendActivityCustomerNewOffer({

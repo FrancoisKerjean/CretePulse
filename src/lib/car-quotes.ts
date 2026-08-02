@@ -69,6 +69,7 @@ export interface QuoteOption {
   insurance_type: string | null;            // 'all_risk_zero' | 'cdw_excess' | null
   excess_eur: number | null;                // franchise si cdw_excess
   zero_excess_upsell_eur_day: number | null; // surcoût /jour pour passer à zéro franchise
+  note: string | null;          // mot du loueur au client (coordonnées déjà retirées)
   created_at: string | null;    // horodatage de l'option (pour l'expiry)
 }
 
@@ -81,13 +82,39 @@ export interface NormalizedOption {
   insurance_type: string | null;
   excess_eur: number | null;
   zero_excess_upsell_eur_day: number | null;
+  /** Note libre du loueur, affichée au client. Coordonnées retirées. */
+  note: string | null;
 }
 
 /** Valide/normalise une option brute soumise par le loueur. null si le prix est
  *  invalide (hors 1..100000). Les autres champs sont nettoyés silencieusement. */
+/**
+ * Note libre du loueur sur une option, affichée au client.
+ *
+ * Née le 01/08/2026 : Luxtrans n'avait pas la city car demandée, a proposé un VW
+ * T-Cross à 580 € contre 320 € pour une citadine, et a dû l'expliquer par TROIS
+ * emails faute de pouvoir l'écrire dans son devis. Le client, lui, ne voyait
+ * qu'un prix 81 % plus cher sans savoir pourquoi.
+ *
+ * ⛔ Elle s'affiche au client : y laisser un téléphone ou un email permettrait de
+ * court-circuiter la mise en relation, donc la commission. Les deux sont retirés.
+ * Le seuil est de 9 chiffres et non 8, sinon une date ISO (`2026-08-03`, 8
+ * chiffres) serait prise pour un numéro.
+ */
+function normalizeOptionNote(raw: unknown): string | null {
+  if (typeof raw !== "string") return null;
+  const cleaned = raw
+    .replace(/[\w.+-]+@[\w-]+\.[\w.]+/g, " ")
+    .replace(/\+?\d[\d\s().-]{6,}\d/g, (m) => (m.replace(/\D/g, "").length >= 9 ? " " : m))
+    .replace(/\s+/g, " ")
+    .trim();
+  return cleaned ? cleaned.slice(0, 140) : null;
+}
+
 export function normalizeQuoteOption(raw: {
   price?: unknown; carModel?: unknown; gearbox?: unknown; inclusions?: unknown;
   insuranceType?: unknown; excessEur?: unknown; zeroExcessUpsellEurDay?: unknown;
+  note?: unknown;
 }): NormalizedOption | null {
   const price = typeof raw.price === "number" ? raw.price : Number(raw.price);
   if (!Number.isFinite(price) || price <= 0 || price > 100000) return null;
@@ -100,7 +127,8 @@ export function normalizeQuoteOption(raw: {
   const excess_eur = insurance_type === "cdw_excess" && Number.isFinite(excessRaw) && excessRaw >= 0 && excessRaw <= 100000 ? excessRaw : null;
   const upsellRaw = typeof raw.zeroExcessUpsellEurDay === "number" ? raw.zeroExcessUpsellEurDay : Number(raw.zeroExcessUpsellEurDay);
   const zero_excess_upsell_eur_day = Number.isFinite(upsellRaw) && upsellRaw > 0 && upsellRaw <= 10000 ? upsellRaw : null;
-  return { price, car_model, gearbox, inclusions, insurance_type, excess_eur, zero_excess_upsell_eur_day };
+  const note = normalizeOptionNote(raw.note);
+  return { price, car_model, gearbox, inclusions, insurance_type, excess_eur, zero_excess_upsell_eur_day, note };
 }
 
 /** Normalise une liste d'options ; ignore les invalides. Max 6 options gardées. */
@@ -126,7 +154,64 @@ export function findChosenOption(options: QuoteOption[], optionId: number): Quot
   return options.find((o) => o.id === optionId) ?? null;
 }
 
-/** Relance loueur : invité, ni chiffré ni désisté, demande ouverte, >24h, jamais relancé. */
+/**
+ * Délai avant de relancer un loueur muet. Ramené de 24 h à 2 h le 01/08/2026.
+ *
+ * Mesure sur 30 jours (22 demandes) : la première offre arrive en <= 0,5 h sur
+ * TOUTES les issues où le client reste dans le jeu, et en 6,7 h sur les 8
+ * demandes où il disparaît sans jamais trancher. Un client qui attend une
+ * matinée a réservé ailleurs et ne revient pas. Relancer à H+24 arrivait donc
+ * longtemps après la bataille.
+ *
+ * Le plafond d'UNE relance par invite ne bouge pas : c'est le moment qui change,
+ * pas le volume de courrier envoyé aux loueurs.
+ */
+export const PARTNER_NUDGE_DELAY_MS = 2 * HOUR;
+
+/** Heures d'envoi acceptables, à Athènes. Bornes : ouverte incluse, fermée exclue. */
+const NUDGE_OPEN_HOUR = 8;
+const NUDGE_CLOSE_HOUR = 21;
+
+/**
+ * Une relance est-elle envoyable maintenant ? Un loueur ne se relève pas à 3 h
+ * du matin, et un courrier nocturne se lit au mieux le lendemain, au pire agace.
+ *
+ * Ne porte QUE sur l'heure d'envoi, jamais sur le calcul du délai : une demande
+ * déposée la nuit garde son ancienneté et part dès l'ouverture.
+ * `Intl` porte les règles de fuseau, donc le passage à l'heure d'hiver suit tout
+ * seul, sans décalage d'une heure deux fois par an.
+ */
+export function isPartnerNudgeHour(nowMs: number): boolean {
+  const hour = Number(new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Athens", hour: "2-digit", hourCycle: "h23",
+  }).format(new Date(nowMs)));
+  if (!Number.isFinite(hour)) return false;
+  return hour >= NUDGE_OPEN_HOUR && hour < NUDGE_CLOSE_HOUR;
+}
+
+/**
+ * Libellé du véhicule d'un devis. Rend `null` tant qu'il n'y a pas de modèle.
+ *
+ * ⛔ Une boîte de vitesses n'est PAS un modèle de voiture. Le libellé se
+ * construisait en `[car_model, gearbox].filter(Boolean).join(" · ")` : quand le
+ * loueur laissait le modèle vide, il ne restait que « Manual », et ce mot partait
+ * à la place du modèle **au client** sur sa page d'offres et dans l'email de mise
+ * en relation. Constaté en production sur les demandes 25 (Zorbas) et 33 (Zakros
+ * Tours) : deux clients sur quatre ont lu « Manual » comme nom de voiture.
+ *
+ * La boîte reste une information utile, mais elle s'affiche sous son propre
+ * intitulé, jamais dans le champ du modèle.
+ */
+export function quotedModelLabel(
+  carModel: string | null | undefined,
+  gearboxLabel: string | null | undefined,
+): string | null {
+  const model = typeof carModel === "string" ? carModel.trim() : "";
+  if (!model) return null;
+  return gearboxLabel ? `${model} · ${gearboxLabel}` : model;
+}
+
+/** Relance loueur : invité, ni chiffré ni désisté, demande ouverte, >2h, jamais relancé. */
 export function partnerNeedsRelance(
   invite: { status: string; relanced_at: string | null },
   requestStatus: string,
@@ -136,7 +221,7 @@ export function partnerNeedsRelance(
   if (invite.status !== "invited") return false;
   if (invite.relanced_at) return false;
   if (!canPartnerQuote(requestStatus)) return false;
-  return nowMs - createdAtMs >= 24 * HOUR;
+  return nowMs - createdAtMs >= PARTNER_NUDGE_DELAY_MS;
 }
 
 /** Relance client : a ≥1 offre (status quoted), non tranché, <2 relances, dernière >24h. */

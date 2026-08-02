@@ -219,6 +219,42 @@
   }
 }
 
+/* Raccourcis des cartes de plage.
+   /en/beaches rend ~182 cartes identiques. Chaque utilitaire y etait recopie
+   autant de fois, et deux fois plutot qu'une : mesure du 01/08/2026, 149 685
+   octets de class= dans le HTML rendu et 144 958 de plus dans le payload RSC
+   qui le double, sur une page de 875 Ko pour 7 876 octets de texte visible.
+   Meme rendu, ecrit une fois. Les combinaisons sont reprises a l'identique de
+   ce qui etait en ligne : ces regles ne decident d'aucun style, elles nomment
+   ce qui existait deja. src/lib/beach-card-css.test.ts verrouille la
+   correspondance, une classe ecrite dans le JSX mais absente d'ici ne casserait
+   rien de visible a la compilation, elle effacerait juste le style de 182
+   cartes en silence.
+   `group` reste dans le JSX a dessein : ce n'est pas une utilite mais un
+   marqueur que `group-hover:` lit sur l'ancetre, @apply n'en produirait aucune
+   regle et tous les survols tomberaient. */
+@layer components {
+  .beach-card {
+    @apply rounded-xl border border-border bg-white overflow-hidden hover:border-sea/30 hover:shadow-soft transition-all;
+  }
+  .beach-card-img {
+    @apply w-full h-full object-cover group-hover:scale-105 transition-transform duration-500;
+  }
+  .beach-card-meta {
+    @apply flex items-center gap-1 text-xs text-text-muted mt-1;
+  }
+  .beach-card-tags {
+    @apply flex flex-wrap items-center gap-2 mt-3;
+  }
+  /* Socle commun des etiquettes. La couleur reste dans le JSX : elle porte une
+     information (qualite d'eau, affluence, equipement), pas une mise en forme.
+     gap-1 est sans effet sur une etiquette sans icone, un seul enfant ne cree
+     aucun ecart : le meme socle sert donc aux deux formes. */
+  .pill {
+    @apply inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full;
+  }
+}
+
 /* iOS Safari auto-zooms when a focused field has font-size < 16px, and the page
    stays zoomed after blur — every page then looks cropped on both edges.
    Force 16px on real text-entry fields, touch devices only (!important beats

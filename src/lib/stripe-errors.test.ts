@@ -19,6 +19,20 @@ describe("classifyStripeFailure", () => {
     expect(failure.status).toBe(503);
   });
 
+  it("reconnait aussi le profil de plateforme non rempli", () => {
+    // Second refus de la meme famille, rencontre le 29/07/2026 apres activation
+    // de Connect : le compte a bien Connect, mais le questionnaire plateforme
+    // n'est pas rempli. C'est un blocage de versement, pas une panne Stripe.
+    const failure = classifyStripeFailure(
+      stripeError({
+        message:
+          "You must complete your platform profile to use Connect and create live connected accounts. Visit your dashboard at https://dashboard.stripe.com/connect/accounts/overview to answer the questionnaire.",
+      }),
+    );
+    expect(failure.code).toBe("payouts_unavailable");
+    expect(failure.status).toBe(503);
+  });
+
   it("range toute autre erreur Stripe en panne du prestataire", () => {
     const failure = classifyStripeFailure(
       stripeError({ message: "Invalid API Key provided", type: "authentication_error" }),

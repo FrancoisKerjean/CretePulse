@@ -1,16 +1,17 @@
 // /stays/[slug] : fiche d'un logement publie. Le prix affiche est le NET proprietaire,
 // les 5 % de frais de paiement sont annonces avant toute demande.
 // Noindex tant qu'il n'y a pas d'annonce reelle (cf ../metadata.ts).
-import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { getListingBySlug, bookedRangesForListing } from "@/lib/stays/db";
 import { unavailableNights } from "@/lib/stays/availability";
+import { normalizeAmenities } from "@/lib/stays/facts";
 import { L, pickStaysLocale } from "../content";
 import { staysMetadata } from "../metadata";
 import RequestForm from "./RequestForm";
+import Gallery from "./Gallery";
 
 export async function generateMetadata(
   { params }: { params: Promise<{ locale: string; slug: string }> },
@@ -40,6 +41,18 @@ export default async function StayDetailPage(
   );
   const minNights = Number(listing.min_nights) || 1;
 
+  // Ligne de faits. Une valeur nulle DISPARAIT : pas de zero, pas de "n/d" sur une
+  // surface voyageur. L ordre est fixe, la ponctuation est ajoutee au rendu.
+  const facts: string[] = [
+    listing.location_slug ? listing.location_slug.replace(/-/g, " ") : null,
+    listing.max_guests ? `${listing.max_guests} ${t.facts.guests}` : null,
+    listing.bedrooms ? `${listing.bedrooms} ${t.facts.bedrooms}` : null,
+    listing.bathrooms ? `${listing.bathrooms} ${t.facts.bathrooms}` : null,
+    listing.area_sqm ? `${listing.area_sqm} ${t.facts.area}` : null,
+  ].filter((v): v is string => v !== null);
+
+  const amenities = normalizeAmenities(listing.amenities);
+
   return (
     <main className="min-h-screen bg-surface">
       <div className="mx-auto max-w-3xl px-4 pt-10 pb-16">
@@ -47,15 +60,30 @@ export default async function StayDetailPage(
           {listing.title}
         </h1>
 
-        {listing.photos?.[0] && (
-          <Image
-            src={listing.photos[0]}
-            alt={listing.title ?? ""}
-            width={1200}
-            height={720}
-            className="w-full rounded-3xl object-cover"
-            priority
-          />
+        {facts.length > 0 && (
+          <p className="m-0 mb-5 flex flex-wrap gap-x-3 gap-y-1 text-[14.5px] text-text-muted">
+            {facts.map((f, i) => (
+              <span key={f}>
+                {i > 0 && <span className="mr-3 text-text-light">·</span>}
+                {f}
+              </span>
+            ))}
+          </p>
+        )}
+
+        <Gallery photos={listing.photos ?? []} alt={listing.title ?? ""} />
+
+        {amenities.length > 0 && (
+          <ul className="m-0 mt-5 flex list-none flex-wrap gap-2 p-0">
+            {amenities.map((k) => (
+              <li
+                key={k}
+                className="rounded-xl border border-border bg-white px-3 py-1.5 text-[13.5px] text-text-muted"
+              >
+                {t.facts.amenities[k]}
+              </li>
+            ))}
+          </ul>
         )}
 
         {listing.description && (
@@ -63,6 +91,15 @@ export default async function StayDetailPage(
             {listing.description}
           </p>
         )}
+
+        {/* La langue de l original vient de la base, jamais d une deduction : sans
+            elle, on n affiche rien. */}
+        {listing.description && listing.description_locale &&
+          listing.description_locale !== pickStaysLocale(locale) && (
+            <p className="m-0 mt-1.5 text-[12.5px] italic text-text-light">
+              {t.langNote.replace("{lang}", listing.description_locale)}
+            </p>
+          )}
 
         <div className="card-base mt-6 p-6">
           <p className="m-0 text-[12px] uppercase tracking-wide text-text-muted">
@@ -85,30 +122,39 @@ export default async function StayDetailPage(
           <RequestForm
             slug={listing.slug}
             strings={t.form}
+            quoteStrings={t.quote}
+            calendarStrings={t.calendar}
             unavailable={unavailable}
             minNights={minNights}
+            locale={pickStaysLocale(locale)}
+            basePriceEur={Number(listing.base_price_eur)}
+            cleaningFeeEur={Number(listing.cleaning_fee_eur)}
+            commissionRate={Number(listing.commission_rate)}
           />
-
-          <div className="mt-5">
-            <p className="m-0 mb-2 text-[12px] uppercase tracking-wide text-text-muted">
-              {t.listing.unavailableTitle}
-            </p>
-            {unavailable.length === 0 ? (
-              <p className="m-0 text-[14px] text-text-muted">{t.listing.unavailableEmpty}</p>
-            ) : (
-              <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
-                {unavailable.slice(0, 45).map((d) => (
-                  <li
-                    key={d}
-                    className="rounded-lg border border-border bg-white px-2 py-1 text-[12.5px] text-text-muted font-data line-through"
-                  >
-                    {d}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
         </section>
+
+        {/* Note relevee sur Airbnb. Aucun lien sortant : envoyer le voyageur la-bas
+            lui ferait payer les frais qu on pretend lui eviter. Le bloc DISPARAIT
+            s il n y a pas d avis, il n annonce jamais son propre vide. */}
+        {listing.rating_avg != null &&
+          listing.reviews_count != null &&
+          listing.reviews_count > 0 && (
+            <section className="mt-12">
+              <p className="m-0 font-heading text-2xl font-extrabold text-text">
+                {t.rating.summary
+                  .replace("{rating}", String(listing.rating_avg).replace(".", ","))
+                  .replace("{count}", String(listing.reviews_count))}
+              </p>
+              {listing.reviews_captured_at && (
+                <p className="m-0 mt-1 text-[12.5px] text-text-light">
+                  {t.rating.source.replace(
+                    "{date}",
+                    listing.reviews_captured_at.slice(0, 10).split("-").reverse().join("/"),
+                  )}
+                </p>
+              )}
+            </section>
+          )}
 
         <p className="mt-8 text-[13px]">
           <Link href={`/${locale}/stays/terms`} className="text-sea underline">

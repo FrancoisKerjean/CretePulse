@@ -20,9 +20,12 @@ export interface CommissionCandidate {
 }
 
 /**
- * Garde d'idempotence et de bon sens, appliquee avant tout appel a Stripe.
- * `commission_session_id` non nul veut dire qu'une demande est deja partie :
- * rejouer setOutcome ne doit pas facturer deux fois le meme loueur.
+ * Garde d'idempotence et de bon sens, appliquee avant toute facturation.
+ *
+ * `commission_session_id` non nul veut dire que le loueur a DEJA CLIQUE sur
+ * « Pay by card » depuis sa page facture : la session nait a ce clic, plus a
+ * l'emission. Une demande dans cet etat a donc forcement recu sa facture, et
+ * rejouer la facturation lui en enverrait une seconde.
  */
 export function shouldRequestCommission(req: CommissionCandidate): boolean {
   if (req.outcome !== "rented") return false;
@@ -41,6 +44,14 @@ export interface CommissionMail {
   dateFrom: string;
   dateTo: string;
   payUrl: string;
+  /**
+   * Numero de la facture, pour le rapprochement comptable du loueur.
+   * Les DEUX appelants le passent aujourd hui (`requestCommission` et
+   * `resendCommissionInvoice`) : il reste optionnel pour que les tests de mise
+   * en forme puissent s en passer, et la ligne « Invoice: » n est rendue que
+   * s il est present.
+   */
+  invoiceNumber?: string;
 }
 
 // Les loueurs cretois recoivent deja leurs leads en anglais (sendCarLeadEmail).
@@ -54,17 +65,22 @@ export function commissionRequestBody(m: CommissionMail): string {
   return [
     `Hi ${m.partnerName},`,
     ``,
-    `Your rental ${m.dateFrom} to ${m.dateTo} is marked as rented on crete.direct.`,
+    `Your rental ${m.dateFrom} to ${m.dateTo} starts today, so here is the commission invoice.`,
     ``,
+    ...(m.invoiceNumber ? [`Invoice: ${m.invoiceNumber}`] : []),
     `Rental reference: ${m.requestId}`,
-    `Rental amount you collected: ${m.finalAmountEur.toFixed(2)} EUR`,
+    // « quoted and accepted », jamais « collected » : au premier jour de
+    // location nous ignorons ce que le loueur a encaisse.
+    `Rental price quoted and accepted by the traveller: ${m.finalAmountEur.toFixed(2)} EUR`,
     `crete.direct commission: ${m.commissionEur.toFixed(2)} EUR`,
     ``,
-    `Pay the commission here:`,
+    `View and pay the invoice here:`,
     m.payUrl,
     ``,
-    `The payment goes to crete.direct only. Your rental money stays with you, we never touch it.`,
-    `Any question on this line, just reply to this email.`,
+    `You can pay by card on that page, or by bank transfer to the IBAN shown on it.`,
+    `Your rental money stays with you, we never touch it.`,
+    ``,
+    `If this rental did not take place, reply to this email and we will cancel the invoice.`,
   ].join("\n");
 }
 
@@ -78,7 +94,7 @@ export interface CommissionCheckoutInput {
   dateTo: string;
 }
 
-const siteBase = (): string =>
+export const siteBase = (): string =>
   process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 export function buildCommissionCheckoutParams(

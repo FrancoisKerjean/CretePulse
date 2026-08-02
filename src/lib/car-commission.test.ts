@@ -133,3 +133,47 @@ describe("commissionRequestSubject / Body", () => {
     expect(body).not.toMatch(/veuillez|règlement|montant/i);
   });
 });
+
+describe("commissionRequestBody apres retouche", () => {
+  const mail = {
+    requestId: 39,
+    partnerName: "Luxtrans Crete",
+    commissionEur: 20,
+    finalAmountEur: 200,
+    dateFrom: "2026-08-07",
+    dateTo: "2026-08-14",
+    payUrl: "https://crete.direct/en/invoice/abc",
+    invoiceNumber: "NOVAI-CD-2026-004",
+  };
+
+  it("annonce le prix du devis accepte, jamais un montant encaisse", () => {
+    // Au premier jour de location on ignore ce que le loueur a encaisse :
+    // ecrire « the amount you collected » serait faux.
+    const body = commissionRequestBody(mail);
+    expect(body).toContain("quoted and accepted");
+    expect(body).not.toContain("you collected");
+  });
+
+  it("porte le numero de facture", () => {
+    expect(commissionRequestBody(mail)).toContain("NOVAI-CD-2026-004");
+  });
+
+  it("omet la ligne facture quand le numero n est pas encore connu", () => {
+    const { invoiceNumber: _omit, ...sansNumero } = mail;
+    expect(commissionRequestBody(sansNumero)).not.toContain("Invoice:");
+  });
+
+  it("pointe vers la page facture et jamais vers Stripe", () => {
+    const body = commissionRequestBody(mail);
+    expect(body).toContain("/invoice/");
+    expect(body).not.toContain("stripe.com");
+  });
+
+  it("rappelle que l argent de la location reste chez le loueur", () => {
+    expect(commissionRequestBody(mail)).toContain("Your rental money stays with you");
+  });
+
+  it("dit au loueur comment faire annuler une location qui n a pas eu lieu", () => {
+    expect(commissionRequestBody(mail)).toContain("did not take place");
+  });
+});

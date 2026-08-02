@@ -36,9 +36,16 @@ const PAYOUT_COUNTRIES = [
 ] as const;
 
 export default function ApprovePanel(
-  { token, strings }: { token: string; strings: StaysStrings["approve"] },
+  { token, strings, suggestedPrice = 0 }: {
+    token: string;
+    strings: StaysStrings["approve"];
+    /** Tarif de l'annonce PAR NUIT, pre-rempli pour eviter la ressaisie. 0 = inconnu. */
+    suggestedPrice?: number;
+  },
 ) {
-  const [price, setPrice] = useState("");
+  // Suggestion modifiable : le proprietaire garde la main, on lui evite seulement
+  // de retaper son propre tarif. Sans suggestion, le champ reste vide comme avant.
+  const [price, setPrice] = useState(suggestedPrice > 0 ? String(suggestedPrice) : "");
   // Pays et type d'entite du compte de versement. Lus par Stripe Connect a la
   // premiere acceptation seulement. Ignores ensuite (le compte existe deja).
   const [country, setCountry] = useState("GR");

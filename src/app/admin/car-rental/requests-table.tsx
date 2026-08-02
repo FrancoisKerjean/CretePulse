@@ -1,7 +1,7 @@
 // Vue Demandes : cartes empilées (mobile-first), filtres par query string,
 // écritures par forms natifs bindés aux server actions (zéro client JS).
 import {
-  requestCommission, buildCarWaMessage, waHref,
+  requestCommission, buildCarWaMessage, waHref, bookingState,
   type AdminPartner, type AdminRequest,
 } from "@/lib/car-admin";
 import {
@@ -14,9 +14,51 @@ import { carPickupLabel } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { canCancelRequest } from "@/lib/car-quotes";
 import { insuranceSummary, inclusionLabels } from "@/lib/car-inclusions";
-import { setOutcome, setCommissionPaid, saveNote, cancelRequest } from "./actions";
+import { invoiceAdminState, type AdminInvoiceRow } from "@/lib/car-invoice";
+import { commissionCatchUp, missingIdentityLabels, shouldOfferCommissionPaidToggle } from "@/lib/car-commission-catchup";
+import {
+  setOutcome, setCommissionPaid, saveNote, cancelRequest,
+  creditInvoiceAction, resendInvoiceAction, emitInvoiceAction,
+} from "./actions";
 
 const PAGE_SIZE = 50;
+
+/**
+ * Etat de l'argent du voyageur sur une demande. Rien ne l'affichait : une
+ * reservation payee dont le versement au loueur n'est pas parti se lisait comme
+ * une demande ordinaire. La logique est pure et testee (check:car-admin), ici on
+ * ne fait que l'habiller.
+ */
+const BOOKING_TONE: Record<"neutral" | "warn" | "ok" | "alert", string> = {
+  neutral: "border border-border bg-white text-text-muted",
+  warn: "border border-sun bg-white font-bold text-text",
+  ok: "bg-ok font-bold text-white",
+  alert: "border border-terracotta bg-terracotta-faint font-bold text-text",
+};
+
+function bookingBadge(r: AdminRequest) {
+  const state = bookingState(r);
+  if (!state) return null;
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-xs ${BOOKING_TONE[state.tone]}`}>
+      {state.label}
+    </span>
+  );
+}
+
+/**
+ * Etat de la facture de commission. Le ton `alert` est reserve a l envoi jamais
+ * parti : la facture existe et porte son numero, mais l email a ete refuse et le
+ * cron ne repassera JAMAIS dessus (il tranche l issue avant de facturer, la
+ * ligne sort de son filtre des le lendemain). Le bouton « renvoyer » est le seul
+ * rattrapage, il doit donc se voir.
+ */
+const INVOICE_TONE: Record<"alert" | "due" | "ok" | "muted", string> = {
+  alert: "border border-terracotta bg-terracotta-faint font-bold text-terracotta",
+  due: "border border-border bg-white text-text-muted",
+  ok: "bg-ok font-bold text-white",
+  muted: "border border-border bg-white text-text-light line-through",
+};
 
 /** Option de devis (variante) telle que lue par la page admin. */
 export type AdminQuoteOption = {
@@ -212,13 +254,14 @@ function OptionsDetail({ options, request }: { options: AdminQuoteOption[]; requ
 }
 
 export function RequestsTable({
-  requests, partnersById, invitesByRequest, monitorByRequest, optionsByRequest, statusFilter, partnerFilter, page,
+  requests, partnersById, invitesByRequest, monitorByRequest, optionsByRequest, invoicesByRequest, statusFilter, partnerFilter, page,
 }: {
   requests: AdminRequest[];
   partnersById: Map<number, AdminPartner>;
   invitesByRequest: Map<number, number>;
   monitorByRequest: Map<number, MonitorInvite[]>;
   optionsByRequest: Map<number, AdminQuoteOption[]>;
+  invoicesByRequest: Map<number, AdminInvoiceRow>;
   statusFilter: string;
   partnerFilter: string;
   page: number;
@@ -301,6 +344,24 @@ export function RequestsTable({
             { status: r.status, client_relanced_at: r.client_relanced_at ?? null, client_relance_count: r.client_relance_count ?? 0 },
             now,
           );
+          const invoice = invoicesByRequest.get(r.id);
+          const inv = invoiceAdminState(invoice);
+          // Facture restée en souffrance : la location est « louée » et aucune
+          // facture n'existe. Le cron ne repassera jamais dessus (il ne prend
+          // que `outcome IS NULL`), ce bouton est le seul rattrapage.
+          const catchUp = commissionCatchUp(
+            {
+              id: r.id,
+              outcome: r.outcome ?? null,
+              commission_eur: r.commission_eur ?? null,
+              commission_paid_at: r.commission_paid_at ?? null,
+              commission_session_id: r.commission_session_id ?? null,
+              quoted_by_partner_id: r.quoted_by_partner_id,
+              commission_requested_at: r.commission_requested_at ?? null,
+            },
+            invoice,
+            winner,
+          );
           const expMs = offerExpiresAt(r.quoted_at, r.date_from);
           const startPassed = new Date(r.date_from + "T00:00:00").getTime() < now;
           return (
@@ -310,7 +371,24 @@ export function RequestsTable({
                 {statusBadge(r.status)}
                 {closureReasonBadge(r.closure_reason)}
                 {outcomeBadge(r.outcome)}
-                {r.commission_paid_at ? <span className="rounded-full bg-ok px-2 py-0.5 text-xs font-bold text-white">commission encaissée</span> : null}
+                {r.commission_paid_at ? (
+                  <span className="rounded-full bg-ok px-2 py-0.5 text-xs font-bold text-white">commission encaissée</span>
+                ) : r.commission_requested_at ? (
+                  // Facture partie mais non réglée : sans cette mention, une
+                  // commission due restait invisible tant qu'on ne lisait pas la base.
+                  <span className="rounded-full border border-border px-2 py-0.5 text-xs font-bold text-text-muted">
+                    commission demandée le{" "}
+                    {new Date(r.commission_requested_at).toLocaleDateString("fr-FR", { timeZone: "Europe/Athens" })}
+                  </span>
+                ) : null}
+                {bookingBadge(r)}
+                {/* Numéro ET état de la facture : où en est l'argent, d'un coup
+                    d'œil, sans ouvrir la base. */}
+                {inv ? (
+                  <span className={`rounded-full px-2 py-0.5 text-xs ${INVOICE_TONE[inv.tone]}`}>
+                    <span className="font-data">{inv.number}</span> · {inv.label}
+                  </span>
+                ) : null}
                 <span className="ml-auto text-xs text-text-muted">{invitesByRequest.get(r.id) ?? 0} loueur(s) invité(s)</span>
               </div>
 
@@ -421,12 +499,85 @@ export function RequestsTable({
                     </div>
                   </details>
                 )}
-                {r.outcome === "rented" ? (
+                {/* Émission d'une facture restée en souffrance. `setOutcome`
+                    bascule en « louée » AVANT de facturer : si la facturation a
+                    été refusée (fiche loueur incomplète, loueur sans email, refus
+                    Stripe), la demande porte `rented` sans facture et le cron ne
+                    la reprendra JAMAIS. Quand la fiche est encore incomplète on
+                    n'affiche PAS le bouton, il serait refusé, et un bouton qui
+                    ment est pire qu'une phrase qui explique : on donne le lien
+                    vers la fiche à compléter.
+                    Placé AVANT « Commission encaissée » : on émet une facture
+                    avant de l'encaisser, l'ordre inverse se lisait à l'envers
+                    (défaut trouvé sur la planche, invisible des tests). */}
+                {catchUp?.kind === "emit" ? (
+                  <form action={emitInvoiceAction.bind(null, r.id)}>
+                    <button className="rounded-full bg-sea px-3 py-1 text-sm font-bold text-white">
+                      Émettre la facture
+                    </button>
+                  </form>
+                ) : catchUp?.kind === "identity_incomplete" ? (
+                  <span className="text-sm text-terracotta">
+                    Facture non émise : fiche loueur incomplète ({missingIdentityLabels(catchUp.missing).join(", ")}).{" "}
+                    <a href={`/admin/car-rental?tab=partners&q=${encodeURIComponent(winner?.name ?? "")}`}
+                       className="font-bold text-sea underline">
+                      Compléter la fiche de {winner?.name}
+                    </a>
+                  </span>
+                ) : catchUp?.kind === "locked" ? (
+                  <span className="text-sm text-terracotta">
+                    Facture bloquée : le verrou de facturation est posé alors qu&apos;aucune facture n&apos;existe.
+                    Aucun clic ne débloque : il faut remettre <span className="font-data">commission_requested_at</span> à NULL en base.
+                  </span>
+                ) : null}
+                {/* Sans facture, encaisser n'a pas de contrepartie
+                    (`markInvoicePaid` ne trouve alors aucune ligne) : un
+                    mensonge d'interface deja documente par `invoiceAdminState`
+                    / `commissionCatchUp` (defaut vu sur la planche, etats 4 et
+                    5 : fiche loueur incomplete, verrou orphelin). Exception
+                    volontaire : une commission deja marquee encaissee a la
+                    main hors systeme (ex. Luxtrans, juillet 2026) reste
+                    corrigeable. */}
+                {shouldOfferCommissionPaidToggle(r, inv != null) ? (
                   <form action={setCommissionPaid.bind(null, r.id, !r.commission_paid_at)}>
                     <button className={`rounded-full px-3 py-1 text-sm font-bold ${r.commission_paid_at ? "border border-border bg-white" : "bg-sun text-night"}`}>
                       {r.commission_paid_at ? "Repasser en due" : "Commission encaissée"}
                     </button>
                   </form>
+                ) : null}
+                {/* Renvoi de facture. Un envoi Resend refusé laisse la facture
+                    numérotée avec sent_at NULL, et le cron ne la reprendra
+                    jamais : il filtre sur outcome IS NULL alors que la bascule
+                    en « rented » a déjà eu lieu. Ce bouton est le SEUL
+                    rattrapage. Un loueur sans email le verrait refuser, on ne
+                    l'affiche donc pas et on dit pourquoi. */}
+                {inv?.canResend ? (
+                  winner?.email ? (
+                    <form action={resendInvoiceAction.bind(null, r.id)}>
+                      <button className={`rounded-full px-3 py-1 text-sm font-bold ${inv.tone === "alert" ? "bg-terracotta text-white" : "border border-border bg-white"}`}>
+                        {inv.tone === "alert" ? "Renvoyer la facture" : "Renvoyer"}
+                      </button>
+                    </form>
+                  ) : (
+                    <span className="text-sm text-terracotta">
+                      Facture non renvoyable : loueur sans email
+                    </span>
+                  )
+                ) : null}
+                {/* Avoir : la facture ne se supprime pas, elle s'annule, et la
+                    demande repasse en « perdue ». Repliée pour éviter le clic
+                    accidentel, motif obligatoire (l'action le refuse sinon). */}
+                {inv?.canCredit ? (
+                  <details className="text-sm">
+                    <summary className="cursor-pointer text-text-muted underline">émettre un avoir</summary>
+                    <form action={creditInvoiceAction.bind(null, r.id)} className="mt-2 flex flex-wrap items-center gap-1.5">
+                      <input name="reason" required maxLength={300} placeholder="Motif de l'avoir…"
+                             className="w-56 rounded-lg border border-border px-2 py-1 text-sm" aria-label="Motif de l'avoir" />
+                      <button className="rounded-full border border-terracotta bg-white px-3 py-1 text-sm font-bold text-terracotta">
+                        Annuler {inv.number} par un avoir
+                      </button>
+                    </form>
+                  </details>
                 ) : null}
                 {relayWaLink(r, relayPartner)}
                 <form action={saveNote.bind(null, r.id)} className="flex min-w-56 flex-1 items-center gap-1.5">

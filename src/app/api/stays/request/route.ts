@@ -10,7 +10,7 @@ import {
 import { isRangeFree } from "@/lib/stays/availability";
 import { nightsBetween } from "@/lib/stays/pricing";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { sendOwnerRequest, sendGuestReceived } from "@/lib/stays/emails";
+import { sendOwnerRequest, sendGuestReceived, pickEmailLocale } from "@/lib/stays/emails";
 import { notifyTelegram } from "@/lib/stays/telegram";
 import { newToken, hashToken, siteBase } from "@/lib/stays/tokens";
 
@@ -51,6 +51,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true });
   }
 
+  // La langue de la page ou le voyageur a rempli le formulaire. Elle est stockee
+  // sur la demande : tous les emails qui suivront, jusqu'au solde ou a
+  // l'expiration, partiront dans cette langue, longtemps apres cette requete.
+  const guestLocale = pickEmailLocale(typeof body.locale === "string" ? body.locale : null);
+
   const approveToken = newToken();
   await createStayRequest({
     listing_id: listing.id,
@@ -64,29 +69,41 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     status: "pending",
     approve_token_hash: hashToken(approveToken),
     ip_hash: ipHashVal,
+    locale: guestLocale,
   });
 
   const { data: owner } = await supabaseAdmin
     .from("stay_owners")
-    .select("email")
+    .select("email, locale")
     .eq("id", listing.owner_id)
     .maybeSingle();
 
-  const approveUrl = `${siteBase()}/fr/stays/approve/${approveToken}`;
+  // Deux langues dans la meme transaction : celle du proprietaire, celle du
+  // voyageur. Elles n'ont aucune raison de coincider.
+  const ownerLocale = pickEmailLocale(owner?.locale ?? null);
+  const approveUrl = `${siteBase()}/${ownerLocale}/stays/approve/${approveToken}`;
   if (owner?.email) {
-    await sendOwnerRequest(owner.email, {
-      guestName: v.row.guestName,
+    await sendOwnerRequest(
+      owner.email,
+      {
+        guestName: v.row.guestName,
+        dateFrom: v.row.dateFrom,
+        dateTo: v.row.dateTo,
+        pax: v.row.pax,
+        approveUrl,
+      },
+      ownerLocale,
+    );
+  }
+  await sendGuestReceived(
+    v.row.guestEmail,
+    {
+      listingTitle: listing.title ?? slug,
       dateFrom: v.row.dateFrom,
       dateTo: v.row.dateTo,
-      pax: v.row.pax,
-      approveUrl,
-    });
-  }
-  await sendGuestReceived(v.row.guestEmail, {
-    listingTitle: listing.title ?? slug,
-    dateFrom: v.row.dateFrom,
-    dateTo: v.row.dateTo,
-  });
+    },
+    guestLocale,
+  );
 
   await notifyTelegram(`🏠 Nouvelle demande Stays · ${listing.title ?? slug} · ${v.row.dateFrom}→${v.row.dateTo}`);
 

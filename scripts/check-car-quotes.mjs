@@ -1,5 +1,5 @@
 // node --experimental-strip-types scripts/check-car-quotes.mjs
-import { sortQuotesByPrice, canPartnerQuote, canCancelRequest, findChosenInvite, partnerNeedsRelance, clientNeedsRelance,
+import { sortQuotesByPrice, canPartnerQuote, canCancelRequest, findChosenInvite, partnerNeedsRelance, isPartnerNudgeHour, quotedModelLabel, clientNeedsRelance,
   clientAutoCloseReason,
   normalizeQuoteOption, normalizeQuoteOptions, bestOption, sortOptionsByPrice, findChosenOption } from "../src/lib/car-quotes.ts";
 
@@ -26,7 +26,24 @@ ok("choix d'une invite inexistante -> null", findChosenInvite([q(1, 300)], 99) =
 const H = 3600000;
 ok("relance loueur due", partnerNeedsRelance({ status: "invited", relanced_at: null }, "quoted", 1751961600000, 1751961600000 - 25 * H));
 ok("pas de relance si deja relance", !partnerNeedsRelance({ status: "invited", relanced_at: "x" }, "quoted", 1751961600000, 1751961600000 - 25 * H));
-ok("pas de relance si <24h", !partnerNeedsRelance({ status: "invited", relanced_at: null }, "quoted", 1751961600000, 1751961600000 - 5 * H));
+// Seuil ramene de 24 h a 2 h le 01/08/2026. Mesure : la 1re offre arrive en
+// <=0,5 h sur toutes les issues ou le client reste, 6,7 h sur les 8 demandes ou
+// il disparait sans jamais trancher. Une relance a H+24 arrivait apres la
+// bataille. Le plafond d'UNE relance par invite ne bouge pas.
+ok("relance loueur due des 3h", partnerNeedsRelance({ status: "invited", relanced_at: null }, "quoted", 1751961600000, 1751961600000 - 3 * H));
+ok("pas de relance si <2h", !partnerNeedsRelance({ status: "invited", relanced_at: null }, "quoted", 1751961600000, 1751961600000 - 1 * H));
+
+// Fenetre d'envoi : un loueur grec ne se releve pas a 3 h du matin. La fenetre
+// porte sur l'heure d'ENVOI, jamais sur le calcul du delai, sinon une demande
+// de nuit perdrait son anciennete.
+const at = (iso) => new Date(iso).getTime();
+ok("fenetre ouverte a 10h Athenes", isPartnerNudgeHour(at("2026-08-01T07:00:00Z")));
+ok("fenetre fermee a 3h Athenes", !isPartnerNudgeHour(at("2026-08-01T00:00:00Z")));
+ok("fenetre fermee a 22h Athenes", !isPartnerNudgeHour(at("2026-08-01T19:00:00Z")));
+ok("fenetre ouverte des 8h Athenes (borne incluse)", isPartnerNudgeHour(at("2026-08-01T05:00:00Z")));
+ok("fenetre fermee a 21h Athenes (borne exclue)", !isPartnerNudgeHour(at("2026-08-01T18:00:00Z")));
+// Heure d'hiver : Athenes passe a UTC+2, la fenetre doit suivre le fuseau reel.
+ok("fenetre suit l'heure d'hiver", isPartnerNudgeHour(at("2026-01-15T07:00:00Z")) && !isPartnerNudgeHour(at("2026-01-15T05:00:00Z")));
 ok("pas de relance si deja chiffre", !partnerNeedsRelance({ status: "quoted", relanced_at: null }, "quoted", 1751961600000, 1751961600000 - 25 * H));
 ok("pas de relance si demande fermee", !partnerNeedsRelance({ status: "invited", relanced_at: null }, "accepted", 1751961600000, 1751961600000 - 25 * H));
 ok("demande annulee = hors relance loueur", !partnerNeedsRelance({ status: "invited", relanced_at: null }, "cancelled", 1751961600000, 1751961600000 - 25 * H));
@@ -55,6 +72,31 @@ ok("normalizeQuoteOptions cap à 6", normalizeQuoteOptions(Array.from({ length: 
 ok("normalizeQuoteOptions non-array -> []", normalizeQuoteOptions("x").length === 0);
 ok("bestOption = la moins chère", bestOption([{ price: 40 }, { price: 30 }, { price: 35 }]).price === 30);
 ok("bestOption liste vide -> null", bestOption([]) === null);
+
+// Note libre du loueur, nee le 01/08/2026 : Luxtrans n'avait pas la city car
+// demandee, a propose un VW T-Cross, et a du l'expliquer par TROIS emails faute
+// de pouvoir l'ecrire dans son devis.
+ok("note conservee", normalizeQuoteOption({ price: 100, note: "No city car left, this is a SUV" }).note === "No city car left, this is a SUV");
+ok("note vide -> null", normalizeQuoteOption({ price: 100, note: "   " }).note === null);
+ok("note absente -> null", normalizeQuoteOption({ price: 100 }).note === null);
+ok("note tronquee a 140", normalizeQuoteOption({ price: 100, note: "x".repeat(200) }).note.length === 140);
+// ⛔ La note s'affiche au CLIENT : un loueur qui y met ses coordonnees court-circuite
+// la mise en relation, donc la commission. Retire, jamais refuse en silence total.
+ok("email retire de la note", !/@/.test(normalizeQuoteOption({ price: 100, note: "write me at info@cretecar.rent" }).note));
+ok("telephone retire de la note", !/\d{4}/.test(normalizeQuoteOption({ price: 100, note: "call +30 6940160266 now" }).note));
+ok("une date n'est PAS prise pour un telephone", normalizeQuoteOption({ price: 100, note: "available from 2026-08-03" }).note.includes("2026-08-03"));
+ok("un prix reste lisible", normalizeQuoteOption({ price: 580, note: "580 EUR for the week" }).note.includes("580"));
+
+// Une boite de vitesses n'est PAS un modele de voiture. Le libelle partait
+// jusqu'au 01/08/2026 en `[car_model, gearbox].filter(Boolean).join(' · ')` :
+// modele vide, il ne restait que « Manual », affiche au client A LA PLACE du
+// modele. Constate en prod sur les demandes 25 (Zorbas) et 33 (Zakros Tours).
+ok("modele + boite", quotedModelLabel("VW Polo", "Automatic") === "VW Polo · Automatic");
+ok("modele seul", quotedModelLabel("VW Polo", null) === "VW Polo");
+ok("boite SEULE ne fait pas un modele", quotedModelLabel(null, "Manual") === null);
+ok("modele vide ne fait pas un modele", quotedModelLabel("   ", "Manual") === null);
+ok("ni modele ni boite", quotedModelLabel(null, null) === null);
+ok("modele espace-entoure nettoye", quotedModelLabel("  Fiat Panda  ", null) === "Fiat Panda");
 
 const opt = (id, invite_id, price) => ({ id, invite_id, partner_id: invite_id, partner_name: `P${invite_id}`, price, currency: "EUR", car_model: null, gearbox: null, inclusions: [], created_at: "2026-07-08T10:00:00Z" });
 ok("sortOptionsByPrice croissant toutes invites confondues", sortOptionsByPrice([opt(1, 10, 40), opt(2, 10, 30), opt(3, 20, 35)]).map((o) => o.id).join() === "2,3,1");

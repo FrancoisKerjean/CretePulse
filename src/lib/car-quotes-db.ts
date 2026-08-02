@@ -33,13 +33,14 @@ export async function quotesForRequest(requestId: number): Promise<QuoteInvite[]
  *  Source des offres présentées au client dans la page /car-offer. */
 export async function optionsForRequest(requestId: number): Promise<QuoteOption[]> {
   const { data } = await supabase.from("car_quote_options")
-    .select("id, invite_id, partner_id, price, currency, car_model, gearbox, inclusions, insurance_type, excess_eur, zero_excess_upsell_eur_day, created_at, car_partners(name)")
+    .select("id, invite_id, partner_id, price, currency, car_model, gearbox, inclusions, insurance_type, excess_eur, zero_excess_upsell_eur_day, note, created_at, car_partners(name)")
     .eq("request_id", requestId);
   type Row = {
     id: number; invite_id: number; partner_id: number;
     price: number; currency: string | null;
     car_model: string | null; gearbox: string | null; inclusions: string[] | null;
     insurance_type: string | null; excess_eur: number | null; zero_excess_upsell_eur_day: number | null;
+    note: string | null;
     created_at: string | null; car_partners?: { name?: string } | null;
   };
   return ((data ?? []) as Row[]).map((r) => ({
@@ -48,6 +49,7 @@ export async function optionsForRequest(requestId: number): Promise<QuoteOption[
     price: r.price, currency: r.currency ?? "EUR",
     car_model: r.car_model, gearbox: r.gearbox, inclusions: r.inclusions,
     insurance_type: r.insurance_type, excess_eur: r.excess_eur, zero_excess_upsell_eur_day: r.zero_excess_upsell_eur_day,
+    note: r.note,
     created_at: r.created_at,
   }));
 }
@@ -56,7 +58,7 @@ export async function optionsForRequest(requestId: number): Promise<QuoteOption[
  *  token client. null si introuvable. */
 export async function requestByClientToken(token: string): Promise<{ request: Record<string, unknown>; quotes: QuoteInvite[]; options: QuoteOption[] } | null> {
   const { data: request } = await supabase.from("car_requests")
-    .select("id, status, locale, pickup_slug, date_from, date_to, car_type, customer_name, customer_email, customer_phone")
+    .select("id, status, locale, pickup_slug, date_from, time_from, date_to, time_to, car_type, customer_name, customer_email, customer_phone")
     .eq("accept_token_hash", hashToken(token)).maybeSingle();
   if (!request) return null;
   const quotes = await quotesForRequest(request.id as number);

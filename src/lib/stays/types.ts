@@ -18,6 +18,8 @@ export interface StayOwner {
   phone: string | null;
   stripe_connect_account_id: string | null;
   kyc_status: "none" | "pending" | "complete";
+  /** Langue de ses emails, posee au depot de l'annonce (en/fr/de/el). */
+  locale: string | null;
   created_at: string;
 }
 
@@ -38,6 +40,14 @@ export interface StayListing {
   bedrooms: number | null;
   beds: number | null;
   max_guests: number | null;
+  bathrooms: number | null;
+  area_sqm: number | null;
+  /** Langue REELLE de `description`, issue du scrape ou declaree. Jamais devinee. */
+  description_locale: string | null;
+  /** Note Airbnb relevee, sur 5. Republiee avec sa date, sans lien sortant. */
+  rating_avg: number | null;
+  reviews_count: number | null;
+  reviews_captured_at: string | null;
   base_price_eur: number;
   cleaning_fee_eur: number;
   min_nights: number;
@@ -61,6 +71,8 @@ export interface StayRequest {
   pax: number | null;
   message: string | null;
   status: RequestStatus;
+  /** Langue de la page ou la demande a ete faite (en/fr/de/el). */
+  locale: string | null;
   quoted_price_eur: number | null;
   quoted_at: string | null;
   approve_token_hash: string | null;

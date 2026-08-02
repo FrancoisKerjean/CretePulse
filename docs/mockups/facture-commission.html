@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apercu - facture de commission loueur (3 etats)</title>
+<!--
+  APERCU DE RELECTURE, PAS UN COMPOSANT. Ce fichier n'est importe par rien.
+  Il reproduit /{locale}/invoice/{token} (src/app/[locale]/invoice/[token]/page.tsx)
+  dans ses trois etats, avec les valeurs de tokens Kalimera resolues a la main :
+    text-night        #07374A
+    text-lagoon-deep  #008C9E
+    text-text-muted   #5C7886
+    border-border     var(--border) = oklch(.922 0 0) ~ #ebebeb
+    bg-surface        #F6FBFC
+    text-ok / bg-ok   #14B86B
+    font-heading      Baloo 2, fallback arrondi systeme
+    rounded-2xl       calc(.875rem * 1.8) = 25.2px   rounded-xl = 19.6px
+  Donnees : facture NOVAI-CD-2026-004, Luxtrans Crete (Cretecar), location 39
+  du 2026-08-07 au 2026-08-14, base 200.00 EUR, taux 10 %, commission 20.00 EUR.
+-->
+<style>
+  :root {
+    --night: #07374A;
+    --lagoon-deep: #008C9E;
+    --muted: #5C7886;
+    --border: #ebebeb;
+    --surface: #F6FBFC;
+    --ok: #14B86B;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #E9F1F4;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--night);
+    -webkit-font-smoothing: antialiased;
+  }
+  .rail { max-width: 44rem; margin: 0 auto; padding: 28px 16px 64px; }
+  .rail > h1 {
+    font-size: 15px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); font-weight: 700; margin: 0 0 6px;
+  }
+  .rail > p.note { margin: 0 0 28px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+  .state-label {
+    margin: 34px 0 10px; font-size: 12px; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--lagoon-deep);
+  }
+  /* Fond de page reel du site (foam), pour juger le contraste des cartes blanches. */
+  .viewport { background: var(--surface); border-radius: 8px; border: 1px solid #d9e6ea; overflow: hidden; }
+
+  /* ---- la page elle-meme ---- */
+  main.invoice { max-width: 42rem; margin: 0 auto; padding: 2.5rem 1.25rem; color: var(--night); }
+  main.invoice p { margin: 0; }
+
+  .hdr { margin-bottom: 2rem; }
+  .kicker {
+    font-size: .75rem; line-height: 1rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--lagoon-deep);
+  }
+  .num {
+    font-family: "Baloo 2", ui-rounded, "Trebuchet MS", system-ui, sans-serif;
+    font-size: 1.5rem; line-height: 2rem; font-weight: 800; margin: 0;
+  }
+  .issued { font-size: .875rem; line-height: 1.25rem; color: var(--muted); }
+
+  .card {
+    margin-bottom: 1.5rem; border-radius: 25.2px; border: 1px solid var(--border);
+    background: #fff; padding: 1.25rem; font-size: .875rem; line-height: 1.35rem;
+  }
+  .card.soft { background: var(--surface); }
+  .card b, .card .b { font-weight: 700; }
+  .card .muted { color: var(--muted); }
+  .card .billed { margin-top: .75rem; color: var(--muted); }
+
+  table.lines { margin-bottom: 1.5rem; width: 100%; font-size: .875rem; border-collapse: collapse; }
+  table.lines td { padding: .5rem 0; vertical-align: top; }
+  table.lines tr.line td { border-bottom: 1px solid var(--border); }
+  table.lines td.right { text-align: right; font-weight: 700; white-space: nowrap; }
+  table.lines td.total { font-weight: 700; }
+  table.lines td.total-amount { text-align: right; font-weight: 800; white-space: nowrap; }
+  table.lines .sub { color: var(--muted); }
+
+  button.pay {
+    width: 100%; border: 0; border-radius: 19.6px; background: var(--lagoon-deep);
+    color: #fff; padding: .75rem 1.25rem; font-weight: 700; font-size: 1rem;
+    font-family: inherit; cursor: pointer; margin-bottom: 1.5rem;
+  }
+  .banner {
+    margin-bottom: 1.5rem; border-radius: 19.6px; padding: .75rem 1.25rem;
+    font-weight: 700; font-size: .95rem;
+  }
+  .banner.paid { background: rgba(20, 184, 107, .1); color: var(--ok); }
+  .banner.credited { background: var(--surface); border: 1px solid var(--border); color: var(--muted); }
+
+  footer.legal { font-size: .75rem; line-height: 1.6; color: var(--muted); }
+  footer.legal p { margin: 0 0 .5rem; }
+</style>
+</head>
+<body>
+<div class="rail">
+  <h1>Apercu facture de commission loueur</h1>
+  <p class="note">
+    Page /{locale}/invoice/{token}, servie par jeton, noindex, publique par conception.
+    Elle tient lieu de facture : le loueur imprime en PDF avec Ctrl+P, et la regle
+    <code>@media print</code> de la page retire le header, le footer et la tab bar du site.
+    Les trois etats ci-dessous sont exclusifs : un seul s'affiche a la fois.
+  </p>
+
+  <!-- ETAT 1 : A PAYER -->
+  <p class="state-label">Etat 1 sur 3 : a payer (paid_at et credited_at nuls)</p>
+  <div class="viewport">
+    <main class="invoice">
+      <header class="hdr">
+        <p class="kicker">Invoice</p>
+        <h1 class="num">NOVAI-CD-2026-004</h1>
+        <p class="issued">Issued 2026-08-07 &middot; payment due on receipt</p>
+      </header>
+
+      <section class="card">
+        <p class="b">SAS NovAI</p>
+        <p>15 rue Berthollet, 29200 Brest, France</p>
+        <p>SIREN 994 765 857 &middot; VAT FR45994765857</p>
+        <p class="billed">Billed to</p>
+        <p class="b">Luxtrans Crete (Cretecar)</p>
+        <p class="muted">info@luxtranscrete.gr</p>
+      </section>
+
+      <table class="lines">
+        <tbody>
+          <tr class="line">
+            <td>
+              Commission on rental 39 &middot; 2026-08-07 &rarr; 2026-08-14 &middot; Heraklion Airport
+              <br>
+              <span class="sub">200.00 EUR quoted and accepted &middot; 10%</span>
+            </td>
+            <td class="right">20.00 EUR</td>
+          </tr>
+          <tr>
+            <td class="total">Total due</td>
+            <td class="total-amount">20.00 EUR</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <form action="/api/car-rental/commission/checkout" method="post" onsubmit="return false">
+        <input type="hidden" name="token" value="apercu">
+        <button type="submit" class="pay">Pay 20.00 EUR by card</button>
+      </form>
+
+      <section class="card soft">
+        <p class="b" style="margin-bottom:.5rem">Bank transfer</p>
+        <p class="muted">
+          Prefer a transfer? Reply to the invoice email and we send you the bank details.
+          Always use the reference NOVAI-CD-2026-004.
+        </p>
+      </section>
+
+      <footer class="legal">
+        <p>VAT not applicable, article 293 B of the French General Tax Code.</p>
+        <p>
+          Late payment gives rise to penalties at three times the French legal interest rate plus a
+          fixed recovery indemnity of 40 EUR, with no reminder required (articles L441-10 and D441-5
+          of the French Commercial Code). No discount for early payment.
+        </p>
+      </footer>
+    </main>
+  </div>
+
+  <!-- ETAT 2 : PAYEE -->
+  <p class="state-label">Etat 2 sur 3 : payee (paid_at pose par le webhook Stripe)</p>
+  <div class="viewport">
+    <main class="invoice">
+      <header class="hdr">
+        <p class="kicker">Invoice</p>
+        <h1 class="num">NOVAI-CD-2026-004</h1>
+        <p class="issued">Issued 2026-08-07 &middot; payment due on receipt</p>
+      </header>
+
+      <section class="card">
+        <p class="b">SAS NovAI</p>
+        <p>15 rue Berthollet, 29200 Brest, France</p>
+        <p>SIREN 994 765 857 &middot; VAT FR45994765857</p>
+        <p class="billed">Billed to</p>
+        <p class="b">Luxtrans Crete (Cretecar)</p>
+        <p class="muted">info@luxtranscrete.gr</p>
+      </section>
+
+      <table class="lines">
+        <tbody>
+          <tr class="line">
+            <td>
+              Commission on rental 39 &middot; 2026-08-07 &rarr; 2026-08-14 &middot; Heraklion Airport
+              <br>
+              <span class="sub">200.00 EUR quoted and accepted &middot; 10%</span>
+            </td>
+            <td class="right">20.00 EUR</td>
+          </tr>
+          <tr>
+            <td class="total">Total due</td>
+            <td class="total-amount">20.00 EUR</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="banner paid">Paid on 2026-08-08. Nothing left to do.</p>
+
+      <footer class="legal">
+        <p>VAT not applicable, article 293 B of the French General Tax Code.</p>
+        <p>
+          Late payment gives rise to penalties at three times the French legal interest rate plus a
+          fixed recovery indemnity of 40 EUR, with no reminder required (articles L441-10 and D441-5
+          of the French Commercial Code). No discount for early payment.
+        </p>
+      </footer>
+    </main>
+  </div>
+
+  <!-- ETAT 3 : ANNULEE PAR AVOIR -->
+  <p class="state-label">Etat 3 sur 3 : annulee par avoir (location non realisee)</p>
+  <div class="viewport">
+    <main class="invoice">
+      <header class="hdr">
+        <p class="kicker">Invoice</p>
+        <h1 class="num">NOVAI-CD-2026-004</h1>
+        <p class="issued">Issued 2026-08-07 &middot; payment due on receipt</p>
+      </header>
+
+      <section class="card">
+        <p class="b">SAS NovAI</p>
+        <p>15 rue Berthollet, 29200 Brest, France</p>
+        <p>SIREN 994 765 857 &middot; VAT FR45994765857</p>
+        <p class="billed">Billed to</p>
+        <p class="b">Luxtrans Crete (Cretecar)</p>
+        <p class="muted">info@luxtranscrete.gr</p>
+      </section>
+
+      <table class="lines">
+        <tbody>
+          <tr class="line">
+            <td>
+              Commission on rental 39 &middot; 2026-08-07 &rarr; 2026-08-14 &middot; Heraklion Airport
+              <br>
+              <span class="sub">200.00 EUR quoted and accepted &middot; 10%</span>
+            </td>
+            <td class="right">20.00 EUR</td>
+          </tr>
+          <tr>
+            <td class="total">Total due</td>
+            <td class="total-amount">20.00 EUR</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="banner credited">Cancelled by credit note NOVAI-CD-2026-004-A. Nothing to pay.</p>
+
+      <footer class="legal">
+        <p>VAT not applicable, article 293 B of the French General Tax Code.</p>
+        <p>
+          Late payment gives rise to penalties at three times the French legal interest rate plus a
+          fixed recovery indemnity of 40 EUR, with no reminder required (articles L441-10 and D441-5
+          of the French Commercial Code). No discount for early payment.
+        </p>
+      </footer>
+    </main>
+  </div>
+</div>
+</body>
+</html>

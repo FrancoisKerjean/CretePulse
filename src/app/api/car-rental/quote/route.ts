@@ -4,6 +4,7 @@ import { carPickupLabel } from "@/lib/car-lead";
 import { hashToken, siteBase, resolveClientToken } from "@/lib/car-quote";
 import { partnerById } from "@/lib/car-partners-db";
 import { canPartnerQuote, normalizeQuoteOptions, normalizeQuoteOption, bestOption } from "@/lib/car-quotes";
+import { notifyOps, echeance } from "@/lib/ops-notify";
 
 // Un loueur soumet son prix (page /car-quote/{token}). Modèle multi-devis : le
 // devis est écrit sur l'invite de CE loueur (pas de course, pas de gagnant
@@ -64,6 +65,7 @@ export async function POST(request: NextRequest) {
       invite_id: inviteRow.id, request_id: req.id, partner_id: invite.partner_id,
       price: o.price, currency: "EUR", car_model: o.car_model, gearbox: o.gearbox, inclusions: o.inclusions,
       insurance_type: o.insurance_type, excess_eur: o.excess_eur, zero_excess_upsell_eur_day: o.zero_excess_upsell_eur_day,
+      note: o.note,
     })),
   );
   if (optErr) {
@@ -104,6 +106,25 @@ export async function POST(request: NextRequest) {
   }
 
   const locale = req.locale || "en";
+
+  // Kami n'etait prevenu de RIEN ici : la route ecrivait en base et notifiait le
+  // client, il fallait ouvrir /admin/car-rental pour apprendre qu'un devis etait
+  // arrive. Un devis, c'est une offre qui attend une decision, donc ca sonne.
+  // Best-effort volontaire : un echec Telegram ne doit pas perdre le devis.
+  void notifyOps({
+    title: `Devis voiture reçu · ${partner.name}`,
+    lines: [
+      `${carPickupLabel(req.pickup_slug)} · ${req.customer_name || "client"}`,
+      options.length > 1
+        ? `${options.length} options, meilleure à ${best.price} EUR`
+        : `${best.price} EUR${best.car_model ? " · " + best.car_model : ""}`,
+      req.status === "sent" ? "premier devis sur cette demande" : "",
+    ],
+    action: "vérifier l'offre et relancer les loueurs muets",
+    due: echeance(1),
+    url: `${siteBase()}/admin/car-rental`,
+  });
+
   try {
     const { sendCustomerNewOffer } = await import("@/lib/email");
     await sendCustomerNewOffer({

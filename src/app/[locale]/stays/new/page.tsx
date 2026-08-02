@@ -28,7 +28,7 @@ export default async function StaysNewPage({ params }: { params: Promise<{ local
           </h1>
           <p className="text-[15.5px] text-text-muted leading-relaxed m-0">{t.wizard.intro}</p>
         </header>
-        <NewListingWizard strings={t.wizard} />
+        <NewListingWizard strings={t.wizard} locale={pickStaysLocale(locale)} />
       </div>
     </main>
   );

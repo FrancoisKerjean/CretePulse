@@ -9,6 +9,7 @@ import {
 } from "@/lib/car-admin";
 import { kpis, reconcileWinnerSnapshot } from "@/lib/car-monitoring";
 import type { MonitorInvite } from "@/lib/car-monitoring";
+import type { AdminInvoiceRow } from "@/lib/car-invoice";
 import { RequestsTable, type AdminQuoteOption } from "./requests-table";
 import { PartnersTable } from "./partners-table";
 import { KpiBand } from "./kpi-band";
@@ -46,9 +47,12 @@ export default async function CarAdminPage({
     car_partners?: { name?: string };
   }[] = [];
   let options: (AdminQuoteOption & { car_partners?: { name?: string } })[] = [];
+  // Factures de commission : sans elles, une facture numerotee dont l email a ete
+  // refuse (sent_at NULL) reste invisible, et le cron ne repassera jamais dessus.
+  let commissionInvoices: (AdminInvoiceRow & { request_id: number })[] = [];
   let loadError: string | null = null;
   try {
-    const [reqRes, partRes, invRes, invFullRes, optRes] = await Promise.all([
+    const [reqRes, partRes, invRes, invFullRes, optRes, cinvRes] = await Promise.all([
       supabase.from("car_requests").select("*").order("created_at", { ascending: false }).limit(1000),
       supabase.from("car_partners").select("*").order("id"),
       supabase.from("car_quote_invites").select("request_id, partner_id"),
@@ -58,18 +62,25 @@ export default async function CarAdminPage({
       supabase.from("car_quote_options").select(
         "id, request_id, invite_id, partner_id, price, currency, car_model, gearbox, inclusions, insurance_type, excess_eur, zero_excess_upsell_eur_day, created_at, car_partners(name)"
       ).order("price"),
+      supabase.from("car_commission_invoices").select(
+        "request_id, number, sent_at, paid_at, credited_at, credit_number"
+      ),
     ]);
-    loadError = reqRes.error?.message ?? partRes.error?.message ?? invRes.error?.message ?? invFullRes.error?.message ?? optRes.error?.message ?? null;
+    loadError = reqRes.error?.message ?? partRes.error?.message ?? invRes.error?.message ?? invFullRes.error?.message ?? optRes.error?.message ?? cinvRes.error?.message ?? null;
     requests = (reqRes.data ?? []) as AdminRequest[];
     partners = (partRes.data ?? []) as AdminPartner[];
     invites = (invRes.data ?? []) as { request_id: number; partner_id: number }[];
     invitesFull = (invFullRes.data ?? []) as typeof invitesFull;
     options = (optRes.data ?? []) as typeof options;
+    commissionInvoices = (cinvRes.data ?? []) as typeof commissionInvoices;
   } catch (e) {
     loadError = e instanceof Error ? e.message : String(e);
   }
 
   const partnersById = new Map(partners.map((p) => [p.id, p]));
+  const invoicesByRequest = new Map<number, AdminInvoiceRow>(
+    commissionInvoices.map((i) => [i.request_id, i]),
+  );
   const invitesByRequest = new Map<number, number>();
   const invitesByPartner = new Map<number, number>();
   for (const i of invites) {
@@ -189,6 +200,7 @@ export default async function CarAdminPage({
           invitesByRequest={invitesByRequest}
           monitorByRequest={monitorByRequest}
           optionsByRequest={optionsByRequest}
+          invoicesByRequest={invoicesByRequest}
           statusFilter={sp.status ?? ""}
           partnerFilter={sp.partner ?? ""}
           page={Math.max(1, Number(sp.page) || 1)}

@@ -14,7 +14,10 @@ vi.mock("@/lib/stays/db", () => ({
 }));
 const sendOwnerRequest = vi.fn(async () => {});
 const sendGuestReceived = vi.fn(async () => {});
-vi.mock("@/lib/stays/emails", () => ({
+// Seuls les envois sont mockes : pickEmailLocale et fallbackListingTitle sont des
+// fonctions pures, les mocker reviendrait a tester le mock.
+vi.mock("@/lib/stays/emails", async (orig: () => Promise<Record<string, unknown>>) => ({
+  ...(await orig()),
   sendOwnerRequest: (...a: unknown[]) => sendOwnerRequest(...a),
   sendGuestReceived: (...a: unknown[]) => sendGuestReceived(...a),
 }));
@@ -25,7 +28,9 @@ vi.mock("@/lib/stays/tokens", () => ({
 }));
 const notifyTelegram = vi.fn(async () => {});
 vi.mock("@/lib/stays/telegram", () => ({ notifyTelegram: (...a: unknown[]) => notifyTelegram(...a) }));
-const ownerMaybeSingle = vi.fn(async () => ({ data: { email: "o@x.com" } }));
+const ownerMaybeSingle = vi.fn(async () => ({
+  data: { email: "o@x.com", locale: "el" } as { email: string; locale: string | null },
+}));
 vi.mock("@/lib/supabase-admin", () => ({
   supabaseAdmin: {
     from: () => ({ select: () => ({ eq: () => ({ maybeSingle: ownerMaybeSingle }) }) }),
@@ -55,6 +60,42 @@ describe("POST /api/stays/request", () => {
     expect(sendGuestReceived).toHaveBeenCalledWith(
       "jane@x.com",
       expect.objectContaining({ dateFrom: "2026-07-01", dateTo: "2026-07-08" }),
+      "en",
+    );
+  });
+
+  // Les pages servent 4 langues : un voyageur allemand qui recoit du francais est
+  // un voyageur perdu. La locale est celle de la page ou il a rempli le formulaire.
+  it("garde la locale du voyageur et lui ecrit dans sa langue", async () => {
+    getListingBySlug.mockResolvedValueOnce({ id: 9, slug: "villa-abc", status: "published", owner_id: 1, title: "Villa" });
+    await POST(req({ ...good, locale: "de" }) as never);
+    expect(createStayRequest).toHaveBeenCalledWith(
+      expect.objectContaining({ locale: "de" }),
+    );
+    expect(sendGuestReceived).toHaveBeenCalledWith(
+      "jane@x.com",
+      expect.anything(),
+      "de",
+    );
+  });
+
+  it("retombe sur l anglais quand la locale n est pas redigee", async () => {
+    getListingBySlug.mockResolvedValueOnce({ id: 9, slug: "villa-abc", status: "published", owner_id: 1, title: "Villa" });
+    await POST(req({ ...good, locale: "ru" }) as never);
+    expect(createStayRequest).toHaveBeenCalledWith(
+      expect.objectContaining({ locale: "en" }),
+    );
+  });
+
+  // Le proprietaire n'a aucune raison de lire la langue de son voyageur : il recoit
+  // sa demande dans la sienne, celle du depot de l'annonce.
+  it("ecrit au proprietaire dans SA langue, pas celle du voyageur", async () => {
+    getListingBySlug.mockResolvedValueOnce({ id: 9, slug: "villa-abc", status: "published", owner_id: 1, title: "Villa" });
+    await POST(req({ ...good, locale: "de" }) as never);
+    expect(sendOwnerRequest).toHaveBeenCalledWith(
+      "o@x.com",
+      expect.anything(),
+      "el",
     );
   });
 

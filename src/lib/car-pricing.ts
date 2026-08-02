@@ -45,15 +45,55 @@ function durationFactor(days: number): number {
 }
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const HH_MM = /^([01]\d|2[0-3]):[0-5]\d$/;
 
-/** Nombre de jours de location (min 1) entre deux dates ISO locales. */
-export function rentalDays(dateFrom: string, dateTo: string): number {
+/** Minutes ecoulees depuis minuit, null si l'heure n'a pas le format de la base. */
+function minutesOfDay(time: string | null | undefined): number | null {
+  if (typeof time !== "string" || !HH_MM.test(time)) return null;
+  return Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5));
+}
+
+/**
+ * Nombre de jours de location (min 1) entre deux dates ISO locales.
+ *
+ * Les heures sont facultatives mais decisives : une journee de location court
+ * d'heure a heure, donc toute journee entamee est due. Rendre a 08:00 une
+ * voiture prise a 01:30 cinq jours plus tot fait six jours de location, pas
+ * cinq. Sans elles on ne peut que compter les dates, ce que font les demandes
+ * anterieures a la saisie obligatoire de l'heure.
+ *
+ * La journee entamee se deduit de la comparaison de deux heures murales, jamais
+ * d'un ecart en millisecondes : un passage a l'heure d'hiver ajoute une heure a
+ * l'ecart brut et ferait facturer un jour de plus.
+ */
+export function rentalDays(
+  dateFrom: string,
+  dateTo: string,
+  timeFrom?: string | null,
+  timeTo?: string | null,
+): number {
   if (!ISO_DATE.test(dateFrom) || !ISO_DATE.test(dateTo)) return 1;
   const from = new Date(`${dateFrom}T00:00:00`).getTime();
   const to = new Date(`${dateTo}T00:00:00`).getTime();
   if (Number.isNaN(from) || Number.isNaN(to)) return 1;
-  const diff = Math.round((to - from) / 86_400_000);
-  return Math.max(1, diff);
+  const calendarDays = Math.round((to - from) / 86_400_000);
+  const startMin = minutesOfDay(timeFrom);
+  const endMin = minutesOfDay(timeTo);
+  const startedDay = startMin != null && endMin != null && endMin > startMin ? 1 : 0;
+  return Math.max(1, calendarDays + startedDay);
+}
+
+/**
+ * Prix par jour d'un total saisi, arrondi au dixieme. Sert a renvoyer au loueur
+ * ce qu'il est en train de vendre pendant qu'il tape son prix : il saisit un
+ * TOTAL et raisonne en journalier, ecart d'ou naissent les erreurs de duree.
+ * Retourne null sur une saisie inexploitable (l'appelant n'affiche rien plutot
+ * que d'afficher un repere faux).
+ */
+export function perDayAmount(totalPrice: number, days: number): number | null {
+  if (!Number.isFinite(totalPrice) || totalPrice <= 0) return null;
+  if (!Number.isInteger(days) || days < 1) return null;
+  return Math.round((totalPrice / days) * 10) / 10;
 }
 
 /**
@@ -64,13 +104,15 @@ export function estimateCarPrice(
   carType: string,
   dateFrom: string,
   dateTo: string,
+  timeFrom?: string | null,
+  timeTo?: string | null,
 ): CarPriceEstimate | null {
   const grid = CAR_PRICE_GRID[carType];
   if (!grid || !ISO_DATE.test(dateFrom)) return null;
   const month = Number(dateFrom.slice(5, 7));
   const season = seasonForMonth(month);
   const [lo, hi] = grid[season];
-  const days = rentalDays(dateFrom, dateTo);
+  const days = rentalDays(dateFrom, dateTo, timeFrom, timeTo);
   const f = durationFactor(days);
   const perDayLow = Math.round(lo * f);
   const perDayHigh = Math.round(hi * f);

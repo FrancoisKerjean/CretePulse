@@ -9,7 +9,30 @@ vi.mock("@/lib/stays/db", () => ({
 vi.mock("@/lib/stays/ical", () => ({
   parseICalText: vi.fn(() => [{ dateFrom: "2026-07-01", dateTo: "2026-07-08" }]),
 }));
-vi.mock("@/lib/stays/tokens", () => ({ hashToken: (t: string) => `hash(${t})` }));
+vi.mock("@/lib/stays/tokens", () => ({
+  hashToken: (t: string) => `hash(${t})`,
+  siteBase: () => "https://crete.direct",
+}));
+const ensureOwnerToken = vi.fn(async () => "own-tok" as string | null);
+vi.mock("@/lib/stays/owner-tokens", () => ({
+  ensureOwnerToken: (...a: unknown[]) => ensureOwnerToken(...(a as [number])),
+  ownerSpaceUrl: (token: string, locale: string) =>
+    `https://crete.direct/${locale}/stays/owner/${token}`,
+}));
+const sendOwnerWelcome = vi.fn(async () => {});
+vi.mock("@/lib/stays/emails", async (orig: () => Promise<Record<string, unknown>>) => ({
+  ...(await orig()),
+  sendOwnerWelcome: (...a: unknown[]) => sendOwnerWelcome(...a),
+}));
+vi.mock("@/lib/stays/ical-apply", () => ({
+  syncListingFromIcal: vi.fn(async () => ({ blocked: 0, released: 0 })),
+}));
+const ownerRow = vi.fn(async () => ({
+  data: { name: "Maria", email: "o@x.com", locale: "el" } as Record<string, unknown> | null,
+}));
+vi.mock("@/lib/supabase-admin", () => ({
+  supabaseAdmin: { from: () => ({ select: () => ({ eq: () => ({ maybeSingle: ownerRow }) }) }) },
+}));
 global.fetch = vi.fn(async () => ({ ok: true, text: async () => "BEGIN:VCALENDAR" }) as never);
 
 import { POST } from "./route";
@@ -32,6 +55,30 @@ describe("POST /api/stays/publish", () => {
     const res = await POST(req({ slug: "villa-abc", icalUrl: "https://airbnb.com/calendar/ical/x.ics", token: "pub-plain" }) as never);
     expect(res.status).toBe(200);
     expect(publishListing).toHaveBeenCalledWith(9, "https://airbnb.com/calendar/ical/x.ics");
+  });
+
+  // L'accueil est le seul email que le proprietaire recoit avant de decouvrir son
+  // espace : il part dans SA langue, celle du depot, pas celle de l'onglet ouvert
+  // au moment de la publication.
+  it("accueille le proprietaire dans sa langue, pas dans celle de la page", async () => {
+    getListingBySlug.mockResolvedValueOnce({ ...draft, owner_id: 3, title: "Villa Danae" });
+    const res = await POST(req({
+      slug: "villa-abc",
+      icalUrl: "https://airbnb.com/calendar/ical/x.ics",
+      token: "pub-plain",
+      locale: "fr",
+    }) as never);
+
+    expect(res.status).toBe(200);
+    expect(sendOwnerWelcome).toHaveBeenCalledWith(
+      "o@x.com",
+      expect.objectContaining({
+        spaceUrl: "https://crete.direct/el/stays/owner/own-tok",
+        icalExportUrl: "https://crete.direct/api/stays/ical/villa-abc",
+      }),
+      "el",
+    );
+    expect((await res.json()).spaceUrl).toBe("https://crete.direct/el/stays/owner/own-tok");
   });
 
   it("403s when the ownership token is wrong", async () => {

@@ -49,7 +49,7 @@ export interface RefundInput {
   hasOption: boolean;
   /** Heures restantes avant le debut. Negatif si la prestation a commence. */
   hoursUntilStart: number;
-  /** Montant paye pour la prestation, HORS prix de l'option. */
+  /** TOTAL paye par le voyageur, option d'annulation comprise. */
   amountPaidEur: number;
 }
 

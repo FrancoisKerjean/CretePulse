@@ -4,6 +4,7 @@
 import {
   commissionEur, requestCommission, requestsSummary, partnerStats,
   validatePartnerUpdate, buildCarWaMessage, waHref, ZONE_IDS,
+  bookingState,
 } from "../src/lib/car-admin.ts";
 
 let fail = 0;
@@ -95,5 +96,32 @@ ok("wa message champs optionnels absents", buildCarWaMessage({ partnerFirstName:
   "Guest: Bob, b@c.d",
 ].join("\n"));
 ok("waHref strip non-digits + encode", waHref("+30 697 414-7291", "a b\nc") === "https://wa.me/306974147291?text=a%20b%0Ac");
+
+// --- etat de reservation voyageur (tunnel car, colonnes booking_*) ---
+// Le tunnel encaisse le voyageur meme sans compte connecte chez le loueur :
+// l'argent attend sur la plateforme. Le back-office doit dire dans quel etat
+// est cet argent, sinon un versement en attente reste invisible.
+ok("aucun etat quand le voyageur n a rien engage", bookingState({}) === null);
+ok("aucun etat sur booking_status null", bookingState({ booking_status: null }) === null);
+
+const bPending = bookingState({ booking_status: "pending_payment", booking_amount_eur: 120 });
+ok("paiement en cours n est pas un encaissement", bPending.tone === "neutral" && bPending.paid === false);
+
+const bPaid = bookingState({ booking_status: "paid", booking_amount_eur: 120 });
+ok("paye sans versement : montant et attente", bPaid.paid === true && bPaid.tone === "warn" && bPaid.label.includes("120.00"));
+ok("paye sans versement le dit explicitement", /vers/i.test(bPaid.label));
+
+const bTransferred = bookingState({ booking_status: "paid", booking_amount_eur: 120, transfer_id: "tr_1" });
+ok("verse au loueur passe au vert", bTransferred.tone === "ok" && bTransferred.transferred === true);
+
+const bRefunded = bookingState({ booking_status: "refunded", booking_amount_eur: 120, refund_amount_eur: 115 });
+ok("remboursement affiche le montant rendu", bRefunded.label.includes("115.00") && bRefunded.tone === "alert");
+ok("remboursement partiel n est pas un encaissement", bRefunded.paid === false);
+
+const bCancelled = bookingState({ booking_status: "cancelled" });
+ok("annulation sans paiement", bCancelled.tone === "neutral" && bCancelled.paid === false);
+
+// Un statut inconnu ne doit pas disparaitre en silence : il s'affiche tel quel.
+ok("statut inconnu affiche brut", bookingState({ booking_status: "wat" }).label === "wat");
 
 process.exit(fail ? 1 : 0);

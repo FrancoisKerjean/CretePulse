@@ -6,6 +6,8 @@ import { sharedOfferCopy } from "@/lib/car-offer-copy";
 import { affiliateClass } from "@/lib/affiliate";
 import { assertSent, reportSend } from "./resend-response";
 import { commissionRequestSubject, commissionRequestBody, type CommissionMail } from "./car-commission";
+import { creditMailBody, type CreditMail } from "./car-invoice";
+import { bookingPaidPartnerBody, bookingPaidCustomerBody, type BookingPaidInfo } from "./car-booking";
 import type { NewsletterDigest, NewsletterLang } from "./newsletter";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -699,11 +701,18 @@ export interface CarQuoteInfo {
   price: number; currency: string;
   partnerName: string;
   carModel?: string | null;
+  /** Boîte du devis retenu. Sert quand `carModel` est absent : le mail la nomme
+   *  alors sous son propre intitulé, au lieu de la faire passer pour un modèle. */
+  gearboxLabel?: string | null;
   inclusions?: string[];
   insuranceType?: string | null;
   excessEur?: number | null;
   zeroExcessUpsellEurDay?: number | null;
   days: number;
+  /** Les AUTRES options que ce loueur avait envoyées sur la même demande, pour
+   *  qu'il situe celle retenue parmi les siennes sans rouvrir son historique.
+   *  Demande de Luxtrans du 01/08/2026. Vide s'il n'en avait envoyé qu'une. */
+  partnerOtherOptions?: { price: number; currency?: string | null; carModel?: string | null }[];
 }
 
 const money = (price: number, currency: string): string =>
@@ -894,7 +903,21 @@ export async function sendConnectionEmails(opts: {
     `Phone / WhatsApp: ${formatPhoneWithCountryCode(customer.phone, customer.locale)}`,
     ``,
     `Booking: ${quote.pickupLabel}, ${quote.dateFrom} → ${quote.dateTo}, ${quote.carTypeLabel}`,
-    ...(quote.carModel ? [`Car model quoted: ${quote.carModel}`] : []),
+    ...(quote.carModel
+      ? [`Car model quoted: ${quote.carModel}`]
+      // Sans modèle, on nomme la boîte pour ce qu'elle est. « Car model quoted:
+      // Manual » n'apprenait rien et se lisait comme un nom de voiture.
+      : quote.gearboxLabel ? [`Gearbox quoted: ${quote.gearboxLabel}`] : []),
+    // Le loueur envoie souvent plusieurs options : on lui rappelle lesquelles,
+    // pour qu'il situe celle retenue sans rouvrir son propre historique.
+    ...(quote.partnerOtherOptions?.length
+      ? [
+          `You had sent ${quote.partnerOtherOptions.length + 1} options on this request. The other ${quote.partnerOtherOptions.length === 1 ? "one was" : "ones were"}:`,
+          ...quote.partnerOtherOptions.map(
+            (o) => `  - ${money(o.price, o.currency ?? "EUR")}${o.carModel ? ` · ${o.carModel}` : ""}`,
+          ),
+        ]
+      : []),
     ...(insuranceSummary(quote.insuranceType, quote.excessEur, quote.zeroExcessUpsellEurDay, "en").length
       ? [`Insurance quoted: ${insuranceSummary(quote.insuranceType, quote.excessEur, quote.zeroExcessUpsellEurDay, "en").join(" · ")}`]
       : []),
@@ -1806,23 +1829,75 @@ export async function sendActivityLeadKamiSummary(
   }
 }
 
-/** Demande de reglement de la commission au loueur, declenchee au passage en
- *  « rented » par le back-office. `reportSend` et non `assertSent` : la session
- *  Stripe existe deja quand on arrive ici, un echec d'email ne doit pas annuler
- *  la facturation. Il est journalise, et le lien reste lisible dans /admin/car-rental. */
+/**
+ * Rend true si Resend a accepte le message. Le retour n est pas cosmetique :
+ * `car_commission_invoices.sent_at` ne doit se remplir que sur un envoi accepte,
+ * sinon une facture jamais partie serait comptee comme envoyee et ne serait
+ * jamais rattrapee. Resend NE LEVE PAS sur refus, d ou la lecture de `error`.
+ */
 export async function sendPartnerCommissionRequest(
   partnerEmail: string,
   m: CommissionMail,
-): Promise<void> {
+): Promise<boolean> {
   try {
-    reportSend(await resend.emails.send({
+    const res = await resend.emails.send({
       from: FROM_EMAIL,
       to: partnerEmail,
       replyTo: "hello@crete.direct",
       subject: commissionRequestSubject(m),
       text: commissionRequestBody(m),
-    }), "demande de commission loueur");
+    });
+    reportSend(res, "demande de commission loueur");
+    return !res.error;
   } catch (e) {
     console.error("[sendPartnerCommissionRequest] échec:", e);
+    return false;
+  }
+}
+
+/**
+ * Avoir : la facture de commission est annulee en totalite. Le loueur doit
+ * l apprendre autrement qu en constatant qu on ne lui reclame plus rien.
+ */
+export async function sendCreditNote(partnerEmail: string, m: CreditMail): Promise<boolean> {
+  try {
+    const res = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: partnerEmail,
+      replyTo: "hello@crete.direct",
+      subject: `crete.direct credit note ${m.creditNumber}`,
+      text: creditMailBody(m),
+    });
+    reportSend(res, "avoir de commission loueur");
+    return !res.error;
+  } catch (e) {
+    console.error("[sendCreditNote] échec:", e);
+    return false;
+  }
+}
+
+/** Reservation voiture payee en ligne : coordonnees echangees, jamais avant. */
+export async function sendCarBookingPaidEmails(
+  partnerEmail: string,
+  info: BookingPaidInfo,
+): Promise<void> {
+  const subject = `Booking paid · ${info.pickupLabel} ${info.dateFrom} → ${info.dateTo}`;
+  try {
+    reportSend(await resend.emails.send({
+      from: FROM_EMAIL, to: partnerEmail, replyTo: info.customerEmail,
+      subject: `[crete.direct] ${subject}`,
+      text: bookingPaidPartnerBody(info),
+    }), "reservation voiture payee, loueur");
+  } catch (e) {
+    console.error("[sendCarBookingPaidEmails] loueur:", e);
+  }
+  try {
+    reportSend(await resend.emails.send({
+      from: FROM_EMAIL, to: info.customerEmail, replyTo: "hello@crete.direct",
+      subject,
+      text: bookingPaidCustomerBody(info),
+    }), "reservation voiture payee, client");
+  } catch (e) {
+    console.error("[sendCarBookingPaidEmails] client:", e);
   }
 }

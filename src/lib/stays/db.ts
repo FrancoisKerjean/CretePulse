@@ -16,16 +16,30 @@ export async function upsertOwnerByEmail(
   email: string,
   name: string | null,
   phone: string | null,
+  /** Langue de la page ou l'annonce a ete deposee. Porte tous ses emails ensuite. */
+  locale: string | null = null,
 ): Promise<StayOwner> {
   const { data: existing } = await supabaseAdmin
     .from("stay_owners")
     .select("*")
     .eq("email", email)
     .maybeSingle();
-  if (existing) return existing as StayOwner;
+  if (existing) {
+    // On complete une langue manquante, jamais on ne remplace celle qu'il a
+    // deja : un proprietaire grec qui passe une fois par la page anglaise ne
+    // doit pas se retrouver notifie en anglais pour toujours.
+    if (locale && !existing.locale) {
+      await supabaseAdmin
+        .from("stay_owners")
+        .update({ locale })
+        .eq("id", existing.id);
+      return { ...(existing as StayOwner), locale };
+    }
+    return existing as StayOwner;
+  }
   const { data, error } = await supabaseAdmin
     .from("stay_owners")
-    .insert({ email, name, phone })
+    .insert({ email, name, phone, locale })
     .select("*")
     .single();
   if (error) throw new Error(error.message);
@@ -149,27 +163,128 @@ export async function ipRateLimited(ipHashVal: string): Promise<boolean> {
   return false;
 }
 
+/**
+ * Statuts qui valent "pris". Definition UNIQUE : la version mono annonce et la
+ * version multi annonces lisent la meme liste, sinon les deux finiraient par
+ * repondre differemment a la meme question.
+ */
+const BOOKED_STATUSES = ["booked", "blocked_ota", "hold"];
+
+/**
+ * Colle les plages contigues d une meme annonce. Convention [) : la nuit D est la
+ * plage [D, D+1), donc deux plages se collent quand la fin de l une EGALE le debut
+ * de l autre. Une nuit libre entre deux nuits prises coupe la plage : la coller
+ * marquerait comme prise une nuit vendable.
+ * Definition UNIQUE du collage, partagee par les deux lectures ci-dessous.
+ */
+export function mergeAdjacentRanges(ranges: DateRange[]): DateRange[] {
+  const sorted = [...ranges].sort((a, b) => a.dateFrom.localeCompare(b.dateFrom));
+  const out: DateRange[] = [];
+  for (const r of sorted) {
+    const last = out[out.length - 1];
+    if (last && last.dateTo >= r.dateFrom) {
+      if (r.dateTo > last.dateTo) last.dateTo = r.dateTo;
+    } else {
+      out.push({ ...r });
+    }
+  }
+  return out;
+}
+
 export async function bookedRangesForListing(listingId: number): Promise<DateRange[]> {
   const { data } = await supabaseAdmin
     .from("stay_availability")
     .select("date")
     .eq("listing_id", listingId)
-    .in("status", ["booked", "blocked_ota", "hold"])
+    .in("status", BOOKED_STATUSES)
     .order("date", { ascending: true });
   const dates = (data ?? []).map((r: { date: string }) => r.date).sort();
-  const ranges: DateRange[] = [];
-  for (const d of dates) {
-    const last = ranges[ranges.length - 1];
-    if (last && addDay(last.dateTo) === d) {
-      last.dateTo = addDay(d);
-    } else {
-      ranges.push({ dateFrom: d, dateTo: addDay(d) });
-    }
+  return mergeAdjacentRanges(dates.map((d) => ({ dateFrom: d, dateTo: addDay(d) })));
+}
+
+type AvailabilityRangeRow = {
+  listing_id: number;
+  date_from: string;
+  date_to: string;
+};
+
+/** Partie pure de bookedRangesForListings, testable sans base. */
+export function groupRangesByListing(
+  rows: AvailabilityRangeRow[] | null,
+): Record<number, DateRange[]> {
+  const out: Record<number, DateRange[]> = {};
+  for (const r of rows ?? []) {
+    (out[r.listing_id] ??= []).push({ dateFrom: r.date_from, dateTo: r.date_to });
   }
-  return ranges;
+  return out;
+}
+
+/**
+ * Nuits prises de PLUSIEURS annonces en UNE requete. La version mono annonce
+ * appelee en boucle ferait N allers-retours par affichage de la liste.
+ * ⛔ `stay_availability` porte UNE LIGNE PAR NUIT (colonne `date`), pas des plages :
+ * chaque nuit devient la plage [D, D+1), puis les plages contigues sont collees.
+ */
+export async function bookedRangesForListings(
+  ids: number[],
+): Promise<Record<number, DateRange[]>> {
+  if (ids.length === 0) return {};
+  const { data } = await supabaseAdmin
+    .from("stay_availability")
+    .select("listing_id,date")
+    .in("listing_id", ids)
+    .in("status", BOOKED_STATUSES)
+    .order("date", { ascending: true });
+  const nights = (data ?? []) as Array<{ listing_id: number; date: string }>;
+  const grouped = groupRangesByListing(
+    nights.map((r) => ({
+      listing_id: r.listing_id,
+      date_from: r.date,
+      date_to: addDay(r.date),
+    })),
+  );
+  for (const key of Object.keys(grouped)) {
+    const id = Number(key);
+    grouped[id] = mergeAdjacentRanges(grouped[id]);
+  }
+  return grouped;
 }
 
 function addDay(iso: string): string {
   const t = new Date(iso + "T00:00:00Z").getTime() + 86_400_000;
   return new Date(t).toISOString().slice(0, 10);
+}
+
+/** Proprietaire identifie par le hash de son jeton d'espace. */
+export async function getOwnerByTokenHash(
+  hash: string,
+): Promise<{ id: number; name: string | null; email: string } | null> {
+  const { data } = await supabaseAdmin
+    .from("stay_owners")
+    .select("id, name, email")
+    .eq("owner_token_hash", hash)
+    .maybeSingle();
+  return data ?? null;
+}
+
+/** Annonces d'un proprietaire, publiees ou non : il doit voir ce qu'il a retire. */
+export async function listingsForOwner(ownerId: number): Promise<StayListing[]> {
+  const { data } = await supabaseAdmin
+    .from("stay_listings")
+    .select("*")
+    .eq("owner_id", ownerId)
+    .order("id");
+  return (data ?? []) as StayListing[];
+}
+
+/** Nuits occupees d'une annonce, avec leur origine. */
+export async function availabilityForListing(
+  listingId: number,
+): Promise<Array<{ date: string; status: string }>> {
+  const { data } = await supabaseAdmin
+    .from("stay_availability")
+    .select("date, status")
+    .eq("listing_id", listingId)
+    .order("date");
+  return (data ?? []) as Array<{ date: string; status: string }>;
 }

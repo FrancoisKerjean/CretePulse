@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apercu - identite de facturation du loueur et facture en souffrance</title>
+<!--
+  APERCU DE RELECTURE, PAS UN COMPOSANT. Ce fichier n'est importe par rien.
+  Il reproduit a la main le markup de :
+    - src/app/admin/car-rental/partners-table.tsx (bloc « identite de facturation »)
+    - src/app/admin/car-rental/requests-table.tsx (bouton « Emettre la facture »)
+  Tokens Kalimera de src/app/globals.css resolus a la main (meme methode que
+  docs/mockups/facture-commission-conforme.html).
+  Donnees : Lux Trans IKE (cretecar.rent, TVA EL801122501, seul loueur renseigne en base)
+  et un loueur fictif « Zorbas Rent a Car » pour la fiche vide.
+  AUCUNE coordonnee bancaire, aucun secret : rien de tout cela ne vit dans le depot.
+-->
+<style>
+  :root{
+    --sea:#0B5E78; --sea-faint:#DFF7FA; --terracotta:#ED7A5C; --terracotta-faint:#FDEEE9;
+    --ok:#14B86B; --sun:#FFC83D; --sand:#FFF3D6; --night:#07374A; --sky:#BDEDF5;
+    --olive:#7C9A53; --border:#DCE9EE; --text:#0B3954; --text-muted:#5C7886;
+    --text-light:#94A3B8; --foam:#F6FBFC; --white:#fff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#E9F1F4;color:var(--text);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+  .rail{max-width:64rem;margin:0 auto;padding:28px 16px 64px}
+  .rail>h1{font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);font-weight:700;margin:0 0 6px}
+  .rail>p.note{margin:0 0 8px;color:var(--text-muted);font-size:13px;line-height:1.6}
+  .state-label{margin:34px 0 10px;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--sea)}
+  .state-note{margin:-4px 0 10px;font-size:12.5px;color:var(--text-muted);line-height:1.55}
+  .viewport{background:var(--foam);border-radius:8px;border:1px solid #d9e6ea;padding:16px}
+
+  /* Utilitaires resolus */
+  .card{border:1px solid var(--border);background:var(--white);border-radius:16px}
+  .card.declined{border-color:var(--terracotta)}
+  .summary{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px;font-size:14px}
+  .body{border-top:1px solid var(--border);padding:12px;font-size:14px}
+  .name{font-weight:700}
+  .pill{border-radius:999px;padding:2px 8px;font-size:12px}
+  .pill-active{background:var(--ok);color:#fff;font-weight:700}
+  .pill-inactive{border:1px solid var(--border);color:var(--text-muted)}
+  .pill-outreach{background:var(--sky);color:var(--night);font-weight:700}
+  .pill-billing-ko{background:var(--terracotta);color:#fff;font-weight:700}
+  .pill-billing-ok{border:1px solid var(--ok);color:var(--ok);font-weight:700}
+  .pill-rating{background:var(--sand);color:var(--night);font-weight:700}
+  .muted{color:var(--text-muted)}
+  .light{color:var(--text-light)}
+  .xs{font-size:12px}
+  .sm{font-size:14px}
+  .sep{border-top:1px solid var(--border);padding-top:8px;margin-top:8px}
+  details>summary{cursor:pointer}
+  .grid3{display:grid;gap:8px;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:8px}
+  @media (max-width:640px){.grid3{grid-template-columns:1fr}}
+  label.field{display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--text-muted)}
+  label.field input{border:1px solid var(--border);background:#fff;border-radius:8px;
+    padding:4px 8px;font:inherit;font-size:14px;color:var(--text)}
+  .req{color:var(--terracotta);font-weight:700}
+  .vies{margin-top:8px;border:1px solid var(--sun);background:rgba(255,243,214,.4);border-radius:12px;padding:8px}
+  .vies label{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text);line-height:1.5}
+  .vies input{margin-top:2px}
+  .btn{border-radius:999px;padding:4px 12px;font-size:14px;font-weight:700;border:1px solid var(--border);
+    background:#fff;color:var(--text);cursor:pointer;font-family:inherit}
+  .btn-sea{background:var(--sea);color:#fff;border-color:var(--sea)}
+  .btn-sun{background:var(--sun);color:var(--night);border-color:var(--sun)}
+  .btn-olive{background:var(--olive);color:#fff;border-color:var(--olive)}
+  .btn-terracotta{background:#fff;color:var(--terracotta);border-color:var(--terracotta)}
+  .btn-xs{font-size:12px}
+  .actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;border-top:1px solid var(--border);
+    padding-top:12px;margin-top:12px}
+  .data{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+  a{color:var(--sea)}
+  .banner{border:1px solid var(--terracotta);background:var(--terracotta-faint);border-radius:12px;
+    padding:12px;font-size:14px;margin-bottom:12px}
+  .req-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+  .pill-rented{background:var(--olive);color:#fff;font-weight:700}
+  .pill-status{background:var(--ok);color:#fff;font-weight:700}
+  .pill-req{border:1px solid var(--border);color:var(--text-muted);font-weight:700}
+  .inv-alert{border:1px solid var(--terracotta);background:var(--terracotta-faint);color:var(--terracotta);font-weight:700}
+  .warn-line{font-size:14px;color:var(--terracotta)}
+  input[type=text]{width:100%}
+</style>
+</head>
+<body>
+<div class="rail">
+  <h1>Back-office car rental — identite de facturation &amp; facture en souffrance</h1>
+  <p class="note">
+    Deux gestes qui manquaient : <strong>saisir l'identite legale d'un loueur</strong> (les colonnes
+    existaient, aucun ecran ne les ecrivait — 10 loueurs actifs, 1 seul renseigne) et
+    <strong>emettre une facture restee en souffrance</strong> (une location marquee « louee » dont la
+    facturation a ete refusee ne repasse JAMAIS par le cron).
+  </p>
+  <p class="note">
+    Rien n'est arme ici : <span class="data">CAR_COMMISSION_ENABLED</span> reste eteint, aucune garde
+    n'a bouge.
+  </p>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <div class="state-label">1 · Onglet Partenaires — fiche VIDE (etat de 9 loueurs sur 10)</div>
+  <p class="state-note">
+    Le badge rouge repond d'un coup d'oeil a la seule question qui compte sur ce registre : lequel de
+    mes loueurs bloquerait l'emission d'une facture ? Il n'apparait que sur les loueurs ACTIFS — un
+    prospect jamais recrute n'a aucune raison d'avoir une identite legale, et teindre en rouge
+    cinquante lignes de prospection noierait les vrais blocages. Le bloc s'ouvre tout seul quand la
+    fiche d'un loueur actif est incomplete.
+  </p>
+  <div class="viewport">
+    <div class="card">
+      <div class="summary">
+        <span class="name">Zorbas Rent a Car</span>
+        <span class="pill pill-active">actif</span>
+        <span class="pill pill-billing-ko" title="Aucune facture emissible : manque raison sociale, adresse, code postal, ville, pays, numero de TVA intracommunautaire">identité incomplète</span>
+        <span class="pill pill-rating">★ 4,6 (212)</span>
+        <span class="xs muted">2 zone(s) · 12 % · <strong style="color:var(--text)">1 devis gagné(s)</strong> · 1 loc.</span>
+      </div>
+      <div class="body">
+        <div class="xs muted">zorbas@example.gr · +30 28430 00000 · direct · depuis 12/03/2026 · 7 invitation(s)</div>
+
+        <div class="sep xs muted">versement : <strong style="color:var(--terracotta)">aucun compte</strong>
+          &nbsp;<button class="btn btn-xs">Ouvrir le compte de versement</button></div>
+
+        <details open style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px">
+          <summary class="xs muted">identité de facturation · <strong style="color:var(--terracotta)">manque raison sociale, adresse, code postal, ville, pays, numéro de TVA intracommunautaire</strong></summary>
+          <form style="margin-top:8px">
+            <div class="grid3">
+              <label class="field"><span>raison sociale<span class="req"> *</span></span><input placeholder="ex. Lux Trans IKE"></label>
+              <label class="field"><span>forme juridique<span class="light"> (facultatif)</span></span><input placeholder="ex. Private company (IKE), Greece"></label>
+              <label class="field"><span>adresse<span class="req"> *</span></span><input placeholder="ex. Leoforos Knossou 12"></label>
+              <label class="field"><span>code postal<span class="req"> *</span></span><input placeholder="ex. 71306"></label>
+              <label class="field"><span>ville<span class="req"> *</span></span><input placeholder="ex. Heraklion"></label>
+              <label class="field"><span>pays<span class="req"> *</span></span><input placeholder="ex. Greece"></label>
+              <label class="field"><span>numéro de TVA intracommunautaire<span class="req"> *</span></span><input placeholder="ex. EL801122501"></label>
+            </div>
+            <p class="xs muted" style="margin:4px 0 0">
+              <span class="req">*</span> mentions obligatoires d'une facture intra-UE : sans elles, aucune
+              facture de commission n'est émise pour ce loueur. Enregistrement partiel accepté.
+            </p>
+            <div class="vies">
+              <label>
+                <input type="checkbox">
+                <span>
+                  <strong>J'ai vérifié ce numéro sur <a href="https://ec.europa.eu/taxation_customs/vies/">VIES</a> et il est valide.</strong><br>
+                  La facture imprimera alors, mot pour mot : «&nbsp;verified against the European Commission
+                  VIES database on &lt;date du jour&gt; and returned as valid&nbsp;». Ne cochez que si le
+                  contrôle a réellement eu lieu. Cocher la datera du jour.<br>
+                  Changer le numéro de TVA retire l'attestation : le contrôle portait sur l'ancien.
+                </span>
+              </label>
+            </div>
+            <button class="btn btn-sea" style="margin-top:8px">Enregistrer l'identité</button>
+          </form>
+        </details>
+
+        <form style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;border-top:1px solid var(--border);padding-top:12px;margin-top:12px">
+          <label class="sm"><input type="checkbox" checked> heraklion</label>
+          <label class="sm"><input type="checkbox"> lassithi</label>
+          <label class="sm">commission <input value="12" style="width:56px;border:1px solid var(--border);border-radius:8px;padding:4px 8px;font:inherit"> %</label>
+          <button class="btn btn-sea">Enregistrer</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <div class="state-label">2 · Onglet Partenaires — fiche COMPLETE, verification VIES attestee</div>
+  <p class="state-note">
+    <strong>vat_verified_at n'est pas un champ comme les autres</strong> : cocher cette case fait
+    IMPRIMER sur la facture une phrase qui affirme qu'un controle VIES a eu lieu. La case cite donc mot
+    pour mot la phrase qu'elle declenche, elle est au passe (« j'ai verifie »), elle pointe vers le
+    verificateur, et elle rappelle que changer le numero de TVA retire l'attestation — le controle
+    portait sur l'ancien numero.
+  </p>
+  <div class="viewport">
+    <div class="card">
+      <div class="summary">
+        <span class="name">cretecar.rent</span>
+        <span class="pill pill-active">actif</span>
+        <span class="pill pill-billing-ok" title="Identité légale complète : une facture de commission peut être émise">facturable</span>
+        <span class="pill pill-rating">★ 4,8 (341)</span>
+        <span class="xs muted">3 zone(s) · 10 % · <strong style="color:var(--text)">4 devis gagné(s)</strong> · 3 loc. · <strong class="data" style="color:var(--text)">204.00 €</strong></span>
+      </div>
+      <div class="body">
+        <div class="xs muted">info@cretecar.rent · +30 28970 00000 · direct · depuis 04/05/2026 · 21 invitation(s)</div>
+        <details open style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px">
+          <summary class="xs muted">identité de facturation · <strong style="color:var(--ok)">complète</strong></summary>
+          <form style="margin-top:8px">
+            <div class="grid3">
+              <label class="field"><span>raison sociale<span class="req"> *</span></span><input value="Lux Trans IKE"></label>
+              <label class="field"><span>forme juridique<span class="light"> (facultatif)</span></span><input value="Private company (IKE), Greece"></label>
+              <label class="field"><span>adresse<span class="req"> *</span></span><input value="Leoforos Knossou 12"></label>
+              <label class="field"><span>code postal<span class="req"> *</span></span><input value="71306"></label>
+              <label class="field"><span>ville<span class="req"> *</span></span><input value="Heraklion"></label>
+              <label class="field"><span>pays<span class="req"> *</span></span><input value="Greece"></label>
+              <label class="field"><span>numéro de TVA intracommunautaire<span class="req"> *</span></span><input value="EL801122501"></label>
+            </div>
+            <p class="xs muted" style="margin:4px 0 0">
+              <span class="req">*</span> mentions obligatoires d'une facture intra-UE : sans elles, aucune
+              facture de commission n'est émise pour ce loueur. Enregistrement partiel accepté.
+            </p>
+            <div class="vies">
+              <label>
+                <input type="checkbox" checked>
+                <span>
+                  <strong>J'ai vérifié ce numéro sur <a href="https://ec.europa.eu/taxation_customs/vies/">VIES</a> et il est valide.</strong><br>
+                  La facture imprimera alors, mot pour mot : «&nbsp;verified against the European Commission
+                  VIES database on 2026-07-30 and returned as valid&nbsp;». Ne cochez que si le contrôle a
+                  réellement eu lieu. Vérification attestée le <strong class="data">2026-07-30</strong> ;
+                  décocher la retire.<br>
+                  Changer le numéro de TVA retire l'attestation : le contrôle portait sur l'ancien.
+                </span>
+              </label>
+            </div>
+            <button class="btn btn-sea" style="margin-top:8px">Enregistrer l'identité</button>
+          </form>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <div class="state-label">3 · Onglet Demandes — facture en souffrance, loueur complet</div>
+  <p class="state-note">
+    La location est « louee », aucune facture n'existe, le loueur est facturable : le bouton apparait.
+    Sans lui, cette ligne ne serait JAMAIS facturee — le cron ne prend que <span class="data">outcome
+    IS NULL</span>, et l'issue a deja ete tranchee. <strong>« Commission encaissée » n'apparait pas
+    encore</strong> : aucune facture n'existe sur cette ligne tant que ce bouton n'a pas ete clique, et
+    proposer d'encaisser une commission jamais facturee laisserait <span class="data">car_requests</span>
+    et <span class="data">car_commission_invoices</span> se contredire (correctif du 31/07/2026).
+  </p>
+  <div class="viewport">
+    <div class="card">
+      <div class="body" style="border-top:0">
+        <div class="req-head">
+          <span class="xs light data">#27 · 28/07/2026 09:14</span>
+          <span class="pill pill-status">accepted</span>
+          <span class="pill pill-rented">rented</span>
+          <span class="xs muted" style="margin-left:auto">4 loueur(s) invité(s)</span>
+        </div>
+        <div class="sm" style="margin-top:8px">
+          <strong>Heraklion airport</strong> · 2026-07-30 10:00 → 2026-08-11 08:00 · Compact, 3 pax<br>
+          Choisi par le client : <strong>cretecar.rent</strong> · final <strong class="data">680 €</strong>
+          · commission <strong class="data">68.00 €</strong>
+        </div>
+        <div class="actions">
+          <details class="sm"><summary class="muted" style="text-decoration:underline">corriger l'issue</summary></details>
+          <button class="btn btn-sea">Émettre la facture</button>
+          <form style="display:flex;gap:6px;flex:1;min-width:14rem">
+            <input type="text" placeholder="Note admin…" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font:inherit;font-size:14px">
+            <button class="btn">OK</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <div class="state-label">4 · Onglet Demandes — facture en souffrance, fiche loueur incomplete</div>
+  <p class="state-note">
+    Aucun bouton d'emission ici : il serait refuse. Un bouton qui ment est pire qu'une phrase qui
+    explique (meme doctrine que <span class="data">invoiceAdminState</span>). On nomme les champs
+    manquants et on donne le lien direct vers la fiche a completer, dans l'onglet Partenaires, filtree
+    sur ce loueur. <strong>« Commission encaissée » ne s'affiche plus non plus</strong> (correctif du
+    31/07/2026) : aucune facture n'existe sur cette ligne, l'encaisser ecrirait
+    <span class="data">commission_paid_at</span> sans aucune contrepartie facturable, et personne ne le
+    verrait.
+  </p>
+  <div class="viewport">
+    <div class="card">
+      <div class="body" style="border-top:0">
+        <div class="req-head">
+          <span class="xs light data">#41 · 29/07/2026 17:02</span>
+          <span class="pill pill-status">accepted</span>
+          <span class="pill pill-rented">rented</span>
+          <span class="xs muted" style="margin-left:auto">3 loueur(s) invité(s)</span>
+        </div>
+        <div class="sm" style="margin-top:8px">
+          <strong>Sitia</strong> · 2026-08-02 12:00 → 2026-08-09 12:00 · SUV, 4 pax<br>
+          Choisi par le client : <strong>Zorbas Rent a Car</strong> · final <strong class="data">420 €</strong>
+          · commission <strong class="data">50.40 €</strong>
+        </div>
+        <div class="actions">
+          <details class="sm"><summary class="muted" style="text-decoration:underline">corriger l'issue</summary></details>
+          <span class="warn-line">
+            Facture non émise : fiche loueur incomplète (raison sociale, adresse, code postal, ville, pays,
+            numéro de TVA intracommunautaire).
+            <a href="#" style="font-weight:700;text-decoration:underline">Compléter la fiche de Zorbas Rent a Car</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <div class="state-label">5 · Onglet Demandes — verrou pose sans facture (impasse honnete)</div>
+  <p class="state-note">
+    Cas rare : <span class="data">commission_requested_at</span> est rempli alors qu'aucune facture
+    n'existe, donc le verrou a ete pris puis jamais relache. Tant qu'il tient,
+    <span class="data">requestCommission</span> rendra <span class="data">already_requested</span> quoi
+    qu'on remplisse. Proposer un bouton, ou reclamer « completez la fiche », serait une fausse promesse :
+    on dit exactement ce qu'il faut faire a la main. <strong>« Commission encaissée » ne s'affiche pas non
+    plus</strong> (correctif du 31/07/2026) : aucune facture n'existe sur cette ligne.
+  </p>
+  <div class="viewport">
+    <div class="card">
+      <div class="body" style="border-top:0">
+        <div class="req-head">
+          <span class="xs light data">#37 · 21/07/2026 08:40</span>
+          <span class="pill pill-status">accepted</span>
+          <span class="pill pill-rented">rented</span>
+          <span class="pill pill-req">commission demandée le 22/07/2026</span>
+          <span class="xs muted" style="margin-left:auto">5 loueur(s) invité(s)</span>
+        </div>
+        <div class="actions">
+          <span class="warn-line">
+            Facture bloquée : le verrou de facturation est posé alors qu'aucune facture n'existe.
+            Aucun clic ne débloque : il faut remettre <span class="data">commission_requested_at</span> à NULL en base.
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <div class="state-label">6 · Onglet Demandes — commission encaissee a la main, AVANT le systeme de facturation</div>
+  <p class="state-note">
+    Cas historique (correctif du 31/07/2026) : cette location a ete reglee <strong>a la main, hors
+    systeme</strong>, avant l'existence de la facturation automatisee — <span class="data">commission_paid_at</span>
+    est rempli, mais aucune ligne n'existe dans <span class="data">car_commission_invoices</span>. Masquer
+    completement le bouton rendrait cette ligne muette et interdirait de corriger une saisie faite par
+    erreur : il reste donc visible, mais seulement pour <strong>repasser en due</strong>, jamais pour
+    encaisser une nouvelle commission sans facture.
+  </p>
+  <div class="viewport">
+    <div class="card">
+      <div class="body" style="border-top:0">
+        <div class="req-head">
+          <span class="xs light data">#9 · 03/07/2026 11:20</span>
+          <span class="pill pill-status">accepted</span>
+          <span class="pill pill-rented">rented</span>
+          <span class="pill pill-status">commission encaissée</span>
+          <span class="xs muted" style="margin-left:auto">2 loueur(s) invité(s)</span>
+        </div>
+        <div class="sm" style="margin-top:8px">
+          <strong>Chania</strong> · 2026-07-05 09:00 → 2026-07-12 09:00 · Compact, 2 pax<br>
+          Choisi par le client : <strong>cretecar.rent</strong> · final <strong class="data">250 €</strong>
+          · commission <strong class="data">25.00 €</strong>
+        </div>
+        <div class="actions">
+          <details class="sm"><summary class="muted" style="text-decoration:underline">corriger l'issue</summary></details>
+          <button class="btn">Repasser en due</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <div class="state-label">7 · Retour d'un clic sur « Emettre la facture », systeme desarme</div>
+  <p class="state-note">
+    Etat NORMAL aujourd'hui. Sans ce bandeau, l'ecran serait rigoureusement identique avant et apres le
+    clic, et le silence passerait pour une panne. Un succes, lui, ne dit rien : le numero de facture
+    apparait de lui-meme sur la ligne.
+  </p>
+  <div class="viewport">
+    <div class="banner">
+      Facturation de commission désarmée (CAR_COMMISSION_ENABLED) : aucune facture n'a été émise.
+    </div>
+    <div class="banner">
+      Facture non émise : fiche loueur incomplète (adresse, numéro de TVA intracommunautaire).
+      Complétez-la dans l'onglet Partenaires, puis réémettez.
+    </div>
+  </div>
+</div>
+</body>
+</html>

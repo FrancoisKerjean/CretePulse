@@ -10,6 +10,8 @@ import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { stripeClient } from "@/lib/stays/stripe-helpers";
+import { transferDueAt } from "@/lib/booking-policy";
+import { markInvoicePaid } from "@/lib/car-invoice-server";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const sig = request.headers.get("stripe-signature") ?? "";
@@ -30,8 +32,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     (event.data.object as { metadata?: Record<string, string> })?.metadata ?? {};
   const requestId = Number(meta.car_request_id);
 
+  // Deux flux passent par cet endpoint : la commission facturee au loueur
+  // (modele hors ligne) et le paiement du voyageur (tunnel en ligne). Tout le
+  // reste appartient a une autre marque du compte et sort en 200 muet.
+  const paymentType = meta.payment_type;
   if (
-    meta.payment_type !== "car_commission" ||
+    (paymentType !== "car_commission" && paymentType !== "car_booking") ||
     meta.brand !== "crete.direct" ||
     !Number.isInteger(requestId) ||
     requestId <= 0
@@ -52,6 +58,35 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "ledger error" }, { status: 500 });
   }
 
+  if (event.type === "checkout.session.completed" && paymentType === "car_booking") {
+    const obj = event.data.object as { payment_intent?: string };
+    // On relit la date de debut pour poser l'echeance de versement : elle doit
+    // etre calculee par booking-policy, jamais recopiee depuis le client.
+    const { data: row } = await supabaseAdmin
+      .from("car_requests")
+      .select("id, date_from")
+      .eq("id", requestId)
+      .maybeSingle();
+
+    const { error } = await supabaseAdmin
+      .from("car_requests")
+      .update({
+        booking_status: "paid",
+        booking_paid_at: new Date().toISOString(),
+        booking_payment_intent_id: obj.payment_intent ?? null,
+        transfer_due_at: row?.date_from ? transferDueAt(row.date_from) : null,
+      })
+      .eq("id", requestId);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    // Mise en relation SEULEMENT ici : avant paiement, le client aurait le
+    // numero du loueur et aucune raison de payer sur crete.direct.
+    const { notifyBookingPaid } = await import("@/lib/car-booking-server");
+    await notifyBookingPaid(requestId);
+
+    return NextResponse.json({ received: true, booking: true });
+  }
+
   if (event.type === "checkout.session.completed") {
     const obj = event.data.object as { payment_intent?: string };
     const { error } = await supabaseAdmin
@@ -61,6 +96,28 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         commission_payment_intent_id: obj.payment_intent ?? null,
       })
       .eq("id", requestId);
+
+    // La facture porte son propre etat : la page se lit sans jointure. Stripe
+    // a deja encaisse la carte du loueur a ce stade, donc cet appel se fait
+    // MEME SI l'ecriture ci-dessus a echoue : un car_requests en retard ne
+    // degrade que le suivi interne, alors qu'une facture non marquee payee
+    // laisserait la page afficher « due » sur un paiement reel, et ferait
+    // payer le loueur deux fois.
+    //
+    // Un refus de la base leve desormais, et il ne doit JAMAIS sortir en 200 :
+    // un 500 marque la livraison en echec chez Stripe, ce qui est la seule
+    // trace visible depuis l'exterieur. L'evenement etant deja au registre, la
+    // nouvelle tentative ressortira en « duplicate » : aucune tempete de rejeu.
+    try {
+      await markInvoicePaid(requestId);
+    } catch (err) {
+      console.error("[car/commission] PAIEMENT ENCAISSE, FACTURE NON MARQUEE PAYEE", {
+        requestId,
+        err,
+      });
+      return NextResponse.json({ error: "invoice not marked paid" }, { status: 500 });
+    }
+
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }

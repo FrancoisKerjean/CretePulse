@@ -7,9 +7,18 @@
 // Pas de création ici : l'auto-enroll signup + INSERT SQL couvrent l'onboarding.
 import { partnerStats, ZONE_IDS, type AdminPartner, type AdminRequest } from "@/lib/car-admin";
 import { partnerPerf, type MonitorInvite } from "@/lib/car-monitoring";
-import { togglePartnerActive, updatePartner } from "./actions";
+import { formatRating } from "@/lib/google-rating";
+import { identityFormFields, identityStatus } from "@/lib/car-partner-identity";
+import {
+  togglePartnerActive, updatePartner, openPartnerOnboarding, refreshPartnerConnect,
+  refreshPartnerRatingAction, updatePartnerIdentity,
+} from "./actions";
 
 const BASE = "/admin/car-rental";
+
+/** Vérificateur VIES de la Commission européenne : le seul contrôle qui donne
+ *  le droit d'imprimer la phrase de vérification sur la facture. */
+const VIES_URL = "https://ec.europa.eu/taxation_customs/vies/";
 
 function outreachBadge(status?: string | null) {
   if (!status) return null;
@@ -17,6 +26,55 @@ function outreachBadge(status?: string | null) {
   return (
     <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${declined ? "bg-terracotta text-white" : "bg-sky text-night"}`}>
       {status}
+    </span>
+  );
+}
+
+/**
+ * Note Google en un coup d'oeil sur la ligne repliée.
+ *
+ * Trois états distincts, et ils comptent : une note, un relevé qui n'a trouvé
+ * aucune fiche sûre, et un loueur jamais relevé. Confondre les deux derniers
+ * ferait lire « mauvaise réputation » là où il n'y a que donnée manquante.
+ */
+function ratingBadge(p: AdminPartner) {
+  const label = formatRating(p.google_rating, p.google_rating_count);
+  if (label) {
+    return (
+      <span className="rounded-full bg-sand px-2 py-0.5 text-xs font-bold text-night" title="Note Google">
+        ★ {label}
+      </span>
+    );
+  }
+  if (p.google_rating_at) {
+    return (
+      <span className="rounded-full border border-border px-2 py-0.5 text-xs text-text-muted" title="Aucune fiche Google appariée avec certitude">
+        ★ fiche non trouvée
+      </span>
+    );
+  }
+  return null;
+}
+
+/**
+ * Facturable, ou pas. Ce badge existe pour répondre d'un coup d'œil à la seule
+ * question qui compte sur ce registre : lesquels de mes loueurs bloqueraient
+ * l'émission d'une facture de commission ?
+ *
+ * Réservé aux loueurs ACTIFS, comme l'alerte rouge de `declined` : un prospect
+ * jamais recruté n'a aucune raison d'avoir une identité légale renseignée, et
+ * teindre en rouge cinquante lignes de prospection noierait les vrais blocages.
+ */
+function billingBadge(p: AdminPartner) {
+  if (!p.active) return null;
+  const st = identityStatus(p);
+  return st.complete ? (
+    <span className="rounded-full border border-ok px-2 py-0.5 text-xs font-bold text-ok" title="Identité légale complète : une facture de commission peut être émise">
+      facturable
+    </span>
+  ) : (
+    <span className="rounded-full bg-terracotta px-2 py-0.5 text-xs font-bold text-white" title={`Aucune facture émissible : manque ${st.missingLabels.join(", ")}`}>
+      identité incomplète
     </span>
   );
 }
@@ -98,6 +156,7 @@ export function PartnersTable({
           const st = statsById.get(p.id)!;
           const perf = partnerPerf(p.id, monitorByPartner);
           const declined = p.outreach_status === "declined";
+          const identity = identityStatus(p);
           return (
             <details key={p.id} className={`rounded-2xl border bg-white ${declined ? "border-terracotta" : "border-border"}`}>
               <summary className="flex cursor-pointer flex-wrap items-center gap-2 p-3 text-sm">
@@ -106,6 +165,8 @@ export function PartnersTable({
                   ? <span className="rounded-full bg-ok px-2 py-0.5 text-xs font-bold text-white">actif</span>
                   : <span className="rounded-full border border-border px-2 py-0.5 text-xs text-text-muted">inactif</span>}
                 {outreachBadge(p.outreach_status)}
+                {billingBadge(p)}
+                {ratingBadge(p)}
                 <span className="text-xs text-text-muted">
                   {p.zone_ids.length} zone(s) · {Math.round(p.commission * 10000) / 100} %
                   {st.won > 0 ? <> · <span className="font-bold text-text">{st.won} devis gagné(s)</span></> : null}
@@ -131,12 +192,139 @@ export function PartnersTable({
                   </form>
                 </div>
 
+                {/* Compte de versement Stripe. Sans lui, le cron garde les fonds
+                    du client et le signale : ce bloc est le seul chemin pour
+                    débloquer un loueur. */}
+                <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-border pt-2">
+                  <span className="text-xs text-text-muted">
+                    versement :{" "}
+                    {p.kyc_status === "complete" ? (
+                      <span className="font-bold text-ok">compte prêt</span>
+                    ) : p.stripe_connect_account_id ? (
+                      <span className="font-bold text-text">onboarding en cours</span>
+                    ) : (
+                      <span className="font-bold text-terracotta">aucun compte</span>
+                    )}
+                  </span>
+                  <form action={openPartnerOnboarding.bind(null, p.id)}>
+                    <button className="rounded-full border border-border bg-white px-3 py-1 text-xs font-bold">
+                      {p.stripe_connect_account_id ? "Reprendre l'onboarding" : "Ouvrir le compte de versement"}
+                    </button>
+                  </form>
+                  {p.stripe_connect_account_id ? (
+                    <form action={refreshPartnerConnect.bind(null, p.id)}>
+                      <button className="rounded-full border border-border bg-white px-3 py-1 text-xs font-bold">
+                        Rafraîchir
+                      </button>
+                    </form>
+                  ) : null}
+                </div>
+
+                {/* Note Google. Jamais saisie à la main : elle vient de Places
+                    API et n'est écrite que si la fiche a été appariée au
+                    loueur. Le Place ID ci-dessous sert à lever un doute. */}
+                <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-border pt-2">
+                  <span className="text-xs text-text-muted">
+                    note Google :{" "}
+                    {formatRating(p.google_rating, p.google_rating_count) ? (
+                      <span className="font-data font-bold text-text">
+                        ★ {formatRating(p.google_rating, p.google_rating_count)}
+                      </span>
+                    ) : (
+                      <span className="font-bold text-text-muted">
+                        {p.google_rating_at ? "aucune fiche appariée" : "jamais relevée"}
+                      </span>
+                    )}
+                    {p.google_rating_at
+                      ? ` · relevée le ${new Date(p.google_rating_at).toLocaleDateString("fr-FR", { timeZone: "Europe/Athens" })}`
+                      : null}
+                  </span>
+                  {p.google_maps_url ? (
+                    <a href={p.google_maps_url} target="_blank" rel="noreferrer" className="text-xs text-sea">
+                      voir la fiche
+                    </a>
+                  ) : null}
+                  <form action={refreshPartnerRatingAction.bind(null, p.id)}>
+                    <button className="rounded-full border border-border bg-white px-3 py-1 text-xs font-bold">
+                      Relever la note
+                    </button>
+                  </form>
+                </div>
+
                 <div className="text-xs text-text-muted">
                   {perf.invited} invité(s) · {perf.quoted} chiffré(s) · {perf.chosen} choisi(s) · {perf.declined} désisté(s)
                   {perf.avgQuotePriceEur != null ? ` · prix moy ${perf.avgQuotePriceEur.toFixed(0)} €` : ""}
                   {perf.responseRate != null ? ` · réponse ${Math.round(perf.responseRate * 100)} %` : ""}
                   {perf.avgResponseHours != null ? ` · délai moy ${perf.avgResponseHours.toFixed(1)}h` : ""}
                 </div>
+
+                {/* Identité légale de facturation. La commission facturée à un
+                    loueur grec est une prestation intra-UE : sans le nom, l'adresse
+                    complète et le numéro de TVA du preneur, la facture est
+                    juridiquement fausse, et la garde refuse de l'émettre. Les
+                    colonnes existaient, rien ne les écrivait : ce formulaire est le
+                    seul chemin. Replié par défaut, il est long et ne se remplit
+                    qu'une fois par loueur. */}
+                <details className="mt-2 border-t border-border pt-2" open={p.active && !identity.complete}>
+                  <summary className="cursor-pointer text-xs text-text-muted">
+                    identité de facturation ·{" "}
+                    {identity.complete
+                      ? <span className="font-bold text-ok">complète</span>
+                      : <span className="font-bold text-terracotta">manque {identity.missingLabels.join(", ")}</span>}
+                  </summary>
+                  <form action={updatePartnerIdentity.bind(null, p.id)} className="mt-2">
+                    <div className="grid gap-2 sm:grid-cols-3">
+                      {identityFormFields().map((f) => (
+                        <label key={f.name} className="flex flex-col gap-0.5 text-xs text-text-muted">
+                          <span>
+                            {f.label}
+                            {f.required
+                              ? <span className="font-bold text-terracotta" title="Sans ce champ, aucune facture n'est émise"> *</span>
+                              : <span className="text-text-light"> (facultatif)</span>}
+                          </span>
+                          <input name={f.name} defaultValue={(p[f.name] as string | null) ?? ""} maxLength={200}
+                                 placeholder={f.placeholder} aria-label={f.label}
+                                 className="rounded-lg border border-border bg-white px-2 py-1 text-sm text-text" />
+                        </label>
+                      ))}
+                    </div>
+                    <p className="mt-1 text-xs text-text-muted">
+                      <span className="font-bold text-terracotta">*</span> mentions obligatoires d&apos;une facture
+                      intra-UE : sans elles, aucune facture de commission n&apos;est émise pour ce loueur.
+                      Enregistrement partiel accepté.
+                    </p>
+
+                    {/* ⛔ vat_verified_at n'est PAS un champ comme les autres : cocher
+                        cette case fait IMPRIMER sur la facture une phrase qui affirme
+                        qu'un contrôle VIES a eu lieu. La cocher sans avoir fait le
+                        contrôle fabrique un mensonge sur une pièce comptable. D'où le
+                        libellé au passé, le lien vers le vérificateur, et la citation
+                        exacte de la phrase qui s'imprimera. */}
+                    <div className="mt-2 rounded-xl border border-sun bg-sand/40 p-2">
+                      <label className="flex items-start gap-2 text-xs text-text">
+                        <input type="checkbox" name="vatVerified" defaultChecked={!!p.vat_verified_at} className="mt-0.5" />
+                        <span>
+                          <span className="font-bold">
+                            J&apos;ai vérifié ce numéro sur <a href={VIES_URL} target="_blank" rel="noreferrer" className="text-sea underline">VIES</a> et il est valide.
+                          </span>
+                          <br />
+                          La facture imprimera alors, mot pour mot : «&nbsp;verified against the European
+                          Commission VIES database on {p.vat_verified_at ?? "<date du jour>"} and returned as
+                          valid&nbsp;». Ne cochez que si le contrôle a réellement eu lieu.
+                          {p.vat_verified_at
+                            ? <> Vérification attestée le <span className="font-data font-bold">{p.vat_verified_at}</span> ; décocher la retire.</>
+                            : <> Cocher la datera du jour.</>}
+                          <br />
+                          Changer le numéro de TVA retire l&apos;attestation : le contrôle portait sur l&apos;ancien.
+                        </span>
+                      </label>
+                    </div>
+
+                    <button className="mt-2 rounded-full bg-sea px-3 py-1 text-sm font-bold text-white">
+                      Enregistrer l&apos;identité
+                    </button>
+                  </form>
+                </details>
 
                 <form action={updatePartner.bind(null, p.id)} className="mt-3 flex flex-wrap items-center gap-3 border-t border-border pt-3">
                   {ZONE_IDS.map((z) => (
@@ -145,6 +333,12 @@ export function PartnersTable({
                       {z}
                     </label>
                   ))}
+                  <label className="flex items-center gap-1.5">
+                    Place ID
+                    <input name="googlePlaceId" defaultValue={p.google_place_id ?? ""} placeholder="ChIJ…"
+                           className="w-44 rounded-lg border border-border px-2 py-1"
+                           aria-label="Google Place ID (corrige un appariement raté)" />
+                  </label>
                   <label className="flex items-center gap-1.5">
                     commission
                     <input name="commissionPct" inputMode="decimal" defaultValue={Math.round(p.commission * 10000) / 100}
