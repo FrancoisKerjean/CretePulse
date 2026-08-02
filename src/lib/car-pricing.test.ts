@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { perDayAmount, rentalDays } from "./car-pricing";
+import { estimateCarPrice, perDayAmount, rentalDays } from "./car-pricing";
 
 describe("rentalDays", () => {
   it("compte les jours entre deux dates ISO", () => {
@@ -14,6 +14,54 @@ describe("rentalDays", () => {
 
   it("rend 1 sur une date non ISO plutot que NaN", () => {
     expect(rentalDays("06/08/2026", "2026-08-14")).toBe(1);
+  });
+});
+
+describe("rentalDays avec les heures de prise et de restitution", () => {
+  it("compte la journee entamee quand la restitution depasse l'heure de prise", () => {
+    // Cas reel Luxtrans du 01/08 : Heraklion 02/09 01:30 -> 07/09 08:00. Le
+    // calcul par dates seules rendait 5 jours, donc 335 EUR affiches a 67 EUR
+    // par jour au lieu de 56. Le loueur facture la journee entamee : 6 jours.
+    expect(rentalDays("2026-09-02", "2026-09-07", "01:30", "08:00")).toBe(6);
+  });
+
+  it("n'ajoute pas de journee quand la voiture rentre a l'heure de prise", () => {
+    expect(rentalDays("2026-09-02", "2026-09-07", "10:00", "10:00")).toBe(5);
+  });
+
+  it("n'ajoute pas de journee quand la voiture rentre plus tot dans la journee", () => {
+    expect(rentalDays("2026-09-02", "2026-09-07", "10:00", "09:00")).toBe(5);
+  });
+
+  it("compte 1 jour sur un aller-retour dans la meme journee", () => {
+    expect(rentalDays("2026-08-06", "2026-08-06", "08:00", "20:00")).toBe(1);
+  });
+
+  it("retombe sur le calcul par dates quand une heure manque ou est invalide", () => {
+    // Les demandes d'avant la saisie obligatoire de l'heure ont time_from null
+    // en base : mieux vaut la duree par dates qu'un repere invente.
+    expect(rentalDays("2026-08-07", "2026-08-14", null, "08:00")).toBe(7);
+    expect(rentalDays("2026-08-07", "2026-08-14", "8h", "08:00")).toBe(7);
+  });
+
+  it("n'ajoute pas de journee au passage a l'heure d'hiver", () => {
+    // Le 25/10/2026 l'heure d'hiver ajoute 3 600 000 ms a l'ecart brut. Un
+    // calcul en duree pure rendrait 3 jours pour 2 nuits de location.
+    expect(rentalDays("2026-10-24", "2026-10-26", "10:00", "10:00")).toBe(2);
+  });
+});
+
+describe("estimateCarPrice", () => {
+  it("estime sur la duree reelle, journee entamee comprise", () => {
+    // L'estimation indicative s'affiche aux etapes 3 et 4 du wizard, ou les
+    // heures sont deja saisies : elle doit porter sur la meme duree que l'offre
+    // recue ensuite, sinon le client compare 5 jours a 6.
+    const est = estimateCarPrice("city", "2026-09-02", "2026-09-07", "01:30", "08:00");
+    expect(est?.days).toBe(6);
+  });
+
+  it("estime sur les dates seules quand les heures manquent", () => {
+    expect(estimateCarPrice("city", "2026-09-02", "2026-09-07")?.days).toBe(5);
   });
 });
 

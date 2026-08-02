@@ -58,8 +58,11 @@ const NOW = Date.parse("2026-07-09T10:00:00Z");
     partnerRelanceState(inv(1, null, "invited", { created_at: T(created) }), "sent", created, NOW).kind === "due");
   ok("relance loueur déjà faite",
     partnerRelanceState(inv(1, null, "invited", { created_at: T(created), relanced_at: T(NOW - 2 * H) }), "sent", created, NOW).kind === "relanced");
-  const dueIn = partnerRelanceState(inv(1, null, "invited", { created_at: T(NOW - 5 * H) }), "sent", NOW - 5 * H, NOW);
-  ok("relance loueur due dans Xh (<24h)", dueIn.kind === "dueInMs" && dueIn.ms > 18 * H && dueIn.ms < 20 * H);
+  // Seuil ramene a H+2 le 01/08/2026 : une invite de 5 h est desormais DUE, le
+  // decompte ne concerne plus que les deux premieres heures.
+  ok("relance loueur due des 5h", partnerRelanceState(inv(1, null, "invited", { created_at: T(NOW - 5 * H) }), "sent", NOW - 5 * H, NOW).kind === "due");
+  const dueIn = partnerRelanceState(inv(1, null, "invited", { created_at: T(NOW - 0.5 * H) }), "sent", NOW - 0.5 * H, NOW);
+  ok("relance loueur due dans Xh (<2h)", dueIn.kind === "dueInMs" && dueIn.ms > 1 * H && dueIn.ms < 2 * H);
   ok("pas de relance si demande fermée",
     partnerRelanceState(inv(1, null, "invited", { created_at: T(created) }), "accepted", created, NOW).kind === "never");
 }

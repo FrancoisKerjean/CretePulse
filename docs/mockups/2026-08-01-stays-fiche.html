@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maquette · fiche Stays · crete.direct</title>
+<style>
+  :root{
+    --surface:#F6FBFC; --text:#0B3954; --text-muted:#5C7886; --text-light:#94A3B8;
+    --border:#DCE9EE; --sea:#0B5E78; --sea-light:#2E7DB2; --sea-faint:#DFF7FA;
+    --terracotta:#ED7A5C; --terracotta-faint:#FDEEE9; --sun:#FFC83D; --ok:#14B86B;
+    --sand:#FFF3D6; --lagoon:#00C2D4;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--surface);color:var(--text);
+       font:15.5px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+  h1,h2,h3{font-family:"Baloo 2",Comfortaa,ui-rounded,system-ui,sans-serif;font-weight:800;letter-spacing:-.01em;margin:0}
+  .wrap{max-width:820px;margin:0 auto;padding:0 16px 64px}
+  .warn{background:var(--sun);color:#3a2a00;font-weight:700;text-align:center;padding:8px 16px;font-size:13px}
+
+  /* Faits */
+  .facts{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--text-muted);font-size:14.5px;margin:10px 0 22px}
+  .facts b{color:var(--text);font-weight:600}
+
+  /* Galerie */
+  .gal{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:130px 130px;gap:8px}
+  .gal figure{margin:0;border-radius:18px;overflow:hidden;position:relative;
+              background:linear-gradient(135deg,#2E7DB2,#0B5E78);display:flex;align-items:flex-end}
+  .gal figure:nth-child(1){grid-row:span 2;background:linear-gradient(135deg,#7fc6d8,#0B5E78)}
+  .gal figure:nth-child(3){background:linear-gradient(135deg,#F29A82,#ED7A5C)}
+  .gal figure:nth-child(4){background:linear-gradient(135deg,#9BB573,#7C9A53)}
+  .gal figure:nth-child(5){background:linear-gradient(160deg,#FFC83D,#ED7A5C)}
+  .gal figcaption{color:#fff;font-size:11.5px;padding:6px 10px;text-shadow:0 1px 4px rgba(0,0,0,.5)}
+  .gal .more{position:absolute;inset:auto 8px 8px auto;background:rgba(255,255,255,.94);
+             color:var(--text);border-radius:999px;padding:4px 11px;font-size:12.5px;font-weight:700}
+
+  /* Equipements */
+  .amen{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 0;padding:0;list-style:none}
+  .amen li{border:1px solid var(--border);background:#fff;border-radius:12px;
+           padding:7px 12px;font-size:13.5px;color:var(--text-muted)}
+  .amen li b{color:var(--text);font-weight:600}
+
+  .desc{color:var(--text-muted);margin:22px 0 0}
+  .lang-note{font-size:12.5px;color:var(--text-light);font-style:italic;margin-top:6px}
+
+  /* Carte reservation */
+  .card{background:#fff;border:1px solid var(--border);border-radius:22px;padding:22px;margin-top:34px}
+  .cal{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:6px}
+  .mo h3{font-size:14px;text-align:center;margin-bottom:10px;color:var(--text)}
+  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center;font-size:12.5px}
+  .grid span{color:var(--text-light);font-size:10.5px;text-transform:uppercase;padding-bottom:4px}
+  .grid b{font-weight:400;padding:7px 0;border-radius:9px;cursor:pointer}
+  .grid b:hover{background:var(--sea-faint)}
+  .grid .out{color:var(--text-light);opacity:.35;cursor:default}
+  .grid .taken{color:var(--text-light);text-decoration:line-through;background:#F1F5F7;cursor:not-allowed}
+  .grid .sel{background:var(--sea);color:#fff;font-weight:700}
+  .grid .in{background:var(--sea-faint)}
+
+  /* Devis */
+  .quote{margin-top:22px;border-top:1px solid var(--border);padding-top:16px}
+  .row{display:flex;justify-content:space-between;padding:5px 0;color:var(--text-muted);font-size:14.5px}
+  .row.tot{border-top:1px solid var(--border);margin-top:8px;padding-top:12px;
+           color:var(--text);font-weight:700;font-size:17px}
+  .split{background:var(--sea-faint);border-radius:14px;padding:11px 14px;margin-top:14px;
+         font-size:13.5px;color:var(--sea)}
+  .fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+  .fields label{display:block;font-size:12.5px;font-weight:600;margin-bottom:5px}
+  .fields input,.fields textarea{width:100%;border:1px solid var(--border);border-radius:12px;
+    padding:11px 13px;font:inherit;font-size:14.5px;background:#fff}
+  .full{grid-column:1/-1}
+  .cta{width:100%;margin-top:16px;border:0;border-radius:999px;background:var(--sun);
+       color:#3a2a00;font-weight:800;font-size:16px;padding:15px;cursor:pointer;font-family:inherit}
+
+  /* Avis */
+  .rev-head{display:flex;align-items:baseline;gap:10px;margin:44px 0 4px}
+  .score{font-size:30px;font-weight:800;font-family:"Baloo 2",system-ui}
+  .src{font-size:12.5px;color:var(--text-light);margin-bottom:18px}
+  .revs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .rev{border:1px solid var(--border);background:#fff;border-radius:16px;padding:15px}
+  .rev p{margin:0;font-size:14px;color:var(--text-muted)}
+  .rev .who{font-size:12.5px;color:var(--text-light);margin-top:9px}
+
+  @media (max-width:768px){
+    .gal{grid-template-columns:1fr 1fr;grid-template-rows:170px 90px}
+    .gal figure:nth-child(1){grid-column:span 2}
+    .gal figure:nth-child(5){display:none}
+    .cal{grid-template-columns:1fr;gap:18px}
+    .mo:nth-child(2){display:none}
+    .fields{grid-template-columns:1fr}
+    .revs{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<p class="warn">MAQUETTE, aucune donnee reelle. Les avis affiches ci-dessous sont fictifs et ne doivent jamais partir en production.</p>
+
+<div class="wrap">
+
+  <h1 style="font-size:38px;line-height:1.1;margin-top:34px">Villa Danae</h1>
+  <p class="facts">
+    <span>Makry Gialos, sud-est</span> ·
+    <span><b>11</b> voyageurs</span> ·
+    <span><b>5</b> chambres</span> ·
+    <span><b>4</b> salles de bain</span> ·
+    <span><b>200</b> m<sup>2</sup></span>
+  </p>
+
+  <div class="gal">
+    <figure><figcaption>photo 1</figcaption></figure>
+    <figure><figcaption>photo 2</figcaption></figure>
+    <figure><figcaption>photo 3</figcaption></figure>
+    <figure><figcaption>photo 4</figcaption></figure>
+    <figure><figcaption>photo 5</figcaption><span class="more">+10 photos</span></figure>
+  </div>
+
+  <ul class="amen">
+    <li><b>Piscine</b> chauffee</li>
+    <li><b>Vue mer</b></li>
+    <li>Climatisation</li>
+    <li>Wifi</li>
+    <li>Barbecue</li>
+    <li>Parking</li>
+    <li>Lit bebe</li>
+  </ul>
+
+  <p class="desc">
+    Cinq chambres, onze vrais couchages, deux cents metres carres de plain-pied. Une villa
+    construite pour rassembler une tribu ou un groupe dans le sud-est de la Crete, sans rien
+    ceder sur l espace ni sur la vue.<br><br>
+    Posee sur la crete de Lagada au-dessus de Makry Gialos, la villa tourne le dos a la route
+    et s ouvre sur la mer. Trois chambres en lit double, deux en lits simples, quatre salles
+    de bain, lit bebe et chaise haute fournis. Climatisation dans chaque chambre.
+  </p>
+  <p class="lang-note">Traduit automatiquement. Version originale redigee en anglais par le proprietaire.</p>
+
+  <div class="card">
+    <h2 style="font-size:24px;margin-bottom:14px">Demander ces dates</h2>
+
+    <div class="cal">
+      <div class="mo">
+        <h3>Aout 2026</h3>
+        <div class="grid">
+          <span>l</span><span>m</span><span>m</span><span>j</span><span>v</span><span>s</span><span>d</span>
+          <b class="out">28</b><b class="out">29</b><b class="out">30</b><b class="out">31</b><b>1</b><b>2</b><b>3</b>
+          <b>4</b><b>5</b><b>6</b><b>7</b><b class="taken">8</b><b class="taken">9</b><b class="taken">10</b>
+          <b class="taken">11</b><b class="taken">12</b><b>13</b><b>14</b><b>15</b><b class="sel">16</b><b class="in">17</b>
+          <b class="in">18</b><b class="in">19</b><b class="in">20</b><b class="in">21</b><b class="in">22</b><b class="sel">23</b><b>24</b>
+          <b>25</b><b>26</b><b>27</b><b>28</b><b>29</b><b>30</b><b>31</b>
+        </div>
+      </div>
+      <div class="mo">
+        <h3>Septembre 2026</h3>
+        <div class="grid">
+          <span>l</span><span>m</span><span>m</span><span>j</span><span>v</span><span>s</span><span>d</span>
+          <b>1</b><b>2</b><b>3</b><b>4</b><b>5</b><b>6</b><b>7</b>
+          <b>8</b><b>9</b><b>10</b><b>11</b><b>12</b><b>13</b><b>14</b>
+          <b class="taken">15</b><b class="taken">16</b><b class="taken">17</b><b>18</b><b>19</b><b>20</b><b>21</b>
+          <b>22</b><b>23</b><b>24</b><b>25</b><b>26</b><b>27</b><b>28</b>
+          <b>29</b><b>30</b>
+        </div>
+      </div>
+    </div>
+
+    <div class="quote">
+      <div class="row"><span>441 &euro; x 7 nuits</span><span>3 087,00 &euro;</span></div>
+      <div class="row"><span>Menage, une fois par sejour</span><span>150,00 &euro;</span></div>
+      <div class="row"><span>Frais de paiement 5 %</span><span>161,85 &euro;</span></div>
+      <div class="row tot"><span>Total</span><span>3 398,85 &euro;</span></div>
+      <div class="split">
+        <b>1 019,66 &euro;</b> aujourd hui, le solde de <b>2 379,19 &euro;</b> quatorze jours avant l arrivee.
+      </div>
+    </div>
+
+    <div class="fields">
+      <div><label>Nom complet</label><input placeholder="Votre nom"></div>
+      <div><label>Email</label><input placeholder="vous@exemple.com"></div>
+      <div><label>Voyageurs</label><input value="6"></div>
+      <div><label>Telephone, facultatif</label><input placeholder="+33"></div>
+      <div class="full"><label>Message au proprietaire</label>
+        <textarea rows="3" placeholder="Facultatif. Tout ce qui est utile sur votre sejour."></textarea></div>
+    </div>
+    <button class="cta">Envoyer la demande</button>
+  </div>
+
+  <div class="rev-head">
+    <span class="score">4,9</span>
+    <span style="color:var(--text-muted)">sur 127 avis</span>
+  </div>
+  <p class="src">Avis publies sur Airbnb, releves le 01/08/2026.</p>
+
+  <div class="revs">
+    <div class="rev"><p>Exemple d avis fictif, uniquement present pour juger la mise en page du bloc.</p><p class="who">Prenom, juillet 2026</p></div>
+    <div class="rev"><p>Exemple d avis fictif, uniquement present pour juger la mise en page du bloc.</p><p class="who">Prenom, juillet 2026</p></div>
+    <div class="rev"><p>Exemple d avis fictif, uniquement present pour juger la mise en page du bloc.</p><p class="who">Prenom, juin 2026</p></div>
+    <div class="rev"><p>Exemple d avis fictif, uniquement present pour juger la mise en page du bloc.</p><p class="who">Prenom, juin 2026</p></div>
+  </div>
+
+</div>
+</body>
+</html>

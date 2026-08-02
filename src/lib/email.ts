@@ -701,11 +701,18 @@ export interface CarQuoteInfo {
   price: number; currency: string;
   partnerName: string;
   carModel?: string | null;
+  /** Boîte du devis retenu. Sert quand `carModel` est absent : le mail la nomme
+   *  alors sous son propre intitulé, au lieu de la faire passer pour un modèle. */
+  gearboxLabel?: string | null;
   inclusions?: string[];
   insuranceType?: string | null;
   excessEur?: number | null;
   zeroExcessUpsellEurDay?: number | null;
   days: number;
+  /** Les AUTRES options que ce loueur avait envoyées sur la même demande, pour
+   *  qu'il situe celle retenue parmi les siennes sans rouvrir son historique.
+   *  Demande de Luxtrans du 01/08/2026. Vide s'il n'en avait envoyé qu'une. */
+  partnerOtherOptions?: { price: number; currency?: string | null; carModel?: string | null }[];
 }
 
 const money = (price: number, currency: string): string =>
@@ -896,7 +903,21 @@ export async function sendConnectionEmails(opts: {
     `Phone / WhatsApp: ${formatPhoneWithCountryCode(customer.phone, customer.locale)}`,
     ``,
     `Booking: ${quote.pickupLabel}, ${quote.dateFrom} → ${quote.dateTo}, ${quote.carTypeLabel}`,
-    ...(quote.carModel ? [`Car model quoted: ${quote.carModel}`] : []),
+    ...(quote.carModel
+      ? [`Car model quoted: ${quote.carModel}`]
+      // Sans modèle, on nomme la boîte pour ce qu'elle est. « Car model quoted:
+      // Manual » n'apprenait rien et se lisait comme un nom de voiture.
+      : quote.gearboxLabel ? [`Gearbox quoted: ${quote.gearboxLabel}`] : []),
+    // Le loueur envoie souvent plusieurs options : on lui rappelle lesquelles,
+    // pour qu'il situe celle retenue sans rouvrir son propre historique.
+    ...(quote.partnerOtherOptions?.length
+      ? [
+          `You had sent ${quote.partnerOtherOptions.length + 1} options on this request. The other ${quote.partnerOtherOptions.length === 1 ? "one was" : "ones were"}:`,
+          ...quote.partnerOtherOptions.map(
+            (o) => `  - ${money(o.price, o.currency ?? "EUR")}${o.carModel ? ` · ${o.carModel}` : ""}`,
+          ),
+        ]
+      : []),
     ...(insuranceSummary(quote.insuranceType, quote.excessEur, quote.zeroExcessUpsellEurDay, "en").length
       ? [`Insurance quoted: ${insuranceSummary(quote.insuranceType, quote.excessEur, quote.zeroExcessUpsellEurDay, "en").join(" · ")}`]
       : []),

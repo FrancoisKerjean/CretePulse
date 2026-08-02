@@ -7,9 +7,9 @@
 // relancé (gardes partnerNeedsRelance/clientNeedsRelance). Idempotent.
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
-import { partnerNeedsRelance, clientNeedsRelance, clientAutoCloseReason } from "@/lib/car-quotes";
-import { newToken, hashToken, siteBase, resolveClientToken } from "@/lib/car-quote";
-import { partnerById } from "@/lib/car-partners-db";
+import { clientNeedsRelance, clientAutoCloseReason } from "@/lib/car-quotes";
+import { hashToken, siteBase, resolveClientToken } from "@/lib/car-quote";
+import { runPartnerNudgePass } from "@/lib/car-partner-nudge-server";
 import { assertCron } from "@/lib/cron-auth";
 
 export const dynamic = "force-dynamic";
@@ -22,38 +22,14 @@ export async function GET(request: NextRequest) {
   const startInFuture = (dateFrom: string | null | undefined): boolean =>
     dateFrom ? new Date(dateFrom + "T00:00:00").getTime() > now : true;
 
-  const { sendPartnerRelance, sendCustomerRelance } = await import("@/lib/email");
+  const { sendCustomerRelance } = await import("@/lib/email");
 
   // ── Passe loueur ───────────────────────────────────────────────────────────
-  let partnersRelanced = 0;
-  const { data: invites } = await supabase.from("car_quote_invites")
-    .select("id, request_id, partner_id, status, relanced_at, created_at, car_requests(status, date_from)")
-    .eq("status", "invited")
-    .is("relanced_at", null);
-  for (const inv of invites ?? []) {
-    const raw = (inv as { car_requests?: unknown }).car_requests;
-    const reqRow = (Array.isArray(raw) ? raw[0] : raw) as { status?: string; date_from?: string } | undefined;
-    if (!reqRow?.status) continue;
-    if (!startInFuture(reqRow.date_from)) continue;
-    if (!partnerNeedsRelance(
-      { status: inv.status, relanced_at: inv.relanced_at },
-      reqRow.status, now, new Date(inv.created_at).getTime(),
-    )) continue;
-
-    const partner = await partnerById(inv.partner_id);
-    if (!partner?.email) continue;
-    // Token loueur rotatif : le clair n'est pas récupérable depuis le hash. On
-    // marque relanced_at AVANT l'envoi → jamais de double relance même si l'email
-    // échoue (best-effort, 1× garanti).
-    const qToken = newToken();
-    await supabase.from("car_quote_invites").update({
-      quote_token_hash: hashToken(qToken), relanced_at: new Date().toISOString(),
-    }).eq("id", inv.id);
-    try {
-      await sendPartnerRelance(partner.email, partner.name, `${siteBase()}/en/car-quote/${qToken}`);
-      partnersRelanced++;
-    } catch (e) { console.error("[cron/car-relance] partner relance failed", inv.id, e); }
-  }
+  // Déléguée à `car-partner-nudge-server`, que `cron/car-partner-nudge` appelle
+  // toutes les heures depuis le passage du seuil à H+2. Cette exécution de 9h
+  // reste un FILET : si la passe horaire tombe, elle rattrape les invites restées
+  // sans relance. Le plafond d'une relance par invite rend le doublon impossible.
+  const { partnersRelanced } = await runPartnerNudgePass(now);
 
   // ── Passe client ─────────────────────────────────────────────────────────────
   let clientsRelanced = 0;

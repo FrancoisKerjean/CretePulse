@@ -5,7 +5,8 @@ import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { partnerById } from "@/lib/car-partners-db";
 import { isOfferExpired } from "@/lib/car-offer-expiry";
 import { requestByClientToken } from "@/lib/car-quotes-db";
-import { findChosenOption, sortOptionsByPrice } from "@/lib/car-quotes";
+import { rentalDays } from "@/lib/car-pricing";
+import { findChosenOption, sortOptionsByPrice, quotedModelLabel } from "@/lib/car-quotes";
 import { startBookingAfterAccept } from "@/lib/car-booking-server";
 
 const GEARBOX_LABEL: Record<string, string> = { automatic: "Automatic", manual: "Manual" };
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
 
   const partner = await partnerById(chosen.partner_id);
   const gearboxLabel = chosen.gearbox ? GEARBOX_LABEL[chosen.gearbox] : null;
-  const carModelSnapshot = [chosen.car_model, gearboxLabel].filter(Boolean).join(" · ") || null;
+  const carModelSnapshot = quotedModelLabel(chosen.car_model, gearboxLabel);
   await supabase.from("car_requests").update({
     status: "accepted", accepted_at: new Date().toISOString(), accept_token_hash: null,
     closure_reason: null,
@@ -86,8 +87,23 @@ export async function POST(request: NextRequest) {
   const ct = CAR_TYPES_DATA.find((c) => c.id === row.car_type);
   const carTypeLabel = carTypeLabelWithExamples(ct, "en", row.car_type as string);
   const carTypeLabelClient = carTypeLabelWithExamples(ct, locale, row.car_type as string);
-  const days = Math.max(1, Math.round((new Date(row.date_to as string).getTime() - new Date(row.date_from as string).getTime()) / 86400000));
+  const days = rentalDays(
+    row.date_from as string,
+    row.date_to as string,
+    row.time_from as string | null,
+    row.time_to as string | null,
+  );
   const partnerName = partner?.name ?? chosen.partner_name;
+  // Les autres options que CE loueur avait envoyées sur cette demande. Luxtrans
+  // le demande le 01/08 : il en envoie souvent 3, et l'email ne nommait que celle
+  // retenue, ce qui l'obligeait à rouvrir son historique pour la situer.
+  const partnerOtherOptions = sortOptionsByPrice(options)
+    .filter((o) => o.partner_id === chosen.partner_id && o.id !== chosen.id)
+    .map((o) => ({
+      price: o.price,
+      currency: o.currency ?? "EUR",
+      carModel: quotedModelLabel(o.car_model, o.gearbox ? GEARBOX_LABEL[o.gearbox] : null),
+    }));
 
   try {
     const { sendConnectionEmails } = await import("@/lib/email");
@@ -97,10 +113,11 @@ export async function POST(request: NextRequest) {
       quote: {
         pickupLabel: carPickupLabel(row.pickup_slug as string), dateFrom: row.date_from as string, dateTo: row.date_to as string,
         carTypeLabel, carTypeLabelClient, price: chosen.price, currency: chosen.currency ?? "EUR",
-        partnerName, carModel: carModelSnapshot,
+        partnerName, carModel: carModelSnapshot, gearboxLabel,
         inclusions: Array.isArray(chosen.inclusions) ? chosen.inclusions : [],
         insuranceType: chosen.insurance_type, excessEur: chosen.excess_eur, zeroExcessUpsellEurDay: chosen.zero_excess_upsell_eur_day,
         days,
+        partnerOtherOptions,
       },
     });
   } catch (e) {

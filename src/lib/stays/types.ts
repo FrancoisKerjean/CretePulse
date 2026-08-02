@@ -40,6 +40,14 @@ export interface StayListing {
   bedrooms: number | null;
   beds: number | null;
   max_guests: number | null;
+  bathrooms: number | null;
+  area_sqm: number | null;
+  /** Langue REELLE de `description`, issue du scrape ou declaree. Jamais devinee. */
+  description_locale: string | null;
+  /** Note Airbnb relevee, sur 5. Republiee avec sa date, sans lien sortant. */
+  rating_avg: number | null;
+  reviews_count: number | null;
+  reviews_captured_at: string | null;
   base_price_eur: number;
   cleaning_fee_eur: number;
   min_nights: number;

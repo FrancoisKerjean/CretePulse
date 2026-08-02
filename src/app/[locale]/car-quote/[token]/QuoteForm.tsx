@@ -20,8 +20,8 @@ const INSURANCE_CHOICES: readonly (readonly [string, string])[] = [
   ["", "Not specified"],
 ];
 
-type OptionDraft = { price: string; carModel: string; gearbox: string; inclusions: string[]; insuranceType: string; excessEur: string; zeroExcessUpsellEurDay: string };
-const emptyOption = (): OptionDraft => ({ price: "", carModel: "", gearbox: "", inclusions: [], insuranceType: "", excessEur: "", zeroExcessUpsellEurDay: "" });
+type OptionDraft = { price: string; carModel: string; gearbox: string; inclusions: string[]; insuranceType: string; excessEur: string; zeroExcessUpsellEurDay: string; note: string };
+const emptyOption = (): OptionDraft => ({ price: "", carModel: "", gearbox: "", inclusions: [], insuranceType: "", excessEur: "", zeroExcessUpsellEurDay: "", note: "" });
 
 // Formulaire de saisie des prix par le loueur. Multi-offres : le loueur peut
 // proposer plusieurs variantes (ex. manuelle vs automatique). Poste la liste +
@@ -68,6 +68,7 @@ export function QuoteForm({
     const payload = options
       .map((o) => ({
         price: Number(o.price), carModel: o.carModel.trim() || null, gearbox: o.gearbox || null, inclusions: o.inclusions,
+        note: o.note.trim() || null,
         insuranceType: o.insuranceType || null,
         excessEur: o.insuranceType === "cdw_excess" && o.excessEur !== "" ? Number(o.excessEur) : null,
         zeroExcessUpsellEurDay: o.insuranceType === "cdw_excess" && o.zeroExcessUpsellEurDay !== "" ? Number(o.zeroExcessUpsellEurDay) : null,
@@ -171,6 +172,22 @@ export function QuoteForm({
               );
             })}
           </div>
+          {/* Placé APRÈS le groupe véhicule, jamais entre le modèle et la boîte :
+              vu à l'oeil le 02/08, il coupait la description du véhicule en deux.
+              Le loueur décrit d'abord ce qu'il propose, puis il en dit un mot.
+              Ne le dites pas par email : le 01/08 un loueur sans la catégorie
+              demandée a proposé un cran au-dessus et l'a expliqué en trois
+              messages, pendant que le client ne voyait qu'un prix plus cher. */}
+          <label style={{ fontSize: 14, fontWeight: 600, color: "#0B3954" }}>A word for the customer (optional)</label>
+          <input
+            type="text" maxLength={140} value={o.note} onChange={(e) => patch(i, { note: e.target.value })}
+            placeholder="e.g. no city car left for these dates, this is a SUV"
+            style={{ padding: "12px 14px", fontSize: 16, borderRadius: 10, border: "1px solid #DCE9EE", outline: "none" }}
+          />
+          <p style={{ margin: "-6px 0 0", color: "#94A3B8", fontSize: 12, lineHeight: 1.5 }}>
+            Shown to the customer with your price. Useful when what you offer differs from what was asked.
+            Phone numbers and email addresses are removed.
+          </p>
           <span style={{ fontSize: 14, fontWeight: 600, color: "#0B3954" }}>Included in the price (optional)</span>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {CAR_INCLUSION_KEYS.map((k) => {
