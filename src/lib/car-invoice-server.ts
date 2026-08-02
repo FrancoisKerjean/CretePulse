@@ -97,7 +97,7 @@ export async function createInvoiceForRequest(
 
 /**
  * PostgREST ne LEVE pas sur refus : il rend `{ data, error }`, exactement comme
- * l API Resend sur laquelle ce depot a deja paye ce piege — des envois refuses
+ * l API Resend sur laquelle ce depot a deja paye ce piege, des envois refuses
  * comptes comme partis parce que personne ne lisait `error`. Une ecriture non
  * verifiee est donc invisible : droits, contrainte ou panne reseau passent pour
  * un succes. Toute ecriture de ce module passe par ici, et un refus LEVE, comme

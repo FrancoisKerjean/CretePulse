@@ -4,7 +4,7 @@
 // ⛔ Ce module ne decide RIEN de la conformite d une facture. La seule autorite
 // est `partnerBillingIdentity` (car-invoice.ts) : quels champs sont exiges,
 // quelle forme a un numero de TVA exploitable, comment il s imprime. Tout ce qui
-// s en approche ici est DERIVE d elle, jamais recopie — une seconde liste
+// s en approche ici est DERIVE d elle, jamais recopie, une seconde liste
 // recopiee deriverait le jour ou la premiere bouge, et l ecran demanderait alors
 // un champ que la garde n exige pas, ou pire, tairait un champ qu elle exige.
 import { partnerBillingIdentity, type PartnerLegalRow } from "./car-invoice";
@@ -37,7 +37,7 @@ export const IDENTITY_FIELD_LABELS: Record<string, string> = {
 /**
  * ⚠️ Tous prefixes « ex. », et ce n est pas cosmetique : la planche de relecture
  * a montre qu une fiche VIDE se lisait comme une fiche REMPLIE avec l identite
- * d un AUTRE loueur — les exemples sont ceux du seul loueur renseigne en base.
+ * d un AUTRE loueur, les exemples sont ceux du seul loueur renseigne en base.
  * Sur un formulaire dont tout l objet est l exactitude juridique, confondre
  * « a remplir » et « deja rempli au nom de quelqu un d autre » est le pire
  * malentendu possible.
@@ -114,7 +114,7 @@ const normalizeVat = (raw: string): string => trim(raw).replace(/\s+/g, "").toUp
 /**
  * Un numero de TVA a-t-il la forme d un identifiant intracommunautaire ?
  * Delegue a la garde, qui ne place `vat_id` dans ses manquants QUE sur un
- * numero inexploitable — la regex n est pas dupliquee ici.
+ * numero inexploitable, la regex n est pas dupliquee ici.
  *
  * ⛔ Ce n est PAS une verification VIES, et rien ici ne pretend l etre.
  */
@@ -170,7 +170,7 @@ export interface IdentityPatchInput {
  * Patch a ecrire sur `car_partners`. Les HUIT colonnes y figurent toujours, y
  * compris celles laissees vides : un champ efface a l ecran doit s effacer en
  * base, sinon l ecran ment sur ce qui est stocke. Une valeur vide s ecrit null
- * et jamais chaine vide — une chaine vide se lit « renseigne » a l oeil.
+ * et jamais chaine vide, une chaine vide se lit « renseigne » a l oeil.
  */
 export function buildIdentityPatch(input: IdentityPatchInput): Record<string, string | null> {
   const patch: Record<string, string | null> = {};

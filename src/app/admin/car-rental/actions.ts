@@ -84,7 +84,7 @@ export async function setOutcome(id: number, formData: FormData) {
       // La location EST louée (l'update ci-dessus a déjà eu lieu) : ce refus
       // ne fait pas échouer le marquage, mais l'écran doit dire pourquoi
       // aucune facture n'est partie, au lieu de rester muet ou d'afficher une
-      // panne — ce n'en est pas une, c'est un état normal tant que la fiche
+      // panne, ce n'en est pas une, c'est un état normal tant que la fiche
       // partenaire n'a pas été complétée.
       const missing = missingIdentityLabels(result.missing).join(", ");
       redirect(
@@ -98,7 +98,7 @@ export async function setOutcome(id: number, formData: FormData) {
   // Location perdue : le lien de paiement encore vivant doit mourir. La page
   // facture et la route de paiement lisent maintenant `outcome`, mais une
   // session Checkout déjà ouverte dans un onglet du loueur ne repasse par
-  // aucune des deux — elle vit 24 h chez Stripe. AUCUN avoir n'est émis ici :
+  // aucune des deux, elle vit 24 h chez Stripe. AUCUN avoir n'est émis ici :
   // émettre une pièce comptable est une décision, pas un effet de bord.
   if (outcome === "lost") await expireCommissionSession(id);
 
@@ -198,7 +198,7 @@ export async function resendInvoiceAction(id: number) {
  *
  * Porte les DEUX états, car ils n'en font qu'un : `car_requests` sert le suivi
  * interne, `car_commission_invoices` sert la page que le loueur a sous les yeux.
- * Ce bouton est la seule réconciliation du virement bancaire — le canal que
+ * Ce bouton est la seule réconciliation du virement bancaire, le canal que
  * l'email met en avant, et le seul sans webhook. Sans l'écriture sur la
  * facture, la page garderait son bouton « Pay by card » sur de l'argent déjà
  * reçu, et le loueur paierait une seconde fois.
@@ -287,7 +287,7 @@ export async function updatePartner(id: number, formData: FormData) {
  *
  * L'enregistrement PARTIEL est accepté volontairement : une fiche à moitié
  * remplie est un état normal (on connaît l'adresse, on attend le numéro de
- * TVA). C'est la garde, au moment de facturer, qui dit ce qui manque — pas le
+ * TVA). C'est la garde, au moment de facturer, qui dit ce qui manque, pas le
  * formulaire, qui refuserait alors d'enregistrer un travail déjà fait.
  *
  * ⛔ `vat_verified_at` n'est PAS écrit comme les autres : voir

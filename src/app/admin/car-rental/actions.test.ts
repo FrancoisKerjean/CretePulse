@@ -159,7 +159,7 @@ describe("setCommissionPaid", () => {
     // Le back-office affichait « commission encaissee » alors que la page du
     // loueur gardait son bouton « Pay by card » : l erreur PostgREST n etait
     // jamais lue. Elle remonte maintenant, comme toutes les erreurs de ce
-    // fichier — Next affiche l echec, personne ne croit a un succes.
+    // fichier, Next affiche l echec, personne ne croit a un succes.
     wiring({ invoiceWriteError: { message: "permission denied for table" } });
     await expect(setCommissionPaid(42, paid)).rejects.toThrow(/permission denied for table/);
   });

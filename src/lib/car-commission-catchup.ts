@@ -3,7 +3,7 @@
 // ⛔ Pourquoi ce module existe : `setOutcome` bascule la demande en « rented »
 // AVANT de facturer, et la facturation peut refuser (fiche loueur incomplete,
 // panne d email, refus Stripe). La ligne porte alors `outcome = 'rented'` SANS
-// facture — et le cron ne repassera JAMAIS dessus, il ne prend que
+// facture, et le cron ne repassera JAMAIS dessus, il ne prend que
 // `outcome IS NULL` (cf. isInvoiceable, car-invoice.ts). Sans geste manuel,
 // completer la fiche du loueur apres coup ne declenche rien et le travail est
 // perdu en silence.

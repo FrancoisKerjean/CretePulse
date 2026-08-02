@@ -83,7 +83,7 @@ export async function requestCommission(requestId: number): Promise<CommissionOu
   //
   // AVANT le verrou et non apres, deliberement : un loueur sans identite
   // complete n'est pas un accident isole qui justifie de poser puis relacher
-  // un verrou (comme `partner_without_email` plus bas) — c'est un etat qui va
+  // un verrou (comme `partner_without_email` plus bas), c'est un etat qui va
   // se represente a CHAQUE tentative tant que personne n'a rempli la fiche
   // (chaque nuit du cron, chaque nouveau clic « louée »). Le lire avant
   // d'ecrire quoi que ce soit evite un aller-retour pose/relache inutile a
@@ -93,7 +93,7 @@ export async function requestCommission(requestId: number): Promise<CommissionOu
   // Uniquement si le partenaire EXISTE : un `quoted_by_partner_id` orphelin
   // (partenaire introuvable) n'a rien a "completer" et reste la responsabilite
   // du garde-fou historique `partner_without_email` plus bas, apres le
-  // verrou — inchange, pour ne pas casser son contrat (verrou pris puis
+  // verrou, inchange, pour ne pas casser son contrat (verrou pris puis
   // relache, deja teste).
   const { data: partnerForIdentity } = await supabaseAdmin
     .from("car_partners")
@@ -240,7 +240,7 @@ export async function requestCommission(requestId: number): Promise<CommissionOu
     // L email EST parti, mais sent_at n a pas pu etre pose : le back-office
     // affichera « jamais envoyee » sur une facture recue. Rendre « requested »
     // ferait compter au cron une facture en bon ordre, alors que cet etat
-    // appelle une main humaine — et un clic sur « Renvoyer » enverrait un
+    // appelle une main humaine, et un clic sur « Renvoyer » enverrait un
     // SECOND email au loueur.
     console.error("[car/commission] facture envoyee mais envoi non enregistre", {
       requestId,

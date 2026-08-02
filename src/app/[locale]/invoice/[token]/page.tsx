@@ -25,14 +25,23 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 // Format du gabarit comptable. Un seul format sur toute la piece : « 68.00 EUR »
-// a cote de « €0.00 — reverse charge » se lit comme deux devises.
+// a cote de « €0.00 : reverse charge » se lit comme deux devises.
+//
+// ⛔ TIRETS CADRATINS ASSUMES DANS LE RENDU (3 lignes, plus leurs assertions dans
+// page.test.ts), grandfatherees dans scripts/da-baseline.json le 02/08/2026 :
+// la mention de TVA, la mention d autoliquidation et le pied de page legal sont
+// recopies A LA LETTRE de ~/docs/facture-novai-luxtrans-2026-003.html, la piece
+// deja EMISE et acceptee le 30/07. La regle « pas de tiret cadratin » vise les
+// textes que nous redigeons ; ici, diverger du gabarit ferait circuler deux
+// versions differentes de la meme facture. Les commentaires et le reste du code
+// de ce fichier respectent la regle.
 const EUR = (n: number) => `€${Number(n).toFixed(2)}`;
 const day = (iso: string) => new Date(iso).toISOString().slice(0, 10);
 
 /**
  * Coordonnees bancaires, lues de l environnement et de NULLE PART ailleurs :
  * aucun IBAN ne vit dans le depot. Les deux valeurs vont ensemble, un IBAN sans
- * BIC n est pas un virement executable — moitie de coordonnees affichee comme
+ * BIC n est pas un virement executable, moitie de coordonnees affichee comme
  * si elle etait complete ferait rater le paiement. Absentes, la page garde son
  * texte de repli et l echange se fait par email.
  */
@@ -73,7 +82,7 @@ export default async function InvoicePage({
    * Identite du client incomplete : par construction impossible, la garde du
    * cron refuse de facturer un loueur qui n a pas la sienne. Mais une fiche peut
    * etre videe APRES l emission, et une facture privee du nom, de l adresse ou
-   * du numero de TVA de son client n est pas une facture — la mention
+   * du numero de TVA de son client n est pas une facture, la mention
    * d autoliquidation n a plus de destinataire identifie.
    *
    * Servir le document ampute mettrait une piece fausse chez une vraie

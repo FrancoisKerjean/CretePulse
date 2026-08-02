@@ -370,7 +370,7 @@ describe("une ecriture refusee ne passe JAMAIS pour un succes", () => {
   // PostgREST ne LEVE pas sur refus : il rend `{ data, error }`, exactement
   // comme l API Resend, sur laquelle ce depot a deja paye ce piege (des envois
   // refuses comptes comme partis). Sans lecture de `error`, une ecriture
-  // refusee — droits, contrainte, panne reseau — est totalement invisible.
+  // refusee, droits, contrainte, panne reseau, est totalement invisible.
   const REFUS = {
     data: null,
     error: { message: "permission denied for table car_commission_invoices" },

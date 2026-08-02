@@ -1,7 +1,7 @@
 // Coordonnees bancaires de la page facture. L email promet au loueur un
 // virement « to the IBAN shown on it » : si la page n en montre aucun, l email
-// ment. Et aucune coordonnee ne vit dans le depot, donc les deux cas — variables
-// posees, variables absentes — sont des comportements a part entiere.
+// ment. Et aucune coordonnee ne vit dans le depot, donc les deux cas, variables
+// posees, variables absentes, sont des comportements a part entiere.
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
@@ -201,7 +201,7 @@ describe("page facture · coordonnees bancaires", () => {
     expect(html).toContain("7.5%");
     expect(html).not.toContain("8%");
     // Montants au format du gabarit comptable (« €68.00 »), le meme que la ligne
-    // de TVA « €0.00 — reverse charge » : deux formats sur une meme piece se
+    // de TVA « €0.00 : reverse charge » : deux formats sur une meme piece se
     // lisent comme deux devises.
     expect(html).toContain("€15.00");
   });

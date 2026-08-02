@@ -6,14 +6,16 @@ vi.hoisted(() => {
   delete process.env.COMMISSION_INVOICING_START;
 });
 
-const { from, update, requestCommission } = vi.hoisted(() => ({
+const { from, update, requestCommission, notifyOps } = vi.hoisted(() => ({
   from: vi.fn(),
   update: vi.fn(),
   requestCommission: vi.fn(),
+  notifyOps: vi.fn(),
 }));
 
 vi.mock("@/lib/supabase-admin", () => ({ supabaseAdmin: { from } }));
 vi.mock("@/lib/car-commission-server", () => ({ requestCommission }));
+vi.mock("@/lib/ops-notify", () => ({ notifyOps }));
 
 /** Borne codee en dur dans la route. Le systeme demarre le 05/08/2026. */
 const START = "2026-08-05";
@@ -124,6 +126,7 @@ describe("GET /api/cron/car-commission-invoice", () => {
     // le pose lui-meme, et l environnement repart propre entre les cas.
     delete process.env.CAR_COMMISSION_ENABLED;
     requestCommission.mockResolvedValue({ status: "requested", invoiceNumber: "F-001" });
+    notifyOps.mockResolvedValue(true);
   });
 
   afterEach(() => {
@@ -418,7 +421,7 @@ describe("GET /api/cron/car-commission-invoice", () => {
     // Ce test remplace deux cas qui interrogeaient `car_commission_invoices` :
     // l un decrivait un rattrapage inexistant (une facture reutilisee n a plus
     // son jeton en clair, requestCommission rend `invoice_without_token` et
-    // n envoie rien — il ne passait que parce que requestCommission est mocke),
+    // n envoie rien, il ne passait que parce que requestCommission est mocke),
     // l autre couvrait un etat inatteignable. Le vrai rattrapage d un envoi rate
     // est le bouton « Renvoyer » du back-office.
     process.env.CAR_COMMISSION_ENABLED = "on";
@@ -487,5 +490,71 @@ describe("GET /api/cron/car-commission-invoice", () => {
 
     expect(await res.json()).toMatchObject({ invoiced: 0, skipped: [] });
     expect(update).not.toHaveBeenCalled();
+  });
+
+  // ── Ce que le passage dit a Kami ───────────────────────────────────────────
+  //
+  // Sans ces cas, une commission ecartee ne vit que dans la reponse HTTP d un
+  // cron que personne n ouvre, et dans un console.error noye dans les journaux
+  // Vercel. Elle repasserait chaque nuit, invisible, jusqu a ce que la location
+  // soit oubliee : exactement l oubli que ce systeme existe pour empecher.
+  describe("notification d exploitation", () => {
+    it("previent quand une ligne est ecartee, en nommant le loueur et ce qui manque", async () => {
+      process.env.CAR_COMMISSION_ENABLED = "on";
+      wiring({ partner: { commission: 0.1, name: "Zorbas Rent a Car" } });
+      const { GET } = await import("./route");
+      await GET(authed());
+
+      expect(notifyOps).toHaveBeenCalledTimes(1);
+      const notice = notifyOps.mock.calls[0][0];
+      const texte = [notice.title, ...notice.lines, notice.action ?? ""].join("\n");
+      // Le loueur par son nom : un identifiant nu n appelle aucune action.
+      expect(texte).toContain("Zorbas Rent a Car");
+      expect(texte).toContain("42");
+      // Les champs a remplir, pas seulement « incomplet ».
+      expect(texte).toContain("vat_id");
+      expect(notice.action).toBeTruthy();
+      expect(notice.url).toContain("/admin/car-rental");
+    });
+
+    it("previent aussi quand des factures sont parties : c est de l argent qui bouge", async () => {
+      process.env.CAR_COMMISSION_ENABLED = "on";
+      wiring();
+      const { GET } = await import("./route");
+      await GET(authed());
+
+      expect(notifyOps).toHaveBeenCalledTimes(1);
+      expect(notifyOps.mock.calls[0][0].title).toContain("1");
+    });
+
+    // Un cron qui parle pour ne rien dire devient un cron qu on n ouvre plus.
+    it("se tait quand il n y a ni facture emise ni ligne ecartee", async () => {
+      process.env.CAR_COMMISSION_ENABLED = "on";
+      wiring({ rows: [] });
+      const { GET } = await import("./route");
+      await GET(authed());
+
+      expect(notifyOps).not.toHaveBeenCalled();
+    });
+
+    // Telegram est un canal de confort : son echec ne doit jamais faire perdre
+    // le resultat d une facturation deja ecrite en base.
+    it("une notification en panne ne fait pas tomber le passage", async () => {
+      process.env.CAR_COMMISSION_ENABLED = "on";
+      notifyOps.mockRejectedValueOnce(new Error("telegram down"));
+      wiring();
+      const { GET } = await import("./route");
+      const res = await GET(authed());
+
+      expect(await res.json()).toMatchObject({ invoiced: 1 });
+    });
+
+    it("ne previent jamais quand l interrupteur est eteint", async () => {
+      wiring();
+      const { GET } = await import("./route");
+      await GET(authed());
+
+      expect(notifyOps).not.toHaveBeenCalled();
+    });
   });
 });

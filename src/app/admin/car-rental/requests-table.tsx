@@ -504,7 +504,7 @@ export function RequestsTable({
                     été refusée (fiche loueur incomplète, loueur sans email, refus
                     Stripe), la demande porte `rented` sans facture et le cron ne
                     la reprendra JAMAIS. Quand la fiche est encore incomplète on
-                    n'affiche PAS le bouton — il serait refusé, et un bouton qui
+                    n'affiche PAS le bouton, il serait refusé, et un bouton qui
                     ment est pire qu'une phrase qui explique : on donne le lien
                     vers la fiche à compléter.
                     Placé AVANT « Commission encaissée » : on émet une facture
