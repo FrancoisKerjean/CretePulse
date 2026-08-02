@@ -10,7 +10,7 @@ pas un mot de la cause alors qu'elle etait en base. On repare le message.
 """
 from datetime import datetime, timedelta, timezone
 
-from flux.watchdog import evaluate, merge_errors
+from flux.watchdog import evaluate, merge_errors, muted_feeds
 
 NOW = datetime(2026, 7, 29, 12, 0, tzinfo=timezone.utc)
 FLIGHTS = "flight_arrivals"
@@ -168,6 +168,49 @@ def test_une_erreur_de_sens_precis_prime_sur_celle_du_noeud():
     errors = merge_errors(rows)
     assert errors[("ferry_crossings", "HER", "arrival")][1] == "parseur casse a l'arrivee"
     assert errors[("ferry_crossings", "HER", "departure")][1] == "panne generale"
+
+
+def test_un_capteur_en_sourdine_ne_reveille_personne():
+    # GTP a banni l'IP du VPS le 30/07 : la panne est reelle, connue, et rien
+    # ne peut la reparer cote code. 24 alertes par jour n'apprennent plus rien.
+    mute = {(FERRIES, "HER", "arrival"): NOW.date() + timedelta(days=14)}
+    stale = {**FRESH, (FERRIES, "HER", "arrival"): NOW - timedelta(hours=96)}
+    assert evaluate(stale, SANE, NOW, muted_until=mute) == []
+
+
+def test_la_sourdine_expire_toute_seule():
+    # Une sonde qu'on eteint « en attendant » est une sonde morte : c'est ce
+    # silence-la qui a coute cinq jours de collecte HER en juillet.
+    mute = {(FERRIES, "HER", "arrival"): NOW.date() - timedelta(days=1)}
+    stale = {**FRESH, (FERRIES, "HER", "arrival"): NOW - timedelta(hours=96)}
+    alerts = evaluate(stale, SANE, NOW, muted_until=mute)
+    assert len(alerts) == 1
+    assert "HER (port)" in alerts[0]
+
+
+def test_la_sourdine_ne_couvre_que_le_capteur_vise():
+    mute = {(FERRIES, "HER", "arrival"): NOW.date() + timedelta(days=14)}
+    stale = {**FRESH,
+             (FERRIES, "HER", "arrival"): NOW - timedelta(hours=96),
+             (FLIGHTS, "CHQ", "arrival"): NOW - timedelta(hours=5)}
+    alerts = evaluate(stale, SANE, NOW, muted_until=mute)
+    assert len(alerts) == 1
+    assert "CHQ (aéroport)" in alerts[0]
+
+
+def test_les_capteurs_en_sourdine_restent_visibles_dans_le_journal():
+    # Une sourdine invisible est un trou : le run doit dire ce qu'il tait et
+    # jusqu'a quand, meme quand il n'envoie rien.
+    mute = {(FERRIES, "HER", "arrival"): NOW.date() + timedelta(days=14)}
+    lignes = muted_feeds(mute, NOW)
+    assert len(lignes) == 1
+    assert "HER (port) arrivées" in lignes[0]
+    assert "12/08" in lignes[0]
+
+
+def test_une_sourdine_expiree_ne_figure_plus_au_journal():
+    mute = {(FERRIES, "HER", "arrival"): NOW.date() - timedelta(days=1)}
+    assert muted_feeds(mute, NOW) == []
 
 
 def test_plusieurs_pannes_plusieurs_alertes():

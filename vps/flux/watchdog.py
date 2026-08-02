@@ -67,8 +67,46 @@ FEEDS = (
 )
 
 
+# Sourdine BORNEE, jamais un cron commente. Une sonde qu'on eteint « en
+# attendant » est une sonde morte : c'est ce silence-la qui a coute cinq jours
+# de collecte HER en juillet. La date est une promesse de reprise, pas une
+# suppression : passee cette date les alertes reviennent seules, meme si
+# personne n'y a retouche.
+#
+# 03/08/2026 -> 16/08 : www.gtp.gr a droppe l'IPv4 du VPS (89.167.115.63) le
+# 30/07. La panne est reelle, sa cause est hors de notre code, et 24 alertes
+# par jour n'apprennent plus rien. Arbitrage attendu de Francois sur la suite
+# (demande de levee a GTP, autre source, ou abandon du capteur).
+MUTED_UNTIL = {
+    ("ferry_crossings", port, direction): date(2026, 8, 16)
+    for port in ("HER", "SOU", "SIT")
+    for direction in ("arrival", "departure")
+}
+
+
 def _key(feed):
     return (feed["collector"], feed["node"], feed["direction"])
+
+
+def _label(feed):
+    return (f"{feed['node']} ({NATURES[feed['collector']]}) "
+            f"{SENS[feed['direction']]}")
+
+
+def _is_muted(muted_until, key, now):
+    until = (muted_until or {}).get(key)
+    return until is not None and now.date() < until
+
+
+def muted_feeds(muted_until, now):
+    """-> lignes de journal pour les capteurs tus, avec leur date de reprise.
+
+    Une sourdine invisible est un trou. Le run doit dire ce qu'il tait et
+    jusqu'a quand, meme quand il n'envoie rien.
+    """
+    return [f"{_label(feed)} : en sourdine jusqu'au "
+            f"{muted_until[_key(feed)]:%d/%m}"
+            for feed in FEEDS if _is_muted(muted_until, _key(feed), now)]
 
 
 def _cause(last_error, key, seen_at):
@@ -89,18 +127,21 @@ def _cause(last_error, key, seen_at):
     return f" — {text}"
 
 
-def evaluate(last_ok, daily, now, last_error=None, stale_after_min=None):
+def evaluate(last_ok, daily, now, last_error=None, muted_until=None,
+             stale_after_min=None):
     """-> liste de messages d'alerte. Liste vide = tout va bien.
 
-    last_ok    : {(collecteur, noeud, sens): datetime du dernier run reussi ou None}
-    daily      : {(collecteur, noeud, sens): mouvements de la derniere journee pleine}
-    last_error : {(collecteur, noeud, sens): (datetime du dernier echec, message)}
+    last_ok     : {(collecteur, noeud, sens): datetime du dernier run reussi ou None}
+    daily       : {(collecteur, noeud, sens): mouvements de la derniere journee pleine}
+    last_error  : {(collecteur, noeud, sens): (datetime du dernier echec, message)}
+    muted_until : {(collecteur, noeud, sens): date de reprise des alertes}
     """
     alerts = []
     for feed in FEEDS:
         key = _key(feed)
-        label = (f"{feed['node']} ({NATURES[feed['collector']]}) "
-                 f"{SENS[feed['direction']]}")
+        if _is_muted(muted_until, key, now):
+            continue
+        label = _label(feed)
         limit = stale_after_min if stale_after_min is not None else feed["stale_after_min"]
         seen_at = last_ok.get(key)
         if seen_at is None:
@@ -217,10 +258,15 @@ def main():
         last_ok, daily, last_error = collect(conn, service_day)
     finally:
         conn.close()
-    alerts = evaluate(last_ok, daily, datetime.now(timezone.utc), last_error=last_error)
+    now = datetime.now(timezone.utc)
+    alerts = evaluate(last_ok, daily, now, last_error=last_error,
+                      muted_until=MUTED_UNTIL)
     stamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    for ligne in muted_feeds(MUTED_UNTIL, now):
+        print(f"{stamp} [flux_watchdog] SOURDINE {ligne}")
     if not alerts:
-        print(f"{stamp} [flux_watchdog] {len(FEEDS)} capteurs frais, "
+        watched = len(FEEDS) - len(muted_feeds(MUTED_UNTIL, now))
+        print(f"{stamp} [flux_watchdog] {watched} capteurs frais, "
               f"comptes du {service_day} plausibles")
         return 0
     for alert in alerts:
