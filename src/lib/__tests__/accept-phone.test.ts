@@ -11,7 +11,7 @@ import { resolveAcceptPhone } from "@/lib/car-lead";
 //     volume de demandes.
 // Declencheur : demande 33, Zakros Tours, 9 jours de silence faute de numero.
 
-describe("resolveAcceptPhone — un numéro rappelable sur chaque conversion", () => {
+describe("resolveAcceptPhone : un numéro rappelable sur chaque conversion", () => {
   it("garde le numéro déjà donné à la demande, sans rien redemander", () => {
     const r = resolveAcceptPhone("+39 333 1234567", undefined);
     expect(r).toEqual({ ok: true, phone: "+39 333 1234567" });

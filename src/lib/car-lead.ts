@@ -114,7 +114,7 @@ export function validateCarLead(body: Record<string, unknown>): CarLeadResult {
   // d'offres reçoit une demande AVEUGLE (leadSummary includeContact=false) :
   // le numéro ne lui sert a rien avant que le client n'accepte un devis, et
   // l'exiger a l'entree ferait payer 38 % des demandes pour une donnee qui
-  // dort en base. Il est exige a l'acceptation — voir resolveAcceptPhone.
+  // dort en base. Il est exige a l'acceptation : voir resolveAcceptPhone.
   const phone = str(body.phone);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateFrom) || !/^\d{4}-\d{2}-\d{2}$/.test(dateTo) || dateTo < dateFrom) {
     return { kind: "error", status: 422, error: "Invalid dates" };

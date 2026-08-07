@@ -22,7 +22,7 @@ const LEAD_VALIDE = {
   phone: "+39 333 1234567",
 };
 
-describe("validateCarLead — le téléphone reste facultatif à la demande", () => {
+describe("validateCarLead : le téléphone reste facultatif à la demande", () => {
   it("garde le téléphone quand il est fourni", () => {
     const r = validateCarLead({ ...LEAD_VALIDE });
     expect(r.kind).toBe("ok");
@@ -45,7 +45,7 @@ describe("validateCarLead — le téléphone reste facultatif à la demande", ()
   });
 });
 
-describe("isCallablePhone — une seule règle, partagée par tous les points d'entrée", () => {
+describe("isCallablePhone : une seule règle, partagée par tous les points d'entrée", () => {
   const ACCEPTES = ["+39 333 1234567", "6978186250", "+30 28970 22137", "0612345678"];
   const REFUSES = ["", "   ", "-", "n/a", "00", "12345", "+++"];
 
