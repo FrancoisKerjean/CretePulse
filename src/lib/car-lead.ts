@@ -10,6 +10,21 @@ import { isChildSeatKey } from "./car-child-seats.ts";
 
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/** Un numéro sur lequel le loueur peut réellement rappeler.
+ *
+ *  Le loueur reçoit les coordonnées APRÈS acceptation : sans téléphone, sa seule
+ *  voie est un email vers un inconnu, qui part en spam. Zakros Tours l'a signalé
+ *  le 07/08/2026 après 9 jours de silence de son client sur la demande 33.
+ *
+ *  Seuil bas (6 chiffres) : recale « - », « n/a » ou « 00 » sans jamais refuser
+ *  un vrai numéro, les plans de numérotation nationaux les plus courts font 7.
+ *
+ *  ⛔ Le wizard DOIT appeler cette fonction, pas réimplémenter la règle : deux
+ *  implémentations divergent, et le client se prend un 422 sans savoir pourquoi. */
+export function isCallablePhone(phone: string | null | undefined): boolean {
+  return (phone ?? "").replace(/\D/g, "").length >= 6;
+}
+
 export const carPickupLabel = (slug: string): string =>
   slug.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
 
@@ -74,6 +89,10 @@ export function validateCarLead(body: Record<string, unknown>): CarLeadResult {
   if (!zone || !SLUG_COORDS[pickup] || !carType || !name || !EMAIL_REGEX.test(email)) {
     return { kind: "error", status: 422, error: "Invalid request" };
   }
+  const phone = str(body.phone);
+  if (!isCallablePhone(phone)) {
+    return { kind: "error", status: 422, error: "Phone required" };
+  }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateFrom) || !/^\d{4}-\d{2}-\d{2}$/.test(dateTo) || dateTo < dateFrom) {
     return { kind: "error", status: 422, error: "Invalid dates" };
   }
@@ -101,7 +120,7 @@ export function validateCarLead(body: Record<string, unknown>): CarLeadResult {
     pax: Number.isInteger(body.pax) ? (body.pax as number) : null,
     customer_name: name,
     customer_email: email,
-    customer_phone: str(body.phone),
+    customer_phone: phone,
     note: str(body.note)?.slice(0, 500) ?? null,
     insurance: body.insurance === "full" || body.insurance === "basic" ? body.insurance : null,
     payment_method: body.payment === "cash" || body.payment === "card" ? body.payment : null,

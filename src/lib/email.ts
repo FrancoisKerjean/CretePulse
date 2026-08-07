@@ -853,10 +853,13 @@ const CONNECT_SUBJECT: Record<string, string> = {
 };
 
 const CONNECT_COPY: Record<string, { intro: string; booking: string; agency: string; totalWord: string; foot: string }> = {
-  en: { intro: "You accepted the offer. Here are the rental agency's details, they will also reach out to finalise your booking.", booking: "Your booking", agency: "Rental agency", totalWord: "total", foot: "Payment and terms are agreed directly with the agency." },
-  fr: { intro: "Vous avez accepté l'offre. Voici les coordonnées de l'agence de location, elle vous contactera aussi pour finaliser votre réservation.", booking: "Votre réservation", agency: "Agence de location", totalWord: "au total", foot: "Le paiement et les conditions se règlent directement avec l'agence." },
-  de: { intro: "Sie haben das Angebot angenommen. Hier sind die Kontaktdaten der Autovermietung, sie meldet sich ebenfalls bei Ihnen.", booking: "Ihre Buchung", agency: "Autovermietung", totalWord: "gesamt", foot: "Zahlung und Bedingungen werden direkt mit der Vermietung vereinbart." },
-  el: { intro: "Αποδεχτήκατε την προσφορά. Ακολουθούν τα στοιχεία του γραφείου ενοικίασης, θα επικοινωνήσει και εκείνο μαζί σας.", booking: "Η κράτησή σας", agency: "Γραφείο ενοικίασης", totalWord: "σύνολο", foot: "Η πληρωμή και οι όροι συμφωνούνται απευθείας με το γραφείο." },
+  // ⛔ Ne JAMAIS revenir a une formulation ou le loueur « vous contactera » :
+  //    le client comprend que c'est reserve, attend, et ne repond jamais.
+  //    Cas Firmino Facchin / Zakros Tours, 29/07 au 07/08/2026 (demande 33).
+  en: { intro: "You accepted the offer. Your car is not held yet: reply to the agency below to confirm, and they will finalise the booking with you.", booking: "Your booking", agency: "Rental agency", totalWord: "total", foot: "Payment and terms are agreed directly with the agency." },
+  fr: { intro: "Vous avez accepté l'offre. Votre voiture n'est pas encore bloquée : répondez à l'agence ci-dessous pour confirmer, elle finalisera la réservation avec vous.", booking: "Votre réservation", agency: "Agence de location", totalWord: "au total", foot: "Le paiement et les conditions se règlent directement avec l'agence." },
+  de: { intro: "Sie haben das Angebot angenommen. Ihr Auto ist noch nicht reserviert: Antworten Sie der Vermietung unten, um zu bestätigen, dann schließt sie die Buchung mit Ihnen ab.", booking: "Ihre Buchung", agency: "Autovermietung", totalWord: "gesamt", foot: "Zahlung und Bedingungen werden direkt mit der Vermietung vereinbart." },
+  el: { intro: "Αποδεχτήκατε την προσφορά. Το αυτοκίνητό σας δεν έχει δεσμευτεί ακόμη: απαντήστε στο γραφείο παρακάτω για επιβεβαίωση και θα ολοκληρώσει την κράτηση μαζί σας.", booking: "Η κράτησή σας", agency: "Γραφείο ενοικίασης", totalWord: "σύνολο", foot: "Η πληρωμή και οι όροι συμφωνούνται απευθείας με το γραφείο." },
 };
 
 // Loueurs partenaires (Grèce) reçoivent des numéros avec l'indicatif du pays du
@@ -950,7 +953,7 @@ export async function sendConnectionEmails(opts: {
     <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 18px;">
       <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${c.agency}</p>
       <p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">
-        ${partner.name}<br>${partner.whatsapp ?? partner.phone}<br>${partner.email}
+        ${partner.name}<br><a href="tel:${(partner.whatsapp ?? partner.phone).replace(/[^\d+]/g, "")}" style="color:${C.text};">${partner.whatsapp ?? partner.phone}</a><br><a href="mailto:${partner.email}" style="color:${C.text};">${partner.email}</a>
       </p>
     </div>
     ${insLines.length ? `<div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 18px;"><p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${insHeading[l] ?? insHeading.en}</p><p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">${insLines.map((x) => `• ${x}`).join("<br>")}</p></div>` : ""}
@@ -962,7 +965,10 @@ export async function sendConnectionEmails(opts: {
   assertSent(await resend.emails.send({
     from: FROM_EMAIL,
     to: customer.email,
-    replyTo: RELAY_EMAIL,
+    // Le loueur en tete : « repondre » depuis le mobile du client doit l'atteindre
+    // LUI, pas une boite relais qu'il faudra relayer a la main. La boite relais
+    // reste en 2e position pour garder le fil visible dans mail.mjs.
+    replyTo: [partner.email, RELAY_EMAIL],
     subject: CONNECT_SUBJECT[l],
     html: kalimeraShell(inner),
   }), "mise en relation client voiture");
@@ -1706,23 +1712,25 @@ const ACT_CONNECT_SUBJECT: Record<string, string> = {
 };
 
 const ACT_CONNECT_COPY: Record<string, { intro: string; provider: string; foot: string }> = {
+  // ⛔ Meme garde que CONNECT_COPY : jamais de formulation ou le prestataire
+  //    « vous contactera ». Le client attend, et la place n'est jamais prise.
   en: {
-    intro: "You accepted the offer. Here are the provider's details, they will also reach out to finalise the booking.",
+    intro: "You accepted the offer. Your place is not booked yet: reply to the provider below to confirm, and they will finalise the booking with you.",
     provider: "Activity provider",
     foot: "You pay the provider directly on the day, no online prepayment.",
   },
   fr: {
-    intro: "Vous avez accepté l'offre. Voici les coordonnées du prestataire, il vous contactera aussi pour finaliser la réservation.",
+    intro: "Vous avez accepté l'offre. Votre place n'est pas encore réservée : répondez au prestataire ci-dessous pour confirmer, il finalisera la réservation avec vous.",
     provider: "Prestataire d'activité",
     foot: "Vous réglez directement avec le prestataire le jour J, aucun prépaiement en ligne.",
   },
   de: {
-    intro: "Sie haben das Angebot angenommen. Hier sind die Kontaktdaten des Anbieters, er meldet sich ebenfalls bei Ihnen.",
+    intro: "Sie haben das Angebot angenommen. Ihr Platz ist noch nicht gebucht: Antworten Sie dem Anbieter unten, um zu bestätigen, dann schließt er die Buchung mit Ihnen ab.",
     provider: "Aktivitätsanbieter",
     foot: "Sie zahlen direkt beim Anbieter am Tag der Aktivität, keine Online-Vorauszahlung.",
   },
   el: {
-    intro: "Αποδεχτήκατε την προσφορά. Ακολουθούν τα στοιχεία του παρόχου, θα επικοινωνήσει και εκείνος μαζί σας.",
+    intro: "Αποδεχτήκατε την προσφορά. Η θέση σας δεν έχει κρατηθεί ακόμη: απαντήστε στον πάροχο παρακάτω για επιβεβαίωση και θα ολοκληρώσει την κράτηση μαζί σας.",
     provider: "Πάροχος δραστηριότητας",
     foot: "Πληρώνετε απευθείας τον πάροχο την ημέρα της δραστηριότητας, χωρίς διαδικτυακή προπληρωμή.",
   },
@@ -1775,7 +1783,7 @@ export async function sendActivityConnectionEmails(opts: {
     <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 18px;">
       <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${c.provider}</p>
       <p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">
-        ${partner.name}<br>${partner.whatsapp ?? partner.phone}<br>${partner.email}
+        ${partner.name}<br><a href="tel:${(partner.whatsapp ?? partner.phone).replace(/[^\d+]/g, "")}" style="color:${C.text};">${partner.whatsapp ?? partner.phone}</a><br><a href="mailto:${partner.email}" style="color:${C.text};">${partner.email}</a>
       </p>
     </div>
     <p style="margin:0; color:${C.faint}; font-size:12px; line-height:1.6;">${c.foot}</p>
@@ -1783,7 +1791,8 @@ export async function sendActivityConnectionEmails(opts: {
   assertSent(await resend.emails.send({
     from: FROM_EMAIL,
     to: customer.email,
-    replyTo: RELAY_EMAIL,
+    // Meme raison que cote voiture : « repondre » doit atteindre le prestataire.
+    replyTo: [partner.email, RELAY_EMAIL],
     subject: ACT_CONNECT_SUBJECT[l],
     html: kalimeraShell(inner),
   }), "mise en relation client activite");
