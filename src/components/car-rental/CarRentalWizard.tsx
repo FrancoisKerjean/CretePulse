@@ -11,7 +11,6 @@ import { useSearchParams } from "next/navigation";
 import { CAR_ZONES, allPickups, zoneForPickup } from "@/lib/car-partners";
 import { CAR_TYPES } from "@/lib/car-types";
 import { CAR_CHILD_SEAT_KEYS, CAR_CHILD_SEAT_LABELS } from "@/lib/car-child-seats";
-import { isCallablePhone } from "@/lib/car-lead";
 import { SLUG_COORDS } from "@/lib/taxi-fare";
 import { nearestBy } from "@/lib/geo";
 import { useGeoPosition } from "@/components/geo/useGeoPosition";
@@ -81,7 +80,6 @@ type Strings = {
   nameLabel: string;
   emailLabel: string;
   phoneLabel: string;
-  phoneHint: string;
   noteLabel: string;
   rgpd: string;
   back: string;
@@ -132,8 +130,7 @@ const T: Record<string, Strings> = {
     title4: "Your contact details",
     nameLabel: "Name",
     emailLabel: "Email",
-    phoneLabel: "Phone / WhatsApp",
-    phoneHint: "The agency calls or texts you to confirm the car. Without it, your booking cannot be finalised.",
+    phoneLabel: "Phone / WhatsApp (optional)",
     noteLabel: "Anything else? (optional)",
     rgpd: "Your details are sent to the local partner agency so they can reply with a quote. Nothing else.",
     back: "Back",
@@ -182,8 +179,7 @@ const T: Record<string, Strings> = {
     title4: "Vos coordonnées",
     nameLabel: "Nom",
     emailLabel: "Email",
-    phoneLabel: "Téléphone / WhatsApp",
-    phoneHint: "L'agence vous appelle ou vous écrit pour confirmer la voiture. Sans lui, la réservation ne peut pas être finalisée.",
+    phoneLabel: "Téléphone / WhatsApp (facultatif)",
     noteLabel: "Une précision ? (facultatif)",
     rgpd: "Vos coordonnées sont transmises à l'agence partenaire locale pour qu'elle vous réponde avec un devis. Rien d'autre.",
     back: "Retour",
@@ -232,8 +228,7 @@ const T: Record<string, Strings> = {
     title4: "Ihre Kontaktdaten",
     nameLabel: "Name",
     emailLabel: "E-Mail",
-    phoneLabel: "Telefon / WhatsApp",
-    phoneHint: "Die Vermietung ruft Sie an oder schreibt Ihnen, um das Auto zu bestätigen. Ohne Nummer kann die Buchung nicht abgeschlossen werden.",
+    phoneLabel: "Telefon / WhatsApp (optional)",
     noteLabel: "Noch etwas? (optional)",
     rgpd: "Ihre Daten werden an die lokale Partneragentur übermittelt, damit sie Ihnen ein Angebot senden kann. Sonst nichts.",
     back: "Zurück",
@@ -282,8 +277,7 @@ const T: Record<string, Strings> = {
     title4: "Τα στοιχεία σας",
     nameLabel: "Όνομα",
     emailLabel: "Email",
-    phoneLabel: "Τηλέφωνο / WhatsApp",
-    phoneHint: "Το γραφείο σας καλεί ή σας γράφει για να επιβεβαιώσει το αυτοκίνητο. Χωρίς αυτό, η κράτηση δεν μπορεί να ολοκληρωθεί.",
+    phoneLabel: "Τηλέφωνο / WhatsApp (προαιρετικό)",
     noteLabel: "Κάτι άλλο; (προαιρετικό)",
     rgpd: "Τα στοιχεία σας αποστέλλονται στο τοπικό συνεργαζόμενο γραφείο ώστε να σας απαντήσει με προσφορά. Τίποτα άλλο.",
     back: "Πίσω",
@@ -451,10 +445,7 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
     dateFrom >= today && dateTo >= dateFrom;
   const timeFilled = /^\d{2}:\d{2}$/.test(timeFrom) && /^\d{2}:\d{2}$/.test(timeTo);
   const timesValid = timeFilled && (dateTo !== dateFrom || timeTo > timeFrom);
-  // Le téléphone compte dans la validité du contact : le loueur ne peut pas
-  // finaliser sans canal de rappel, et le serveur le refuse (isCallablePhone).
-  // Même règle des deux côtés, jamais deux implémentations.
-  const contactValid = name.trim().length > 0 && EMAIL_REGEX.test(email.trim()) && isCallablePhone(phone);
+  const contactValid = name.trim().length > 0 && EMAIL_REGEX.test(email.trim());
 
   async function submit() {
     if (!pickup || !carTypeDef || !contactValid || submitting) return;
@@ -914,10 +905,8 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
             </div>
             <div>
               <label htmlFor="cr-phone" className={LABEL_CLS}>{t.phoneLabel}</label>
-              <input id="cr-phone" type="tel" autoComplete="tel" required value={phone}
-                onChange={(e) => setPhone(e.target.value)} className={`${INPUT_CLS} font-data`}
-                aria-describedby="cr-phone-hint" />
-              <p id="cr-phone-hint" className="mt-1 text-xs text-slate-500">{t.phoneHint}</p>
+              <input id="cr-phone" type="tel" autoComplete="tel" value={phone}
+                onChange={(e) => setPhone(e.target.value)} className={`${INPUT_CLS} font-data`} />
             </div>
             <div>
               <label htmlFor="cr-note" className={LABEL_CLS}>{t.noteLabel}</label>

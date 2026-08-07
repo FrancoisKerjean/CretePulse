@@ -25,6 +25,27 @@ export function isCallablePhone(phone: string | null | undefined): boolean {
   return (phone ?? "").replace(/\D/g, "").length >= 6;
 }
 
+/** Le numéro à retenir quand le client accepte une offre, ou un refus.
+ *
+ *  Exigé ICI et nulle part avant : le loueur en appel d'offres reçoit une
+ *  demande aveugle, le numéro ne lui sert qu'après acceptation. À ce moment le
+ *  client a choisi un prix, il est engagé, et un champ de plus ne lui fait pas
+ *  abandonner ce qu'il vient de décider. Le volume de demandes n'est pas touché.
+ *
+ *  Un numéro déjà stocké ET rappelable prime : on ne redemande rien aux 62 %
+ *  qui l'ont déjà donné. Un numéro stocké inutilisable (« - » d'une demande
+ *  ancienne, où le champ était libre) se fait remplacer plutôt que propager. */
+export function resolveAcceptPhone(
+  existing: string | null | undefined,
+  submitted: string | null | undefined,
+): { ok: true; phone: string } | { ok: false } {
+  const stocke = (existing ?? "").trim();
+  if (isCallablePhone(stocke)) return { ok: true, phone: stocke };
+  const saisi = (submitted ?? "").trim();
+  if (isCallablePhone(saisi)) return { ok: true, phone: saisi };
+  return { ok: false };
+}
+
 export const carPickupLabel = (slug: string): string =>
   slug.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
 
@@ -89,10 +110,12 @@ export function validateCarLead(body: Record<string, unknown>): CarLeadResult {
   if (!zone || !SLUG_COORDS[pickup] || !carType || !name || !EMAIL_REGEX.test(email)) {
     return { kind: "error", status: 422, error: "Invalid request" };
   }
+  // ⛔ Le téléphone n'est PAS exigé ICI, volontairement. Le loueur en appel
+  // d'offres reçoit une demande AVEUGLE (leadSummary includeContact=false) :
+  // le numéro ne lui sert a rien avant que le client n'accepte un devis, et
+  // l'exiger a l'entree ferait payer 38 % des demandes pour une donnee qui
+  // dort en base. Il est exige a l'acceptation — voir resolveAcceptPhone.
   const phone = str(body.phone);
-  if (!isCallablePhone(phone)) {
-    return { kind: "error", status: 422, error: "Phone required" };
-  }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateFrom) || !/^\d{4}-\d{2}-\d{2}$/.test(dateTo) || dateTo < dateFrom) {
     return { kind: "error", status: 422, error: "Invalid dates" };
   }

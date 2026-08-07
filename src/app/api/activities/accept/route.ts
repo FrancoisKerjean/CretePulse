@@ -5,6 +5,7 @@ import { partnerById } from "@/lib/activity-partners-db";
 import { isOfferExpired } from "@/lib/car-offer-expiry";
 import { requestByClientToken } from "@/lib/activity-quotes-db";
 import { findChosenInvite } from "@/lib/activity-quotes";
+import { resolveAcceptPhone } from "@/lib/car-lead";
 
 // Le client choisit une offre (page /activity-offer/{token}). Il désigne l'invite
 // (invite_id) qu'il retient ; on snapshot son devis sur activity_requests
@@ -45,9 +46,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, expired: true }, { status: 410 });
   }
 
+  // Meme garde que cote voiture : le prestataire ne recoit les coordonnees
+  // qu'apres acceptation, donc c'est ICI que le numero de rappel se joue, avant
+  // toute ecriture. Sans lui, il n'a qu'un email vers un inconnu.
+  const phoneResolu = resolveAcceptPhone(row.customer_phone as string | null, typeof body.phone === "string" ? body.phone : undefined);
+  if (!phoneResolu.ok) {
+    return NextResponse.json({ ok: false, phoneRequired: true }, { status: 422 });
+  }
+
   const partner = await partnerById(chosen.partner_id);
   await supabase.from("activity_requests").update({
     status: "accepted", accepted_at: new Date().toISOString(), accept_token_hash: null,
+    customer_phone: phoneResolu.phone,
     quoted_price: chosen.quote_price, quoted_currency: chosen.quote_currency ?? "EUR",
     quoted_details: chosen.quote_details ?? null, quoted_inclusions: chosen.quote_inclusions ?? [],
     quoted_at: chosen.quoted_at, quoted_by_partner_id: chosen.partner_id,
@@ -64,7 +74,9 @@ export async function POST(request: NextRequest) {
     const { sendActivityConnectionEmails, sendActivityPartnerNotChosen } = await import("@/lib/email");
     await sendActivityConnectionEmails({
       partner: { name: partnerName, email: partner?.email ?? "", phone: partner?.phone ?? "", whatsapp: partner?.whatsapp ?? undefined },
-      customer: { name: row.customer_name as string, email: row.customer_email as string, phone: (row.customer_phone as string | null) ?? undefined, locale },
+      // phoneResolu.phone, PAS row.customer_phone : `row` est le snapshot lu AVANT
+      // l'update, il vaut encore null quand le client vient de saisir son numero.
+      customer: { name: row.customer_name as string, email: row.customer_email as string, phone: phoneResolu.phone, locale },
       quote: {
         categoryLabel: categoryLabel(row.category_slug as string, locale),
         cityLabel: cityLabel(row.city as string, locale),

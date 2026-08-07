@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { AcceptButton } from "./AcceptButton";
+import { isCallablePhone } from "@/lib/car-lead";
 import { DeclineButton } from "./DeclineButton";
 import { activityInclusionLabels } from "@/lib/activity-inclusions";
 import { isOfferExpired } from "@/lib/car-offer-expiry";
@@ -22,6 +23,7 @@ type Copy = {
   title: string; intro: string; request: string; accept: string; done: string;
   expired: string; expiredOffer: string; alreadyTitle: string; alreadyBody: string;
   noOffers: string; offersTitle: string; declineLink: string; declineDone: string;
+  phoneLabel: string; phoneHint: string; phoneError: string;
   forWholeGroup: string; included: string; offerFrom: string; localProvider: string;
   groupLabel: (adults: number, children: number) => string;
 };
@@ -41,6 +43,7 @@ const COPY: Record<string, Copy> = {
     offersTitle: "Your activity offers",
     declineLink: "None of these offers suits me",
     declineDone: "Noted, no problem. This request is now closed.",
+    phoneLabel: "Your phone / WhatsApp", phoneHint: "The provider calls or texts you to confirm. This is the only step left.", phoneError: "Please enter a number the provider can reach you on.",
     forWholeGroup: "for your whole group",
     included: "Included in the price",
     offerFrom: "Offer from",
@@ -66,6 +69,7 @@ const COPY: Record<string, Copy> = {
     offersTitle: "Vos offres d'activité",
     declineLink: "Aucune de ces offres ne me convient",
     declineDone: "Noté, pas de souci. Votre demande est clôturée.",
+    phoneLabel: "Votre téléphone / WhatsApp", phoneHint: "Le prestataire vous appelle ou vous écrit pour confirmer. C'est la dernière étape.", phoneError: "Indiquez un numéro sur lequel le prestataire peut vous joindre.",
     forWholeGroup: "pour votre groupe",
     included: "Inclus dans le prix",
     offerFrom: "Offre de",
@@ -91,6 +95,7 @@ const COPY: Record<string, Copy> = {
     offersTitle: "Ihre Aktivitäts-Angebote",
     declineLink: "Keines dieser Angebote passt mir",
     declineDone: "Notiert, kein Problem. Ihre Anfrage ist nun geschlossen.",
+    phoneLabel: "Ihr Telefon / WhatsApp", phoneHint: "Der Anbieter ruft Sie an oder schreibt Ihnen zur Bestätigung. Das ist der letzte Schritt.", phoneError: "Bitte geben Sie eine Nummer an, unter der der Anbieter Sie erreicht.",
     forWholeGroup: "für Ihre ganze Gruppe",
     included: "Im Preis enthalten",
     offerFrom: "Angebot von",
@@ -116,6 +121,7 @@ const COPY: Record<string, Copy> = {
     offersTitle: "Οι προσφορές δραστηριότητάς σας",
     declineLink: "Καμία από αυτές τις προσφορές δεν μου ταιριάζει",
     declineDone: "Σημειώθηκε, κανένα πρόβλημα. Το αίτημά σας έκλεισε.",
+    phoneLabel: "Το τηλέφωνό σας / WhatsApp", phoneHint: "Ο πάροχος σας καλεί ή σας γράφει για επιβεβαίωση. Είναι το τελευταίο βήμα.", phoneError: "Δώστε έναν αριθμό στον οποίο μπορεί να σας βρει ο πάροχος.",
     forWholeGroup: "για ολόκληρη την ομάδα σας",
     included: "Περιλαμβάνεται στην τιμή",
     offerFrom: "Προσφορά από",
@@ -167,7 +173,9 @@ function OfferCard({
       {expired ? (
         <p style={{ margin: 0, padding: "16px 18px", borderRadius: 12, background: "#FEF9EC", color: "#92400E", fontSize: 15, lineHeight: 1.6 }}>{c.expiredOffer}</p>
       ) : (
-        <AcceptButton token={token} inviteId={offer.id} label={c.accept} doneText={c.done} expiredText={c.expiredOffer} />
+        <AcceptButton token={token} inviteId={offer.id} label={c.accept} doneText={c.done} expiredText={c.expiredOffer}
+          needsPhone={!isCallablePhone(request.customer_phone as string | null)}
+          phoneLabel={c.phoneLabel} phoneHint={c.phoneHint} phoneError={c.phoneError} />
       )}
     </div>
   );

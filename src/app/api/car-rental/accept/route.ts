@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
-import { carPickupLabel, carTypeLabelWithExamples } from "@/lib/car-lead";
+import { carPickupLabel, carTypeLabelWithExamples, resolveAcceptPhone } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { partnerById } from "@/lib/car-partners-db";
 import { isOfferExpired } from "@/lib/car-offer-expiry";
@@ -55,12 +55,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, expired: true }, { status: 410 });
   }
 
+  // Le numéro de rappel se joue ICI, avant toute écriture : accepter sans lui
+  // produit exactement la demande 33 (Zakros Tours, 9 jours de silence, le
+  // loueur réduit à un email vers un inconnu qui part en spam).
+  const phoneResolu = resolveAcceptPhone(row.customer_phone as string | null, typeof body.phone === "string" ? body.phone : undefined);
+  if (!phoneResolu.ok) {
+    return NextResponse.json({ ok: false, phoneRequired: true }, { status: 422 });
+  }
+
   const partner = await partnerById(chosen.partner_id);
   const gearboxLabel = chosen.gearbox ? GEARBOX_LABEL[chosen.gearbox] : null;
   const carModelSnapshot = quotedModelLabel(chosen.car_model, gearboxLabel);
   await supabase.from("car_requests").update({
     status: "accepted", accepted_at: new Date().toISOString(), accept_token_hash: null,
-    closure_reason: null,
+    closure_reason: null, customer_phone: phoneResolu.phone,
     quoted_price: chosen.price, quoted_currency: chosen.currency ?? "EUR",
     quoted_car_model: carModelSnapshot, quoted_inclusions: chosen.inclusions ?? [],
     quoted_insurance_type: chosen.insurance_type, quoted_excess_eur: chosen.excess_eur,
@@ -109,7 +117,11 @@ export async function POST(request: NextRequest) {
     const { sendConnectionEmails } = await import("@/lib/email");
     await sendConnectionEmails({
       partner: { name: partnerName, email: partner?.email ?? "", phone: partner?.phone ?? "", whatsapp: partner?.whatsapp ?? undefined },
-      customer: { name: row.customer_name as string, email: row.customer_email as string, phone: (row.customer_phone as string | null) ?? undefined, locale },
+      // ⛔ phoneResolu.phone, PAS row.customer_phone : `row` est le snapshot lu
+      // AVANT l'update, donc il vaut encore null quand le client vient tout
+      // juste de saisir son numero. Le loueur recevrait « - » sur exactement
+      // les conversions que ce champ etait cense couvrir.
+      customer: { name: row.customer_name as string, email: row.customer_email as string, phone: phoneResolu.phone, locale },
       quote: {
         pickupLabel: carPickupLabel(row.pickup_slug as string), dateFrom: row.date_from as string, dateTo: row.date_to as string,
         carTypeLabel, carTypeLabelClient, price: chosen.price, currency: chosen.currency ?? "EUR",
