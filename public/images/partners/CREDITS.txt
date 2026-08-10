@@ -1,0 +1,16 @@
+Visuels du rail « Reserver en direct » de la home (src/lib/home-services.ts).
+
+van.jpg — minivan de passagers sur une plage au coucher de soleil.
+  Source  : Pexels, photo id 24536588, deposee par Hyundai Motor Group.
+  Licence : Pexels License (usage commercial libre, attribution non requise,
+            revente de la photo seule interdite).
+  https://www.pexels.com/photo/24536588/
+  Modifications : recadrage 2:1 sur le bas de l'image + redimensionnement
+  1200x600 (format des autres cartes du rail), JPEG qualite 82 progressif.
+  Pose le 10/08/2026, en remplacement de ferry.jpg : la carte « van partage »
+  servait une photo de bateau, mesuree a 1,21 % de clic contre 3,24 % a la
+  carte voiture sur la meme periode.
+
+car-rental.jpg, ferry.jpg, tours.jpg, villa.jpg, investment.jpg — source non
+tracee, anterieures a ce fichier. Ne pas supposer une licence : verifier avant
+toute reutilisation hors de ce site.

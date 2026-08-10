@@ -16,7 +16,10 @@ export interface HomeService {
 
 const CATALOG: Omit<HomeService, "external">[] = [
   { id: "car", href: "/car-rental", photo: "/images/partners/car-rental.jpg", layout: "band" },
-  { id: "van", href: "https://van.crete.direct", photo: "/images/partners/ferry.jpg", layout: "card" },
+  // ⛔ Pas ferry.jpg : la carte « van partagé » a servi une photo de bateau du
+  // 29/07 au 10/08. Mesure sur cette période : 496 impressions pour 6 clics,
+  // soit 1,21 % contre 3,24 % à la voiture et 2,13 % aux activités.
+  { id: "van", href: "https://van.crete.direct", photo: "/images/partners/van.jpg", layout: "card" },
   { id: "activities", href: "/activities", photo: "/images/partners/tours.jpg", layout: "card" },
   { id: "stays", href: "/stays", photo: "/images/partners/villa.jpg", layout: "card" },
 ];
