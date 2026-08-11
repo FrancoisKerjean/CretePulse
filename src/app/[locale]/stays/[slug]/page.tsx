@@ -8,7 +8,7 @@ import { setRequestLocale } from "next-intl/server";
 import { getListingBySlug, bookedRangesForListing } from "@/lib/stays/db";
 import { unavailableNights } from "@/lib/stays/availability";
 import { normalizeAmenities } from "@/lib/stays/facts";
-import { quoteForNights } from "@/lib/stays/pricing";
+import { quoteForNights, formatEur } from "@/lib/stays/pricing";
 import { L, pickStaysLocale } from "../content";
 import { staysMetadata } from "../metadata";
 import RequestForm from "./RequestForm";
@@ -161,6 +161,39 @@ export default async function StayDetailPage(
                 {t.listing.termsLink}
               </Link>
             </p>
+
+            {/* Barre de reservation, mobile seulement. Sur mobile le panneau prix
+                est remonte au-dessus de la description : il sort du champ des le
+                premier defilement, et il n y avait plus ni prix ni bouton pendant
+                1 500 px, jusqu au formulaire. Cachee des lg, ou le panneau collant
+                fait deja ce travail.
+
+                ⛔ Posee dans la COLONNE DE GAUCHE et non a la fin de la page :
+                une position collante ne s active que dans son conteneur, et cette
+                colonne commence sous le panneau prix. La barre apparait donc quand
+                le panneau s en va, au lieu de repeter le meme total 200 px plus bas
+                sur le premier ecran.
+
+                `sticky bottom-0` et non `fixed` : elle se range au-dessus du pied
+                de page au lieu de le recouvrir pour toujours. */}
+            <div className="sticky bottom-0 z-40 -mx-4 mt-10 border-t border-border bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="m-0 font-heading text-[17px] font-extrabold text-text font-data">
+                    {formatEur(minStay.guestTotalEur)}
+                  </p>
+                  <p className="m-0 text-[12px] text-text-muted">
+                    {t.calendar.minNights.replace("{n}", String(minNights))}
+                  </p>
+                </div>
+                <a
+                  href="#request"
+                  className="shrink-0 rounded-full bg-sun px-5 py-2.5 text-center font-heading text-[14.5px] font-bold text-night no-underline"
+                >
+                  {t.listing.requestTitle}
+                </a>
+              </div>
+            </div>
           </div>
 
           {/* Panneau collant : le prix suit la lecture au lieu d attendre 900 px
@@ -198,6 +231,7 @@ export default async function StayDetailPage(
             </p>
           </aside>
         </div>
+
       </div>
     </main>
   );

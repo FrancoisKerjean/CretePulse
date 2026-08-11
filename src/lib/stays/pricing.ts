@@ -2,6 +2,16 @@ import type { StayQuote } from "./types";
 
 const round2 = (n: number): number => Math.round(n * 100) / 100;
 
+/**
+ * Montant en euros tel qu'il s affiche au voyageur.
+ *
+ * Vit ici et non dans un composant : le detail du devis et la barre de
+ * reservation mobile annoncent le MEME total, et deux formatages differents
+ * donneraient deux montants a l ecran pour un seul calcul.
+ */
+export const formatEur = (n: number): string =>
+  `${n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+
 export function nightsBetween(dateFrom: string, dateTo: string): number {
   const from = new Date(dateFrom + "T00:00:00Z").getTime();
   const to = new Date(dateTo + "T00:00:00Z").getTime();

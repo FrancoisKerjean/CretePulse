@@ -9,10 +9,8 @@
 // (api/stays/approve). Afficher un total sans cette mention serait un engagement de
 // prix que le produit ne tient pas.
 import type { StayQuote } from "@/lib/stays/types";
+import { formatEur as eur } from "@/lib/stays/pricing";
 import type { StaysStrings } from "../content";
-
-const eur = (n: number): string =>
-  `${n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
 
 export default function QuoteBreakdown({
   quote,
