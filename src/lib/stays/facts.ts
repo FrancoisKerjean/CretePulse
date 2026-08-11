@@ -6,19 +6,36 @@
 // Elargie le 11/08/2026 : les sept cles d origine venaient de ce que le scrape
 // Airbnb sait remplir, alors que les annonces reelles portaient deja des
 // equipements plus rares et plus vendeurs (plage privee, hammam, sauna) qui
-// n avaient nulle part ou aller.
+// n avaient nulle part ou aller. Seconde passe le meme jour, apres avoir compte
+// ce que les trois annonces portent VRAIMENT : 10 libelles sur 18 etaient
+// retenus sur l annonce 1.
+//
+// ⛔ Ce qui reste DEHORS, et pourquoi, sinon la liste se remplira de phrases
+// d annonce au lieu de criteres comparables :
+//   « Vue sur la baie », « Vue jardin », « Vue montagne » : ecartes par des
+//     motifs volontairement etroits, voir LABEL_PATTERNS.
+//   « Escalier prive vers la plage » : dit deux fois la meme chose que
+//     private_beach.
+//   « 200 m2 sur un niveau » : c est la colonne area_sqm, pas un equipement.
+//   « Studio professionnel 90 m2 », « Gazebo en pierre », « TV satellite »,
+//     « Reception parlee FR / EN / GR » : une seule annonce chacun, rien a
+//     comparer d une fiche a l autre.
 export const AMENITY_KEYS = [
   "private_beach",
   "pool",
   "sea_view",
   "hammam",
   "sauna",
+  "terrace",
+  "outdoor_shower",
   "ac",
   "wifi",
   "kitchen",
   "washer",
   "bbq",
+  "workspace",
   "parking",
+  "baby_gear",
   "pets",
 ] as const;
 
@@ -62,12 +79,19 @@ const LABEL_PATTERNS: ReadonlyArray<[AmenityKey, RegExp]> = [
   ["sea_view", /vue (sur la )?mer|sea view|vue ocean/],
   ["hammam", /hammam|steam room/],
   ["sauna", /sauna/],
+  // Attrape aussi « Toit-terrasse » et « Terrasse vue mer ». Cette derniere
+  // donne DEUX cles, terrace et sea_view : c est voulu, elle porte les deux.
+  ["terrace", /terrasse|\bterrace\b/],
+  ["outdoor_shower", /douche exterieure|outdoor shower/],
   ["ac", /climatisation|climatise|air conditioning|\ba\/?c\b/],
   ["wifi", /wi-?fi/],
   ["kitchen", /cuisine (equipee|amenagee)|equipped kitchen|kitchenette/],
   ["washer", /lave-linge|machine a laver|washer|washing machine/],
   ["bbq", /barbecue|\bbbq\b/],
+  ["workspace", /espace de travail|bureau dedie|dedicated workspace/],
   ["parking", /parking|place de stationnement/],
+  // Un seul des deux objets suffit a dire « on peut venir avec un bebe ».
+  ["baby_gear", /lit bebe|chaise haute|baby cot|high ?chair/],
   ["pets", /animaux acceptes|pets allowed|pet friendly/],
 ];
 

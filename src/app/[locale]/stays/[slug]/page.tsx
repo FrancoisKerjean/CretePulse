@@ -9,7 +9,7 @@ import { getListingBySlug, bookedRangesForListing } from "@/lib/stays/db";
 import { unavailableNights } from "@/lib/stays/availability";
 import { normalizeAmenities } from "@/lib/stays/facts";
 import { quoteForNights, formatEur } from "@/lib/stays/pricing";
-import { L, pickStaysLocale } from "../content";
+import { L, pickStaysLocale, languageName } from "../content";
 import { staysMetadata } from "../metadata";
 import RequestForm from "./RequestForm";
 import Gallery from "./Gallery";
@@ -122,7 +122,10 @@ export default async function StayDetailPage(
             {listing.description && listing.description_locale &&
               listing.description_locale !== pickStaysLocale(locale) && (
                 <p className="m-0 mt-1.5 text-[12.5px] italic text-text-light">
-                  {t.langNote.replace("{lang}", listing.description_locale)}
+                  {t.langNote.replace(
+                    "{lang}",
+                    languageName(listing.description_locale, pickStaysLocale(locale)),
+                  )}
                 </p>
               )}
 

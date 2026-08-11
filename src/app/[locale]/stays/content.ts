@@ -22,6 +22,28 @@ export function pickStaysLocale(locale: string): StaysLocale {
     : "en";
 }
 
+/**
+ * Nom d une langue, ecrit dans la langue de la page : "en" devient "anglais"
+ * en francais, "Englisch" en allemand.
+ *
+ * ⛔ La fiche affichait « Version originale redigee en en par le proprietaire » :
+ * le code ISO brut etait injecte tel quel dans la phrase. Vu en prod le
+ * 11/08/2026, dans les quatre langues.
+ *
+ * Intl le fait, aucune table a tenir a jour : quatre langues de page fois
+ * autant de langues d annonce, ce serait seize chaines a maintenir pour
+ * quelque chose que la plateforme sait deja.
+ * Repli sur le code lui-meme si la langue est inconnue ou l ICU absent : une
+ * phrase avec un code reste lisible, une phrase vide ne l est pas.
+ */
+export function languageName(code: string, inLocale: StaysLocale): string {
+  try {
+    return new Intl.DisplayNames([inLocale], { type: "language" }).of(code) ?? code;
+  } catch {
+    return code;
+  }
+}
+
 export type StaysMetaKey =
   | "index"
   | "listing"
@@ -77,6 +99,16 @@ export type StaysStrings = {
     estimate: string;
   };
   rating: { summary: string; source: string };
+  /**
+   * Note sous la description. `{lang}` recoit un NOM de langue, jamais un code.
+   *
+   * ⛔ Les quatre variantes annoncaient « traduit automatiquement ». C etait
+   * faux : il n existe qu une colonne `description` et elle est affichee telle
+   * quelle, sans aucune traduction nulle part dans le depot. Une fiche qui
+   * annonce une traduction qu elle ne fait pas ment au visiteur sur ce qu il
+   * lit. Corrige le 11/08/2026, apres l avoir vu a l ecran sur la page /fr,
+   * qui affichait un texte anglais sous cette mention.
+   */
   langNote: string;
   form: {
     name: string;
@@ -372,12 +404,16 @@ export const L: Record<StaysLocale, StaysStrings> = {
         sea_view: "Sea view",
         hammam: "Hammam",
         sauna: "Sauna",
+        terrace: "Terrace",
+        outdoor_shower: "Outdoor shower",
         ac: "Air conditioning",
         wifi: "Wifi",
         kitchen: "Equipped kitchen",
         washer: "Washing machine",
         bbq: "Barbecue",
+        workspace: "Workspace",
         parking: "Parking",
+        baby_gear: "Baby equipment",
         pets: "Pets allowed",
       },
     },
@@ -399,7 +435,7 @@ export const L: Record<StaysLocale, StaysStrings> = {
       summary: "{rating} out of {count} reviews",
       source: "Rating taken from Airbnb on {date}.",
     },
-    langNote: "Translated automatically. Original written in {lang} by the owner.",
+    langNote: "Written in {lang} by the owner, shown as received.",
     form: {
       name: "Full name",
       email: "Email",
@@ -586,12 +622,16 @@ export const L: Record<StaysLocale, StaysStrings> = {
         sea_view: "Vue mer",
         hammam: "Hammam",
         sauna: "Sauna",
+        terrace: "Terrasse",
+        outdoor_shower: "Douche extérieure",
         ac: "Climatisation",
         wifi: "Wifi",
         kitchen: "Cuisine équipée",
         washer: "Lave-linge",
         bbq: "Barbecue",
+        workspace: "Espace de travail",
         parking: "Parking",
+        baby_gear: "Équipement bébé",
         pets: "Animaux acceptés",
       },
     },
@@ -615,7 +655,7 @@ export const L: Record<StaysLocale, StaysStrings> = {
       source: "Note relevée sur Airbnb le {date}.",
     },
     langNote:
-      "Traduit automatiquement. Version originale rédigée en {lang} par le propriétaire.",
+      "Rédigée en {lang} par le propriétaire, affichée telle qu'elle a été reçue.",
     form: {
       name: "Nom complet",
       email: "Email",
@@ -802,12 +842,16 @@ export const L: Record<StaysLocale, StaysStrings> = {
         sea_view: "Meerblick",
         hammam: "Hamam",
         sauna: "Sauna",
+        terrace: "Terrasse",
+        outdoor_shower: "Außendusche",
         ac: "Klimaanlage",
         wifi: "WLAN",
         kitchen: "Ausgestattete Küche",
         washer: "Waschmaschine",
         bbq: "Grill",
+        workspace: "Arbeitsplatz",
         parking: "Parkplatz",
+        baby_gear: "Baby-Ausstattung",
         pets: "Haustiere erlaubt",
       },
     },
@@ -830,7 +874,7 @@ export const L: Record<StaysLocale, StaysStrings> = {
       summary: "{rating} bei {count} Bewertungen",
       source: "Bewertung von Airbnb, erhoben am {date}.",
     },
-    langNote: "Automatisch übersetzt. Original vom Gastgeber auf {lang} verfasst.",
+    langNote: "Vom Gastgeber auf {lang} verfasst, unverändert wiedergegeben.",
     form: {
       name: "Vollständiger Name",
       email: "E-Mail",
@@ -1019,12 +1063,16 @@ export const L: Record<StaysLocale, StaysStrings> = {
         sea_view: "Θέα στη θάλασσα",
         hammam: "Χαμάμ",
         sauna: "Σάουνα",
+        terrace: "Βεράντα",
+        outdoor_shower: "Εξωτερικό ντους",
         ac: "Κλιματισμός",
         wifi: "Wifi",
         kitchen: "Εξοπλισμένη κουζίνα",
         washer: "Πλυντήριο ρούχων",
         bbq: "Ψησταριά",
+        workspace: "Χώρος εργασίας",
         parking: "Πάρκινγκ",
+        baby_gear: "Εξοπλισμός για μωρά",
         pets: "Δεκτά κατοικίδια",
       },
     },
@@ -1047,7 +1095,7 @@ export const L: Record<StaysLocale, StaysStrings> = {
       summary: "{rating} από {count} κριτικές",
       source: "Βαθμολογία από το Airbnb, καταγραφή {date}.",
     },
-    langNote: "Αυτόματη μετάφραση. Το πρωτότυπο γράφτηκε στα {lang} από τον ιδιοκτήτη.",
+    langNote: "Γράφτηκε στα {lang} από τον ιδιοκτήτη και εμφανίζεται όπως παραλήφθηκε.",
     form: {
       name: "Ονοματεπώνυμο",
       email: "Email",
