@@ -256,7 +256,11 @@ export async function updatePartner(id: number, formData: FormData) {
   const zone_ids = ZONE_IDS.filter((z) => formData.get(`zone-${z}`) === "on");
   const pct = num(formData.get("commissionPct"));
   const commission = pct == null ? NaN : Math.round(pct * 100) / 10000; // "12" -> 0.12
-  const err = validatePartnerUpdate({ zone_ids, commission });
+  // Champ vide = « on ne sait pas » = null, jamais 0 ni 1 : onze loueurs sur
+  // onze n'ont déclaré aucune durée minimale, et écrire une valeur par défaut
+  // ferait passer une ignorance pour un fait.
+  const minDays = num(formData.get("minDays"));
+  const err = validatePartnerUpdate({ zone_ids, commission, min_days: minDays });
   if (err) redirect(`${PATH}?tab=partners&error=${encodeURIComponent(err)}`);
   // Place ID corrigé à la main : on efface la note relevée avec l'ancienne
   // fiche, sinon l'écran garderait la note d'un autre établissement jusqu'au
@@ -268,6 +272,7 @@ export async function updatePartner(id: number, formData: FormData) {
   const { error } = await supabase.from("car_partners").update({
     zone_ids,
     commission,
+    min_days: minDays,
     google_place_id: placeId,
     ...(placeChanged
       ? { google_rating: null, google_rating_count: null, google_maps_url: null, google_rating_at: null }

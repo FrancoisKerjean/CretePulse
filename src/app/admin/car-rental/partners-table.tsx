@@ -169,6 +169,9 @@ export function PartnersTable({
                 {ratingBadge(p)}
                 <span className="text-xs text-text-muted">
                   {p.zone_ids.length} zone(s) · {Math.round(p.commission * 10000) / 100} %
+                  {/* Affichée seulement si déclarée : un « min. n/d » sur onze
+                      fiches sur onze est du bruit, pas une information. */}
+                  {p.min_days ? <> · <span className="font-data">min. {p.min_days} j</span></> : null}
                   {st.won > 0 ? <> · <span className="font-bold text-text">{st.won} devis gagné(s)</span></> : null}
                   {st.rented > 0 ? <> · {st.rented} loc.</> : null}
                   {st.commissionEur > 0 ? <> · <span className="font-data font-bold text-text">{st.commissionEur.toFixed(2)} €</span></> : null}
@@ -344,6 +347,16 @@ export function PartnersTable({
                     <input name="commissionPct" inputMode="decimal" defaultValue={Math.round(p.commission * 10000) / 100}
                            className="w-16 rounded-lg border border-border px-2 py-1" aria-label="Commission (%)" />
                     %
+                  </label>
+                  {/* Durée minimale déclarée par le loueur. Champ vide = inconnue,
+                      ce qui est le cas de tous aujourd'hui : le placeholder dit
+                      « n/d » plutôt que de suggérer une valeur. */}
+                  <label className="flex items-center gap-1.5">
+                    min.
+                    <input name="minDays" inputMode="numeric" defaultValue={p.min_days ?? ""} placeholder="n/d"
+                           className="w-14 rounded-lg border border-border px-2 py-1"
+                           aria-label="Durée minimale de location (jours)" />
+                    j
                   </label>
                   <button className="rounded-full bg-sea px-3 py-1 font-bold text-white">Enregistrer</button>
                 </form>

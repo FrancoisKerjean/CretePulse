@@ -68,6 +68,13 @@ export interface AdminPartner {
   // Colonne recrutement ajoutée en SQL direct sur le VPS (non versionnée) :
   // affichée si présente, ignorée sinon.
   outreach_status?: string | null;
+  // Durée minimale de location déclarée par le loueur, en jours
+  // (migration 20260811_car_partners_min_days). `null` = inconnue, ce qui est
+  // le cas des onze loueurs aujourd'hui : ne jamais l'afficher comme « 1 ».
+  // ⛔ Elle n'a encore AUCUN effet sur l'appel d'offres : un loueur à trois
+  // jours minimum continue de recevoir des demandes de deux jours. Le filtrage
+  // des invitations est un chantier distinct.
+  min_days?: number | null;
   // Compte de versement Stripe Connect (migration 20260730_car_booking).
   // Sans lui, le cron de versement garde les fonds du client et le signale.
   stripe_connect_account_id?: string | null;
@@ -253,11 +260,20 @@ export function partnerStats(
 export const ZONE_IDS: string[] = CAR_ZONES.map((z) => z.id);
 
 /** null = OK, sinon message d'erreur (la server action redirige avec ?error=, la page l'affiche en bandeau). */
-export function validatePartnerUpdate(u: { zone_ids: string[]; commission: number }): string | null {
+export function validatePartnerUpdate(
+  u: { zone_ids: string[]; commission: number; min_days?: number | null },
+): string | null {
   if (!Array.isArray(u.zone_ids) || u.zone_ids.length === 0) return "At least one zone required";
   if (u.zone_ids.some((z) => !ZONE_IDS.includes(z))) return "Unknown zone";
   if (typeof u.commission !== "number" || Number.isNaN(u.commission) || u.commission < 0 || u.commission > 0.5) {
     return "Commission out of range (0-0.5)";
+  }
+  // `null` est une valeur légitime : « on ne sait pas ». Seule une valeur
+  // présente est bornée. Le plafond à 30 jours est le même que celui de la
+  // liste blanche de kairos-inbox, qui écrira cette colonne par courrier.
+  if (u.min_days != null
+      && (!Number.isInteger(u.min_days) || u.min_days < 1 || u.min_days > 30)) {
+    return "Minimum days out of range (1-30)";
   }
   return null;
 }
