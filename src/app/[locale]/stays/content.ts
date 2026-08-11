@@ -11,6 +11,8 @@
 // Contrainte DA (gate CI check:da) : aucun tiret cadratin. Separateurs autorises :
 // point median, virgule, point, deux-points.
 
+import type { AmenityKey } from "@/lib/stays/facts";
+
 export const STAYS_LOCALES = ["en", "fr", "de", "el"] as const;
 export type StaysLocale = (typeof STAYS_LOCALES)[number];
 
@@ -55,10 +57,10 @@ export type StaysStrings = {
     bedrooms: string;
     bathrooms: string;
     area: string;
-    amenities: Record<
-      "pool" | "sea_view" | "ac" | "wifi" | "bbq" | "parking" | "pets",
-      string
-    >;
+    // Lie a AMENITY_KEYS et non recopie : la liste a ete elargie le 11/08/2026
+    // et les deux avaient deja diverge. Le type impose desormais la parite des
+    // quatre langues a chaque ajout de cle.
+    amenities: Record<AmenityKey, string>;
   };
   calendar: {
     checkIn: string;
@@ -365,10 +367,15 @@ export const L: Record<StaysLocale, StaysStrings> = {
       bathrooms: "bathrooms",
       area: "sqm",
       amenities: {
+        private_beach: "Private beach",
         pool: "Pool",
         sea_view: "Sea view",
+        hammam: "Hammam",
+        sauna: "Sauna",
         ac: "Air conditioning",
         wifi: "Wifi",
+        kitchen: "Equipped kitchen",
+        washer: "Washing machine",
         bbq: "Barbecue",
         parking: "Parking",
         pets: "Pets allowed",
@@ -574,10 +581,15 @@ export const L: Record<StaysLocale, StaysStrings> = {
       bathrooms: "salles de bain",
       area: "m2",
       amenities: {
+        private_beach: "Plage privée",
         pool: "Piscine",
         sea_view: "Vue mer",
+        hammam: "Hammam",
+        sauna: "Sauna",
         ac: "Climatisation",
         wifi: "Wifi",
+        kitchen: "Cuisine équipée",
+        washer: "Lave-linge",
         bbq: "Barbecue",
         parking: "Parking",
         pets: "Animaux acceptés",
@@ -785,10 +797,15 @@ export const L: Record<StaysLocale, StaysStrings> = {
       bathrooms: "Badezimmer",
       area: "qm",
       amenities: {
+        private_beach: "Privatstrand",
         pool: "Pool",
         sea_view: "Meerblick",
+        hammam: "Hamam",
+        sauna: "Sauna",
         ac: "Klimaanlage",
         wifi: "WLAN",
+        kitchen: "Ausgestattete Küche",
+        washer: "Waschmaschine",
         bbq: "Grill",
         parking: "Parkplatz",
         pets: "Haustiere erlaubt",
@@ -997,10 +1014,15 @@ export const L: Record<StaysLocale, StaysStrings> = {
       bathrooms: "μπάνια",
       area: "τ.μ.",
       amenities: {
+        private_beach: "Ιδιωτική παραλία",
         pool: "Πισίνα",
         sea_view: "Θέα στη θάλασσα",
+        hammam: "Χαμάμ",
+        sauna: "Σάουνα",
         ac: "Κλιματισμός",
         wifi: "Wifi",
+        kitchen: "Εξοπλισμένη κουζίνα",
+        washer: "Πλυντήριο ρούχων",
         bbq: "Ψησταριά",
         parking: "Πάρκινγκ",
         pets: "Δεκτά κατοικίδια",

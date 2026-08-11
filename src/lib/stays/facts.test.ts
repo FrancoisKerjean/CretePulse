@@ -23,10 +23,15 @@ describe("normalizeAmenities", () => {
 
   it("isAmenityKey discrimine", () => {
     expect(isAmenityKey("pool")).toBe(true);
-    expect(isAmenityKey("sauna")).toBe(false);
+    expect(isAmenityKey("jacuzzi")).toBe(false);
   });
 
+  // Liste elargie le 11/08/2026 : les annonces reelles portaient deja plage
+  // privee, hammam et sauna, qui n avaient aucune cle ou aller.
   it("AMENITY_KEYS est la liste fermee de la spec", () => {
-    expect(AMENITY_KEYS).toEqual(["pool", "sea_view", "ac", "wifi", "bbq", "parking", "pets"]);
+    expect(AMENITY_KEYS).toEqual([
+      "private_beach", "pool", "sea_view", "hammam", "sauna", "ac",
+      "wifi", "kitchen", "washer", "bbq", "parking", "pets",
+    ]);
   });
 });

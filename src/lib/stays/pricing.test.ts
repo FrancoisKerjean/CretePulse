@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { nightsBetween, computeQuote, balanceApplicationFeeCents } from "./pricing";
+import { nightsBetween, computeQuote, quoteForNights, balanceApplicationFeeCents } from "./pricing";
 
 describe("nightsBetween", () => {
   it("counts nights exclusive of checkout", () => {
@@ -87,5 +87,37 @@ describe("balanceApplicationFeeCents", () => {
     for (const input of cases) {
       expect(balanceApplicationFeeCents(computeQuote(input))).toBeGreaterThanOrEqual(0);
     }
+  });
+});
+
+describe("quoteForNights", () => {
+  // La fiche annonce un prix a la nuit, mais ce que le voyageur veut savoir est
+  // le total du sejour le plus court qu'il puisse reserver. Il le calculait de
+  // tete, minimum de nuits et frais compris.
+  it("chiffre le sejour minimum de l annonce", () => {
+    const q = quoteForNights(5, { basePriceEur: 945, cleaningFeeEur: 0, commissionRate: 5 });
+    expect(q.nights).toBe(5);
+    expect(q.ownerNetEur).toBe(4725);
+    expect(q.commissionEur).toBe(236.25);
+    expect(q.guestTotalEur).toBe(4961.25);
+  });
+
+  it("compte le menage UNE fois, jamais par nuit", () => {
+    const q = quoteForNights(3, { basePriceEur: 441, cleaningFeeEur: 120, commissionRate: 5 });
+    expect(q.ownerNetEur).toBe(441 * 3 + 120);
+  });
+
+  // Meme formule que le tunnel d encaissement : si les deux divergeaient, la
+  // fiche annoncerait un total que la demande ne confirmerait pas.
+  it("rend exactement ce que computeQuote rend sur les memes nuits", () => {
+    const common = { basePriceEur: 200, cleaningFeeEur: 60, commissionRate: 5 };
+    const parDates = computeQuote({ ...common, dateFrom: "2026-09-01", dateTo: "2026-09-06" });
+    const parNuits = quoteForNights(5, common);
+    expect(parNuits).toEqual(parDates);
+  });
+
+  it("refuse un nombre de nuits qui n a pas de sens", () => {
+    expect(() => quoteForNights(0, { basePriceEur: 100, cleaningFeeEur: 0, commissionRate: 5 })).toThrow();
+    expect(() => quoteForNights(2.5, { basePriceEur: 100, cleaningFeeEur: 0, commissionRate: 5 })).toThrow();
   });
 });

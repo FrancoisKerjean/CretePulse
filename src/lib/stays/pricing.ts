@@ -41,21 +41,40 @@ export function balanceApplicationFeeCents(quote: StayQuote): number {
   );
 }
 
-export function computeQuote(input: QuoteInput): StayQuote {
-  const nights = nightsBetween(input.dateFrom, input.dateTo);
-  const ownerNetEur = round2(input.basePriceEur * nights + input.cleaningFeeEur);
-  const commissionEur = round2(ownerNetEur * (input.commissionRate / 100));
+/** Ce qu'il faut pour chiffrer un sejour, une fois le nombre de nuits connu. */
+export type NightlyTerms = Pick<
+  QuoteInput,
+  "basePriceEur" | "cleaningFeeEur" | "commissionRate"
+>;
+
+/**
+ * Devis a partir d un NOMBRE de nuits plutot que de deux dates.
+ *
+ * Sert a la fiche visiteur, qui doit annoncer le total du sejour le plus court
+ * reservable (le minimum de l annonce) avant que le voyageur ait choisi ses
+ * dates : sans lui, la page affiche un prix a la nuit et laisse le lecteur
+ * multiplier de tete, minimum de nuits et frais compris.
+ *
+ * ⛔ `computeQuote` delegue ici : une seule formule, sinon la fiche annoncerait
+ * un total que la demande ne confirmerait pas.
+ */
+export function quoteForNights(nights: number, terms: NightlyTerms): StayQuote {
+  if (!Number.isInteger(nights) || nights <= 0) {
+    throw new Error("Invalid nights");
+  }
+  const ownerNetEur = round2(terms.basePriceEur * nights + terms.cleaningFeeEur);
+  const commissionEur = round2(ownerNetEur * (terms.commissionRate / 100));
   const guestTotalEur = round2(ownerNetEur + commissionEur);
   const depositEur = round2(guestTotalEur * DEPOSIT_PCT);
   const balanceEur = round2(guestTotalEur - depositEur);
   const ownerNetDeposit = round2(ownerNetEur * DEPOSIT_PCT);
   const applicationFeeCents = Math.round(
-    ownerNetDeposit * (input.commissionRate / 100) * 100,
+    ownerNetDeposit * (terms.commissionRate / 100) * 100,
   );
   return {
     nights,
-    basePriceEur: round2(input.basePriceEur),
-    cleaningFeeEur: round2(input.cleaningFeeEur),
+    basePriceEur: round2(terms.basePriceEur),
+    cleaningFeeEur: round2(terms.cleaningFeeEur),
     ownerNetEur,
     commissionEur,
     guestTotalEur,
@@ -63,4 +82,8 @@ export function computeQuote(input: QuoteInput): StayQuote {
     balanceEur,
     applicationFeeCents,
   };
+}
+
+export function computeQuote(input: QuoteInput): StayQuote {
+  return quoteForNights(nightsBetween(input.dateFrom, input.dateTo), input);
 }

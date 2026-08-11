@@ -8,10 +8,12 @@ import { setRequestLocale } from "next-intl/server";
 import { getListingBySlug, bookedRangesForListing } from "@/lib/stays/db";
 import { unavailableNights } from "@/lib/stays/availability";
 import { normalizeAmenities } from "@/lib/stays/facts";
+import { quoteForNights } from "@/lib/stays/pricing";
 import { L, pickStaysLocale } from "../content";
 import { staysMetadata } from "../metadata";
 import RequestForm from "./RequestForm";
 import Gallery from "./Gallery";
+import QuoteBreakdown from "./QuoteBreakdown";
 
 export async function generateMetadata(
   { params }: { params: Promise<{ locale: string; slug: string }> },
@@ -53,114 +55,149 @@ export default async function StayDetailPage(
 
   const amenities = normalizeAmenities(listing.amenities);
 
+  const hasRating =
+    listing.rating_avg != null && listing.reviews_count != null && listing.reviews_count > 0;
+
+  // Total du sejour le plus court REELLEMENT reservable, frais compris. La fiche
+  // n affichait qu un tarif a la nuit : le voyageur multipliait de tete, oubliait
+  // le minimum de nuits et le menage, et decouvrait le vrai montant au devis.
+  // Meme formule que l encaissement : quoteForNights est ce que computeQuote
+  // appelle, il ne peut pas y avoir deux totaux.
+  const minStay = quoteForNights(minNights, {
+    basePriceEur: Number(listing.base_price_eur),
+    cleaningFeeEur: Number(listing.cleaning_fee_eur),
+    commissionRate: Number(listing.commission_rate),
+  });
+
   return (
     <main className="min-h-screen bg-surface">
-      <div className="mx-auto max-w-3xl px-4 pt-10 pb-16">
-        <h1 className="font-heading font-extrabold text-3xl md:text-[40px] leading-[1.1] tracking-tight text-text mb-4">
+      <div className="mx-auto max-w-6xl px-4 pt-10 pb-16">
+        <h1 className="font-heading font-extrabold text-3xl md:text-[40px] leading-[1.1] tracking-tight text-text mb-3">
           {listing.title}
         </h1>
 
-        {facts.length > 0 && (
-          <p className="m-0 mb-5 flex flex-wrap gap-x-3 gap-y-1 text-[14.5px] text-text-muted">
-            {facts.map((f, i) => (
-              <span key={f}>
-                {i > 0 && <span className="mr-3 text-text-light">·</span>}
-                {f}
-              </span>
-            ))}
-          </p>
-        )}
+        {/* Ligne de confiance, au-dessus de la ligne de flottaison. La note vivait
+            sous le formulaire : l argument qui fait rester arrivait apres celui
+            qui fait decider. */}
+        <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[14.5px] text-text-muted">
+          {hasRating && (
+            <span className="font-semibold text-text">
+              {t.rating.summary
+                .replace("{rating}", String(listing.rating_avg).replace(".", ","))
+                .replace("{count}", String(listing.reviews_count))}
+            </span>
+          )}
+          {facts.map((f) => (
+            <span key={f}>{f}</span>
+          ))}
+        </div>
 
         <Gallery photos={listing.photos ?? []} alt={listing.title ?? ""} />
 
-        {amenities.length > 0 && (
-          <ul className="m-0 mt-5 flex list-none flex-wrap gap-2 p-0">
-            {amenities.map((k) => (
-              <li
-                key={k}
-                className="rounded-xl border border-border bg-white px-3 py-1.5 text-[13.5px] text-text-muted"
-              >
-                {t.facts.amenities[k]}
-              </li>
-            ))}
-          </ul>
-        )}
+        <div className="mt-7 grid items-start gap-8 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+          <div className="min-w-0">
+            {/* Les equipements passent AVANT la description : ce sont eux qui font
+                retenir ou eliminer une annonce, pas le troisieme paragraphe. */}
+            {amenities.length > 0 && (
+              <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
+                {amenities.map((k) => (
+                  <li
+                    key={k}
+                    className="rounded-xl border border-border bg-white px-3 py-1.5 text-[13.5px] text-text-muted"
+                  >
+                    {t.facts.amenities[k]}
+                  </li>
+                ))}
+              </ul>
+            )}
 
-        {listing.description && (
-          <p className="mt-6 text-[15.5px] text-text-muted leading-relaxed whitespace-pre-line">
-            {listing.description}
-          </p>
-        )}
-
-        {/* La langue de l original vient de la base, jamais d une deduction : sans
-            elle, on n affiche rien. */}
-        {listing.description && listing.description_locale &&
-          listing.description_locale !== pickStaysLocale(locale) && (
-            <p className="m-0 mt-1.5 text-[12.5px] italic text-text-light">
-              {t.langNote.replace("{lang}", listing.description_locale)}
-            </p>
-          )}
-
-        <div className="card-base mt-6 p-6">
-          <p className="m-0 text-[12px] uppercase tracking-wide text-text-muted">
-            {t.listing.priceLabel}
-          </p>
-          <p className="m-0 mt-1 font-heading font-extrabold text-3xl text-text font-data">
-            {listing.base_price_eur} €
-          </p>
-          <p className="m-0 mt-2 text-sm text-text-muted">{t.listing.priceNote}</p>
-          <p className="m-0 mt-1 text-sm text-text-muted">{t.listing.feeNote}</p>
-        </div>
-
-        <section className="mt-10">
-          <h2 className="font-heading font-extrabold text-[26px] text-text mb-2">
-            {t.listing.requestTitle}
-          </h2>
-          <p className="text-[15px] text-text-muted leading-relaxed mt-0 mb-5">
-            {t.listing.requestIntro}
-          </p>
-          <RequestForm
-            slug={listing.slug}
-            strings={t.form}
-            quoteStrings={t.quote}
-            calendarStrings={t.calendar}
-            unavailable={unavailable}
-            minNights={minNights}
-            locale={pickStaysLocale(locale)}
-            basePriceEur={Number(listing.base_price_eur)}
-            cleaningFeeEur={Number(listing.cleaning_fee_eur)}
-            commissionRate={Number(listing.commission_rate)}
-          />
-        </section>
-
-        {/* Note relevee sur Airbnb. Aucun lien sortant : envoyer le voyageur la-bas
-            lui ferait payer les frais qu on pretend lui eviter. Le bloc DISPARAIT
-            s il n y a pas d avis, il n annonce jamais son propre vide. */}
-        {listing.rating_avg != null &&
-          listing.reviews_count != null &&
-          listing.reviews_count > 0 && (
-            <section className="mt-12">
-              <p className="m-0 font-heading text-2xl font-extrabold text-text">
-                {t.rating.summary
-                  .replace("{rating}", String(listing.rating_avg).replace(".", ","))
-                  .replace("{count}", String(listing.reviews_count))}
+            {listing.description && (
+              <p className="mt-6 text-[15.5px] text-text-muted leading-relaxed whitespace-pre-line">
+                {listing.description}
               </p>
-              {listing.reviews_captured_at && (
-                <p className="m-0 mt-1 text-[12.5px] text-text-light">
-                  {t.rating.source.replace(
-                    "{date}",
-                    listing.reviews_captured_at.slice(0, 10).split("-").reverse().join("/"),
-                  )}
+            )}
+
+            {/* La langue de l original vient de la base, jamais d une deduction : sans
+                elle, on n affiche rien. */}
+            {listing.description && listing.description_locale &&
+              listing.description_locale !== pickStaysLocale(locale) && (
+                <p className="m-0 mt-1.5 text-[12.5px] italic text-text-light">
+                  {t.langNote.replace("{lang}", listing.description_locale)}
                 </p>
               )}
-            </section>
-          )}
 
-        <p className="mt-8 text-[13px]">
-          <Link href={`/${locale}/stays/terms`} className="text-sea underline">
-            {t.listing.termsLink}
-          </Link>
-        </p>
+            {hasRating && listing.reviews_captured_at && (
+              <p className="m-0 mt-4 text-[12.5px] text-text-light">
+                {t.rating.source.replace(
+                  "{date}",
+                  listing.reviews_captured_at.slice(0, 10).split("-").reverse().join("/"),
+                )}
+              </p>
+            )}
+
+            <section id="request" className="mt-10 scroll-mt-6">
+              <h2 className="font-heading font-extrabold text-[26px] text-text mb-2">
+                {t.listing.requestTitle}
+              </h2>
+              <p className="text-[15px] text-text-muted leading-relaxed mt-0 mb-5">
+                {t.listing.requestIntro}
+              </p>
+              <RequestForm
+                slug={listing.slug}
+                strings={t.form}
+                quoteStrings={t.quote}
+                calendarStrings={t.calendar}
+                unavailable={unavailable}
+                minNights={minNights}
+                locale={pickStaysLocale(locale)}
+                basePriceEur={Number(listing.base_price_eur)}
+                cleaningFeeEur={Number(listing.cleaning_fee_eur)}
+                commissionRate={Number(listing.commission_rate)}
+              />
+            </section>
+
+            <p className="mt-8 text-[13px]">
+              <Link href={`/${locale}/stays/terms`} className="text-sea underline">
+                {t.listing.termsLink}
+              </Link>
+            </p>
+          </div>
+
+          {/* Panneau collant : le prix suit la lecture au lieu d attendre 900 px
+              plus bas. Sur mobile il reprend sa place dans le flux, au-dessus de
+              la description, faute de colonne ou se coller.
+              ⛔ top-24 et non top-6 : l en-tete du site est LUI AUSSI collant et
+              descend jusqu a 70 px. A 24 px, les 46 premiers pixels du panneau
+              passaient dessous, libelle du prix compris. Meme calage que la
+              colonne collante de articles/[slug]. */}
+          <aside className="card-base order-first p-5 lg:order-none lg:sticky lg:top-24">
+            <p className="m-0 text-[12px] uppercase tracking-wide text-text-muted">
+              {t.listing.priceLabel}
+            </p>
+            <p className="m-0 mt-1 font-heading font-extrabold text-3xl text-text font-data">
+              {listing.base_price_eur} €
+            </p>
+            <p className="m-0 mt-1 text-[13px] text-text-muted">
+              {t.calendar.minNights.replace("{n}", String(minNights))}
+            </p>
+
+            <QuoteBreakdown
+              quote={minStay}
+              commissionRate={Number(listing.commission_rate)}
+              strings={t.quote}
+            />
+
+            <a
+              href="#request"
+              className="mt-4 block rounded-full bg-sun px-5 py-3 text-center font-heading text-[15px] font-bold text-night no-underline"
+            >
+              {t.listing.requestTitle}
+            </a>
+            <p className="m-0 mt-2.5 text-center text-[12.5px] text-text-muted">
+              {t.listing.priceNote}
+            </p>
+          </aside>
+        </div>
       </div>
     </main>
   );
