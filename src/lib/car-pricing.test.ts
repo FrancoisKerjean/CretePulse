@@ -1,5 +1,32 @@
 import { describe, it, expect } from "vitest";
-import { estimateCarPrice, perDayAmount, rentalDays } from "./car-pricing";
+import { estimateCarPrice, meetsMinDays, perDayAmount, rentalDays } from "./car-pricing";
+
+describe("meetsMinDays", () => {
+  it("n'exclut personne quand la duree minimale est inconnue", () => {
+    // 11 loueurs sur 11 portaient min_days a NULL le 12/08/2026. Un NULL
+    // traite comme 0 exclurait tout le monde et fermerait l'appel d'offres.
+    expect(meetsMinDays(null, 1)).toBe(true);
+    expect(meetsMinDays(undefined, 1)).toBe(true);
+  });
+
+  it("accepte une duree egale au minimum", () => {
+    expect(meetsMinDays(3, 3)).toBe(true);
+  });
+
+  it("exclut une duree sous le minimum", () => {
+    // Cas reel : la demande 53, Rethymno 15/08 -> 16/08 (1 jour), routee vers
+    // Luxtrans Crete (Cretecar) qui a repondu par ecrit « 3 day minimum ».
+    expect(meetsMinDays(3, 1)).toBe(false);
+  });
+
+  it("n'exclut personne sur un minimum absurde en base", () => {
+    // La saisie admin borne a 1..30, mais la colonne est un integer nu : une
+    // ecriture directe en base ne doit pas pouvoir vider un appel d'offres.
+    expect(meetsMinDays(0, 1)).toBe(true);
+    expect(meetsMinDays(-2, 1)).toBe(true);
+    expect(meetsMinDays(2.5, 1)).toBe(true);
+  });
+});
 
 describe("rentalDays", () => {
   it("compte les jours entre deux dates ISO", () => {

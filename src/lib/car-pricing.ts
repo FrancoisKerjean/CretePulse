@@ -84,6 +84,23 @@ export function rentalDays(
 }
 
 /**
+ * Ce loueur accepte-t-il une location de cette duree ?
+ *
+ * ⛔ `null` N'EXCLUT PAS. La colonne `car_partners.min_days` existe depuis le
+ * 11/08/2026 et valait NULL sur les 11 loueurs le lendemain : un NULL traite
+ * comme 0 minimum viderait chaque appel d'offres. Inconnu veut dire « pas de
+ * contrainte connue », jamais « aucune location acceptee ».
+ *
+ * ⛔ Une valeur aberrante n'exclut pas non plus. La saisie admin borne a 1..30,
+ * mais la colonne est un integer nu : une ecriture directe en base ne doit pas
+ * pouvoir fermer le tunnel en silence. Seul un entier >= 1 filtre.
+ */
+export function meetsMinDays(minDays: number | null | undefined, days: number): boolean {
+  if (minDays == null || !Number.isInteger(minDays) || minDays < 1) return true;
+  return days >= minDays;
+}
+
+/**
  * Prix par jour d'un total saisi, arrondi au dixieme. Sert a renvoyer au loueur
  * ce qu'il est en train de vendre pendant qu'il tape son prix : il saisit un
  * TOTAL et raisonne en journalier, ecart d'ou naissent les erreurs de duree.
