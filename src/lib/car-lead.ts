@@ -7,6 +7,7 @@ import { zoneForPickup, type CarZone } from "./car-partners.ts";
 import { CAR_TYPES_DATA, type CarTypeData } from "./car-types-data.ts";
 import { SLUG_COORDS } from "./taxi-fare.ts";
 import { isChildSeatKey } from "./car-child-seats.ts";
+import { SHORT_STAY_MIN_DAYS, rentalDays } from "./car-pricing.ts";
 
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -126,6 +127,17 @@ export function validateCarLead(body: Record<string, unknown>): CarLeadResult {
   }
   if (dateTo === dateFrom && timeTo <= timeFrom) {
     return { kind: "error", status: 422, error: "Invalid times" };
+  }
+  // ⛔ Duree minimale : la garde vit ICI parce que le formulaire est du code
+  // CLIENT. Desactiver un bouton n'empeche aucun POST direct, et cette route
+  // declenche un fan-out d'emails vers de vrais loueurs.
+  //
+  // [FACT 2026-08-12 : sous 3 jours, 4 demandes sur 4 sont restees a zero offre
+  // sur 60 jours, contre 26 sur 26 servies au-dela. Refuser a l'entree ne coute
+  // donc aucun revenu mesure, et evite d'encaisser un lead que personne ne peut
+  // servir. Decision de Francois, qui a prefere trier plutot qu'avertir.]
+  if (rentalDays(dateFrom, dateTo, timeFrom, timeTo) < SHORT_STAY_MIN_DAYS) {
+    return { kind: "error", status: 422, error: "Rental too short" };
   }
 
   const row: CarRequestRow = {

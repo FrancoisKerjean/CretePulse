@@ -13,9 +13,11 @@ export interface DbPartner {
   commission: number;
   lead_routing: "direct" | "relay";
   active: boolean;
+  /** Duree minimale de location acceptee. `null` = inconnue, jamais « aucune ». */
+  min_days: number | null;
 }
 
-const COLS = "id, name, email, phone, whatsapp, zone_ids, commission, lead_routing, active";
+const COLS = "id, name, email, phone, whatsapp, zone_ids, commission, lead_routing, active, min_days";
 
 /** Loueurs actifs couvrant la zone : tous invités (appel d'offres first-come). */
 export async function partnersForZone(zoneId: string): Promise<DbPartner[]> {

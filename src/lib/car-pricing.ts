@@ -84,6 +84,48 @@ export function rentalDays(
 }
 
 /**
+ * En dessous de cette duree, une demande n'a jamais recu d'offre.
+ *
+ * [FACT 2026-08-12 : agregat des `car_requests` sur 60 jours. 0 jour -> 2
+ * demandes, 0 offre. 1 jour -> 2 demandes, 0 offre. 3 jours et plus -> 26
+ * demandes, 165 offres, aucune a zero. Les invitations etaient bien parties et
+ * relancees : 4 loueurs sur 8 ont explicitement decline. Le tunnel marche,
+ * l'offre n'existe pas.]
+ *
+ * REFUSE la demande, des le formulaire ET dans `validateCarLead`. Le 12/08/2026
+ * Francois a tranche pour le tri plutot que pour l'avertissement : encaisser un
+ * lead que personne ne peut servir coute un voyageur decu et un loueur derange,
+ * pour un revenu mesure a zero.
+ *
+ * ⛔ La garde du formulaire ne suffit PAS : c'est du code client, desactiver un
+ * bouton n'empeche aucun POST direct, et la route declenche un fan-out d'emails
+ * vers de vrais loueurs. Les deux gardes lisent cette meme constante.
+ *
+ * SHORTCUT: seuil unique en dur alors que le vrai minimum est par loueur et par
+ * zone (`car_partners.min_days`). Declencheur d'upgrade : des que la moitie des
+ * loueurs actifs porte la colonne, calculer le seuil = min(min_days) de la zone
+ * choisie et supprimer cette constante.
+ */
+export const SHORT_STAY_MIN_DAYS = 3;
+
+/**
+ * Ce loueur accepte-t-il une location de cette duree ?
+ *
+ * ⛔ `null` N'EXCLUT PAS. La colonne `car_partners.min_days` existe depuis le
+ * 11/08/2026 et valait NULL sur les 11 loueurs le lendemain : un NULL traite
+ * comme 0 minimum viderait chaque appel d'offres. Inconnu veut dire « pas de
+ * contrainte connue », jamais « aucune location acceptee ».
+ *
+ * ⛔ Une valeur aberrante n'exclut pas non plus. La saisie admin borne a 1..30,
+ * mais la colonne est un integer nu : une ecriture directe en base ne doit pas
+ * pouvoir fermer le tunnel en silence. Seul un entier >= 1 filtre.
+ */
+export function meetsMinDays(minDays: number | null | undefined, days: number): boolean {
+  if (minDays == null || !Number.isInteger(minDays) || minDays < 1) return true;
+  return days >= minDays;
+}
+
+/**
  * Prix par jour d'un total saisi, arrondi au dixieme. Sert a renvoyer au loueur
  * ce qu'il est en train de vendre pendant qu'il tape son prix : il saisit un
  * TOTAL et raisonne en journalier, ecart d'ou naissent les erreurs de duree.
