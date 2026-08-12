@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
     // Mesure du 12/08/2026 : la demande 53 (Rethymno, 1 jour) est partie à 8
     // loueurs et n'a produit 0 offre. Luxtrans avait répondu par écrit « 3 day
     // minimum », et le brouillon de réponse promettait de filtrer les demandes
-    // suivantes — un filtre qui n'existait pas. Il existe maintenant, et le cas
+    // suivantes, un filtre qui n'existait pas. Il existe maintenant, et le cas
     // « personne n'est éligible » sonne au lieu de laisser le voyageur attendre.
     await supabase.from("car_requests").update({ status: "below_min_days" }).eq("id", requestId);
     void notifyOps({
