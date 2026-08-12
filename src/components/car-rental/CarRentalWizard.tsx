@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { CAR_ZONES, allPickups, zoneForPickup } from "@/lib/car-partners";
 import { CAR_TYPES } from "@/lib/car-types";
+import { SHORT_STAY_MIN_DAYS, rentalDays } from "@/lib/car-pricing";
 import { CAR_CHILD_SEAT_KEYS, CAR_CHILD_SEAT_LABELS } from "@/lib/car-child-seats";
 import { SLUG_COORDS } from "@/lib/taxi-fare";
 import { nearestBy } from "@/lib/geo";
@@ -93,6 +94,7 @@ type Strings = {
   whatsappCta: string;
   error: string;
   npTitle: string;
+  shortStay: string; // {days}
   npBody: string; // {place}
   npPartnersCta: string;
   npSuggest: string;
@@ -143,6 +145,7 @@ const T: Record<string, Strings> = {
     fallbackBody: "Our email to the agency failed. Reach them directly on WhatsApp · your request is ready to send.",
     whatsappCta: "Open WhatsApp",
     error: "Something went wrong. Please try again in a moment.",
+    shortStay: "Most agencies here ask for {days} days minimum. Shorter rentals rarely get an offer. You can still send your request.",
     npTitle: "No partner in this area yet",
     npBody: "We don't have a vetted rental partner around {place} yet. No request was sent: we only forward requests to agencies we actually work with.",
     npPartnersCta: "Run a local rental agency? Become a partner",
@@ -192,6 +195,7 @@ const T: Record<string, Strings> = {
     fallbackBody: "Notre email vers l'agence a échoué. Contactez-la directement sur WhatsApp : votre demande est prête à envoyer.",
     whatsappCta: "Ouvrir WhatsApp",
     error: "Une erreur est survenue. Réessayez dans un instant.",
+    shortStay: "La plupart des agences d'ici demandent {days} jours minimum. En dessous, une location reçoit rarement une offre. Vous pouvez tout de même envoyer votre demande.",
     npTitle: "Pas encore de partenaire dans cette zone",
     npBody: "Nous n'avons pas encore d'agence de location partenaire vérifiée autour de {place}. Aucune demande n'a été envoyée : nous ne transmettons des demandes qu'aux agences avec lesquelles nous travaillons vraiment.",
     npPartnersCta: "Vous êtes une agence locale ? Devenez partenaire",
@@ -241,6 +245,7 @@ const T: Record<string, Strings> = {
     fallbackBody: "Unsere E-Mail an die Agentur ist fehlgeschlagen. Kontaktieren Sie sie direkt per WhatsApp · Ihre Anfrage ist vorbereitet.",
     whatsappCta: "WhatsApp öffnen",
     error: "Etwas ist schiefgelaufen. Bitte versuchen Sie es gleich noch einmal.",
+    shortStay: "Die meisten Agenturen hier verlangen mindestens {days} Tage. Kürzere Mieten erhalten selten ein Angebot. Sie können Ihre Anfrage trotzdem senden.",
     npTitle: "Noch kein Partner in dieser Gegend",
     npBody: "Rund um {place} haben wir noch keine geprüfte Partneragentur. Es wurde keine Anfrage gesendet: Wir leiten Anfragen nur an Agenturen weiter, mit denen wir wirklich zusammenarbeiten.",
     npPartnersCta: "Sie führen eine lokale Agentur? Partner werden",
@@ -290,6 +295,7 @@ const T: Record<string, Strings> = {
     fallbackBody: "Το email προς το γραφείο απέτυχε. Επικοινωνήστε απευθείας μέσω WhatsApp · το αίτημά σας είναι έτοιμο για αποστολή.",
     whatsappCta: "Άνοιγμα WhatsApp",
     error: "Κάτι πήγε στραβά. Δοκιμάστε ξανά σε λίγο.",
+    shortStay: "Τα περισσότερα γραφεία εδώ ζητούν τουλάχιστον {days} ημέρες. Οι πιο σύντομες ενοικιάσεις σπάνια λαμβάνουν προσφορά. Μπορείτε ωστόσο να στείλετε το αίτημά σας.",
     npTitle: "Δεν υπάρχει ακόμη συνεργάτης σε αυτήν την περιοχή",
     npBody: "Δεν έχουμε ακόμη ελεγμένο συνεργαζόμενο γραφείο ενοικίασης γύρω από το {place}. Δεν στάλθηκε κανένα αίτημα: προωθούμε αιτήματα μόνο σε γραφεία με τα οποία πραγματικά συνεργαζόμαστε.",
     npPartnersCta: "Είστε τοπικό γραφείο; Γίνετε συνεργάτης",
@@ -747,6 +753,14 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
           </div>
           {!timesValid && (
             <p className="mt-4 text-sm font-semibold text-terracotta">{t.invalidTimeRange}</p>
+          )}
+          {/* Avertissement, jamais un blocage : le bouton reste actif. Une
+              demande sous ce seuil n'a jamais recu d'offre (4 sur 4), mais un
+              loueur peut accepter et perdre le lead serait pire. */}
+          {datesValid && timesValid && rentalDays(dateFrom, dateTo, timeFrom, timeTo) < SHORT_STAY_MIN_DAYS && (
+            <p className="mt-4 text-sm text-text/70">
+              {t.shortStay.replace("{days}", String(SHORT_STAY_MIN_DAYS))}
+            </p>
           )}
         </div>
       )}

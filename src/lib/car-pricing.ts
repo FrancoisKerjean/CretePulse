@@ -84,6 +84,25 @@ export function rentalDays(
 }
 
 /**
+ * En dessous de cette duree, une demande n'a jamais recu d'offre.
+ *
+ * [FACT 2026-08-12 : agregat des `car_requests` sur 60 jours. 0 jour -> 2
+ * demandes, 0 offre. 1 jour -> 2 demandes, 0 offre. 3 jours et plus -> 26
+ * demandes, 165 offres, aucune a zero. Les invitations etaient bien parties et
+ * relancees : 4 loueurs sur 8 ont explicitement decline. Le tunnel marche,
+ * l'offre n'existe pas.]
+ *
+ * Sert a PREVENIR le voyageur, jamais a le bloquer : un loueur peut accepter,
+ * et refuser la saisie perdrait un lead que personne n'a arbitre.
+ *
+ * SHORTCUT: seuil unique en dur alors que le vrai minimum est par loueur et par
+ * zone (`car_partners.min_days`). Declencheur d'upgrade : des que la moitie des
+ * loueurs actifs porte la colonne, calculer le seuil = min(min_days) de la zone
+ * choisie et supprimer cette constante.
+ */
+export const SHORT_STAY_MIN_DAYS = 3;
+
+/**
  * Ce loueur accepte-t-il une location de cette duree ?
  *
  * ⛔ `null` N'EXCLUT PAS. La colonne `car_partners.min_days` existe depuis le
