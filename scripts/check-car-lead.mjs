@@ -41,7 +41,16 @@ ok("même jour avec retour avant prise en charge -> 422 'Invalid times'", (() =>
   const x = validateCarLead({ ...valid, dateFrom: "2026-09-25", dateTo: "2026-09-25", timeFrom: "17:40", timeTo: "02:40" });
   return x.kind === "error" && x.error === "Invalid times";
 })());
-ok("même jour avec retour après prise en charge -> ok", validateCarLead({ ...valid, dateFrom: "2026-09-25", dateTo: "2026-09-25", timeFrom: "09:00", timeTo: "17:00" }).kind === "ok");
+// ⛔ Cette assertion disait « -> ok » jusqu'au 12/08/2026 et elle est tombée
+// À RAISON : une location du jour même est désormais refusée, comme tout ce qui
+// est sous SHORT_STAY_MIN_DAYS. Sur 60 jours, 4 demandes sur 4 sous 3 jours
+// étaient restées à zéro offre, contre 26 sur 26 servies au-delà.
+ok("même jour avec retour après prise en charge -> 422 'Rental too short'", (() => {
+  const x = validateCarLead({ ...valid, dateFrom: "2026-09-25", dateTo: "2026-09-25", timeFrom: "09:00", timeTo: "17:00" });
+  return x.kind === "error" && x.status === 422 && x.error === "Rental too short";
+})());
+ok("2 jours -> 422 'Rental too short'", validateCarLead({ ...valid, dateFrom: "2026-09-25", dateTo: "2026-09-27", timeFrom: "10:00", timeTo: "09:00" }).error === "Rental too short");
+ok("3 jours pleins -> ok", validateCarLead({ ...valid, dateFrom: "2026-09-25", dateTo: "2026-09-28", timeFrom: "10:00", timeTo: "09:00" }).kind === "ok");
 
 const good = validateCarLead(valid);
 ok("demande valide -> kind ok", good.kind === "ok");
