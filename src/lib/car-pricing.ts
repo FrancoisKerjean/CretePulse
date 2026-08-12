@@ -92,8 +92,14 @@ export function rentalDays(
  * relancees : 4 loueurs sur 8 ont explicitement decline. Le tunnel marche,
  * l'offre n'existe pas.]
  *
- * Sert a PREVENIR le voyageur, jamais a le bloquer : un loueur peut accepter,
- * et refuser la saisie perdrait un lead que personne n'a arbitre.
+ * REFUSE la demande, des le formulaire ET dans `validateCarLead`. Le 12/08/2026
+ * Francois a tranche pour le tri plutot que pour l'avertissement : encaisser un
+ * lead que personne ne peut servir coute un voyageur decu et un loueur derange,
+ * pour un revenu mesure a zero.
+ *
+ * ⛔ La garde du formulaire ne suffit PAS : c'est du code client, desactiver un
+ * bouton n'empeche aucun POST direct, et la route declenche un fan-out d'emails
+ * vers de vrais loueurs. Les deux gardes lisent cette meme constante.
  *
  * SHORTCUT: seuil unique en dur alors que le vrai minimum est par loueur et par
  * zone (`car_partners.min_days`). Declencheur d'upgrade : des que la moitie des
