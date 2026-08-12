@@ -33,13 +33,11 @@ const nextConfig: NextConfig = {
       { hostname: "images.unsplash.com" },
       { hostname: "images.pexels.com" },
       { hostname: "a0.muscache.com" },
+      // Sert aussi les 55 photos des 3 annonces /stays depuis le 12/08/2026.
+      // Les hotes kairosguest.com et le bucket Supabase Kairos ont ete retires
+      // le meme jour, APRES la bascule de stay_listings.photos : les retirer
+      // avant aurait fait repondre 400 a /_next/image et vide les fiches.
       { hostname: "media.crete.direct" },
-      // Photos des annonces /stays importees depuis Kairos (seed 25/07/2026) :
-      // fichiers statiques servis par kairosguest.com et bucket property-photos
-      // du Supabase Kairos. A retirer quand les photos seront rapatriees sur
-      // media.crete.direct.
-      { hostname: "kairosguest.com" },
-      { hostname: "duupvqvnjvbshbpryejw.supabase.co" },
     ],
   },
   async redirects() {
