@@ -47,41 +47,40 @@ FEEDS = (
      "band": (40, 140), "stale_after_min": 45, "unit": "vols"},
     {"collector": "flight_arrivals", "node": "CHQ", "direction": "departure",
      "band": (40, 140), "stale_after_min": 45, "unit": "vols"},
-    # Ferries : cron 2 fois par jour, donc 26 h de silence = une journee sautee.
-    # Bande haute a 25 pour Heraklion : au-dela, c'est le regroupement d'escales
-    # qui a lache et un navire est compte une fois par port desservi.
-    # Bande basse a 0 pour Souda et Sitia : leurs lignes ne partent pas tous les
-    # jours, une journee vide y est normale et n'est pas une panne.
-    {"collector": "ferry_crossings", "node": "HER", "direction": "arrival",
-     "band": (1, 25), "stale_after_min": 1560, "unit": "traversées"},
-    {"collector": "ferry_crossings", "node": "HER", "direction": "departure",
-     "band": (1, 25), "stale_after_min": 1560, "unit": "traversées"},
-    {"collector": "ferry_crossings", "node": "SOU", "direction": "arrival",
-     "band": (0, 10), "stale_after_min": 1560, "unit": "traversées"},
-    {"collector": "ferry_crossings", "node": "SOU", "direction": "departure",
-     "band": (0, 10), "stale_after_min": 1560, "unit": "traversées"},
-    {"collector": "ferry_crossings", "node": "SIT", "direction": "arrival",
-     "band": (0, 10), "stale_after_min": 1560, "unit": "traversées"},
-    {"collector": "ferry_crossings", "node": "SIT", "direction": "departure",
-     "band": (0, 10), "stale_after_min": 1560, "unit": "traversées"},
+    # ⛔ Les 6 capteurs ferries (HER/SOU/SIT x arrivée/départ) ont ete RETIRES le
+    # 16/08/2026 : voir CAPTEUR FERRIES ABANDONNE plus bas. On ne surveille pas
+    # ce qu on a decide de ne plus collecter.
 )
 
 
-# Sourdine BORNEE, jamais un cron commente. Une sonde qu'on eteint « en
-# attendant » est une sonde morte : c'est ce silence-la qui a coute cinq jours
-# de collecte HER en juillet. La date est une promesse de reprise, pas une
-# suppression : passee cette date les alertes reviennent seules, meme si
-# personne n'y a retouche.
+# --- CAPTEUR FERRIES ABANDONNE le 16/08/2026 (arbitrage Francois) ------------
 #
-# 03/08/2026 -> 16/08 : www.gtp.gr a droppe l'IPv4 du VPS (89.167.115.63) le
-# 30/07. La panne est reelle, sa cause est hors de notre code, et 24 alertes
-# par jour n'apprennent plus rien. Arbitrage attendu de Francois sur la suite
-# (demande de levee a GTP, autre source, ou abandon du capteur).
-MUTED_UNTIL = {
-    ("ferry_crossings", port, direction): date(2026, 8, 16)
-    for port in ("HER", "SOU", "SIT")
-    for direction in ("arrival", "departure")
-}
+# La sourdine bornee posee le 03/08 expirait le 16/08 : c etait une promesse de
+# reprise, pas une suppression, et les 6 alertes sont bien revenues seules ce
+# jour-la. Le mecanisme a fait son travail, l arbitrage est tombe : abandon.
+#
+# Ce qui a porte la decision, mesure le 16/08 :
+#   - GTP a LU le mail du 02/08 21:00 (statut Resend `ok lu`) et n a pas repondu
+#     en 13 jours. Un mail ouvert puis ignore apres un ban delibere est une
+#     reponse, pas un silence administratif.
+#   - Le DROP sur l IPv4 du VPS tient a 17 jours : www.gtp.gr rend un timeout de
+#     20 s depuis 89.167.115.63, avec ET sans UA navigateur, et 200 en 0,62 s
+#     depuis Brest a la meme minute. La cause est hors de notre code.
+#   - Les ferries pesent 14,0 % des arrivees (ELSTAT T3 2025 : 570 235
+#     debarquements HER+SOU+SIT contre 3 487 622 arrivees aeriennes HER+CHQ).
+#     L estimateur reste aerien et complet, il l a toujours ete.
+#
+# ⛔ Pas de sourdine cette fois : une sourdine est une promesse de reprise, et
+# il n y en a plus. Une sonde qui crie pour une panne qu on ne repare pas est
+# exactement le bruit que ce fichier existe pour eviter.
+#
+# ⛔ CE QUI N EST PAS SUPPRIME : la table `flux_ferry_crossings` et ses 168
+# traversees du 29/07 restent en base. Elles sont figees, pas fausses, et
+# effacer une mesure coute plus cher que de la garder.
+#
+# La mecanique de sourdine, elle, RESTE : elle resservira au prochain capteur en
+# panne durable. Un test la tient.
+MUTED_UNTIL = {}
 
 
 def _key(feed):
