@@ -554,9 +554,20 @@ export default async function FluxAdminPage({
       </p>
 
       <Section
-        title="Traversées ferries (comptage)"
+        title="Traversées ferries (comptage ARRÊTÉ)"
         hint="Horaires GTP, toutes compagnies, pour Héraklion, Souda et Sitia. Un navire desservant plusieurs ports compte pour une seule traversée. Comptage d'offre programmée, pas de mouvements réels observés : une annulation météo n'est pas visible."
       >
+        {/* Sans ce bandeau, le panneau montre les chiffres du dernier jour collecté
+            comme s'ils étaient d'aujourd'hui : la donnée est vraie, sa présentation
+            mentirait sur sa fraîcheur. */}
+        <p className="mb-3 rounded border border-warn/40 bg-warn/10 p-2 text-[11px] text-text">
+          <strong>Collecte arrêtée le 16/08/2026.</strong>{" "}
+          GTP a bloqué l&apos;IP du serveur
+          le 30/07 et n&apos;a pas répondu à notre demande de levée. Les chiffres ci-dessous
+          sont figés au dernier jour collecté et ne bougeront plus. Ils restent exacts pour
+          leur période. La mer représente environ 14 % des arrivées (ELSTAT T3 2025),
+          l&apos;estimation de stock est aérienne et le reste.
+        </p>
         {ferryDaily.length ? (
           <>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
