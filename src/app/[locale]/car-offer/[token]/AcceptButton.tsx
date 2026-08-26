@@ -16,9 +16,14 @@ import { isCallablePhone } from "@/lib/car-lead";
 export function AcceptButton({
   token, optionId, label, doneText, expiredText,
   needsPhone = false, phoneLabel = "", phoneHint = "", phoneError = "",
+  rank = 0, offers = 0,
 }: {
   token: string; optionId: number; label: string; doneText: string; expiredText: string;
   needsPhone?: boolean; phoneLabel?: string; phoneHint?: string; phoneError?: string;
+  /** Rang de cette offre dans le tri par prix croissant, 1 = la moins chere. */
+  rank?: number;
+  /** Nombre total d'offres affichees, pour lire le rang relativement au choix offert. */
+  offers?: number;
 }) {
   const [state, setState] = useState<"idle" | "sending" | "done" | "expired" | "error" | "phone">("idle");
   const [phone, setPhone] = useState("");
@@ -28,6 +33,13 @@ export function AcceptButton({
     // client ce qui manque au lieu de lui renvoyer un 422 muet.
     if (needsPhone && !isCallablePhone(phone)) {
       setState("phone");
+      // Le client a VOULU accepter et s'est heurte a une demande de telephone.
+      // Sans cette ligne ce moment n'existe nulle part, alors que c'est une
+      // marche ou l'on peut perdre quelqu'un qui avait deja choisi sa voiture.
+      // Trouve en cliquant, pas en relisant : la 1re version sortait ici en
+      // silence. `phone_prompt` (l'ecran s'ouvre) et `phone_required` (le
+      // serveur refuse) restent distincts, ils n'appellent pas le meme remede.
+      track("phone_prompt");
       return;
     }
     setState("sending");
@@ -40,14 +52,28 @@ export function AcceptButton({
       const json = await res.json();
       if (res.status === 410 || json.expired) {
         setState("expired");
+        track("expired");
       } else if (res.status === 422 && json.phoneRequired) {
         setState("phone");
+        track("phone_required");
       } else {
-        setState(res.ok && json.ok ? "done" : "error");
+        const ok = res.ok && json.ok;
+        setState(ok ? "done" : "error");
+        track(ok ? "ok" : "error");
       }
     } catch {
       setState("error");
+      track("network_error");
     }
+  }
+
+  // UN clic, UN event, et l'issue vit dans une prop. Le contre-exemple est dans
+  // le depot : `Car Wizard Submit` part a la tentative PUIS au succes, ce qui
+  // rend 66 events pour 33 demandes et fait lire le double a qui l'ignore.
+  function track(outcome: string) {
+    window.plausible?.("car_offer_accept", {
+      props: { outcome, rank: String(rank), offers: offers >= 10 ? "10+" : String(offers) },
+    });
   }
 
   if (state === "done") {

@@ -6,6 +6,8 @@ import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { AcceptButton } from "./AcceptButton";
 import { isCallablePhone } from "@/lib/car-lead";
 import { DeclineButton } from "./DeclineButton";
+import { OfferBeacon } from "./OfferBeacon";
+import { offerViewProps } from "@/lib/car-offer-metrics";
 import { inclusionLabels, insuranceSummary } from "@/lib/car-inclusions";
 import { isOfferExpired } from "@/lib/car-offer-expiry";
 import { sharedOfferCopy } from "@/lib/car-offer-copy";
@@ -62,13 +64,16 @@ const COPY: Record<string, Copy> = {
 };
 
 function OfferCard({
-  offer, token, request, locale, c,
+  offer, token, request, locale, c, rank, total,
 }: {
   offer: QuoteOption;
   token: string;
   request: Record<string, unknown>;
   locale: string;
   c: Copy & ReturnType<typeof sharedOfferCopy>;
+  /** 1 = l'offre la moins chere. Dit si le client choisit ailleurs que le prix. */
+  rank: number;
+  total: number;
 }) {
   const expired = isOfferExpired(offer.created_at, request.date_from as string, Date.now());
   const ct = CAR_TYPES_DATA.find((cc) => cc.id === (request.car_type as string));
@@ -140,7 +145,8 @@ function OfferCard({
       ) : (
         <AcceptButton token={token} optionId={offer.id} label={c.accept} doneText={c.done} expiredText={c.expiredOffer}
           needsPhone={!isCallablePhone(request.customer_phone as string | null)}
-          phoneLabel={c.phoneLabel} phoneHint={c.phoneHint} phoneError={c.phoneError} />
+          phoneLabel={c.phoneLabel} phoneHint={c.phoneHint} phoneError={c.phoneError}
+          rank={rank} offers={total} />
       )}
     </div>
   );
@@ -156,10 +162,26 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
   const { request, options } = found;
   const offers = sortOptionsByPrice(options);
 
+  // Props de mesure, calculées ici une fois : le client qui ouvre cette page est
+  // le maillon qu'on ne voyait pas. Voir src/lib/car-offer-metrics.ts.
+  const beacon = (state: "offers" | "none_yet" | "already_accepted") => (
+    <OfferBeacon
+      token={token}
+      props={offerViewProps({
+        state,
+        prices: offers.map((o) => o.price),
+        dateFrom: request.date_from as string | null,
+        locale,
+        now: Date.now(),
+      })}
+    />
+  );
+
   // Etat : déjà accepté
   if (request.status === "accepted") {
     return (
       <main style={shell}>
+        {beacon("already_accepted")}
         <div style={card}>
           <p style={{ margin: "0 0 4px", color: "#008C9E", fontSize: 13, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase" }}>crete · direct</p>
           <h1 style={{ margin: "0 0 6px", fontSize: 21, color: "#0B3954" }}>{c.alreadyTitle}</h1>
@@ -173,6 +195,7 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
   if (offers.length === 0) {
     return (
       <main style={shell}>
+        {beacon("none_yet")}
         <div style={card}>
           <p style={{ margin: "0 0 4px", color: "#008C9E", fontSize: 13, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase" }}>crete · direct</p>
           <h1 style={{ margin: "0 0 8px", fontSize: 20, color: "#0B3954" }}>{c.offersTitle}</h1>
@@ -185,12 +208,14 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
   // Etat : une ou plusieurs offres à comparer
   return (
     <main style={shell}>
+      {beacon("offers")}
       <p style={{ margin: "0 0 6px", color: "#008C9E", fontSize: 13, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", textAlign: "center" }}>crete · direct</p>
       <h1 style={{ margin: "0 0 20px", fontSize: 22, color: "#0B3954", fontWeight: 800, textAlign: "center" }}>{c.offersTitle}</h1>
-      {offers.map((offer) => (
-        <OfferCard key={offer.id} offer={offer} token={token} request={request} locale={locale} c={c} />
+      {offers.map((offer, i) => (
+        <OfferCard key={offer.id} offer={offer} token={token} request={request} locale={locale} c={c}
+          rank={i + 1} total={offers.length} />
       ))}
-      <DeclineButton token={token} label={c.declineLink} doneText={c.declineDone} />
+      <DeclineButton token={token} label={c.declineLink} doneText={c.declineDone} offers={offers.length} />
     </main>
   );
 }

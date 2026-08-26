@@ -4,7 +4,13 @@ import { useState } from "react";
 
 // Bouton « aucune de ces offres ne me convient » (désistement client). Ferme la
 // demande côté client et coupe les relances, sans email aux loueurs.
-export function DeclineButton({ token, label, doneText }: { token: string; label: string; doneText: string }) {
+export function DeclineButton({
+  token, label, doneText, offers = 0,
+}: {
+  token: string; label: string; doneText: string;
+  /** Nombre d'offres refusees d'un bloc : un refus sur 9 ne dit pas la meme chose qu'un refus sur 1. */
+  offers?: number;
+}) {
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
 
   async function decline() {
@@ -16,9 +22,18 @@ export function DeclineButton({ token, label, doneText }: { token: string; label
         body: JSON.stringify({ token }),
       });
       const json = await res.json();
-      setState(res.ok && json.ok ? "done" : "error");
+      const ok = res.ok && json.ok;
+      setState(ok ? "done" : "error");
+      // Le refus explicite est le signal le plus rare du tunnel : UN seul sur 31
+      // demandes en juillet-aout. Chacun compte, il faut donc le compter.
+      window.plausible?.("car_offer_decline", {
+        props: { outcome: ok ? "ok" : "error", offers: offers >= 10 ? "10+" : String(offers) },
+      });
     } catch {
       setState("error");
+      window.plausible?.("car_offer_decline", {
+        props: { outcome: "network_error", offers: offers >= 10 ? "10+" : String(offers) },
+      });
     }
   }
 
