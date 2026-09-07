@@ -134,6 +134,11 @@ export function outcomePageState(row: ClickRow & { outcome_at: string | null }, 
     return { kind: "done", choice: row.outcome === "lost" ? "lost" : "rented" };
   }
   const presumed = row.outcome === "rented" && row.outcome_source === "auto";
+  // Sur une ligne encore présumée, `recorded` n'a qu'une origine : le loueur a
+  // dit « pas eu lieu » et l'avoir automatique a été refusé, les ops sont
+  // prévenus. Son clic EST pris en compte, il ne doit pas revoir le formulaire
+  // comme s'il s'était perdu, et le refus d'avoir ne le regarde pas.
+  if (result === "recorded" && presumed) return { kind: "done", choice: "lost" };
   if (row.outcome == null || presumed) return { kind: "form" };
   return { kind: "recorded", outcome: row.outcome, at: row.outcome_at, contested: result === "contested" };
 }

@@ -224,6 +224,28 @@ describe("handleOutcomeClick", () => {
     expect(notifyOps.mock.calls[0][0].action).toMatch(/rembours/i);
   });
 
+  it("présumée SANS facture · pas eu lieu : l'issue bascule en perdue sous verrou source_auto", async () => {
+    const w = wiring();
+    const res = await handleOutcomeClick({ ...ROW, outcome: "rented", outcome_source: "auto" }, null, "lost");
+    expect(res).toBe("applied");
+    expect(w.updates[0].patch).toMatchObject({ outcome: "lost", outcome_source: "partner_link", final_amount_eur: null });
+    expect(w.filters).toContainEqual(["eq", "outcome_source", "auto"]);
+    // Rien à annuler : la bascule du J1 n'avait pas réussi à facturer.
+    expect(creditCommissionInvoice).not.toHaveBeenCalled();
+    expect(requestCommission).not.toHaveBeenCalled();
+  });
+
+  it("avoir refusé : aucune issue réécrite, les ops reçoivent le refus et le loueur un accusé", async () => {
+    const w = wiring();
+    creditCommissionInvoice.mockResolvedValueOnce({ error: "already_credited" });
+    const res = await handleOutcomeClick({ ...ROW, outcome: "rented", outcome_source: "auto" }, INVOICE, "lost");
+    expect(res).toBe("recorded");
+    expect(w.updates).toHaveLength(0);
+    const n = notifyOps.mock.calls[0][0];
+    expect(n.title).toContain("Avoir refusé");
+    expect(n.title).toContain("already_credited");
+  });
+
   it("issue admin contredite : aucune écriture, ops « contestation »", async () => {
     const w = wiring();
     const res = await handleOutcomeClick({ ...ROW, outcome: "lost", outcome_source: "admin" }, null, "rented");

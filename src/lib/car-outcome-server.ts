@@ -12,12 +12,11 @@ import { supabaseAdmin as supabase } from "./supabase-admin";
 import { commissionEur, type Outcome, type OutcomeSource } from "./car-admin";
 import { requestCommission, type CommissionOutcome } from "./car-commission-server";
 import { creditCommissionInvoice, expireCommissionSession } from "./car-invoice-credit";
-import type { InvoiceRow } from "./car-invoice-server";
 import { outcomeClickDecision, ddmm, type OutcomeChoice } from "./car-outcome-followup";
 import { notifyOps, echeance, type OpsNotice } from "./ops-notify";
 import { siteBase } from "./car-commission";
 import { todayAthens } from "./car-partner-identity";
-import { assertWritten } from "./car-invoice-server";
+import { assertWritten, type InvoiceRow } from "./car-invoice-server";
 
 export interface ApplyOutcomeInput {
   id: number;
@@ -122,7 +121,7 @@ export async function confirmPresumedOutcome(id: number): Promise<boolean> {
   const { data, error } = await supabase.from("car_requests")
     .update({ outcome_source: "partner_link", outcome_at: new Date().toISOString() })
     .eq("id", id).eq("outcome_source", "auto").select();
-  if (error) throw new Error(error.message);
+  assertWritten("confirmPresumedOutcome", id, error);
   return (data?.length ?? 0) > 0;
 }
 

@@ -131,6 +131,14 @@ describe("outcomePageState", () => {
     expect(outcomePageState(row({ outcome: "rented", outcome_source: "partner_link", outcome_at: "x" }), "lost_race"))
       .toEqual({ kind: "recorded", outcome: "rented", at: "x", contested: false });
   });
+  it("avoir refusé sur une présomption : accusé de réception, jamais le formulaire à nouveau", () => {
+    expect(outcomePageState(row({ outcome: "rented", outcome_source: "auto", hasInvoice: true }), "recorded"))
+      .toEqual({ kind: "done", choice: "lost" });
+  });
+  it("recorded sur une issue déjà posée par une autre source garde recorded", () => {
+    expect(outcomePageState(row({ outcome: "lost", outcome_source: "partner_link", outcome_at: "x" }), "recorded"))
+      .toEqual({ kind: "recorded", outcome: "lost", at: "x", contested: false });
+  });
   it("facture payée déclarée non advenue : already_paid", () => {
     expect(outcomePageState(row({ outcome: "rented", outcome_source: "auto", hasInvoice: true, invoicePaid: true }), "already_paid")).toEqual({ kind: "already_paid" });
   });
