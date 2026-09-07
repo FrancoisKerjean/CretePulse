@@ -99,10 +99,11 @@ export interface InvoiceReminderMail {
   outcomeUrl: string;
 }
 
-// Copie deliberee du `ddmm` de car-outcome-followup.ts, et non un import : ce
-// module n'a aucune dependance runtime, l'importer tirerait car-admin puis
-// car-partners dans le bundle Stripe et dans celui de la page facture. Il n'y
-// a pas de cycle d'import a eviter ici, seulement du poids.
+// Copie assumée d'une ligne, et non un import de car-outcome-followup.ts : ce
+// module n'a AUCUN import runtime, et cette ligne suffit à le garder ainsi.
+// Le coût de bundle serait nul (car-outcome-followup.ts est pur et n'importe
+// car-admin qu'en `import type`, effacé à la compilation) : l'argument est la
+// forme du module, pas le poids.
 const ddmm = (iso: string): string => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
 
 export function invoiceReminderSubject(m: InvoiceReminderMail): string {
