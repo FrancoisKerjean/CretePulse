@@ -84,6 +84,53 @@ export function commissionRequestBody(m: CommissionMail): string {
   ].join("\n");
 }
 
+export interface InvoiceReminderMail {
+  invoiceNumber: string;
+  partnerName: string;
+  requestId: number;
+  dateFrom: string;
+  dateTo: string;
+  /** YYYY-MM-DD, la date que la page facture imprime. */
+  issuedOn: string;
+  amountEur: number;
+  /** Lien facture FRAIS : le jeton est tourné avant l'envoi (rotateInvoiceToken). */
+  invoiceUrl: string;
+  /** Lien d'issue SANS ?choice= : le corps ajoute ?choice=lost. */
+  outcomeUrl: string;
+}
+
+const ddmm = (iso: string): string => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
+
+export function invoiceReminderSubject(m: InvoiceReminderMail): string {
+  return `Reminder · crete.direct invoice ${m.invoiceNumber} (${m.amountEur.toFixed(2)} EUR)`;
+}
+
+/**
+ * Rappel J+15 d'une facture due. Distinct de commissionRequestBody, qui dit
+ * « starts today » : quinze jours plus tard, ce serait faux. Le second lien
+ * réutilise le jeton d'issue : une facture contestée à J+15 passe par le
+ * même circuit qu'une issue déclarée à J+1.
+ */
+export function invoiceReminderBody(m: InvoiceReminderMail): string {
+  const first = m.partnerName.split(" ")[0] || m.partnerName;
+  return [
+    `Hi ${first},`,
+    ``,
+    `Invoice ${m.invoiceNumber} for rental ${m.requestId} (${ddmm(m.dateFrom)} to ${ddmm(m.dateTo)}) was issued on ${m.issuedOn} and is still open.`,
+    `Amount: ${m.amountEur.toFixed(2)} EUR, payable on receipt.`,
+    ``,
+    `View and pay the invoice here (card or bank transfer, IBAN on the page):`,
+    m.invoiceUrl,
+    ``,
+    `If you already paid by transfer, thank you, please ignore this message.`,
+    `If the rental did not take place, tell us here and the invoice will be cancelled:`,
+    `${m.outcomeUrl}?choice=lost`,
+    ``,
+    `Kami`,
+    `crete.direct`,
+  ].join("\n");
+}
+
 export interface CommissionCheckoutInput {
   requestId: number;
   partnerName: string;

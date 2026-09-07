@@ -4,6 +4,8 @@ import {
   buildCommissionCheckoutParams,
   commissionRequestSubject,
   commissionRequestBody,
+  invoiceReminderSubject,
+  invoiceReminderBody,
   type CommissionCandidate,
 } from "./car-commission";
 
@@ -175,5 +177,34 @@ describe("commissionRequestBody apres retouche", () => {
 
   it("dit au loueur comment faire annuler une location qui n a pas eu lieu", () => {
     expect(commissionRequestBody(mail)).toContain("did not take place");
+  });
+});
+
+describe("invoiceReminderSubject / Body", () => {
+  const m = {
+    invoiceNumber: "NOVAI-CD-2026-001", partnerName: "Nikos Zorbas", requestId: 63,
+    dateFrom: "2026-09-06", dateTo: "2026-09-13", issuedOn: "2026-09-06", amountEur: 24,
+    invoiceUrl: "https://crete.direct/en/invoice/tok-neuf", outcomeUrl: "https://crete.direct/en/rental-outcome/tok-63",
+  };
+
+  it("sujet : numero et montant", () => {
+    expect(invoiceReminderSubject(m)).toBe("Reminder · crete.direct invoice NOVAI-CD-2026-001 (24.00 EUR)");
+  });
+  it("corps : numero, montant, date d emission, les deux liens", () => {
+    const body = invoiceReminderBody(m);
+    expect(body).toContain("Hi Nikos,");
+    expect(body).toContain("Invoice NOVAI-CD-2026-001 for rental 63 (06/09 to 13/09) was issued on 2026-09-06 and is still open.");
+    expect(body).toContain("Amount: 24.00 EUR, payable on receipt.");
+    expect(body).toContain("https://crete.direct/en/invoice/tok-neuf");
+    expect(body).toContain("https://crete.direct/en/rental-outcome/tok-63?choice=lost");
+  });
+  it("ne dit JAMAIS « starts today » : ce n est pas le texte de premiere emission", () => {
+    expect(invoiceReminderBody(m)).not.toContain("starts today");
+  });
+  it("laisse partir un loueur qui a deja vire, sans tiret cadratin", () => {
+    const body = invoiceReminderBody(m);
+    expect(body).toContain("If you already paid by transfer, thank you, please ignore this message.");
+    expect(body).not.toContain(String.fromCharCode(0x2014));
+    expect(body.endsWith("Kami\ncrete.direct")).toBe(true);
   });
 });

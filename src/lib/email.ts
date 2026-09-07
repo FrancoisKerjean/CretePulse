@@ -5,7 +5,10 @@ import { CAR_CHILD_SEAT_LABELS_PARTNER, type CarChildSeatKey } from "@/lib/car-c
 import { sharedOfferCopy } from "@/lib/car-offer-copy";
 import { affiliateClass } from "@/lib/affiliate";
 import { assertSent, reportSend } from "./resend-response";
-import { commissionRequestSubject, commissionRequestBody, type CommissionMail } from "./car-commission";
+import {
+  commissionRequestSubject, commissionRequestBody, type CommissionMail,
+  invoiceReminderSubject, invoiceReminderBody, type InvoiceReminderMail,
+} from "./car-commission";
 import { creditMailBody, type CreditMail } from "./car-invoice";
 import { outcomeQuestionSubject, outcomeQuestionBody, type OutcomeQuestionMail } from "./car-outcome-followup";
 import { bookingPaidPartnerBody, bookingPaidCustomerBody, type BookingPaidInfo } from "./car-booking";
@@ -1908,6 +1911,24 @@ export async function sendPartnerOutcomeQuestion(
     return !res.error;
   } catch (e) {
     console.error("[sendPartnerOutcomeQuestion] échec:", e);
+    return false;
+  }
+}
+
+/** Rappel J+15 d'une facture de commission due (cron car-outcome-followup). Best-effort, `reminded_at` est écrit avant. */
+export async function sendInvoiceReminder(partnerEmail: string, m: InvoiceReminderMail): Promise<boolean> {
+  try {
+    const res = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: partnerEmail,
+      replyTo: "hello@crete.direct",
+      subject: invoiceReminderSubject(m),
+      text: invoiceReminderBody(m),
+    });
+    reportSend(res, "rappel de facture loueur");
+    return !res.error;
+  } catch (e) {
+    console.error("[sendInvoiceReminder] échec:", e);
     return false;
   }
 }
