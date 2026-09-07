@@ -119,7 +119,7 @@ Le tableau se lit ligne par ligne, première ligne qui matche. `mid` est l'encar
 | 1 | `format = daily`, `category = daily-weather` (105) | none | none | Bulletin lu par des gens déjà sur place, existe en anglais seul (noindex sur 21 locales, `isGuideTranslated`), aucun dans les 23 premiers, et la page embarque déjà une vidéo verticale (`YouTubeEmbed vertical`). Un encart de plus y coûte du LCP pour un trafic qu'on ne mesure pas. Réexamen à 30 jours si un daily dépasse 50 visiteurs. |
 | 2 | `format = daily`, `category = daily-news` (67) | bus générique | none | Lecteur sur l'île ou local : le bus est l'outil qui lui sert aujourd'hui, la voiture est hors sujet à J0. Un seul encart, en fin d'article, pour ne pas alourdir un format court. |
 | 3 | `format = news`, `category = airport` (4) | car, `landing: "heraklion-airport"` | van générique | Article d'aéroport : le lecteur arrive ou part. Même choix que `src/app/[locale]/airport/[slug]/page.tsx`. |
-| 4 | `format = news`, autres catégories (37) | bus générique | none | Infrastructure, permis, tourisme : lectorat informé, souvent local ou professionnel. Le bus n'engage à rien et se mesure. |
+| 4 | `format = news`, autres catégories (37) | none | bus générique | Infrastructure, permis, tourisme : lectorat informé, souvent local ou professionnel. Le bus n'engage à rien et se mesure. Format court, souvent moins de 3 H2 : l'encart va en fin d'article comme pour daily-news, sinon la découpe ne le montrerait jamais. |
 | 5 | Texte cite « airport », « transfer », « arrival », « getting to » | van corridor si détecté, sinon van générique | car, `landing` de l'aéroport cité | Le van convertit à 9,4 % et n'a que 325 impressions : quand l'article parle d'arrivée, il passe devant. |
 | 6 | `category` dans beaches | car, `pickup` de la zone détectée | van corridor si une ville de corridor est citée, sinon bus si un lieu bus est cité, sinon none | Balos, Elafonisi, Falassarna, Preveli : parking et pistes, le bus n'y va qu'en saison et une fois par jour. La voiture reste l'offre principale. |
 | 7 | `category` dans hikes, nature | car, `pickup` détecté | bus si un lieu bus est cité | Départs de gorges hors réseau KTEL sauf Samaria et Imbros ; la mention d'un lieu bus donne un bloc horaire honnête. |
@@ -330,7 +330,7 @@ Pattern du dépôt : scripts purs `scripts/check-*.mjs` en `node --experimental-
 Routage :
 - chacun des dix slugs connus, avec sa catégorie réelle et un titre représentatif, donne le couple `mid/end` attendu par la table de la section 2.4 ;
 - `daily/daily-weather` donne `none/none` ; `daily/daily-news` donne `none` en mid et `bus` générique en end ;
-- `news/airport` donne car avec `landing: "heraklion-airport"` ; `news/infrastructure` donne bus ;
+- `news/airport` donne car avec `landing: "heraklion-airport"` ; `news/infrastructure` donne `none` en mid et `bus` générique en end ;
 - catégorie inconnue (`"zzz"`) donne car générique ;
 - `format: "short"` et `format: "news"` ne tombent pas dans une branche par défaut silencieuse ;
 - moins de trois H2 : `mid.kind === "none"` quelle que soit la catégorie ;
