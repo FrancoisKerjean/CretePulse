@@ -8,9 +8,8 @@
 // extension cassent `node --experimental-strip-types` (check:car-admin).
 import type { OutcomeSource } from "./car-admin.ts";
 
-export const DAY_MS = 86_400_000;
-/** Délai avant l'email 2 (après l'email 1) et avant l'email 3 (après l'email 2) : J+1, J+4, J+8. */
-export const FOLLOWUP_DELAYS_MS: Record<1 | 2, number> = { 1: 3 * DAY_MS, 2: 4 * DAY_MS };
+/** Jours civils avant l'email 2 (après l'email 1) et avant l'email 3 (après l'email 2) : J+1, J+4, J+8. */
+export const FOLLOWUP_DELAY_DAYS: Record<1 | 2, number> = { 1: 3, 2: 4 };
 export const FOLLOWUP_MAX = 3;
 /** Jours après date_to au bout desquels l'issue inconnue remonte aux ops. */
 export const ESCALATION_DAYS = 10;
@@ -24,9 +23,12 @@ export function addDays(iso: string, days: number): string {
 /** JJ/MM depuis YYYY-MM-DD, le format des emails loueur et des lignes ops. */
 export const ddmm = (iso: string): string => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
 
+/** Mots d'un nom, tolérant aux espaces doubles et aux bords : source unique du découpage. */
+const nameParts = (full: string): string[] => full.trim().split(/\s+/).filter(Boolean);
+
 /** « Marie Dupont » devient « Marie D. » : le loueur reconnaît le voyageur, l'email n'expose pas son nom complet. */
 export function shortName(full: string): string {
-  const parts = full.trim().split(/\s+/).filter(Boolean);
+  const parts = nameParts(full);
   if (parts.length < 2) return parts[0] ?? "";
   return `${parts[0]} ${parts[parts.length - 1][0].toUpperCase()}.`;
 }
@@ -44,20 +46,26 @@ export type FollowupStep = "none" | "send" | "escalate" | "remind";
 
 /**
  * Étape du jour pour une ligne dont l'issue est inconnue ou seulement
- * présumée. `today` est la date civile d'Athènes (YYYY-MM-DD), `nowMs`
- * l'instant courant : les délais entre emails se comptent à la seconde
- * depuis l'envoi précédent, l'escalade se compte en jours civils depuis
- * date_to. `date_to < today` strictement : le jour de la restitution, on
- * n'écrit pas encore.
+ * présumée. `today` est la date civile d'Athènes (YYYY-MM-DD) : TOUT se
+ * compte en jours civils, délai entre emails compris, jamais en
+ * millisecondes depuis l'envoi précédent. Une borne à la milliseconde
+ * comparerait un multiple exact de 24 h à l'heure d'invocation d'un cron
+ * quotidien : la passe de J+3 qui tourne 35 s plus tôt que celle de J+0 ne
+ * franchit pas la borne et l'email glisse d'un jour entier, deux glissements
+ * amenant le dernier rappel le jour même de l'escalade.
+ * `date_to < today` strictement : le jour de la restitution, on n'écrit pas
+ * encore. `_nowMs` n'est plus lu, la signature reste celle qu'appelle le cron.
  */
-export function outcomeFollowupStep(row: FollowupRow, today: string, nowMs: number): FollowupStep {
+export function outcomeFollowupStep(row: FollowupRow, today: string, _nowMs?: number): FollowupStep {
   if (!(row.date_to < today)) return "none";
   if (row.outcome_followup_escalated_at) return "remind";
   const count = row.outcome_followup_count ?? 0;
   if (count === 0) return "send";
   if (count === 1 || count === 2) {
-    const sentMs = row.outcome_followup_sent_at ? new Date(row.outcome_followup_sent_at).getTime() : 0;
-    return sentMs + FOLLOWUP_DELAYS_MS[count] <= nowMs ? "send" : "none";
+    // Envoi compté mais date perdue (colonne absente avant migration) : on
+    // envoie, un email de trop vaut mieux qu'une relance bloquée pour toujours.
+    const sentDay = row.outcome_followup_sent_at?.slice(0, 10);
+    return !sentDay || addDays(sentDay, FOLLOWUP_DELAY_DAYS[count]) <= today ? "send" : "none";
   }
   return addDays(row.date_to, ESCALATION_DAYS) <= today ? "escalate" : "none";
 }
@@ -158,7 +166,7 @@ export function outcomeQuestionSubject(m: OutcomeQuestionMail): string {
 }
 
 export function outcomeQuestionBody(m: OutcomeQuestionMail): string {
-  const first = m.partnerName.split(" ")[0] || m.partnerName;
+  const first = nameParts(m.partnerName)[0] ?? m.partnerName;
   const lines = [
     `Hi ${first},`,
     ``,
@@ -184,7 +192,7 @@ export function outcomeQuestionBody(m: OutcomeQuestionMail): string {
     );
   }
   if (m.attempt === 3) {
-    lines.push(`Without an answer by ${ddmm(addDays(m.dateTo, ESCALATION_DAYS))} we will call you.`, ``);
+    lines.push(`Without an answer by ${ddmm(addDays(m.dateTo, ESCALATION_DAYS))}, we will call you.`, ``);
   }
   lines.push(`Kami`, `crete.direct`);
   return lines.join("\n");

@@ -6,7 +6,7 @@ import {
   outcomeFollowupStep, outcomeClickDecision, outcomePageState,
   outcomeQuestionSubject, outcomeQuestionBody,
   outcomeBadgeLabel, followupStatusLine,
-  DAY_MS, type OutcomeQuestionMail, type ClickRow,
+  type OutcomeQuestionMail, type ClickRow,
 } from "./car-outcome-followup";
 
 const TODAY = "2026-09-16";
@@ -35,18 +35,23 @@ describe("outcomeFollowupStep", () => {
   it("date_to < today et count 0 : email 1", () => {
     expect(outcomeFollowupStep(base, TODAY, NOW)).toBe("send");
   });
-  it("count 1 : email 2 exactement 3 jours après l'envoi, pas une seconde avant", () => {
-    const sent = new Date(NOW - 3 * DAY_MS).toISOString();
-    expect(outcomeFollowupStep({ ...base, outcome_followup_count: 1, outcome_followup_sent_at: sent }, TODAY, NOW)).toBe("send");
-    expect(outcomeFollowupStep({ ...base, outcome_followup_count: 1, outcome_followup_sent_at: sent }, TODAY, NOW - 1000)).toBe("none");
+  it("count 1 : email 2 le 3e jour civil après l'envoi, pas la veille", () => {
+    const send = { ...base, outcome_followup_count: 1, outcome_followup_sent_at: "2026-09-13T06:20:00.000Z" };
+    expect(outcomeFollowupStep(send, TODAY, NOW)).toBe("send");
+    expect(outcomeFollowupStep({ ...send, outcome_followup_sent_at: "2026-09-14T06:20:00.000Z" }, TODAY, NOW)).toBe("none");
   });
-  it("count 2 : email 3 exactement 4 jours après l'envoi", () => {
-    const sent = new Date(NOW - 4 * DAY_MS).toISOString();
-    expect(outcomeFollowupStep({ ...base, outcome_followup_count: 2, outcome_followup_sent_at: sent }, TODAY, NOW)).toBe("send");
-    expect(outcomeFollowupStep({ ...base, outcome_followup_count: 2, outcome_followup_sent_at: sent }, TODAY, NOW - 1000)).toBe("none");
+  it("count 2 : email 3 le 4e jour civil après l'envoi, pas la veille", () => {
+    const send = { ...base, outcome_followup_count: 2, outcome_followup_sent_at: "2026-09-12T06:20:00.000Z" };
+    expect(outcomeFollowupStep(send, TODAY, NOW)).toBe("send");
+    expect(outcomeFollowupStep({ ...send, outcome_followup_sent_at: "2026-09-13T06:20:00.000Z" }, TODAY, NOW)).toBe("none");
+  });
+  it("gigue du cron : 35 s d'avance sur la passe suivante ne repoussent pas l'email d'un jour", () => {
+    const row = { ...base, date_to: "2026-09-09", outcome_followup_count: 1, outcome_followup_sent_at: "2026-09-10T06:20:45.000Z" };
+    const now = new Date("2026-09-13T06:20:10.000Z").getTime();
+    expect(outcomeFollowupStep(row, "2026-09-13", now)).toBe("send");
   });
   it("count 3 : escalade quand date_to + 10 j <= today, rien avant", () => {
-    const row = { ...base, outcome_followup_count: 3, outcome_followup_sent_at: new Date(NOW - DAY_MS).toISOString() };
+    const row = { ...base, outcome_followup_count: 3, outcome_followup_sent_at: "2026-09-15T06:20:00.000Z" };
     expect(outcomeFollowupStep({ ...row, date_to: "2026-09-06" }, TODAY, NOW)).toBe("escalate");
     expect(outcomeFollowupStep({ ...row, date_to: "2026-09-07" }, TODAY, NOW)).toBe("none");
   });
@@ -58,7 +63,7 @@ describe("outcomeFollowupStep", () => {
   });
 });
 
-describe("outcomeClickDecision · les 12 cases du tableau 3.4", () => {
+describe("outcomeClickDecision · les 10 cases du tableau 3.4 qui sont du ressort du module", () => {
   const row = (p: Partial<ClickRow>): ClickRow => ({
     status: "accepted", outcome: null, outcome_source: null,
     hasInvoice: false, invoicePaid: false, invoiceCredited: false, ...p,
@@ -171,7 +176,7 @@ describe("email de question au loueur", () => {
     expect(body).not.toContain("follows automatically");
   });
   it("troisième email : annonce l'appel à date_to + 10 j", () => {
-    expect(outcomeQuestionBody({ ...mail, attempt: 3 })).toContain("Without an answer by 25/09 we will call you.");
+    expect(outcomeQuestionBody({ ...mail, attempt: 3 })).toContain("Without an answer by 25/09, we will call you.");
     expect(outcomeQuestionBody({ ...mail, attempt: 2 })).not.toContain("we will call you");
   });
   it("aucun tiret cadratin dans les trois emails (même règle que check-campagne)", () => {
