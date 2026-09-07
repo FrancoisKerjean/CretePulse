@@ -26,19 +26,19 @@
       "corridor": {
         "v1": {
           "title": "{from} ile {to} arası paylaşımlı minibüs",
-          "line": "Koltuk başına {price} € ve üzeri. Lisanslı yerel sürücü, şimdi ödeme yok.",
+          "line": "Koltuk başına {price} €'dan başlayan. Lisanslı yerel sürücü, şimdi ödeme yok.",
           "cta": "Bir gruba katıl"
         },
         "v2": {
           "title": "Havalimanından {to}, araba kiralamadan",
-          "line": "Koltuk başına {price} € ve üzeri paylaşımlı minibüs. Grup dolunca kalkış onaylanır.",
+          "line": "Koltuk başına {price} €'dan başlayan paylaşımlı minibüs. Grup dolunca kalkış onaylanır.",
           "cta": "Kalkışları gör"
         }
       },
       "generic": {
         "v1": {
-          "title": "Havalimanından kasabanıza, paylaşımlı minibüsle",
-          "line": "Kandiye ve Hanya çıkışlı {count} güzergâh, koltuk başına {price} € ve üzeri.",
+          "title": "Havalimanından kasabanıza, ortak minibüsle",
+          "line": "Kandiye ve Hanya çıkışlı {count} güzergâh, koltuk başına {price} €'dan başlayan.",
           "cta": "Güzergâhları gör"
         },
         "v2": {

@@ -37,7 +37,7 @@
       },
       "generic": {
         "v1": {
-          "title": "Van de luchthaven naar jouw plaats, met een gedeelde minibus",
+          "title": "Van luchthaven naar jouw plaats, per minibus",
           "line": "{count} routes vanuit Heraklion en Chania, vanaf {price} € per plaats.",
           "cta": "Routes bekijken"
         },

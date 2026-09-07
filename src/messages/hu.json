@@ -26,19 +26,19 @@
       "corridor": {
         "v1": {
           "title": "Közös kisbusz {from} és {to} között",
-          "line": "{price} € ártól helyenként. Engedéllyel rendelkező helyi sofőr, most nincs fizetés.",
+          "line": "{price} €-tól helyenként. Engedéllyel rendelkező helyi sofőr, most nincs fizetés.",
           "cta": "Csatlakozom egy csoporthoz"
         },
         "v2": {
           "title": "{to} a repülőtérről, autóbérlés nélkül",
-          "line": "Közös kisbusz {price} € ártól helyenként. Az indulás akkor véglegesedik, amikor a csoport betelik.",
+          "line": "Közös kisbusz {price} €-tól helyenként. Az indulás akkor véglegesedik, amikor a csoport betelik.",
           "cta": "Indulások megtekintése"
         }
       },
       "generic": {
         "v1": {
-          "title": "A repülőtérről a szállásod városába, közös kisbusszal",
-          "line": "{count} útvonal Heraklionból és Chaniából, {price} € ártól helyenként.",
+          "title": "A reptérről a városodba, közös kisbusszal",
+          "line": "{count} útvonal Heraklionból és Chaniából, {price} €-tól helyenként.",
           "cta": "Útvonalak megtekintése"
         },
         "v2": {
@@ -51,7 +51,7 @@
     "bus": {
       "pair": {
         "v1": {
-          "title": "Busszal innen: {from}",
+          "title": "Busszal {from} felől",
           "line": "Mai menetrend, menetidő és jegyár.",
           "cta": "Menetrendek megtekintése"
         },

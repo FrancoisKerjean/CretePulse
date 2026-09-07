@@ -30,14 +30,14 @@
           "cta": "Alătură-te unui grup"
         },
         "v2": {
-          "title": "{to} de la aeroport, fără să închiriezi mașină",
+          "title": "{to} de la aeroport, fără mașină închiriată",
           "line": "Microbuz partajat de la {price} € locul. Plecarea se confirmă când grupul se completează.",
           "cta": "Vezi plecările"
         }
       },
       "generic": {
         "v1": {
-          "title": "De la aeroport în localitatea ta, cu microbuz partajat",
+          "title": "De la aeroport în oraș, cu microbuz partajat",
           "line": "{count} rute din Heraklion și Chania, de la {price} € locul.",
           "cta": "Vezi rutele"
         },

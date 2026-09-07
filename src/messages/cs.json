@@ -25,24 +25,24 @@
     "van": {
       "corridor": {
         "v1": {
-          "title": "Sdílená dodávka z {from} do {to}",
+          "title": "Sdílený van z {from} do {to}",
           "line": "Od {price} € za místo. Místní řidič s licencí, bez platby teď.",
           "cta": "Přidat se ke skupině"
         },
         "v2": {
           "title": "{to} z letiště, bez půjčení auta",
-          "line": "Sdílená dodávka od {price} € za místo. Odjezd je potvrzen, jakmile se skupina naplní.",
+          "line": "Sdílený van od {price} € za místo. Odjezd je potvrzen, jakmile se skupina naplní.",
           "cta": "Zobrazit odjezdy"
         }
       },
       "generic": {
         "v1": {
-          "title": "Z letiště do vašeho města sdílenou dodávkou",
+          "title": "Z letiště do vašeho města sdíleným vanem",
           "line": "{count} tras z Heraklionu a Chanie, od {price} € za místo.",
           "cta": "Zobrazit trasy"
         },
         "v2": {
-          "title": "Bez auta? Sdílejte dodávku.",
+          "title": "Bez auta? Sdílejte van.",
           "line": "Místní řidič, bez platby při rezervaci.",
           "cta": "Zobrazit trasy"
         }

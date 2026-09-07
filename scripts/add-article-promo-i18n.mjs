@@ -3,11 +3,16 @@
 // src/messages/<locale>.json. Insertion textuelle pour un diff minimal, idempotent
 // (skip si déjà présent). Même mécanisme que add-activity-nudge-i18n.mjs, avec des
 // garde-fous : 22 locales, 33 feuilles, variables ICU conservées, pas d'anglais
-// recopié, pas de tiret cadratin.
+// recopié, pas de tiret cadratin, aucun titre au-delà de 45 caractères (mobile).
 // Spec : docs/superpowers/specs/2026-09-07-article-service-promos-design.md §4
 // Lancer : node scripts/add-article-promo-i18n.mjs
+//   --update : le namespace existe déjà, réécrire les feuilles dont la valeur diffère
+//              de TRANSLATIONS (les blocs ci-dessous restent la source de vérité).
 import { readFileSync, writeFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+
+const UPDATE = process.argv.includes("--update");
+const TITLE_MAX = 45;
 
 const DIR = "src/messages";
 
@@ -97,10 +102,10 @@ const TRANSLATIONS = {
     van: {
       corridor: {
         v1: { title: "Κοινόχρηστο βαν {from} προς {to}", line: "Από {price} € η θέση. Αδειοδοτημένος τοπικός οδηγός, καμία πληρωμή τώρα.", cta: "Συμμετοχή σε ομάδα" },
-        v2: { title: "{to} από το αεροδρόμιο, χωρίς ενοικίαση αυτοκινήτου", line: "Κοινόχρηστο βαν από {price} € η θέση. Η αναχώρηση επιβεβαιώνεται όταν γεμίσει η ομάδα.", cta: "Δείτε αναχωρήσεις" },
+        v2: { title: "{to} από το αεροδρόμιο, χωρίς ενοικίαση", line: "Κοινόχρηστο βαν από {price} € η θέση. Η αναχώρηση επιβεβαιώνεται όταν γεμίσει η ομάδα.", cta: "Δείτε αναχωρήσεις" },
       },
       generic: {
-        v1: { title: "Από το αεροδρόμιο στην πόλη σας, με κοινόχρηστο βαν", line: "{count} διαδρομές από Ηράκλειο και Χανιά, από {price} € η θέση.", cta: "Δείτε διαδρομές" },
+        v1: { title: "Αεροδρόμιο προς την πόλη σας, με κοινό βαν", line: "{count} διαδρομές από Ηράκλειο και Χανιά, από {price} € η θέση.", cta: "Δείτε διαδρομές" },
         v2: { title: "Χωρίς αυτοκίνητο; Μοιραστείτε ένα βαν.", line: "Τοπικός οδηγός, καμία πληρωμή κατά την κράτηση.", cta: "Δείτε διαδρομές" },
       },
     },
@@ -125,7 +130,7 @@ const TRANSLATIONS = {
         v2: { title: "{to} desde el aeropuerto, sin alquilar coche", line: "Furgoneta compartida desde {price} € por plaza. La salida se confirma cuando el grupo se completa.", cta: "Ver salidas" },
       },
       generic: {
-        v1: { title: "Del aeropuerto a tu pueblo, en furgoneta compartida", line: "{count} rutas desde Heraklion y Chania, desde {price} € por plaza.", cta: "Ver rutas" },
+        v1: { title: "Aeropuerto a tu pueblo, furgoneta compartida", line: "{count} rutas desde Heraklion y Chania, desde {price} € por plaza.", cta: "Ver rutas" },
         v2: { title: "¿Sin coche? Comparte una furgoneta.", line: "Conductor local, sin pago al reservar.", cta: "Ver rutas" },
       },
     },
@@ -175,7 +180,7 @@ const TRANSLATIONS = {
         v2: { title: "{to} a partir do aeroporto, sem alugar carro", line: "Carrinha partilhada desde {price} € por lugar. A partida é confirmada quando o grupo fica completo.", cta: "Ver partidas" },
       },
       generic: {
-        v1: { title: "Do aeroporto à sua localidade, em carrinha partilhada", line: "{count} rotas a partir de Heraklion e Chania, desde {price} € por lugar.", cta: "Ver rotas" },
+        v1: { title: "Do aeroporto à sua vila, carrinha partilhada", line: "{count} rotas a partir de Heraklion e Chania, desde {price} € por lugar.", cta: "Ver rotas" },
         v2: { title: "Sem carro? Partilhe uma carrinha.", line: "Motorista local, sem pagamento na reserva.", cta: "Ver rotas" },
       },
     },
@@ -200,7 +205,7 @@ const TRANSLATIONS = {
         v2: { title: "{to} vanaf de luchthaven, zonder huurauto", line: "Gedeelde minibus vanaf {price} € per plaats. Het vertrek wordt bevestigd zodra de groep vol is.", cta: "Vertrektijden bekijken" },
       },
       generic: {
-        v1: { title: "Van de luchthaven naar jouw plaats, met een gedeelde minibus", line: "{count} routes vanuit Heraklion en Chania, vanaf {price} € per plaats.", cta: "Routes bekijken" },
+        v1: { title: "Van luchthaven naar jouw plaats, per minibus", line: "{count} routes vanuit Heraklion en Chania, vanaf {price} € per plaats.", cta: "Routes bekijken" },
         v2: { title: "Geen auto? Deel een minibus.", line: "Lokale chauffeur, geen betaling bij het boeken.", cta: "Routes bekijken" },
       },
     },
@@ -225,7 +230,7 @@ const TRANSLATIONS = {
         v2: { title: "{to} från flygplatsen, utan att hyra bil", line: "Delad minibuss från {price} € per plats. Avgången bekräftas när gruppen är full.", cta: "Se avgångar" },
       },
       generic: {
-        v1: { title: "Från flygplatsen till din ort, med delad minibuss", line: "{count} sträckor från Heraklion och Chania, från {price} € per plats.", cta: "Se sträckor" },
+        v1: { title: "Flygplatsen till din ort, med delad minibuss", line: "{count} sträckor från Heraklion och Chania, från {price} € per plats.", cta: "Se sträckor" },
         v2: { title: "Ingen bil? Dela en minibuss.", line: "Lokal förare, ingen betalning vid bokning.", cta: "Se sträckor" },
       },
     },
@@ -275,7 +280,7 @@ const TRANSLATIONS = {
         v2: { title: "{to} fra flyplassen, uten å leie bil", line: "Delt minibuss fra {price} € per plass. Avgangen bekreftes når gruppen er full.", cta: "Se avganger" },
       },
       generic: {
-        v1: { title: "Fra flyplassen til stedet ditt, med delt minibuss", line: "{count} strekninger fra Heraklion og Chania, fra {price} € per plass.", cta: "Se strekninger" },
+        v1: { title: "Fra flyplassen til ditt sted, delt minibuss", line: "{count} strekninger fra Heraklion og Chania, fra {price} € per plass.", cta: "Se strekninger" },
         v2: { title: "Ingen bil? Del en minibuss.", line: "Lokal sjåfør, ingen betaling ved bestilling.", cta: "Se strekninger" },
       },
     },
@@ -296,18 +301,18 @@ const TRANSLATIONS = {
     },
     van: {
       corridor: {
-        v1: { title: "Jaettu pikkubussi kohteesta {from} kohteeseen {to}", line: "Alkaen {price} € paikalta. Luvallinen paikallinen kuljettaja, ei maksua nyt.", cta: "Liity ryhmään" },
+        v1: { title: "Jaettu pikkubussi {from} ja {to} välillä", line: "Alkaen {price} € paikalta. Luvallinen paikallinen kuljettaja, ei maksua nyt.", cta: "Liity ryhmään" },
         v2: { title: "{to} lentokentältä ilman vuokra-autoa", line: "Jaettu pikkubussi alkaen {price} € paikalta. Lähtö vahvistetaan, kun ryhmä on täynnä.", cta: "Katso lähdöt" },
       },
       generic: {
-        v1: { title: "Lentokentältä kohteeseesi jaetulla pikkubussilla", line: "{count} reittiä Heraklionista ja Chaniasta, alkaen {price} € paikalta.", cta: "Katso reitit" },
+        v1: { title: "Lentokentältä kohteeseesi, jaettu pikkubussi", line: "{count} reittiä Heraklionista ja Chaniasta, alkaen {price} € paikalta.", cta: "Katso reitit" },
         v2: { title: "Ei autoa? Jaa pikkubussi.", line: "Paikallinen kuljettaja, ei maksua varattaessa.", cta: "Katso reitit" },
       },
     },
     bus: {
       pair: {
         v1: { title: "Bussilla kohteesta {from}", line: "Päivän aikataulu, matka-aika ja lipun hinta.", cta: "Katso aikataulut" },
-        v2: { title: "Bussi kohteesta {from} kohteeseen {to}, tänään", line: "Vaihdot ja hinnat KTEL-aikataulujen mukaan.", cta: "Avaa reittiopas" },
+        v2: { title: "Bussi {from} ja {to} välillä, tänään", line: "Vaihdot ja hinnat KTEL-aikataulujen mukaan.", cta: "Avaa reittiopas" },
       },
       generic: { title: "Bussilla Kreetalla", line: "KTEL-verkkojen aikataulut, hinnat ja vaihdot.", cta: "Katso aikataulut" },
     },
@@ -325,8 +330,8 @@ const TRANSLATIONS = {
         v2: { title: "{to} z lotniska, bez wynajmu samochodu", line: "Wspólny bus od {price} € za miejsce. Wyjazd potwierdzany, gdy grupa się zapełni.", cta: "Zobacz odjazdy" },
       },
       generic: {
-        v1: { title: "Z lotniska do Twojej miejscowości, wspólnym busem", line: "{count} tras z Heraklionu i Chanii, od {price} € za miejsce.", cta: "Zobacz trasy" },
-        v2: { title: "Bez samochodu? Podziel się busem.", line: "Lokalny kierowca, bez płatności przy rezerwacji.", cta: "Zobacz trasy" },
+        v1: { title: "Z lotniska do Twojego miasta, wspólnym busem", line: "{count} tras z Heraklionu i Chanii, od {price} € za miejsce.", cta: "Zobacz trasy" },
+        v2: { title: "Jedź wspólnym busem.", line: "Lokalny kierowca, bez płatności przy rezerwacji.", cta: "Zobacz trasy" },
       },
     },
     bus: {
@@ -346,12 +351,12 @@ const TRANSLATIONS = {
     },
     van: {
       corridor: {
-        v1: { title: "Sdílená dodávka z {from} do {to}", line: "Od {price} € za místo. Místní řidič s licencí, bez platby teď.", cta: "Přidat se ke skupině" },
-        v2: { title: "{to} z letiště, bez půjčení auta", line: "Sdílená dodávka od {price} € za místo. Odjezd je potvrzen, jakmile se skupina naplní.", cta: "Zobrazit odjezdy" },
+        v1: { title: "Sdílený van z {from} do {to}", line: "Od {price} € za místo. Místní řidič s licencí, bez platby teď.", cta: "Přidat se ke skupině" },
+        v2: { title: "{to} z letiště, bez půjčení auta", line: "Sdílený van od {price} € za místo. Odjezd je potvrzen, jakmile se skupina naplní.", cta: "Zobrazit odjezdy" },
       },
       generic: {
-        v1: { title: "Z letiště do vašeho města sdílenou dodávkou", line: "{count} tras z Heraklionu a Chanie, od {price} € za místo.", cta: "Zobrazit trasy" },
-        v2: { title: "Bez auta? Sdílejte dodávku.", line: "Místní řidič, bez platby při rezervaci.", cta: "Zobrazit trasy" },
+        v1: { title: "Z letiště do vašeho města sdíleným vanem", line: "{count} tras z Heraklionu a Chanie, od {price} € za místo.", cta: "Zobrazit trasy" },
+        v2: { title: "Bez auta? Sdílejte van.", line: "Místní řidič, bez platby při rezervaci.", cta: "Zobrazit trasy" },
       },
     },
     bus: {
@@ -371,17 +376,17 @@ const TRANSLATIONS = {
     },
     van: {
       corridor: {
-        v1: { title: "Közös kisbusz {from} és {to} között", line: "{price} € ártól helyenként. Engedéllyel rendelkező helyi sofőr, most nincs fizetés.", cta: "Csatlakozom egy csoporthoz" },
-        v2: { title: "{to} a repülőtérről, autóbérlés nélkül", line: "Közös kisbusz {price} € ártól helyenként. Az indulás akkor véglegesedik, amikor a csoport betelik.", cta: "Indulások megtekintése" },
+        v1: { title: "Közös kisbusz {from} és {to} között", line: "{price} €-tól helyenként. Engedéllyel rendelkező helyi sofőr, most nincs fizetés.", cta: "Csatlakozom egy csoporthoz" },
+        v2: { title: "{to} a repülőtérről, autóbérlés nélkül", line: "Közös kisbusz {price} €-tól helyenként. Az indulás akkor véglegesedik, amikor a csoport betelik.", cta: "Indulások megtekintése" },
       },
       generic: {
-        v1: { title: "A repülőtérről a szállásod városába, közös kisbusszal", line: "{count} útvonal Heraklionból és Chaniából, {price} € ártól helyenként.", cta: "Útvonalak megtekintése" },
+        v1: { title: "A reptérről a városodba, közös kisbusszal", line: "{count} útvonal Heraklionból és Chaniából, {price} €-tól helyenként.", cta: "Útvonalak megtekintése" },
         v2: { title: "Nincs autó? Ossz meg egy kisbuszt.", line: "Helyi sofőr, foglaláskor nincs fizetés.", cta: "Útvonalak megtekintése" },
       },
     },
     bus: {
       pair: {
-        v1: { title: "Busszal innen: {from}", line: "Mai menetrend, menetidő és jegyár.", cta: "Menetrendek megtekintése" },
+        v1: { title: "Busszal {from} felől", line: "Mai menetrend, menetidő és jegyár.", cta: "Menetrendek megtekintése" },
         v2: { title: "A {from} és {to} közötti busz, ma", line: "Átszállások és árak, a KTEL menetrendjei alapján.", cta: "Útvonaltervező megnyitása" },
       },
       generic: { title: "Busszal Krétán", line: "A KTEL hálózatok menetrendjei, árai és átszállásai.", cta: "Menetrendek megtekintése" },
@@ -397,10 +402,10 @@ const TRANSLATIONS = {
     van: {
       corridor: {
         v1: { title: "Microbuz partajat de la {from} la {to}", line: "De la {price} € locul. Șofer local autorizat, nicio plată acum.", cta: "Alătură-te unui grup" },
-        v2: { title: "{to} de la aeroport, fără să închiriezi mașină", line: "Microbuz partajat de la {price} € locul. Plecarea se confirmă când grupul se completează.", cta: "Vezi plecările" },
+        v2: { title: "{to} de la aeroport, fără mașină închiriată", line: "Microbuz partajat de la {price} € locul. Plecarea se confirmă când grupul se completează.", cta: "Vezi plecările" },
       },
       generic: {
-        v1: { title: "De la aeroport în localitatea ta, cu microbuz partajat", line: "{count} rute din Heraklion și Chania, de la {price} € locul.", cta: "Vezi rutele" },
+        v1: { title: "De la aeroport în oraș, cu microbuz partajat", line: "{count} rute din Heraklion și Chania, de la {price} € locul.", cta: "Vezi rutele" },
         v2: { title: "Fără mașină? Împarte un microbuz.", line: "Șofer local, nicio plată la rezervare.", cta: "Vezi rutele" },
       },
     },
@@ -421,11 +426,11 @@ const TRANSLATIONS = {
     },
     van: {
       corridor: {
-        v1: { title: "{from} ile {to} arası paylaşımlı minibüs", line: "Koltuk başına {price} € ve üzeri. Lisanslı yerel sürücü, şimdi ödeme yok.", cta: "Bir gruba katıl" },
-        v2: { title: "Havalimanından {to}, araba kiralamadan", line: "Koltuk başına {price} € ve üzeri paylaşımlı minibüs. Grup dolunca kalkış onaylanır.", cta: "Kalkışları gör" },
+        v1: { title: "{from} ile {to} arası paylaşımlı minibüs", line: "Koltuk başına {price} €'dan başlayan. Lisanslı yerel sürücü, şimdi ödeme yok.", cta: "Bir gruba katıl" },
+        v2: { title: "Havalimanından {to}, araba kiralamadan", line: "Koltuk başına {price} €'dan başlayan paylaşımlı minibüs. Grup dolunca kalkış onaylanır.", cta: "Kalkışları gör" },
       },
       generic: {
-        v1: { title: "Havalimanından kasabanıza, paylaşımlı minibüsle", line: "Kandiye ve Hanya çıkışlı {count} güzergâh, koltuk başına {price} € ve üzeri.", cta: "Güzergâhları gör" },
+        v1: { title: "Havalimanından kasabanıza, ortak minibüsle", line: "Kandiye ve Hanya çıkışlı {count} güzergâh, koltuk başına {price} €'dan başlayan.", cta: "Güzergâhları gör" },
         v2: { title: "Araba yok mu? Minibüsü paylaşın.", line: "Yerel sürücü, rezervasyonda ödeme yok.", cta: "Güzergâhları gör" },
       },
     },
@@ -450,8 +455,8 @@ const TRANSLATIONS = {
         v2: { title: "{to} из аэропорта, без аренды машины", line: "Совместный микроавтобус от {price} € за место. Отправление подтверждается, когда группа набрана.", cta: "Смотреть отправления" },
       },
       generic: {
-        v1: { title: "Из аэропорта в ваш город на совместном микроавтобусе", line: "{count} маршрутов из Ираклиона и Ханьи, от {price} € за место.", cta: "Смотреть маршруты" },
-        v2: { title: "Нет машины? Разделите микроавтобус.", line: "Местный водитель, без оплаты при бронировании.", cta: "Смотреть маршруты" },
+        v1: { title: "Из аэропорта в ваш город на микроавтобусе", line: "{count} маршрутов из Ираклиона и Ханьи, от {price} € за место.", cta: "Смотреть маршруты" },
+        v2: { title: "Возьмите место в микроавтобусе.", line: "Местный водитель, без оплаты при бронировании.", cta: "Смотреть маршруты" },
       },
     },
     bus: {
@@ -482,7 +487,7 @@ const TRANSLATIONS = {
     bus: {
       pair: {
         v1: { title: "الوصول بالحافلة من {from}", line: "مواعيد اليوم، مدة الرحلة وسعر التذكرة.", cta: "اطّلع على المواعيد" },
-        v2: { title: "حافلة {from} إلى {to}، اليوم", line: "التحويلات والأسعار، وفق مواعيد KTEL.", cta: "افتح المخطط" },
+        v2: { title: "حافلة {from} إلى {to}، اليوم", line: "التحويلات والأسعار، وفق مواعيد KTEL.", cta: "افتح مخطط الرحلات" },
       },
       generic: { title: "التنقل بالحافلة في كريت", line: "مواعيد وأسعار وتحويلات شبكات KTEL.", cta: "اطّلع على المواعيد" },
     },
@@ -591,6 +596,9 @@ for (const loc of locales) {
     if (String(l[k]).includes("\u2014")) problems.push(`${loc} ${k} : tiret cadratin`);
     // Aucun chiffre en dur : les seuls nombres sont {price} et {count}.
     if (/\d/.test(String(l[k]).replace(/\{\w+\}/g, ""))) problems.push(`${loc} ${k} : chiffre en dur`);
+    // Un titre d'encart tient sur une ligne mobile : 45 caractères, template compris.
+    const len = [...String(l[k])].length;
+    if (k.endsWith(".title") && len > TITLE_MAX) problems.push(`${loc} ${k} : titre de ${len} caractères, ${TITLE_MAX} max`);
   }
   for (const k of Object.keys(l)) if (!(k in en)) problems.push(`${loc} : feuille en trop ${k}`);
   if (loc !== "en" && l["car.v1.title"] === en["car.v1.title"]) problems.push(`${loc} : anglais recopié`);
@@ -602,19 +610,43 @@ if (problems.length) {
 }
 
 // ── Injection ──
+let updated = 0;
 for (const file of files) {
   const locale = file.replace(".json", "");
   const path = join(DIR, file);
   const content = readFileSync(path, "utf8");
-  if (content.includes('"articlePromo"')) {
-    console.log("skip (déjà présent)", file);
-    continue;
-  }
   // Même fin de ligne que le fichier (CRLF sur le poste avec core.autocrlf=true, LF ailleurs).
   const eol = content.includes("\r\n") ? "\r\n" : "\n";
   const block = '  "articlePromo": ' + JSON.stringify(TRANSLATIONS[locale], null, 2).replace(/\n/g, eol + "  ") + "," + eol;
-  const out = content.replace(/^\{\r?\n/, (m) => m + block);
-  if (out === content) throw new Error("Insertion échouée (format racine inattendu) : " + file);
+  let out;
+  if (!content.includes('"articlePromo"')) {
+    out = content.replace(/^\{\r?\n/, (m) => m + block);
+    if (out === content) throw new Error("Insertion échouée (format racine inattendu) : " + file);
+  } else if (UPDATE) {
+    const current = leaves(JSON.parse(content).articlePromo);
+    const wanted = leaves(TRANSLATIONS[locale]);
+    const diff = Object.keys(wanted).filter((k) => current[k] !== wanted[k]);
+    if (!diff.length) { console.log("skip (à jour)", file); continue; }
+    // Le bloc a été posé par ce script, indenté à 2 espaces : il court de sa clé à la
+    // première ligne « }, » de niveau racine qui suit.
+    const start = content.indexOf('  "articlePromo": {');
+    const endRe = /^ {2}\},?\r?\n/m;
+    const rest = content.slice(start);
+    const m = endRe.exec(rest);
+    if (start < 0 || !m) throw new Error("Bloc articlePromo introuvable ou format inattendu : " + file);
+    out = content.slice(0, start) + block + rest.slice(m.index + m[0].length);
+    updated += diff.length;
+    console.log(`updated ${file} : ${diff.length} feuille(s)`, diff.join(", "));
+  } else {
+    console.log("skip (déjà présent, --update pour réécrire)", file);
+    continue;
+  }
+  // Le reste du fichier est intact et le namespace vaut exactement TRANSLATIONS.
+  const before = JSON.parse(content), after = JSON.parse(out);
+  delete before.articlePromo; delete after.articlePromo;
+  if (JSON.stringify(before) !== JSON.stringify(after)) throw new Error("Autre clé modifiée, rien n'est écrit : " + file);
+  if (JSON.stringify(JSON.parse(out).articlePromo) !== JSON.stringify(TRANSLATIONS[locale])) throw new Error("Namespace réécrit différent de TRANSLATIONS : " + file);
   writeFileSync(path, out, "utf8");
-  console.log("updated", file);
+  if (!UPDATE) console.log("updated", file);
 }
+if (UPDATE) console.log(`updated: ${updated}`);

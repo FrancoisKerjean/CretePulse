@@ -25,7 +25,7 @@
     "van": {
       "corridor": {
         "v1": {
-          "title": "Jaettu pikkubussi kohteesta {from} kohteeseen {to}",
+          "title": "Jaettu pikkubussi {from} ja {to} välillä",
           "line": "Alkaen {price} € paikalta. Luvallinen paikallinen kuljettaja, ei maksua nyt.",
           "cta": "Liity ryhmään"
         },
@@ -37,7 +37,7 @@
       },
       "generic": {
         "v1": {
-          "title": "Lentokentältä kohteeseesi jaetulla pikkubussilla",
+          "title": "Lentokentältä kohteeseesi, jaettu pikkubussi",
           "line": "{count} reittiä Heraklionista ja Chaniasta, alkaen {price} € paikalta.",
           "cta": "Katso reitit"
         },
@@ -56,7 +56,7 @@
           "cta": "Katso aikataulut"
         },
         "v2": {
-          "title": "Bussi kohteesta {from} kohteeseen {to}, tänään",
+          "title": "Bussi {from} ja {to} välillä, tänään",
           "line": "Vaihdot ja hinnat KTEL-aikataulujen mukaan.",
           "cta": "Avaa reittiopas"
         }

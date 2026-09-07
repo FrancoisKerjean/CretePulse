@@ -37,12 +37,12 @@
       },
       "generic": {
         "v1": {
-          "title": "Z lotniska do Twojej miejscowości, wspólnym busem",
+          "title": "Z lotniska do Twojego miasta, wspólnym busem",
           "line": "{count} tras z Heraklionu i Chanii, od {price} € za miejsce.",
           "cta": "Zobacz trasy"
         },
         "v2": {
-          "title": "Bez samochodu? Podziel się busem.",
+          "title": "Jedź wspólnym busem.",
           "line": "Lokalny kierowca, bez płatności przy rezerwacji.",
           "cta": "Zobacz trasy"
         }

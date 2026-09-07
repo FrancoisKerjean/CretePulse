@@ -37,7 +37,7 @@
       },
       "generic": {
         "v1": {
-          "title": "Från flygplatsen till din ort, med delad minibuss",
+          "title": "Flygplatsen till din ort, med delad minibuss",
           "line": "{count} sträckor från Heraklion och Chania, från {price} € per plats.",
           "cta": "Se sträckor"
         },
