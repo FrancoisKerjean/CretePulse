@@ -36,11 +36,11 @@ interface Wiring {
   updates: Array<{ id: unknown; patch: Record<string, unknown> }>;
 }
 
-function wiring(opts: { unknown?: unknown[]; presumed?: unknown[]; partner?: unknown; updateError?: { message: string } } = {}): Wiring {
+function wiring(opts: { unknown?: unknown[]; presumed?: unknown[]; partner?: unknown; updateError?: { message: string }; selectError?: { message: string }; partnerError?: { message: string } } = {}): Wiring {
   const w: Wiring = { queries: [], updates: [] };
   from.mockImplementation((table: string) => {
     if (table === "car_partners") {
-      return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: "partner" in opts ? opts.partner : PARTNER }) }) }) };
+      return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: "partner" in opts ? opts.partner : PARTNER, error: opts.partnerError ?? null }) }) }) };
     }
     if (table !== "car_requests") throw new Error(`table inattendue: ${table}`);
     return {
@@ -56,6 +56,8 @@ function wiring(opts: { unknown?: unknown[]; presumed?: unknown[]; partner?: unk
           lt: async (c: string, v: unknown) => {
             q.filters.push(`lt:${c}:${v}`);
             const populationB = q.filters.includes("eq:outcome_source:auto");
+            // PostgREST ne leve pas : il rend `data: null` ET `error`.
+            if (opts.selectError) return { data: null, error: opts.selectError };
             return { data: populationB ? (opts.presumed ?? []) : (opts.unknown ?? [UNKNOWN]), error: null };
           },
         });
@@ -94,6 +96,19 @@ describe("runOutcomeFollowupPass · sélection", () => {
     expect(res.sent).toBe(0);
     expect(w.updates).toHaveLength(0);
     expect(sendPartnerOutcomeQuestion).not.toHaveBeenCalled();
+  });
+
+  it("lecture refusée par la base : les deux populations journalisées, rien ne passe en silence", async () => {
+    wiring({ selectError: { message: "column car_requests.outcome_token does not exist" } });
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await runOutcomeFollowupPass(NOW);
+    expect(res).toMatchObject({ sent: 0, refused: 0, escalated: 0, reminded: 0 });
+    expect(sendPartnerOutcomeQuestion).not.toHaveBeenCalled();
+    const texte = JSON.stringify(errSpy.mock.calls);
+    expect(texte).toContain("population A");
+    expect(texte).toContain("population B");
+    expect(texte).toContain("column car_requests.outcome_token does not exist");
+    errSpy.mockRestore();
   });
 
   it("population B : l'email nomme la facture émise", async () => {
@@ -147,7 +162,11 @@ describe("runOutcomeFollowupPass · envoi", () => {
     const res = await runOutcomeFollowupPass(NOW);
     expect(sendPartnerOutcomeQuestion).not.toHaveBeenCalled();
     expect(res.sent).toBe(0);
+    expect(res.writeRefused).toBe(1);
     expect(JSON.stringify(errSpy.mock.calls)).toContain("permission denied");
+    // Sans ligne ops, la demande resterait sur l'email 1 a chaque passage,
+    // sans jamais atteindre l'escalade : personne ne le saurait.
+    expect(JSON.stringify(notifyOps.mock.calls[0][0])).toContain("db_write_refused");
     errSpy.mockRestore();
   });
 
@@ -160,6 +179,27 @@ describe("runOutcomeFollowupPass · envoi", () => {
     wiring({ unknown: [{ ...UNKNOWN, outcome_followup_count: 1, outcome_followup_sent_at: "2026-09-14T06:20:00.000Z", outcome_token: "tok-33" }] });
     await runOutcomeFollowupPass(NOW);
     expect(sendPartnerOutcomeQuestion).not.toHaveBeenCalled();
+  });
+
+  it("fiche loueur introuvable : motif propre, jamais confondue avec un email manquant", async () => {
+    const w = wiring({ partner: null });
+    const res = await runOutcomeFollowupPass(NOW);
+    expect(res.partnerNotFound).toBe(1);
+    expect(res.withoutEmail).toBe(0);
+    expect(w.updates).toHaveLength(0);
+    expect(sendPartnerOutcomeQuestion).not.toHaveBeenCalled();
+    const texte = JSON.stringify(notifyOps.mock.calls[0][0]);
+    expect(texte).toContain("partner_not_found");
+    expect(texte).not.toContain("partner_without_email");
+  });
+
+  it("lecture du loueur refusée : même motif, et le refus est journalisé", async () => {
+    wiring({ partner: null, partnerError: { message: "permission denied for table car_partners" } });
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await runOutcomeFollowupPass(NOW);
+    expect(res.partnerNotFound).toBe(1);
+    expect(JSON.stringify(errSpy.mock.calls)).toContain("permission denied for table car_partners");
+    errSpy.mockRestore();
   });
 
   it("loueur sans email : aucun envoi, notification ops immédiate avec le motif", async () => {

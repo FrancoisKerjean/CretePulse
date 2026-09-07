@@ -61,12 +61,22 @@ export interface OutcomeFollowupResult {
   escalated: number;
   reminded: number;
   withoutEmail: number;
+  /** Fiche loueur introuvable ou illisible : la question ne peut pas partir. */
+  partnerNotFound: number;
+  /** Ecriture du compteur refusée : la ligne reste sur l'email 1 à chaque passage et ne s'escalade jamais seule. */
+  writeRefused: number;
 }
 
-async function partnerRow(id: number): Promise<PartnerRow | null> {
-  const { data } = await supabase.from("car_partners")
+/**
+ * Fiche absente et lecture refusée rendaient toutes deux `null`, et la ligne
+ * partait en ops comme « loueur sans email » : deux mains très différentes
+ * derrière un seul message. Le motif est désormais rendu, au sens des rejets
+ * du cron de facturation (`partner_not_found`).
+ */
+async function partnerRow(id: number): Promise<{ partner: PartnerRow | null; error: string | null }> {
+  const { data, error } = await supabase.from("car_partners")
     .select("id, name, email, whatsapp, phone, commission").eq("id", id).maybeSingle();
-  return (data as PartnerRow) ?? null;
+  return { partner: (data as PartnerRow) ?? null, error: error?.message ?? null };
 }
 
 /** Telegram est un canal de confort : son échec ne doit jamais faire perdre le résultat d'une passe. */
@@ -130,22 +140,31 @@ export async function runOutcomeFollowupPass(now: Date): Promise<OutcomeFollowup
   const { sendPartnerOutcomeQuestion } = await import("./email");
 
   // A. Issue inconnue.
-  const { data: unknown } = await supabase.from("car_requests").select(COLS)
+  const { data: unknown, error: errA } = await supabase.from("car_requests").select(COLS)
     .eq("status", "accepted")
     .is("outcome", null)
     .is("booking_paid_at", null)
     .not("quoted_by_partner_id", "is", null)
     .lt("date_to", today);
   // B. Issue présumée, non confirmée.
-  const { data: presumed } = await supabase.from("car_requests").select(COLS)
+  const { data: presumed, error: errB } = await supabase.from("car_requests").select(COLS)
     .eq("outcome", "rented")
     .eq("outcome_source", "auto")
     .lt("date_to", today);
+  // PostgREST ne lève pas : une lecture refusée (colonnes absentes tant que la
+  // migration n'est pas appliquée, droits) rend `data` null, et la passe
+  // répondrait « 0 envoi » comme un jour calme, route comprise. Elle journalise
+  // au lieu de se taire, sans lever : l'autre population doit tourner.
+  if (errA) console.error("[car/outcome-followup] lecture population A refusee", { error: errA.message });
+  if (errB) console.error("[car/outcome-followup] lecture population B refusee", { error: errB.message });
 
   const rows = [...((unknown ?? []) as FollowupRequest[]), ...((presumed ?? []) as FollowupRequest[])];
-  const result: OutcomeFollowupResult = { sent: 0, refused: 0, escalated: 0, reminded: 0, withoutEmail: 0 };
+  const result: OutcomeFollowupResult = { sent: 0, refused: 0, escalated: 0, reminded: 0, withoutEmail: 0, partnerNotFound: 0, writeRefused: 0 };
   const escalations: string[] = [];
-  const sansEmail: string[] = [];
+  // Trois motifs, une seule notification : dans les trois cas la question ne
+  // peut pas partir et il faut une main. Chaque ligne porte le sien, comme les
+  // rejets du cron de facturation.
+  const bloquees: string[] = [];
 
   for (const row of rows) {
     // Exclusions communes, redites en code : la requête B ne filtre ni le
@@ -155,12 +174,22 @@ export async function runOutcomeFollowupPass(now: Date): Promise<OutcomeFollowup
     const step = outcomeFollowupStep(row, today);
     if (step === "none") continue;
 
-    const partner = await partnerRow(row.quoted_by_partner_id);
-    const nom = partner?.name ?? `loueur ${row.quoted_by_partner_id}`;
-    if (!partner?.email) {
+    const { partner, error: partnerError } = await partnerRow(row.quoted_by_partner_id);
+    if (!partner) {
+      // Fiche introuvable ou illisible : l'onglet Partenaires n'a aucun email à
+      // remplir, la main à faire n'est pas la même. Motif et ligne distincts.
+      if (partnerError) {
+        console.error("[car/outcome-followup] lecture du loueur refusee", { requestId: row.id, partnerId: row.quoted_by_partner_id, error: partnerError });
+      }
+      bloquees.push(`#${row.id} loueur ${row.quoted_by_partner_id} : fiche loueur illisible (partner_not_found)`);
+      result.partnerNotFound += 1;
+      continue;
+    }
+    const nom = partner.name ?? `loueur ${row.quoted_by_partner_id}`;
+    if (!partner.email) {
       // Pas d'attente J+10 : sans email, rien ne partira jamais, il faut une
       // main tout de suite. La ligne reste chaque jour jusqu'à saisie admin.
-      sansEmail.push(`#${row.id} ${nom} : loueur sans email (partner_without_email)`);
+      bloquees.push(`#${row.id} ${nom} : loueur sans email (partner_without_email)`);
       result.withoutEmail += 1;
       continue;
     }
@@ -178,7 +207,11 @@ export async function runOutcomeFollowupPass(now: Date): Promise<OutcomeFollowup
       if (error) {
         // Refusée en silence, l'email partirait avec un jeton qui n'existe
         // pas en base : lien mort chez le loueur. On journalise et on saute.
+        // Et sans ligne ops elle resterait sur l'email 1 à chaque passage, sans
+        // jamais atteindre l'escalade : un blocage muet pour toujours.
         console.error("[car/outcome-followup] ecriture du compteur refusee, aucun envoi", { requestId: row.id, error: error.message });
+        bloquees.push(`#${row.id} ${nom} : écriture du compteur refusée par la base, aucun email (db_write_refused)`);
+        result.writeRefused += 1;
         continue;
       }
       const invoice = row.outcome === "rented" ? await invoiceForRequest(row.id) : null;
@@ -214,11 +247,11 @@ export async function runOutcomeFollowupPass(now: Date): Promise<OutcomeFollowup
       url: `${siteBase()}/admin/car-rental`,
     });
   }
-  if (sansEmail.length > 0) {
+  if (bloquees.length > 0) {
     await ops({
-      title: `Issue de location : ${sansEmail.length} loueur(s) sans email, question impossible`,
-      lines: sansEmail,
-      action: "Renseigner l'email du loueur dans l'onglet Partenaires, ou poser l'issue à la main.",
+      title: `Issue de location : ${bloquees.length} question(s) impossible(s) à poser`,
+      lines: bloquees,
+      action: "Renseigner l'email ou retrouver la fiche du loueur dans l'onglet Partenaires, ou poser l'issue à la main. Une écriture refusée est une migration ou un droit manquant.",
       due: echeance(1),
       url: `${siteBase()}/admin/car-rental?tab=partners`,
     });
