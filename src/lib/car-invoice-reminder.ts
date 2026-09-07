@@ -94,12 +94,18 @@ export async function runInvoiceReminderPass(now: Date): Promise<InvoiceReminder
   const { sendInvoiceReminder } = await import("./email");
   const cutoff = new Date(nowMs - REMINDER_DAYS * DAY_MS).toISOString();
 
-  const { data } = await supabase.from("car_commission_invoices")
+  const { data, error: readError } = await supabase.from("car_commission_invoices")
     .select("id, number, request_id, partner_id, amount_eur, issued_at, sent_at, paid_at, credited_at, reminded_at")
     .not("sent_at", "is", null)
     .is("paid_at", null)
     .is("credited_at", null)
     .lte("sent_at", cutoff);
+  // Sans ce garde, une colonne absente (migration non appliquee) rend `data`
+  // nul et la passe se lit comme une journee sans facture due : muette, verte,
+  // et fausse. On journalise sans lever, le cron reste vert pour sa passe 1.
+  if (readError) {
+    console.error("[car/invoice-reminder] lecture refusee", { error: readError.message });
+  }
 
   const result: InvoiceReminderResult = { reminded: 0, overdue: 0 };
   const overdueLines: string[] = [];
@@ -112,6 +118,8 @@ export async function runInvoiceReminderPass(now: Date): Promise<InvoiceReminder
     const { data: partner } = await supabase.from("car_partners")
       .select("name, email, whatsapp, phone").eq("id", inv.partner_id).maybeSingle();
     const p = (partner as ReminderPartner | null) ?? null;
+    // Libelle d'exploitation, francais, jamais expedie au loueur : le mail est
+    // en anglais et repart de `p.name` (voir `remind`).
     const nom = p?.name ?? `loueur ${inv.partner_id}`;
 
     if (due.remind) {
@@ -121,7 +129,7 @@ export async function runInvoiceReminderPass(now: Date): Promise<InvoiceReminder
       if (!p?.email || !req) {
         console.error("[car/invoice-reminder] rappel impossible", { invoice: inv.number, partnerWithoutEmail: !p?.email, requestMissing: !req });
       } else {
-        await remind(inv, req, p.email, nom, now, sendInvoiceReminder, result);
+        await remind(inv, req, p, p.email, now, sendInvoiceReminder, result);
       }
     }
 
@@ -154,14 +162,44 @@ export async function runInvoiceReminderPass(now: Date): Promise<InvoiceReminder
 async function remind(
   inv: ReminderInvoice,
   req: ReminderRequest,
+  p: ReminderPartner,
   email: string,
-  nom: string,
   now: Date,
   send: (email: string, m: InvoiceReminderMail) => Promise<boolean>,
   result: InvoiceReminderResult,
 ): Promise<void> {
-  // ⛔ AVANT l'email, et le refus arrête tout : le clair n'est pas relisible
-  // (car-invoice-server.ts), un jeton non enregistré est un lien mort.
+  const nom = p.name ?? `loueur ${inv.partner_id}`;
+
+  // Verrou optimiste AVANT tout, meme forme que car-commission-server.ts :
+  // `reminded_at` passe de NULL a maintenant et seule la passe qui remporte
+  // l'update continue. Le cron Vercel est at-least-once et le GET se rejoue
+  // avec CRON_SECRET : sans le verrou, deux passes chevauchees lisent toutes
+  // deux `reminded_at: null` et envoient deux rappels. `paid_at` et
+  // `credited_at` referment la fenetre entre le select et l'update, une
+  // facture reglee entre les deux ne recoit plus rien.
+  const { data: locked, error } = await supabase.from("car_commission_invoices")
+    .update({ reminded_at: now.toISOString() })
+    .eq("id", inv.id)
+    .is("reminded_at", null)
+    .is("paid_at", null)
+    .is("credited_at", null)
+    .select();
+  if (error) {
+    console.error("[car/invoice-reminder] reminded_at refuse par la base, aucun rappel", { invoice: inv.number, error: error.message });
+    return;
+  }
+  // PostgREST ne leve pas et rend `data: []` quand aucune ligne ne matche :
+  // verrou deja pris par une passe concurrente, ou facture reglee entre le
+  // select et ici. Sortir AVANT la rotation, sinon la passe perdante tuerait
+  // le lien que la gagnante vient d'envoyer.
+  if (!locked || locked.length === 0) return;
+
+  const outcomeToken = await ensureOutcomeToken(req);
+  if (!outcomeToken) return;
+
+  // ⛔ Le plus tard possible, et jamais avant le verrou : la rotation tue le
+  // lien de l'email de facture, le clair n'etant pas relisible
+  // (car-invoice-server.ts). Un refus laisse l'ancien lien vivant.
   let token: string;
   try {
     token = await rotateInvoiceToken(inv.id);
@@ -169,21 +207,11 @@ async function remind(
     console.error("[car/invoice-reminder] rotation du jeton refusee, aucun rappel", { invoice: inv.number, err });
     return;
   }
-  const outcomeToken = await ensureOutcomeToken(req);
-  if (!outcomeToken) return;
-
-  // reminded_at AVANT l'envoi : un refus Resend ne provoque pas un second
-  // rappel le lendemain, la facture passera à J+30 chez les ops.
-  const { error } = await supabase.from("car_commission_invoices")
-    .update({ reminded_at: now.toISOString() }).eq("id", inv.id).select();
-  if (error) {
-    console.error("[car/invoice-reminder] reminded_at refuse par la base, aucun rappel", { invoice: inv.number, error: error.message });
-    return;
-  }
 
   const ok = await send(email, {
     invoiceNumber: inv.number,
-    partnerName: nom,
+    // Anglais : `p.name` ou « there », jamais le libelle d'exploitation.
+    partnerName: p.name || "there",
     requestId: req.id,
     dateFrom: req.date_from,
     dateTo: req.date_to,
@@ -192,6 +220,21 @@ async function remind(
     invoiceUrl: `${siteBase()}/en/invoice/${token}`,
     outcomeUrl: `${siteBase()}/en/rental-outcome/${outcomeToken}`,
   });
-  if (ok) result.reminded += 1;
-  else console.error("[car/invoice-reminder] rappel refuse par Resend", { invoice: inv.number });
+  if (ok) {
+    result.reminded += 1;
+    return;
+  }
+
+  // Le jeton est tourne et `reminded_at` pose : l'ancien lien de l'email de
+  // facture est mort et aucun rappel ne repartira tout seul. Un console.error
+  // ne se voit nulle part (Sentry ne capture pas la console) : les ops doivent
+  // renvoyer la facture a la main, tout de suite.
+  console.error("[car/invoice-reminder] rappel refuse par Resend", { invoice: inv.number });
+  await ops({
+    title: `Rappel de facture ${inv.number} non parti (Resend)`,
+    lines: [`${nom} · jeton régénéré, l'ancien lien est mort`],
+    action: "Renvoyer la facture depuis le back-office",
+    due: echeance(1),
+    url: `${siteBase()}/admin/car-rental`,
+  });
 }

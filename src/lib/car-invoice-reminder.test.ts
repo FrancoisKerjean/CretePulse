@@ -48,7 +48,7 @@ describe("invoiceReminderDue (pur)", () => {
 
 interface Wiring { filters: string[]; updates: Array<{ table: string; patch: Record<string, unknown> }> }
 
-function wiring(opts: { invoices?: unknown[]; request?: unknown; partner?: unknown; updateError?: { message: string } } = {}): Wiring {
+function wiring(opts: { invoices?: unknown[]; request?: unknown; partner?: unknown; updateError?: { message: string }; updateEmpty?: boolean; selectError?: { message: string } } = {}): Wiring {
   const w: Wiring = { filters: [], updates: [] };
   from.mockImplementation((table: string) => {
     const chain: Record<string, unknown> = {};
@@ -57,9 +57,13 @@ function wiring(opts: { invoices?: unknown[]; request?: unknown; partner?: unkno
       eq: (c: string, v: unknown) => push(`eq:${c}:${v}`),
       is: (c: string, v: unknown) => push(`is:${c}:${v}`),
       not: (c: string, op: string, v: unknown) => push(`not:${c}:${op}:${v}`),
-      lte: async (c: string, v: unknown) => { push(`lte:${c}:${v}`); return { data: opts.invoices ?? [INVOICE], error: null }; },
+      lte: async (c: string, v: unknown) => { push(`lte:${c}:${v}`); return opts.selectError ? { data: null, error: opts.selectError } : { data: opts.invoices ?? [INVOICE], error: null }; },
       maybeSingle: async () => ({ data: table === "car_partners" ? ("partner" in opts ? opts.partner : PARTNER) : ("request" in opts ? opts.request : REQUEST) }),
-      select: async () => (opts.updateError ? { data: null, error: opts.updateError } : { data: [{ id: 1 }], error: null }),
+      // `data: []` sans erreur = verrou perdu, la forme exacte que rend PostgREST.
+      select: async () => {
+        if (opts.updateError) return { data: null, error: opts.updateError };
+        return { data: opts.updateEmpty ? [] : [{ id: 1 }], error: null };
+      },
     });
     return {
       select: () => chain,
@@ -88,13 +92,16 @@ describe("runInvoiceReminderPass · J+15", () => {
     ]));
   });
 
-  it("tourne le jeton, ecrit reminded_at, PUIS envoie, dans cet ordre", async () => {
+  it("verrouille reminded_at, PUIS tourne le jeton, PUIS envoie, dans cet ordre", async () => {
     const w = wiring();
     const res = await runInvoiceReminderPass(NOW);
     expect(res.reminded).toBe(1);
     expect(rotateInvoiceToken).toHaveBeenCalledWith(1);
     const reminded = w.updates.find((u) => u.table === "car_commission_invoices");
     expect(reminded?.patch).toEqual({ reminded_at: NOW.toISOString() });
+    // La rotation tue le lien de l email de facture : elle ne part qu une fois
+    // le verrou remporte, sinon une passe perdante tuerait le lien de la gagnante.
+    expect(from.mock.invocationCallOrder.at(-1)!).toBeLessThan(rotateInvoiceToken.mock.invocationCallOrder[0]);
     expect(rotateInvoiceToken.mock.invocationCallOrder[0]).toBeLessThan(sendInvoiceReminder.mock.invocationCallOrder[0]);
     expect(from.mock.invocationCallOrder.at(-1)!).toBeLessThan(sendInvoiceReminder.mock.invocationCallOrder[0]);
     const [email, mail] = sendInvoiceReminder.mock.calls[0];
@@ -104,15 +111,68 @@ describe("runInvoiceReminderPass · J+15", () => {
     expect(mail.outcomeUrl).toContain("/en/rental-outcome/tok-63");
   });
 
-  it("refus de rotateInvoiceToken : aucun email, reminded_at intact", async () => {
+  it("refus de rotateInvoiceToken : aucun email, et le verrou reste pris", async () => {
     const w = wiring();
     rotateInvoiceToken.mockRejectedValueOnce(new Error("rotateInvoiceToken(1) refuse par la base"));
     const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const res = await runInvoiceReminderPass(NOW);
     expect(res.reminded).toBe(0);
     expect(sendInvoiceReminder).not.toHaveBeenCalled();
-    expect(w.updates.find((u) => u.table === "car_commission_invoices")).toBeUndefined();
+    // Voulu : le verrou est pris avant la rotation, donc reminded_at est ecrit
+    // et aucun second rappel ne partira. L ancien lien reste vivant (rien n a
+    // ete tourne) et la facture remontera aux ops a J+30.
+    expect(w.updates.find((u) => u.table === "car_commission_invoices")).toBeDefined();
     errSpy.mockRestore();
+  });
+
+  it("verrou perdu par une passe concurrente : ni rotation ni envoi", async () => {
+    wiring({ updateEmpty: true });
+    await runInvoiceReminderPass(NOW);
+    expect(rotateInvoiceToken).not.toHaveBeenCalled();
+    expect(sendInvoiceReminder).not.toHaveBeenCalled();
+  });
+
+  it("l ecriture de reminded_at est conditionnelle, pas un update aveugle", async () => {
+    const w = wiring();
+    await runInvoiceReminderPass(NOW);
+    expect(w.filters).toContain("car_commission_invoices:eq:id:1");
+    expect(w.filters).toContain("car_commission_invoices:is:reminded_at:null");
+    // Une fois au select, une fois sur l update : la facture reglee entre les
+    // deux ne recoit rien.
+    expect(w.filters.filter((f) => f === "car_commission_invoices:is:paid_at:null")).toHaveLength(2);
+    expect(w.filters.filter((f) => f === "car_commission_invoices:is:credited_at:null")).toHaveLength(2);
+  });
+
+  it("Resend refuse apres rotation : les ops sont prevenues que le lien est mort", async () => {
+    wiring();
+    sendInvoiceReminder.mockResolvedValueOnce(false);
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await runInvoiceReminderPass(NOW);
+    expect(res.reminded).toBe(0);
+    expect(notifyOps).toHaveBeenCalledTimes(1);
+    const n = notifyOps.mock.calls[0][0];
+    expect(n.title).toBe("Rappel de facture NOVAI-CD-2026-001 non parti (Resend)");
+    expect(n.lines[0]).toContain("Zorbas Rent a Car");
+    expect(n.action).toMatch(/back-office/);
+    expect(n.due).toBe("+1");
+    expect(n.url).toContain("/admin/car-rental");
+    errSpy.mockRestore();
+  });
+
+  it("lecture refusee par la base : journalisee, jamais une passe muette et verte", async () => {
+    wiring({ selectError: { message: "column car_commission_invoices.reminded_at does not exist" } });
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await runInvoiceReminderPass(NOW);
+    expect(res).toEqual({ reminded: 0, overdue: 0 });
+    expect(sendInvoiceReminder).not.toHaveBeenCalled();
+    expect(errSpy.mock.calls[0][0]).toContain("lecture refusee");
+    errSpy.mockRestore();
+  });
+
+  it("loueur sans nom : l email anglais dit « there », jamais le libelle francais", async () => {
+    wiring({ partner: { ...PARTNER, name: null } });
+    await runInvoiceReminderPass(NOW);
+    expect(sendInvoiceReminder.mock.calls[0][1].partnerName).toBe("there");
   });
 
   it("reminded_at refuse par la base : aucun email", async () => {
