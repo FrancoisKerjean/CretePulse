@@ -15,6 +15,8 @@ import {
   type Guide,
 } from "@/lib/guides";
 import { getAutolinkIndex, autolinkHtml } from "@/lib/autolink";
+import { resolveArticlePromo, splitAfterSecondH2 } from "@/lib/article-promo";
+import { ArticlePromoSlot } from "@/components/articles/ArticlePromoSlot";
 import type { Locale } from "@/lib/types";
 import { CATEGORY_LABELS, CATEGORY_COLORS } from "../articles-shared";
 import { breadcrumbSchema } from "@/lib/schema";
@@ -246,29 +248,6 @@ const MORE_ARTICLES_LABEL: Record<Locale, string> = {
   el: "Περισσότεροι οδηγοί",
 };
 
-const KAIROS_CTA: Record<Locale, { intro: string; link: string; href: string }> = {
-  en: {
-    intro: "Thinking about buying property in Crete? Read our guide on prices and steps.",
-    link: "Buy a house in Crete",
-    href: "https://kairosguest.com/en/blog/acheter-maison-crete-prix-2026",
-  },
-  fr: {
-    intro: "Vous pensez à acheter en Crète ? Lisez notre guide complet sur les prix et démarches.",
-    link: "Acheter une maison en Crète",
-    href: "https://kairosguest.com/fr/blog/acheter-maison-crete-prix-2026",
-  },
-  de: {
-    intro: "Denken Sie daran, eine Immobilie in Kreta zu kaufen? Unser Leitfaden zu Preisen und Schritten.",
-    link: "Haus in Kreta kaufen",
-    href: "https://kairosguest.com/en/blog/acheter-maison-crete-prix-2026",
-  },
-  el: {
-    intro: "Σκέφτεστε να αγοράσετε ακίνητο στην Κρήτη; Διαβάστε τον οδηγό μας για τιμές και διαδικασίες.",
-    link: "Αγοράστε σπίτι στην Κρήτη",
-    href: "https://kairosguest.com/en/blog/acheter-maison-crete-prix-2026",
-  },
-};
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function ArticleDetailPage({
@@ -279,9 +258,6 @@ export default async function ArticleDetailPage({
   const { locale, slug } = await params;
   setRequestLocale(locale);
   const loc = locale as Locale;
-  // Article content has 22 routed locales but Locale type only covers en/fr/de/el.
-  // Fallback to en on extended locales to avoid `undefined.intro` crashes.
-  const kairosCta = KAIROS_CTA[loc] ?? KAIROS_CTA.en;
   const readTimeLabel = READ_TIME_LABEL[loc] ?? READ_TIME_LABEL.en;
   const backLabel = BACK_LABEL[loc] ?? BACK_LABEL.en;
   const moreArticlesLabel = MORE_ARTICLES_LABEL[loc] ?? MORE_ARTICLES_LABEL.en;
@@ -306,6 +282,11 @@ export default async function ArticleDetailPage({
   // Auto-link the first mention of known beaches/villages/hikes to their pages (in-body
   // internal links; the most-clicked + best-for-crawl link type, absent from auto articles).
   const linkedContent = autolinkHtml(content, await getAutolinkIndex(loc), { maxLinks: 6 });
+  // Encarts de service (spec 2026-09-07) : plan résolu au rendu, dans le HTML servi par
+  // le CDN. La découpe travaille sur le HTML autolinké et dans la locale servie ; au
+  // moindre doute elle retourne null et l'article s'affiche entier, avec le seul encart de fin.
+  const promoPlan = resolveArticlePromo(guide, { html: linkedContent });
+  const split = promoPlan.mid.kind !== "none" ? splitAfterSecondH2(linkedContent) : null;
 
   const categoryLabel = CATEGORY_LABELS[guide.category]?.[loc] || guide.category;
   const categoryColor = CATEGORY_COLORS[guide.category] || "bg-surface text-text-muted";
@@ -448,25 +429,24 @@ export default async function ArticleDetailPage({
               />
             )}
 
-            <article
-              className="article-prose max-w-none"
-              dangerouslySetInnerHTML={{ __html: linkedContent }}
-            />
+            <article className="article-prose max-w-none">
+              {split ? (
+                <>
+                  <div dangerouslySetInnerHTML={{ __html: split[0] }} />
+                  <ArticlePromoSlot promo={promoPlan.mid} locale={locale} slug={slug} />
+                  <div dangerouslySetInnerHTML={{ __html: split[1] }} />
+                </>
+              ) : (
+                <div dangerouslySetInnerHTML={{ __html: linkedContent }} />
+              )}
+            </article>
 
             {/* FAQ Accordion */}
             <FaqSection faqs={faqs} />
 
-            {/* Kairos cross-link (multilingue, discret, vers l'article cible SEO) */}
-            <div className="mt-12 p-8 bg-sand rounded-lg border border-sand-warm">
-              <p className="font-heading italic text-sea text-xl mb-3">{kairosCta.intro}</p>
-              <a
-                href={kairosCta.href}
-                target="_blank"
-                rel="noopener"
-                className="inline-block mt-1 px-5 py-2.5 bg-terracotta text-white text-[13px] font-semibold uppercase tracking-wider rounded-md hover:bg-terracotta-light transition-colors"
-              >
-                {kairosCta.link}
-              </a>
+            {/* Encart de fin : voiture, van ou bus selon le plan de l'article (spec 2026-09-07) */}
+            <div className="mt-4">
+              <ArticlePromoSlot promo={promoPlan.end} locale={locale} slug={slug} />
             </div>
 
             {/* Related guides */}
