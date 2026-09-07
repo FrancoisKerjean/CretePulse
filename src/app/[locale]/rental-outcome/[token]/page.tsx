@@ -90,7 +90,11 @@ export default async function RentalOutcomePage({
         ) : state.kind === "done" ? (
           <p style={{ ...notice, background: "#ECFDF5", color: "#065F46" }}>
             Thank you, recorded: {state.choice === "rented" ? "the rental took place." : "the rental did not take place."}
-            {state.choice === "lost" && invoice?.credited_at ? ` Invoice ${invoice.number} is cancelled by credit note ${invoice.credit_number ?? ""}, nothing to pay.` : ""}
+            {/* Le numéro d'avoir peut manquer (avoir écrit sans numérotation) :
+                sans ce garde la phrase se lisait « by credit note , nothing to pay ». */}
+            {state.choice === "lost" && invoice?.credited_at
+              ? ` Invoice ${invoice.number} is cancelled${invoice.credit_number ? ` by credit note ${invoice.credit_number}` : ""}, nothing to pay.`
+              : ""}
             {state.choice === "rented" ? " If a commission is due, the invoice follows by email." : ""}
           </p>
         ) : state.kind === "already_paid" ? (

@@ -92,6 +92,27 @@ describe("page rental-outcome", () => {
     expect(html).not.toContain('type="submit"');
   });
 
+  it("état done, avoir numéroté : la phrase nomme l'avoir", async () => {
+    invoiceForRequest.mockResolvedValue({
+      id: 7, number: "NOVAI-CD-2026-002", amount_eur: 32, paid_at: null,
+      credited_at: "2026-09-16T06:00:00.000Z", credit_number: "NOVAI-CD-2026-002-A",
+    });
+    const html = await render({ result: "credited" }, { ...ROW, outcome: "lost", outcome_source: "partner_link", outcome_at: "2026-09-16T06:00:00.000Z" });
+    expect(html).toContain("is cancelled by credit note NOVAI-CD-2026-002-A, nothing to pay.");
+  });
+
+  // Un avoir sans numéro rendait « by credit note , nothing to pay » : la
+  // phrase tombe entière, elle ne garde pas une amorce vide.
+  it("état done, avoir sans numéro : aucune amorce vide", async () => {
+    invoiceForRequest.mockResolvedValue({
+      id: 7, number: "NOVAI-CD-2026-002", amount_eur: 32, paid_at: null,
+      credited_at: "2026-09-16T06:00:00.000Z", credit_number: null,
+    });
+    const html = await render({ result: "credited" }, { ...ROW, outcome: "lost", outcome_source: "partner_link", outcome_at: "2026-09-16T06:00:00.000Z" });
+    expect(html).toContain("Invoice NOVAI-CD-2026-002 is cancelled, nothing to pay.");
+    expect(html).not.toContain("credit note");
+  });
+
   it("état recorded : le lien n'a plus de pouvoir, date de l'issue affichée", async () => {
     const html = await render({}, { ...ROW, outcome: "lost", outcome_source: "admin", outcome_at: "2026-09-10T10:00:00.000Z" });
     expect(html).toContain("recorded on 2026-09-10");
