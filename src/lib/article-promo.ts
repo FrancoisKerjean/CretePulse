@@ -85,10 +85,13 @@ function wholeWord(name: string): RegExp {
 
 /** Corridor retenu par ville : le sens aéroport vers ville, premier de la table pour cette ville. */
 const CORRIDOR_BY_CITY_SLUG = new Map<string, VanCorridor>();
+/** Même sens, indexé `${aéroport}|${ville}` : Rethymno se dessert depuis les deux aéroports. */
+const CORRIDOR_BY_AIRPORT_CITY = new Map<string, VanCorridor>();
 for (const c of VAN_CORRIDORS) {
   const [from, to] = c.slug.split("--");
-  if (from.endsWith("-airport") && !to.endsWith("-airport") && !CORRIDOR_BY_CITY_SLUG.has(to)) {
-    CORRIDOR_BY_CITY_SLUG.set(to, c);
+  if (from.endsWith("-airport") && !to.endsWith("-airport")) {
+    if (!CORRIDOR_BY_CITY_SLUG.has(to)) CORRIDOR_BY_CITY_SLUG.set(to, c);
+    CORRIDOR_BY_AIRPORT_CITY.set(`${from}|${to}`, c);
   }
 }
 
@@ -147,26 +150,49 @@ export function detectPlaces(text: string): DetectedPlaces {
     const cur = first[e.kind];
     if (!cur || m.index < cur.idx) first[e.kind] = { idx: m.index, value: e.value };
   }
+  // Dédoublonné par slug, pas par nom : Elafonisi et Elafonissi (ou Kissamos et Kasteli)
+  // sont un seul lieu, jamais une paire. La première orthographe rencontrée reste.
   const busPlaces: string[] = [];
-  for (const b of bus.sort((a, c) => a.idx - c.idx)) if (!busPlaces.includes(b.value)) busPlaces.push(b.value);
+  const busSlugs = new Set<string>();
+  for (const b of bus.sort((a, c) => a.idx - c.idx)) {
+    const slug = BUS_PLACE_SLUGS[b.value];
+    if (busSlugs.has(slug)) continue;
+    busSlugs.add(slug);
+    busPlaces.push(b.value);
+  }
+  const airportLanding = first.airport?.value ?? null;
+  // Le corridor suit l'aéroport cité quand la table le sert ; sinon le premier de la table.
+  const corridor = first.corridor
+    ? (airportLanding ? CORRIDOR_BY_AIRPORT_CITY.get(`${airportLanding}|${first.corridor.value}`) : undefined)
+      ?? CORRIDOR_BY_CITY_SLUG.get(first.corridor.value) ?? null
+    : null;
   return {
-    corridor: first.corridor ? CORRIDOR_BY_CITY_SLUG.get(first.corridor.value) ?? null : null,
+    corridor,
     pickup: first.pickup?.value ?? null,
-    airportLanding: first.airport?.value ?? null,
+    airportLanding,
     busPlaces,
     arrival: ARRIVAL_RE.test(text),
   };
 }
 
-/** Titre EN, mots-clés, slug, puis les DETECT_WINDOW premiers caractères du contenu EN, balises retirées. */
+/** Sans diacritiques (Sitía, Réthymno), &nbsp; et retours à la ligne ramenés à un espace. */
+function normalizeText(s: string): string {
+  return s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/&nbsp;| /g, " ").replace(/\s+/g, " ");
+}
+
+/**
+ * Titre EN, mots-clés, slug : la tête de l'article, seule lue pour décider d'une
+ * arrivée. « 30 minutes from Heraklion airport » dans le corps d'un guide plage
+ * ne fait pas de l'article un guide de transfert.
+ */
+export function headText(input: ArticlePromoInput): string {
+  return normalizeText([input.titles?.en ?? "", (input.keywords ?? []).join(" "), wordsOf(input.slug)].join("\n"));
+}
+
+/** Tête, puis les DETECT_WINDOW premiers caractères du contenu EN, balises retirées : pour les lieux. */
 export function detectionText(input: ArticlePromoInput): string {
   const html = input.contents?.en ?? "";
-  return [
-    input.titles?.en ?? "",
-    (input.keywords ?? []).join(" "),
-    wordsOf(input.slug),
-    html.slice(0, DETECT_WINDOW).replace(/<[^>]*>/g, " "),
-  ].join("\n");
+  return headText(input) + " " + normalizeText(html.slice(0, DETECT_WINDOW).replace(/<[^>]*>/g, " "));
 }
 
 /** FNV-1a 32 bits du slug, réduit à 1..n. Stable d'un rendu à l'autre, réparti à peu près également. */
@@ -248,7 +274,8 @@ function countH2(html: string): number {
  * les H2 de contents.en.
  */
 export function planArticlePromo(input: ArticlePromoInput, opts: { html?: string } = {}): ArticlePromoPlan {
-  let { mid, end } = route(input, detectPlaces(detectionText(input)));
+  const places = detectPlaces(detectionText(input));
+  let { mid, end } = route(input, { ...places, arrival: ARRIVAL_RE.test(headText(input)) });
   if (mid.kind !== "none" && mid.kind === end.kind) end = NONE;
   if (countH2(opts.html ?? input.contents?.en ?? "") < MIN_H2_FOR_MID) mid = NONE;
   return { mid, end };

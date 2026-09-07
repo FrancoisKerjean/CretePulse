@@ -261,6 +261,44 @@ ok("les mots-clés sont lus", () => {
   assert.equal(detectPlaces(detectionText(g)).corridor?.slug, "heraklion-airport--ierapetra");
 });
 
+ok("deux orthographes du même lieu ne font pas une paire bus : un seul lieu, première orthographe gardée", () => {
+  const d = detectPlaces("Elafonisi beach, also spelled Elafonissi, then Kissamos or Kasteli");
+  assert.deepEqual(d.busPlaces, ["Elafonisi", "Kissamos"]);
+  const p = planArticlePromo(guide({ slug: "ela", category: "beaches", title: "Elafonisi beach, also spelled Elafonissi" }));
+  assert.equal(p.end.busFrom, "Elafonisi");
+  assert.equal(p.end.busTo, undefined);
+});
+
+ok("le corridor van suit l'aéroport cité : Chania Airport vers Rethymno, pas Héraklion", () => {
+  assert.equal(detectPlaces("From Chania Airport to Rethymno").corridor?.slug, "chania-airport--rethymno");
+  assert.equal(detectPlaces("From Heraklion Airport to Rethymno").corridor?.slug, "heraklion-airport--rethymno");
+  assert.equal(detectPlaces("Rethymno in two days").corridor?.slug, "heraklion-airport--rethymno", "sans aéroport : premier de la table");
+  assert.equal(detectPlaces("From Chania Airport to Matala").corridor?.slug, "heraklion-airport--matala", "aéroport sans corridor vers cette ville : repli");
+});
+
+ok("l'arrivée se lit dans le titre, les mots-clés et le slug, jamais dans le corps", () => {
+  const anon = planArticlePromo(guide({ slug: "quiet-beach", category: "beaches", title: "A quiet beach in the south", content: "<p>Only 30 minutes from the airport.</p>" + H2x3 }));
+  assert.deepEqual(kinds(anon), ["car", "none"]);
+  const body = "<p>Only 30 minutes from Heraklion airport, this beach is quiet.</p>" + H2x3;
+  const p = planArticlePromo(guide({ slug: "quiet-beach", category: "beaches", title: "A quiet beach in the south", content: body }));
+  assert.equal(p.mid.kind, "car", "le van ne passe pas devant sur un mot du corps");
+  assert.equal(p.mid.pickup, "heraklion", "le corps sert toujours à la détection des lieux");
+  assert.equal(p.end.kind, "bus", "Heraklion est un lieu bus : ligne plages de la table");
+  const t = planArticlePromo(guide({ slug: "cha-to-reth", category: "beaches", title: "Getting from Chania Airport to Rethymno" }));
+  assert.deepEqual(kinds(t), ["van", "car"]);
+  assert.equal(t.mid.corridor?.slug, "chania-airport--rethymno");
+  const k = planArticlePromo(guide({ slug: "x", category: "beaches", title: "Beaches", keywords: ["airport transfer"] }));
+  assert.equal(k.mid.kind, "van", "mots-clés lus pour l'arrivée");
+});
+
+ok("diacritiques, &nbsp; et retours à la ligne ne cachent pas un lieu", () => {
+  const g = guide({ slug: "x", category: "beaches", title: "Sitía in a day", content: "<p>Then Agios\nNikolaos, and Chania&nbsp;Airport.</p>" + H2x3 });
+  const d = detectPlaces(detectionText(g));
+  assert.equal(d.corridor?.slug, "heraklion-airport--sitia");
+  assert.deepEqual(d.busPlaces, ["Siteia", "Agios Nikolaos", "Chania Airport"]);
+  assert.equal(d.airportLanding, "chania-airport");
+});
+
 ok("faits van génériques lus dans VAN_CORRIDORS : 20 € et 8 paires", () => {
   assert.deepEqual(vanGenericFacts(), { price: 20, count: 8 });
 });
