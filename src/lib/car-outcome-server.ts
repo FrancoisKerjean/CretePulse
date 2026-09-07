@@ -11,7 +11,12 @@
 import { supabaseAdmin as supabase } from "./supabase-admin";
 import { commissionEur, type Outcome, type OutcomeSource } from "./car-admin";
 import { requestCommission, type CommissionOutcome } from "./car-commission-server";
-import { expireCommissionSession } from "./car-invoice-credit";
+import { creditCommissionInvoice, expireCommissionSession } from "./car-invoice-credit";
+import type { InvoiceRow } from "./car-invoice-server";
+import { outcomeClickDecision, ddmm, type OutcomeChoice } from "./car-outcome-followup";
+import { notifyOps, echeance, type OpsNotice } from "./ops-notify";
+import { siteBase } from "./car-commission";
+import { todayAthens } from "./car-partner-identity";
 import { assertWritten } from "./car-invoice-server";
 
 export interface ApplyOutcomeInput {
@@ -79,4 +84,156 @@ export async function applyOutcome(input: ApplyOutcomeInput): Promise<ApplyOutco
   // session Checkout ouverte dans un onglet du loueur vit 24 h chez Stripe.
   await expireCommissionSession(input.id);
   return { status: "lost" };
+}
+
+// ── Lien loueur ─────────────────────────────────────────────────────────────
+
+export interface OutcomeRequestRow {
+  id: number;
+  status: string;
+  outcome: string | null;
+  outcome_source: string | null;
+  outcome_at: string | null;
+  outcome_token: string | null;
+  date_from: string;
+  date_to: string;
+  pickup_slug: string;
+  quoted_car_model: string | null;
+  quoted_price: number | null;
+  customer_name: string;
+  quoted_by_partner_id: number | null;
+}
+
+const OUTCOME_COLS =
+  "id, status, outcome, outcome_source, outcome_at, outcome_token, date_from, date_to, pickup_slug, quoted_car_model, quoted_price, customer_name, quoted_by_partner_id";
+
+/** Jeton STABLE en clair (même arbitrage que client_token) : lookup par égalité. */
+export async function requestByOutcomeToken(token: string): Promise<OutcomeRequestRow | null> {
+  const { data } = await supabase.from("car_requests").select(OUTCOME_COLS).eq("outcome_token", token).maybeSingle();
+  return (data as OutcomeRequestRow) ?? null;
+}
+
+/**
+ * La présomption du cron devient un fait : seule la source change, l'issue,
+ * le montant et la facture ne bougent pas. Conditionnel sur `auto` : si
+ * l'admin a repris la main entre l'email et le clic, zéro ligne est touchée.
+ */
+export async function confirmPresumedOutcome(id: number): Promise<boolean> {
+  const { data, error } = await supabase.from("car_requests")
+    .update({ outcome_source: "partner_link", outcome_at: new Date().toISOString() })
+    .eq("id", id).eq("outcome_source", "auto").select();
+  if (error) throw new Error(error.message);
+  return (data?.length ?? 0) > 0;
+}
+
+export type ClickResult =
+  | "applied" | "confirmed" | "credited" | "already_paid"
+  | "recorded" | "contested" | "cancelled" | "lost_race";
+
+/** Telegram est un canal de confort : son échec ne doit jamais faire perdre un clic loueur. */
+async function ops(n: Omit<OpsNotice, "url">): Promise<void> {
+  try {
+    await notifyOps({ ...n, url: `${siteBase()}/admin/car-rental` });
+  } catch (e) {
+    console.error("[car/outcome] notification d exploitation echouee", e);
+  }
+}
+
+async function partnerNameOf(partnerId: number | null): Promise<string | null> {
+  if (partnerId == null) return null;
+  const { data } = await supabase.from("car_partners").select("name").eq("id", partnerId).maybeSingle();
+  return (data?.name as string | undefined) ?? null;
+}
+
+/**
+ * Ce que le POST du loueur fait, décision par décision (tableau 3.4 de la
+ * spec). La décision est pure (outcomeClickDecision), ici on l'exécute.
+ */
+export async function handleOutcomeClick(
+  row: OutcomeRequestRow,
+  invoice: InvoiceRow | null,
+  choice: OutcomeChoice,
+): Promise<ClickResult> {
+  const decision = outcomeClickDecision({
+    status: row.status,
+    outcome: row.outcome,
+    outcome_source: row.outcome_source,
+    hasInvoice: Boolean(invoice),
+    invoicePaid: Boolean(invoice?.paid_at),
+    invoiceCredited: Boolean(invoice?.credited_at),
+  }, choice);
+  if (decision.kind === "cancelled") return "cancelled";
+  if (decision.kind === "recorded" && !decision.contested) return "recorded";
+
+  const nom = await partnerNameOf(row.quoted_by_partner_id);
+  const qui = `#${row.id}${nom ? ` ${nom}` : ""} · ${ddmm(row.date_from)} → ${ddmm(row.date_to)}`;
+
+  switch (decision.kind) {
+    case "recorded":
+      await ops({
+        title: `Issue contestée par le loueur : ${qui}`,
+        lines: [`Issue enregistrée : ${row.outcome} (${row.outcome_source}), le loueur clique « ${choice} »`],
+        action: "Vérifier avec le loueur et corriger l'issue dans le back-office si besoin.",
+        due: echeance(2),
+      });
+      return "contested";
+
+    case "confirm":
+      return (await confirmPresumedOutcome(row.id)) ? "confirmed" : "lost_race";
+
+    case "already_paid":
+      await ops({
+        title: `Location déclarée non advenue, facture DÉJÀ PAYÉE : ${qui}`,
+        lines: [`Facture ${invoice?.number ?? "?"} réglée, aucun avoir émis (décision du 31/07 : remboursement manuel)`],
+        action: "Rembourser via Stripe ou par virement, puis émettre l'avoir à la main.",
+        due: echeance(3),
+      });
+      return "already_paid";
+
+    case "credit": {
+      const reason = `Reported by the rental company via the outcome link on ${todayAthens()}`;
+      const res = await creditCommissionInvoice(row.id, reason, "partner_link");
+      if ("error" in res) {
+        await ops({
+          title: `Avoir refusé (${res.error}) sur une location déclarée non advenue : ${qui}`,
+          lines: [`Facture ${invoice?.number ?? "?"}`],
+          action: "Regarder la facture dans le back-office.",
+          due: echeance(1),
+        });
+        return "recorded";
+      }
+      await ops({
+        title: `Location non advenue déclarée par le loueur, avoir ${res.creditNumber} émis : ${qui}`,
+        lines: [
+          `Facture ${invoice?.number ?? "?"} annulée, ${res.notified ? "loueur prévenu par email" : "loueur NON prévenu (sans email)"}`,
+          `Le voyageur reste joignable pour vérification en cas de doute.`,
+        ],
+        action: "Rien à faire sauf doute sur la déclaration : la mesure anti-fraude est le nombre de « perdue · loueur » par loueur dans le back-office.",
+      });
+      return "credited";
+    }
+
+    case "apply": {
+      const res = await applyOutcome({
+        id: row.id,
+        outcome: decision.outcome,
+        source: "partner_link",
+        finalAmountEur: decision.outcome === "rented" ? row.quoted_price : null,
+        expect: decision.expect,
+      });
+      if (res.status === "lost_race") return "lost_race";
+      if (res.status === "rented" && res.commission.status !== "requested") {
+        // L'issue EST posée. La facture, elle, se rattrape dans le back-office
+        // (bouton « Émettre la facture » ou fiche loueur à compléter).
+        const detail = res.commission.status === "failed" ? res.commission.code : res.commission.status;
+        await ops({
+          title: `Loueur a confirmé la location, facture NON émise (${detail}) : ${qui}`,
+          lines: [`Prix accepté ${Number(row.quoted_price ?? 0).toFixed(2)} €`],
+          action: "Émettre la facture depuis le back-office, ou compléter la fiche du loueur puis réémettre.",
+          due: echeance(2),
+        });
+      }
+      return "applied";
+    }
+  }
 }

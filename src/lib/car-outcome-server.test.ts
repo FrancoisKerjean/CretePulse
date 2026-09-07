@@ -36,7 +36,9 @@ function wiring(opts: { partnerCommission?: number | null; updatedRows?: unknown
       maybeSingle: async () => ({
         data: table === "car_requests"
           ? { quoted_by_partner_id: 111 }
-          : opts.partnerCommission === undefined ? { commission: 0.1 } : opts.partnerCommission === null ? null : { commission: opts.partnerCommission },
+          : opts.partnerCommission === null
+            ? null
+            : { name: "Zorbas Rent a Car", email: "info@zorbas.gr", whatsapp: "+306912345678", commission: opts.partnerCommission ?? 0.1 },
         error: null,
       }),
       select: async () => ({ data: opts.updateError ? null : (opts.updatedRows ?? [{ id: 42 }]), error: opts.updateError ?? null }),
@@ -135,5 +137,129 @@ describe("applyOutcome · verrou optimiste", () => {
     wiring({ updateError: { message: "permission denied" } });
     await expect(applyOutcome({ id: 42, outcome: "rented", source: "admin", finalAmountEur: 320 })).rejects.toThrow("permission denied");
     expect(requestCommission).not.toHaveBeenCalled();
+  });
+});
+
+import { handleOutcomeClick, requestByOutcomeToken, type OutcomeRequestRow } from "./car-outcome-server";
+
+const ROW: OutcomeRequestRow = {
+  id: 33, status: "accepted", outcome: null, outcome_source: null, outcome_at: null,
+  outcome_token: "tok-33", date_from: "2026-09-08", date_to: "2026-09-15",
+  pickup_slug: "heraklion-airport", quoted_car_model: "Toyota Yaris", quoted_price: 320,
+  customer_name: "Marie Dupont", quoted_by_partner_id: 111,
+};
+const INVOICE = {
+  id: 7, number: "NOVAI-CD-2026-002", request_id: 33, partner_id: 111, base_amount_eur: 320, rate: 0.1,
+  amount_eur: 32, issued_at: "2026-09-08T05:00:00.000Z", sent_at: "2026-09-08T05:00:01.000Z",
+  paid_at: null as string | null, credited_at: null as string | null, credit_number: null, credit_reason: null,
+};
+
+describe("handleOutcomeClick", () => {
+  beforeEach(() => {
+    creditCommissionInvoice.mockResolvedValue({ creditNumber: "NOVAI-CD-2026-002-A", notified: true });
+  });
+
+  it("issue nulle · a eu lieu : applyOutcome partner_link au prix accepté, facture demandée", async () => {
+    const w = wiring();
+    const res = await handleOutcomeClick(ROW, null, "rented");
+    expect(res).toBe("applied");
+    expect(w.updates[0].patch).toMatchObject({ outcome: "rented", outcome_source: "partner_link", final_amount_eur: 320 });
+    expect(w.filters).toContainEqual(["is", "outcome", null]);
+    expect(requestCommission).toHaveBeenCalledWith(33);
+    // Rien à signaler : la facture part d'elle-même.
+    expect(notifyOps).not.toHaveBeenCalled();
+  });
+
+  it("issue nulle · a eu lieu mais facturation refusée : l'issue reste posée et les ops reçoivent le code réel", async () => {
+    wiring();
+    requestCommission.mockResolvedValueOnce({ status: "failed", code: "partner_without_email" });
+    const res = await handleOutcomeClick(ROW, null, "rented");
+    expect(res).toBe("applied");
+    expect(notifyOps).toHaveBeenCalledTimes(1);
+    const n = notifyOps.mock.calls[0][0];
+    expect(n.title).toContain("partner_without_email");
+    expect(n.title).toContain("#33");
+    expect(n.silent).not.toBe(true);
+  });
+
+  it("issue nulle · pas eu lieu : applyOutcome lost, aucun avoir (il n'y a pas de facture)", async () => {
+    const w = wiring();
+    expect(await handleOutcomeClick(ROW, null, "lost")).toBe("applied");
+    expect(w.updates[0].patch).toMatchObject({ outcome: "lost", outcome_source: "partner_link" });
+    expect(creditCommissionInvoice).not.toHaveBeenCalled();
+  });
+
+  it("course perdue (update à zéro ligne) : lost_race, aucune facturation", async () => {
+    wiring({ updatedRows: [] });
+    expect(await handleOutcomeClick(ROW, null, "rented")).toBe("lost_race");
+    expect(requestCommission).not.toHaveBeenCalled();
+  });
+
+  it("présumée · a eu lieu : seule la source change, sous verrou source_auto", async () => {
+    const w = wiring();
+    const res = await handleOutcomeClick({ ...ROW, outcome: "rented", outcome_source: "auto" }, INVOICE, "rented");
+    expect(res).toBe("confirmed");
+    expect(w.updates[0].patch).toMatchObject({ outcome_source: "partner_link" });
+    expect(w.updates[0].patch).not.toHaveProperty("outcome");
+    expect(w.filters).toContainEqual(["eq", "outcome_source", "auto"]);
+    expect(requestCommission).not.toHaveBeenCalled();
+  });
+
+  it("présumée · pas eu lieu : avoir automatique de source partner_link, ops non silencieux", async () => {
+    wiring();
+    const res = await handleOutcomeClick({ ...ROW, outcome: "rented", outcome_source: "auto" }, INVOICE, "lost");
+    expect(res).toBe("credited");
+    expect(creditCommissionInvoice).toHaveBeenCalledWith(33, expect.stringContaining("Reported by the rental company via the outcome link on"), "partner_link");
+    const n = notifyOps.mock.calls[0][0];
+    expect(n.title).toContain("NOVAI-CD-2026-002-A");
+    expect(n.silent).not.toBe(true);
+  });
+
+  it("présumée, facture payée · pas eu lieu : aucune écriture, ops pour remboursement manuel", async () => {
+    const w = wiring();
+    const res = await handleOutcomeClick({ ...ROW, outcome: "rented", outcome_source: "auto" }, { ...INVOICE, paid_at: "2026-09-10T00:00:00.000Z" }, "lost");
+    expect(res).toBe("already_paid");
+    expect(w.updates).toHaveLength(0);
+    expect(creditCommissionInvoice).not.toHaveBeenCalled();
+    expect(notifyOps.mock.calls[0][0].action).toMatch(/rembours/i);
+  });
+
+  it("issue admin contredite : aucune écriture, ops « contestation »", async () => {
+    const w = wiring();
+    const res = await handleOutcomeClick({ ...ROW, outcome: "lost", outcome_source: "admin" }, null, "rented");
+    expect(res).toBe("contested");
+    expect(w.updates).toHaveLength(0);
+    expect(notifyOps.mock.calls[0][0].title).toMatch(/contest/i);
+  });
+
+  it("issue déjà confirmée, même choix (double clic) : aucune écriture, aucun bruit", async () => {
+    const w = wiring();
+    expect(await handleOutcomeClick({ ...ROW, outcome: "lost", outcome_source: "partner_link" }, null, "lost")).toBe("recorded");
+    expect(w.updates).toHaveLength(0);
+    expect(notifyOps).not.toHaveBeenCalled();
+  });
+
+  it("demande annulée : aucune écriture", async () => {
+    const w = wiring();
+    expect(await handleOutcomeClick({ ...ROW, status: "cancelled" }, null, "rented")).toBe("cancelled");
+    expect(w.updates).toHaveLength(0);
+  });
+
+  it("Telegram en panne ne fait pas tomber le clic", async () => {
+    wiring();
+    notifyOps.mockRejectedValueOnce(new Error("telegram down"));
+    expect(await handleOutcomeClick({ ...ROW, outcome: "lost", outcome_source: "admin" }, null, "rented")).toBe("contested");
+  });
+});
+
+describe("requestByOutcomeToken", () => {
+  it("cherche par égalité sur outcome_token et rend null sur inconnu", async () => {
+    const w = wiring();
+    from.mockImplementationOnce((table: string) => {
+      const chain = { eq: (col: string, val: unknown) => { w.filters.push(["eq", col, val]); return chain; }, maybeSingle: async () => ({ data: null }) };
+      return { select: () => chain };
+    });
+    expect(await requestByOutcomeToken("inconnu")).toBeNull();
+    expect(w.filters).toContainEqual(["eq", "outcome_token", "inconnu"]);
   });
 });

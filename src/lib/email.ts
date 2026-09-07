@@ -7,6 +7,7 @@ import { affiliateClass } from "@/lib/affiliate";
 import { assertSent, reportSend } from "./resend-response";
 import { commissionRequestSubject, commissionRequestBody, type CommissionMail } from "./car-commission";
 import { creditMailBody, type CreditMail } from "./car-invoice";
+import { outcomeQuestionSubject, outcomeQuestionBody, type OutcomeQuestionMail } from "./car-outcome-followup";
 import { bookingPaidPartnerBody, bookingPaidCustomerBody, type BookingPaidInfo } from "./car-booking";
 import type { NewsletterDigest, NewsletterLang } from "./newsletter";
 
@@ -1881,6 +1882,32 @@ export async function sendCreditNote(partnerEmail: string, m: CreditMail): Promi
     return !res.error;
   } catch (e) {
     console.error("[sendCreditNote] échec:", e);
+    return false;
+  }
+}
+
+/**
+ * Question d'issue au loueur après la fin de location (cron
+ * car-outcome-followup). Texte brut, même canal et même ton que la demande
+ * de commission. Best-effort : le compteur est écrit AVANT l'appel, un refus
+ * Resend est journalisé et l'étape suivante réessaie.
+ */
+export async function sendPartnerOutcomeQuestion(
+  partnerEmail: string,
+  m: OutcomeQuestionMail,
+): Promise<boolean> {
+  try {
+    const res = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: partnerEmail,
+      replyTo: "hello@crete.direct",
+      subject: outcomeQuestionSubject(m),
+      text: outcomeQuestionBody(m),
+    });
+    reportSend(res, "question d'issue loueur");
+    return !res.error;
+  } catch (e) {
+    console.error("[sendPartnerOutcomeQuestion] échec:", e);
     return false;
   }
 }
