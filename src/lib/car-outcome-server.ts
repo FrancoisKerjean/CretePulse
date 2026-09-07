@@ -12,6 +12,7 @@ import { supabaseAdmin as supabase } from "./supabase-admin";
 import { commissionEur, type Outcome, type OutcomeSource } from "./car-admin";
 import { requestCommission, type CommissionOutcome } from "./car-commission-server";
 import { expireCommissionSession } from "./car-invoice-credit";
+import { assertWritten } from "./car-invoice-server";
 
 export interface ApplyOutcomeInput {
   id: number;
@@ -64,7 +65,7 @@ export async function applyOutcome(input: ApplyOutcomeInput): Promise<ApplyOutco
   if (input.expect === "outcome_null") query = query.is("outcome", null);
   if (input.expect === "source_auto") query = query.eq("outcome_source", "auto");
   const { data, error } = await query.select();
-  if (error) throw new Error(error.message);
+  assertWritten("applyOutcome", input.id, error);
   if (input.expect && (!data || data.length === 0)) return { status: "lost_race" };
 
   // Facturation au passage en « louée » (décision du 29/07/2026).
