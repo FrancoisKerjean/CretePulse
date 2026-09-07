@@ -177,7 +177,7 @@ export function detectPlaces(text: string): DetectedPlaces {
 
 /** Sans diacritiques (Sitía, Réthymno), &nbsp; et retours à la ligne ramenés à un espace. */
 function normalizeText(s: string): string {
-  return s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/&nbsp;| /g, " ").replace(/\s+/g, " ");
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/&nbsp;|\u00a0/g, " ").replace(/\s+/g, " ");
 }
 
 /**
@@ -277,7 +277,11 @@ export function planArticlePromo(input: ArticlePromoInput, opts: { html?: string
   const places = detectPlaces(detectionText(input));
   let { mid, end } = route(input, { ...places, arrival: ARRIVAL_RE.test(headText(input)) });
   if (mid.kind !== "none" && mid.kind === end.kind) end = NONE;
-  if (countH2(opts.html ?? input.contents?.en ?? "") < MIN_H2_FOR_MID) mid = NONE;
+  if (countH2(opts.html ?? input.contents?.en ?? "") < MIN_H2_FOR_MID) {
+    // Traduction courte : l'encart de fin ne coupe pas la lecture, le mid y glisse plutôt que de disparaître.
+    if (end.kind === "none") end = mid;
+    mid = NONE;
+  }
   return { mid, end };
 }
 

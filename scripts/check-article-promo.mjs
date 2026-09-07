@@ -161,6 +161,28 @@ ok("moins de trois H2 : mid none quelle que soit la catégorie", () => {
   }
 });
 
+ok("traduction courte (2 H2) et end none : le mid glisse en fin, l'article garde un encart", () => {
+  const p = planArticlePromo(guide({ slug: "kids", category: "family", title: "Crete with kids", content: H2x2 }));
+  assert.deepEqual(kinds(p), ["none", "car"]);
+  assert.equal(p.end.variant, variantFor("kids", 3), "c'est bien le mid (voiture, 3 variantes) qui a glissé");
+  const fr = planArticlePromo(guide({ slug: "day-trips-from-heraklion", category: "day-trips", title: "Day trips from Heraklion" }), { html: H2x2 });
+  assert.deepEqual(kinds(fr), ["none", "car"]);
+  assert.equal(fr.end.pickup, "heraklion", "le pickup détecté suit l'encart");
+});
+
+ok("traduction courte (2 H2) avec un end déjà pris : le end reste, le mid disparaît", () => {
+  const p = planArticlePromo(guide({ slug: "tav", category: "food", title: "Best tavernas in Chania", content: H2x2 }));
+  assert.deepEqual(kinds(p), ["none", "bus"]);
+  assert.equal(p.end.busFrom, "Chania");
+});
+
+ok("3 H2 : rien ne glisse, mid et end inchangés", () => {
+  const p = planArticlePromo(guide({ slug: "kids", category: "family", title: "Crete with kids", content: H2x3 }));
+  assert.deepEqual(kinds(p), ["car", "none"]);
+  const b = planArticlePromo(guide({ slug: "tav", category: "food", title: "Best tavernas in Chania", content: H2x3 }));
+  assert.deepEqual(kinds(b), ["car", "bus"]);
+});
+
 ok("le HTML rendu prime sur contents.en pour compter les H2", () => {
   const p = planArticlePromo(guide({ slug: "x", category: "beaches", content: H2x2 }), { html: H2x3 });
   assert.equal(p.mid.kind, "car");
