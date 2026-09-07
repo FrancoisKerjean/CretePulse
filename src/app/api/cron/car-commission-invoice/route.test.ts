@@ -209,6 +209,17 @@ describe("GET /api/cron/car-commission-invoice", () => {
     expect(requestCommission).toHaveBeenCalledWith(42);
   });
 
+  it("signe sa bascule outcome_source=auto : une issue presumee doit se lire comme telle", async () => {
+    // Le cron PRESUME « louee » au J1. Sans cette signature, le suivi d issue
+    // (cron car-outcome-followup) ne saurait pas quelles lignes confirmer, et
+    // le back-office lirait la presomption comme un fait constate.
+    process.env.CAR_COMMISSION_ENABLED = "on";
+    const { updates } = wiring();
+    const { GET } = await import("./route");
+    await GET(authed());
+    expect(updates[0]).toMatchObject({ outcome: "rented", outcome_source: "auto" });
+  });
+
   // ── La selection ───────────────────────────────────────────────────────────
 
   it("ecarte cote requete les tranchees, les payees en ligne et le hors-borne", async () => {

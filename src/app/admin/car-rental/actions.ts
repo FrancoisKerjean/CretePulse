@@ -7,13 +7,13 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { isCarAdmin } from "@/lib/car-admin-auth";
-import { OUTCOMES, commissionEur, validatePartnerUpdate, ZONE_IDS } from "@/lib/car-admin";
+import { OUTCOMES, validatePartnerUpdate, ZONE_IDS, type Outcome } from "@/lib/car-admin";
+import { applyOutcome } from "@/lib/car-outcome-server";
 import { canCancelRequest } from "@/lib/car-quotes";
 import { requestCommission } from "@/lib/car-commission-server";
 import {
   creditCommissionInvoice,
   resendCommissionInvoice,
-  expireCommissionSession,
 } from "@/lib/car-invoice-credit";
 import { markInvoicePaid, markInvoiceUnpaid, assertWritten } from "@/lib/car-invoice-server";
 import { startPartnerOnboarding, refreshPartnerKyc } from "@/lib/car-connect-server";
@@ -47,44 +47,20 @@ export async function setOutcome(id: number, formData: FormData) {
     redirect(`${PATH}?error=${encodeURIComponent("Montant requis pour marquer une location « louée »")}`);
   }
 
-  // Snapshot de la commission au taux du jour (colonne commission_eur) :
-  // l'édition ultérieure du taux partenaire ne réécrit pas l'historique
-  // facturable.
-  let commission: number | null = null;
-  if (outcome === "rented" && finalAmount != null) {
-    const { data: req } = await supabase.from("car_requests")
-      .select("quoted_by_partner_id").eq("id", id).maybeSingle();
-    if (req?.quoted_by_partner_id != null) {
-      const { data: p } = await supabase.from("car_partners")
-        .select("commission").eq("id", req.quoted_by_partner_id).maybeSingle();
-      if (p) commission = commissionEur(finalAmount, p.commission);
-    }
-  }
+  // L'écriture elle-même vit dans applyOutcome, partagée avec le lien loueur.
+  // Ici ne restent que les décisions d'écran. AUCUN avoir n'est émis sur
+  // « perdue » : émettre une pièce comptable est une décision, pas un effet
+  // de bord d'un clic de statut.
+  const res = await applyOutcome({ id, outcome: outcome as Outcome, source: "admin", finalAmountEur: finalAmount });
 
-  const { error } = await supabase.from("car_requests").update({
-    outcome,
-    outcome_at: new Date().toISOString(),
-    final_amount_eur: finalAmount,
-    commission_eur: commission,
-    // une demande reperdue n'a plus de commission encaissable
-    ...(outcome === "lost" ? { commission_paid_at: null } : {}),
-  }).eq("id", id);
-  if (error) throw new Error(error.message);
-
-  // Facturation automatique de la commission au passage en « louée » (décision
-  // Kami 29/07/2026). requestCommission porte ses propres gardes : montant sous
-  // le minimum Stripe, demande déjà partie, loueur inconnu. Un échec Stripe est
-  // journalisé et relâche son verrou, il ne fait pas échouer le marquage : la
-  // location EST louée, c'est un fait, la facturation se rattrape ensuite.
-  if (outcome === "rented") {
-    const result = await requestCommission(id);
+  if (res.status === "rented") {
+    const result = res.commission;
     if (result.status === "failed") {
       console.error("[admin/car-rental] commission non demandée", { id, code: result.code });
     } else if (result.status === "partner_identity_incomplete") {
-      // La location EST louée (l'update ci-dessus a déjà eu lieu) : ce refus
-      // ne fait pas échouer le marquage, mais l'écran doit dire pourquoi
-      // aucune facture n'est partie, au lieu de rester muet ou d'afficher une
-      // panne, ce n'en est pas une, c'est un état normal tant que la fiche
+      // La location EST louée (l'update a déjà eu lieu) : ce refus ne fait
+      // pas échouer le marquage, mais l'écran doit dire pourquoi aucune
+      // facture n'est partie, c'est un état normal tant que la fiche
       // partenaire n'a pas été complétée.
       const missing = missingIdentityLabels(result.missing).join(", ");
       redirect(
@@ -94,13 +70,6 @@ export async function setOutcome(id: number, formData: FormData) {
       );
     }
   }
-
-  // Location perdue : le lien de paiement encore vivant doit mourir. La page
-  // facture et la route de paiement lisent maintenant `outcome`, mais une
-  // session Checkout déjà ouverte dans un onglet du loueur ne repasse par
-  // aucune des deux, elle vit 24 h chez Stripe. AUCUN avoir n'est émis ici :
-  // émettre une pièce comptable est une décision, pas un effet de bord.
-  if (outcome === "lost") await expireCommissionSession(id);
 
   revalidatePath(PATH);
 }

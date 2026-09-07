@@ -157,6 +157,9 @@ export async function GET(request: NextRequest) {
       .from("car_requests")
       .update({
         outcome: "rented",
+        // Présomption, pas constat : le cron car-outcome-followup demandera
+        // confirmation au loueur après date_to. Voir car-admin.ts OUTCOME_SOURCES.
+        outcome_source: "auto",
         outcome_at: new Date().toISOString(),
         final_amount_eur: amounts.base,
         commission_eur: amounts.amount,

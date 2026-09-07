@@ -4,6 +4,7 @@
 // Une facture ne se supprime JAMAIS : elle porte un numero d une serie qui doit
 // rester continue. Elle s annule par un avoir, et son numero ne bouge pas.
 import { supabaseAdmin } from "./supabase-admin";
+import type { OutcomeSource } from "./car-admin";
 import {
   invoiceForRequest,
   creditInvoice,
@@ -57,6 +58,8 @@ export async function expireCommissionSession(requestId: number): Promise<void> 
 export async function creditCommissionInvoice(
   requestId: number,
   reason: string,
+  /** Qui déclare la location non advenue : le back-office par défaut, ou le loueur via son lien d'issue. */
+  source: OutcomeSource = "admin",
 ): Promise<{ creditNumber: string; notified: boolean } | { error: string }> {
   const invoice = await invoiceForRequest(requestId);
   if (!invoice) return { error: "no_invoice" };
@@ -85,6 +88,7 @@ export async function creditCommissionInvoice(
       .from("car_requests")
       .update({
         outcome: "lost",
+        outcome_source: source,
         outcome_at: new Date().toISOString(),
         // une demande reperdue n a plus de commission encaissable
         commission_paid_at: null,

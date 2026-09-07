@@ -151,6 +151,23 @@ describe("creditCommissionInvoice", () => {
     });
   });
 
+  it("signe la demande reperdue outcome_source=admin par defaut", async () => {
+    const w = wiring();
+    await creditCommissionInvoice(42, "location annulee par le client");
+    const patch = w.updates.find((u) => "outcome" in u);
+    expect(patch).toMatchObject({ outcome: "lost", outcome_source: "admin" });
+  });
+
+  it("porte la source fournie quand l avoir vient du lien loueur", async () => {
+    // Le loueur qui declare lui-meme « pas eu lieu » n est pas un clic admin :
+    // la mesure anti-fraude de la spec (lost de source partner_link par loueur)
+    // se lit sur cette colonne.
+    const w = wiring();
+    await creditCommissionInvoice(42, "Reported by the rental company via the outcome link on 2026-09-16", "partner_link");
+    const patch = w.updates.find((u) => "outcome" in u);
+    expect(patch).toMatchObject({ outcome: "lost", outcome_source: "partner_link" });
+  });
+
   it("refuse d avoirer une facture deja reglee", async () => {
     // Le remboursement Stripe est manuel et hors perimetre : mieux vaut refuser
     // que produire un avoir sur de l argent deja encaisse.
