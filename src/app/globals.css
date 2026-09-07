@@ -307,8 +307,11 @@ a, button {
   line-height: 1.7;
   color: var(--color-text);
 }
-.article-prose p { margin-bottom: 24px; }
-.article-prose p:first-of-type::first-letter {
+/* :not(aside *) : l'encart de service monté au milieu de l'article (spec 2026-09-07) est un
+   <aside> de PromoBox enfant de .article-prose ; ces règles hors @layer battraient ses
+   utilities Tailwind (marges, couleur du CTA, soulignement), donc elles s'arrêtent à sa porte. */
+.article-prose p:not(aside *) { margin-bottom: 24px; }
+.article-prose > div:first-child > p:first-of-type::first-letter {
   font-family: var(--font-heading), "Comfortaa", system-ui, sans-serif;
   font-weight: 700;
   font-size: 72px;
@@ -375,17 +378,17 @@ a, button {
   text-align: left;
 }
 .article-prose th { background: var(--color-sea-faint, #E8F1F5); font-weight: 600; }
-.article-prose a {
+.article-prose a:not(aside *) {
   color: var(--color-sea);
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 4px;
   text-decoration-color: color-mix(in oklab, var(--color-sea) 40%, transparent);
 }
-.article-prose a:hover { text-decoration-color: var(--color-sea); }
+.article-prose a:not(aside *):hover { text-decoration-color: var(--color-sea); }
 @media (max-width: 768px) {
   .article-prose { font-size: 17px; }
-  .article-prose p { margin-bottom: 20px; }
+  .article-prose p:not(aside *) { margin-bottom: 20px; }
   .article-prose h2 { font-size: 26px; margin-top: 48px; }
   .article-prose figure { margin: 32px -16px; }
 }
