@@ -44,6 +44,14 @@ export interface AdminRequest {
   /** Session Checkout ouverte par le loueur depuis sa page facture : elle nait
    *  a son clic, donc une demande qui en porte une a forcement recu sa facture. */
   commission_session_id?: string | null;
+  // Suivi d'issue après la fin de location (migration 20260908) : optionnelles
+  // comme les autres colonnes admin, une prod pas encore migrée ne casse rien.
+  outcome_source?: string | null; // 'partner_link' | 'admin' | 'auto' | null
+  /** Jeton STABLE en clair du lien d'issue, même arbitrage que client_token. */
+  outcome_token?: string | null;
+  outcome_followup_count?: number | null;
+  outcome_followup_sent_at?: string | null;
+  outcome_followup_escalated_at?: string | null;
   admin_note?: string | null;
   client_relanced_at?: string | null;
   client_relance_count?: number;
@@ -105,6 +113,15 @@ export interface AdminPartner {
 
 export const OUTCOMES = ["rented", "lost"] as const;
 export type Outcome = (typeof OUTCOMES)[number];
+
+/**
+ * Qui a posé l'issue (migration 20260908_car_outcome_followup) :
+ * `auto` = présomption du cron de facturation au J1, `partner_link` = clic du
+ * loueur sur son lien d'issue, `admin` = back-office. Sans cette colonne,
+ * présumé et confirmé se lisaient pareil et personne ne relançait le loueur.
+ */
+export const OUTCOME_SOURCES = ["partner_link", "admin", "auto"] as const;
+export type OutcomeSource = (typeof OUTCOME_SOURCES)[number];
 
 // ── Etat de reservation voyageur (colonnes booking_*) ───────────────────────
 // Le tunnel voiture encaisse le voyageur meme quand le loueur n'a pas de compte

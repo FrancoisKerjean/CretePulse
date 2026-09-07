@@ -4,7 +4,7 @@
 import {
   commissionEur, requestCommission, requestsSummary, partnerStats,
   validatePartnerUpdate, buildCarWaMessage, waHref, ZONE_IDS,
-  bookingState,
+  bookingState, OUTCOME_SOURCES,
 } from "../src/lib/car-admin.ts";
 
 let fail = 0;
@@ -123,5 +123,12 @@ ok("annulation sans paiement", bCancelled.tone === "neutral" && bCancelled.paid 
 
 // Un statut inconnu ne doit pas disparaitre en silence : il s'affiche tel quel.
 ok("statut inconnu affiche brut", bookingState({ booking_status: "wat" }).label === "wat");
+
+// --- sources d'issue (migration 20260908_car_outcome_followup) ---
+// Une issue présumée par le cron au J1 et une issue confirmée par le loueur ne
+// doivent plus se lire pareil : la source est une donnée, pas une déduction.
+ok("OUTCOME_SOURCES = partner_link, admin, auto",
+  Array.isArray(OUTCOME_SOURCES) && OUTCOME_SOURCES.length === 3
+  && OUTCOME_SOURCES.includes("partner_link") && OUTCOME_SOURCES.includes("admin") && OUTCOME_SOURCES.includes("auto"));
 
 process.exit(fail ? 1 : 0);
