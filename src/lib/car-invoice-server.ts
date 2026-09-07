@@ -197,9 +197,17 @@ export async function markInvoiceUnpaid(requestId: number): Promise<void> {
   assertWritten("markInvoiceUnpaid", requestId, error);
 }
 
-export async function creditInvoice(id: number, number: string, reason: string): Promise<string> {
+/**
+ * Emet l avoir d une facture et rend son numero. Rend `null` quand la garde
+ * SQL `credited_at is null` n a touche AUCUNE ligne : un autre appel a gagne
+ * la course et l avoir existe deja. Ce cas n est PAS une erreur de base, il ne
+ * leve donc pas, mais il ne doit pas se confondre avec un succes : rendre le
+ * numero quand meme ferait partir un second email d avoir et une seconde
+ * ligne ops sur une seule et meme piece comptable.
+ */
+export async function creditInvoice(id: number, number: string, reason: string): Promise<string | null> {
   const creditNumber = creditNumberFor(number);
-  const { error } = await supabaseAdmin
+  const { data, error } = await supabaseAdmin
     .from("car_commission_invoices")
     .update({
       credited_at: new Date().toISOString(),
@@ -212,5 +220,5 @@ export async function creditInvoice(id: number, number: string, reason: string):
   // Refuse en silence, on rendrait un numero d avoir qui n existe nulle part,
   // et le loueur recevrait la notification d une piece comptable inexistante.
   assertWritten("creditInvoice", id, error);
-  return creditNumber;
+  return (data?.length ?? 0) > 0 ? creditNumber : null;
 }

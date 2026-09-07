@@ -54,7 +54,7 @@ function wiring(
   opts: {
     selects?: Array<{ data: unknown }>;
     insert?: { data: unknown; error: { message: string } | null };
-    /** Reponse de PostgREST a un UPDATE. Par defaut : accepte, 0 ligne touchee. */
+    /** Reponse de PostgREST a un UPDATE. Par defaut : accepte, 1 ligne touchee. */
     write?: { data: unknown; error: { message: string } | null };
   } = {},
 ): Wiring {
@@ -76,7 +76,9 @@ function wiring(
       maybeSingle: async () => nextSelect(),
       // Fin de chaine d un update : PostgREST ne renvoie les lignes touchees
       // que si `select()` suit. Il ne LEVE jamais, il rend `{ data, error }`.
-      select: async () => opts.write ?? { data: [], error: null },
+      // Le defaut touche UNE ligne : `data: []` veut dire « aucune ligne ne
+      // correspondait aux filtres », c est un cas a demander explicitement.
+      select: async () => opts.write ?? { data: [INVOICE], error: null },
     };
     return {
       select: () => chain,
@@ -327,6 +329,16 @@ describe("marquages", () => {
       ["id", 7],
       ["credited_at", null],
     ]);
+  });
+
+  it("course perdue : zero ligne touchee ne rend AUCUN numero", async () => {
+    // Deux POST « perdu » simultanes lisent tous deux `credited_at: null` et
+    // arrivent tous deux ici : seule la garde SQL les separe, et le perdant
+    // n ecrit rien. Lui rendre le numero de l autre ferait partir un second
+    // email d avoir et une seconde ligne ops sur une seule piece comptable.
+    const w = wiring({ write: { data: [], error: null } });
+    expect(await creditInvoice(7, "NOVAI-CD-2026-004", "annulation loueur")).toBeNull();
+    expect(w.updates).toHaveLength(1);
   });
 });
 

@@ -74,6 +74,13 @@ export async function creditCommissionInvoice(
   await expireCommissionSession(requestId);
 
   const creditNumber = await creditInvoice(invoice.id, invoice.number, reason);
+  // Course perdue : deux clics « perdu » simultanes passent tous deux la lecture
+  // de `invoice.credited_at` ci-dessus, seule la garde SQL `credited_at is null`
+  // les separe. Le perdant n a ecrit AUCUNE ligne : continuer lui ferait rendre
+  // un numero d avoir emis par l autre, renvoyer l email d avoir une seconde
+  // fois et poser une seconde ligne ops sur une seule piece comptable. Meme
+  // code que le refus lu avant l ecriture : pour l appelant, c est le meme fait.
+  if (creditNumber === null) return { error: "already_credited" };
 
   // A ce point, l avoir EST deja en base : creditInvoice a leve si la base
   // l avait refuse. Un refus ICI ne peut plus etre repare en rejouant cette

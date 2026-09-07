@@ -31,7 +31,7 @@ const INVOICE = {
 };
 
 const invoiceForRequest = vi.fn(async () => INVOICE as typeof INVOICE | null);
-const creditInvoice = vi.fn(async (_id: number, number: string) => `${number}-A`);
+const creditInvoice = vi.fn(async (_id: number, number: string): Promise<string | null> => `${number}-A`);
 const markInvoiceSent = vi.fn(async () => {});
 let tokenSeq = 0;
 const rotateInvoiceToken = vi.fn(async () => `tok_neuf_${++tokenSeq}`);
@@ -191,6 +191,22 @@ describe("creditCommissionInvoice", () => {
     expect(await creditCommissionInvoice(42, "annulation")).toEqual({ error: "already_credited" });
     expect(creditInvoice).not.toHaveBeenCalled();
     expect(sendCreditNote).not.toHaveBeenCalled();
+    expect(w.updates).toHaveLength(0);
+  });
+
+  it("double clic simultane : le perdant de la course n emet ni avoir ni email", async () => {
+    // La lecture de `credited_at` ci-dessus ne protege que du rejeu SEQUENTIEL.
+    // Deux POST « perdu » simultanes la passent tous deux, et seule la garde SQL
+    // `credited_at is null` les separe : le perdant touche zero ligne, ce que
+    // creditInvoice rend par `null`. Sans ce cas, il rendait le numero de
+    // l autre, envoyait un second email d avoir et posait une seconde ligne ops.
+    creditInvoice.mockResolvedValueOnce(null);
+    const w = wiring();
+
+    expect(await creditCommissionInvoice(42, "annulation")).toEqual({ error: "already_credited" });
+    expect(creditInvoice).toHaveBeenCalledOnce();
+    expect(sendCreditNote).not.toHaveBeenCalled();
+    // Rien n est repasse en « perdue » non plus : c est le gagnant qui l a fait.
     expect(w.updates).toHaveLength(0);
   });
 
