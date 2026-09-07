@@ -145,5 +145,18 @@ ok("badge sans issue -> null", outcomeBadgeLabel(null, null) === null);
 ok("ligne d'état absente avant le premier envoi", followupStatusLine({ date_to: "2026-09-15" }) === null);
 ok("ligne d'état compte les envois", /2\/3 envoyées/.test(followupStatusLine({ date_to: "2026-09-15", outcome_followup_count: 2, outcome_followup_sent_at: "2026-09-12T06:20:00.000Z" })));
 ok("ligne d'état : l'escalade prime", /escaladée/.test(followupStatusLine({ date_to: "2026-09-15", outcome_followup_count: 3, outcome_followup_escalated_at: "2026-09-18T06:20:00.000Z" })));
+// Une issue connue ferme la question : sans ce garde, une demande confirmée
+// après 2 emails affichait « 2/3 envoyées » pour toujours, ce qui se lit comme
+// une question encore ouverte. Seules les lignes que le cron relance encore la
+// portent : issue nulle, ou seulement présumée.
+const relancee = { date_to: "2026-09-15", outcome_followup_count: 2, outcome_followup_sent_at: "2026-09-12T06:20:00.000Z" };
+ok("ligne d'état muette dès que le loueur a confirmé",
+  followupStatusLine({ ...relancee, outcome: "rented", outcome_source: "partner_link" }) === null);
+ok("ligne d'état muette sur une issue posée par l'admin",
+  followupStatusLine({ ...relancee, outcome: "lost", outcome_source: "admin" }) === null);
+ok("ligne d'état visible sous une issue présumée",
+  /2\/3 envoyées/.test(followupStatusLine({ ...relancee, outcome: "rented", outcome_source: "auto" })));
+ok("une escalade suivie d'une confirmation ne laisse aucune ligne",
+  followupStatusLine({ ...relancee, outcome: "rented", outcome_source: "partner_link", outcome_followup_escalated_at: "2026-09-18T06:20:00.000Z" }) === null);
 
 process.exit(fail ? 1 : 0);

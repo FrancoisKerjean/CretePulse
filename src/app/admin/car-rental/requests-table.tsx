@@ -9,7 +9,7 @@ import {
   isSilentRequest, isAwaitingChoice,
   type MonitorInvite,
 } from "@/lib/car-monitoring";
-import { outcomeBadgeLabel, followupStatusLine } from "@/lib/car-outcome-followup";
+import { outcomeBadgeLabel, followupStatusLine, isPresumedRented } from "@/lib/car-outcome-followup";
 import { offerExpiresAt } from "@/lib/car-offer-expiry";
 import { carPickupLabel } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
@@ -125,7 +125,7 @@ function outcomeBadge(r: AdminRequest) {
   const label = outcomeBadgeLabel(r.outcome, r.outcome_source);
   const status = followupStatusLine(r);
   if (!label && !status) return null;
-  const presumed = r.outcome === "rented" && r.outcome_source === "auto";
+  const presumed = isPresumedRented(r.outcome, r.outcome_source);
   return (
     <>
       {label ? (

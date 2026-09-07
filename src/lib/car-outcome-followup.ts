@@ -123,6 +123,17 @@ export type OutcomePageState =
   | { kind: "recorded"; outcome: string; at: string | null; contested: boolean };
 
 /**
+ * Issue « louée » posée par le cron au J1, sans confirmation du loueur : la
+ * question lui reste ouverte. Le même prédicat sert la page loueur, le badge
+ * admin et la ligne d'état, il ne vit donc qu'ici : le jour où la marque de
+ * présomption change, un seul endroit bouge.
+ */
+export const isPresumedRented = (
+  outcome: string | null | undefined,
+  source: string | null | undefined,
+): boolean => outcome === "rented" && source === "auto";
+
+/**
  * Ce que la page montre. `result` est le `?result=` posé par la redirection
  * 303 de l'endpoint (null à la première visite). La page relit la base, donc
  * après un POST l'issue affichée est celle réellement écrite.
@@ -133,7 +144,7 @@ export function outcomePageState(row: ClickRow & { outcome_at: string | null }, 
   if (result === "applied" || result === "confirmed" || result === "credited") {
     return { kind: "done", choice: row.outcome === "lost" ? "lost" : "rented" };
   }
-  const presumed = row.outcome === "rented" && row.outcome_source === "auto";
+  const presumed = isPresumedRented(row.outcome, row.outcome_source);
   // Sur une ligne encore présumée, `recorded` n'a qu'une origine : le loueur a
   // dit « pas eu lieu » et l'avoir automatique a été refusé, les ops sont
   // prévenus. Son clic EST pris en compte, il ne doit pas revoir le formulaire
@@ -223,8 +234,17 @@ export function outcomeBadgeLabel(outcome: string | null | undefined, source: st
 const adminDay = (iso: string): string =>
   new Date(iso).toLocaleDateString("fr-FR", { timeZone: "Europe/Athens" });
 
-/** Ligne d'état de la relance sous le badge, null tant que rien n'est parti. */
-export function followupStatusLine(row: FollowupRow): string | null {
+/**
+ * Ligne d'état de la relance sous le badge, null tant que rien n'est parti.
+ * Null aussi dès que l'issue est CONNUE : la question ne se pose plus, et
+ * « 2/3 envoyées » sous « confirmée loueur » se lirait comme une question
+ * encore ouverte, pour toujours. Même population que le cron : issue nulle,
+ * ou seulement présumée.
+ */
+export function followupStatusLine(
+  row: FollowupRow & { outcome?: string | null; outcome_source?: string | null },
+): string | null {
+  if (row.outcome && !isPresumedRented(row.outcome, row.outcome_source)) return null;
   if (row.outcome_followup_escalated_at) {
     return `question d'issue : escaladée le ${adminDay(row.outcome_followup_escalated_at)}`;
   }
