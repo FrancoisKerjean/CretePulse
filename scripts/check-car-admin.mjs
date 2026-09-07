@@ -6,6 +6,7 @@ import {
   validatePartnerUpdate, buildCarWaMessage, waHref, ZONE_IDS,
   bookingState, OUTCOME_SOURCES,
 } from "../src/lib/car-admin.ts";
+import { outcomeBadgeLabel, followupStatusLine } from "../src/lib/car-outcome-followup.ts";
 
 let fail = 0;
 const ok = (n, c) => { console.log(c ? `ok - ${n}` : `FAIL - ${n}`); if (!c) fail++; };
@@ -130,5 +131,19 @@ ok("statut inconnu affiche brut", bookingState({ booking_status: "wat" }).label 
 ok("OUTCOME_SOURCES = partner_link, admin, auto",
   Array.isArray(OUTCOME_SOURCES) && OUTCOME_SOURCES.length === 3
   && OUTCOME_SOURCES.includes("partner_link") && OUTCOME_SOURCES.includes("admin") && OUTCOME_SOURCES.includes("auto"));
+
+// Libellés de badge : une présomption du cron et une confirmation du loueur
+// ne se lisent plus pareil. Une source par entrée de OUTCOME_SOURCES.
+for (const source of OUTCOME_SOURCES) {
+  ok(`badge louée · ${source} porte la source`, (outcomeBadgeLabel("rented", source) ?? "").startsWith("louée · "));
+  ok(`badge perdue · ${source} porte la source`, (outcomeBadgeLabel("lost", source) ?? "").startsWith("perdue · "));
+}
+ok("badge présumée J1", outcomeBadgeLabel("rented", "auto") === "louée · présumée J1");
+ok("badge confirmée loueur", outcomeBadgeLabel("rented", "partner_link") === "louée · confirmée loueur");
+ok("badge sans source (pré-migration) reste lisible", outcomeBadgeLabel("rented", null) === "louée");
+ok("badge sans issue -> null", outcomeBadgeLabel(null, null) === null);
+ok("ligne d'état absente avant le premier envoi", followupStatusLine({ date_to: "2026-09-15" }) === null);
+ok("ligne d'état compte les envois", /2\/3 envoyées/.test(followupStatusLine({ date_to: "2026-09-15", outcome_followup_count: 2, outcome_followup_sent_at: "2026-09-12T06:20:00.000Z" })));
+ok("ligne d'état : l'escalade prime", /escaladée/.test(followupStatusLine({ date_to: "2026-09-15", outcome_followup_count: 3, outcome_followup_escalated_at: "2026-09-18T06:20:00.000Z" })));
 
 process.exit(fail ? 1 : 0);

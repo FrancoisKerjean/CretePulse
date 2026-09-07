@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Planche · page d'issue loueur et badge admin</title>
+<style>
+  body { font-family: 'Baloo 2', system-ui, sans-serif; color: #0B3954; background: #F6FBFC; margin: 0; padding: 32px; }
+  h1 { font-size: 20px; margin: 0 0 24px; }
+  h2 { font-size: 14px; color: #5C7886; margin: 32px 0 12px; text-transform: uppercase; letter-spacing: .04em; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; }
+  .card { background: #fff; border: 1px solid #DCE9EE; border-radius: 20px; padding: 26px 24px; }
+  .card p.head { margin: 0 0 4px; font-weight: 700; }
+  .card p.sub { margin: 0 0 20px; color: #5C7886; }
+  .option { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px; border: 1px solid #DCE9EE; margin-bottom: 10px; }
+  .notice { margin: 0 0 14px; padding: 16px 18px; border-radius: 12px; font-size: 15px; line-height: 1.6; background: #F6FBFC; }
+  .ok { background: #ECFDF5; color: #065F46; }
+  .warn { background: #FEF9EC; color: #92400E; }
+  button { width: 100%; padding: 14px 20px; border-radius: 999px; border: none; background: #008C9E; color: #fff; font-size: 16px; font-weight: 700; }
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .badge { border-radius: 999px; padding: 2px 8px; font-size: 12px; font-weight: 700; }
+  .olive { background: #6B8E23; color: #fff; }
+  .olive-outline { border: 1px solid #6B8E23; background: #fff; color: #6B8E23; }
+  .grey { background: #94A3B8; color: #fff; }
+  .muted { font-size: 12px; color: #5C7886; }
+  .email { white-space: pre-wrap; font-family: ui-monospace, monospace; font-size: 13px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<h1>Page /en/rental-outcome/[token] · états, et badge admin</h1>
+
+<h2>1. Formulaire, ?choice=lost pré-coché, population B (facture émise)</h2>
+<div class="grid">
+  <div class="card">
+    <p class="head">Rental 33 · 08/09 to 15/09 · Heraklion airport · Toyota Yaris automatic</p>
+    <p class="sub">Traveller: Marie D. · Price accepted: 320.00 EUR</p>
+    <label class="option"><input type="radio" name="c1"> Yes, it took place</label>
+    <label class="option"><input type="radio" name="c1" checked> No, it did not happen</label>
+    <p class="notice">Invoice NOVAI-CD-2026-002 (32.00 EUR) was issued on the first day of the rental. If it did not take place, confirming cancels it by credit note, nothing to pay.</p>
+    <button>Confirm</button>
+  </div>
+  <div class="card">
+    <p class="head">Rental 25 · 01/08 to 08/08 · Chania airport</p>
+    <p class="sub">Traveller: Paul M. · Price accepted: 210.00 EUR</p>
+    <label class="option"><input type="radio" name="c2" checked> Yes, it took place</label>
+    <label class="option"><input type="radio" name="c2"> No, it did not happen</label>
+    <button>Confirm</button>
+  </div>
+</div>
+
+<h2>2. Après le POST</h2>
+<div class="grid">
+  <div class="card"><p class="notice ok">Thank you, recorded: the rental did not take place. Invoice NOVAI-CD-2026-002 is cancelled by credit note NOVAI-CD-2026-002-A, nothing to pay.</p></div>
+  <div class="card"><p class="notice ok">Thank you, recorded: the rental took place. If a commission is due, the invoice follows by email.</p></div>
+  <div class="card"><p class="notice">Already recorded on 2026-09-10: the rental did not take place. If this is wrong, reply to hello@crete.direct.</p></div>
+  <div class="card"><p class="notice warn">This invoice is already paid, so it cannot be cancelled here. Reply to hello@crete.direct and we will refund it.</p></div>
+  <div class="card"><p class="notice warn">Sorry, this request was cancelled. Nothing to confirm.</p></div>
+</div>
+
+<h2>3. Badge admin (requests-table.tsx) et ligne d'état</h2>
+<div class="card">
+  <div class="badges"><span class="badge olive-outline">louée · présumée J1</span><span class="muted">question d'issue : 2/3 envoyées, dernière le 12/09/2026</span></div>
+  <div class="badges" style="margin-top:10px"><span class="badge olive">louée · confirmée loueur</span></div>
+  <div class="badges" style="margin-top:10px"><span class="badge olive">louée · admin</span></div>
+  <div class="badges" style="margin-top:10px"><span class="badge grey">perdue · loueur</span></div>
+  <div class="badges" style="margin-top:10px"><span class="muted">question d'issue : escaladée le 18/09/2026</span> <span class="muted">(issue encore nulle : pas de badge, la ligne d'état seule)</span></div>
+</div>
+
+<h2>4. Email 3 (population A)</h2>
+<div class="card email">Subject: Last reminder: crete.direct · did rental 25 take place? One click
+
+Hi Nikos,
+
+Rental 25 · 01/08 to 08/08 · Chania airport
+Traveller: Paul M. · Price accepted: 210.00 EUR
+
+Did this rental take place?
+
+  Yes, it took place:      https://crete.direct/en/rental-outcome/{token}?choice=rented
+  No, it did not happen:   https://crete.direct/en/rental-outcome/{token}?choice=lost
+
+If it took place, the 10% commission invoice (21.00 EUR) follows automatically.
+
+Without an answer by 18/08 we will call you.
+
+Kami
+crete.direct</div>
+</body>
+</html>

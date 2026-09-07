@@ -9,6 +9,7 @@ import {
   isSilentRequest, isAwaitingChoice,
   type MonitorInvite,
 } from "@/lib/car-monitoring";
+import { outcomeBadgeLabel, followupStatusLine } from "@/lib/car-outcome-followup";
 import { offerExpiresAt } from "@/lib/car-offer-expiry";
 import { carPickupLabel } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
@@ -114,12 +115,30 @@ function closureReasonBadge(reason?: string | null) {
   );
 }
 
-function outcomeBadge(o?: string | null) {
-  if (!o) return null;
+/**
+ * Issue ET sa source : « louée · présumée J1 » (le cron a facturé sans
+ * confirmation) ne se lit plus comme « louée · confirmée loueur ». Sous le
+ * badge, l'état de la question posée au loueur, données déjà chargées par le
+ * select("*") de page.tsx, aucune requête de plus.
+ */
+function outcomeBadge(r: AdminRequest) {
+  const label = outcomeBadgeLabel(r.outcome, r.outcome_source);
+  const status = followupStatusLine(r);
+  if (!label && !status) return null;
+  const presumed = r.outcome === "rented" && r.outcome_source === "auto";
   return (
-    <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${o === "rented" ? "bg-olive text-white" : "bg-text-light text-white"}`}>
-      {o}
-    </span>
+    <>
+      {label ? (
+        <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${
+          r.outcome === "rented"
+            ? presumed ? "border border-olive bg-white text-olive" : "bg-olive text-white"
+            : "bg-text-light text-white"
+        }`}>
+          {label}
+        </span>
+      ) : null}
+      {status ? <span className="text-xs text-text-muted">{status}</span> : null}
+    </>
   );
 }
 
@@ -370,7 +389,7 @@ export function RequestsTable({
                 <span className="font-data text-xs text-text-light">#{r.id} · {fmtDate(r.created_at)}</span>
                 {statusBadge(r.status)}
                 {closureReasonBadge(r.closure_reason)}
-                {outcomeBadge(r.outcome)}
+                {outcomeBadge(r)}
                 {r.commission_paid_at ? (
                   <span className="rounded-full bg-ok px-2 py-0.5 text-xs font-bold text-white">commission encaissée</span>
                 ) : r.commission_requested_at ? (
