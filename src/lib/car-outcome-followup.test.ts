@@ -10,7 +10,6 @@ import {
 } from "./car-outcome-followup";
 
 const TODAY = "2026-09-16";
-const NOW = new Date(`${TODAY}T06:20:00.000Z`).getTime();
 const EMDASH = String.fromCharCode(0x2014);
 
 describe("addDays / ddmm / shortName", () => {
@@ -30,36 +29,35 @@ describe("outcomeFollowupStep", () => {
   const base = { date_to: "2026-09-15", outcome_followup_count: 0, outcome_followup_sent_at: null, outcome_followup_escalated_at: null };
 
   it("date_to = today ne déclenche rien : la location se termine aujourd'hui", () => {
-    expect(outcomeFollowupStep({ ...base, date_to: TODAY }, TODAY, NOW)).toBe("none");
+    expect(outcomeFollowupStep({ ...base, date_to: TODAY }, TODAY)).toBe("none");
   });
   it("date_to < today et count 0 : email 1", () => {
-    expect(outcomeFollowupStep(base, TODAY, NOW)).toBe("send");
+    expect(outcomeFollowupStep(base, TODAY)).toBe("send");
   });
   it("count 1 : email 2 le 3e jour civil après l'envoi, pas la veille", () => {
     const send = { ...base, outcome_followup_count: 1, outcome_followup_sent_at: "2026-09-13T06:20:00.000Z" };
-    expect(outcomeFollowupStep(send, TODAY, NOW)).toBe("send");
-    expect(outcomeFollowupStep({ ...send, outcome_followup_sent_at: "2026-09-14T06:20:00.000Z" }, TODAY, NOW)).toBe("none");
+    expect(outcomeFollowupStep(send, TODAY)).toBe("send");
+    expect(outcomeFollowupStep({ ...send, outcome_followup_sent_at: "2026-09-14T06:20:00.000Z" }, TODAY)).toBe("none");
   });
   it("count 2 : email 3 le 4e jour civil après l'envoi, pas la veille", () => {
     const send = { ...base, outcome_followup_count: 2, outcome_followup_sent_at: "2026-09-12T06:20:00.000Z" };
-    expect(outcomeFollowupStep(send, TODAY, NOW)).toBe("send");
-    expect(outcomeFollowupStep({ ...send, outcome_followup_sent_at: "2026-09-13T06:20:00.000Z" }, TODAY, NOW)).toBe("none");
+    expect(outcomeFollowupStep(send, TODAY)).toBe("send");
+    expect(outcomeFollowupStep({ ...send, outcome_followup_sent_at: "2026-09-13T06:20:00.000Z" }, TODAY)).toBe("none");
   });
   it("gigue du cron : 35 s d'avance sur la passe suivante ne repoussent pas l'email d'un jour", () => {
     const row = { ...base, date_to: "2026-09-09", outcome_followup_count: 1, outcome_followup_sent_at: "2026-09-10T06:20:45.000Z" };
-    const now = new Date("2026-09-13T06:20:10.000Z").getTime();
-    expect(outcomeFollowupStep(row, "2026-09-13", now)).toBe("send");
+    expect(outcomeFollowupStep(row, "2026-09-13")).toBe("send");
   });
   it("count 3 : escalade quand date_to + 10 j <= today, rien avant", () => {
     const row = { ...base, outcome_followup_count: 3, outcome_followup_sent_at: "2026-09-15T06:20:00.000Z" };
-    expect(outcomeFollowupStep({ ...row, date_to: "2026-09-06" }, TODAY, NOW)).toBe("escalate");
-    expect(outcomeFollowupStep({ ...row, date_to: "2026-09-07" }, TODAY, NOW)).toBe("none");
+    expect(outcomeFollowupStep({ ...row, date_to: "2026-09-06" }, TODAY)).toBe("escalate");
+    expect(outcomeFollowupStep({ ...row, date_to: "2026-09-07" }, TODAY)).toBe("none");
   });
   it("déjà escaladée : rappel à chaque passage", () => {
-    expect(outcomeFollowupStep({ ...base, outcome_followup_count: 3, outcome_followup_escalated_at: "2026-09-10T06:20:00.000Z" }, TODAY, NOW)).toBe("remind");
+    expect(outcomeFollowupStep({ ...base, outcome_followup_count: 3, outcome_followup_escalated_at: "2026-09-10T06:20:00.000Z" }, TODAY)).toBe("remind");
   });
   it("colonnes absentes (prod pas migrée) : lues comme count 0", () => {
-    expect(outcomeFollowupStep({ date_to: "2026-09-15" }, TODAY, NOW)).toBe("send");
+    expect(outcomeFollowupStep({ date_to: "2026-09-15" }, TODAY)).toBe("send");
   });
 });
 

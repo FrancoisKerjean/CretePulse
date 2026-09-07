@@ -54,9 +54,9 @@ export type FollowupStep = "none" | "send" | "escalate" | "remind";
  * franchit pas la borne et l'email glisse d'un jour entier, deux glissements
  * amenant le dernier rappel le jour même de l'escalade.
  * `date_to < today` strictement : le jour de la restitution, on n'écrit pas
- * encore. `_nowMs` n'est plus lu, la signature reste celle qu'appelle le cron.
+ * encore. Aucune horloge en paramètre : `today` suffit.
  */
-export function outcomeFollowupStep(row: FollowupRow, today: string, _nowMs?: number): FollowupStep {
+export function outcomeFollowupStep(row: FollowupRow, today: string): FollowupStep {
   if (!(row.date_to < today)) return "none";
   if (row.outcome_followup_escalated_at) return "remind";
   const count = row.outcome_followup_count ?? 0;
