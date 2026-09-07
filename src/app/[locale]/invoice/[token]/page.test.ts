@@ -181,6 +181,23 @@ describe("page facture · coordonnees bancaires", () => {
     expect(html).not.toContain("This rental was cancelled");
   });
 
+  it("l avoir numerote nomme la piece comptable", async () => {
+    wiring({ ...INVOICE, credited_at: "2026-08-11T09:00:00.000Z", credit_number: "F-2026-0004-A" });
+
+    const html = await render();
+    expect(html).toContain("Cancelled by credit note F-2026-0004-A. Nothing to pay.");
+  });
+
+  it("un avoir sans numero ne laisse aucune amorce vide", async () => {
+    // Sans garde, la page rendait « Cancelled by credit note . Nothing to pay. »
+    // Frere du defaut corrige sur la page d issue : la mention tombe entiere.
+    wiring({ ...INVOICE, credited_at: "2026-08-11T09:00:00.000Z", credit_number: null });
+
+    const html = await render();
+    expect(html).toContain("Cancelled. Nothing to pay.");
+    expect(html).not.toContain("credit note");
+  });
+
   it("un paiement deja encaisse prime sur la location annulee", async () => {
     // Sinon la page dirait « rien a payer » a un loueur qui a paye, et le
     // suivi interne perdrait la seule trace visible de son virement.

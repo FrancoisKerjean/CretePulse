@@ -253,7 +253,9 @@ export default async function InvoicePage({
       )}
       {state === "credited" && (
         <p className="mb-6 rounded-xl border border-border bg-surface px-5 py-3 font-bold text-text-muted">
-          Cancelled by credit note {invoice.credit_number}. Nothing to pay.
+          {/* Le numéro d'avoir peut manquer : sans ce garde la phrase se lisait
+              « Cancelled by credit note . ». Même défaut que sur la page d'issue. */}
+          Cancelled{invoice.credit_number ? ` by credit note ${invoice.credit_number}` : ""}. Nothing to pay.
         </p>
       )}
 
