@@ -3446,7 +3446,10 @@ Expected : `git status` vide ; `ship` affiche le vert de `npm run check`, intèg
 
 - [ ] **Step 4 : ACTION HUMAINE : appliquer la migration sur la base de production**
 
-Qui : François, depuis le VPS (la base est un Postgres self-hosted derrière PostgREST, `SUPABASE_SERVICE_KEY` n'existe que sur Vercel). Butoir : **avant le déploiement de 20h Athènes du jour du ship**, sinon le cron de 06:20 UTC du lendemain lit des colonnes absentes et sa requête échoue (PostgREST rend `error`, la passe journalise et rend des compteurs à zéro, rien n'est cassé mais rien ne part).
+Qui : François, depuis le VPS (la base est un Postgres self-hosted derrière PostgREST, `SUPABASE_SERVICE_KEY` n'existe que sur Vercel). Butoir : **AVANT le déploiement de 20h Athènes qui embarque ce chantier**, pas après. Une base non migrée ne se contente pas de laisser le cron de 06:20 UTC muet : `outcome_source` est ÉCRITE par deux chemins déjà en production, et PostgREST refuse une colonne inconnue (PGRST204).
+
+1. **Le bouton « Loué / Perdu » du back-office** (`applyOutcome`, `src/lib/car-outcome-server.ts`) met `outcome_source` dans son patch : le refus remonte par `assertWritten` et l'action échoue à l'écran. Plus aucune issue ne se pose à la main tant que la migration n'est pas passée.
+2. **Le cron de facturation `car-commission-invoice`** (05:00 UTC) écrit la même colonne avant d'appeler `requestCommission` : chaque ligne éligible sort en `outcome_update_failed` et **zéro facture n'est émise** ce matin-là. Auto-guérissant, `outcome` reste NULL et les lignes ressortent du même filtre le lendemain, une fois la migration appliquée.
 
 Run (sur le VPS, adapter le nom de base et l'utilisateur à ceux du runbook du serveur) :
 ```bash

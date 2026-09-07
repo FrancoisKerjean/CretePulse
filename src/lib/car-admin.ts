@@ -45,7 +45,10 @@ export interface AdminRequest {
    *  a son clic, donc une demande qui en porte une a forcement recu sa facture. */
   commission_session_id?: string | null;
   // Suivi d'issue après la fin de location (migration 20260908) : optionnelles
-  // comme les autres colonnes admin, une prod pas encore migrée ne casse rien.
+  // comme les autres colonnes admin, ce qui protège la LECTURE (`select *` sans
+  // crash) mais PAS l'écriture : `outcome_source` est écrite par applyOutcome et
+  // par le cron de facturation, et PostgREST refuse une colonne inconnue
+  // (PGRST204). La migration doit précéder le déploiement, pas le suivre.
   outcome_source?: string | null; // 'partner_link' | 'admin' | 'auto' | null
   /** Jeton STABLE en clair du lien d'issue, même arbitrage que client_token. */
   outcome_token?: string | null;
