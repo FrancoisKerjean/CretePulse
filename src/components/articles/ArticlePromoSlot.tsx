@@ -58,7 +58,7 @@ export async function ArticlePromoSlot({ promo, locale, slug }: { promo: Article
     return (
       <VanPromo
         locale={locale}
-        generic={{ href: `https://van.crete.direct/?source=${ARTICLE_PROMO_SOURCE}` }}
+        generic
         source={ARTICLE_PROMO_SOURCE}
         slug={slug}
         variant={v}

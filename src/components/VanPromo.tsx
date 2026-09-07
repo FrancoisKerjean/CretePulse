@@ -54,18 +54,24 @@ export function VanPromo({
   slug?: string;
   /** Variante de copie (1..2), ajoutée aux props de promo_impression. */
   variant?: number;
-  /** Van sans corridor nommé : lien vers la racine de van.crete.direct. Exige `copy`. */
-  generic?: { href: string };
+  /** Van sans corridor nommé : lien vers la racine localisée de van.crete.direct. Exige `copy`. */
+  generic?: true;
 }) {
   const main = corridors[0];
   if (!main && !generic) return null;
   const c = COPY[locale] || COPY.en;
   const title = copy?.title ?? (main ? c.title(main.fromName, main.toName) : null);
-  if (!title) return null;
+  if (!title) {
+    console.error("VanPromo: generic sans copy, encart non rendu", { locale, source, slug });
+    return null;
+  }
   const line = copy?.line ?? (main ? vanPromoLine(locale, main) : undefined);
+  // Une seule règle de langue pour les deux cas : le site van ne parle que les 4 langues de COPY,
+  // et sa racine sans locale redirige vers /en (mesuré 07/09 : 307 vers /en même en Accept-Language fr).
+  const vanLocale = COPY[locale] ? locale : "en";
   const href = main
-    ? `https://van.crete.direct/${COPY[locale] ? locale : "en"}/${main.slug}?source=${encodeURIComponent(source)}`
-    : generic!.href;
+    ? `https://van.crete.direct/${vanLocale}/${main.slug}?source=${encodeURIComponent(source)}`
+    : `https://van.crete.direct/${vanLocale}?source=${encodeURIComponent(source)}`;
 
   function fireClick() {
     const plausible = (window as unknown as {
