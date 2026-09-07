@@ -116,6 +116,13 @@ export async function requestByOutcomeToken(token: string): Promise<OutcomeReque
  * La présomption du cron devient un fait : seule la source change, l'issue,
  * le montant et la facture ne bougent pas. Conditionnel sur `auto` : si
  * l'admin a repris la main entre l'email et le clic, zéro ligne est touchée.
+ *
+ * `outcome_at` est RÉÉCRIT à l'instant de la confirmation : c'est cette date
+ * que la page loueur imprime sous « Already recorded on », et c'est bien le
+ * jour où le loueur a confirmé qui l'intéresse, pas celui de la présomption.
+ * Le rétro-remplissage de la migration 20260908, lui, lit `outcome_at` comme
+ * l'instant de pose par le cron (fenêtre 05:00-05:10 UTC) : sans conflit, il
+ * ne tourne qu'une fois, avant la toute première confirmation.
  */
 export async function confirmPresumedOutcome(id: number): Promise<boolean> {
   const { data, error } = await supabase.from("car_requests")
