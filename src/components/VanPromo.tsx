@@ -4,8 +4,10 @@
 // est couverte par un corridor van actif (src/lib/van-corridors.ts). Même
 // pattern PromoBox que CarPromo ; impression via ImpressionTracker, clic tracé
 // van_offer_click (mêmes props que le lien VanInterest du planner).
+// Depuis le 09/2026 : monté aussi dans les articles (ArticlePromoSlot) avec des textes
+// i18n imposés par `copy`, et un cas `generic` sans corridor (racine van.crete.direct).
 import { Users } from "lucide-react";
-import { PromoBox } from "@/components/PromoBox";
+import { PromoBox, type PromoCopy } from "@/components/PromoBox";
 import { ImpressionTracker } from "@/components/ui/ImpressionTracker";
 import type { VanCorridor } from "@/lib/van-corridors";
 import { vanPromoLine } from "@/lib/van-guarantee-copy";
@@ -35,35 +37,59 @@ const COPY: Record<string, { title: (from: string, to: string) => string; cta: s
 
 export function VanPromo({
   locale,
-  corridors,
+  corridors = [],
   source,
+  copy,
+  slug,
+  variant,
+  generic,
 }: {
   locale: string;
   /** Corridors couvrant la paire, sens de la page en premier (vanCorridorsForPair). */
-  corridors: VanCorridor[];
+  corridors?: VanCorridor[];
   source: string;
+  /** Textes imposés par l'appelant (articles : namespace i18n articlePromo). Défaut : COPY interne. */
+  copy?: PromoCopy;
+  /** Slug de la page hôte, ajouté aux props de promo_impression et de van_offer_click. */
+  slug?: string;
+  /** Variante de copie (1..2), ajoutée aux props de promo_impression. */
+  variant?: number;
+  /** Van sans corridor nommé : lien vers la racine de van.crete.direct. Exige `copy`. */
+  generic?: { href: string };
 }) {
   const main = corridors[0];
-  if (!main) return null;
+  if (!main && !generic) return null;
   const c = COPY[locale] || COPY.en;
+  const title = copy?.title ?? (main ? c.title(main.fromName, main.toName) : null);
+  if (!title) return null;
+  const line = copy?.line ?? (main ? vanPromoLine(locale, main) : undefined);
+  const href = main
+    ? `https://van.crete.direct/${COPY[locale] ? locale : "en"}/${main.slug}?source=${encodeURIComponent(source)}`
+    : generic!.href;
 
   function fireClick() {
     const plausible = (window as unknown as {
       plausible?: (e: string, o?: { props?: Record<string, string | number> }) => void;
     }).plausible;
-    plausible?.("van_offer_click", { props: { corridor: main.slug, source } });
+    const props: Record<string, string | number> = { corridor: main?.slug ?? "generic", source };
+    if (slug) props.slug = slug;
+    plausible?.("van_offer_click", { props });
   }
+
+  const impression: Record<string, string | number> = { block: "van-promo", source };
+  if (slug) impression.slug = slug;
+  if (variant) impression.variant = variant;
 
   return (
     <div onClickCapture={fireClick}>
-      <ImpressionTracker event="promo_impression" props={{ block: "van-promo", source }} />
+      <ImpressionTracker event="promo_impression" props={impression} />
       <PromoBox
         icon={Users}
-        title={c.title(main.fromName, main.toName)}
-        line={vanPromoLine(locale, main)}
-        ctaLabel={c.cta}
-        ctaHref={`https://van.crete.direct/${COPY[locale] ? locale : "en"}/${main.slug}?source=${encodeURIComponent(source)}`}
-        disclosure={c.disclosure}
+        title={title}
+        line={line}
+        ctaLabel={copy?.cta ?? c.cta}
+        ctaHref={href}
+        disclosure={copy?.disclosure ?? c.disclosure}
       />
     </div>
   );

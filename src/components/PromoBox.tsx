@@ -6,6 +6,14 @@
 import type { LucideIcon } from "lucide-react";
 import { ArrowRight, BadgeCheck, ExternalLink } from "lucide-react";
 
+/** Textes d'un encart : mêmes quatre champs que les tables COPY de CarPromo et VanPromo. */
+export interface PromoCopy {
+  title: string;
+  line: string;
+  cta: string;
+  disclosure: string;
+}
+
 export function PromoBox({ icon: Icon, title, line, ctaLabel, ctaHref, disclosure, photo }: {
   icon: LucideIcon;
   title: string;

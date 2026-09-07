@@ -6,7 +6,7 @@
 // En zone non couverte, passer pickup=undefined (le wizard ouvre à l'étape 1).
 // Spec : docs/superpowers/specs/2026-06-12-car-rental-wizard-design.md (§5)
 import { Car } from "lucide-react";
-import { PromoBox } from "@/components/PromoBox";
+import { PromoBox, type PromoCopy } from "@/components/PromoBox";
 import { ImpressionTracker } from "@/components/ui/ImpressionTracker";
 import { getCarLanding, landingForPickup } from "@/lib/car-landings";
 
@@ -44,6 +44,9 @@ export function CarPromo({
   pickup,
   source,
   landing,
+  copy,
+  slug,
+  variant,
 }: {
   locale: string;
   /** Slug de pickup contextuel (doit appartenir à une zone car-partners), sinon étape 1. */
@@ -52,8 +55,14 @@ export function CarPromo({
   source?: string;
   /** Slug de landing /car-rental/[location] explicite quand le contexte la désigne (ex : page aéroport HER). */
   landing?: string;
+  /** Textes imposés par l'appelant (articles : namespace i18n articlePromo). Défaut : COPY interne. */
+  copy?: PromoCopy;
+  /** Slug de la page hôte, ajouté aux props de promo_impression (CTR par article). */
+  slug?: string;
+  /** Variante de copie (1..3), ajoutée aux props de promo_impression. */
+  variant?: number;
 }) {
-  const c = COPY[locale] || COPY.en;
+  const c = copy ?? COPY[locale] ?? COPY.en;
   const target = (landing ? getCarLanding(landing) : null) ?? (pickup ? landingForPickup(pickup) : null);
   const params = new URLSearchParams();
   // La landing pré-remplit déjà son propre pickup ; on ne le passe en query que
@@ -62,11 +71,14 @@ export function CarPromo({
   if (source) params.set("source", source);
   const qs = params.toString();
   const base = target ? `/${locale}/car-rental/${target.slug}` : `/${locale}/car-rental`;
+  const impression: Record<string, string | number> = { block: "car-promo", source: source ?? "" };
+  if (slug) impression.slug = slug;
+  if (variant) impression.variant = variant;
   return (
     <>
       {/* Capture décisionnelle : impression du bloc Auto Smart (CTR vs Car
           Wizard Step, pathname attaché par Plausible). */}
-      <ImpressionTracker event="promo_impression" props={{ block: "car-promo", source: source ?? "" }} />
+      <ImpressionTracker event="promo_impression" props={impression} />
       <PromoBox
         icon={Car}
         title={c.title}
