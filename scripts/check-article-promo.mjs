@@ -3,6 +3,7 @@
 // Spec : docs/superpowers/specs/2026-09-07-article-service-promos-design.md
 // Lancé par `npm run check:article-promo` et par l'agrégat `npm run check`.
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import {
   planArticlePromo,
   resolveArticlePromo,
@@ -324,6 +325,37 @@ ok("hors pilote : none / none ; dans le pilote : le plan", () => {
   assert.deepEqual(kinds(out), ["none", "none"]);
   const inn = resolveArticlePromo(guide({ slug: "best-tavernas-chania", category: "food", title: "Best tavernas in Chania" }));
   assert.deepEqual(kinds(inn), ["car", "bus"]);
+});
+
+// ── Textes : 33 feuilles articlePromo.* dans les 22 locales, variables ICU conservées ──
+
+function leaves(obj, prefix = "") {
+  const out = {};
+  for (const [k, v] of Object.entries(obj)) {
+    const p = prefix ? `${prefix}.${k}` : k;
+    if (v && typeof v === "object") Object.assign(out, leaves(v, p));
+    else out[p] = v;
+  }
+  return out;
+}
+const icuVars = (s) => [...String(s).matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort().join(",");
+
+ok("articlePromo : 33 feuilles dans chacune des 22 locales, mêmes variables ICU qu'en anglais", () => {
+  const files = fs.readdirSync("src/messages").filter((f) => f.endsWith(".json"));
+  assert.equal(files.length, 22);
+  const en = leaves(JSON.parse(fs.readFileSync("src/messages/en.json", "utf8")).articlePromo ?? {});
+  assert.equal(Object.keys(en).length, 33);
+  for (const f of files) {
+    const loc = leaves(JSON.parse(fs.readFileSync(`src/messages/${f}`, "utf8")).articlePromo ?? {});
+    assert.deepEqual(Object.keys(loc).sort(), Object.keys(en).sort(), `${f} : jeu de clés`);
+    for (const k of Object.keys(en)) {
+      assert.equal(icuVars(loc[k]), icuVars(en[k]), `${f} ${k} : variables ICU`);
+      assert.ok(!String(loc[k]).includes("\u2014"), `${f} ${k} : tiret cadratin`);
+      assert.ok(String(loc[k]).trim().length > 0, `${f} ${k} : vide`);
+    }
+    // disclosure.van vaut « van.crete.direct » partout, c'est un nom de domaine ; le reste est traduit.
+    if (f !== "en.json") assert.notEqual(loc["car.v1.title"], en["car.v1.title"], `${f} : anglais recopié`);
+  }
 });
 
 console.log(`check:article-promo OK (${n} tests)`);

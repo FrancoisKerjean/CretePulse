@@ -1,4 +1,73 @@
 {
+  "articlePromo": {
+    "disclosure": {
+      "car": "Lokale partner",
+      "van": "van.crete.direct",
+      "bus": "Officiële KTEL-dienstregelingen"
+    },
+    "car": {
+      "v1": {
+        "title": "Een auto voor deze route?",
+        "line": "Lokaal verhuurbedrijf, offerte in vier stappen, geen vooruitbetaling.",
+        "cta": "Offerte aanvragen"
+      },
+      "v2": {
+        "title": "De bus komt hier niet overal.",
+        "line": "Huur bij een verhuurder op het eiland. Prijs vooraf bekend, ophalen op de luchthaven mogelijk.",
+        "cta": "Prijzen bekijken"
+      },
+      "v3": {
+        "title": "De gids heb je. Nu nog de rit.",
+        "line": "Lokale huurauto, snel antwoord, contant betalen kan.",
+        "cta": "Offerte opvragen"
+      }
+    },
+    "van": {
+      "corridor": {
+        "v1": {
+          "title": "Gedeelde minibus van {from} naar {to}",
+          "line": "Vanaf {price} € per plaats. Erkende lokale chauffeur, nu niets betalen.",
+          "cta": "Bij een groep aansluiten"
+        },
+        "v2": {
+          "title": "{to} vanaf de luchthaven, zonder huurauto",
+          "line": "Gedeelde minibus vanaf {price} € per plaats. Het vertrek wordt bevestigd zodra de groep vol is.",
+          "cta": "Vertrektijden bekijken"
+        }
+      },
+      "generic": {
+        "v1": {
+          "title": "Van de luchthaven naar jouw plaats, met een gedeelde minibus",
+          "line": "{count} routes vanuit Heraklion en Chania, vanaf {price} € per plaats.",
+          "cta": "Routes bekijken"
+        },
+        "v2": {
+          "title": "Geen auto? Deel een minibus.",
+          "line": "Lokale chauffeur, geen betaling bij het boeken.",
+          "cta": "Routes bekijken"
+        }
+      }
+    },
+    "bus": {
+      "pair": {
+        "v1": {
+          "title": "Met de bus vanuit {from}",
+          "line": "Dienstregeling van vandaag, reistijd en ticketprijs.",
+          "cta": "Dienstregeling bekijken"
+        },
+        "v2": {
+          "title": "De bus van {from} naar {to}, vandaag",
+          "line": "Overstappen en tarieven, volgens de KTEL-dienstregelingen.",
+          "cta": "Planner openen"
+        }
+      },
+      "generic": {
+        "title": "Met de bus door Kreta",
+        "line": "Dienstregelingen, tarieven en overstappen van de KTEL-netwerken.",
+        "cta": "Dienstregeling bekijken"
+      }
+    }
+  },
   "activityNudge": {
     "close": "Sluiten",
     "title": "Nog niet beslist?",

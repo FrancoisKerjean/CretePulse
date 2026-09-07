@@ -1,4 +1,73 @@
 {
+  "articlePromo": {
+    "disclosure": {
+      "car": "Partener local",
+      "van": "van.crete.direct",
+      "bus": "Orare oficiale KTEL"
+    },
+    "car": {
+      "v1": {
+        "title": "O mașină pentru acest traseu?",
+        "line": "Agenție locală, ofertă în patru pași, fără plată în avans.",
+        "cta": "Cere o ofertă"
+      },
+      "v2": {
+        "title": "Autobuzul nu ajunge peste tot aici.",
+        "line": "Închiriază de la o agenție de pe insulă. Preț anunțat dinainte, preluare de la aeroport posibilă.",
+        "cta": "Vezi prețurile"
+      },
+      "v3": {
+        "title": "Ghidul îl ai. Mai rămâne drumul.",
+        "line": "Mașină de închiriat locală, răspuns rapid, numerar acceptat.",
+        "cta": "Solicită o ofertă"
+      }
+    },
+    "van": {
+      "corridor": {
+        "v1": {
+          "title": "Microbuz partajat de la {from} la {to}",
+          "line": "De la {price} € locul. Șofer local autorizat, nicio plată acum.",
+          "cta": "Alătură-te unui grup"
+        },
+        "v2": {
+          "title": "{to} de la aeroport, fără să închiriezi mașină",
+          "line": "Microbuz partajat de la {price} € locul. Plecarea se confirmă când grupul se completează.",
+          "cta": "Vezi plecările"
+        }
+      },
+      "generic": {
+        "v1": {
+          "title": "De la aeroport în localitatea ta, cu microbuz partajat",
+          "line": "{count} rute din Heraklion și Chania, de la {price} € locul.",
+          "cta": "Vezi rutele"
+        },
+        "v2": {
+          "title": "Fără mașină? Împarte un microbuz.",
+          "line": "Șofer local, nicio plată la rezervare.",
+          "cta": "Vezi rutele"
+        }
+      }
+    },
+    "bus": {
+      "pair": {
+        "v1": {
+          "title": "Cu autobuzul din {from}",
+          "line": "Orarul zilei, durata și prețul biletului.",
+          "cta": "Vezi orarele"
+        },
+        "v2": {
+          "title": "Autobuzul de la {from} la {to}, astăzi",
+          "line": "Legături și tarife, după orarele KTEL.",
+          "cta": "Deschide planificatorul"
+        }
+      },
+      "generic": {
+        "title": "Cu autobuzul prin Creta",
+        "line": "Orare, tarife și legături ale rețelelor KTEL.",
+        "cta": "Vezi orarele"
+      }
+    }
+  },
   "activityNudge": {
     "close": "Închide",
     "title": "Tot indecis?",

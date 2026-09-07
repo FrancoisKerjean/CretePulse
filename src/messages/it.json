@@ -1,4 +1,73 @@
 {
+  "articlePromo": {
+    "disclosure": {
+      "car": "Partner locale",
+      "van": "van.crete.direct",
+      "bus": "Orari ufficiali KTEL"
+    },
+    "car": {
+      "v1": {
+        "title": "Un'auto per questo tragitto?",
+        "line": "Agenzia locale, preventivo in quattro passaggi, nessun pagamento anticipato.",
+        "cta": "Richiedi un preventivo"
+      },
+      "v2": {
+        "title": "Qui l'autobus non arriva ovunque.",
+        "line": "Noleggia da un'agenzia dell'isola. Prezzo indicato in anticipo, ritiro in aeroporto possibile.",
+        "cta": "Vedi i prezzi"
+      },
+      "v3": {
+        "title": "Hai la guida. Manca il viaggio.",
+        "line": "Auto a noleggio locale, risposta rapida, contanti accettati.",
+        "cta": "Chiedi un preventivo"
+      }
+    },
+    "van": {
+      "corridor": {
+        "v1": {
+          "title": "Van condiviso da {from} a {to}",
+          "line": "Da {price} € a posto. Autista locale autorizzato, nessun pagamento ora.",
+          "cta": "Unisciti a un gruppo"
+        },
+        "v2": {
+          "title": "{to} dall'aeroporto, senza noleggiare un'auto",
+          "line": "Van condiviso da {price} € a posto. La partenza è confermata quando il gruppo è completo.",
+          "cta": "Vedi le partenze"
+        }
+      },
+      "generic": {
+        "v1": {
+          "title": "Dall'aeroporto al tuo paese, in van condiviso",
+          "line": "{count} tratte da Heraklion e Chania, da {price} € a posto.",
+          "cta": "Vedi le tratte"
+        },
+        "v2": {
+          "title": "Senza auto? Condividi un van.",
+          "line": "Autista locale, nessun pagamento alla prenotazione.",
+          "cta": "Vedi le tratte"
+        }
+      }
+    },
+    "bus": {
+      "pair": {
+        "v1": {
+          "title": "Arrivarci in autobus da {from}",
+          "line": "Orari di oggi, durata e prezzo del biglietto.",
+          "cta": "Vedi gli orari"
+        },
+        "v2": {
+          "title": "L'autobus da {from} a {to}, oggi",
+          "line": "Coincidenze e tariffe, secondo gli orari KTEL.",
+          "cta": "Apri il pianificatore"
+        }
+      },
+      "generic": {
+        "title": "Spostarsi in autobus a Creta",
+        "line": "Orari, tariffe e coincidenze delle reti KTEL.",
+        "cta": "Vedi gli orari"
+      }
+    }
+  },
   "activityNudge": {
     "close": "Chiudi",
     "title": "Ancora indeciso?",

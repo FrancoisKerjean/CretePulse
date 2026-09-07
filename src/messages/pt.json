@@ -1,4 +1,73 @@
 {
+  "articlePromo": {
+    "disclosure": {
+      "car": "Parceiro local",
+      "van": "van.crete.direct",
+      "bus": "Horários oficiais KTEL"
+    },
+    "car": {
+      "v1": {
+        "title": "Um carro para este trajeto?",
+        "line": "Agência local, orçamento em quatro passos, sem pré-pagamento.",
+        "cta": "Pedir orçamento"
+      },
+      "v2": {
+        "title": "O autocarro não chega a todo o lado aqui.",
+        "line": "Alugue numa agência da ilha. Preço indicado à partida, levantamento no aeroporto possível.",
+        "cta": "Ver preços"
+      },
+      "v3": {
+        "title": "Já tem o guia. Falta o trajeto.",
+        "line": "Carro de aluguer local, resposta rápida, dinheiro aceite.",
+        "cta": "Solicitar orçamento"
+      }
+    },
+    "van": {
+      "corridor": {
+        "v1": {
+          "title": "Carrinha partilhada de {from} para {to}",
+          "line": "Desde {price} € por lugar. Motorista local licenciado, sem pagamento agora.",
+          "cta": "Juntar-se a um grupo"
+        },
+        "v2": {
+          "title": "{to} a partir do aeroporto, sem alugar carro",
+          "line": "Carrinha partilhada desde {price} € por lugar. A partida é confirmada quando o grupo fica completo.",
+          "cta": "Ver partidas"
+        }
+      },
+      "generic": {
+        "v1": {
+          "title": "Do aeroporto à sua localidade, em carrinha partilhada",
+          "line": "{count} rotas a partir de Heraklion e Chania, desde {price} € por lugar.",
+          "cta": "Ver rotas"
+        },
+        "v2": {
+          "title": "Sem carro? Partilhe uma carrinha.",
+          "line": "Motorista local, sem pagamento na reserva.",
+          "cta": "Ver rotas"
+        }
+      }
+    },
+    "bus": {
+      "pair": {
+        "v1": {
+          "title": "Ir de autocarro a partir de {from}",
+          "line": "Horários de hoje, duração e preço do bilhete.",
+          "cta": "Ver horários"
+        },
+        "v2": {
+          "title": "O autocarro de {from} para {to}, hoje",
+          "line": "Ligações e tarifas, segundo os horários da KTEL.",
+          "cta": "Abrir o planeador"
+        }
+      },
+      "generic": {
+        "title": "Deslocar-se de autocarro em Creta",
+        "line": "Horários, tarifas e ligações das redes KTEL.",
+        "cta": "Ver horários"
+      }
+    }
+  },
   "activityNudge": {
     "close": "Fechar",
     "title": "Ainda em dúvida?",

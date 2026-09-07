@@ -1,4 +1,73 @@
 {
+  "articlePromo": {
+    "disclosure": {
+      "car": "Helyi partner",
+      "van": "van.crete.direct",
+      "bus": "Hivatalos KTEL menetrendek"
+    },
+    "car": {
+      "v1": {
+        "title": "Autó erre az útra?",
+        "line": "Helyi kölcsönző, ajánlat négy lépésben, előleg nélkül.",
+        "cta": "Ajánlatot kérek"
+      },
+      "v2": {
+        "title": "A busz itt nem jár mindenhová.",
+        "line": "Béreljen a sziget egyik kölcsönzőjénél. Az ár előre ismert, átvétel a repülőtéren lehetséges.",
+        "cta": "Árak megtekintése"
+      },
+      "v3": {
+        "title": "Az útikalauz megvan. Már csak az út hiányzik.",
+        "line": "Helyi bérautó, gyors válasz, készpénz elfogadva.",
+        "cta": "Ajánlatkérés"
+      }
+    },
+    "van": {
+      "corridor": {
+        "v1": {
+          "title": "Közös kisbusz {from} és {to} között",
+          "line": "{price} € ártól helyenként. Engedéllyel rendelkező helyi sofőr, most nincs fizetés.",
+          "cta": "Csatlakozom egy csoporthoz"
+        },
+        "v2": {
+          "title": "{to} a repülőtérről, autóbérlés nélkül",
+          "line": "Közös kisbusz {price} € ártól helyenként. Az indulás akkor véglegesedik, amikor a csoport betelik.",
+          "cta": "Indulások megtekintése"
+        }
+      },
+      "generic": {
+        "v1": {
+          "title": "A repülőtérről a szállásod városába, közös kisbusszal",
+          "line": "{count} útvonal Heraklionból és Chaniából, {price} € ártól helyenként.",
+          "cta": "Útvonalak megtekintése"
+        },
+        "v2": {
+          "title": "Nincs autó? Ossz meg egy kisbuszt.",
+          "line": "Helyi sofőr, foglaláskor nincs fizetés.",
+          "cta": "Útvonalak megtekintése"
+        }
+      }
+    },
+    "bus": {
+      "pair": {
+        "v1": {
+          "title": "Busszal innen: {from}",
+          "line": "Mai menetrend, menetidő és jegyár.",
+          "cta": "Menetrendek megtekintése"
+        },
+        "v2": {
+          "title": "A {from} és {to} közötti busz, ma",
+          "line": "Átszállások és árak, a KTEL menetrendjei alapján.",
+          "cta": "Útvonaltervező megnyitása"
+        }
+      },
+      "generic": {
+        "title": "Busszal Krétán",
+        "line": "A KTEL hálózatok menetrendjei, árai és átszállásai.",
+        "cta": "Menetrendek megtekintése"
+      }
+    }
+  },
   "activityNudge": {
     "close": "Bezárás",
     "title": "Még bizonytalan vagy?",

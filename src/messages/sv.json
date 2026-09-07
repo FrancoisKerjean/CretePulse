@@ -1,4 +1,73 @@
 {
+  "articlePromo": {
+    "disclosure": {
+      "car": "Lokal partner",
+      "van": "van.crete.direct",
+      "bus": "Officiella KTEL-tidtabeller"
+    },
+    "car": {
+      "v1": {
+        "title": "En bil för den här resan?",
+        "line": "Lokal uthyrare, offert i fyra steg, ingen förskottsbetalning.",
+        "cta": "Begär offert"
+      },
+      "v2": {
+        "title": "Bussen går inte överallt här.",
+        "line": "Hyr hos en uthyrare på ön. Priset anges i förväg, upphämtning på flygplatsen möjlig.",
+        "cta": "Se priser"
+      },
+      "v3": {
+        "title": "Guiden har du. Nu återstår resan.",
+        "line": "Lokal hyrbil, snabbt svar, kontanter accepteras.",
+        "cta": "Be om offert"
+      }
+    },
+    "van": {
+      "corridor": {
+        "v1": {
+          "title": "Delad minibuss {from} till {to}",
+          "line": "Från {price} € per plats. Licensierad lokal förare, ingen betalning nu.",
+          "cta": "Gå med i en grupp"
+        },
+        "v2": {
+          "title": "{to} från flygplatsen, utan att hyra bil",
+          "line": "Delad minibuss från {price} € per plats. Avgången bekräftas när gruppen är full.",
+          "cta": "Se avgångar"
+        }
+      },
+      "generic": {
+        "v1": {
+          "title": "Från flygplatsen till din ort, med delad minibuss",
+          "line": "{count} sträckor från Heraklion och Chania, från {price} € per plats.",
+          "cta": "Se sträckor"
+        },
+        "v2": {
+          "title": "Ingen bil? Dela en minibuss.",
+          "line": "Lokal förare, ingen betalning vid bokning.",
+          "cta": "Se sträckor"
+        }
+      }
+    },
+    "bus": {
+      "pair": {
+        "v1": {
+          "title": "Ta bussen från {from}",
+          "line": "Dagens tidtabell, restid och biljettpris.",
+          "cta": "Se tidtabeller"
+        },
+        "v2": {
+          "title": "Bussen {from} till {to}, i dag",
+          "line": "Byten och priser, enligt KTEL:s tidtabeller.",
+          "cta": "Öppna reseplaneraren"
+        }
+      },
+      "generic": {
+        "title": "Resa med buss på Kreta",
+        "line": "Tidtabeller, priser och byten i KTEL-näten.",
+        "cta": "Se tidtabeller"
+      }
+    }
+  },
   "activityNudge": {
     "close": "Stäng",
     "title": "Fortfarande osäker?",

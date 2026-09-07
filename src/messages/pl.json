@@ -1,4 +1,73 @@
 {
+  "articlePromo": {
+    "disclosure": {
+      "car": "Lokalny partner",
+      "van": "van.crete.direct",
+      "bus": "Oficjalne rozkłady KTEL"
+    },
+    "car": {
+      "v1": {
+        "title": "Samochód na tę trasę?",
+        "line": "Lokalna wypożyczalnia, wycena w czterech krokach, bez przedpłaty.",
+        "cta": "Poproś o wycenę"
+      },
+      "v2": {
+        "title": "Autobus nie dojeżdża tu wszędzie.",
+        "line": "Wynajmij w wypożyczalni na wyspie. Cena podana z góry, odbiór na lotnisku możliwy.",
+        "cta": "Zobacz ceny"
+      },
+      "v3": {
+        "title": "Przewodnik już masz. Została trasa.",
+        "line": "Lokalny samochód na wynajem, szybka odpowiedź, gotówka akceptowana.",
+        "cta": "Zapytaj o wycenę"
+      }
+    },
+    "van": {
+      "corridor": {
+        "v1": {
+          "title": "Wspólny bus z {from} do {to}",
+          "line": "Od {price} € za miejsce. Licencjonowany lokalny kierowca, bez płatności teraz.",
+          "cta": "Dołącz do grupy"
+        },
+        "v2": {
+          "title": "{to} z lotniska, bez wynajmu samochodu",
+          "line": "Wspólny bus od {price} € za miejsce. Wyjazd potwierdzany, gdy grupa się zapełni.",
+          "cta": "Zobacz odjazdy"
+        }
+      },
+      "generic": {
+        "v1": {
+          "title": "Z lotniska do Twojej miejscowości, wspólnym busem",
+          "line": "{count} tras z Heraklionu i Chanii, od {price} € za miejsce.",
+          "cta": "Zobacz trasy"
+        },
+        "v2": {
+          "title": "Bez samochodu? Podziel się busem.",
+          "line": "Lokalny kierowca, bez płatności przy rezerwacji.",
+          "cta": "Zobacz trasy"
+        }
+      }
+    },
+    "bus": {
+      "pair": {
+        "v1": {
+          "title": "Dojazd autobusem z {from}",
+          "line": "Dzisiejszy rozkład, czas przejazdu i cena biletu.",
+          "cta": "Zobacz rozkłady"
+        },
+        "v2": {
+          "title": "Autobus z {from} do {to}, dzisiaj",
+          "line": "Przesiadki i ceny, według rozkładów KTEL.",
+          "cta": "Otwórz planer"
+        }
+      },
+      "generic": {
+        "title": "Autobusem po Krecie",
+        "line": "Rozkłady, ceny i przesiadki sieci KTEL.",
+        "cta": "Zobacz rozkłady"
+      }
+    }
+  },
   "activityNudge": {
     "close": "Zamknij",
     "title": "Wciąż się wahasz?",

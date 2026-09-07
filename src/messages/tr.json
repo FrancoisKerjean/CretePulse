@@ -1,4 +1,73 @@
 {
+  "articlePromo": {
+    "disclosure": {
+      "car": "Yerel ortak",
+      "van": "van.crete.direct",
+      "bus": "Resmî KTEL tarifeleri"
+    },
+    "car": {
+      "v1": {
+        "title": "Bu yolculuk için araba mı lazım?",
+        "line": "Yerel acente, dört adımda teklif, ön ödeme yok.",
+        "cta": "Teklif al"
+      },
+      "v2": {
+        "title": "Otobüs burada her yere gitmiyor.",
+        "line": "Adadaki bir acenteden kiralayın. Fiyat baştan belli, havalimanından teslim mümkün.",
+        "cta": "Fiyatları gör"
+      },
+      "v3": {
+        "title": "Rehber elinizde. Sıra yolda.",
+        "line": "Yerel kiralık araba, hızlı yanıt, nakit kabul edilir.",
+        "cta": "Teklif iste"
+      }
+    },
+    "van": {
+      "corridor": {
+        "v1": {
+          "title": "{from} ile {to} arası paylaşımlı minibüs",
+          "line": "Koltuk başına {price} € ve üzeri. Lisanslı yerel sürücü, şimdi ödeme yok.",
+          "cta": "Bir gruba katıl"
+        },
+        "v2": {
+          "title": "Havalimanından {to}, araba kiralamadan",
+          "line": "Koltuk başına {price} € ve üzeri paylaşımlı minibüs. Grup dolunca kalkış onaylanır.",
+          "cta": "Kalkışları gör"
+        }
+      },
+      "generic": {
+        "v1": {
+          "title": "Havalimanından kasabanıza, paylaşımlı minibüsle",
+          "line": "Kandiye ve Hanya çıkışlı {count} güzergâh, koltuk başına {price} € ve üzeri.",
+          "cta": "Güzergâhları gör"
+        },
+        "v2": {
+          "title": "Araba yok mu? Minibüsü paylaşın.",
+          "line": "Yerel sürücü, rezervasyonda ödeme yok.",
+          "cta": "Güzergâhları gör"
+        }
+      }
+    },
+    "bus": {
+      "pair": {
+        "v1": {
+          "title": "{from} çıkışlı otobüsle ulaşım",
+          "line": "Bugünün tarifesi, yolculuk süresi ve bilet fiyatı.",
+          "cta": "Tarifeleri gör"
+        },
+        "v2": {
+          "title": "{from} ile {to} arası otobüs, bugün",
+          "line": "Aktarmalar ve ücretler, KTEL tarifelerine göre.",
+          "cta": "Planlayıcıyı aç"
+        }
+      },
+      "generic": {
+        "title": "Girit'te otobüsle ulaşım",
+        "line": "KTEL ağlarının tarifeleri, ücretleri ve aktarmaları.",
+        "cta": "Tarifeleri gör"
+      }
+    }
+  },
   "activityNudge": {
     "close": "Kapat",
     "title": "Hâlâ kararsız mısın?",

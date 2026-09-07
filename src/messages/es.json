@@ -1,4 +1,73 @@
 {
+  "articlePromo": {
+    "disclosure": {
+      "car": "Socio local",
+      "van": "van.crete.direct",
+      "bus": "Horarios oficiales KTEL"
+    },
+    "car": {
+      "v1": {
+        "title": "¿Un coche para este trayecto?",
+        "line": "Agencia local, presupuesto en cuatro pasos, sin pago por adelantado.",
+        "cta": "Pedir presupuesto"
+      },
+      "v2": {
+        "title": "El autobús no llega a todas partes aquí.",
+        "line": "Alquila en una agencia de la isla. Precio indicado de antemano, recogida en el aeropuerto posible.",
+        "cta": "Ver precios"
+      },
+      "v3": {
+        "title": "Ya tienes la guía. Falta el trayecto.",
+        "line": "Coche de alquiler local, respuesta rápida, se acepta efectivo.",
+        "cta": "Solicitar presupuesto"
+      }
+    },
+    "van": {
+      "corridor": {
+        "v1": {
+          "title": "Furgoneta compartida de {from} a {to}",
+          "line": "Desde {price} € por plaza. Conductor local con licencia, sin pago ahora.",
+          "cta": "Unirse a un grupo"
+        },
+        "v2": {
+          "title": "{to} desde el aeropuerto, sin alquilar coche",
+          "line": "Furgoneta compartida desde {price} € por plaza. La salida se confirma cuando el grupo se completa.",
+          "cta": "Ver salidas"
+        }
+      },
+      "generic": {
+        "v1": {
+          "title": "Del aeropuerto a tu pueblo, en furgoneta compartida",
+          "line": "{count} rutas desde Heraklion y Chania, desde {price} € por plaza.",
+          "cta": "Ver rutas"
+        },
+        "v2": {
+          "title": "¿Sin coche? Comparte una furgoneta.",
+          "line": "Conductor local, sin pago al reservar.",
+          "cta": "Ver rutas"
+        }
+      }
+    },
+    "bus": {
+      "pair": {
+        "v1": {
+          "title": "Llegar en autobús desde {from}",
+          "line": "Horarios de hoy, duración y precio del billete.",
+          "cta": "Ver horarios"
+        },
+        "v2": {
+          "title": "El autobús de {from} a {to}, hoy",
+          "line": "Conexiones y tarifas, según los horarios de KTEL.",
+          "cta": "Abrir el planificador"
+        }
+      },
+      "generic": {
+        "title": "Moverse en autobús por Creta",
+        "line": "Horarios, tarifas y conexiones de las redes KTEL.",
+        "cta": "Ver horarios"
+      }
+    }
+  },
   "activityNudge": {
     "close": "Cerrar",
     "title": "¿Aún no te decides?",

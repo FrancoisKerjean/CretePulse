@@ -1,4 +1,73 @@
 {
+  "articlePromo": {
+    "disclosure": {
+      "car": "Local partner",
+      "van": "van.crete.direct",
+      "bus": "Official KTEL timetables"
+    },
+    "car": {
+      "v1": {
+        "title": "A car for this trip?",
+        "line": "Local agency, quote in four steps, no prepayment.",
+        "cta": "Get a quote"
+      },
+      "v2": {
+        "title": "The bus does not go everywhere here.",
+        "line": "Rent from an agency on the island. Price stated upfront, airport pickup available.",
+        "cta": "See prices"
+      },
+      "v3": {
+        "title": "You have the guide. The drive is next.",
+        "line": "Local rental car, fast reply, cash accepted.",
+        "cta": "Request a quote"
+      }
+    },
+    "van": {
+      "corridor": {
+        "v1": {
+          "title": "Shared van {from} to {to}",
+          "line": "From {price} € a seat. Licensed local driver, no payment now.",
+          "cta": "Join a group"
+        },
+        "v2": {
+          "title": "{to} from the airport, without renting a car",
+          "line": "Shared van from {price} € a seat. Departure confirmed once the group fills.",
+          "cta": "See departures"
+        }
+      },
+      "generic": {
+        "v1": {
+          "title": "Airport to your town, by shared van",
+          "line": "{count} routes from Heraklion and Chania, from {price} € a seat.",
+          "cta": "See routes"
+        },
+        "v2": {
+          "title": "No car? Share a van.",
+          "line": "Local driver, no payment at booking.",
+          "cta": "See routes"
+        }
+      }
+    },
+    "bus": {
+      "pair": {
+        "v1": {
+          "title": "Getting there by bus from {from}",
+          "line": "Today's timetable, journey time and ticket price.",
+          "cta": "See timetables"
+        },
+        "v2": {
+          "title": "The {from} to {to} bus, today",
+          "line": "Connections and fares, from KTEL timetables.",
+          "cta": "Open the planner"
+        }
+      },
+      "generic": {
+        "title": "Getting around Crete by bus",
+        "line": "Timetables, fares and connections of the KTEL networks.",
+        "cta": "See timetables"
+      }
+    }
+  },
   "activityNudge": {
     "close": "Close",
     "title": "Still undecided?",

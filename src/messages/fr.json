@@ -1,4 +1,73 @@
 {
+  "articlePromo": {
+    "disclosure": {
+      "car": "Partenaire local",
+      "van": "van.crete.direct",
+      "bus": "Horaires officiels KTEL"
+    },
+    "car": {
+      "v1": {
+        "title": "Une voiture pour ce trajet ?",
+        "line": "Agence locale, devis en quatre étapes, aucun prépaiement.",
+        "cta": "Obtenir un devis"
+      },
+      "v2": {
+        "title": "Le bus ne va pas partout ici.",
+        "line": "Louez auprès d'une agence de l'île. Prix annoncé, retrait à l'aéroport possible.",
+        "cta": "Voir les prix"
+      },
+      "v3": {
+        "title": "Vous avez le guide. Reste le trajet.",
+        "line": "Voiture de location locale, réponse rapide, espèces acceptées.",
+        "cta": "Demander un devis"
+      }
+    },
+    "van": {
+      "corridor": {
+        "v1": {
+          "title": "Van partagé {from} vers {to}",
+          "line": "Dès {price} € la place. Chauffeur local licencié, aucun paiement maintenant.",
+          "cta": "Rejoindre un groupe"
+        },
+        "v2": {
+          "title": "{to} depuis l'aéroport, sans louer de voiture",
+          "line": "Van partagé dès {price} € la place. Le départ est confirmé quand le groupe se remplit.",
+          "cta": "Voir les départs"
+        }
+      },
+      "generic": {
+        "v1": {
+          "title": "De l'aéroport à votre ville, en van partagé",
+          "line": "{count} trajets depuis Héraklion et La Canée, dès {price} € la place.",
+          "cta": "Voir les trajets"
+        },
+        "v2": {
+          "title": "Pas de voiture ? Partagez un van.",
+          "line": "Chauffeur local, aucun paiement à la réservation.",
+          "cta": "Voir les trajets"
+        }
+      }
+    },
+    "bus": {
+      "pair": {
+        "v1": {
+          "title": "Y aller en bus depuis {from}",
+          "line": "Horaires du jour, durée et prix du billet.",
+          "cta": "Voir les horaires"
+        },
+        "v2": {
+          "title": "Le bus {from} vers {to}, aujourd'hui",
+          "line": "Correspondances et prix, d'après les horaires KTEL.",
+          "cta": "Ouvrir le planificateur"
+        }
+      },
+      "generic": {
+        "title": "Se déplacer en bus en Crète",
+        "line": "Horaires, prix et correspondances des réseaux KTEL.",
+        "cta": "Voir les horaires"
+      }
+    }
+  },
   "activityNudge": {
     "close": "Fermer",
     "title": "Pas encore décidé ?",

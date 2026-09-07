@@ -1,4 +1,73 @@
 {
+  "articlePromo": {
+    "disclosure": {
+      "car": "Lokaler Partner",
+      "van": "van.crete.direct",
+      "bus": "Offizielle KTEL-Fahrpläne"
+    },
+    "car": {
+      "v1": {
+        "title": "Ein Auto für diese Strecke?",
+        "line": "Lokale Agentur, Angebot in vier Schritten, keine Vorauszahlung.",
+        "cta": "Angebot anfordern"
+      },
+      "v2": {
+        "title": "Der Bus fährt hier nicht überall hin.",
+        "line": "Mieten Sie bei einer Agentur der Insel. Preis vorab genannt, Abholung am Flughafen möglich.",
+        "cta": "Preise ansehen"
+      },
+      "v3": {
+        "title": "Der Guide ist da. Jetzt der Weg.",
+        "line": "Lokaler Mietwagen, schnelle Antwort, Barzahlung möglich.",
+        "cta": "Angebot anfragen"
+      }
+    },
+    "van": {
+      "corridor": {
+        "v1": {
+          "title": "Sammelvan {from} nach {to}",
+          "line": "Ab {price} € pro Platz. Lizenzierter lokaler Fahrer, keine Zahlung jetzt.",
+          "cta": "Gruppe beitreten"
+        },
+        "v2": {
+          "title": "{to} vom Flughafen aus, ohne Mietwagen",
+          "line": "Sammelvan ab {price} € pro Platz. Die Abfahrt wird bestätigt, sobald die Gruppe voll ist.",
+          "cta": "Abfahrten ansehen"
+        }
+      },
+      "generic": {
+        "v1": {
+          "title": "Vom Flughafen in Ihren Ort, im Sammelvan",
+          "line": "{count} Strecken ab Heraklion und Chania, ab {price} € pro Platz.",
+          "cta": "Strecken ansehen"
+        },
+        "v2": {
+          "title": "Kein Auto? Teilen Sie sich einen Van.",
+          "line": "Lokaler Fahrer, keine Zahlung bei der Buchung.",
+          "cta": "Strecken ansehen"
+        }
+      }
+    },
+    "bus": {
+      "pair": {
+        "v1": {
+          "title": "Mit dem Bus ab {from}",
+          "line": "Fahrplan des Tages, Fahrzeit und Ticketpreis.",
+          "cta": "Fahrpläne ansehen"
+        },
+        "v2": {
+          "title": "Der Bus {from} nach {to}, heute",
+          "line": "Verbindungen und Preise, nach den KTEL-Fahrplänen.",
+          "cta": "Planer öffnen"
+        }
+      },
+      "generic": {
+        "title": "Mit dem Bus durch Kreta",
+        "line": "Fahrpläne, Preise und Verbindungen der KTEL-Netze.",
+        "cta": "Fahrpläne ansehen"
+      }
+    }
+  },
   "activityNudge": {
     "close": "Schließen",
     "title": "Noch unentschlossen?",

@@ -1,4 +1,73 @@
 {
+  "articlePromo": {
+    "disclosure": {
+      "car": "Lokal partner",
+      "van": "van.crete.direct",
+      "bus": "Officielle KTEL-køreplaner"
+    },
+    "car": {
+      "v1": {
+        "title": "En bil til denne tur?",
+        "line": "Lokalt udlejningsfirma, tilbud i fire trin, ingen forudbetaling.",
+        "cta": "Få et tilbud"
+      },
+      "v2": {
+        "title": "Bussen kører ikke overalt her.",
+        "line": "Lej hos et udlejningsfirma på øen. Prisen oplyses på forhånd, afhentning i lufthavnen mulig.",
+        "cta": "Se priser"
+      },
+      "v3": {
+        "title": "Guiden har du. Nu mangler turen.",
+        "line": "Lokal lejebil, hurtigt svar, kontanter accepteres.",
+        "cta": "Bed om et tilbud"
+      }
+    },
+    "van": {
+      "corridor": {
+        "v1": {
+          "title": "Delt minibus {from} til {to}",
+          "line": "Fra {price} € pr. plads. Lokal chauffør med licens, ingen betaling nu.",
+          "cta": "Deltag i en gruppe"
+        },
+        "v2": {
+          "title": "{to} fra lufthavnen, uden at leje bil",
+          "line": "Delt minibus fra {price} € pr. plads. Afgangen bekræftes, når gruppen er fuld.",
+          "cta": "Se afgange"
+        }
+      },
+      "generic": {
+        "v1": {
+          "title": "Fra lufthavnen til din by, i delt minibus",
+          "line": "{count} ruter fra Heraklion og Chania, fra {price} € pr. plads.",
+          "cta": "Se ruter"
+        },
+        "v2": {
+          "title": "Ingen bil? Del en minibus.",
+          "line": "Lokal chauffør, ingen betaling ved booking.",
+          "cta": "Se ruter"
+        }
+      }
+    },
+    "bus": {
+      "pair": {
+        "v1": {
+          "title": "Med bus fra {from}",
+          "line": "Dagens køreplan, rejsetid og billetpris.",
+          "cta": "Se køreplaner"
+        },
+        "v2": {
+          "title": "Bussen {from} til {to}, i dag",
+          "line": "Forbindelser og priser, ifølge KTEL's køreplaner.",
+          "cta": "Åbn rejseplanlæggeren"
+        }
+      },
+      "generic": {
+        "title": "Rundt på Kreta med bus",
+        "line": "Køreplaner, priser og forbindelser i KTEL-nettene.",
+        "cta": "Se køreplaner"
+      }
+    }
+  },
   "activityNudge": {
     "close": "Luk",
     "title": "Stadig i tvivl?",

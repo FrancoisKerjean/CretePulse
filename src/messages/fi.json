@@ -1,4 +1,73 @@
 {
+  "articlePromo": {
+    "disclosure": {
+      "car": "Paikallinen kumppani",
+      "van": "van.crete.direct",
+      "bus": "Viralliset KTEL-aikataulut"
+    },
+    "car": {
+      "v1": {
+        "title": "Auto tälle matkalle?",
+        "line": "Paikallinen vuokraamo, tarjous neljässä vaiheessa, ei ennakkomaksua.",
+        "cta": "Pyydä tarjous"
+      },
+      "v2": {
+        "title": "Bussi ei kulje täällä kaikkialle.",
+        "line": "Vuokraa saaren vuokraamosta. Hinta kerrotaan etukäteen, nouto lentokentältä mahdollinen.",
+        "cta": "Katso hinnat"
+      },
+      "v3": {
+        "title": "Opas on käsissäsi. Jäljellä on matka.",
+        "line": "Paikallinen vuokra-auto, nopea vastaus, käteinen käy.",
+        "cta": "Pyydä tarjous"
+      }
+    },
+    "van": {
+      "corridor": {
+        "v1": {
+          "title": "Jaettu pikkubussi kohteesta {from} kohteeseen {to}",
+          "line": "Alkaen {price} € paikalta. Luvallinen paikallinen kuljettaja, ei maksua nyt.",
+          "cta": "Liity ryhmään"
+        },
+        "v2": {
+          "title": "{to} lentokentältä ilman vuokra-autoa",
+          "line": "Jaettu pikkubussi alkaen {price} € paikalta. Lähtö vahvistetaan, kun ryhmä on täynnä.",
+          "cta": "Katso lähdöt"
+        }
+      },
+      "generic": {
+        "v1": {
+          "title": "Lentokentältä kohteeseesi jaetulla pikkubussilla",
+          "line": "{count} reittiä Heraklionista ja Chaniasta, alkaen {price} € paikalta.",
+          "cta": "Katso reitit"
+        },
+        "v2": {
+          "title": "Ei autoa? Jaa pikkubussi.",
+          "line": "Paikallinen kuljettaja, ei maksua varattaessa.",
+          "cta": "Katso reitit"
+        }
+      }
+    },
+    "bus": {
+      "pair": {
+        "v1": {
+          "title": "Bussilla kohteesta {from}",
+          "line": "Päivän aikataulu, matka-aika ja lipun hinta.",
+          "cta": "Katso aikataulut"
+        },
+        "v2": {
+          "title": "Bussi kohteesta {from} kohteeseen {to}, tänään",
+          "line": "Vaihdot ja hinnat KTEL-aikataulujen mukaan.",
+          "cta": "Avaa reittiopas"
+        }
+      },
+      "generic": {
+        "title": "Bussilla Kreetalla",
+        "line": "KTEL-verkkojen aikataulut, hinnat ja vaihdot.",
+        "cta": "Katso aikataulut"
+      }
+    }
+  },
   "activityNudge": {
     "close": "Sulje",
     "title": "Etkö ole vielä päättänyt?",
