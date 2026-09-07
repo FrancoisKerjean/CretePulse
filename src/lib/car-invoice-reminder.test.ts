@@ -120,8 +120,16 @@ describe("runInvoiceReminderPass · J+15", () => {
     expect(sendInvoiceReminder).not.toHaveBeenCalled();
     // Voulu : le verrou est pris avant la rotation, donc reminded_at est ecrit
     // et aucun second rappel ne partira. L ancien lien reste vivant (rien n a
-    // ete tourne) et la facture remontera aux ops a J+30.
+    // ete tourne), et les ops sont prevenues plutot que d attendre J+30.
     expect(w.updates.find((u) => u.table === "car_commission_invoices")).toBeDefined();
+    expect(notifyOps).toHaveBeenCalledTimes(1);
+    const n = notifyOps.mock.calls[0][0];
+    expect(n.title).toBe("Rappel de facture NOVAI-CD-2026-001 non parti (jeton)");
+    expect(n.lines[0]).toContain("Zorbas Rent a Car");
+    expect(n.lines[0]).toContain("l'ancien lien reste vivant");
+    expect(n.action).toMatch(/back-office/);
+    expect(n.due).toBe("+1");
+    expect(n.url).toContain("/admin/car-rental");
     errSpy.mockRestore();
   });
 

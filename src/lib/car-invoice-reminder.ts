@@ -204,7 +204,17 @@ async function remind(
   try {
     token = await rotateInvoiceToken(inv.id);
   } catch (err) {
+    // Le verrou est deja pris : aucun rappel ne repartira tout seul et, sans
+    // cette ligne, le loueur ne serait relance qu a J+30. L ancien lien de
+    // l email de facture est intact, il reste a le renvoyer a la main.
     console.error("[car/invoice-reminder] rotation du jeton refusee, aucun rappel", { invoice: inv.number, err });
+    await ops({
+      title: `Rappel de facture ${inv.number} non parti (jeton)`,
+      lines: [`${nom} · l'ancien lien reste vivant, rappel à envoyer à la main`],
+      action: "Renvoyer la facture depuis le back-office",
+      due: echeance(1),
+      url: `${siteBase()}/admin/car-rental`,
+    });
     return;
   }
 
