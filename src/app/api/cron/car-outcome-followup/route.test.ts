@@ -1,9 +1,25 @@
 // Route mince : authentification fail-closed, deux passes, compteurs en JSON.
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+// Les deux mocks portent le type de retour RÉEL des passes : un compteur ajouté
+// ou retiré côté module casse la compilation de ce test au lieu de le laisser
+// vérifier un contrat JSON périmé. `import type` est effacé, il ne réintroduit
+// aucun import runtime des modules mockés.
+import type { OutcomeFollowupResult } from "@/lib/car-outcome-followup-server";
+import type { InvoiceReminderResult } from "@/lib/car-invoice-reminder";
 
 const { runOutcomeFollowupPass, runInvoiceReminderPass } = vi.hoisted(() => ({
-  runOutcomeFollowupPass: vi.fn(async () => ({ sent: 2, refused: 0, escalated: 1, reminded: 0, withoutEmail: 0 })),
-  runInvoiceReminderPass: vi.fn(async () => ({ reminded: 1, overdue: 0 })),
+  runOutcomeFollowupPass: vi.fn(
+    async (): Promise<OutcomeFollowupResult> => ({
+      sent: 2,
+      refused: 0,
+      escalated: 1,
+      reminded: 0,
+      withoutEmail: 0,
+      partnerNotFound: 0,
+      writeRefused: 0,
+    }),
+  ),
+  runInvoiceReminderPass: vi.fn(async (): Promise<InvoiceReminderResult> => ({ reminded: 1, overdue: 0 })),
 }));
 vi.mock("@/lib/car-outcome-followup-server", () => ({ runOutcomeFollowupPass }));
 vi.mock("@/lib/car-invoice-reminder", () => ({ runInvoiceReminderPass }));
@@ -41,7 +57,15 @@ describe("GET /api/cron/car-outcome-followup", () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({
       ok: true,
-      outcome: { sent: 2, refused: 0, escalated: 1, reminded: 0, withoutEmail: 0 },
+      outcome: {
+        sent: 2,
+        refused: 0,
+        escalated: 1,
+        reminded: 0,
+        withoutEmail: 0,
+        partnerNotFound: 0,
+        writeRefused: 0,
+      },
       invoices: { reminded: 1, overdue: 0 },
     });
     expect(runOutcomeFollowupPass).toHaveBeenCalledTimes(1);
