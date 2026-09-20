@@ -20,14 +20,17 @@ const { INDEXABLE_LOCALES, routing } = await import("@/i18n/routing");
 const req = (path: string) => new NextRequest(`https://crete.direct${path}`);
 
 describe("middleware : X-Robots-Tag par locale", () => {
-  it("pose noindex sur chacune des 18 locales hors perimetre", () => {
-    const horsPerimetre = routing.locales.filter(
-      (l) => !(INDEXABLE_LOCALES as readonly string[]).includes(l),
-    );
+  // 🚨 CE TEST BOUCLAIT SUR UNE LISTE DEVENUE VIDE, DONC IL PASSAIT SANS RIEN VÉRIFIER.
+  // Il itérait `routing.locales` moins `INDEXABLE_LOCALES` ; les 18 locales hors périmètre
+  // ont quitté le routage le 20/09/2026, la liste est tombée à zéro et la boucle n'a plus
+  // exécuté un seul `expect`. Un test vert qui n'assure rien est pire qu'un test rouge.
+  // On assure donc désormais l'état RÉEL : plus aucune locale servie ne reçoit de noindex.
+  it("ne laisse aucune locale servie recevoir un noindex", () => {
+    expect(routing.locales.length).toBeGreaterThan(0);
 
-    for (const loc of horsPerimetre) {
+    for (const loc of routing.locales) {
       const res = middleware(req(`/${loc}/beaches`));
-      expect(res.headers.get("x-robots-tag"), `locale ${loc}`).toBe("noindex, follow");
+      expect(res.headers.get("x-robots-tag"), `locale ${loc}`).toBeNull();
     }
   });
 
@@ -42,8 +45,13 @@ describe("middleware : X-Robots-Tag par locale", () => {
     expect(middleware(req("/")).headers.get("x-robots-tag")).toBeNull();
   });
 
-  it("noindex aussi la racine d'une locale hors perimetre", () => {
-    expect(middleware(req("/es")).headers.get("x-robots-tag")).toBe("noindex, follow");
+  // `/es` n'est plus une locale pour le middleware depuis le 20/09/2026 : `next.config.ts`
+  // la redirige en 301 vers /en, et les redirections de la config sont évaluées AVANT le
+  // middleware. Il n'a donc plus rien à marquer, et ne doit surtout pas traiter `es` comme
+  // un préfixe de locale, c'est `localeFromPathname` qui le garantit.
+  it("ne traite plus une locale retirée comme une locale", () => {
+    expect(middleware(req("/es")).headers.get("x-robots-tag")).toBeNull();
+    expect(middleware(req("/ja/beaches")).headers.get("x-robots-tag")).toBeNull();
   });
 
   // Le blocage geo Chine et la redirection ASCII sont anterieurs (voir middleware.ts).

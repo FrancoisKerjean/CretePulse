@@ -3,7 +3,7 @@ import type { Viewport } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
-import { routing } from "@/i18n/routing";
+import { routing, isRtlLocale } from "@/i18n/routing";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ActivityNudge } from "@/components/nudge/ActivityNudge";
@@ -105,7 +105,7 @@ export default async function LocaleLayout({
   };
 
   return (
-    <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"} className={`${geist.variable} ${baloo.variable} ${comfortaa.variable}`}>
+    <html lang={locale} dir={isRtlLocale(locale) ? "rtl" : "ltr"} className={`${geist.variable} ${baloo.variable} ${comfortaa.variable}`}>
       <body className="bg-surface text-ink font-sans antialiased">
         <JsonLd data={organizationSchema} />
         <NextIntlClientProvider messages={messages}>

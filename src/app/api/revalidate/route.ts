@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { routing } from "@/i18n/routing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const LOCALES = [
-  "en", "fr", "de", "el", "it", "nl", "pl", "es", "pt", "ru",
-  "ja", "ko", "zh", "tr", "sv", "da", "no", "fi", "cs", "hu",
-  "ro", "ar",
-];
+// La liste était recopiée ici : elle vaut `routing.locales`, et une copie dérive. Elle est
+// passée de 22 à 4 le 20/09/2026, donc `all=1` revalide 4 accueils au lieu de 22.
+const LOCALES = routing.locales;
 
 // Trigger via:
 //   curl -X POST 'https://crete.direct/api/revalidate?secret=...&path=/fr'

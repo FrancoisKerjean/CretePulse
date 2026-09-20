@@ -54,7 +54,19 @@ const nextConfig: NextConfig = {
       destination: `/:locale/buses/${pair}`,
       permanent: true, // 301
     });
+    // ⛔ LES 18 LOCALES RETIRÉES DU ROUTAGE LE 20/09/2026, ET CETTE LISTE DOIT RESTER LE
+    // COMPLÉMENT EXACT DE `routing.locales`. Elle est écrite en clair ici, pas importée :
+    // `next.config.ts` est chargé avant le bundle et une garde de source
+    // (`src/i18n/routing.test.ts`) vérifie qu'elle correspond à `RETIRED_LOCALES`.
+    // Motif : chaque locale routée est un jeu de ~24 000 routes ISR offertes aux robots, et
+    // les ISR Writes sont le 1er poste de la facture Vercel (18,15 $ sur 56,36 $, cycle
+    // 19/08-18/09). 301 et non 404 : aucun vieux lien ne meurt.
+    const retired = "it|nl|pl|es|pt|ru|ja|ko|zh|tr|sv|da|no|fi|cs|hu|ro|ar";
     return [
+      // Le préfixe nu (`/ja`) ET le préfixe suivi d'un chemin (`/ja/beaches`) : `:path*`
+      // accepte zéro segment, mais la règle nue évite un `/en/` à slash final.
+      { source: `/:locale(${retired})`, destination: "/en", permanent: true },
+      { source: `/:locale(${retired})/:path*`, destination: "/en/:path*", permanent: true },
       qr("her", "heraklion"), qr("chq", "chania-airport"), qr("jsh", "sitia"),
       gar("heraklion-to-chania", "chania-to-heraklion"),
       gar("heraklion-to-rethymno", "heraklion-to-rethymno"),

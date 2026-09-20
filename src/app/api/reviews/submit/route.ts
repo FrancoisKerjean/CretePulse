@@ -9,6 +9,7 @@ import { containsBanned, looksLikeSpam } from "@/lib/reviews/banlist";
 import { isDisposable } from "@/lib/reviews/disposable-domains";
 import { hashIp, hashToken, getClientIp, rateLimit, fakeAwaitEmail, SALT_VERSION } from "@/lib/reviews/sec";
 import { consentTextFor } from "@/lib/reviews/consent-text";
+import { routing } from "@/i18n/routing";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const OK = NextResponse.json({ ok: true, requires_confirmation: true });
@@ -138,7 +139,11 @@ export async function POST(req: NextRequest) {
     consent_text_hash,
     ip_hash,
     salt_version: SALT_VERSION,
-    locale: ["en","fr","de","el","it","nl","pl","es","pt","ru","ja","ko","zh","tr","sv","da","no","fi","cs","hu","ro","ar"].includes(locale) ? locale : "en",
+    // La liste des locales était recopiée ici : elle vaut `routing.locales`, et une copie
+    // dérive. Le repli sur "en" était déjà le comportement pour une locale inconnue, il
+    // couvre donc sans changement les 18 retirées le 20/09/2026, qu'une page encore en
+    // cache navigateur pourrait continuer d'envoyer.
+    locale: (routing.locales as readonly string[]).includes(locale) ? locale : "en",
   });
   if (error) {
     // Unique violation = race with another submit → silent success

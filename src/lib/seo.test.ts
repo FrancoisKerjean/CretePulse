@@ -37,10 +37,14 @@ describe("buildAlternates", () => {
 });
 
 describe("INDEXABLE_LOCALES", () => {
-  it("est un sous-ensemble strict des locales servies", () => {
+  // Le sous-ensemble était STRICT jusqu'au 20/09/2026 : 4 indexables sur 22 servies. Les 18
+  // autres ont quitté le routage ce jour-là, donc les deux ensembles coïncident. Ce qui doit
+  // rester vrai dans tous les cas, c'est l'inclusion : une locale indexable et non servie
+  // annoncerait un hreflang vers une page qui n'existe pas.
+  it("est inclus dans les locales servies", () => {
     for (const loc of INDEXABLE_LOCALES) {
       expect(routing.locales).toContain(loc);
     }
-    expect(INDEXABLE_LOCALES.length).toBeLessThan(routing.locales.length);
+    expect(INDEXABLE_LOCALES.length).toBeLessThanOrEqual(routing.locales.length);
   });
 });

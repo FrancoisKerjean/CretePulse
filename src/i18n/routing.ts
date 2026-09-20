@@ -1,7 +1,17 @@
 import { defineRouting } from "next-intl/routing";
 
 export const routing = defineRouting({
-  locales: ["en", "fr", "de", "el", "it", "nl", "pl", "es", "pt", "ru", "ja", "ko", "zh", "tr", "sv", "da", "no", "fi", "cs", "hu", "ro", "ar"],
+  // 4 depuis le 20/09/2026, 22 avant. Les 18 retirées sont dans RETIRED_LOCALES plus bas et
+  // redirigent en 301 vers /en depuis next.config.ts : aucune URL ne casse, aucun backlink ne
+  // meurt : la promesse du 01/08 tient, par la redirection au lieu du service.
+  //
+  // Motif, mesuré le 20/09/2026 sur la facture Vercel du cycle 19/08-18/09 : ISR Writes
+  // 4 886 032 = 18,15 $, PREMIER poste des 56,36 $ de consommation. Une locale routée est un
+  // jeu complet de ~24 000 routes ISR offertes aux robots, et 22 locales en faisaient ~528 000
+  // pour 3 413 événements Web Analytics sur le mois.
+  // ⛔ Le `noindex` du 01/08 n'y a rien changé : il agit sur l'indexation, pas sur le ROUTAGE,
+  // et une page noindex se régénère quand un robot la demande, exactement comme les autres.
+  locales: ["en", "fr", "de", "el"],
   defaultLocale: "en",
   localePrefix: "always",
   // false on purpose: localeDetection:true made next-intl read Accept-Language and set a
@@ -23,9 +33,33 @@ export const routing = defineRouting({
 });
 
 /**
- * Locales exposees a l'indexation. Les autres restent SERVIES (aucune URL ne casse,
- * aucun backlink ne meurt) mais sortent des hreflang et recoivent un `X-Robots-Tag:
- * noindex, follow` dans le middleware.
+ * Les 18 locales retirées du routage le 20/09/2026. Elles ne sont plus servies :
+ * `next.config.ts` les redirige en 301 vers l'équivalent sous /en.
+ *
+ * ⛔ CETTE LISTE ET `routing.locales` NE DOIVENT JAMAIS SE CHEVAUCHER NI LAISSER DE TROU.
+ * Une locale présente dans les deux se redirigerait hors d'elle-même ; une locale absente des
+ * deux rendrait 404 sur ses vieux liens. `routing.test.ts` vérifie les deux sens contre la
+ * liste historique des 22, et une garde de source vérifie que `next.config.ts` redirige
+ * exactement celles-ci.
+ *
+ * ⚠️ Ce qu'on accepte en les coupant, mesure GSC du 01/08/2026 : les 18 cumulaient ~700 clics
+ * par mois AVANT l'effondrement du 19/07. Après, le site entier est à 40 impressions/jour :
+ * ces 700 clics n'existent plus, et c'est ce qui rend l'arbitrage soutenable aujourd'hui.
+ * Le retour arrière est une ligne, les fichiers de traduction restent au dépôt.
+ */
+export const RETIRED_LOCALES = [
+  "it", "nl", "pl", "es", "pt", "ru", "ja", "ko", "zh",
+  "tr", "sv", "da", "no", "fi", "cs", "hu", "ro", "ar",
+] as const;
+
+/**
+ * Locales exposees a l'indexation.
+ *
+ * ⚠️ Depuis le 20/09/2026 cette liste est IDENTIQUE à `routing.locales` : tout ce qui est
+ * routé est indexable. Elle reste séparée exprès : c'est elle que lisent le middleware,
+ * `buildAlternates()` et le sitemap, et les deux notions redeviendraient distinctes le jour
+ * où une locale serait routée sans être indexée. Le `X-Robots-Tag: noindex, follow` du
+ * middleware ne se déclenche donc plus pour personne, et ce n'est pas un défaut.
  *
  * Contexte : effondrement Google du 19/07/2026, -93 % d'impressions site-wide.
  * Google connaissait ~237 000 URL pour 3 705 pages declarees au sitemap, et rejetait
@@ -39,6 +73,20 @@ export const routing = defineRouting({
 export const INDEXABLE_LOCALES = ["en", "fr", "de", "el"] as const;
 
 export type IndexableLocale = (typeof INDEXABLE_LOCALES)[number];
+
+/**
+ * Locales qui s'écrivent de droite à gauche, pour le `dir` du `<html>`.
+ *
+ * ⚠️ `ar` est la seule, et elle est retirée du routage depuis le 20/09/2026 : aucune locale
+ * servie n'est RTL aujourd'hui. La fonction reste exprès, et prend un `string` et non une
+ * locale typée : écrit `locale === "ar"` dans le layout, TypeScript refusait la comparaison
+ * dès que `ar` a quitté l'union, et la réactiver aurait rendu la page en `ltr` sans un mot.
+ */
+const RTL_LOCALES: readonly string[] = ["ar"];
+
+export function isRtlLocale(locale: string): boolean {
+  return RTL_LOCALES.includes(locale);
+}
 
 export function isIndexableLocale(locale: string): locale is IndexableLocale {
   return (INDEXABLE_LOCALES as readonly string[]).includes(locale);

@@ -1,13 +1,14 @@
 "use client";
 
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { routing } from "@/i18n/routing";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Menu, X, Globe, ChevronDown, Search } from "lucide-react";
 import { Wordmark } from "@/components/Wordmark";
 import { LivePill } from "@/components/LivePill";
 
-const LOCALES = [
+const ALL_LOCALES = [
   { code: "en", label: "EN", name: "English" },
   { code: "fr", label: "FR", name: "Français" },
   { code: "de", label: "DE", name: "Deutsch" },
@@ -31,6 +32,14 @@ const LOCALES = [
   { code: "ro", label: "RO", name: "Română" },
   { code: "ar", label: "AR", name: "العربية" },
 ];
+
+// ⛔ Le sélecteur ne propose que les locales ROUTÉES. Les 18 retirées le 20/09/2026
+// redirigent en 301 vers /en : les proposer enverrait le visiteur faire un aller-retour
+// pour revenir à l'anglais. La table ci-dessus reste complète : c'est elle qui rend le
+// retour arrière gratuit si une langue est réactivée.
+const LOCALES = ALL_LOCALES.filter((l) =>
+  (routing.locales as readonly string[]).includes(l.code),
+);
 
 type NavLabel = Record<string, string>;
 type NavLink = { href: string; label: NavLabel };
