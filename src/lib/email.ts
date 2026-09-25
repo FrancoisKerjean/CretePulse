@@ -903,7 +903,10 @@ export async function sendConnectionEmails(opts: {
   const agencyLines = [
     `Hi ${partner.name.split(" ")[0]},`,
     ``,
-    `Good news: the customer accepted your ${money(quote.price, quote.currency)} quote. Here are their details to finalise the rental:`,
+    // ⛔ Une acceptation de devis n'est PAS une location. Le titre « Booking
+    // confirmed » le laissait croire, et le loueur (Zorbas, 25/09/2026) a reçu
+    // une facture pour une cliente qui n'avait jamais envoyé ses coordonnées.
+    `Good news: the customer accepted your ${money(quote.price, quote.currency)} quote. This is not a secured booking yet: contact them to collect what you need (details, deposit). Here are their details:`,
     ``,
     `Customer: ${customer.name}`,
     `Email: ${customer.email}`,
@@ -930,7 +933,9 @@ export async function sendConnectionEmails(opts: {
       : []),
     `Our referral commission is 10%.`,
     ``,
-    `Please contact the customer to confirm the details. Thanks!`,
+    `We only invoice it once you have confirmed that the rental took place, on the final amount.`,
+    ``,
+    `Please contact the customer to secure the booking. Thanks!`,
     `Kami · crete.direct`,
   ];
   const r1 = await resend.emails.send({
@@ -938,7 +943,7 @@ export async function sendConnectionEmails(opts: {
     to: partner.email,
     cc: RELAY_EMAIL,
     replyTo: customer.email,
-    subject: `Booking confirmed · ${quote.pickupLabel} ${quote.dateFrom} → ${quote.dateTo} (${money(quote.price, quote.currency)})`,
+    subject: `Quote accepted · ${quote.pickupLabel} ${quote.dateFrom} → ${quote.dateTo} (${money(quote.price, quote.currency)})`,
     text: agencyLines.join("\n"),
   });
   if (r1.error) throw new Error(`Resend: ${r1.error.message}`);

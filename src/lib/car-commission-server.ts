@@ -1,8 +1,10 @@
 // Declenchement de la demande de commission. Deux appelants, meme chemin :
-// - le cron `/api/cron/car-commission-invoice`, declencheur PRINCIPAL, au
-//   premier jour de la location ;
+// - le lien d'issue du loueur (rental-outcome), quand il confirme « rented »
+//   apres la location, sur le montant final ;
 // - le back-office, au passage manuel d'une location en « rented ».
-// (decision Kami 29/07/2026 : automatique, pas de geste manuel obligatoire).
+// ⛔ Plus de facture presumee au premier jour depuis le 25/09/2026 : le cron
+// car-commission-invoice facturait toute acceptation de devis, y compris des
+// locations jamais conclues (Zorbas, facture 004 annulee par avoir).
 //
 // Ce module ne touche jamais l'argent de la location : il vend la commission au
 // loueur, sur le compte plateforme, sans Connect. Voir car-commission.ts.

@@ -65,7 +65,7 @@ export function commissionRequestBody(m: CommissionMail): string {
   return [
     `Hi ${m.partnerName},`,
     ``,
-    `Your rental ${m.dateFrom} to ${m.dateTo} starts today, so here is the commission invoice.`,
+    `Here is the commission invoice for your rental ${m.dateFrom} to ${m.dateTo}.`,
     ``,
     ...(m.invoiceNumber ? [`Invoice: ${m.invoiceNumber}`] : []),
     `Rental reference: ${m.requestId}`,
