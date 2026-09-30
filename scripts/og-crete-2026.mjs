@@ -13,7 +13,7 @@ const COPY = {
   fr: { kicker: "crete.direct · bilan de saison", l1: "L’été 2026", pre: "en ", hl: "Crète", stats: [["10,5 M", "passagers aériens"], ["27 333", "annonces Airbnb"], ["8 031 ha", "brûlés, un record"]] },
   en: { kicker: "crete.direct · season review", l1: "Summer 2026", pre: "in ", hl: "Crete", stats: [["10.5M", "air passengers"], ["27,333", "Airbnb listings"], ["8,031 ha", "burned, a record"]] },
   de: { kicker: "crete.direct · Saisonbilanz", l1: "Sommer 2026", pre: "auf ", hl: "Kreta", stats: [["10,5 Mio.", "Fluggäste"], ["27.333", "Airbnb-Inserate"], ["8.031 ha", "verbrannt, ein Rekord"]] },
-  el: { kicker: "crete.direct · απολογισμός σεζόν", l1: "Καλοκαίρι 2026", pre: "στην ", hl: "Κρήτη", stats: [["10,5 εκ.", "αεροπορικοί επιβάτες"], ["27.333", "καταχωρίσεις Airbnb"], ["8.031 ha", "καμένα, ρεκόρ"]] },
+  el: { kicker: "crete.direct · απολογισμός σεζόν", l1: "Καλοκαίρι 2026", pre: "στην ", hl: "Κρήτη", stats: [["10,5 εκατ.", "αεροπορικοί επιβάτες"], ["27.333", "καταχωρίσεις Airbnb"], ["8.031 ha", "καμένα, ρεκόρ"]] },
 };
 
 // lang = locale : en grec, les capitales CSS perdent leurs accents (règle typographique).
