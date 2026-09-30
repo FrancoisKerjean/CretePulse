@@ -117,4 +117,5 @@ export function getShare(locale: string): { title: string; text: string } { retu
 export const LINKS = {
   instagram: "https://instagram.com/cretedirect",
   facebook: "https://www.facebook.com/1098023870060924",
+  youtube: "https://www.youtube.com/@CreteDirect",
 };

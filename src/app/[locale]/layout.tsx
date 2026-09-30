@@ -15,6 +15,7 @@ import { baloo, geist, comfortaa } from "@/app/layout";
 import Script from "next/script";
 import { buildAlternates } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
+import { LINKS } from "@/lib/campagne";
 import "@/app/globals.css";
 
 export const viewport: Viewport = {
@@ -101,7 +102,8 @@ export default async function LocaleLayout({
     logo: `${BASE_URL}/icon.svg`,
     description: t("description"),
     areaServed: { "@type": "Place", name: "Crete, Greece" },
-    sameAs: [],
+    // Relie l'entite aux profils officiels (vide jusqu'au 30/09/2026).
+    sameAs: Object.values(LINKS),
   };
 
   return (
