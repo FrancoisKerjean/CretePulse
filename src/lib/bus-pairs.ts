@@ -98,6 +98,38 @@ export function slugifyPlace(place: string): string | null {
   return BUS_PLACE_SLUGS[place] ?? null;
 }
 
+// Nom AFFICHÉ par slug, quand la graphie de la base (translittération du scraper ou
+// des PDF e-ktel) n'est pas celle que cherchent les voyageurs. Les titres publics
+// disaient « Bus Agios Nikolaos to Eloynta » (constaté le 30/09/2026). La base garde
+// sa graphie : le planificateur, les correspondances et les formulaires comparent
+// les noms bruts, seul l'affichage passe par placeLabel.
+const PLACE_LABELS: Record<string, string> = {
+  sitia: "Sitia",
+  hersonissos: "Hersonissos",
+  elounda: "Elounda",
+  "makry-gyalos": "Makrygialos",
+  phaistos: "Phaistos",
+  archanes: "Archanes",
+  palekastro: "Palekastro",
+  "kalo-chorio": "Kalo Chorio",
+  cretaquarium: "Cretaquarium",
+  plaka: "Plaka",
+  kroustas: "Kroustas",
+  avgeniki: "Avgeniki",
+  krousonas: "Krousonas",
+  kissamos: "Kissamos",
+  elafonissi: "Elafonisi",
+  almyrida: "Almyrida",
+  kalyves: "Kalyves",
+  "anogeia-west": "Anogeia",
+};
+
+/** Nom à afficher pour un lieu de la base ; inchangé s'il n'a pas d'étiquette. */
+export function placeLabel(place: string): string {
+  const slug = slugifyPlace(place);
+  return (slug && PLACE_LABELS[slug]) || place;
+}
+
 /** Slug stable de la paire (ordre alphabetique des slugs), null si un bout est indigne. */
 export function pairSlug(a: string, b: string): string | null {
   const sa = slugifyPlace(a);

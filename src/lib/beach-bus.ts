@@ -8,7 +8,7 @@
 import { supabase } from "./supabase";
 import { haversineKm } from "./geo";
 import { getBusRoutes } from "./buses";
-import { eligiblePairs, slugifyPlace, BUS_PLACE_SLUGS } from "./bus-pairs";
+import { eligiblePairs, slugifyPlace, placeLabel, BUS_PLACE_SLUGS } from "./bus-pairs";
 
 /** Rayon max pour proposer un arrêt physique (au-delà, le bus n'est pas un accès réaliste). */
 const STOP_RADIUS_KM = 8;
@@ -128,7 +128,7 @@ export async function getBeachBusInfo(lat: number, lng: number): Promise<BeachBu
         )
         .filter((p): p is NonNullable<typeof p> => Boolean(p))
         .slice(0, 2)
-        .map((p) => ({ slug: p.slug, fromName: p.placeA, toName: p.placeB }));
+        .map((p) => ({ slug: p.slug, fromName: placeLabel(p.placeA), toName: placeLabel(p.placeB) }));
     }
 
     return { stop, urban, destination, pairs };

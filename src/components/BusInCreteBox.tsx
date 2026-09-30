@@ -9,6 +9,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { supabase } from "@/lib/supabase";
 import { priorityPairs, type SeoRoute } from "@/lib/bus-seo";
+import { placeLabel } from "@/lib/bus-pairs";
 
 /** Affiche les liens-trajet prioritaires. `locale` = locale serveur. */
 export async function BusInCreteBox({ locale }: { locale: string }) {
@@ -38,7 +39,7 @@ export async function BusInCreteBox({ locale }: { locale: string }) {
               href={`/${locale}/buses/${p.slug}`}
               className="text-sea hover:underline"
             >
-              Bus {p.placeA} {t("connector")} {p.placeB}
+              Bus {placeLabel(p.placeA)} {t("connector")} {placeLabel(p.placeB)}
             </Link>
           </li>
         ))}

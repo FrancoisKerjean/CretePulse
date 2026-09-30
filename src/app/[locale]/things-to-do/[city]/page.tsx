@@ -10,7 +10,7 @@ import { cityThingsToDoSchema } from "@/lib/schema";
 import { CarPromo } from "@/components/car-rental/CarPromo";
 import { getBusRoutes } from "@/lib/buses";
 import { qualityPairSlugs, type SeoRoute } from "@/lib/bus-seo";
-import { eligiblePairs } from "@/lib/bus-pairs";
+import { eligiblePairs, placeLabel } from "@/lib/bus-pairs";
 import { JsonLd } from "@/components/JsonLd";
 
 export const revalidate = 172800; // 03/07 optim couts Vercel (48h, ISR Writes)
@@ -565,7 +565,7 @@ export default async function ThingsToDoPage({ params }: { params: Promise<{ loc
                           className="inline-flex items-center gap-1 text-sm font-semibold text-sea hover:text-sea/80 transition-colors"
                         >
                           <ChevronRight className="w-4 h-4 flex-shrink-0" />
-                          {placeA} {connector} {placeB}
+                          {placeLabel(placeA)} {connector} {placeLabel(placeB)}
                         </Link>
                       </li>
                     );

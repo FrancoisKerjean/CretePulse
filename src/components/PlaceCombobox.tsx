@@ -4,6 +4,7 @@
 // Enter, Escape), fermeture au clic dehors. Zero dependance. La liste des
 // lieux est fournie en prop (deja chargee par la page /buses).
 import { useEffect, useId, useRef, useState } from "react";
+import { placeLabel } from "@/lib/bus-pairs";
 
 export function PlaceCombobox({
   value, onChange, options, placeholder, ariaLabel,
@@ -21,7 +22,8 @@ export function PlaceCombobox({
   const listId = useId();
 
   // Sync quand la valeur change de l'exterieur (swap, geoloc, deep-link).
-  useEffect(() => { setQuery(value); }, [value]);
+  // Le champ montre le nom usuel (« Sitia »), la valeur reste le nom de la base (« Siteia »).
+  useEffect(() => { setQuery(value ? placeLabel(value) : value); }, [value]);
 
   useEffect(() => {
     function onDoc(e: MouseEvent) {
@@ -32,11 +34,24 @@ export function PlaceCombobox({
   }, []);
 
   const filtered = query
-    ? options.filter((o) => o.toLowerCase().includes(query.toLowerCase())).slice(0, 8)
+    ? (() => {
+        const q = query.toLowerCase();
+        // Taper « Sitia » ou « Elounda » ne trouvait rien : le filtre ne lisait que la
+        // graphie de la base (« Siteia », « Eloynta »). Le nom usuel qui commence par la
+        // saisie passe devant : sinon « Sitia » proposait d'abord « Palaiokastro Sitia ».
+        const rank = (o: string) => {
+          const l = placeLabel(o).toLowerCase();
+          return l.startsWith(q) ? 0 : l.includes(q) ? 1 : 2;
+        };
+        return options
+          .filter((o) => o.toLowerCase().includes(q) || placeLabel(o).toLowerCase().includes(q))
+          .sort((a, b) => rank(a) - rank(b))
+          .slice(0, 8);
+      })()
     : options.slice(0, 8);
 
   function commit(v: string) {
-    onChange(v); setQuery(v); setOpen(false);
+    onChange(v); setQuery(placeLabel(v)); setOpen(false);
   }
 
   return (
@@ -67,7 +82,7 @@ export function PlaceCombobox({
               onMouseDown={(e) => { e.preventDefault(); commit(o); }}
               onMouseEnter={() => setActive(i)}
               className={`px-4 py-2 text-sm cursor-pointer ${i === active ? "bg-surface text-text" : "text-text"}`}>
-              {o}
+              {placeLabel(o)}
             </li>
           ))}
         </ul>

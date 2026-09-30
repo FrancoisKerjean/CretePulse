@@ -1,7 +1,7 @@
 // Assertions du module bus-pairs. Run: node scripts/check-bus-pairs.mjs
 import assert from "node:assert/strict";
 import {
-  slugifyPlace, pairSlug, eligiblePairs, pairRoutes, onwardPlaces,
+  slugifyPlace, pairSlug, eligiblePairs, pairRoutes, onwardPlaces, placeLabel,
 } from "../src/lib/bus-pairs.ts";
 
 const R = (id, from, to) => ({ id, from_place: from, to_place: to });
@@ -15,6 +15,17 @@ assert.equal(slugifyPlace("A1 Super Market"), null);          // pas digne -> nu
 assert.equal(pairSlug("Heraklion", "Ierapetra"), "heraklion-to-ierapetra");
 assert.equal(pairSlug("Ierapetra", "Heraklion"), "heraklion-to-ierapetra");
 assert.equal(pairSlug("Chania", "A1 Super Market"), null);    // un bout indigne -> null
+
+// --- noms affichés ---------------------------------------------------------
+// Les titres publics affichaient la graphie du scraper (« Bus Agios Nikolaos to
+// Eloynta », constaté le 30/09/2026). Le nom affiché suit ce que cherchent les gens.
+assert.equal(placeLabel("Eloynta"), "Elounda");
+assert.equal(placeLabel("Siteia"), "Sitia");
+assert.equal(placeLabel("Kalo Chorio Lasithioy"), "Kalo Chorio");
+assert.equal(placeLabel("Plaka(Ag.Nikolaos)"), "Plaka");
+assert.equal(placeLabel("Kasteli"), "Kissamos");                // deux graphies, un nom
+assert.equal(placeLabel("Heraklion"), "Heraklion");             // déjà bon : inchangé
+assert.equal(placeLabel("A1 Super Market"), "A1 Super Market"); // hors table : inchangé
 
 // --- eligibilite ----------------------------------------------------------
 const routes = [

@@ -5,7 +5,7 @@ import { getBusRoutes, getBusDestinations, latestScrapedAt } from "@/lib/buses";
 import { getBusAlerts } from "@/lib/bus-alerts";
 import { busesPageSchema } from "@/lib/schema";
 import { qualityPairSlugs } from "@/lib/bus-seo";
-import { eligiblePairs } from "@/lib/bus-pairs";
+import { eligiblePairs, placeLabel } from "@/lib/bus-pairs";
 import { JsonLd } from "@/components/JsonLd";
 import { ShareBar } from "@/components/ShareBar";
 
@@ -75,7 +75,7 @@ export default async function BusesPage({ params }: { params: Promise<{ locale: 
   const slugSet = new Set(qualityPairSlugs(routes));
   const pairsForSchema = eligiblePairs(routes)
     .filter((p) => slugSet.has(p.slug))
-    .map((p) => ({ from: p.placeA, to: p.placeB, slug: p.slug }));
+    .map((p) => ({ from: placeLabel(p.placeA), to: placeLabel(p.placeB), slug: p.slug }));
 
   const schema = busesPageSchema({
     locale,

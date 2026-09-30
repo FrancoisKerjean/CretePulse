@@ -4,6 +4,7 @@
 // dans le DOM (replies par defaut), donc indexables. Tap sur le titre = page
 // paire si digne. Le but : ~383 routes en ~15 ecrans au lieu de 120.
 import { useState } from "react";
+import { placeLabel } from "@/lib/bus-pairs";
 import { Link } from "@/i18n/navigation";
 import type { BusRoute } from "@/lib/buses";
 import { pairSlug } from "@/lib/bus-pairs";
@@ -21,7 +22,7 @@ export function RouteLine({ route, locale }: { route: BusRoute; locale: string }
 
   const title = (
     <span className="font-semibold text-[13px] text-text">
-      {route.from_place} <span className="text-lagoon mx-0.5">·</span> {route.to_place}
+      {placeLabel(route.from_place)} <span className="text-lagoon mx-0.5">·</span> {placeLabel(route.to_place)}
     </span>
   );
 

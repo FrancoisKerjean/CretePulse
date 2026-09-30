@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { placeLabel } from "@/lib/bus-pairs";
 import { Info, ChevronDown, TriangleAlert } from "lucide-react";
 import { CiBus } from "@/components/icons";
 import Link from "next/link";
@@ -266,9 +267,9 @@ function PopularRoutes({
             onClick={() => onPick(p.from, p.to)}
             className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3.5 py-1.5 text-sm text-text hover:border-sea hover:text-sea transition-colors"
           >
-            <span>{p.from}</span>
+            <span>{placeLabel(p.from)}</span>
             <span className="text-text-muted" aria-hidden>·</span>
-            <span>{p.to}</span>
+            <span>{placeLabel(p.to)}</span>
           </button>
         ))}
       </div>

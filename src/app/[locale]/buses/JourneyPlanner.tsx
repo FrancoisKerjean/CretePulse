@@ -4,6 +4,7 @@
 // itineraire(s) + prix. Calcul 100 % local (moteur bus-journey, routes deja
 // chargees par la page). Spec : docs/superpowers/specs/2026-06-10-bus-journey-planner-design.md
 import { useEffect, useMemo, useRef, useState } from "react";
+import { placeLabel } from "@/lib/bus-pairs";
 import { ArrowRight, Clock, Info } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { athensNow } from "@/lib/athens-time";
@@ -164,12 +165,12 @@ function LegRow({ leg, locale }: { leg: JourneyLeg; locale: Locale }) {
     <div className="px-4 py-3">
       <div className="flex items-center gap-2 flex-wrap text-sm font-semibold text-text">
         <CiBus className="w-4 h-4 text-sea shrink-0" />
-        <span>{leg.route.from_place}</span>
+        <span>{placeLabel(leg.route.from_place)}</span>
         <ArrowRight className="w-3.5 h-3.5 text-text-muted shrink-0" />
-        <span>{leg.alightAt ?? leg.route.to_place}</span>
+        <span>{placeLabel(leg.alightAt ?? leg.route.to_place)}</span>
         {alight && (
           <span className="text-[11px] font-normal text-text-muted bg-surface border border-border rounded-full px-2 py-0.5">
-            {tp("lineLabel", locale)} {leg.route.from_place} – {leg.route.to_place} · {tp("alightAt", locale)} {leg.alightAt}
+            {tp("lineLabel", locale)} {placeLabel(leg.route.from_place)} – {placeLabel(leg.route.to_place)} · {tp("alightAt", locale)} {placeLabel(leg.alightAt ?? "")}
           </span>
         )}
         {dur != null && (

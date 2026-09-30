@@ -6,7 +6,7 @@ import { CiBus } from "@/components/icons";
 import { buildAlternates } from "@/lib/seo";
 import { getBusRoutes, getBusDestinations, latestScrapedAt } from "@/lib/buses";
 import type { BusRoute } from "@/lib/buses";
-import { eligiblePairs, pairRoutes, onwardPlaces, pairSlug, slugifyPlace } from "@/lib/bus-pairs";
+import { eligiblePairs, pairRoutes, onwardPlaces, pairSlug, slugifyPlace, placeLabel } from "@/lib/bus-pairs";
 import { pairHasTimetable, type SeoRoute } from "@/lib/bus-seo";
 import { getBusAlerts } from "@/lib/bus-alerts";
 import { RouteAlertBanner } from "@/components/RouteAlertBanner";
@@ -153,8 +153,8 @@ export async function generateMetadata({ params }: { params: Promise<Params> }) 
   const pr = pairRoutes(routes, pair);
   if (!pr) return {};
   const ui = pickUiLoc(locale);
-  const title = `${T.title[ui](pr.pair.placeA, pr.pair.placeB)} | Crete Direct`;
-  const description = T.metaDesc[ui](pr.pair.placeA, pr.pair.placeB);
+  const title = `${T.title[ui](placeLabel(pr.pair.placeA), placeLabel(pr.pair.placeB))} | Crete Direct`;
+  const description = T.metaDesc[ui](placeLabel(pr.pair.placeA), placeLabel(pr.pair.placeB));
   const url = `${BASE_URL}/${locale}/buses/${pair}`;
   const indexable = pairHasTimetable(routes as SeoRoute[], pair);
   const ogImage = `${BASE_URL}/api/og?type=transport&title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent(description.slice(0, 120))}`;
@@ -236,6 +236,9 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
   const pr = pairRoutes(routes, pair);
   if (!pr) notFound();
   const { placeA, placeB } = pr.pair;
+  // Noms bruts de la base pour les comparaisons et les liens du planificateur ;
+  // noms affichés (labelA, labelB) pour tout ce que lit le voyageur.
+  const labelA = placeLabel(placeA), labelB = placeLabel(placeB);
   const updatedAt = latestScrapedAt([...pr.outbound, ...pr.inbound]);
 
   // FAQ data-driven : uniquement les questions dont on a la donnee.
@@ -257,12 +260,12 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
   const faq: Array<[string, string]> = [];
   if (ref?.price_eur != null) {
     const p = `${ref.price_eur.toFixed(2)} €${ref.price_estimated ? ` (${T.indicative[ui]})` : ""}`;
-    faq.push(T.faqPrice[ui](placeA, placeB, p) as [string, string]);
+    faq.push(T.faqPrice[ui](labelA, labelB, p) as [string, string]);
   }
-  if (ref?.duration) faq.push(T.faqDuration[ui](placeA, placeB, ref.duration) as [string, string]);
+  if (ref?.duration) faq.push(T.faqDuration[ui](labelA, labelB, ref.duration) as [string, string]);
   const deps = pr.outbound[0]?.departures ?? [];
   if (deps.length > 1) {
-    faq.push(T.faqFirstLast[ui](placeA, placeB, deps[0], deps[deps.length - 1]) as [string, string]);
+    faq.push(T.faqFirstLast[ui](labelA, labelB, deps[0], deps[deps.length - 1]) as [string, string]);
   }
   const sa = slugifyPlace(placeA)!;
   const sb = slugifyPlace(placeB)!;
@@ -280,7 +283,7 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
   const vanCorridors = vanCorridorsForPair(sa, sb);
   if (taxiFare) {
     const busP = ref?.price_eur != null ? `${ref.price_eur.toFixed(2)} €` : null;
-    faq.push(T.faqTaxi[ui](placeA, placeB, taxiFare.low, taxiFare.high, busP) as [string, string]);
+    faq.push(T.faqTaxi[ui](labelA, labelB, taxiFare.low, taxiFare.high, busP) as [string, string]);
   }
 
   const schema = {
@@ -291,7 +294,7 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Home", item: `${BASE_URL}/${locale}` },
           { "@type": "ListItem", position: 2, name: "Buses", item: `${BASE_URL}/${locale}/buses` },
-          { "@type": "ListItem", position: 3, name: `${placeA} ${T.connector[ui]} ${placeB}`, item: `${BASE_URL}/${locale}/buses/${pair}` },
+          { "@type": "ListItem", position: 3, name: `${labelA} ${T.connector[ui]} ${labelB}`, item: `${BASE_URL}/${locale}/buses/${pair}` },
         ],
       },
       ...(faq.length > 0 ? [{
@@ -323,11 +326,11 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
             {T.allBuses[ui]}
           </Link>
           <h1 className="font-heading font-extrabold text-3xl md:text-[42px] tracking-tight text-text m-0">
-            Bus {placeA} <span className="text-lagoon-deep">{T.connector[ui]}</span> {placeB}
+            Bus {labelA} <span className="text-lagoon-deep">{T.connector[ui]}</span> {labelB}
           </h1>
           {hasTimetable && introCount > 0 && (
             <p className="text-[15px] text-text-muted mt-3 mb-0 leading-relaxed">
-              {T.introParts.runs[ui]} {introCount} {T.introParts.departures[ui]} {placeA} {T.introParts.and[ui]} {placeB}.
+              {T.introParts.runs[ui]} {introCount} {T.introParts.departures[ui]} {labelA} {T.introParts.and[ui]} {labelB}.
               {introFirst && ` ${T.introParts.first[ui]} ${introFirst}${introLast ? `, ${T.introParts.last[ui]} ${introLast}.` : "."}`}
               {introDuration && ` ${T.introParts.journey[ui]} ${introDuration}.`}
               {introPrice && ` ${T.introParts.ticket[ui]} ${introPrice}.`}
@@ -371,8 +374,8 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
 
       <div className="max-w-3xl mx-auto px-4 pt-6 pb-12">
         <RouteAlertBanner alerts={routeAlerts} locale={ui} />
-        <DirectionSection from={placeA} to={placeB} routes={pr.outbound} ui={ui} />
-        <DirectionSection from={placeB} to={placeA} routes={pr.inbound} ui={ui} />
+        <DirectionSection from={labelA} to={labelB} routes={pr.outbound} ui={ui} />
+        <DirectionSection from={labelB} to={labelA} routes={pr.inbound} ui={ui} />
 
         {/* Pickup contextuel = placeA si en zone partenaire, sinon placeB. */}
         {/* Liaison bus incomplète (au moins un sens sans horaires publiés) ->
@@ -422,14 +425,14 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
 
         {onwardB.length > 0 && (
           <section className="mb-8">
-            <h2 className="font-heading font-extrabold text-2xl text-text mb-3.5">{T.onward[ui]} {placeB}</h2>
+            <h2 className="font-heading font-extrabold text-2xl text-text mb-3.5">{T.onward[ui]} {labelB}</h2>
             <div className="flex flex-wrap gap-2.5">
               {onwardB.map((p) => {
                 const s = pairSlug(placeB, p);
                 return s ? (
                   <Link key={p} href={`/${locale}/buses/${s}`}
                         className="px-4.5 py-2.5 rounded-full bg-white text-[13.5px] font-semibold text-sea shadow-[0_8px_20px_rgba(11,94,120,.10)] no-underline hover:shadow-[0_10px_26px_rgba(11,94,120,.16)] transition-shadow">
-                    {placeB} <span className="text-lagoon font-extrabold">·</span> {p}
+                    {labelB} <span className="text-lagoon font-extrabold">·</span> {placeLabel(p)}
                   </Link>
                 ) : null;
               })}

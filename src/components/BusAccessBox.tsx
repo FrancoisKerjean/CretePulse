@@ -3,6 +3,7 @@
 // Server component : fetch Supabase bus_destinations + bus_routes par slug source.
 
 import { Bus, ArrowRight, Clock, Euro, Repeat } from "lucide-react";
+import { placeLabel } from "@/lib/bus-pairs";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import type { BusRoute, BusDestination } from "@/lib/buses";
@@ -154,7 +155,7 @@ export async function BusAccessBox({
             <li key={r.id} className="text-sm">
               <div className="font-semibold mb-1">
                 {t.directBus} {t.fromCity}{" "}
-                <span className="text-sea">{r.from_place}</span>
+                <span className="text-sea">{placeLabel(r.from_place)}</span>
               </div>
               <div className="text-text/80 flex flex-wrap gap-x-5 gap-y-1">
                 {r.duration && (

@@ -5,6 +5,7 @@
 // destinations capitales, badge terracotta si depart < 15 min. Donnees via lib pure
 // bus-departures (deja testee). Spec 2026-06-12-buses-redesign-board-design.md
 import { useEffect, useMemo, useState } from "react";
+import { placeLabel } from "@/lib/bus-pairs";
 import { Link } from "@/i18n/navigation";
 import { athensNow } from "@/lib/athens-time";
 import { departuresFrom, originPlaces, type DepartureRow } from "@/lib/bus-departures";
@@ -94,7 +95,7 @@ export function DepartureBoard({
           <button key={p} type="button" onClick={() => onPlaceChange(p)}
             className={`rounded-full px-3 py-1.5 text-xs font-semibold border-[1.5px] ${
               p === activePlace ? "bg-night text-white border-night" : "bg-white text-text border-border"}`}>
-            {p}
+            {placeLabel(p)}
           </button>
         ))}
       </div>
@@ -109,7 +110,7 @@ export function DepartureBoard({
               <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10 last:border-0">
                 <span className="font-heading font-extrabold text-sun text-base w-[52px] tabular-nums">{d.time}</span>
                 <span className="flex-1 min-w-0">
-                  <span className="block font-bold text-[13px] uppercase tracking-wide truncate">{d.toPlace}</span>
+                  <span className="block font-bold text-[13px] uppercase tracking-wide truncate">{placeLabel(d.toPlace)}</span>
                   {d.durationLabel && <span className="block text-[10px] text-sky/80">{d.durationLabel}</span>}
                 </span>
                 {d.isTomorrow ? (
