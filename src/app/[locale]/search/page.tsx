@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Search as SearchIcon } from "lucide-react";
+import { searchPlaces, type PlaceIndexRow } from "@/lib/place-search";
 
 interface SearchEntry {
   title: Record<string, string>;
@@ -15,7 +16,7 @@ const SEARCH_INDEX: SearchEntry[] = [
   {
     title: { en: "Beaches in Crete", fr: "Plages en Crète", de: "Strände auf Kreta", el: "Παραλίες στην Κρήτη" },
     path: "/beaches",
-    tags: ["beach", "sand", "sea", "swim", "plage", "mer", "strand", "παραλία"],
+    tags: ["beach", "sand", "sea", "swim", "plage", "mer", "strand", "παραλία", "paralia"],
   },
   {
     title: { en: "Weather in Crete", fr: "Météo en Crète", de: "Wetter auf Kreta", el: "Καιρός στην Κρήτη" },
@@ -223,21 +224,38 @@ export default function SearchPage() {
 
   const showResults = query.trim().length >= 2;
 
+  // Les lieux (plages, villages, sites) : 83 % des recherches étaient des noms de lieux
+  // et revenaient vides. L'index ne se charge qu'à la première frappe ; un échec le
+  // remplace par une liste vide pour que la page reste utilisable.
+  const [places, setPlaces] = useState<PlaceIndexRow[] | null>(null);
+  useEffect(() => {
+    if (!showResults || places !== null) return;
+    fetch("/search-index.json")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((rows: PlaceIndexRow[]) => setPlaces(Array.isArray(rows) ? rows : []))
+      .catch(() => setPlaces([]));
+  }, [showResults, places]);
+  const placeResults = useMemo(
+    () => (places ? searchPlaces(places, query) : []),
+    [places, query],
+  );
+  const total = results.length + placeResults.length;
+
   // Capture décisionnelle (instrumentation 13/06) : ce que les gens cherchent
   // = signal de demande / trou de contenu (une requête à 0 résultat = page à
   // créer). Debounce 1,2s pour ne logger que la requête "finie", pas chaque
   // frappe. Le pathname est attaché automatiquement par Plausible.
   useEffect(() => {
     const q = query.trim();
-    if (q.length < 3) return;
+    if (q.length < 3 || places === null) return;
     const t = setTimeout(() => {
       type Plausible = (e: string, o?: { props?: Record<string, string | number> }) => void;
       (window as unknown as { plausible?: Plausible }).plausible?.("search_query", {
-        props: { q: q.toLowerCase().slice(0, 60), results: results.length, locale },
+        props: { q: q.toLowerCase().slice(0, 60), results: total, locale },
       });
     }, 1200);
     return () => clearTimeout(t);
-  }, [query, results.length, locale]);
+  }, [query, total, places, locale]);
 
   return (
     <main className="min-h-screen bg-surface">
@@ -263,10 +281,10 @@ export default function SearchPage() {
         {showResults && (
           <div>
             <p className="text-sm text-text-muted mb-4">
-              {results.length} {labels.resultsCount}
+              {total} {labels.resultsCount}
             </p>
 
-            {results.length === 0 ? (
+            {total === 0 && places !== null ? (
               <p className="text-text-muted py-8 text-center">
                 {labels.noResults}
               </p>
@@ -283,6 +301,18 @@ export default function SearchPage() {
                     </span>
                     <span className="block text-sm text-text-muted mt-0.5">
                       crete.direct/{locale}{entry.path}
+                    </span>
+                  </Link>
+                ))}
+                {placeResults.map(([name, slug]) => (
+                  <Link
+                    key={slug}
+                    href={`/${locale}/explore/${slug}`}
+                    className="block rounded-xl border border-border bg-white px-5 py-4 hover:border-sea/30 hover:shadow-soft transition-all"
+                  >
+                    <span className="font-semibold text-text hover:text-sea transition-colors">{name}</span>
+                    <span className="block text-sm text-text-muted mt-0.5">
+                      crete.direct/{locale}/explore/{slug}
                     </span>
                   </Link>
                 ))}
