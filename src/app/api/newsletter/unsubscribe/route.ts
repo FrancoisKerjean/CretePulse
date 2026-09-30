@@ -1,24 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
+import { emailFromUnsubscribeToken } from "@/lib/newsletter-token";
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const token = searchParams.get("token");
-
+/** Résilie l'adresse portée par le jeton signé. Rend une réponse d'erreur, ou null. */
+async function unsubscribe(request: NextRequest): Promise<NextResponse | null> {
+  const token = request.nextUrl.searchParams.get("token");
   if (!token) {
     return NextResponse.json({ error: "Missing token" }, { status: 400 });
   }
-
-  // Token is base64-encoded email
-  let email: string;
-  try {
-    email = Buffer.from(token, "base64").toString("utf-8").trim().toLowerCase();
-  } catch {
-    return NextResponse.json({ error: "Invalid token" }, { status: 400 });
-  }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
+  // Jeton signé depuis le 01/10/2026 : avant, c'était l'email en base64, que n'importe
+  // qui pouvait fabriquer pour désinscrire une adresse qui n'était pas la sienne.
+  const email = emailFromUnsubscribeToken(token);
+  if (!email) {
     return NextResponse.json({ error: "Invalid token" }, { status: 400 });
   }
 
@@ -32,6 +25,19 @@ export async function GET(request: NextRequest) {
     console.error("[newsletter/unsubscribe] Supabase error:", error.message);
     return NextResponse.json({ error: "Unsubscribe failed" }, { status: 500 });
   }
+  return null;
+}
+
+// Désinscription en un clic (RFC 8058) : l'en-tête List-Unsubscribe-Post est annoncé par
+// chaque lettre, et Gmail comme Apple Mail envoient alors un POST sur la même URL.
+// Sans ce gestionnaire, le bouton « Se désabonner » de la messagerie tombait sur un 405.
+export async function POST(request: NextRequest) {
+  return (await unsubscribe(request)) ?? NextResponse.json({ ok: true });
+}
+
+export async function GET(request: NextRequest) {
+  const failed = await unsubscribe(request);
+  if (failed) return failed;
 
   return new NextResponse(
     `<!DOCTYPE html>

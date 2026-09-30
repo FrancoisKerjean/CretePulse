@@ -1,3 +1,4 @@
+import { unsubscribeToken } from "@/lib/newsletter-token";
 import { Resend } from "resend";
 import { buildCarWaMessage, waHref } from "./car-admin";
 import { inclusionLabels, insuranceSummary } from "@/lib/car-inclusions";
@@ -385,7 +386,7 @@ export async function sendNewsletterDigest(
 ): Promise<void> {
   const lang = (["en", "fr", "de", "el"].includes(locale) ? locale : "en") as NewsletterLang;
   const site = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
-  const token = Buffer.from(email).toString("base64");
+  const token = unsubscribeToken(email);
   const unsubscribeUrl = `${site}/api/newsletter/unsubscribe?token=${encodeURIComponent(token)}`;
 
   const { error } = await resend.emails.send({
