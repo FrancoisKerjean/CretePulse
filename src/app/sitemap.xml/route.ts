@@ -58,6 +58,7 @@ const STATIC_PAGES = [
   "/projet/institutions",
   "/projet/entreprises",
   "/enquete/paradoxe-tourisme-crete",
+  "/crete-2026",
 ];
 
 const BEACH_ACTIVITIES = ["snorkeling", "kids", "swimming", "secluded", "sandy", "pebble"];

@@ -1,0 +1,90 @@
+{
+  "_about": "Séries figées des 5 graphiques de la page /[locale]/crete-2026 (bilan de l’été 2026, publié le 30/09/2026). Chiffres validés le 30/09/2026 : ne pas les modifier sans refaire la vérification contre les sources citées.",
+  "published": "2026-09-30",
+  "passengers": {
+    "source": "HCAA",
+    "years": [
+      {
+        "year": 2023,
+        "values": [165258, 159664, 194398, 664751, 1260163, 1801119, 2257940, 2243167, 1891304, 1344917, 254236, 207497]
+      },
+      {
+        "year": 2024,
+        "values": [177561, 163102, 237075, 677506, 1452371, 1932075, 2349344, 2378228, 2018621, 1482089, 305361, 227957]
+      },
+      {
+        "year": 2025,
+        "values": [202616, 187331, 237503, 797830, 1494248, 2022186, 2430960, 2534334, 2095178, 1619831, 335571, 255466]
+      },
+      {
+        "year": 2026,
+        "values": [209665, 220916, 275050, 860013, 1648443, 2094470, 2550701, 2639025, null, null, null, null]
+      }
+    ]
+  },
+  "languages": {
+    "source": "Inside Airbnb, langue détectée par crete.direct",
+    "codes": ["en", "fr", "de", "el", "it", "nl"],
+    "periods": [
+      {
+        "year": 2024,
+        "shares": [54.02, 15.77, 14.31, 7.43, 1.62, 2.29]
+      },
+      {
+        "year": 2025,
+        "shares": [50.24, 16.35, 16.35, 7.22, 1.91, 2.99]
+      },
+      {
+        "year": 2026,
+        "shares": [48.28, 16.84, 17.3, 6.86, 1.5, 3.44]
+      }
+    ]
+  },
+  "busRoutes": {
+    "source": "planificateur de trajets crete.direct, 13/06 au 29/09/2026",
+    "routes": [
+      { "from": "heraklion", "to": "chania", "visitors": 258 },
+      { "from": "heraklion", "to": "rethymno", "visitors": 162 },
+      { "from": "chania", "to": "heraklion", "visitors": 129 },
+      { "from": "heraklion", "to": "agiosNikolaos", "visitors": 123 },
+      { "from": "rethymno", "to": "heraklion", "visitors": 98 },
+      { "from": "rethymno", "to": "chania", "visitors": 90 },
+      { "from": "heraklion", "to": "hersonissos", "visitors": 90 },
+      { "from": "chania", "to": "rethymno", "visitors": 88 },
+      { "from": "chania", "to": "chaniaAirport", "visitors": 82 },
+      { "from": "heraklion", "to": "malia", "visitors": 74 }
+    ]
+  },
+  "fires": {
+    "source": "EFFIS (Copernicus, JRC), au 30/09/2026",
+    "years": [
+      { "year": 2016, "hectares": 2697 },
+      { "year": 2017, "hectares": 356 },
+      { "year": 2018, "hectares": 990 },
+      { "year": 2019, "hectares": 43 },
+      { "year": 2020, "hectares": 653 },
+      { "year": 2021, "hectares": 597 },
+      { "year": 2022, "hectares": 2424 },
+      { "year": 2023, "hectares": 144 },
+      { "year": 2024, "hectares": 1946 },
+      { "year": 2025, "hectares": 1411 },
+      { "year": 2026, "hectares": 8031 }
+    ]
+  },
+  "index": {
+    "source": "Banque de Grèce, Eurostat",
+    "base": 2016,
+    "years": [
+      { "year": 2016, "visits": 100, "receipts": 100 },
+      { "year": 2017, "visits": 105.9, "receipts": 104.1 },
+      { "year": 2018, "visits": 115.2, "receipts": 99.3 },
+      { "year": 2019, "visits": 116.5, "receipts": 113.6 },
+      { "year": 2020, "visits": 27.2, "receipts": 27.5 },
+      { "year": 2021, "visits": 69.4, "receipts": 76.1 },
+      { "year": 2022, "visits": 112.7, "receipts": 106.4 },
+      { "year": 2023, "visits": 121.7, "receipts": 145 },
+      { "year": 2024, "visits": 131.3, "receipts": 123.7 },
+      { "year": 2025, "visits": 140, "receipts": 114.3 }
+    ]
+  }
+}

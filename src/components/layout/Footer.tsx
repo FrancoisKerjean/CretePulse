@@ -42,6 +42,14 @@ const CAR_RENTAL_LABELS: Record<string, string> = {
   ar: "تأجير سيارات",
 };
 
+// Bilan de saison (page statique /crete-2026), 4 locales routées : repli anglais sinon.
+const SUMMER_2026_LABELS: Record<string, string> = {
+  en: "Summer 2026 in numbers",
+  fr: "L’été 2026 en chiffres",
+  de: "Sommer 2026 in Zahlen",
+  el: "Το καλοκαίρι 2026 σε αριθμούς",
+};
+
 export function Footer() {
   const t = useTranslations("footer");
   const tn = useTranslations("nav");
@@ -124,6 +132,9 @@ export function Footer() {
             <Link href="/news" className={linkCls}>{tn("news")}</Link>
             <Link href="/events" className={linkCls}>{tn("events")}</Link>
             <Link href="/articles" className={linkCls}>{tn("articles")}</Link>
+            <Link href="/crete-2026" className={linkCls}>
+              {SUMMER_2026_LABELS[locale] || SUMMER_2026_LABELS.en}
+            </Link>
             <Link href="/submit-event" className={linkCls}>{t("submitEvent")}</Link>
           </Col>
 
