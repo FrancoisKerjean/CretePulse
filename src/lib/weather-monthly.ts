@@ -20,6 +20,14 @@ export const CITIES = [
   { slug: "makrigialos", name: "Makrigialos", nameEl: "Μακρύγιαλος", lat: 35.04, lng: 25.98 },
 ] as const;
 
+/**
+ * Locales where /weather/[city]/[month] generated >=2 clicks on the last 28d (GSC).
+ * Other locales are noindex'd: they had 0 clicks across 220-1117 impressions
+ * (avg position 50-75 = invisible page 5-8 Google). Decision 15/05/2026.
+ * Partagee avec le sitemap, qui n'annonce la page que dans ces locales.
+ */
+export const WEATHER_INDEX_LOCALES: ReadonlySet<string> = new Set(["fr", "de", "el", "da", "ru"]);
+
 export const MONTHS = [
   "january", "february", "march", "april", "may", "june",
   "july", "august", "september", "october", "november", "december",

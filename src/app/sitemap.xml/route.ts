@@ -18,12 +18,15 @@
 
 import { supabase } from "@/lib/supabase";
 import { qualityPairSlugs, priorityPairSlugs, pairLastmod } from "@/lib/bus-seo";
-import { MONTHS, CITIES } from "@/lib/weather-monthly";
+import { MONTHS, CITIES, WEATHER_INDEX_LOCALES } from "@/lib/weather-monthly";
+import { isNewsTranslated, NEWS_INDEXABLE_MAX_AGE_DAYS } from "@/lib/news";
+import type { NewsItem } from "@/lib/types";
 import { CRETE_NEIGHBOURHOODS } from "@/lib/airbnb-mappings";
 import { CRETE_AIRPORTS } from "@/lib/airports";
 import { CAR_LOCATION_SLUGS } from "@/lib/car-locations";
 import { ACTIVITY_CATEGORIES, ACTIVITY_CITIES } from "@/lib/activity-taxonomy";
 import { sitemapUrlEntry, escapeXml, type SitemapEntry } from "@/lib/sitemap-entry";
+import { INDEXABLE_LOCALES } from "@/i18n/routing";
 
 export const revalidate = 86400;
 
@@ -95,16 +98,21 @@ async function fetchSlugsWithDate(
   table: string,
   dateCol: string,
   extra?: string,
-): Promise<Array<{ slug: string; lastmod: string }>> {
+): Promise<Array<{ slug: string; lastmod: string; locales?: string[] }>> {
   try {
     const cols = `slug, ${dateCol}`;
     let q = supabase.from(table).select(cols);
     if (extra === "news") {
+      // Une news de plus de NEWS_INDEXABLE_MAX_AGE_DAYS est servie en noindex : sans
+      // cette borne, 405 des 500 news annoncees l'etaient (releve du 30/09/2026).
+      const cutoff = new Date(Date.now() - NEWS_INDEXABLE_MAX_AGE_DAYS * 86_400_000).toISOString();
+      const newsCols: string = `${cols}, title_en, title_fr, title_de, title_el`;
       q = supabase
         .from(table)
-        .select(cols)
+        .select(newsCols)
         .neq("title_en", "")
         .neq("category", "filtered")
+        .gte(dateCol, cutoff)
         .order(dateCol, { ascending: false })
         .limit(500);
     } else if (extra === "guides_published") {
@@ -119,6 +127,11 @@ async function fetchSlugsWithDate(
     return rows.map((r) => ({
       slug: r.slug,
       lastmod: new Date(r[dateCol]).toISOString(),
+      // Une locale sans traduction sert l'anglais en noindex (isNewsTranslated).
+      locales:
+        extra === "news"
+          ? INDEXABLE_LOCALES.filter((l) => isNewsTranslated(r as unknown as NewsItem, l))
+          : undefined,
     }));
   } catch {
     return [];
@@ -128,9 +141,18 @@ async function fetchSlugsWithDate(
 
 export async function GET() {
   const entries: Entry[] = [];
-  const push = (path: string, changefreq: Entry["changefreq"], priority: number, lastmod?: string) => {
-    entries.push({ path, changefreq, priority, lastmod });
+  const push = (
+    path: string,
+    changefreq: Entry["changefreq"],
+    priority: number,
+    lastmod?: string,
+    locales?: readonly string[],
+  ) => {
+    entries.push({ path, changefreq, priority, lastmod, locales });
   };
+  // /weather/[city]/[month] est noindex en /en (0 clic, decision 15/05) : l'annoncer
+  // en /en faisait 120 des 525 entrees contradictoires relevees le 30/09/2026.
+  const weatherLocales = INDEXABLE_LOCALES.filter((l) => WEATHER_INDEX_LOCALES.has(l));
 
   // Static pages
   for (const page of STATIC_PAGES) {
@@ -150,7 +172,7 @@ export async function GET() {
   for (const city of CITIES) {
     push(`/things-to-do/${city.slug}`, "monthly", 0.6);
     for (const month of MONTHS) {
-      push(`/weather/${city.slug}/${month}`, "monthly", 0.5);
+      push(`/weather/${city.slug}/${month}`, "monthly", 0.5, undefined, weatherLocales);
     }
   }
   // /visit/[month] pages are noindex (GSC: ~5800 impressions on 28d for only 4 clicks
@@ -231,7 +253,7 @@ export async function GET() {
   // for (const s of foodPlaces) push(`/food/${s}`, "monthly", 0.6);
   void foodPlaces;
   for (const s of hikes) push(`/hikes/${s}`, "monthly", 0.6);
-  for (const n of news) push(`/news/${n.slug}`, "daily", 0.5, n.lastmod);
+  for (const n of news) push(`/news/${n.slug}`, "daily", 0.5, n.lastmod, n.locales);
   for (const g of guides) push(`/articles/${g.slug}`, "weekly", 0.7, g.lastmod);
 
   // /explore/[slug] : 2294+ fiches lieux (cb_places). Toutes les fiches sont
@@ -266,7 +288,7 @@ export async function GET() {
   }
 
   const lastmod = new Date().toISOString();
-  const xmlEntries = entries.map((e) => sitemapUrlEntry(e, lastmod)).join("\n");
+  const xmlEntries = entries.map((e) => sitemapUrlEntry(e, lastmod)).filter(Boolean).join("\n");
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset

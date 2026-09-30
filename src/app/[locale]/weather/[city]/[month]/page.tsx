@@ -1,4 +1,4 @@
-import { CITIES, MONTHS, MONTH_NAMES, getClimateData, getCity, getSwimVerdict, getAnnualAverage, getCityLocativeEl } from "@/lib/weather-monthly";
+import { CITIES, MONTHS, MONTH_NAMES, getClimateData, getCity, getSwimVerdict, getAnnualAverage, getCityLocativeEl, WEATHER_INDEX_LOCALES } from "@/lib/weather-monthly";
 import { weatherInsight } from "@/lib/weather-insight";
 import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/types";
@@ -23,12 +23,6 @@ export function generateStaticParams() {
   return params;
 }
 
-/**
- * Locales where /weather/[city]/[month] generated >=2 clicks on the last 28d (GSC).
- * Other locales are noindex'd: they had 0 clicks across 220-1117 impressions
- * (avg position 50-75 = invisible page 5-8 Google). Decision 15/05/2026.
- */
-const WEATHER_INDEX_LOCALES = new Set(["fr", "de", "el", "da", "ru"]);
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; city: string; month: string }> }) {
   const { locale, city: citySlug, month } = await params;

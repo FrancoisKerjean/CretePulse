@@ -7,6 +7,8 @@ export type SitemapEntry = {
   changefreq: "daily" | "weekly" | "monthly";
   priority: number;
   lastmod?: string;
+  /** Locales ou la page est indexable. Absent = toutes les INDEXABLE_LOCALES. */
+  locales?: readonly string[];
 };
 
 export function escapeXml(s: string): string {
@@ -32,13 +34,21 @@ export function escapeXml(s: string): string {
  * Spec : docs/superpowers/specs/2026-08-01-seo-locale-scope-design.md
  */
 export function sitemapUrlEntry(entry: SitemapEntry, fallbackLastmod: string): string {
-  const alternates = INDEXABLE_LOCALES.map(
+  // Une page servie en noindex dans une locale n'est ni loc, ni alternate, ni x-default :
+  // l'annoncer donne a Google deux ordres contraires sur la meme URL.
+  const locales = entry.locales
+    ? INDEXABLE_LOCALES.filter((l) => entry.locales!.includes(l))
+    : [...INDEXABLE_LOCALES];
+  if (locales.length === 0) return "";
+  const primary = locales.includes("en") ? "en" : locales[0];
+
+  const alternates = locales.map(
     (loc) =>
       `    <xhtml:link rel="alternate" hreflang="${loc}" href="${escapeXml(`${BASE_URL}/${loc}${entry.path}`)}" />`,
   ).join("\n");
-  const xDefault = `    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(`${BASE_URL}/en${entry.path}`)}" />`;
+  const xDefault = `    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(`${BASE_URL}/${primary}${entry.path}`)}" />`;
 
-  const loc = `${BASE_URL}/en${entry.path}`;
+  const loc = `${BASE_URL}/${primary}${entry.path}`;
   const lastmod = entry.lastmod || fallbackLastmod;
 
   return `  <url>

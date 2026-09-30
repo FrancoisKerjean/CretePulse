@@ -46,4 +46,35 @@ describe("sitemapUrlEntry", () => {
     expect(xml).toContain("a&amp;b");
     expect(xml).not.toContain("a&b<");
   });
+
+  // 30/09/2026 : 525 des 3 859 entrees pointaient vers une page servie en noindex
+  // (120 meteo en /en, 405 news de plus de 30 jours). Une entree peut maintenant
+  // restreindre ses locales a celles qui sont reellement indexables.
+  it("restreint loc et alternates aux locales passees", () => {
+    const xml = sitemapUrlEntry({ ...entry, path: "/weather/chania/july", locales: ["fr", "de", "el"] }, LASTMOD);
+
+    expect(xml).toContain("<loc>https://crete.direct/fr/weather/chania/july</loc>");
+    expect(xml).not.toContain('hreflang="en"');
+    expect(xml.match(/rel="alternate"/g)).toHaveLength(4);
+    expect(xml).toContain('hreflang="x-default" href="https://crete.direct/fr/weather/chania/july"');
+  });
+
+  it("ignore une locale passee hors perimetre indexable", () => {
+    const xml = sitemapUrlEntry({ ...entry, locales: ["fr", "ru"] }, LASTMOD);
+
+    expect(xml).not.toContain('hreflang="ru"');
+    expect(xml).toContain("<loc>https://crete.direct/fr/beaches</loc>");
+  });
+
+  it("garde /en en loc et en x-default quand en fait partie des locales", () => {
+    const xml = sitemapUrlEntry({ ...entry, locales: ["en", "el"] }, LASTMOD);
+
+    expect(xml).toContain("<loc>https://crete.direct/en/beaches</loc>");
+    expect(xml.match(/rel="alternate"/g)).toHaveLength(3);
+    expect(xml).not.toContain('hreflang="fr"');
+  });
+
+  it("n'emet rien pour une entree sans aucune locale indexable", () => {
+    expect(sitemapUrlEntry({ ...entry, locales: ["ru"] }, LASTMOD)).toBe("");
+  });
 });
