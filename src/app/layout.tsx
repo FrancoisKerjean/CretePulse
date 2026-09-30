@@ -16,8 +16,13 @@ export const baloo = Baloo_2({
   display: "swap",
 });
 
+// Grec seulement, sans préchargement : ses sous-ensembles latin et cyrillique étaient
+// préchargés sur chaque page (3 fichiers sur les 6 polices de l'accueil) alors que Baloo 2
+// couvre le latin et que les locales cyrilliques ne sont plus routées depuis le 20/09/2026.
+// La police se télécharge d'elle-même quand un glyphe grec s'affiche (unicode-range).
 export const comfortaa = Comfortaa({
-  subsets: ["latin", "cyrillic", "greek"],
+  subsets: ["greek"],
+  preload: false,
   variable: "--font-comfortaa",
   weight: ["400", "600", "700"],
   display: "swap",

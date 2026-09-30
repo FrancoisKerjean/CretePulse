@@ -33,7 +33,13 @@ function Card({ s }: { s: HomeService }) {
   const inner = (
     <>
       <ImpressionTracker event="promo_impression" props={impressionProps} />
-      <img src={s.photo} alt="" loading={band ? "eager" : "lazy"} aria-hidden
+      {/* Variantes WebP 640/1200 px posées à côté de chaque JPEG (qualité 62 : la photo
+          est un fond sous voile sombre). Le JPEG servait 567 Kio aux quatre blocs sur
+          mobile, 117 Kio désormais. Le JPEG reste l'image de partage des pages voiture. */}
+      <img src={s.photo.replace(/\.jpg$/, "-1200.webp")}
+           srcSet={`${s.photo.replace(/\.jpg$/, "-640.webp")} 640w, ${s.photo.replace(/\.jpg$/, "-1200.webp")} 1200w`}
+           sizes={band ? "(max-width: 768px) calc(100vw - 32px), 1100px" : "(max-width: 768px) calc(100vw - 32px), 360px"}
+           alt="" loading={band ? "eager" : "lazy"} aria-hidden
            className="absolute inset-0 h-full w-full object-cover transition-transform duration-[4000ms] ease-out group-hover:scale-105" />
       {/* Voilage : en dessous de md le bandeau n'a pas de zone calme a droite,
           on repasse en degrade vertical. Les cartes portent un texte qui remplit
