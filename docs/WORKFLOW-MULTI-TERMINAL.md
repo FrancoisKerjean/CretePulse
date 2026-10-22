@@ -68,9 +68,9 @@ git merge origin/master && git push origin HEAD:master`.
 **Tu ne pousses JAMAIS `main` toi-même.** `master` ne déploie pas : c'est la zone
 d'intégration où tous les terminaux déposent leur travail vert au fil de la journée.
 
-Un **récap Telegram à 19h Athens** (Action `predeploy-recap`) liste, 1h avant le
-deploy, ce qui va partir + les branches `feat/*` actives (<7j) pas encore
-intégrées — ta dernière chance de rattraper un chantier oublié.
+Le récap Telegram de 19h (Action `predeploy-recap`) est retiré depuis le 22/10/2026 :
+Telegram ne sonne plus que pour l'argent et les vraies pannes. Seul un deploy
+quotidien en échec envoie un message.
 
 ### Promotion prod : 1×/jour, automatique (13/07/2026)
 

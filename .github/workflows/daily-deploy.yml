@@ -65,13 +65,12 @@ jobs:
             echo "Secret Telegram absent, notif skippee (job OK quand meme)."
             exit 0
           fi
-          if [ "$COUNT" = "0" ]; then
-            MSG="crete.direct - deploy quotidien : rien a promouvoir (master == main)."
-          elif [ "$PROMOTE" = "ok" ]; then
-            MSG=$(printf 'crete.direct - deploy quotidien OK\n%s commit(s) promus master -> main :\n%s\n\nBuild Vercel en cours (~15 min).' "$COUNT" "$COMMITS")
-          else
-            MSG="crete.direct - DEPLOY QUOTIDIEN ECHOUE (push master:main). main a peut-etre diverge -> intervention manuelle requise."
+          # Telegram = argent et vraies pannes (22/10/2026) : seul l echec sonne.
+          if [ "$COUNT" = "0" ] || [ "$PROMOTE" = "ok" ]; then
+            echo "Rien a signaler (count=$COUNT, promote=$PROMOTE)."
+            exit 0
           fi
+          MSG="crete.direct - DEPLOY QUOTIDIEN ECHOUE (push master:main). main a peut-etre diverge -> intervention manuelle requise."
           curl -s -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${TG_CHAT}" \
             --data-urlencode "text=${MSG}" \

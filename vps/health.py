@@ -13,6 +13,13 @@ import urllib.error
 from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
 from supabase import create_client
+# Routage 3 canaux (refonte 30/07/2026). Import tolerant : ces processus tournent
+# en service ou en cron, ils ne doivent jamais tomber a cause du module.
+try:
+    from kairos_telegram import send as _kt_send, Bot as _KtBot
+    from kairos_telegram.routing import Channel as _KtChannel
+except Exception:
+    _kt_send = None
 
 load_dotenv()
 
@@ -30,30 +37,15 @@ NEWS_QUIET_END = 6      # no news alert before 6h (Athens time = UTC+3 in summer
 
 def send_alert(message: str) -> None:
     """Send a Telegram alert message."""
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    payload = json.dumps({
-        "chat_id": TELEGRAM_CHANNEL_ID,
-        "text": f"🚨 <b>CretePulse Health Alert</b>\n\n{message}",
-        "parse_mode": "HTML",
-        "disable_web_page_preview": True,
-    }).encode("utf-8")
+    if _kt_send is not None:
+        # Sante d un pipeline : a savoir, rien a faire dans l heure -> DIGEST.
+        if _kt_send(_KtBot.SCOUT, 'CretePulse Health', message,
+                    msg_type='data', channel=_KtChannel.DIGEST):
+            return
 
-    req = urllib.request.Request(
-        url,
-        data=payload,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-
-    try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            result = json.loads(resp.read().decode())
-            if result.get("ok"):
-                print("[health] alert sent via Telegram")
-            else:
-                print(f"[health] Telegram API error: {result}")
-    except Exception as e:
-        print(f"[health] could not send Telegram alert: {e}")
+    # ⛔ Le repli postait dans le canal PUBLIC @CretePulseDaily. Retire le
+    # 22/10/2026 : une alerte technique n a rien a faire chez des lecteurs.
+    print(f"[health] alerte non envoyee (kairos_telegram indisponible) : {message}")
 
 
 def check_supabase(supabase) -> tuple[bool, str]:
