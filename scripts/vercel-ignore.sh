@@ -7,6 +7,13 @@
 #   autres branches -> preview seulement si le message de commit contient [preview]
 # Convention exit code Vercel : 0 = skip le build, 1 = build.
 
+# [force-build] dans le message : build meme sans diff de code. Sert quand seule une
+# variable d'env Vercel change (rotation de cle du 22/10/2026 : le redeploy du meme sha
+# etait annule par la regle ci-dessous, la prod gardait l'ancienne cle).
+case "$VERCEL_GIT_COMMIT_MESSAGE" in
+  *"[force-build]"*) exit 1 ;;
+esac
+
 if [ "$VERCEL_GIT_COMMIT_REF" = "main" ]; then
   # main est promu 1x/jour et embarque TOUTE une journee de commits (daily-deploy).
   # Comparer HEAD^..HEAD (dernier commit seulement) skiperait a tort une journee
