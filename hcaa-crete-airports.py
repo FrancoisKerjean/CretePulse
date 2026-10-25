@@ -204,8 +204,9 @@ def discover_xlsx_url(year: int) -> str:
 # --------------------------------------------------------------------------
 
 def download_xlsx(url: str, dest_path: str) -> None:
-    if os.path.exists(dest_path) and os.path.getsize(dest_path) > 1024:
-        return
+    # Always re-download: HCAA republishes the SAME year's workbook every month
+    # (2026.xlsx, 2026_1, 2026_3, 2026_4...). A "file already cached" shortcut froze
+    # hcaa_crete_monthly at February 2026 from May to October 2026.
     r = requests.get(url, headers=_browser_headers(), timeout=60)
     r.raise_for_status()
     tmp = dest_path + ".tmp"
@@ -229,6 +230,19 @@ def to_int(v):
         return 0
 
 
+def check_pax_columns(ws) -> None:
+    """Raise if HCAA moved the passenger columns: a shifted layout would otherwise
+       store wrong figures without any error."""
+    for row in ws.iter_rows(max_row=10, values_only=True):
+        if (len(row) > COL_PAX_GRAND_TOTAL
+                and str(row[COL_PAX_DISEMBARK_TOTAL] or "").strip() == "Αποβιβάσεις"
+                and str(row[COL_PAX_GRAND_TOTAL] or "").strip() == "Σύνολο"):
+            return
+    raise RuntimeError(
+        f"sheet {ws.title}: passenger columns moved (expected 'Αποβιβάσεις' at "
+        f"{COL_PAX_DISEMBARK_TOTAL} and 'Σύνολο' at {COL_PAX_GRAND_TOTAL})")
+
+
 def parse_month_sheet(wb, month_num: int) -> dict:
     """Extract HER/CHQ/JSH rows from a monthly sheet. Returns
        {iata: {pax_total, pax_disembark, pax_embark, pax_transit,
@@ -239,6 +253,7 @@ def parse_month_sheet(wb, month_num: int) -> dict:
     if sheet_name not in wb.sheetnames:
         return {}
     ws = wb[sheet_name]
+    check_pax_columns(ws)
 
     found = {}
     for row in ws.iter_rows(values_only=True):
@@ -606,6 +621,21 @@ def main() -> int:
             for iata, vals in month_data.items():
                 if vals["pax_total"] > 0:
                     upsert_airport_row(conn, year, m, iata, vals, url)
+
+        # A run that leaves the table behind HCAA must FAIL (rc != 0), never exit 0.
+        # On the 20th, month N-2 is always online (Aug 2026 published 18/09,
+        # Sep 2026 on 21/10), so missing N-2 means the collection is broken.
+        now = datetime.now(timezone.utc)
+        n = now.year * 12 + now.month - 1 - 2
+        expected_ym = (n // 12) * 100 + n % 12 + 1
+        with conn.cursor() as cur:
+            cur.execute("SELECT max(year * 100 + month) FROM hcaa_crete_monthly")
+            latest_ym = cur.fetchone()[0] or 0
+        if latest_ym < expected_ym:
+            log(f"ERROR stale: hcaa_crete_monthly stops at {latest_ym}, "
+                f"HCAA should have {expected_ym} by now ({url})")
+            return 2
+        log(f"  table up to {latest_ym} (expected >= {expected_ym})")
 
         if not args.force and already_in_ledger(conn, year, latest_month):
             log(f"  article {year}-{latest_month:02d} already published — skip")
