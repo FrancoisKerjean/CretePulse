@@ -10,7 +10,7 @@ import GoatStanding from "@/components/campagne/GoatStanding";
 import { ChartFigure, GroupedBarChart, HBarChart, Legend, LineChart, VBarChart } from "@/components/crete-2026/Charts";
 import { CopyEmail } from "@/components/crete-2026/CopyEmail";
 import s from "@/components/crete-2026/crete-2026.module.css";
-import { CRETE_2026_COPY, fmtNum, fmtPct, nb, pickC26, type C26Locale, type Chapter, type Crete2026Copy, type Fact, type PlaceKey } from "@/lib/crete-2026";
+import { CRETE_2026_COPY, fmtNum, fmtPct, nb, pickC26, type C26Locale, type ChartCopy, type Crete2026Copy, type Fact, type PlaceKey } from "@/lib/crete-2026";
 import DATA from "@/data/crete-2026.json";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
@@ -66,7 +66,7 @@ function FactCard({ f, badge }: { f: Fact; badge: string }) {
   );
 }
 
-function Chart({ ch, c, l }: { ch: NonNullable<Chapter["chart"]>; c: Crete2026Copy; l: C26Locale }) {
+function Chart({ ch, c, l }: { ch: ChartCopy; c: Crete2026Copy; l: C26Locale }) {
   const n = (v: number, d = 0) => fmtNum(l, v, d);
   const colon = l === "fr" ? " : " : ": ";
   const fig = (rows: string[][], body: React.ReactNode) => (
@@ -79,6 +79,8 @@ function Chart({ ch, c, l }: { ch: NonNullable<Chapter["chart"]>; c: Crete2026Co
     const years = DATA.passengers.years;
     const color = (i: number) => (i === years.length - 1 ? MAIN : gray(0.35 + 0.45 * (i / (years.length - 2))));
     const millions = (v: number) => (v === 0 ? "0" : n(v / 1e6, 1) + c.millionSuffix);
+    const lastValues = years[years.length - 1].values;
+    const lastMonth = lastValues.reduce<number>((k, v, i) => (v == null ? k : i), 0);
     return fig(
       c.months.map((m, i) => [m, ...years.map((y) => (y.values[i] == null ? "" : n(y.values[i] as number)))]),
       <>
@@ -97,7 +99,44 @@ function Chart({ ch, c, l }: { ch: NonNullable<Chapter["chart"]>; c: Crete2026Co
             values: y.values,
             color: color(i),
             width: i === years.length - 1 ? 3 : 2,
-            ...(i === years.length - 1 ? { endAt: 7, endLabel: n((y.values[7] as number) / 1e6, 2) + c.millionSuffix } : {}),
+            ...(i === years.length - 1 ? { endAt: lastMonth, endLabel: n((lastValues[lastMonth] as number) / 1e6, 2) + c.millionSuffix } : {}),
+          }))}
+        />
+      </>,
+    );
+  }
+
+  if (ch.key === "arrivals") {
+    // Somme des 3 aéroports, colonnes du tableau dans l'ordre de l'en-tête : 2025 intérieur, 2025 international, 2026...
+    const airports = Object.values(DATA.arrivals.airports);
+    const years = ["2025", "2026"] as const;
+    const sum = (k: "domestic" | "international", y: (typeof years)[number]) =>
+      airports[0][k][y].map((_, m) => airports.reduce((t, a) => t + a[k][y][m], 0));
+    const cols = years.flatMap((y) => [sum("domestic", y), sum("international", y)]);
+    const shares = years.map((_, i) => cols[2 * i + 1].map((v, m) => (100 * v) / (v + cols[2 * i][m])));
+    const months = c.months.slice(0, cols[0].length);
+    const last = months.length - 1;
+    const colors = [gray(0.5), MAIN];
+    const total = (a: number[]) => a.reduce((t, v) => t + v, 0);
+    return fig(
+      [...months.map((m, i) => [m, ...cols.map((a) => n(a[i]))]), [c.total, ...cols.map((a) => n(total(a)))]],
+      <>
+        <Legend items={years.map((y, i) => ({ label: y, color: colors[i] }))} />
+        <LineChart
+          ariaLabel={ch.title}
+          height={240}
+          padRight={44}
+          xLabels={months}
+          ticks={[0, 25, 50, 75, 100]}
+          max={100}
+          fmtY={(v) => fmtPct(l, v, 0)}
+          tip={(i) => [months[i], ...years.map((y, k) => `${y}${colon}${fmtPct(l, shares[k][i], 1)}`)].join("\n")}
+          series={years.map((y, k) => ({
+            label: y,
+            values: shares[k],
+            color: colors[k],
+            width: k === 1 ? 3 : 2,
+            ...(k === 1 ? { endAt: last, endLabel: fmtPct(l, shares[k][last], 0) } : {}),
           }))}
         />
       </>,
@@ -202,7 +241,7 @@ export default async function Crete2026Page({ params }: { params: Promise<{ loca
       description: c.meta.description,
       inLanguage: locale,
       datePublished: DATA.published,
-      dateModified: DATA.published,
+      dateModified: DATA.updated,
       image: { "@type": "ImageObject", url: ogImage(l), width: 1200, height: 630 },
       author: { "@type": "Organization", name: "Crete Direct", url: BASE_URL },
       publisher,
@@ -276,7 +315,7 @@ export default async function Crete2026Page({ params }: { params: Promise<{ loca
             <ul className={`${s.facts} ${ch.facts.length === 4 ? s.four : ""}`}>
               {ch.facts.map((f) => <FactCard key={f.big + f.src} f={f} badge={c.badge} />)}
             </ul>
-            {ch.chart && <Chart ch={ch.chart} c={c} l={l} />}
+            {ch.charts?.map((cc) => <Chart key={cc.key} ch={cc} c={c} l={l} />)}
           </section>
         ))}
 

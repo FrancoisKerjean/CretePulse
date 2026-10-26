@@ -1,6 +1,7 @@
 {
-  "_about": "Séries figées des 5 graphiques de la page /[locale]/crete-2026 (bilan de l’été 2026, publié le 30/09/2026). Chiffres validés le 30/09/2026 : ne pas les modifier sans refaire la vérification contre les sources citées.",
+  "_about": "Séries figées des 6 graphiques de la page /[locale]/crete-2026 (bilan de l’été 2026, publié le 30/09/2026). Chiffres validés le 30/09/2026, mis à jour le 26/10/2026 : septembre 2026 HCAA (table hcaa_crete_monthly du VPS, janvier-août identiques au chiffre près) et arrivées de la Région de Crète. Ne pas les modifier sans refaire la vérification contre les sources citées.",
   "published": "2026-09-30",
+  "updated": "2026-10-26",
   "passengers": {
     "source": "HCAA",
     "years": [
@@ -18,9 +19,26 @@
       },
       {
         "year": 2026,
-        "values": [209665, 220916, 275050, 860013, 1648443, 2094470, 2550701, 2639025, null, null, null, null]
+        "values": [209665, 220916, 275050, 860013, 1648443, 2094470, 2550701, 2639025, 2203062, null, null, null]
       }
     ]
+  },
+  "arrivals": {
+    "source": "Région de Crète (Dr K. Kotsoglou), tableur « Airport Stats 1ος - 9ος 2025_2026 » reçu le 25/10/2026, arrivées janvier-septembre. Feuilles par aéroport, pas la feuille « Κρήτη » dont juillet dépasse la somme des aéroports.",
+    "airports": {
+      "HER": {
+        "domestic": { "2025": [66489, 60623, 69032, 82579, 79340, 83845, 91285, 89486, 81608], "2026": [62378, 67092, 74819, 83074, 77663, 83362, 97779, 95897, 84345] },
+        "international": { "2025": [1529, 1718, 13275, 250893, 474489, 624610, 779388, 784809, 635433], "2026": [6426, 7128, 31385, 258687, 521782, 637914, 801296, 804499, 661589] }
+      },
+      "CHQ": {
+        "domestic": { "2025": [30280, 29298, 35785, 39948, 40173, 46599, 52437, 52282, 46237], "2026": [33172, 33380, 36998, 39824, 42773, 52130, 58486, 57969, 51173] },
+        "international": { "2025": [1543, 1141, 3788, 73168, 192087, 274137, 328901, 301939, 256200], "2026": [1668, 1805, 9798, 88636, 226349, 286740, 345268, 320424, 274832] }
+      },
+      "JSH": {
+        "domestic": { "2025": [1164, 691, 1074, 1523, 1240, 1790, 2764, 4445, 1648], "2026": [1072, 974, 977, 1690, 1156, 1916, 2317, 3006, 1474] },
+        "international": { "2025": [0, 0, 0, 0, 778, 1457, 1432, 1449, 1254], "2026": [0, 0, 0, 0, 536, 1421, 1587, 1897, 1127] }
+      }
+    }
   },
   "languages": {
     "source": "Inside Airbnb, langue détectée par crete.direct",

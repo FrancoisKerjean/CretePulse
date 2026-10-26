@@ -9,9 +9,9 @@ export const pickC26 = (locale: string): C26Locale =>
   (C26_LOCALES as string[]).includes(locale) ? (locale as C26Locale) : "en";
 
 export type Fact = { big: string; txt: string; src: string; ex?: true; feat?: true; grave?: true };
-export type ChartKey = "passengers" | "languages" | "busRoutes" | "fires" | "index";
+export type ChartKey = "passengers" | "arrivals" | "languages" | "busRoutes" | "fires" | "index";
 export type ChartCopy = { key: ChartKey; title: string; sub: string; source: string; head: string[] };
-export type Chapter = { id: string; nav: string; num: string; title: string; story: string; facts: Fact[]; chart?: ChartCopy };
+export type Chapter = { id: string; nav: string; num: string; title: string; story: string; facts: Fact[]; charts?: ChartCopy[] };
 export type PlaceKey = "heraklion" | "chania" | "rethymno" | "agiosNikolaos" | "hersonissos" | "malia" | "chaniaAirport";
 
 export type Crete2026Copy = {
@@ -27,6 +27,7 @@ export type Crete2026Copy = {
   };
   published: string;
   seeData: string;
+  total: string;
   months: string[];
   languages: string[];
   period: (year: number) => string;
@@ -61,8 +62,8 @@ const fr: Crete2026Copy = {
     description: "Aéroports, Airbnb, bus, météo, feux : la saison 2026 en Crète en chiffres, dont beaucoup que vous ne trouverez que sur crete.direct.",
     headline: "L’été 2026 en Crète",
     datasetName: "L’été 2026 en Crète : données des graphiques",
-    datasetDescription: "Séries du bilan de l’été 2026 en Crète : passagers aériens mensuels 2023-2026 (HCAA), langue de 281 874 avis Airbnb, trajets de bus les plus recherchés sur crete.direct, surfaces brûlées 2016-2026 (EFFIS), indice des visites et des recettes touristiques 2016-2025 (Banque de Grèce, Eurostat).",
-    variables: ["passagers aériens par mois", "langue des avis Airbnb", "recherches de trajets de bus", "surfaces brûlées", "indice des visites et des recettes touristiques"],
+    datasetDescription: "Séries du bilan de l’été 2026 en Crète : passagers aériens mensuels 2023-2026 (HCAA), arrivées en avion par type de vol de janvier à septembre 2025-2026 (Région de Crète), langue de 281 874 avis Airbnb, trajets de bus les plus recherchés sur crete.direct, surfaces brûlées 2016-2026 (EFFIS), indice des visites et des recettes touristiques 2016-2025 (Banque de Grèce, Eurostat).",
+    variables: ["passagers aériens par mois", "arrivées en avion par type de vol", "langue des avis Airbnb", "recherches de trajets de bus", "surfaces brûlées", "indice des visites et des recettes touristiques"],
   },
   hero: {
     kicker: "crete.direct · bilan de saison",
@@ -80,9 +81,11 @@ const fr: Crete2026Copy = {
       id: "venus", nav: "Arriver", num: "1 · Arriver", title: "Une île qui fait le plein",
       story: "La Crète n’avait pas vu passer autant de voyageurs dans ses aéroports depuis au moins 2023. Et nos capteurs, qui lisent les tableaux d’arrivées et de départs toutes les dix minutes, racontent le détail de l’été.",
       facts: [
-        { big: "10,5 M", txt: "passagers aériens de janvier à août, +6 % en un an.", src: "Aviation civile grecque (HCAA)", feat: true },
+        { big: "12,7 M", txt: "passagers aériens de janvier à septembre, +5,8 % en un an.", src: "Aviation civile grecque (HCAA)", feat: true },
         { big: "2,64 M", txt: "passagers en août, le mois le plus chargé depuis au moins 2023.", src: "HCAA" },
         { big: "1 sur 5", txt: "des arrivées internationales en avion de toute la Grèce atterrit en Crète.", src: "INSETE, janvier-août 2026" },
+        { big: "×2,5", txt: "pour les arrivées sur des vols internationaux de janvier à mars, par rapport à 2025. Les vols internationaux reviennent plus tôt dans l’année.", src: "Région de Crète, arrivées par aéroport" },
+        { big: "+8,6 %", txt: "d’arrivées en avion à La Canée de janvier à septembre, une hausse deux fois plus forte qu’à Héraklion (+4,4 %). Sitia recule de 6,9 %.", src: "Région de Crète, arrivées par aéroport" },
         { big: "562", txt: "vols en une journée, le dimanche 23 août : le record de l’été à Héraklion et La Canée.", src: "tableaux des aéroports relevés par crete.direct", ex: true },
         { big: "+15 %", txt: "de vols le dimanche par rapport à la semaine. Le mardi est le jour le plus calme.", src: "tableaux des aéroports, 28/07 au 29/09", ex: true },
         { big: "Tel-Aviv", txt: "est le premier aéroport étranger d’origine des vols vers la Crète cet été, avec 840 arrivées.", src: "tableaux des aéroports, 28/07 au 29/09", ex: true },
@@ -90,7 +93,9 @@ const fr: Crete2026Copy = {
         { big: "179", txt: "villes dans 42 pays reliées à la Crète par avion cet été.", src: "tableaux des aéroports", ex: true },
         { big: "20 min", txt: "de retard médian à l’arrivée à Héraklion. Les vols du matin sont les plus ponctuels.", src: "tableaux des aéroports, mesure toutes les 10 min", ex: true },
       ],
-      chart: { key: "passengers", title: "Chaque mois de 2026 dépasse les années précédentes", sub: "Passagers des aéroports crétois par mois", source: "Source : aviation civile grecque (HCAA).", head: ["Mois", "2023", "2024", "2025", "2026"] },
+      charts: [{ key: "passengers", title: "Chaque mois de 2026 dépasse les années précédentes", sub: "Passagers des aéroports crétois par mois", source: "Source : aviation civile grecque (HCAA).", head: ["Mois", "2023", "2024", "2025", "2026"] },
+        { key: "arrivals", title: "Les vols internationaux reviennent plus tôt dans l’année", sub: "Part des vols internationaux dans les arrivées en avion, par mois", source: "Source : Région de Crète, arrivées des aéroports d’Héraklion, La Canée et Sitia.", head: ["Mois", "2025 intérieur", "2025 international", "2026 intérieur", "2026 international"] },
+      ],
     },
     {
       id: "dormir", nav: "Dormir", num: "2 · Dormir", title: "27 333 annonces Airbnb",
@@ -103,7 +108,7 @@ const fr: Crete2026Copy = {
         { big: "132 €", txt: "la nuit en médiane dans le Lassithi, contre 163 € à La Canée : l’est est 19 % moins cher.", src: "Inside Airbnb, prix affichés en juin 2026" },
         { big: "20 %", txt: "des avis de l’année tombent en août. De novembre à mars, à peine 7 %.", src: "Inside Airbnb, moyenne 2023-2025" },
       ],
-      chart: { key: "languages", title: "L’allemand et le français progressent, l’anglais recule", sub: "Langue des avis Airbnb laissés en Crète, janvier-juin", source: "Source : 281 874 avis, langue détectée par crete.direct. Langue de l’avis, pas nationalité.", head: ["Langue", "janv-juin 2024", "janv-juin 2025", "janv-juin 2026"] },
+      charts: [{ key: "languages", title: "L’allemand et le français progressent, l’anglais recule", sub: "Langue des avis Airbnb laissés en Crète, janvier-juin", source: "Source : 281 874 avis, langue détectée par crete.direct. Langue de l’avis, pas nationalité.", head: ["Langue", "janv-juin 2024", "janv-juin 2025", "janv-juin 2026"] }],
     },
     {
       id: "bouger", nav: "Bouger", num: "3 · Bouger", title: "Le bus au dernier moment",
@@ -117,7 +122,7 @@ const fr: Crete2026Copy = {
         { big: "51 €", txt: "par jour pour une voiture de location en médiane, et, pour une même demande, l’offre la plus chère coûte en médiane 1,66 fois la moins chère.", src: "devis reçus par crete.direct", ex: true },
         { big: "143", txt: "escales de croisière programmées à Héraklion de juillet à décembre. Un jour d’escale sur cinq voit arriver deux navires ou plus.", src: "programme du port d’Héraklion, compilé par crete.direct" },
       ],
-      chart: { key: "busRoutes", title: "Les trajets de bus les plus recherchés", sub: "Visiteurs ayant cherché chaque trajet, 13/06 au 29/09", source: "Source : planificateur de trajets de crete.direct.", head: ["Trajet", "Visiteurs"] },
+      charts: [{ key: "busRoutes", title: "Les trajets de bus les plus recherchés", sub: "Visiteurs ayant cherché chaque trajet, 13/06 au 29/09", source: "Source : planificateur de trajets de crete.direct.", head: ["Trajet", "Visiteurs"] }],
     },
     {
       id: "decouvrir", nav: "Découvrir", num: "4 · Découvrir", title: "Ce que vous avez regardé",
@@ -140,7 +145,7 @@ const fr: Crete2026Copy = {
         { big: "8 031 ha", txt: "brûlés en 2026, 7 fois la moyenne de la décennie. Le feu de Kria Vrisi et Saktouria, le 29 juillet, a parcouru 5 331 ha et coûté la vie à deux pompiers.", src: "EFFIS (Copernicus)", grave: true },
         { big: "340", txt: "détections satellite de feu suivies du 29 au 31 juillet, les trois quarts de l’année.", src: "NASA FIRMS, suivi en direct sur crete.direct" },
       ],
-      chart: { key: "fires", title: "2026, année record : 8 031 hectares brûlés", sub: "Surfaces brûlées en Crète par année", source: "Source : EFFIS (Copernicus, JRC), au 30/09/2026.", head: ["Année", "Hectares"] },
+      charts: [{ key: "fires", title: "2026, année record : 8 031 hectares brûlés", sub: "Surfaces brûlées en Crète par année", source: "Source : EFFIS (Copernicus, JRC), au 30/09/2026.", head: ["Année", "Hectares"] }],
     },
     {
       id: "envers", nav: "L’envers du décor", num: "6 · L’envers du décor", title: "Plus de visiteurs, pas plus d’argent",
@@ -151,7 +156,7 @@ const fr: Crete2026Copy = {
         { big: "684 €", txt: "dépensés par visite en 2025, autant qu’en 2016. Inflation déduite, c’est 18 % de moins.", src: "Banque de Grèce, Eurostat" },
         { big: "20 %", txt: "des nuitées marchandes réservées via Airbnb, Booking et les autres plateformes en 2025, deux fois plus qu’en 2019.", src: "Eurostat" },
       ],
-      chart: { key: "index", title: "Les visites montent, les recettes réelles stagnent", sub: "Indice base 100 en 2016, recettes en euros constants", source: "Source : Banque de Grèce, Eurostat.", head: ["Année", "Visites", "Recettes réelles"] },
+      charts: [{ key: "index", title: "Les visites montent, les recettes réelles stagnent", sub: "Indice base 100 en 2016, recettes en euros constants", source: "Source : Banque de Grèce, Eurostat.", head: ["Année", "Visites", "Recettes réelles"] }],
     },
     {
       id: "demain", nav: "Demain", num: "7 · Demain", title: "Ce qui arrive",
@@ -177,12 +182,13 @@ const fr: Crete2026Copy = {
       ["L’agenda et l’actualité", "981 événements de l’été et 40 946 actualités crétoises classées."],
       ["Les feux", "détections satellite de la NASA suivies et cartographiées en direct depuis le 29 juillet."],
     ],
-    note: "Sources officielles : aviation civile grecque (HCAA), INSETE, Banque de Grèce, Eurostat, ELSTAT, Inside Airbnb, Agence européenne pour l’environnement, EFFIS et Copernicus, NASA FIRMS, Open-Meteo (réanalyse ERA5), NOAA, Wikimedia, port d’Héraklion. Les données de septembre ne sont pas encore toutes publiées. Un avis n’est pas un séjour, et le pays d’un vol n’est pas la nationalité de ses passagers.",
+    note: "Sources officielles : aviation civile grecque (HCAA), Région de Crète, INSETE, Banque de Grèce, Eurostat, ELSTAT, Inside Airbnb, Agence européenne pour l’environnement, EFFIS et Copernicus, NASA FIRMS, Open-Meteo (réanalyse ERA5), NOAA, Wikimedia, port d’Héraklion. Les chiffres des aéroports de septembre ont été ajoutés le 26 octobre 2026. Les autres données de septembre ne sont pas encore toutes publiées. Un avis n’est pas un séjour, et le pays d’un vol n’est pas la nationalité de ses passagers.",
     cta: "Vous avez passé l’été en Crète ? Dites-nous ce que crete.direct doit améliorer pour 2027 :",
     copy: "Copier l’adresse", copied: "Adresse copiée", selected: "Adresse sélectionnée",
   },
-  published: "Le guide pratique de la Crète · bilan publié le 30 septembre 2026",
+  published: "Le guide pratique de la Crète · bilan publié le 30 septembre 2026, mis à jour le 26 octobre 2026",
   seeData: "Voir les données",
+  total: "Total janv.-sept.",
   months: ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."],
   languages: ["anglais", "français", "allemand", "grec", "italien", "néerlandais"],
   period: (y) => `janv-juin ${y}`,
@@ -198,8 +204,8 @@ const en: Crete2026Copy = {
     description: "Airports, Airbnb, buses, weather, fires: the 2026 season in Crete in numbers, many of which you will only find on crete.direct.",
     headline: "Crete, summer 2026 in numbers",
     datasetName: "Crete, summer 2026: chart data",
-    datasetDescription: "Series behind the summer 2026 review of Crete: monthly air passengers 2023-2026 (HCAA), language of 281,874 Airbnb reviews, most searched bus routes on crete.direct, area burned 2016-2026 (EFFIS), index of visits and tourism receipts 2016-2025 (Bank of Greece, Eurostat).",
-    variables: ["air passengers per month", "language of Airbnb reviews", "bus route searches", "area burned", "index of visits and tourism receipts"],
+    datasetDescription: "Series behind the summer 2026 review of Crete: monthly air passengers 2023-2026 (HCAA), air arrivals by type of flight from January to September 2025-2026 (Region of Crete), language of 281,874 Airbnb reviews, most searched bus routes on crete.direct, area burned 2016-2026 (EFFIS), index of visits and tourism receipts 2016-2025 (Bank of Greece, Eurostat).",
+    variables: ["air passengers per month", "air arrivals by type of flight", "language of Airbnb reviews", "bus route searches", "area burned", "index of visits and tourism receipts"],
   },
   hero: {
     kicker: "crete.direct · season review",
@@ -217,9 +223,11 @@ const en: Crete2026Copy = {
       id: "venus", nav: "Arriving", num: "1 · Arriving", title: "Full house on the island",
       story: "Crete’s airports had not seen so many travellers since at least 2023. And our sensors, which read the arrival and departure boards every ten minutes, tell the story of the summer in detail.",
       facts: [
-        { big: "10.5M", txt: "air passengers from January to August, +6% in a year.", src: "Hellenic Civil Aviation Authority (HCAA)", feat: true },
+        { big: "12.7M", txt: "air passengers from January to September, +5.8% in a year.", src: "Hellenic Civil Aviation Authority (HCAA)", feat: true },
         { big: "2.64M", txt: "passengers in August, the busiest month since at least 2023.", src: "HCAA" },
         { big: "1 in 5", txt: "international air arrivals in the whole of Greece lands in Crete.", src: "INSETE, January-August 2026" },
+        { big: "×2.5", txt: "international flight arrivals from January to March compared with 2025. International flights come back earlier in the year.", src: "Region of Crete, arrivals by airport" },
+        { big: "+8.6%", txt: "air arrivals in Chania from January to September, twice the growth of Heraklion (+4.4%). Sitia is down 6.9%.", src: "Region of Crete, arrivals by airport" },
         { big: "562", txt: "flights in a single day, on Sunday 23 August: the summer record at Heraklion and Chania.", src: "airport boards tracked by crete.direct", ex: true },
         { big: "+15%", txt: "more flights on Sundays than on weekdays. Tuesday is the quietest day.", src: "airport boards, 28/07 to 29/09", ex: true },
         { big: "Tel Aviv", txt: "is the top foreign airport of origin for flights to Crete this summer, with 840 arrivals.", src: "airport boards, 28/07 to 29/09", ex: true },
@@ -227,7 +235,9 @@ const en: Crete2026Copy = {
         { big: "179", txt: "cities in 42 countries linked to Crete by air this summer.", src: "airport boards", ex: true },
         { big: "20 min", txt: "median arrival delay at Heraklion. Morning flights are the most punctual.", src: "airport boards, measured every 10 min", ex: true },
       ],
-      chart: { key: "passengers", title: "Every month of 2026 beats the previous years", sub: "Passengers at Cretan airports, by month", source: "Source: Hellenic Civil Aviation Authority (HCAA).", head: ["Month", "2023", "2024", "2025", "2026"] },
+      charts: [{ key: "passengers", title: "Every month of 2026 beats the previous years", sub: "Passengers at Cretan airports, by month", source: "Source: Hellenic Civil Aviation Authority (HCAA).", head: ["Month", "2023", "2024", "2025", "2026"] },
+        { key: "arrivals", title: "International flights come back earlier in the year", sub: "Share of international flights in air arrivals, by month", source: "Source: Region of Crete, arrivals at Heraklion, Chania and Sitia airports.", head: ["Month", "2025 domestic", "2025 international", "2026 domestic", "2026 international"] },
+      ],
     },
     {
       id: "dormir", nav: "Staying", num: "2 · Staying", title: "27,333 Airbnb listings",
@@ -240,7 +250,7 @@ const en: Crete2026Copy = {
         { big: "€132", txt: "per night (median) in Lasithi, against €163 in Chania: the east is 19% cheaper.", src: "Inside Airbnb, listed prices in June 2026" },
         { big: "20%", txt: "of the year’s reviews come in August. From November to March, barely 7%.", src: "Inside Airbnb, 2023-2025 average" },
       ],
-      chart: { key: "languages", title: "German and French are rising, English is falling", sub: "Language of Airbnb reviews left in Crete, January-June", source: "Source: 281,874 reviews, language detected by crete.direct. Language of the review, not nationality.", head: ["Language", "Jan-Jun 2024", "Jan-Jun 2025", "Jan-Jun 2026"] },
+      charts: [{ key: "languages", title: "German and French are rising, English is falling", sub: "Language of Airbnb reviews left in Crete, January-June", source: "Source: 281,874 reviews, language detected by crete.direct. Language of the review, not nationality.", head: ["Language", "Jan-Jun 2024", "Jan-Jun 2025", "Jan-Jun 2026"] }],
     },
     {
       id: "bouger", nav: "Getting around", num: "3 · Getting around", title: "The last-minute bus",
@@ -254,7 +264,7 @@ const en: Crete2026Copy = {
         { big: "€51", txt: "per day for a rental car (median), and for the same request, the most expensive offer costs a median 1.66 times the cheapest.", src: "quotes received by crete.direct", ex: true },
         { big: "143", txt: "cruise calls scheduled in Heraklion from July to December. One call day in five sees two or more ships arrive.", src: "Heraklion port schedule, compiled by crete.direct" },
       ],
-      chart: { key: "busRoutes", title: "The most searched bus routes", sub: "Visitors who searched each route, 13/06 to 29/09", source: "Source: crete.direct journey planner.", head: ["Route", "Visitors"] },
+      charts: [{ key: "busRoutes", title: "The most searched bus routes", sub: "Visitors who searched each route, 13/06 to 29/09", source: "Source: crete.direct journey planner.", head: ["Route", "Visitors"] }],
     },
     {
       id: "decouvrir", nav: "Exploring", num: "4 · Exploring", title: "What you looked at",
@@ -277,7 +287,7 @@ const en: Crete2026Copy = {
         { big: "8,031 ha", txt: "burned in 2026, 7 times the decade’s average. The Kria Vrisi and Saktouria fire on 29 July swept through 5,331 ha and cost the lives of two firefighters.", src: "EFFIS (Copernicus)", grave: true },
         { big: "340", txt: "satellite fire detections tracked from 29 to 31 July, three quarters of the year’s total.", src: "NASA FIRMS, tracked live on crete.direct" },
       ],
-      chart: { key: "fires", title: "2026, a record year: 8,031 hectares burned", sub: "Area burned in Crete per year", source: "Source: EFFIS (Copernicus, JRC), as of 30/09/2026.", head: ["Year", "Hectares"] },
+      charts: [{ key: "fires", title: "2026, a record year: 8,031 hectares burned", sub: "Area burned in Crete per year", source: "Source: EFFIS (Copernicus, JRC), as of 30/09/2026.", head: ["Year", "Hectares"] }],
     },
     {
       id: "envers", nav: "The flip side", num: "6 · The flip side", title: "More visitors, no more money",
@@ -288,7 +298,7 @@ const en: Crete2026Copy = {
         { big: "€684", txt: "spent per visit in 2025, the same as in 2016. Adjusted for inflation, that is 18% less.", src: "Bank of Greece, Eurostat" },
         { big: "20%", txt: "of paid overnight stays were booked through Airbnb, Booking and other platforms in 2025, twice as many as in 2019.", src: "Eurostat" },
       ],
-      chart: { key: "index", title: "Visits rise, real receipts stall", sub: "Index, 2016 = 100, receipts in constant euros", source: "Source: Bank of Greece, Eurostat.", head: ["Year", "Visits", "Real receipts"] },
+      charts: [{ key: "index", title: "Visits rise, real receipts stall", sub: "Index, 2016 = 100, receipts in constant euros", source: "Source: Bank of Greece, Eurostat.", head: ["Year", "Visits", "Real receipts"] }],
     },
     {
       id: "demain", nav: "Tomorrow", num: "7 · Tomorrow", title: "What’s coming",
@@ -314,12 +324,13 @@ const en: Crete2026Copy = {
       ["Events and news", "981 summer events and 40,946 Cretan news items classified."],
       ["Fires", "NASA satellite detections tracked and mapped live since 29 July."],
     ],
-    note: "Official sources: Hellenic Civil Aviation Authority (HCAA), INSETE, Bank of Greece, Eurostat, ELSTAT, Inside Airbnb, European Environment Agency, EFFIS and Copernicus, NASA FIRMS, Open-Meteo (ERA5 reanalysis), NOAA, Wikimedia, Port of Heraklion. September data are not all published yet. A review is not a stay, and the country a flight comes from is not the nationality of its passengers.",
+    note: "Official sources: Hellenic Civil Aviation Authority (HCAA), Region of Crete, INSETE, Bank of Greece, Eurostat, ELSTAT, Inside Airbnb, European Environment Agency, EFFIS and Copernicus, NASA FIRMS, Open-Meteo (ERA5 reanalysis), NOAA, Wikimedia, Port of Heraklion. Airport figures for September were added on 26 October 2026. Other September data are not all published yet. A review is not a stay, and the country a flight comes from is not the nationality of its passengers.",
     cta: "Spent the summer in Crete? Tell us what crete.direct should improve for 2027:",
     copy: "Copy address", copied: "Address copied", selected: "Address selected",
   },
-  published: "The practical guide to Crete · review published on 30 September 2026",
+  published: "The practical guide to Crete · review published on 30 September 2026, updated on 26 October 2026",
   seeData: "See the data",
+  total: "Total Jan-Sep",
   months: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
   languages: ["English", "French", "German", "Greek", "Italian", "Dutch"],
   period: (y) => `Jan-Jun ${y}`,
@@ -335,8 +346,8 @@ const de: Crete2026Copy = {
     description: "Flughäfen, Airbnb, Busse, Wetter, Brände: die Saison 2026 auf Kreta in Zahlen, viele davon gibt es nur bei crete.direct.",
     headline: "Kreta, Sommer 2026 in Zahlen",
     datasetName: "Kreta, Sommer 2026: Daten der Grafiken",
-    datasetDescription: "Datenreihen der Bilanz des Sommers 2026 auf Kreta: monatliche Fluggäste 2023-2026 (HCAA), Sprache von 281.874 Airbnb-Bewertungen, meistgesuchte Busverbindungen auf crete.direct, verbrannte Fläche 2016-2026 (EFFIS), Index der Besuche und Tourismuseinnahmen 2016-2025 (Bank von Griechenland, Eurostat).",
-    variables: ["Fluggäste pro Monat", "Sprache der Airbnb-Bewertungen", "Suchen nach Busverbindungen", "verbrannte Fläche", "Index der Besuche und Tourismuseinnahmen"],
+    datasetDescription: "Datenreihen der Bilanz des Sommers 2026 auf Kreta: monatliche Fluggäste 2023-2026 (HCAA), Flugankünfte nach Flugart von Januar bis September 2025-2026 (Region Kreta), Sprache von 281.874 Airbnb-Bewertungen, meistgesuchte Busverbindungen auf crete.direct, verbrannte Fläche 2016-2026 (EFFIS), Index der Besuche und Tourismuseinnahmen 2016-2025 (Bank von Griechenland, Eurostat).",
+    variables: ["Fluggäste pro Monat", "Flugankünfte nach Flugart", "Sprache der Airbnb-Bewertungen", "Suchen nach Busverbindungen", "verbrannte Fläche", "Index der Besuche und Tourismuseinnahmen"],
   },
   hero: {
     kicker: "crete.direct · Saisonbilanz",
@@ -354,9 +365,11 @@ const de: Crete2026Copy = {
       id: "venus", nav: "Ankommen", num: "1 · Ankommen", title: "Volles Haus auf der Insel",
       story: "So viele Reisende hatten Kretas Flughäfen mindestens seit 2023 nicht gesehen. Und unsere Sensoren, die alle zehn Minuten die Ankunfts- und Abflugtafeln auslesen, erzählen den Sommer im Detail.",
       facts: [
-        { big: "10,5 Mio.", txt: "Fluggäste von Januar bis August, +6 % in einem Jahr.", src: "Griechische Zivilluftfahrtbehörde (HCAA)", feat: true },
+        { big: "12,7 Mio.", txt: "Fluggäste von Januar bis September, +5,8 % in einem Jahr.", src: "Griechische Zivilluftfahrtbehörde (HCAA)", feat: true },
         { big: "2,64 Mio.", txt: "Fluggäste im August, der verkehrsreichste Monat seit mindestens 2023.", src: "HCAA" },
         { big: "1 von 5", txt: "internationalen Flugankünften in ganz Griechenland landet auf Kreta.", src: "INSETE, Januar-August 2026" },
+        { big: "×2,5", txt: "so viele Ankünfte auf internationalen Flügen von Januar bis März wie 2025. Die internationalen Flüge kehren früher im Jahr zurück.", src: "Region Kreta, Ankünfte nach Flughafen" },
+        { big: "+8,6 %", txt: "Flugankünfte in Chania von Januar bis September, ein doppelt so starkes Wachstum wie in Heraklion (+4,4 %). Sitia verliert 6,9 %.", src: "Region Kreta, Ankünfte nach Flughafen" },
         { big: "562", txt: "Flüge an einem einzigen Tag, am Sonntag, dem 23. August: der Sommerrekord in Heraklion und Chania.", src: "von crete.direct erfasste Flughafentafeln", ex: true },
         { big: "+15 %", txt: "mehr Flüge am Sonntag als unter der Woche. Der Dienstag ist der ruhigste Tag.", src: "Flughafentafeln, 28.07. bis 29.09.", ex: true },
         { big: "Tel Aviv", txt: "ist in diesem Sommer der wichtigste ausländische Herkunftsflughafen für Flüge nach Kreta, mit 840 Ankünften.", src: "Flughafentafeln, 28.07. bis 29.09.", ex: true },
@@ -364,7 +377,9 @@ const de: Crete2026Copy = {
         { big: "179", txt: "Städte in 42 Ländern waren diesen Sommer per Flug mit Kreta verbunden.", src: "Flughafentafeln", ex: true },
         { big: "20 Min.", txt: "Verspätung im Median bei der Ankunft in Heraklion. Die Morgenflüge sind am pünktlichsten.", src: "Flughafentafeln, Messung alle 10 Min.", ex: true },
       ],
-      chart: { key: "passengers", title: "Jeder Monat 2026 übertrifft die Vorjahre", sub: "Fluggäste der kretischen Flughäfen pro Monat", source: "Quelle: Griechische Zivilluftfahrtbehörde (HCAA).", head: ["Monat", "2023", "2024", "2025", "2026"] },
+      charts: [{ key: "passengers", title: "Jeder Monat 2026 übertrifft die Vorjahre", sub: "Fluggäste der kretischen Flughäfen pro Monat", source: "Quelle: Griechische Zivilluftfahrtbehörde (HCAA).", head: ["Monat", "2023", "2024", "2025", "2026"] },
+        { key: "arrivals", title: "Internationale Flüge kehren früher im Jahr zurück", sub: "Anteil internationaler Flüge an den Flugankünften, pro Monat", source: "Quelle: Region Kreta, Ankünfte an den Flughäfen Heraklion, Chania und Sitia.", head: ["Monat", "2025 Inland", "2025 international", "2026 Inland", "2026 international"] },
+      ],
     },
     {
       id: "dormir", nav: "Übernachten", num: "2 · Übernachten", title: "27.333 Airbnb-Inserate",
@@ -377,7 +392,7 @@ const de: Crete2026Copy = {
         { big: "132 €", txt: "pro Nacht im Median in Lasithi, gegenüber 163 € in Chania: Der Osten ist 19 % günstiger.", src: "Inside Airbnb, angezeigte Preise im Juni 2026" },
         { big: "20 %", txt: "der Bewertungen eines Jahres entfallen auf den August. Von November bis März sind es kaum 7 %.", src: "Inside Airbnb, Durchschnitt 2023-2025" },
       ],
-      chart: { key: "languages", title: "Deutsch und Französisch legen zu, Englisch geht zurück", sub: "Sprache der Airbnb-Bewertungen auf Kreta, Januar-Juni", source: "Quelle: 281.874 Bewertungen, Sprache von crete.direct erkannt. Sprache der Bewertung, nicht Nationalität.", head: ["Sprache", "Jan.-Juni 2024", "Jan.-Juni 2025", "Jan.-Juni 2026"] },
+      charts: [{ key: "languages", title: "Deutsch und Französisch legen zu, Englisch geht zurück", sub: "Sprache der Airbnb-Bewertungen auf Kreta, Januar-Juni", source: "Quelle: 281.874 Bewertungen, Sprache von crete.direct erkannt. Sprache der Bewertung, nicht Nationalität.", head: ["Sprache", "Jan.-Juni 2024", "Jan.-Juni 2025", "Jan.-Juni 2026"] }],
     },
     {
       id: "bouger", nav: "Unterwegs", num: "3 · Unterwegs", title: "Der Bus in letzter Minute",
@@ -391,7 +406,7 @@ const de: Crete2026Copy = {
         { big: "51 €", txt: "pro Tag kostet ein Mietwagen im Median, und bei derselben Anfrage kostet das teuerste Angebot im Median das 1,66-Fache des günstigsten.", src: "bei crete.direct eingegangene Angebote", ex: true },
         { big: "143", txt: "Kreuzfahrtanläufe in Heraklion von Juli bis Dezember geplant. An jedem fünften Anlauftag kommen zwei oder mehr Schiffe.", src: "Hafenplan von Heraklion, zusammengestellt von crete.direct" },
       ],
-      chart: { key: "busRoutes", title: "Die meistgesuchten Busverbindungen", sub: "Besucher, die die jeweilige Strecke gesucht haben, 13.06. bis 29.09.", source: "Quelle: Routenplaner von crete.direct.", head: ["Strecke", "Besucher"] },
+      charts: [{ key: "busRoutes", title: "Die meistgesuchten Busverbindungen", sub: "Besucher, die die jeweilige Strecke gesucht haben, 13.06. bis 29.09.", source: "Quelle: Routenplaner von crete.direct.", head: ["Strecke", "Besucher"] }],
     },
     {
       id: "decouvrir", nav: "Entdecken", num: "4 · Entdecken", title: "Was Sie sich angesehen haben",
@@ -414,7 +429,7 @@ const de: Crete2026Copy = {
         { big: "8.031 ha", txt: "verbrannt im Jahr 2026, das Siebenfache des Durchschnitts des Jahrzehnts. Der Brand von Kria Vrisi und Saktouria am 29. Juli erfasste 5.331 ha und kostete zwei Feuerwehrleute das Leben.", src: "EFFIS (Copernicus)", grave: true },
         { big: "340", txt: "Brandentdeckungen per Satellit vom 29. bis 31. Juli, drei Viertel des ganzen Jahres.", src: "NASA FIRMS, live verfolgt auf crete.direct" },
       ],
-      chart: { key: "fires", title: "2026, ein Rekordjahr: 8.031 Hektar verbrannt", sub: "Verbrannte Fläche auf Kreta pro Jahr", source: "Quelle: EFFIS (Copernicus, JRC), Stand 30.09.2026.", head: ["Jahr", "Hektar"] },
+      charts: [{ key: "fires", title: "2026, ein Rekordjahr: 8.031 Hektar verbrannt", sub: "Verbrannte Fläche auf Kreta pro Jahr", source: "Quelle: EFFIS (Copernicus, JRC), Stand 30.09.2026.", head: ["Jahr", "Hektar"] }],
     },
     {
       id: "envers", nav: "Die Kehrseite", num: "6 · Die Kehrseite", title: "Mehr Besucher, nicht mehr Geld",
@@ -425,7 +440,7 @@ const de: Crete2026Copy = {
         { big: "684 €", txt: "Ausgaben pro Besuch im Jahr 2025, so viel wie 2016. Inflationsbereinigt sind das 18 % weniger.", src: "Bank von Griechenland, Eurostat" },
         { big: "20 %", txt: "der gewerblichen Übernachtungen wurden 2025 über Airbnb, Booking und andere Plattformen gebucht, doppelt so viele wie 2019.", src: "Eurostat" },
       ],
-      chart: { key: "index", title: "Die Besuche steigen, die realen Einnahmen stagnieren", sub: "Index 2016 = 100, Einnahmen in konstanten Euro", source: "Quelle: Bank von Griechenland, Eurostat.", head: ["Jahr", "Besuche", "Reale Einnahmen"] },
+      charts: [{ key: "index", title: "Die Besuche steigen, die realen Einnahmen stagnieren", sub: "Index 2016 = 100, Einnahmen in konstanten Euro", source: "Quelle: Bank von Griechenland, Eurostat.", head: ["Jahr", "Besuche", "Reale Einnahmen"] }],
     },
     {
       id: "demain", nav: "Morgen", num: "7 · Morgen", title: "Was kommt",
@@ -451,12 +466,13 @@ const de: Crete2026Copy = {
       ["Kalender und Nachrichten", "981 Veranstaltungen im Sommer und 40.946 kretische Nachrichten, thematisch eingeordnet."],
       ["Die Brände", "Satellitendaten der NASA, seit dem 29. Juli live verfolgt und kartiert."],
     ],
-    note: "Amtliche Quellen: Griechische Zivilluftfahrtbehörde (HCAA), INSETE, Bank von Griechenland, Eurostat, ELSTAT, Inside Airbnb, Europäische Umweltagentur, EFFIS und Copernicus, NASA FIRMS, Open-Meteo (ERA5-Reanalyse), NOAA, Wikimedia, Hafen Heraklion. Die Septemberdaten sind noch nicht vollständig veröffentlicht. Eine Bewertung ist kein Aufenthalt, und das Herkunftsland eines Flugs ist nicht die Nationalität seiner Passagiere.",
+    note: "Amtliche Quellen: Griechische Zivilluftfahrtbehörde (HCAA), Region Kreta, INSETE, Bank von Griechenland, Eurostat, ELSTAT, Inside Airbnb, Europäische Umweltagentur, EFFIS und Copernicus, NASA FIRMS, Open-Meteo (ERA5-Reanalyse), NOAA, Wikimedia, Hafen Heraklion. Die Flughafenzahlen für September wurden am 26. Oktober 2026 ergänzt. Die übrigen Septemberdaten sind noch nicht vollständig veröffentlicht. Eine Bewertung ist kein Aufenthalt, und das Herkunftsland eines Flugs ist nicht die Nationalität seiner Passagiere.",
     cta: "Sie haben den Sommer auf Kreta verbracht? Sagen Sie uns, was crete.direct für 2027 verbessern soll:",
     copy: "Adresse kopieren", copied: "Adresse kopiert", selected: "Adresse markiert",
   },
-  published: "Der praktische Kreta-Reiseführer · Bilanz veröffentlicht am 30. September 2026",
+  published: "Der praktische Kreta-Reiseführer · Bilanz veröffentlicht am 30. September 2026, aktualisiert am 26. Oktober 2026",
   seeData: "Daten anzeigen",
+  total: "Gesamt Jan.-Sept.",
   months: ["Jan.", "Feb.", "März", "Apr.", "Mai", "Juni", "Juli", "Aug.", "Sept.", "Okt.", "Nov.", "Dez."],
   languages: ["Englisch", "Französisch", "Deutsch", "Griechisch", "Italienisch", "Niederländisch"],
   period: (y) => `Jan.-Juni ${y}`,
@@ -472,8 +488,8 @@ const el: Crete2026Copy = {
     description: "Αεροδρόμια, Airbnb, λεωφορεία, καιρός, πυρκαγιές: η σεζόν 2026 στην Κρήτη σε αριθμούς, πολλοί από τους οποίους υπάρχουν μόνο στο crete.direct.",
     headline: "Κρήτη, καλοκαίρι 2026 σε αριθμούς",
     datasetName: "Κρήτη, καλοκαίρι 2026: δεδομένα των γραφημάτων",
-    datasetDescription: "Οι σειρές δεδομένων του απολογισμού του καλοκαιριού 2026 στην Κρήτη: μηνιαία επιβατική κίνηση των αεροδρομίων 2023-2026 (ΥΠΑ), γλώσσα 281.874 κριτικών Airbnb, οι διαδρομές λεωφορείου με τις περισσότερες αναζητήσεις στο crete.direct, καμένες εκτάσεις 2016-2026 (EFFIS), δείκτης επισκέψεων και τουριστικών εισπράξεων 2016-2025 (Τράπεζα της Ελλάδος, Eurostat).",
-    variables: ["επιβάτες αεροδρομίων ανά μήνα", "γλώσσα των κριτικών Airbnb", "αναζητήσεις διαδρομών λεωφορείου", "καμένες εκτάσεις", "δείκτης επισκέψεων και τουριστικών εισπράξεων"],
+    datasetDescription: "Οι σειρές δεδομένων του απολογισμού του καλοκαιριού 2026 στην Κρήτη: μηνιαία επιβατική κίνηση των αεροδρομίων 2023-2026 (ΥΠΑ), αεροπορικές αφίξεις ανά είδος πτήσης από τον Ιανουάριο έως τον Σεπτέμβριο 2025-2026 (Περιφέρεια Κρήτης), γλώσσα 281.874 κριτικών Airbnb, οι διαδρομές λεωφορείου με τις περισσότερες αναζητήσεις στο crete.direct, καμένες εκτάσεις 2016-2026 (EFFIS), δείκτης επισκέψεων και τουριστικών εισπράξεων 2016-2025 (Τράπεζα της Ελλάδος, Eurostat).",
+    variables: ["επιβάτες αεροδρομίων ανά μήνα", "αεροπορικές αφίξεις ανά είδος πτήσης", "γλώσσα των κριτικών Airbnb", "αναζητήσεις διαδρομών λεωφορείου", "καμένες εκτάσεις", "δείκτης επισκέψεων και τουριστικών εισπράξεων"],
   },
   hero: {
     kicker: "crete.direct · απολογισμός σεζόν",
@@ -491,9 +507,11 @@ const el: Crete2026Copy = {
       id: "venus", nav: "Άφιξη", num: "1 · Άφιξη", title: "Ένα νησί γεμάτο κόσμο",
       story: "Τα αεροδρόμια της Κρήτης δεν είχαν δει τόσους ταξιδιώτες τουλάχιστον από το 2023. Και οι αισθητήρες μας, που διαβάζουν τους πίνακες αφίξεων και αναχωρήσεων κάθε δέκα λεπτά, αφηγούνται το καλοκαίρι με κάθε λεπτομέρεια.",
       facts: [
-        { big: "10,5 εκατ.", txt: "επιβάτες στα αεροδρόμια από τον Ιανουάριο έως τον Αύγουστο, +6% σε ετήσια βάση.", src: "Υπηρεσία Πολιτικής Αεροπορίας (ΥΠΑ)", feat: true },
+        { big: "12,7 εκατ.", txt: "επιβάτες στα αεροδρόμια από τον Ιανουάριο έως τον Σεπτέμβριο, +5,8% σε ετήσια βάση.", src: "Υπηρεσία Πολιτικής Αεροπορίας (ΥΠΑ)", feat: true },
         { big: "2,64 εκατ.", txt: "επιβάτες τον Αύγουστο, ο μήνας με τη μεγαλύτερη κίνηση τουλάχιστον από το 2023.", src: "ΥΠΑ" },
         { big: "1 στις 5", txt: "διεθνείς αεροπορικές αφίξεις σε όλη την Ελλάδα γίνεται στην Κρήτη.", src: "ΙΝΣΕΤΕ, Ιανουάριος-Αύγουστος 2026" },
+        { big: "×2,5", txt: "οι αφίξεις με διεθνείς πτήσεις από τον Ιανουάριο έως τον Μάρτιο σε σχέση με το 2025. Οι διεθνείς πτήσεις επιστρέφουν νωρίτερα μέσα στη χρονιά.", src: "Περιφέρεια Κρήτης, αφίξεις ανά αεροδρόμιο" },
+        { big: "+8,6%", txt: "οι αεροπορικές αφίξεις στα Χανιά από τον Ιανουάριο έως τον Σεπτέμβριο, διπλάσια αύξηση από το Ηράκλειο (+4,4%). Η Σητεία υποχωρεί κατά 6,9%.", src: "Περιφέρεια Κρήτης, αφίξεις ανά αεροδρόμιο" },
         { big: "562", txt: "πτήσεις σε μία μόνο μέρα, την Κυριακή 23 Αυγούστου: το ρεκόρ του καλοκαιριού σε Ηράκλειο και Χανιά.", src: "πίνακες πτήσεων των αεροδρομίων, καταγραφή crete.direct", ex: true },
         { big: "+15%", txt: "περισσότερες πτήσεις την Κυριακή σε σχέση με τις καθημερινές. Η Τρίτη είναι η πιο ήσυχη μέρα.", src: "πίνακες πτήσεων, 28/07 έως 29/09", ex: true },
         { big: "Τελ Αβίβ", txt: "είναι το πρώτο ξένο αεροδρόμιο προέλευσης των πτήσεων προς την Κρήτη αυτό το καλοκαίρι, με 840 αφίξεις.", src: "πίνακες πτήσεων, 28/07 έως 29/09", ex: true },
@@ -501,7 +519,9 @@ const el: Crete2026Copy = {
         { big: "179", txt: "πόλεις σε 42 χώρες συνδέθηκαν αεροπορικώς με την Κρήτη αυτό το καλοκαίρι.", src: "πίνακες πτήσεων", ex: true },
         { big: "20 λεπτά", txt: "διάμεση καθυστέρηση στις αφίξεις του Ηρακλείου. Οι πρωινές πτήσεις είναι οι πιο συνεπείς.", src: "πίνακες πτήσεων, μέτρηση κάθε 10 λεπτά", ex: true },
       ],
-      chart: { key: "passengers", title: "Κάθε μήνας του 2026 ξεπερνά τις προηγούμενες χρονιές", sub: "Επιβάτες των αεροδρομίων της Κρήτης ανά μήνα", source: "Πηγή: Υπηρεσία Πολιτικής Αεροπορίας (ΥΠΑ).", head: ["Μήνας", "2023", "2024", "2025", "2026"] },
+      charts: [{ key: "passengers", title: "Κάθε μήνας του 2026 ξεπερνά τις προηγούμενες χρονιές", sub: "Επιβάτες των αεροδρομίων της Κρήτης ανά μήνα", source: "Πηγή: Υπηρεσία Πολιτικής Αεροπορίας (ΥΠΑ).", head: ["Μήνας", "2023", "2024", "2025", "2026"] },
+        { key: "arrivals", title: "Οι διεθνείς πτήσεις επιστρέφουν νωρίτερα μέσα στη χρονιά", sub: "Μερίδιο των διεθνών πτήσεων στις αεροπορικές αφίξεις, ανά μήνα", source: "Πηγή: Περιφέρεια Κρήτης, αφίξεις στα αεροδρόμια Ηρακλείου, Χανίων και Σητείας.", head: ["Μήνας", "2025 εσωτερικού", "2025 εξωτερικού", "2026 εσωτερικού", "2026 εξωτερικού"] },
+      ],
     },
     {
       id: "dormir", nav: "Διαμονή", num: "2 · Διαμονή", title: "27.333 καταχωρίσεις Airbnb",
@@ -514,7 +534,7 @@ const el: Crete2026Copy = {
         { big: "132 €", txt: "τη βραδιά (διάμεση τιμή) στο Λασίθι, έναντι 163 € στα Χανιά: η ανατολική Κρήτη είναι 19% φθηνότερη.", src: "Inside Airbnb, αναρτημένες τιμές Ιουνίου 2026" },
         { big: "20%", txt: "των κριτικών της χρονιάς γράφονται τον Αύγουστο. Από τον Νοέμβριο έως τον Μάρτιο, μόλις 7%.", src: "Inside Airbnb, μέσος όρος 2023-2025" },
       ],
-      chart: { key: "languages", title: "Τα γερμανικά και τα γαλλικά ανεβαίνουν, τα αγγλικά υποχωρούν", sub: "Γλώσσα των κριτικών Airbnb στην Κρήτη, Ιανουάριος-Ιούνιος", source: "Πηγή: 281.874 κριτικές, αναγνώριση γλώσσας από το crete.direct. Γλώσσα της κριτικής, όχι εθνικότητα.", head: ["Γλώσσα", "Ιαν.-Ιουν. 2024", "Ιαν.-Ιουν. 2025", "Ιαν.-Ιουν. 2026"] },
+      charts: [{ key: "languages", title: "Τα γερμανικά και τα γαλλικά ανεβαίνουν, τα αγγλικά υποχωρούν", sub: "Γλώσσα των κριτικών Airbnb στην Κρήτη, Ιανουάριος-Ιούνιος", source: "Πηγή: 281.874 κριτικές, αναγνώριση γλώσσας από το crete.direct. Γλώσσα της κριτικής, όχι εθνικότητα.", head: ["Γλώσσα", "Ιαν.-Ιουν. 2024", "Ιαν.-Ιουν. 2025", "Ιαν.-Ιουν. 2026"] }],
     },
     {
       id: "bouger", nav: "Μετακινήσεις", num: "3 · Μετακινήσεις", title: "Λεωφορείο την τελευταία στιγμή",
@@ -528,7 +548,7 @@ const el: Crete2026Copy = {
         { big: "51 €", txt: "την ημέρα για ενοικιαζόμενο αυτοκίνητο (διάμεση τιμή). Για το ίδιο αίτημα, η ακριβότερη προσφορά κοστίζει 1,66 φορές την τιμή της φθηνότερης (διάμεσος λόγος).", src: "προσφορές που έλαβε το crete.direct", ex: true },
         { big: "143", txt: "προσεγγίσεις κρουαζιερόπλοιων προγραμματισμένες στο Ηράκλειο από τον Ιούλιο έως τον Δεκέμβριο. Σε μία στις πέντε ημέρες προσέγγισης φτάνουν δύο ή περισσότερα πλοία.", src: "πρόγραμμα του λιμανιού Ηρακλείου, επεξεργασία crete.direct" },
       ],
-      chart: { key: "busRoutes", title: "Οι διαδρομές λεωφορείου με τις περισσότερες αναζητήσεις", sub: "Επισκέπτες που αναζήτησαν κάθε διαδρομή, 13/06 έως 29/09", source: "Πηγή: σχεδιαστής διαδρομών του crete.direct.", head: ["Διαδρομή", "Επισκέπτες"] },
+      charts: [{ key: "busRoutes", title: "Οι διαδρομές λεωφορείου με τις περισσότερες αναζητήσεις", sub: "Επισκέπτες που αναζήτησαν κάθε διαδρομή, 13/06 έως 29/09", source: "Πηγή: σχεδιαστής διαδρομών του crete.direct.", head: ["Διαδρομή", "Επισκέπτες"] }],
     },
     {
       id: "decouvrir", nav: "Εξερεύνηση", num: "4 · Εξερεύνηση", title: "Τι σας ενδιέφερε",
@@ -551,7 +571,7 @@ const el: Crete2026Copy = {
         { big: "8.031 ha", txt: "κάηκαν το 2026, επταπλάσια από τον μέσο όρο της δεκαετίας. Η πυρκαγιά σε Κρύα Βρύση και Σακτούρια, στις 29 Ιουλίου, έκαψε 5.331 εκτάρια και στοίχισε τη ζωή σε δύο πυροσβέστες.", src: "EFFIS (Copernicus)", grave: true },
         { big: "340", txt: "δορυφορικές ανιχνεύσεις πυρκαγιάς καταγράφηκαν από τις 29 έως τις 31 Ιουλίου, τα τρία τέταρτα του συνόλου της χρονιάς.", src: "NASA FIRMS, ζωντανή παρακολούθηση στο crete.direct" },
       ],
-      chart: { key: "fires", title: "2026, χρονιά-ρεκόρ: 8.031 καμένα εκτάρια", sub: "Καμένες εκτάσεις στην Κρήτη ανά έτος", source: "Πηγή: EFFIS (Copernicus, JRC), έως 30/09/2026.", head: ["Έτος", "Εκτάρια"] },
+      charts: [{ key: "fires", title: "2026, χρονιά-ρεκόρ: 8.031 καμένα εκτάρια", sub: "Καμένες εκτάσεις στην Κρήτη ανά έτος", source: "Πηγή: EFFIS (Copernicus, JRC), έως 30/09/2026.", head: ["Έτος", "Εκτάρια"] }],
     },
     {
       id: "envers", nav: "Η άλλη όψη", num: "6 · Η άλλη όψη", title: "Περισσότεροι επισκέπτες, όχι περισσότερα χρήματα",
@@ -562,7 +582,7 @@ const el: Crete2026Copy = {
         { big: "684 €", txt: "δαπάνη ανά επίσκεψη το 2025, όση και το 2016. Αν αφαιρεθεί ο πληθωρισμός, είναι 18% χαμηλότερη.", src: "Τράπεζα της Ελλάδος, Eurostat" },
         { big: "20%", txt: "των διανυκτερεύσεων σε καταλύματα κρατήθηκε μέσω Airbnb, Booking και άλλων πλατφορμών το 2025, διπλάσιο ποσοστό από το 2019.", src: "Eurostat" },
       ],
-      chart: { key: "index", title: "Οι επισκέψεις ανεβαίνουν, οι πραγματικές εισπράξεις μένουν στάσιμες", sub: "Δείκτης με βάση το 2016 = 100, εισπράξεις σε σταθερές τιμές", source: "Πηγή: Τράπεζα της Ελλάδος, Eurostat.", head: ["Έτος", "Επισκέψεις", "Πραγματικές εισπράξεις"] },
+      charts: [{ key: "index", title: "Οι επισκέψεις ανεβαίνουν, οι πραγματικές εισπράξεις μένουν στάσιμες", sub: "Δείκτης με βάση το 2016 = 100, εισπράξεις σε σταθερές τιμές", source: "Πηγή: Τράπεζα της Ελλάδος, Eurostat.", head: ["Έτος", "Επισκέψεις", "Πραγματικές εισπράξεις"] }],
     },
     {
       id: "demain", nav: "Αύριο", num: "7 · Αύριο", title: "Τι έρχεται",
@@ -588,12 +608,13 @@ const el: Crete2026Copy = {
       ["Η ατζέντα και οι ειδήσεις", "981 καλοκαιρινές εκδηλώσεις και 40.946 ειδήσεις από την Κρήτη, ταξινομημένες ανά θέμα."],
       ["Οι πυρκαγιές", "δορυφορικές ανιχνεύσεις της NASA, με ζωντανή παρακολούθηση και χαρτογράφηση από τις 29 Ιουλίου."],
     ],
-    note: "Επίσημες πηγές: Υπηρεσία Πολιτικής Αεροπορίας (ΥΠΑ), ΙΝΣΕΤΕ, Τράπεζα της Ελλάδος, Eurostat, ΕΛΣΤΑΤ, Inside Airbnb, Ευρωπαϊκός Οργανισμός Περιβάλλοντος, EFFIS και Copernicus, NASA FIRMS, Open-Meteo (επανανάλυση ERA5), NOAA, Wikimedia, λιμάνι Ηρακλείου. Τα στοιχεία του Σεπτεμβρίου δεν έχουν δημοσιευτεί ακόμη στο σύνολό τους. Μια κριτική δεν ισοδυναμεί με διαμονή, και η χώρα προέλευσης μιας πτήσης δεν ταυτίζεται με την εθνικότητα των επιβατών της.",
+    note: "Επίσημες πηγές: Υπηρεσία Πολιτικής Αεροπορίας (ΥΠΑ), Περιφέρεια Κρήτης, ΙΝΣΕΤΕ, Τράπεζα της Ελλάδος, Eurostat, ΕΛΣΤΑΤ, Inside Airbnb, Ευρωπαϊκός Οργανισμός Περιβάλλοντος, EFFIS και Copernicus, NASA FIRMS, Open-Meteo (επανανάλυση ERA5), NOAA, Wikimedia, λιμάνι Ηρακλείου. Τα στοιχεία των αεροδρομίων για τον Σεπτέμβριο προστέθηκαν στις 26 Οκτωβρίου 2026. Τα υπόλοιπα στοιχεία του Σεπτεμβρίου δεν έχουν δημοσιευτεί ακόμη στο σύνολό τους. Μια κριτική δεν ισοδυναμεί με διαμονή, και η χώρα προέλευσης μιας πτήσης δεν ταυτίζεται με την εθνικότητα των επιβατών της.",
     cta: "Περάσατε το καλοκαίρι στην Κρήτη; Πείτε μας τι πρέπει να βελτιώσει το crete.direct για το 2027:",
     copy: "Αντιγραφή διεύθυνσης", copied: "Η διεύθυνση αντιγράφηκε", selected: "Η διεύθυνση επιλέχθηκε",
   },
-  published: "Ο πρακτικός οδηγός της Κρήτης · απολογισμός που δημοσιεύτηκε στις 30 Σεπτεμβρίου 2026",
+  published: "Ο πρακτικός οδηγός της Κρήτης · απολογισμός που δημοσιεύτηκε στις 30 Σεπτεμβρίου 2026, ενημερώθηκε στις 26 Οκτωβρίου 2026",
   seeData: "Δείτε τα δεδομένα",
+  total: "Σύνολο Ιαν.-Σεπ.",
   months: ["Ιαν.", "Φεβ.", "Μάρ.", "Απρ.", "Μάι.", "Ιούν.", "Ιούλ.", "Αύγ.", "Σεπ.", "Οκτ.", "Νοέ.", "Δεκ."],
   languages: ["αγγλικά", "γαλλικά", "γερμανικά", "ελληνικά", "ιταλικά", "ολλανδικά"],
   period: (y) => `Ιαν.-Ιουν. ${y}`,
