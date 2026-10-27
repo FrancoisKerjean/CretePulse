@@ -1129,8 +1129,11 @@ export function ExploreView({
         }`}
       >
         <div className="relative w-[72px] h-[64px] rounded-lg overflow-hidden bg-sand shrink-0">
+          {/* width/height explicites, pas `fill` : avec fill + sizes="72px", next/image
+              emettait 15 entrees de srcset (jusqu'a w=3840) soit 2,4 Ko par vignette,
+              587 Ko sur les 230 de la page (releve prod du 27/10/2026). Ici : 1x/2x. */}
           {p.photos?.[0] ? (
-            <Image src={p.photos[0]} alt={p.name} fill sizes="72px" className="object-cover" />
+            <Image src={p.photos[0]} alt={p.name} width={72} height={64} className="h-full w-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-sea/30">
               <MapPin size={20} />
@@ -1388,7 +1391,7 @@ export function ExploreView({
                 >
                   <div className="h-[84px] bg-sand relative">
                     {p.photos?.[0] ? (
-                      <Image src={p.photos[0]} alt={p.name} fill sizes="196px" className="object-cover" />
+                      <Image src={p.photos[0]} alt={p.name} width={196} height={84} className="h-full w-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-sea/30"><MapPin size={22} /></div>
                     )}
