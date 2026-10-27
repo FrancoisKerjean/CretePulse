@@ -40,6 +40,12 @@ export function isGuideTranslated(guide: Guide, locale: string): boolean {
 
 /** Formats dates (meteo du jour, recap presse) : perimes passes 30 j, comme les news. */
 const DATED_FORMATS: ReadonlySet<Guide["format"]> = new Set(["daily", "news"]);
+/**
+ * Le bulletin meteo quotidien (`daily`) n'est jamais indexable, meme frais : GSC du 01/05 au
+ * 18/07/2026, 61 pages pour 8 clics ; 1 clic depuis. Il reste servi par /daily et la video,
+ * il ne concourt plus au crawl. Les news gardent leur fenetre de 30 j (12 clics avant la chute).
+ */
+const NEVER_INDEXED_FORMATS: ReadonlySet<Guide["format"]> = new Set(["daily"]);
 
 /**
  * Indexable = traduit dans la locale ET, pour un format date, publie depuis moins de
@@ -49,6 +55,7 @@ const DATED_FORMATS: ReadonlySet<Guide["format"]> = new Set(["daily", "news"]);
  * Une seule verite pour la page (robots) et le sitemap.
  */
 export function isGuideIndexable(guide: Guide, locale: string, now: Date = new Date()): boolean {
+  if (NEVER_INDEXED_FORMATS.has(guide.format)) return false;
   if (!isGuideTranslated(guide, locale)) return false;
   if (!DATED_FORMATS.has(guide.format)) return true;
   const ts = Date.parse(guide.published_at);

@@ -24,13 +24,16 @@ describe("isGuideIndexable", () => {
     expect(isGuideIndexable(guide("mid", 400), "en", NOW)).toBe(true);
     expect(isGuideIndexable(guide("long", 400), "fr", NOW)).toBe(true);
   });
-  it("garde un daily ou une news de moins de 30 jours", () => {
-    expect(isGuideIndexable(guide("daily", 10), "en", NOW)).toBe(true);
+  it("garde une news de moins de 30 jours", () => {
     expect(isGuideIndexable(guide("news", 29), "en", NOW)).toBe(true);
   });
-  it("retire un daily ou une news de plus de 30 jours", () => {
-    expect(isGuideIndexable(guide("daily", 31), "en", NOW)).toBe(false);
+  it("retire une news de plus de 30 jours", () => {
     expect(isGuideIndexable(guide("news", 90), "en", NOW)).toBe(false);
+  });
+  it("ne garde jamais un bulletin meteo daily, meme du jour", () => {
+    expect(isGuideIndexable(guide("daily", 0), "en", NOW)).toBe(false);
+    expect(isGuideIndexable(guide("daily", 10), "en", NOW)).toBe(false);
+    expect(isGuideIndexable(guide("daily", 31), "en", NOW)).toBe(false);
   });
   it("retire toujours une locale servie en anglais par repli", () => {
     expect(isGuideIndexable(guide("mid", 1), "de", NOW)).toBe(false);
