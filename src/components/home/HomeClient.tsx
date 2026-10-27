@@ -531,8 +531,10 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                         <div className="relative">
                           {guide.image_url ? (
                             <>
-                              <Image src={guide.image_url} alt={gTitle} fill sizes="112px"
-                                   className="object-cover saturate-[1.08]" />
+                              {/* width/height explicites : `fill` + sizes en px emet 15 entrees de
+                                  srcset (2,4 Ko par vignette, cf. ExploreView 27/10/2026). */}
+                              <Image src={guide.image_url} alt={gTitle} width={112} height={112}
+                                   className="absolute inset-0 h-full w-full object-cover saturate-[1.08]" />
                               <div className="absolute inset-0 bg-gradient-to-b from-lagoon/5 to-night/35 pointer-events-none" />
                             </>
                           ) : (
