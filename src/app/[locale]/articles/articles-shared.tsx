@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
   Clock, ChevronRight, Waves, Mountain, Plane, UtensilsCrossed,
-  Home, Newspaper, Users, BookOpen,
+  Home, Newspaper, Users, BookOpen, BarChart3,
 } from "lucide-react";
 import { getLocalizedGuideField, type Guide } from "@/lib/guides";
 import { AbstractFallback } from "@/components/AbstractFallback";
@@ -15,6 +15,8 @@ export const CATEGORY_LABELS: Record<string, Record<string, string>> = {
   expat: { en: "Expat life", fr: "Vie d'expatrié", de: "Expat-Leben", el: "Ζωή εκπατρισμένου" },
   news: { en: "News", fr: "Actualités", de: "Nachrichten", el: "Νέα" },
   family: { en: "Family", fr: "Famille", de: "Familie", el: "Οικογένεια" },
+  // Relevés chiffrés (« La Crète en chiffres » mensuel, chiffres-mensuels.py).
+  data: { en: "Data", fr: "Données", de: "Daten", el: "Δεδομένα" },
 };
 
 export const CATEGORY_COLORS: Record<string, string> = {
@@ -25,6 +27,7 @@ export const CATEGORY_COLORS: Record<string, string> = {
   expat: "bg-surface text-text-muted",
   news: "bg-sea-faint text-sea",
   family: "bg-sand text-text",
+  data: "bg-sea-faint text-sea",
 };
 
 /**
@@ -41,6 +44,7 @@ const CATEGORY_FALLBACK: Record<string, { kind: "sea" | "land" | "news"; Icon: t
   expat: { kind: "land", Icon: Home },
   news: { kind: "news", Icon: Newspaper },
   family: { kind: "land", Icon: Users },
+  data: { kind: "sea", Icon: BarChart3 },
 };
 
 export function GuideCardFallback({ category }: { category: string; slug?: string }) {

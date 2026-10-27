@@ -1,0 +1,213 @@
+{
+ "year": 2026,
+ "month": 10,
+ "generated_on": "2026-10-27",
+ "flights": {
+  "from": "2026-10-01",
+  "to": "2026-10-26",
+  "days": 26,
+  "prev_from": "2026-09-01",
+  "prev_to": "2026-09-26",
+  "airports": [
+   {
+    "iata": "CHQ",
+    "arrivals": 1371,
+    "arrivals_prev": 1730
+   },
+   {
+    "iata": "HER",
+    "arrivals": 3286,
+    "arrivals_prev": 4465
+   }
+  ],
+  "weeks": [
+   {
+    "from": "2026-10-01",
+    "to": "2026-10-04",
+    "arrivals": 908,
+    "full": false
+   },
+   {
+    "from": "2026-10-05",
+    "to": "2026-10-11",
+    "arrivals": 1383,
+    "full": true
+   },
+   {
+    "from": "2026-10-12",
+    "to": "2026-10-18",
+    "arrivals": 1294,
+    "full": true
+   },
+   {
+    "from": "2026-10-19",
+    "to": "2026-10-25",
+    "arrivals": 1013,
+    "full": true
+   },
+   {
+    "from": "2026-10-26",
+    "to": "2026-10-26",
+    "arrivals": 59,
+    "full": false
+   }
+  ],
+  "origins": [
+   {
+    "name": "Athens",
+    "arrivals": 585
+   },
+   {
+    "name": "Frankfurt",
+    "arrivals": 193
+   },
+   {
+    "name": "Dusseldorf",
+    "arrivals": 171
+   },
+   {
+    "name": "Munich",
+    "arrivals": 150
+   },
+   {
+    "name": "Thessaloniki",
+    "arrivals": 142
+   },
+   {
+    "name": "Zurich",
+    "arrivals": 119
+   },
+   {
+    "name": "London Gatwick",
+    "arrivals": 116
+   },
+   {
+    "name": "Tel Aviv",
+    "arrivals": 114
+   }
+  ],
+  "origins_total": 165
+ },
+ "hcaa": {
+  "year": 2026,
+  "month": 9,
+  "airports": [
+   {
+    "iata": "HER",
+    "pax": 1531109,
+    "pax_prev": 1473944,
+    "movements": 9421
+   },
+   {
+    "iata": "CHQ",
+    "pax": 666432,
+    "pax_prev": 615054,
+    "movements": 4003
+   },
+   {
+    "iata": "JSH",
+    "pax": 5521,
+    "pax_prev": 6180,
+    "movements": 150
+   }
+  ],
+  "ytd": 12701345,
+  "ytd_prev": 12002186,
+  "source_url": "http://www.ypa.gr/userfiles/4659ed30-b59b-4111-9747-a3550129731a/(EL)%20%ce%9a%ce%99%ce%9d%ce%97%ce%a3%ce%97%20%ce%91%ce%95%ce%a1%ce%9f%ce%9b%ce%99%ce%9c%ce%95%ce%9d%ce%a9%ce%9d%202026_4.xlsx"
+ },
+ "cruise": {
+  "month": {
+   "calls": 38,
+   "ships": 22,
+   "capacity": 48268,
+   "days": 24
+  },
+  "next": {
+   "calls": 16,
+   "ships": 11,
+   "capacity": 21033,
+   "days": 16
+  },
+  "next_year": 2026,
+  "next_month": 11,
+  "top_ships": [
+   {
+    "name": "Celestyal Discovery",
+    "calls": 7,
+    "capacity": 1582
+   },
+   {
+    "name": "Mein Schiff 5",
+    "calls": 3,
+    "capacity": 2534
+   },
+   {
+    "name": "AIDAstella",
+    "calls": 2,
+    "capacity": 2174
+   }
+  ]
+ },
+ "airbnb": {
+  "snapshot": "2026-09-25",
+  "listings": 27381,
+  "reviews": 672725,
+  "listings_prev": 27582,
+  "snapshot_prev": "2025-09-28",
+  "priced": 24515,
+  "licensed_pct": 96.62247603508057,
+  "median_price": 128.0,
+  "pro_pct": 29.97756475627167,
+  "entire_pct": 90.54048541709157,
+  "rating": 4.85,
+  "areas": [
+   {
+    "name": "Chania",
+    "listings": 6165
+   },
+   {
+    "name": "Rethymno",
+    "listings": 3139
+   },
+   {
+    "name": "Hersonissos",
+    "listings": 2312
+   },
+   {
+    "name": "Heraklion",
+    "listings": 2119
+   },
+   {
+    "name": "Apokoronas",
+    "listings": 1847
+   }
+  ],
+  "south_aegean": {
+   "snapshot": "2026-09-20",
+   "listings": 36644
+  }
+ },
+ "bog": {
+  "year": 2025,
+  "cur": {
+   "receipts": 4342.5522687977,
+   "overnight_stays": 48621.9409043337,
+   "expenditure_per_visit": 683.801142843548,
+   "visits": 6350.60691875923,
+   "expenditure_per_night": 89.3126063671936,
+   "average_stay": 7.65626679880123
+  },
+  "prev": {
+   "receipts": 4568.71465201271,
+   "expenditure_per_visit": 766.692377779999,
+   "visits": 5958.99318216999,
+   "overnight_stays": 46705.6440988639,
+   "expenditure_per_night": 97.8193265538082,
+   "average_stay": 7.83784150628209
+  }
+ },
+ "bus_live": {
+  "chania": 484,
+  "heraklion": 533
+ }
+}
