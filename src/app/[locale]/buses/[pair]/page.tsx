@@ -10,6 +10,7 @@ import { eligiblePairs, pairRoutes, onwardPlaces, pairSlug, slugifyPlace, placeL
 import { pairHasTimetable, type SeoRoute } from "@/lib/bus-seo";
 import { getBusAlerts } from "@/lib/bus-alerts";
 import { RouteAlertBanner } from "@/components/RouteAlertBanner";
+import { OfflineNotice } from "@/components/OfflineNotice";
 import { TaxiCompare } from "@/components/TaxiCompare";
 import { NextDeparture } from "@/components/NextDeparture";
 import { TimeChips } from "@/components/TimeChips";
@@ -369,6 +370,7 @@ export default async function BusPairPage({ params }: { params: Promise<Params> 
               {T.updatedOn[ui]} {new Date(updatedAt).toLocaleDateString(locale)}
             </p>
           )}
+          <div className="mt-4"><OfflineNotice locale={locale} updatedAt={updatedAt} /></div>
         </div>
       </header>
 

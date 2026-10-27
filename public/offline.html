@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Offline · crete.direct</title>
+<style>
+  :root { color-scheme: light; }
+  body { margin: 0; background: #F6FAFB; color: #0B3954; font-family: 'Baloo 2', 'Trebuchet MS', Verdana, Arial, sans-serif; }
+  main { max-width: 520px; margin: 0 auto; padding: 40px 20px 60px; }
+  .mark { font-weight: 800; font-size: 18px; color: #07374A; }
+  .mark span { color: #FFC83D; }
+  h1 { font-size: 26px; line-height: 1.2; margin: 28px 0 8px; }
+  p { margin: 0 0 12px; line-height: 1.5; }
+  .sub { color: #5B6B74; font-size: 14px; }
+  ul { list-style: none; padding: 0; margin: 20px 0 0; }
+  li a { display: block; padding: 12px 14px; margin-bottom: 8px; background: #fff; border: 1px solid #DCE9EE; border-radius: 14px; color: #0B3954; text-decoration: none; font-weight: 700; }
+  li a small { display: block; color: #5B6B74; font-weight: 400; font-size: 12px; margin-top: 2px; }
+  .retry { display: inline-block; margin-top: 24px; padding: 10px 16px; border-radius: 14px; background: #FFC83D; color: #07374A; font-weight: 800; text-decoration: none; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <div class="mark">crete<span>·</span>direct</div>
+  <h1>You are offline</h1>
+  <p>This page was not saved on your phone. The bus timetables you opened while online are still here:</p>
+  <p class="sub">Vous êtes hors ligne : les horaires de bus déjà ouverts restent disponibles ci-dessous. · Sie sind offline: bereits geöffnete Busfahrpläne finden Sie unten. · Είστε εκτός σύνδεσης: τα δρομολόγια που ανοίξατε παραμένουν διαθέσιμα παρακάτω.</p>
+  <ul id="saved"></ul>
+  <p id="none" class="sub hidden">No timetable saved yet. Open a route while you have signal and it will stay available offline.</p>
+  <a class="retry" href="" onclick="location.reload();return false;">Try again</a>
+</main>
+<script>
+(async () => {
+  const ul = document.getElementById("saved");
+  const none = document.getElementById("none");
+  try {
+    const cache = await caches.open("cd-bus-pages-v1");
+    const reqs = await cache.keys();
+    const seen = new Set();
+    for (const r of reqs) {
+      const u = new URL(r.url);
+      if (!/\/buses(\/|$)/.test(u.pathname) || seen.has(u.pathname)) continue;
+      seen.add(u.pathname);
+      const parts = u.pathname.split("/").filter(Boolean);
+      const tail = parts.slice(2).join(" / ") || "Bus hub";
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.href = u.pathname;
+      a.textContent = decodeURIComponent(tail).replace(/-to-/g, " → ").replace(/-/g, " ");
+      const s = document.createElement("small");
+      s.textContent = u.pathname;
+      a.appendChild(s);
+      li.appendChild(a);
+      ul.appendChild(li);
+    }
+    if (!seen.size) none.classList.remove("hidden");
+  } catch (_e) {
+    none.classList.remove("hidden");
+  }
+})();
+</script>
+</body>
+</html>

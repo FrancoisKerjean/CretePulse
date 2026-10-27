@@ -16,6 +16,7 @@ import { RouteLine } from "@/components/RouteLine";
 import { originPlaces } from "@/lib/bus-departures";
 import { pairSlug } from "@/lib/bus-pairs";
 import { PushBell } from "@/components/PushBell";
+import { OfflineNotice } from "@/components/OfflineNotice";
 import { CarPromo } from "@/components/car-rental/CarPromo";
 
 // ---------------------------------------------------------------------------
@@ -431,6 +432,7 @@ export function BusesClient({
               {t("updatedOn", locale)} {new Date(updatedAt).toLocaleDateString(locale)}
             </p>
           )}
+          <div className="mt-3"><OfflineNotice locale={locale} updatedAt={updatedAt} /></div>
           {/* Opt-in push : alertes bus KTEL + infos urgentes (consentement explicite) */}
           <div className="mt-3">
             <PushBell locale={locale} />
