@@ -4,6 +4,7 @@ import type { Locale } from "@/lib/types";
 import { Wind, Droplets, Sun, Thermometer, Waves, Eye } from "lucide-react";
 import { buildAlternates } from "@/lib/seo";
 import { ShareBar } from "@/components/ShareBar";
+import { CarPromo } from "@/components/car-rental/CarPromo";
 
 export const revalidate = 7200;
 
@@ -114,6 +115,13 @@ export default async function WeatherPage({ params }: { params: Promise<{ locale
           <h1 className="text-3xl font-bold text-sea">{title}</h1>
           <p className="text-text-muted mt-2">{subtitle}</p>
           <ShareBar url={`${BASE_URL}/${locale}/weather`} title={title} locale={locale} className="mt-4" />
+        </div>
+
+        {/* Saison 2027 pt 2 (27/10/2026) : /de/weather = 2e page allemande (408 vues/28 j)
+            sans aucun appel voiture. Sous l'en-tete, pas sous les 10 cartes : en bas de
+            page l'encart etait hors de portee sur mobile (shot du 27/10). */}
+        <div className="mb-8">
+          <CarPromo locale={locale} source="weather" />
         </div>
 
         {/* Cities grid */}

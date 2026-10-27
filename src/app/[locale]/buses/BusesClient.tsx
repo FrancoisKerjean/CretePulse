@@ -557,7 +557,16 @@ export function BusesClient({
                 <CarPromo locale={locale} source="buses-noroute" />
               </div>
             ) : (
-              <RouteList list={filtered} locale={locale} />
+              <>
+                <RouteList list={filtered} locale={locale} />
+                {/* Saison 2027 pt 2 (27/10/2026) : l'encart buses-home ne vit que sans
+                    recherche, or /de/buses est la 1re page allemande (586 vues/28 j) et
+                    buses-home n'y fait que 28 impressions : les visiteurs cherchent
+                    d'abord. Sous la liste des trajets trouves, source distincte. */}
+                <div className="mt-6">
+                  <CarPromo locale={locale} source="buses-results" />
+                </div>
+              </>
             )}
           </div>
         ) : (
