@@ -32,13 +32,19 @@ export const INDEXABLE_ROBOTS = {
  *
  * @param path - The path after locale, e.g. "/beaches/balos" or "" for home
  */
-export function buildAlternates(locale: string, path: string = "") {
+export function buildAlternates(
+  locale: string,
+  path: string = "",
+  // Locales ou la page est indexable (sous-ensemble d'INDEXABLE_LOCALES). Une page
+  // servie en noindex dans une locale ne doit pas etre annoncee comme alternate.
+  locales: readonly string[] = INDEXABLE_LOCALES,
+) {
   const canonical = `${BASE_URL}/${locale}${path}`;
   const languages: Record<string, string> = {};
   for (const loc of INDEXABLE_LOCALES) {
-    languages[loc] = `${BASE_URL}/${loc}${path}`;
+    if (locales.includes(loc)) languages[loc] = `${BASE_URL}/${loc}${path}`;
   }
-  languages["x-default"] = `${BASE_URL}/en${path}`;
+  languages["x-default"] = `${BASE_URL}/${locales.includes("en") ? "en" : locales[0]}${path}`;
   return { canonical, languages };
 }
 

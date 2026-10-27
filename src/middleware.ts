@@ -18,17 +18,16 @@ function toAsciiPath(pathname: string): string | null {
   } catch {
     return null; // % malforme (scan bot) : laisse next-intl gerer
   }
-  let hasNonAscii = false;
-  for (let i = 0; i < decoded.length; i++) {
-    if (decoded.charCodeAt(i) > 127) {
-      hasNonAscii = true;
-      break;
-    }
+  // La virgule est le separateur des cache tags Next : un slug qui en porte rend 404
+  // (29 cb_places, migration 20261027_cb_places_comma_slugs). Meme traitement.
+  let needsFix = decoded.includes(",");
+  for (let i = 0; !needsFix && i < decoded.length; i++) {
+    if (decoded.charCodeAt(i) > 127) needsFix = true;
   }
-  if (!hasNonAscii) return null; // deja ASCII : cout nul
+  if (!needsFix) return null; // deja canonique : cout nul
 
   const ascii = Array.from(decoded.normalize("NFKD"))
-    .filter((ch) => ch.charCodeAt(0) <= 127)
+    .filter((ch) => ch.charCodeAt(0) <= 127 && ch !== ",")
     .join("")
     .replace(/-{2,}/g, "-");
   return ascii !== decoded ? ascii : null;

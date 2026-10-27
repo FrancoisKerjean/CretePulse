@@ -1,9 +1,10 @@
 import { supabase } from "./supabase";
+import { NEWS_INDEXABLE_MAX_AGE_DAYS } from "./news";
 
 export interface Guide {
   id: number;
   slug: string;
-  format: "long" | "mid" | "daily";
+  format: "long" | "mid" | "short" | "daily" | "news";
   category: string;
   keywords: string[];
   titles: Record<string, string>;
@@ -35,6 +36,24 @@ export function isGuideTranslated(guide: Guide, locale: string): boolean {
   if (locale === "en") return true;
   const c = guide.contents?.[locale];
   return !!c && c.trim().length > 0 && c.trim() !== (guide.contents?.["en"] || "").trim();
+}
+
+/** Formats dates (meteo du jour, recap presse) : perimes passes 30 j, comme les news. */
+const DATED_FORMATS: ReadonlySet<Guide["format"]> = new Set(["daily", "news"]);
+
+/**
+ * Indexable = traduit dans la locale ET, pour un format date, publie depuis moins de
+ * NEWS_INDEXABLE_MAX_AGE_DAYS. 235 des 508 articles du sitemap etaient des
+ * `crete-weather-*` / `crete-news-recap-*` perimes (27/10/2026), le format mesure a
+ * 0,2 visiteur par guide (project_crete_direct_guides) : ils diluaient le crawl.
+ * Une seule verite pour la page (robots) et le sitemap.
+ */
+export function isGuideIndexable(guide: Guide, locale: string, now: Date = new Date()): boolean {
+  if (!isGuideTranslated(guide, locale)) return false;
+  if (!DATED_FORMATS.has(guide.format)) return true;
+  const ts = Date.parse(guide.published_at);
+  if (Number.isNaN(ts)) return false;
+  return now.getTime() - ts <= NEWS_INDEXABLE_MAX_AGE_DAYS * 86_400_000;
 }
 
 export function getLocalizedFaqs(

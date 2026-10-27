@@ -11,7 +11,7 @@ import {
   getLocalizedGuideField,
   getLocalizedFaqs,
   extractToc,
-  isGuideTranslated,
+  isGuideIndexable,
   type Guide,
 } from "@/lib/guides";
 import { getAutolinkIndex, autolinkHtml } from "@/lib/autolink";
@@ -60,7 +60,7 @@ export async function generateMetadata({
     // identical-content URLs don't cannibalise each other; keep follow for link equity.
     // INDEXABLE_ROBOTS (pas undefined) : une clé robots même undefined écrase
     // le max-image-preview:large du layout, requis par Discover.
-    robots: isGuideTranslated(guide, locale) ? INDEXABLE_ROBOTS : { index: false, follow: true },
+    robots: isGuideIndexable(guide, locale) ? INDEXABLE_ROBOTS : { index: false, follow: true },
     openGraph: {
       title,
       description,

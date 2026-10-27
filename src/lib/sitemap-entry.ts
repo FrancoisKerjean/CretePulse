@@ -33,7 +33,7 @@ export function escapeXml(s: string): string {
  *
  * Spec : docs/superpowers/specs/2026-08-01-seo-locale-scope-design.md
  */
-export function sitemapUrlEntry(entry: SitemapEntry, fallbackLastmod: string): string {
+export function sitemapUrlEntry(entry: SitemapEntry): string {
   // Une page servie en noindex dans une locale n'est ni loc, ni alternate, ni x-default :
   // l'annoncer donne a Google deux ordres contraires sur la meme URL.
   const locales = entry.locales
@@ -49,11 +49,12 @@ export function sitemapUrlEntry(entry: SitemapEntry, fallbackLastmod: string): s
   const xDefault = `    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(`${BASE_URL}/${primary}${entry.path}`)}" />`;
 
   const loc = `${BASE_URL}/${primary}${entry.path}`;
-  const lastmod = entry.lastmod || fallbackLastmod;
+  // Pas de lastmod inconnu : 2 856 des 3 500 URL portaient la date du build (27/10/2026),
+  // ce que Google ignore et qui discredite les lastmod vrais (news, guides, paires bus).
+  const lastmod = entry.lastmod ? `\n    <lastmod>${entry.lastmod}</lastmod>` : "";
 
   return `  <url>
-    <loc>${escapeXml(loc)}</loc>
-    <lastmod>${lastmod}</lastmod>
+    <loc>${escapeXml(loc)}</loc>${lastmod}
     <changefreq>${entry.changefreq}</changefreq>
     <priority>${entry.priority.toFixed(1)}</priority>
 ${alternates}

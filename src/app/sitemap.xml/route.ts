@@ -20,6 +20,8 @@ import { supabase } from "@/lib/supabase";
 import { qualityPairSlugs, priorityPairSlugs, pairLastmod } from "@/lib/bus-seo";
 import { MONTHS, CITIES, WEATHER_INDEX_LOCALES } from "@/lib/weather-monthly";
 import { isNewsTranslated, NEWS_INDEXABLE_MAX_AGE_DAYS } from "@/lib/news";
+import { isGuideIndexable, type Guide } from "@/lib/guides";
+import { EXPLORE_LOCALES } from "@/lib/explore-locales";
 import type { NewsItem } from "@/lib/types";
 import { CRETE_NEIGHBOURHOODS } from "@/lib/airbnb-mappings";
 import { CRETE_AIRPORTS } from "@/lib/airports";
@@ -100,7 +102,7 @@ async function fetchSlugsWithDate(
   extra?: string,
 ): Promise<Array<{ slug: string; lastmod: string; locales?: string[] }>> {
   try {
-    const cols = `slug, ${dateCol}`;
+    const cols = extra === "guides_published" ? `slug, ${dateCol}, format, contents` : `slug, ${dateCol}`;
     let q = supabase.from(table).select(cols);
     if (extra === "news") {
       // Une news de plus de NEWS_INDEXABLE_MAX_AGE_DAYS est servie en noindex : sans
@@ -127,11 +129,14 @@ async function fetchSlugsWithDate(
     return rows.map((r) => ({
       slug: r.slug,
       lastmod: new Date(r[dateCol]).toISOString(),
-      // Une locale sans traduction sert l'anglais en noindex (isNewsTranslated).
+      // Une locale sans traduction sert l'anglais en noindex (isNewsTranslated,
+      // isGuideIndexable) ; un daily/news perime est noindex partout.
       locales:
         extra === "news"
           ? INDEXABLE_LOCALES.filter((l) => isNewsTranslated(r as unknown as NewsItem, l))
-          : undefined,
+          : extra === "guides_published"
+            ? INDEXABLE_LOCALES.filter((l) => isGuideIndexable(r as unknown as Guide, l))
+            : undefined,
     }));
   } catch {
     return [];
@@ -254,12 +259,14 @@ export async function GET() {
   void foodPlaces;
   for (const s of hikes) push(`/hikes/${s}`, "monthly", 0.6);
   for (const n of news) push(`/news/${n.slug}`, "daily", 0.5, n.lastmod, n.locales);
-  for (const g of guides) push(`/articles/${g.slug}`, "weekly", 0.7, g.lastmod);
+  for (const g of guides) push(`/articles/${g.slug}`, "weekly", 0.7, g.lastmod, g.locales);
 
   // /explore/[slug] : 2294+ fiches lieux (cb_places). Toutes les fiches sont
   // indexables : pages dédiées avec bento, description, JSON-LD, CTAs. Priorité
   // 0.6 (infra, comme /beaches/[slug]) ; changefreq mensuelle (données stables).
-  // Le sitemap ne filtre pas par locale (/en/* est la loc canonique dans urlEntry).
+  // Indexables en /en seulement (EXPLORE_LOCALES) : la description n'existe qu'en anglais.
+  // Un slug a virgule rend 404 (separateur des cache tags Next) : exclu jusqu'a la
+  // migration 20261027_cb_places_comma_slugs, le middleware redirige deja en 308.
   // PostgREST plafonne à 1000 lignes par requête : on pagine par tranches de 1000
   // avec .range(offset, offset+999) + .order("slug") jusqu'à épuisement.
   try {
@@ -275,7 +282,8 @@ export async function GET() {
       if (error) break;
       const rows = (page || []) as Array<{ slug: string }>;
       for (const row of rows) {
-        push(`/explore/${row.slug}`, "monthly", 0.6);
+        if (row.slug.includes(",")) continue;
+        push(`/explore/${row.slug}`, "monthly", 0.6, undefined, EXPLORE_LOCALES);
       }
       if (rows.length < PAGE_SIZE) {
         done = true;
@@ -287,8 +295,7 @@ export async function GET() {
     // Silencieux : le sitemap reste valide sans les fiches /explore.
   }
 
-  const lastmod = new Date().toISOString();
-  const xmlEntries = entries.map((e) => sitemapUrlEntry(e, lastmod)).filter(Boolean).join("\n");
+  const xmlEntries = entries.map((e) => sitemapUrlEntry(e)).filter(Boolean).join("\n");
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset

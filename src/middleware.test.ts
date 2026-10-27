@@ -64,4 +64,14 @@ describe("middleware : X-Robots-Tag par locale", () => {
 
     expect(middleware(r).status).toBe(403);
   });
+
+  // 29 slugs cb_places portent une virgule (`agii-pantes-monastery,-loutraki`) : la page
+  // rend 404 (la virgule est le separateur des cache tags Next) et le sitemap les
+  // annoncait quand meme. Meme geste que pour les accents : 308 vers la forme canonique,
+  // alignee sur la migration 20261027_cb_places_comma_slugs.
+  it("redirige en 308 un slug a virgule vers sa forme sans virgule", () => {
+    const res = middleware(req("/en/explore/agii-pantes-monastery,-loutraki"));
+    expect(res.status).toBe(308);
+    expect(res.headers.get("location")).toBe("https://crete.direct/en/explore/agii-pantes-monastery-loutraki");
+  });
 });

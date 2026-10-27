@@ -10,7 +10,8 @@ import { getCbPlaceBySlug } from "@/lib/cb-places";
 import { typeLabel } from "@/lib/cb-type-labels";
 import { cleanCbDescription } from "@/lib/cb-place-helpers";
 import { CbPlaceActions } from "@/components/explore/CbPlaceActions";
-import { buildAlternates } from "@/lib/seo";
+import { buildAlternates, INDEXABLE_ROBOTS } from "@/lib/seo";
+import { EXPLORE_LOCALES } from "@/lib/explore-locales";
 import { ExploreBento } from "@/components/explore/bento/ExploreBento";
 import { ReadMoreAccordion } from "@/components/explore/bento/shared/ReadMoreAccordion";
 import { ReviewCTA } from "@/components/reviews/ReviewCTA";
@@ -46,7 +47,8 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: buildAlternates(locale, `/explore/${slug}`),
+    alternates: buildAlternates(locale, `/explore/${slug}`, EXPLORE_LOCALES),
+    robots: EXPLORE_LOCALES.includes(locale) ? INDEXABLE_ROBOTS : { index: false, follow: true },
     openGraph: {
       title,
       description,

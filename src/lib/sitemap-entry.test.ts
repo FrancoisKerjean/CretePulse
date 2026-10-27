@@ -7,11 +7,10 @@ import { sitemapUrlEntry } from "./sitemap-entry";
 // Spec : docs/superpowers/specs/2026-08-01-seo-locale-scope-design.md
 
 const entry = { path: "/beaches", changefreq: "monthly" as const, priority: 0.6 };
-const LASTMOD = "2026-08-01T00:00:00.000Z";
 
 describe("sitemapUrlEntry", () => {
   it("n'annonce que les 4 locales indexables plus x-default", () => {
-    const xml = sitemapUrlEntry(entry, LASTMOD);
+    const xml = sitemapUrlEntry(entry);
 
     expect(xml.match(/rel="alternate"/g)).toHaveLength(5);
     for (const loc of ["en", "fr", "de", "el"]) {
@@ -21,7 +20,7 @@ describe("sitemapUrlEntry", () => {
   });
 
   it("n'annonce plus aucune locale hors perimetre", () => {
-    const xml = sitemapUrlEntry(entry, LASTMOD);
+    const xml = sitemapUrlEntry(entry);
 
     for (const loc of ["es", "ja", "ru", "cs", "no", "pt", "hu", "fi"]) {
       expect(xml, `locale ${loc}`).not.toContain(`hreflang="${loc}"`);
@@ -29,19 +28,19 @@ describe("sitemapUrlEntry", () => {
   });
 
   it("garde le loc canonique en /en", () => {
-    expect(sitemapUrlEntry(entry, LASTMOD)).toContain(
+    expect(sitemapUrlEntry(entry)).toContain(
       "<loc>https://crete.direct/en/beaches</loc>",
     );
   });
 
   it("utilise le lastmod de l'entree quand elle en porte un", () => {
-    const xml = sitemapUrlEntry({ ...entry, lastmod: "2026-07-15T10:00:00.000Z" }, LASTMOD);
+    const xml = sitemapUrlEntry({ ...entry, lastmod: "2026-07-15T10:00:00.000Z" });
 
     expect(xml).toContain("<lastmod>2026-07-15T10:00:00.000Z</lastmod>");
   });
 
   it("echappe les caracteres XML du chemin", () => {
-    const xml = sitemapUrlEntry({ ...entry, path: "/explore/a&b" }, LASTMOD);
+    const xml = sitemapUrlEntry({ ...entry, path: "/explore/a&b" });
 
     expect(xml).toContain("a&amp;b");
     expect(xml).not.toContain("a&b<");
@@ -51,7 +50,7 @@ describe("sitemapUrlEntry", () => {
   // (120 meteo en /en, 405 news de plus de 30 jours). Une entree peut maintenant
   // restreindre ses locales a celles qui sont reellement indexables.
   it("restreint loc et alternates aux locales passees", () => {
-    const xml = sitemapUrlEntry({ ...entry, path: "/weather/chania/july", locales: ["fr", "de", "el"] }, LASTMOD);
+    const xml = sitemapUrlEntry({ ...entry, path: "/weather/chania/july", locales: ["fr", "de", "el"] });
 
     expect(xml).toContain("<loc>https://crete.direct/fr/weather/chania/july</loc>");
     expect(xml).not.toContain('hreflang="en"');
@@ -60,14 +59,14 @@ describe("sitemapUrlEntry", () => {
   });
 
   it("ignore une locale passee hors perimetre indexable", () => {
-    const xml = sitemapUrlEntry({ ...entry, locales: ["fr", "ru"] }, LASTMOD);
+    const xml = sitemapUrlEntry({ ...entry, locales: ["fr", "ru"] });
 
     expect(xml).not.toContain('hreflang="ru"');
     expect(xml).toContain("<loc>https://crete.direct/fr/beaches</loc>");
   });
 
   it("garde /en en loc et en x-default quand en fait partie des locales", () => {
-    const xml = sitemapUrlEntry({ ...entry, locales: ["en", "el"] }, LASTMOD);
+    const xml = sitemapUrlEntry({ ...entry, locales: ["en", "el"] });
 
     expect(xml).toContain("<loc>https://crete.direct/en/beaches</loc>");
     expect(xml.match(/rel="alternate"/g)).toHaveLength(3);
@@ -75,6 +74,12 @@ describe("sitemapUrlEntry", () => {
   });
 
   it("n'emet rien pour une entree sans aucune locale indexable", () => {
-    expect(sitemapUrlEntry({ ...entry, locales: ["ru"] }, LASTMOD)).toBe("");
+    expect(sitemapUrlEntry({ ...entry, locales: ["ru"] })).toBe("");
+  });
+
+  // 2 856 des 3 500 URL portaient la date du build (releve du 27/10/2026) : un lastmod
+  // toujours « aujourd'hui » est ignore par Google et discredite ceux qui sont vrais.
+  it("n'emet AUCUN lastmod quand l'entree n'en connait pas", () => {
+    expect(sitemapUrlEntry(entry)).not.toContain("<lastmod>");
   });
 });
