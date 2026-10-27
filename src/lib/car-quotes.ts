@@ -149,6 +149,42 @@ export function sortOptionsByPrice(options: QuoteOption[]): QuoteOption[] {
   return [...options].filter((o) => o.price != null).sort((a, b) => a.price - b.price);
 }
 
+/**
+ * Plancher de vraisemblance d'un prix par jour. Cas reels du 26/08/2026 : les options 233
+ * (1 EUR) et 237 (2 EUR) portaient « we don't have available cars » dans car_model et
+ * sortaient EN TETE de liste chez le client, sous notre entete. Toute offre acceptee en 2026
+ * vaut 22 a 91 EUR/jour. Sous ce plancher, l'offre n'est pas un prix : elle n'est pas montree.
+ */
+export const MIN_PLAUSIBLE_EUR_PER_DAY = 10;
+
+/**
+ * Offres montrees depliees au client. Mesure 90 j au 27/10/2026 (ClickHouse + car_requests) :
+ * les clients ouvrent la page (12 visiteurs pour 7 demandes), voient 4 a 7 offres a ecart
+ * large, et 21 sur 30 ne choisissent jamais. Les suivantes restent accessibles, repliees.
+ */
+export const OFFERS_SHOWN_MAX = 3;
+
+export interface CuratedOffers {
+  /** Les moins cheres, depliees. */
+  shown: QuoteOption[];
+  /** Le reste des offres vraisemblables, repliees sous « voir les N autres ». */
+  folded: QuoteOption[];
+  /** Sous le plancher : jamais montrees au client (le loueur a mal utilise le champ prix). */
+  implausible: QuoteOption[];
+}
+
+/** Tri par prix, plancher par jour, puis coupe a OFFERS_SHOWN_MAX. Pur, sans I/O. */
+export function curateOffers(options: QuoteOption[], rentalDays: number): CuratedOffers {
+  const days = Math.max(1, rentalDays);
+  const sorted = sortOptionsByPrice(options);
+  const plausible = sorted.filter((o) => o.price / days >= MIN_PLAUSIBLE_EUR_PER_DAY);
+  return {
+    shown: plausible.slice(0, OFFERS_SHOWN_MAX),
+    folded: plausible.slice(OFFERS_SHOWN_MAX),
+    implausible: sorted.filter((o) => o.price / days < MIN_PLAUSIBLE_EUR_PER_DAY),
+  };
+}
+
 /** L'option choisie par le client : doit exister dans la liste. Sinon null. */
 export function findChosenOption(options: QuoteOption[], optionId: number): QuoteOption | null {
   return options.find((o) => o.id === optionId) ?? null;

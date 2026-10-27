@@ -13,7 +13,7 @@ import { isOfferExpired } from "@/lib/car-offer-expiry";
 import { sharedOfferCopy } from "@/lib/car-offer-copy";
 import { requestByClientToken } from "@/lib/car-quotes-db";
 import { rentalDays } from "@/lib/car-pricing";
-import { sortOptionsByPrice, quotedModelLabel } from "@/lib/car-quotes";
+import { curateOffers, quotedModelLabel } from "@/lib/car-quotes";
 import type { QuoteOption } from "@/lib/car-quotes";
 
 const GEARBOX_LABEL: Record<string, string> = { automatic: "Automatic", manual: "Manual" };
@@ -28,6 +28,12 @@ const GEARBOX_ONLY: Record<string, Record<string, string>> = {
   el: { automatic: "Αυτόματο κιβώτιο", manual: "Χειροκίνητο κιβώτιο" },
 };
 const INSURANCE_HEADING: Record<string, string> = { en: "Insurance", fr: "Assurance", de: "Versicherung", el: "Ασφάλιση" };
+const MORE_OFFERS: Record<string, string> = {
+  en: "See the {n} other offers",
+  fr: "Voir les {n} autres offres",
+  de: "Die {n} weiteren Angebote ansehen",
+  el: "Δείτε τις {n} άλλες προσφορές",
+};
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -160,7 +166,14 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
   const found = await requestByClientToken(token);
   if (!found) notFound();
   const { request, options } = found;
-  const offers = sortOptionsByPrice(options);
+  // Les offres sous le plancher (prix bidon d'un loueur sans voiture) ne sont jamais
+  // montrees ; les 3 moins cheres sont depliees, le reste replie. Voir curateOffers.
+  const curated = curateOffers(
+    options,
+    rentalDays(request.date_from as string, request.date_to as string, request.time_from as string | null, request.time_to as string | null),
+  );
+  const offers = [...curated.shown, ...curated.folded];
+  const more = (MORE_OFFERS[locale] ?? MORE_OFFERS.en).replace("{n}", String(curated.folded.length));
 
   // Props de mesure, calculées ici une fois : le client qui ouvre cette page est
   // le maillon qu'on ne voyait pas. Voir src/lib/car-offer-metrics.ts.
@@ -211,10 +224,21 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
       {beacon("offers")}
       <p style={{ margin: "0 0 6px", color: "#008C9E", fontSize: 13, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", textAlign: "center" }}>crete · direct</p>
       <h1 style={{ margin: "0 0 20px", fontSize: 22, color: "#0B3954", fontWeight: 800, textAlign: "center" }}>{c.offersTitle}</h1>
-      {offers.map((offer, i) => (
+      {curated.shown.map((offer, i) => (
         <OfferCard key={offer.id} offer={offer} token={token} request={request} locale={locale} c={c}
           rank={i + 1} total={offers.length} />
       ))}
+      {curated.folded.length > 0 && (
+        <details style={{ margin: "4px 0 16px" }}>
+          <summary style={{ cursor: "pointer", color: "#0B3954", fontSize: 15, fontWeight: 700, padding: "10px 0", listStyle: "none", textAlign: "center" }}>
+            {more}
+          </summary>
+          {curated.folded.map((offer, i) => (
+            <OfferCard key={offer.id} offer={offer} token={token} request={request} locale={locale} c={c}
+              rank={curated.shown.length + i + 1} total={offers.length} />
+          ))}
+        </details>
+      )}
       <DeclineButton token={token} label={c.declineLink} doneText={c.declineDone} offers={offers.length} />
     </main>
   );

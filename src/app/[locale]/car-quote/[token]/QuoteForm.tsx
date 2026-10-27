@@ -7,10 +7,13 @@ import { perDayAmount } from "@/lib/car-pricing";
 // Copy i18n du bouton de désistement loueur (le reste du form reste EN : les
 // loueurs sont des pros locaux, l'anglais suffit — cf sendAgencyQuoteRequest).
 const DECLINE_COPY: Record<string, { link: string; sending: string; done: string }> = {
-  en: { link: "I can't quote this request", sending: "Sending…", done: "Noted, thank you." },
-  fr: { link: "Je ne peux pas répondre à cette demande", sending: "Envoi…", done: "Noté, merci." },
-  de: { link: "Ich kann diese Anfrage nicht bedienen", sending: "Senden…", done: "Notiert, danke." },
-  el: { link: "Δεν μπορώ να απαντήσω σε αυτό το αίτημα", sending: "Αποστολή…", done: "Σημειώθηκε, ευχαριστούμε." },
+  // Bouton visible, pas un lien gris : le 26/08/2026 deux loueurs sans voiture ont repondu
+  // « 1 EUR » / « 2 EUR » avec « we don't have available cars » dans le champ modele, faute
+  // d'avoir trouve ce chemin. Le client a vu ces lignes en tete de liste.
+  en: { link: "No car available for these dates", sending: "Sending…", done: "Noted, thank you. No need to enter a price." },
+  fr: { link: "Pas de voiture disponible à ces dates", sending: "Envoi…", done: "Noté, merci. Aucun prix à saisir." },
+  de: { link: "Kein Fahrzeug für diese Daten verfügbar", sending: "Senden…", done: "Notiert, danke. Kein Preis nötig." },
+  el: { link: "Δεν υπάρχει διαθέσιμο αυτοκίνητο για αυτές τις ημερομηνίες", sending: "Αποστολή…", done: "Σημειώθηκε, ευχαριστούμε. Δεν χρειάζεται τιμή." },
 };
 
 const GEARBOX_CHOICES = [["automatic", "Automatic"], ["manual", "Manual"], ["", "Any"]] as const;
@@ -252,7 +255,7 @@ export function QuoteForm({
       )}
       <button
         type="button" onClick={declineRequest} disabled={decline === "sending"}
-        style={{ marginTop: 2, padding: "8px", border: "none", background: "transparent", color: "#94A3B8", fontSize: 13, textDecoration: "underline", cursor: "pointer" }}
+        style={{ marginTop: 6, padding: "12px 20px", borderRadius: 999, border: "1.5px solid #CBD5E1", background: "#fff", color: "#334155", fontSize: 14, fontWeight: 700, cursor: "pointer", opacity: decline === "sending" ? 0.6 : 1 }}
       >
         {decline === "sending" ? d.sending : d.link}
       </button>

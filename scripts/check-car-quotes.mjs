@@ -1,7 +1,8 @@
 // node --experimental-strip-types scripts/check-car-quotes.mjs
 import { sortQuotesByPrice, canPartnerQuote, canCancelRequest, findChosenInvite, partnerNeedsRelance, isPartnerNudgeHour, quotedModelLabel, clientNeedsRelance,
   clientAutoCloseReason,
-  normalizeQuoteOption, normalizeQuoteOptions, bestOption, sortOptionsByPrice, findChosenOption } from "../src/lib/car-quotes.ts";
+  normalizeQuoteOption, normalizeQuoteOptions, bestOption, sortOptionsByPrice, findChosenOption,
+  curateOffers, MIN_PLAUSIBLE_EUR_PER_DAY, OFFERS_SHOWN_MAX } from "../src/lib/car-quotes.ts";
 
 let fail = 0;
 const ok = (n, c) => { console.log(c ? `ok - ${n}` : `FAIL - ${n}`); if (!c) fail++; };
@@ -102,6 +103,18 @@ const opt = (id, invite_id, price) => ({ id, invite_id, partner_id: invite_id, p
 ok("sortOptionsByPrice croissant toutes invites confondues", sortOptionsByPrice([opt(1, 10, 40), opt(2, 10, 30), opt(3, 20, 35)]).map((o) => o.id).join() === "2,3,1");
 ok("findChosenOption existante", findChosenOption([opt(1, 10, 40), opt(2, 20, 30)], 2)?.id === 2);
 ok("findChosenOption inexistante -> null", findChosenOption([opt(1, 10, 40)], 99) === null);
+
+// Curation (27/10/2026) : plancher par jour + 3 offres depliees. Cas reels 233/237 du 26/08.
+{
+  const c = curateOffers([opt(1, 10, 320), opt(2, 20, 1), opt(3, 30, 280), opt(4, 40, 300), opt(5, 50, 350)], 4);
+  ok("curate : l'offre a 1 EUR sur 4 jours est sous le plancher, jamais montree", c.implausible.map((o) => o.id).join() === "2" && !c.shown.some((o) => o.id === 2) && !c.folded.some((o) => o.id === 2));
+  ok("curate : 3 moins cheres depliees, triees", c.shown.map((o) => o.id).join() === "3,4,1");
+  ok("curate : le reste replie", c.folded.map((o) => o.id).join() === "5");
+  ok("curate : constantes exposees", MIN_PLAUSIBLE_EUR_PER_DAY === 10 && OFFERS_SHOWN_MAX === 3);
+}
+ok("curate : exactement au plancher = vraisemblable", curateOffers([opt(1, 10, 70)], 7).shown.length === 1);
+ok("curate : rentalDays 0 compte pour 1 jour", curateOffers([opt(1, 10, 9)], 0).implausible.length === 1 && curateOffers([opt(1, 10, 10)], 0).shown.length === 1);
+ok("curate : liste vide", (() => { const c = curateOffers([], 3); return c.shown.length === 0 && c.folded.length === 0 && c.implausible.length === 0; })());
 
 console.log(fail ? `\n${fail} FAIL` : "\nAll passed");
 process.exit(fail ? 1 : 0);
