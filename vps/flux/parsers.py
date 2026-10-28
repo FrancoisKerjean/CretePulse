@@ -290,6 +290,28 @@ def athens_day(now_utc):
 FERRY_SLOT_WINDOW_MIN = 180
 
 MIDNIGHT_GAP_MIN = 60   # recul horaire au-dela duquel on considere un passage de minuit
+
+# Ecart minimal entre l'heure de capture et le PREMIER horaire du tableau pour conclure que
+# celui-ci commence avant minuit. Ne pas reutiliser MIDNIGHT_GAP_MIN ici : ses 60 minutes
+# sont justes pour reperer un passage de minuit A L'INTERIEUR du tableau, et fausses pour
+# l'ancrage.
+#
+# Le 29/08/2026 a 04:50 Athenes, HER n'avait aucun vol avant 06:05 : l'aeroport dort la nuit.
+# L'ecart valait 75 minutes, donc superieur a 60, et TOUT le tableau a recule d'un jour --
+# 106 vols du 29 dates du 28, ou ils s'ajoutaient aux vrais vols du 28 (279 au lieu de 173).
+# Meme cause pour les 10 journees d'arrivees et 18 de departs corrompues depuis le 29/07 :
+# 2 986 lignes en trop, et une alerte de plausibilite chaque fois.
+#
+# Les deux situations sont pourtant tres eloignees. Le tableau demarre 1 a 2 h dans le passe :
+# s'il commence vraiment la veille, le premier horaire tombe vers 22 h alors qu'il est 0 h ou
+# 1 h, soit environ 1 320 minutes d'ecart. Un creux nocturne, lui, ne produit qu'un petit
+# ecart positif -- 75 minutes le 29/08. Douze heures separent les deux sans ambiguite.
+#
+# Le meme seuil vaut dans l'autre sens. Le 27/10/2026 a 23:03, plus aucun depart HER avant
+# minuit (horaire d'hiver depuis le 25/10) : le tableau commencait a 00:25 LE LENDEMAIN, soit
+# 1 358 minutes AVANT l'heure de capture si on le croit du jour. Rien ne prevoyait ce cas, et
+# 54 departs du 28 ont ete dates du 27, en plus des vrais departs du 27.
+ANCRAGE_VEILLE_MIN = 12 * 60
 SLOT_WINDOW_MIN = 240   # ecart max entre deux horaires du meme vol = un retard
 
 
@@ -313,12 +335,23 @@ def assign_service_dates(rows, now_local):
     veille lorsque la capture tombe entre minuit et ~02 h. Combinee a un
     incrementeur de minuit non borne, elle produisait jusqu'a quatre dates de
     service par capture et une journee fantome chaque nuit.
+
+    Le 29/08/2026, l'ancrage a rate dans l'autre sens : il reculait d'un jour des
+    que le premier horaire depassait l'heure de capture de 60 minutes, ce qui est
+    le cas de toute capture tombant dans le creux nocturne d'un aeroport qui dort.
+    Voir ANCRAGE_VEILLE_MIN. Une capture a 04:50 a suffi a dater du 28 les 106 vols
+    du 29 -- et ils y ont ete comptes EN PLUS des vrais vols du 28.
+
+    Le 27/10/2026, cas symetrique : capture a 23:03, tableau commencant a 00:25
+    demain faute de depart restant avant minuit. Meme seuil, dans l'autre sens.
     """
     now_minutes = now_local.hour * 60 + now_local.minute
     day = now_local.date()
     first = next((m for m in (_minutes(r.get("sched_time")) for r in rows) if m is not None), None)
-    if first is not None and first - now_minutes > MIDNIGHT_GAP_MIN:
+    if first is not None and first - now_minutes > ANCRAGE_VEILLE_MIN:
         day -= timedelta(days=1)  # le tableau commence avant minuit : c'est hier
+    elif first is not None and now_minutes - first > ANCRAGE_VEILLE_MIN:
+        day += timedelta(days=1)  # plus rien avant minuit : le tableau commence demain
     prev, bumped = None, False
     for row in rows:
         minutes = _minutes(row.get("sched_time"))
@@ -330,6 +363,27 @@ def assign_service_dates(rows, now_local):
             prev = minutes
         row["service_date"] = day
     return rows
+
+
+# Garde de continuite. Le JSON Fraport de Chania a servi deux fois, le temps d'un passage,
+# la liste d'un AUTRE aeroport (10/08/2026 11:45 : 71 arrivees ; 09/10 13:37 : 45 departs),
+# sans aucun champ qui permette de le voir. D'un passage a l'autre le tableau glisse de
+# quelques vols ; un tableau qui partage moins d'un cinquieme de ses vols avec le passage
+# precedent n'est pas le meme tableau. La reprise du tableau HER apres son gel du 27/10
+# (27 vols deja vus sur 95, soit 28 %) passe.
+#
+# Pas de verrou durable : un passage refuse ne rafraichit rien, donc au troisieme passage
+# (30 min) le precedent sort de la fenetre de comparaison et la liste est prise. Un vrai
+# changement de tableau ne coute que 20 minutes de retard.
+GARDE_PART_MIN = 0.2
+GARDE_TAILLE_MIN = 8
+
+
+def tableau_etranger(courants, precedents):
+    """True si les vols lus ne partagent presque rien avec ceux du passage precedent."""
+    if len(courants) < GARDE_TAILLE_MIN or len(precedents) < GARDE_TAILLE_MIN // 2:
+        return False
+    return len(courants & precedents) / len(courants) < GARDE_PART_MIN
 
 
 def pick_slot(existing, sched_time, window_min=SLOT_WINDOW_MIN):

@@ -23,7 +23,7 @@ from zoneinfo import ZoneInfo
 
 from db import connect
 from parsers import (assign_service_dates, parse_arrivals, parse_chq,
-                     parse_departures, pick_slot)
+                     parse_departures, pick_slot, tableau_etranger)
 
 URLS = {
     ("HER", "arrival"): "https://screen.herairport.com/arr2web.php",
@@ -65,6 +65,14 @@ update flux_flight_arrivals set
 where id = %(slot_id)s;
 """
 
+# Vols rafraichis par les passages recents. 25 minutes = le passage precedent, et celui
+# d'avant si le precedent a ete refuse : au troisieme refus de suite, plus rien a comparer,
+# la liste est prise (voir GARDE_PART_MIN dans parsers.py).
+PRECEDENTS_SQL = """
+select distinct flight_no from flux_flight_arrivals
+where airport = %s and direction = %s and last_seen_at > now() - interval '25 minutes';
+"""
+
 RUN_SQL = """
 insert into flux_collector_runs
   (collector, airport, direction, ok, rows_seen, inserted, updated, error)
@@ -75,6 +83,47 @@ values ('flight_arrivals', %s, %s, %s, %s, %s, %s, %s);
 def log(msg):
     print(f"{datetime.now(timezone.utc).isoformat(timespec='seconds')} [flight_arrivals] {msg}",
           flush=True)
+
+
+# Un echec isole n'est pas une panne : le collecteur repasse dans 10 minutes et rattrape.
+# Mesure du 29/08/2026 sur 7 jours, 1 008 runs par capteur : CHQ departure echoue 34 fois
+# (3,4 %), CHQ arrival 8 fois, HER arrival 1 fois -- et la plus longue serie d'echecs
+# CONSECUTIFS est de 2 runs, soit 20 minutes. Aucun trou n'en resulte : les comptes
+# journaliers CHQ restent entre 58 et 91, coherents entre arrivees et departs.
+# Chacun de ces aleas ecrivait pourtant ERROR, que le cron_watchdog de kairos-guard remonte
+# en « erreur detectee » a chaque cycle : du bruit permanent pour zero consequence, et du
+# bruit qui use la lecture des vraies alertes.
+#
+# ERROR est garde des 3 echecs de suite, soit 30 minutes -- avant les 45 minutes au-dela
+# desquelles watchdog.py declare le capteur muet. Une vraie panne reste donc annoncee deux
+# fois, par deux chemins independants.
+ECHECS_AVANT_ERREUR = 3
+
+DERNIERS_RUNS_SQL = """
+select ok from flux_collector_runs
+where collector = 'flight_arrivals' and airport = %s and direction = %s
+order by ran_at desc limit %s;
+"""
+
+
+def echecs_consecutifs(airport, direction, limite=ECHECS_AVANT_ERREUR):
+    """Echecs de suite, celui qui vient d'etre enregistre compris."""
+    try:
+        conn = connect()
+        with conn, conn.cursor() as cur:
+            cur.execute(DERNIERS_RUNS_SQL, (airport, direction, limite))
+            lignes = cur.fetchall()
+        conn.close()
+    except Exception:
+        # Base injoignable : c'est deja une anomalie en soi, ne pas la transformer en
+        # silence. On repond « au seuil » pour que la ligne parte en ERROR.
+        return limite
+    serie = 0
+    for (ok,) in lignes:
+        if ok:
+            break
+        serie += 1
+    return serie
 
 
 def fetch(url):
@@ -114,6 +163,15 @@ def record_run(airport, direction, ok, rows_seen, inserted, updated, error):
         log(f"journal du run non ecrit: {exc}")
 
 
+def vols_precedents(airport, direction):
+    conn = connect()
+    with conn, conn.cursor() as cur:
+        cur.execute(PRECEDENTS_SQL, (airport, direction))
+        vols = {r[0] for r in cur.fetchall()}
+    conn.close()
+    return vols
+
+
 def store(rows):
     inserted = updated = 0
     conn = connect()
@@ -140,6 +198,12 @@ def run(airport, direction):
         rows = parse_chq(json.loads(raw), direction)
     if not rows:
         raise RuntimeError("source lue mais 0 vol extrait (structure changee ?)")
+    courants = {r["flight_no"] for r in rows}
+    precedents = vols_precedents(airport, direction)
+    if tableau_etranger(courants, precedents):
+        raise RuntimeError(f"tableau refuse : {len(courants)} vols dont "
+                           f"{len(courants & precedents)} vus au passage precedent "
+                           f"(autre aeroport ?)")
     for row in rows:
         row["airport"] = airport
         row["direction"] = direction
@@ -156,6 +220,12 @@ if __name__ == "__main__":
     try:
         run(airport, direction)
     except Exception as exc:  # cron : log horodate + trace en base + exit != 0
-        log(f"ERROR {airport} {direction}: {exc}")
+        # Enregistrer AVANT de compter : la serie doit inclure l'echec en cours.
         record_run(airport, direction, False, 0, 0, 0, str(exc)[:500])
+        suite = echecs_consecutifs(airport, direction)
+        if suite >= ECHECS_AVANT_ERREUR:
+            log(f"ERROR {airport} {direction}: {exc} ({suite} echecs de suite)")
+        else:
+            log(f"INFO {airport} {direction}: tentative echouee, rattrapage au prochain "
+                f"run dans 10 min ({suite}/{ECHECS_AVANT_ERREUR}) — {exc}")
         sys.exit(1)

@@ -7,7 +7,7 @@ run, code de sortie avale par cron. Cette sonde ferme ce trou.
 
 Deux controles, sur la derniere journee de service COMPLETE :
   - fraicheur : un run reussi dans les 45 dernieres minutes (cron toutes les 10)
-  - plausibilite : le compte du jour reste dans une bande realiste
+  - plausibilite : le compte du jour reste dans une bande SAISONNIERE (HCAA du mois)
 
 Le message porte la NATURE du capteur et la CAUSE de la panne. Le 02/08/2026,
 six capteurs de port muets ont ete annonces « HER arrival, SOU arrival... »
@@ -19,12 +19,43 @@ calcul ne se propage pas toute seule cote affichage.
 
 Cron : 20 * * * * (toutes les heures).
 """
+import json
+import math
 import os
+import re
 import sys
 from datetime import date, datetime, timedelta, timezone
 
 STALE_AFTER_MIN = 45
 CAUSE_MAX_CHARS = 110
+
+# Une alerte qui se repete a l'identique se lit comme la premiere fois.
+#
+# Ce capteur a envoye 641 messages entre le 30/07 et le 29/08/2026, 23 a 47 par jour, tous
+# formules pareil, pendant que la donnee etait fausse : une capture tombant dans le creux
+# nocturne datait tout le tableau de la veille et gonflait HER d'une centaine de vols. La
+# sonde avait RAISON des le 30/07 a 02:20, le lendemain de l'apparition du bug. Personne ne
+# l'a lue pendant un mois, et c'est comprehensible : le 641e message etait identique au
+# premier, et le bandeau du canal `system` annonce « Surveillance automatique, rien a faire ».
+#
+# Rien de neuf n'est construit ici, les deux mecanismes existaient deja :
+#   - `dedup_key` / `dedup_ttl` de kairos_telegram, dont la doc cite nommement ce watchdog
+#     (« would otherwise repeat itself 24 times a day ») ;
+#   - le canal ACTION, qui remplace le bandeau par « Une action est attendue de toi ».
+# Il manquait de les brancher, et de faire porter a l'alerte son age.
+HISTORIQUE_ALERTES = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                  "watchdog_alertes.json")
+
+# Au-dela de ce nombre de jours, une anomalie n'est plus une fluctuation surveillee : elle
+# demande un diagnostic. Deux jours, parce qu'un capteur peut decrocher une nuit et se
+# retablir seul -- au troisieme message quotidien identique, personne ne viendra plus.
+JOURS_AVANT_ACTION = 2
+
+# Fenetre de dedoublonnage. Le watchdog reevalue la MEME journee de service toutes les
+# heures : sans elle, il repete son constat 24 fois par jour. La cle porte deja la journee
+# controlee et la liste des capteurs en cause, donc une anomalie NOUVELLE sonne tout de
+# suite au lieu d'attendre l'expiration.
+DEDUP_TTL_S = 23 * 3600
 
 # HER designe un aeroport ET un port : le libelle doit dire lequel.
 NATURES = {"flight_arrivals": "aéroport", "ferry_crossings": "port"}
@@ -34,8 +65,9 @@ SENS = {"arrival": "arrivées", "departure": "départs"}
 # parce que HER designe a la fois un aeroport et un port : sans lui, la sonde
 # des ferries masquerait celle des vols.
 #
-# Bandes vols calees sur les journees propres observees (HER ~150-190 vols/jour,
-# CHQ ~65-93), elargies pour ne se declencher que sur une vraie panne.
+# Bandes vols FIXES calees sur les journees d'ete (HER ~150-190 vols/jour, CHQ ~65-93).
+# Elles ne servent plus que de repli quand la reference saisonniere manque : voir
+# bandes_saisonnieres plus bas.
 # Bandes ferries calees sur le releve GTP du 30/07/2026 (cf CALIBRATION du
 # capteur) et volontairement larges : l'offre maritime s'effondre hors saison.
 FEEDS = (
@@ -83,6 +115,61 @@ FEEDS = (
 MUTED_UNTIL = {}
 
 
+# --- bandes saisonnieres -----------------------------------------------------
+#
+# Les bandes fixes d'ete ont crie 72 fois du 25 au 28/10/2026 : l'horaire d'hiver IATA
+# demarre le dernier dimanche d'octobre, CHQ passe de ~50 a ~26 vols par jour et par sens,
+# HER de ~124 a ~85. Et l'hiver ne fait que commencer : en janvier, la HCAA compte 17 vols
+# par jour a HER et 9 a CHQ. Aucune bande fixe ne tient a la fois aout et janvier.
+#
+# La reference est donc le trafic OFFICIEL HCAA du mois (`flux_calibration`, methode
+# hcaa-movements, derniere annee publiee), interpole lineairement entre deux milieux de
+# mois pour suivre les bascules de saison sans marche d'escalier. Officiel et pas mesure :
+# une reference tiree du capteur lui-meme ne pourrait pas le prendre en faute.
+#
+# Rejoue le 28/10/2026 sur les 108 journees x 4 capteurs collectees depuis le 10/07 : zero
+# fausse alerte, bascule d'hiver de CHQ comprise (0,68 a 0,79 de la reference). Attrapes :
+# le gel du tableau HER du 24 au 26/10 (0,36 a 0,45, la source n'affichait plus qu'un tiers
+# des vols), la journee partielle du 10/07, et trois pics isoles que les bandes fixes
+# laissaient passer (CHQ 10/08 a 1,96, CHQ 09/10 a 2,04, HER 20/09 a 1,70).
+BANDE_BASSE = 0.5
+BANDE_HAUTE = 1.5
+
+
+def _milieu(annee, mois):
+    if mois == 0:
+        return date(annee - 1, 12, 15)
+    if mois == 13:
+        return date(annee + 1, 1, 15)
+    return date(annee, mois, 15)
+
+
+def reference_du_jour(par_mois, jour):
+    """Vols attendus ce jour-la : interpolation entre les deux milieux de mois voisins.
+
+    par_mois : {1..12: vols par jour officiels du mois}. None si un des deux manque.
+    """
+    if jour.day >= 15:
+        avant, apres = _milieu(jour.year, jour.month), _milieu(jour.year, jour.month + 1)
+    else:
+        avant, apres = _milieu(jour.year, jour.month - 1), _milieu(jour.year, jour.month)
+    v_avant, v_apres = par_mois.get(avant.month), par_mois.get(apres.month)
+    if v_avant is None or v_apres is None:
+        return None
+    t = (jour - avant).days / (apres - avant).days
+    return v_avant + (v_apres - v_avant) * t
+
+
+def bandes_saisonnieres(references, jour):
+    """{cle capteur: {mois: vols/jour}} -> {cle capteur: (bas, haut)} pour `jour`."""
+    bandes = {}
+    for key, par_mois in references.items():
+        ref = reference_du_jour(par_mois, jour)
+        if ref is not None:
+            bandes[key] = (math.floor(ref * BANDE_BASSE), math.ceil(ref * BANDE_HAUTE))
+    return bandes
+
+
 def _key(feed):
     return (feed["collector"], feed["node"], feed["direction"])
 
@@ -127,13 +214,15 @@ def _cause(last_error, key, seen_at):
 
 
 def evaluate(last_ok, daily, now, last_error=None, muted_until=None,
-             stale_after_min=None):
+             stale_after_min=None, bandes=None):
     """-> liste de messages d'alerte. Liste vide = tout va bien.
 
     last_ok     : {(collecteur, noeud, sens): datetime du dernier run reussi ou None}
     daily       : {(collecteur, noeud, sens): mouvements de la derniere journee pleine}
     last_error  : {(collecteur, noeud, sens): (datetime du dernier echec, message)}
     muted_until : {(collecteur, noeud, sens): date de reprise des alertes}
+    bandes      : {(collecteur, noeud, sens): (bas, haut)} saisonnieres ; a defaut,
+                  la bande fixe du capteur
     """
     alerts = []
     for feed in FEEDS:
@@ -157,10 +246,66 @@ def evaluate(last_ok, daily, now, last_error=None, muted_until=None,
         if count is None:
             alerts.append(f"{label} : aucune ligne pour la dernière journée pleine")
             continue
-        low, high = feed["band"]
+        low, high = (bandes or {}).get(key) or feed["band"]
         if not low <= count <= high:
             alerts.append(f"{label} : {count} {feed['unit']} hier, hors bande {low}-{high}")
     return alerts
+
+
+def _cle_stable(alerte):
+    """Identite d'une alerte, ses chiffres retires.
+
+    « 279 vols hier, hors bande 100-260 » devient « 280 vols hier » le lendemain, et
+    « muet depuis 3 h 20 » change a chaque passage. Prendre la phrase entiere comme
+    identite ferait repartir le compteur a chaque run : l'alerte n'aurait toujours pas
+    d'age, ce qui est precisement le defaut qu'on repare.
+    """
+    return re.sub(r"\d+", "#", alerte)
+
+
+def dater_alertes(alertes, historique, aujourdhui):
+    """-> (alertes suffixees de leur age, historique a jour, age de la plus ancienne).
+
+    Les cles absentes du run ne sont PAS reportees : l'alerte a cesse, et son compteur ne
+    doit pas ressusciter au prochain episode comme s'il n'y avait jamais eu de repit.
+    """
+    vivantes, sorties, plus_ancienne = {}, [], 0
+    for alerte in alertes:
+        cle = _cle_stable(alerte)
+        avant = historique.get(cle) or {}
+        try:
+            depuis = date.fromisoformat(avant["depuis"])
+        except (KeyError, TypeError, ValueError):
+            depuis = aujourdhui
+        envois = avant.get("envois", 0) + 1
+        vivantes[cle] = {"depuis": depuis.isoformat(), "envois": envois}
+        jours = (aujourdhui - depuis).days
+        plus_ancienne = max(plus_ancienne, jours)
+        if envois > 1:
+            alerte += f"  [{jours} j, {envois}e envoi]"
+        sorties.append(alerte)
+    return sorties, vivantes, plus_ancienne
+
+
+def charger_historique(chemin=HISTORIQUE_ALERTES):
+    try:
+        with open(chemin) as f:
+            charge = json.load(f)
+        return charge if isinstance(charge, dict) else {}
+    except (OSError, ValueError):
+        # Un historique illisible ne doit jamais empecher d'alerter : au pire l'alerte
+        # repart a « 0 j », ce qui reste plus utile que le silence.
+        return {}
+
+
+def ecrire_historique(historique, chemin=HISTORIQUE_ALERTES):
+    try:
+        with open(chemin + ".tmp", "w") as f:
+            json.dump(historique, f, indent=2, sort_keys=True)
+        os.replace(chemin + ".tmp", chemin)
+    except OSError as e:
+        print(f"{datetime.now(timezone.utc).isoformat(timespec='seconds')} "
+              f"[flux_watchdog] historique non ecrit : {e}")
 
 
 def merge_errors(rows):
@@ -219,6 +364,16 @@ left join flux_ferry_crossings c
 group by 1, 2;
 """
 
+# Une valeur par capteur et par mois civil : la plus recente publiee par la HCAA.
+REFERENCES_SQL = """
+select distinct on (airport, direction, extract(month from month))
+       airport, direction, extract(month from month)::int,
+       flights_official::float / extract(day from (month + interval '1 month' - interval '1 day'))
+from flux_calibration
+where scope = 'airport' and method = 'hcaa-movements' and flights_official > 0
+order by airport, direction, extract(month from month), month desc;
+"""
+
 PRUNE_SQL = "delete from flux_collector_runs where ran_at < now() - interval '30 days';"
 
 
@@ -233,20 +388,41 @@ def collect(conn, service_day):
         daily.update({("ferry_crossings", p, d): n for p, d, n in cur.fetchall()})
         cur.execute(LAST_ERROR_SQL)
         last_error = merge_errors(cur.fetchall())
+        cur.execute(REFERENCES_SQL)
+        references = {}
+        for a, d, mois, par_jour in cur.fetchall():
+            references.setdefault(("flight_arrivals", a, d), {})[mois] = par_jour
         cur.execute(PRUNE_SQL)  # ~580 runs/jour, on garde 30 jours
-    return last_ok, daily, last_error
+    return last_ok, daily, last_error, references
 
 
-def notify(alerts, service_day):
+def notify(alerts, service_day, cles, jours=0):
     from dotenv import load_dotenv
     load_dotenv("/opt/cretepulse/.env")  # TG_TOKEN_CHIEF / TG_CHAT_ID
     sys.path.insert(0, "/opt/kairos-telegram")
     from kairos_telegram import Bot, Priority, send
+    from kairos_telegram.routing import Channel
+
+    dure = jours >= JOURS_AVANT_ACTION
     body = (f"Journée de service contrôlée : {service_day:%d/%m}\n\n"
             + "\n".join(f"- {a}" for a in alerts)
             + "\n\nCockpit : https://crete.direct/admin/flux")
-    return send(Bot.CHIEF, "Capteurs flux crete.direct", body,
-                priority=Priority.WARNING, msg_type="system")
+
+    # La cle porte la journee controlee ET les capteurs en cause : le meme constat repete
+    # d'heure en heure est tu, mais un capteur qui s'ajoute rouvre une cle et sonne.
+    empreinte = "|".join(sorted(cles))
+
+    return send(
+        Bot.CHIEF, "Capteurs flux crete.direct", body,
+        priority=Priority.WARNING, msg_type="system",
+        # Tant que ca dure, ce n'est plus de la surveillance : le bandeau doit cesser de
+        # dire « rien a faire », sinon le message se lit comme les 640 precedents.
+        channel=Channel.ACTION if dure else None,
+        action=(f"Diagnostiquer le capteur : l'anomalie dure depuis {jours} jours"
+                if dure else ""),
+        dedup_key=f"flux-watchdog:{service_day:%Y-%m-%d}:{empreinte}",
+        dedup_ttl=DEDUP_TTL_S,
+    )
 
 
 def main():
@@ -254,24 +430,37 @@ def main():
     service_day = date.today() - timedelta(days=1)
     conn = connect()
     try:
-        last_ok, daily, last_error = collect(conn, service_day)
+        last_ok, daily, last_error, references = collect(conn, service_day)
     finally:
         conn.close()
     now = datetime.now(timezone.utc)
     alerts = evaluate(last_ok, daily, now, last_error=last_error,
-                      muted_until=MUTED_UNTIL)
+                      muted_until=MUTED_UNTIL,
+                      bandes=bandes_saisonnieres(references, service_day))
     stamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
     for ligne in muted_feeds(MUTED_UNTIL, now):
         print(f"{stamp} [flux_watchdog] SOURDINE {ligne}")
+    # Une simulation ne doit rien laisser derriere elle : compter un envoi qui n'a pas eu
+    # lieu ferait vieillir l'alerte a chaque essai de mise au point.
+    simulation = os.environ.get("FLUX_WATCHDOG_DRY_RUN") == "1"
+    historique = charger_historique()
+
     if not alerts:
         watched = len(FEEDS) - len(muted_feeds(MUTED_UNTIL, now))
         print(f"{stamp} [flux_watchdog] {watched} capteurs frais, "
               f"comptes du {service_day} plausibles")
+        if historique and not simulation:
+            # Les compteurs ne survivent pas au retour a la normale : la prochaine
+            # anomalie doit s'annoncer comme neuve, pas heriter du mois precedent.
+            ecrire_historique({})
         return 0
+
+    alerts, historique, jours = dater_alertes(alerts, historique, now.date())
     for alert in alerts:
         print(f"{stamp} [flux_watchdog] ALERTE {alert}")
-    if os.environ.get("FLUX_WATCHDOG_DRY_RUN") != "1":
-        notify(alerts, service_day)
+    if not simulation:
+        ecrire_historique(historique)
+        notify(alerts, service_day, historique.keys(), jours)
     return 1
 
 
