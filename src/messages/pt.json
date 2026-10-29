@@ -164,6 +164,22 @@
       "east": "Costa este",
       "central": "Costa central"
     },
+    "winter": {
+      "heroPre": "Sun, buses, weather.",
+      "heroSun": "Right now the sun is out in {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "heroDry": "Right now the driest spot on the island is {city}: {temp}°, no rain. We watch the weather and the buses for you, all day long.",
+      "heroWet": "It's raining across the island right now. Mildest: {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "cta": "Sun over the next 5 days",
+      "weekTitle": "Where to find the sun this week",
+      "rainPct": "rain {pct}%",
+      "wetEverywhere": "rain everywhere",
+      "warmest": "mildest",
+      "driest": "driest",
+      "dryEverywhere": "dry everywhere",
+      "rainAt": "rain: {cities}",
+      "rainCount": "rain at {n} stations",
+      "sky": { "dry": "dry", "wet": "rain" }
+    },
     "tools": {
       "buses": "Autocarros",
       "busesLine": "Horários & preços",
@@ -176,14 +192,17 @@
       "airbnb": "Dados Airbnb",
       "airbnbLine": "Preços por zona",
       "weather": "Meteorologia",
-      "weatherLine": "10 estações + mar"
+      "weatherLine": "10 estações + mar",
+      "villages": "Villages",
+      "villagesLine": "28 villages"
     },
     "nextEvents": "Próximos eventos",
     "barometer": {
       "sea": "{temp}° na água, vento {wind} km/h, ar {air}°",
       "cruise": "Até {pax} passageiros de cruzeiro hoje em {port}",
       "buses": "{count, plural, one {# autocarro seguido em direto} other {# autocarros seguidos em direto}}",
-      "src": { "weather": "estações meteorológicas", "port": "calendário oficial do porto", "gps": "GPS, a cada 5 min" }
+      "src": { "weather": "estações meteorológicas", "port": "calendário oficial do porto", "gps": "GPS, a cada 5 min" },
+      "sky": "{temp}° in {city}, wind {wind} km/h · {wet, plural, =0 {no station reporting rain} one {rain at # of {total} stations} other {rain at # of {total} stations}}"
     },
     "serviceRail": {
       "title": "Reserve diretamente",

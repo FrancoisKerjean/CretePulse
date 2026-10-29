@@ -164,6 +164,22 @@
       "east": "Ostküste",
       "central": "Zentralküste"
     },
+    "winter": {
+      "heroPre": "Sonne, Busse, Wetter.",
+      "heroSun": "Gerade scheint die Sonne in {city}, {temp}°. Wir behalten Wetter und Busse für dich im Blick, den ganzen Tag.",
+      "heroDry": "Gerade ist es in {city} am trockensten: {temp}°, kein Regen. Wir behalten Wetter und Busse für dich im Blick, den ganzen Tag.",
+      "heroWet": "Gerade regnet es auf der ganzen Insel. Am mildesten: {city}, {temp}°. Wir behalten Wetter und Busse für dich im Blick, den ganzen Tag.",
+      "cta": "Sonne in den nächsten 5 Tagen",
+      "weekTitle": "Wo diese Woche die Sonne scheint",
+      "rainPct": "Regen {pct} %",
+      "wetEverywhere": "überall Regen",
+      "warmest": "am mildesten",
+      "driest": "am trockensten",
+      "dryEverywhere": "überall trocken",
+      "rainAt": "Regen: {cities}",
+      "rainCount": "Regen an {n} Stationen",
+      "sky": { "dry": "trocken", "wet": "Regen" }
+    },
     "tools": {
       "buses": "Busse",
       "busesLine": "Fahrpläne & Preise",
@@ -176,14 +192,17 @@
       "airbnb": "Airbnb-Daten",
       "airbnbLine": "Preise je Gebiet",
       "weather": "Wetter",
-      "weatherLine": "10 Stationen + Meer"
+      "weatherLine": "10 Stationen + Meer",
+      "villages": "Dörfer",
+      "villagesLine": "28 Dörfer"
     },
     "nextEvents": "Nächste Events",
     "barometer": {
       "sea": "{temp}° im Wasser, Wind {wind} km/h, Luft {air}°",
       "cruise": "Bis zu {pax} Kreuzfahrtgäste heute in {port}",
       "buses": "{count, plural, one {# Bus live verfolgt} other {# Busse live verfolgt}}",
-      "src": { "weather": "Wetterstationen", "port": "offizieller Hafenkalender", "gps": "GPS, alle 5 Min." }
+      "src": { "weather": "Wetterstationen", "port": "offizieller Hafenkalender", "gps": "GPS, alle 5 Min." },
+      "sky": "{temp}° in {city}, Wind {wind} km/h · {wet, plural, =0 {keine Station meldet Regen} one {Regen an # von {total} Stationen} other {Regen an # von {total} Stationen}}"
     },
     "serviceRail": {
       "title": "Direkt buchen",

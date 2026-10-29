@@ -164,6 +164,22 @@
       "east": "Costa est",
       "central": "Costa centrale"
     },
+    "winter": {
+      "heroPre": "Sun, buses, weather.",
+      "heroSun": "Right now the sun is out in {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "heroDry": "Right now the driest spot on the island is {city}: {temp}°, no rain. We watch the weather and the buses for you, all day long.",
+      "heroWet": "It's raining across the island right now. Mildest: {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "cta": "Sun over the next 5 days",
+      "weekTitle": "Where to find the sun this week",
+      "rainPct": "rain {pct}%",
+      "wetEverywhere": "rain everywhere",
+      "warmest": "mildest",
+      "driest": "driest",
+      "dryEverywhere": "dry everywhere",
+      "rainAt": "rain: {cities}",
+      "rainCount": "rain at {n} stations",
+      "sky": { "dry": "dry", "wet": "rain" }
+    },
     "tools": {
       "buses": "Bus",
       "busesLine": "Orari & prezzi",
@@ -176,14 +192,17 @@
       "airbnb": "Dati Airbnb",
       "airbnbLine": "Prezzi per zona",
       "weather": "Meteo",
-      "weatherLine": "10 stazioni + mare"
+      "weatherLine": "10 stazioni + mare",
+      "villages": "Villages",
+      "villagesLine": "28 villages"
     },
     "nextEvents": "Prossimi eventi",
     "barometer": {
       "sea": "{temp}° in acqua, vento {wind} km/h, aria {air}°",
       "cruise": "Fino a {pax} passeggeri da crociera oggi a {port}",
       "buses": "{count, plural, one {# autobus tracciato in diretta} other {# autobus tracciati in diretta}}",
-      "src": { "weather": "stazioni meteo", "port": "calendario ufficiale del porto", "gps": "GPS, ogni 5 min" }
+      "src": { "weather": "stazioni meteo", "port": "calendario ufficiale del porto", "gps": "GPS, ogni 5 min" },
+      "sky": "{temp}° in {city}, wind {wind} km/h · {wet, plural, =0 {no station reporting rain} one {rain at # of {total} stations} other {rain at # of {total} stations}}"
     },
     "serviceRail": {
       "title": "Prenota diretto",

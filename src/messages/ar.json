@@ -164,6 +164,22 @@
       "east": "الساحل الشرقي",
       "central": "الساحل الأوسط"
     },
+    "winter": {
+      "heroPre": "Sun, buses, weather.",
+      "heroSun": "Right now the sun is out in {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "heroDry": "Right now the driest spot on the island is {city}: {temp}°, no rain. We watch the weather and the buses for you, all day long.",
+      "heroWet": "It's raining across the island right now. Mildest: {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "cta": "Sun over the next 5 days",
+      "weekTitle": "Where to find the sun this week",
+      "rainPct": "rain {pct}%",
+      "wetEverywhere": "rain everywhere",
+      "warmest": "mildest",
+      "driest": "driest",
+      "dryEverywhere": "dry everywhere",
+      "rainAt": "rain: {cities}",
+      "rainCount": "rain at {n} stations",
+      "sky": { "dry": "dry", "wet": "rain" }
+    },
     "tools": {
       "buses": "الحافلات",
       "busesLine": "المواعيد والأسعار",
@@ -176,14 +192,17 @@
       "airbnb": "بيانات Airbnb",
       "airbnbLine": "الأسعار حسب المنطقة",
       "weather": "الطقس",
-      "weatherLine": "١٠ محطات + البحر"
+      "weatherLine": "١٠ محطات + البحر",
+      "villages": "Villages",
+      "villagesLine": "28 villages"
     },
     "nextEvents": "الفعاليات القادمة",
     "barometer": {
       "sea": "{temp}° في الماء، رياح {wind} كم/س، هواء {air}°",
       "cruise": "حتى {pax} راكب رحلات بحرية اليوم في {port}",
       "buses": "{count, plural, zero {لا توجد حافلات متتبعة مباشرة} one {حافلة واحدة متتبعة مباشرة} two {حافلتان متتبعتان مباشرة} few {# حافلات متتبعة مباشرة} many {# حافلة متتبعة مباشرة} other {# حافلة متتبعة مباشرة}}",
-      "src": { "weather": "محطات الطقس", "port": "الجدول الرسمي للميناء", "gps": "GPS، كل 5 دقائق" }
+      "src": { "weather": "محطات الطقس", "port": "الجدول الرسمي للميناء", "gps": "GPS، كل 5 دقائق" },
+      "sky": "{temp}° in {city}, wind {wind} km/h · {wet, plural, =0 {no station reporting rain} one {rain at # of {total} stations} other {rain at # of {total} stations}}"
     },
     "serviceRail": {
       "title": "احجز مباشرة",

@@ -164,6 +164,22 @@
       "east": "Costa este",
       "central": "Costa central"
     },
+    "winter": {
+      "heroPre": "Sun, buses, weather.",
+      "heroSun": "Right now the sun is out in {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "heroDry": "Right now the driest spot on the island is {city}: {temp}°, no rain. We watch the weather and the buses for you, all day long.",
+      "heroWet": "It's raining across the island right now. Mildest: {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "cta": "Sun over the next 5 days",
+      "weekTitle": "Where to find the sun this week",
+      "rainPct": "rain {pct}%",
+      "wetEverywhere": "rain everywhere",
+      "warmest": "mildest",
+      "driest": "driest",
+      "dryEverywhere": "dry everywhere",
+      "rainAt": "rain: {cities}",
+      "rainCount": "rain at {n} stations",
+      "sky": { "dry": "dry", "wet": "rain" }
+    },
     "tools": {
       "buses": "Buses",
       "busesLine": "Horarios y precios",
@@ -176,14 +192,17 @@
       "airbnb": "Datos Airbnb",
       "airbnbLine": "Precios por zona",
       "weather": "Tiempo",
-      "weatherLine": "10 estaciones + mar"
+      "weatherLine": "10 estaciones + mar",
+      "villages": "Villages",
+      "villagesLine": "28 villages"
     },
     "nextEvents": "Próximos eventos",
     "barometer": {
       "sea": "{temp}° en el agua, viento {wind} km/h, aire {air}°",
       "cruise": "Hasta {pax} cruceristas hoy en {port}",
       "buses": "{count, plural, one {# autobús seguido en directo} other {# autobuses seguidos en directo}}",
-      "src": { "weather": "estaciones meteorológicas", "port": "calendario oficial del puerto", "gps": "GPS, cada 5 min" }
+      "src": { "weather": "estaciones meteorológicas", "port": "calendario oficial del puerto", "gps": "GPS, cada 5 min" },
+      "sky": "{temp}° in {city}, wind {wind} km/h · {wet, plural, =0 {no station reporting rain} one {rain at # of {total} stations} other {rain at # of {total} stations}}"
     },
     "serviceRail": {
       "title": "Reserva directa",

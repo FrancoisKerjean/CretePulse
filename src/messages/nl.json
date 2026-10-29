@@ -164,6 +164,22 @@
       "east": "Oostkust",
       "central": "Middenkust"
     },
+    "winter": {
+      "heroPre": "Sun, buses, weather.",
+      "heroSun": "Right now the sun is out in {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "heroDry": "Right now the driest spot on the island is {city}: {temp}°, no rain. We watch the weather and the buses for you, all day long.",
+      "heroWet": "It's raining across the island right now. Mildest: {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "cta": "Sun over the next 5 days",
+      "weekTitle": "Where to find the sun this week",
+      "rainPct": "rain {pct}%",
+      "wetEverywhere": "rain everywhere",
+      "warmest": "mildest",
+      "driest": "driest",
+      "dryEverywhere": "dry everywhere",
+      "rainAt": "rain: {cities}",
+      "rainCount": "rain at {n} stations",
+      "sky": { "dry": "dry", "wet": "rain" }
+    },
     "tools": {
       "buses": "Bussen",
       "busesLine": "Tijden & prijzen",
@@ -176,14 +192,17 @@
       "airbnb": "Airbnb-data",
       "airbnbLine": "Prijzen per zone",
       "weather": "Weer",
-      "weatherLine": "10 stations + zee"
+      "weatherLine": "10 stations + zee",
+      "villages": "Villages",
+      "villagesLine": "28 villages"
     },
     "nextEvents": "Komende evenementen",
     "barometer": {
       "sea": "{temp}° in het water, wind {wind} km/h, lucht {air}°",
       "cruise": "Tot {pax} cruisepassagiers vandaag in {port}",
       "buses": "{count, plural, one {# bus live gevolgd} other {# bussen live gevolgd}}",
-      "src": { "weather": "weerstations", "port": "officieel havenschema", "gps": "GPS, elke 5 min" }
+      "src": { "weather": "weerstations", "port": "officieel havenschema", "gps": "GPS, elke 5 min" },
+      "sky": "{temp}° in {city}, wind {wind} km/h · {wet, plural, =0 {no station reporting rain} one {rain at # of {total} stations} other {rain at # of {total} stations}}"
     },
     "serviceRail": {
       "title": "Rechtstreeks boeken",

@@ -8,7 +8,7 @@
 // Lignes cliquables : docs/superpowers/specs/2026-07-29-hero-clickable-design.md
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { CiBus, CiWave } from "@/components/icons";
+import { CiBus, CiRain, CiSun, CiWave } from "@/components/icons";
 import { ChevronRight, Ship } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { cruisePortHref } from "@/lib/hero-links";
@@ -19,7 +19,7 @@ interface IslandNow {
   stock: null;
 }
 
-type Zone = "sea" | "cruise" | "buses";
+type Zone = "sea" | "sky" | "cruise" | "buses";
 
 function track(zone: Zone) {
   (window as unknown as { plausible?: (e: string, o?: { props?: Record<string, string> }) => void })
@@ -66,10 +66,13 @@ export function IslandBarometer({
   seaTemp,
   windSpeed,
   airTemp,
+  sky = null,
 }: {
   seaTemp: number | null;
   windSpeed: number | null;
   airTemp: number | null;
+  /** Mode hiver : la ligne météo (station la plus ensoleillée) remplace la ligne mer. */
+  sky?: { city: string; temp: number; wind: number; wet: number; total: number } | null;
 }) {
   const t = useTranslations("home");
   const locale = useLocale();
@@ -88,13 +91,27 @@ export function IslandBarometer({
     return () => { alive = false; };
   }, []);
 
-  const showSea = seaTemp != null && windSpeed != null && airTemp != null;
+  const showSea = !sky && seaTemp != null && windSpeed != null && airTemp != null;
   const cruise = data?.cruise ?? null;
   const buses = data?.buses ?? null;
-  if (!showSea && !cruise && !buses) return null;
+  if (!sky && !showSea && !cruise && !buses) return null;
 
   return (
     <div className="bg-white/86 rounded-[22px] px-4 py-0.5 mb-4 max-w-[470px] shadow-[0_12px_30px_rgba(11,94,120,.14)]">
+      {sky && (
+        <Row href="/weather" zone="sky">
+          {sky.wet === sky.total
+            ? <CiRain className="w-[18px] h-[18px] text-sea shrink-0" aria-hidden />
+            : <CiSun className="w-[18px] h-[18px] text-sea shrink-0" aria-hidden />}
+          <p className="flex-1 text-[13.5px] leading-snug text-text m-0">
+            {t("barometer.sky", sky)}
+          </p>
+          <span className="text-[10px] text-text-muted text-right max-w-[96px] leading-tight sr-only sm:not-sr-only sm:block">
+            {t("barometer.src.weather")}
+          </span>
+        </Row>
+      )}
+
       {showSea && (
         <Row href="/weather" zone="sea">
           <CiWave className="w-[18px] h-[18px] text-sea shrink-0" aria-hidden />

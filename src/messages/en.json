@@ -164,6 +164,22 @@
       "east": "East coast",
       "central": "Central coast"
     },
+    "winter": {
+      "heroPre": "Sun, buses, weather.",
+      "heroSun": "Right now the sun is out in {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "heroDry": "Right now the driest spot on the island is {city}: {temp}°, no rain. We watch the weather and the buses for you, all day long.",
+      "heroWet": "It's raining across the island right now. Mildest: {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "cta": "Sun over the next 5 days",
+      "weekTitle": "Where to find the sun this week",
+      "rainPct": "rain {pct}%",
+      "wetEverywhere": "rain everywhere",
+      "warmest": "mildest",
+      "driest": "driest",
+      "dryEverywhere": "dry everywhere",
+      "rainAt": "rain: {cities}",
+      "rainCount": "rain at {n} stations",
+      "sky": { "dry": "dry", "wet": "rain" }
+    },
     "tools": {
       "buses": "Buses",
       "busesLine": "Timetables & prices",
@@ -176,14 +192,17 @@
       "airbnb": "Airbnb data",
       "airbnbLine": "Prices by area",
       "weather": "Weather",
-      "weatherLine": "10 stations + sea"
+      "weatherLine": "10 stations + sea",
+      "villages": "Villages",
+      "villagesLine": "28 villages"
     },
     "nextEvents": "Upcoming events",
     "barometer": {
       "sea": "{temp}° in the water, wind {wind} km/h, air {air}°",
       "cruise": "Up to {pax} cruise passengers in {port} today",
       "buses": "{count, plural, one {# bus tracked live} other {# buses tracked live}}",
-      "src": { "weather": "weather stations", "port": "official port schedule", "gps": "GPS, every 5 min" }
+      "src": { "weather": "weather stations", "port": "official port schedule", "gps": "GPS, every 5 min" },
+      "sky": "{temp}° in {city}, wind {wind} km/h · {wet, plural, =0 {no station reporting rain} one {rain at # of {total} stations} other {rain at # of {total} stations}}"
     },
     "serviceRail": {
       "title": "Book direct",

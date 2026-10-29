@@ -164,6 +164,22 @@
       "east": "Côte est",
       "central": "Côte centrale"
     },
+    "winter": {
+      "heroPre": "Soleil, bus, météo.",
+      "heroSun": "En ce moment, le soleil est à {city}, {temp}°. On surveille la météo et les bus pour toi, toute la journée.",
+      "heroDry": "En ce moment, le plus sec de l'île, c'est {city} : {temp}°, sans pluie. On surveille la météo et les bus pour toi, toute la journée.",
+      "heroWet": "Il pleut sur toute l'île en ce moment. Le plus doux : {city}, {temp}°. On surveille la météo et les bus pour toi, toute la journée.",
+      "cta": "Le soleil des 5 prochains jours",
+      "weekTitle": "Où trouver le soleil cette semaine",
+      "rainPct": "pluie {pct} %",
+      "wetEverywhere": "pluie partout",
+      "warmest": "le plus doux",
+      "driest": "le plus sec",
+      "dryEverywhere": "sec partout",
+      "rainAt": "pluie : {cities}",
+      "rainCount": "pluie sur {n} stations",
+      "sky": { "dry": "sec", "wet": "pluie" }
+    },
     "tools": {
       "buses": "Bus",
       "busesLine": "Horaires & prix",
@@ -176,14 +192,17 @@
       "airbnb": "Data Airbnb",
       "airbnbLine": "Prix par zone",
       "weather": "Météo",
-      "weatherLine": "10 stations + mer"
+      "weatherLine": "10 stations + mer",
+      "villages": "Villages",
+      "villagesLine": "28 villages"
     },
     "nextEvents": "Prochains événements",
     "barometer": {
       "sea": "{temp}° dans l'eau, vent {wind} km/h, air {air}°",
       "cruise": "Jusqu'à {pax} croisiéristes à {port} aujourd'hui",
       "buses": "{count, plural, one {# bus suivi en direct} other {# bus suivis en direct}}",
-      "src": { "weather": "stations météo", "port": "calendrier officiel du port", "gps": "GPS, toutes les 5 min" }
+      "src": { "weather": "stations météo", "port": "calendrier officiel du port", "gps": "GPS, toutes les 5 min" },
+      "sky": "{temp}° à {city}, vent {wind} km/h · {wet, plural, =0 {aucune station sous la pluie} one {pluie : # station sur {total}} other {pluie : # stations sur {total}}}"
     },
     "serviceRail": {
       "title": "Réserver en direct",

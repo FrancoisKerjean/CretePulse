@@ -164,6 +164,22 @@
       "east": "Wybrzeże wschodnie",
       "central": "Wybrzeże centralne"
     },
+    "winter": {
+      "heroPre": "Sun, buses, weather.",
+      "heroSun": "Right now the sun is out in {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "heroDry": "Right now the driest spot on the island is {city}: {temp}°, no rain. We watch the weather and the buses for you, all day long.",
+      "heroWet": "It's raining across the island right now. Mildest: {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "cta": "Sun over the next 5 days",
+      "weekTitle": "Where to find the sun this week",
+      "rainPct": "rain {pct}%",
+      "wetEverywhere": "rain everywhere",
+      "warmest": "mildest",
+      "driest": "driest",
+      "dryEverywhere": "dry everywhere",
+      "rainAt": "rain: {cities}",
+      "rainCount": "rain at {n} stations",
+      "sky": { "dry": "dry", "wet": "rain" }
+    },
     "tools": {
       "buses": "Autobusy",
       "busesLine": "Rozkłady i ceny",
@@ -176,14 +192,17 @@
       "airbnb": "Dane Airbnb",
       "airbnbLine": "Ceny według obszaru",
       "weather": "Pogoda",
-      "weatherLine": "10 stacji + morze"
+      "weatherLine": "10 stacji + morze",
+      "villages": "Villages",
+      "villagesLine": "28 villages"
     },
     "nextEvents": "Nadchodzące wydarzenia",
     "barometer": {
       "sea": "{temp}° w wodzie, wiatr {wind} km/h, powietrze {air}°",
       "cruise": "Nawet {pax} pasażerów wycieczkowców dziś w {port}",
       "buses": "{count, plural, one {# autobus śledzony na żywo} few {# autobusy śledzone na żywo} many {# autobusów śledzonych na żywo} other {# autobusa śledzonego na żywo}}",
-      "src": { "weather": "stacje pogodowe", "port": "oficjalny rozkład portu", "gps": "GPS, co 5 min" }
+      "src": { "weather": "stacje pogodowe", "port": "oficjalny rozkład portu", "gps": "GPS, co 5 min" },
+      "sky": "{temp}° in {city}, wind {wind} km/h · {wet, plural, =0 {no station reporting rain} one {rain at # of {total} stations} other {rain at # of {total} stations}}"
     },
     "serviceRail": {
       "title": "Rezerwuj bezpośrednio",

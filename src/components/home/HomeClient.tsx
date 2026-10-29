@@ -13,12 +13,13 @@ import { CreteMap } from "@/components/CreteMap";
 import { DepBoard } from "@/components/DepBoard";
 import { WindArrow } from "@/components/WindArrow";
 import {
-  CiBus, CiWave, CiSun, CiCompass, CiPlane, CiChart,
+  CiBus, CiWave, CiSun, CiCloud, CiRain, CiMountain, CiCompass, CiPlane, CiChart,
   CiNews, CiBook,
   CiInstagram, CiFacebook, CiYouTube,
 } from "@/components/icons";
 import { Link } from "@/i18n/navigation";
-import type { CityWeather } from "@/lib/weather";
+import { getWeatherIcon, type CityWeather } from "@/lib/weather";
+import { sunNow, sunWeek } from "@/lib/winter-sun";
 import type { BusRoute } from "@/lib/buses";
 import type { NewsItem, Event, Locale } from "@/lib/types";
 import { getLocalizedField } from "@/lib/types";
@@ -31,7 +32,7 @@ import { ChevronRight } from "lucide-react";
 
 // Zones cliquables du hero portées par ce composant. Le baromètre suit le même
 // event avec ses propres zones. Spec : docs/superpowers/specs/2026-07-29-hero-clickable-design.md
-function trackHero(zone: "badge" | "swim") {
+function trackHero(zone: "badge" | "swim" | "sun") {
   (window as unknown as { plausible?: (e: string, o?: { props?: Record<string, string> }) => void })
     .plausible?.("hero_click", { props: { zone } });
 }
@@ -138,6 +139,8 @@ interface HomeClientProps {
   boardRoutes: BusRoute[];
   locale: string;
   services: HomeService[];
+  /** Hors saison de baignade : la home parle soleil et pluie, plus plages. */
+  winter: boolean;
 }
 
 const VERDICT_COLORS: Record<SwimPickLite["rating"], string> = {
@@ -176,7 +179,7 @@ function safeIntlLocale(locale: string): string {
   }
 }
 
-export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, swimPick, swimSides, boardRoutes, locale, services }: HomeClientProps) {
+export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, swimPick, swimSides, boardRoutes, locale, services, winter }: HomeClientProps) {
   const loc = locale as Locale;
   const t = useTranslations("home");
 
@@ -191,9 +194,20 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
   // Dégonflé le 28/07 : le bloc occupait environ 40 % de la hauteur pour 3,7 % des clics.
   const news = latestNews.slice(0, 4);
   const guides = latestGuides.slice(0, 2);
-  const heroCity = cities.find((c) => c.name === (swimPick?.cityName ?? "Heraklion")) ?? cities[0];
+  // Mode hiver : la station la plus ensoleillée remplace la plage du jour, sur
+  // la phrase du hero, le baromètre et l'épingle de la carte.
+  const sun = winter ? sunNow(cities) : null;
+  const sunDays = winter ? sunWeek(cities) : [];
+  const cityLabel = (c: CityWeather) => (loc === "el" ? c.nameEl : c.name);
+  const heroCity = sun?.city ?? cities.find((c) => c.name === (swimPick?.cityName ?? "Heraklion")) ?? cities[0];
+  const sunKey = !sun ? null : sun.wetEverywhere ? "heroWet" : sun.city.weatherCode <= 1 ? "heroSun" : "heroDry";
+  const dayLabel = (iso: string) =>
+    new Intl.DateTimeFormat(safeIntlLocale(locale), { weekday: "short", day: "numeric", timeZone: "UTC" })
+      .format(new Date(`${iso}T12:00:00Z`));
 
-  const swimPin = swimPick
+  const swimPin = sun
+    ? { name: cityLabel(sun.city), lat: sun.city.lat, lng: sun.city.lng }
+    : swimPick
     ? { name: swimPick.name, lat: swimPick.lat, lng: swimPick.lng }
     : null;
 
@@ -202,7 +216,9 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
 
   const TOOLS = [
     { href: "/buses", icon: CiBus, title: t("tools.buses"), line: t("tools.busesLine") },
-    { href: "/beaches/today", icon: CiWave, title: t("tools.swim"), line: t("tools.swimLine") },
+    winter
+      ? { href: "/villages", icon: CiMountain, title: t("tools.villages"), line: t("tools.villagesLine") }
+      : { href: "/beaches/today", icon: CiWave, title: t("tools.swim"), line: t("tools.swimLine") },
     { href: "/explore", icon: CiCompass, title: t("tools.explore"), line: t("tools.exploreLine") },
     { href: "/airport", icon: CiPlane, title: t("tools.airports"), line: t("tools.airportsLine") },
     { href: "/airbnb", icon: CiChart, title: t("tools.airbnb"), line: t("tools.airbnbLine") },
@@ -234,11 +250,20 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                 <ChevronRight className={HERO_CHEVRON} aria-hidden />
               </Link>
               <h1 className="font-heading font-extrabold text-4xl md:text-[54px] leading-[1.06] tracking-tight text-text mt-4 mb-3">
-                {t("heroMain.pre")}
+                {winter ? t("winter.heroPre") : t("heroMain.pre")}
                 <br />
                 <span className="text-white [text-shadow:0_2px_18px_rgba(11,94,120,.35)]">{t("heroMain.hl")}</span>
               </h1>
-              {swimPick && swimLink ? (
+              {sun && sunKey ? (
+                <Link
+                  href="/weather"
+                  onClick={() => trackHero("sun")}
+                  className="group/hero block max-w-md mb-6 text-base text-[rgba(11,57,84,.78)] hover:text-sea leading-relaxed no-underline transition-colors"
+                >
+                  {t(`winter.${sunKey}`, { city: cityLabel(sun.city), temp: sun.city.temp })}
+                  <ChevronRight className={`${HERO_CHEVRON} inline-block align-[-3px] ml-1 text-sea`} aria-hidden />
+                </Link>
+              ) : swimPick && swimLink ? (
                 <Link
                   href={swimLink}
                   onClick={() => trackHero("swim")}
@@ -258,10 +283,17 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                 seaTemp={swimPick?.seaTemp ?? null}
                 windSpeed={swimPick?.windSpeed ?? null}
                 airTemp={heroCity?.temp ?? null}
+                sky={sun ? { city: cityLabel(sun.city), temp: sun.city.temp, wind: sun.city.windSpeed, wet: sun.wetCount, total: sun.total } : null}
               />
-              <Link href="/beaches/today" className="inline-block bg-sun text-text rounded-[17px] px-4 py-2.5 text-sm font-heading font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)] no-underline hover:brightness-105 transition-all">
-                {t("ctaBeach")}
-              </Link>
+              {winter ? (
+                <a href="#soleil" className="inline-block bg-sun text-text rounded-[17px] px-4 py-2.5 text-sm font-heading font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)] no-underline hover:brightness-105 transition-all">
+                  {t("winter.cta")}
+                </a>
+              ) : (
+                <Link href="/beaches/today" className="inline-block bg-sun text-text rounded-[17px] px-4 py-2.5 text-sm font-heading font-bold shadow-[0_10px_26px_rgba(11,94,120,.16)] no-underline hover:brightness-105 transition-all">
+                  {t("ctaBeach")}
+                </Link>
+              )}
               {/* Socials Kalimera : chips blancs hover sun, cohérents avec chips météo */}
               <div className="flex flex-wrap gap-2 mt-5">
                 <a
@@ -355,9 +387,15 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                       <WindArrow deg={c.windDir} className="w-3 h-3" /> {c.windSpeed} km/h
                       {c.seaTemp != null && <> · {t("sea")} {c.seaTemp}°</>}
                     </p>
-                    <p className={`mt-2 mb-0 inline-flex text-[12.5px] font-bold rounded-full px-3 py-1.5 font-data ${st.warn ? "bg-white/90 text-[#C2543A]" : "bg-white/85 text-sea"}`}>
-                      ≈ {t(`seaStates.${st.key}`)}
-                    </p>
+                    {winter ? (
+                      <p className={`mt-2 mb-0 inline-flex text-[12.5px] font-bold rounded-full px-3 py-1.5 font-data ${c.weatherCode >= 51 || c.precipitation > 0 ? "bg-white/90 text-[#C2543A]" : "bg-white/85 text-sea"}`}>
+                        {t(c.weatherCode >= 51 || c.precipitation > 0 ? "winter.sky.wet" : "winter.sky.dry")}
+                      </p>
+                    ) : (
+                      <p className={`mt-2 mb-0 inline-flex text-[12.5px] font-bold rounded-full px-3 py-1.5 font-data ${st.warn ? "bg-white/90 text-[#C2543A]" : "bg-white/85 text-sea"}`}>
+                        ≈ {t(`seaStates.${st.key}`)}
+                      </p>
+                    )}
                   </Link>
                 );
               })}
@@ -365,8 +403,55 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
           </>
         )}
 
+        {/* ═══════ HIVER : OU TROUVER LE SOLEIL CETTE SEMAINE ═══════ */}
+        {winter && sunDays.length > 0 && (
+          <>
+            <div id="soleil" className="flex items-center justify-between mt-10 mb-4 scroll-mt-24">
+              <h2 className="font-heading text-[28px] font-extrabold text-text m-0">{t("winter.weekTitle")}</h2>
+              <Link href="/weather" className="text-[13.5px] font-heading font-bold text-sea bg-white rounded-full px-4 py-2 shadow-[0_8px_20px_rgba(11,94,120,.12)] no-underline">
+                {t("allStations")}
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-5 gap-3.5">
+              {sunDays.map((d, i) => {
+                const kind = getWeatherIcon(d.day.weatherCode);
+                const Icon = kind === "sun" ? CiSun : kind === "rain" ? CiRain : CiCloud;
+                return (
+                  <BlurFade key={d.date} delay={Math.min(0.05 * i, 0.3)}>
+                    <Link href="/weather"
+                          className={`h-full rounded-[24px] px-5 py-4 no-underline flex sm:flex-col items-center sm:items-start gap-4 sm:gap-2 ${d.wetEverywhere ? "bg-[#DCEBFF]" : "bg-[#FFE9CF]"}`}>
+                      <p className="w-16 sm:w-auto shrink-0 text-[12.5px] font-heading font-bold uppercase tracking-[0.08em] text-[rgba(11,57,84,.6)] m-0">{dayLabel(d.date)}</p>
+                      <span className="bg-white/85 w-[46px] h-[46px] rounded-[15px] flex items-center justify-center text-text shrink-0">
+                        <Icon className="w-6 h-6" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-[11.5px] text-[rgba(11,57,84,.6)] m-0">
+                          {t(d.wetCities.length === 0 ? "winter.warmest" : "winter.driest")}
+                        </p>
+                        <p className="font-heading font-extrabold text-[19px] text-text m-0 leading-tight">{cityLabel(d.city)}</p>
+                        <p className="font-data text-[13px] text-[rgba(11,57,84,.7)] m-0 mt-0.5">
+                          {d.day.tempMax}° · {t("winter.rainPct", { pct: d.day.precipProb })}
+                        </p>
+                        <p className={`mt-1.5 mb-0 inline-flex text-[11.5px] font-bold rounded-full px-2.5 py-1 bg-white/90 ${d.wetCities.length === 0 ? "text-sea" : "text-[#C2543A]"}`}>
+                          {d.wetEverywhere
+                            ? t("winter.wetEverywhere")
+                            : d.wetCities.length === 0
+                            ? t("winter.dryEverywhere")
+                            : d.wetCities.length <= 2
+                            ? t("winter.rainAt", { cities: d.wetCities.map(cityLabel).join(", ") })
+                            : t("winter.rainCount", { n: d.wetCities.length })}
+                        </p>
+                      </div>
+                    </Link>
+                  </BlurFade>
+                );
+              })}
+            </div>
+          </>
+        )}
+
         {/* ═══════ OU SE BAIGNER AUJOURD'HUI ═══════ */}
-        {swimPick && (
+        {!winter && swimPick && (
           <>
             <div className="flex items-center justify-between mt-10 mb-4">
               <h2 className="font-heading text-[28px] font-extrabold text-text m-0">{t("swimToday")}</h2>

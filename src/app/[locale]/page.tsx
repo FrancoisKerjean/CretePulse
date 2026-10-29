@@ -4,6 +4,7 @@ import { getLatestNews } from "@/lib/news";
 import { getUpcomingEvents } from "@/lib/events";
 import { getEditorialGuides, type Guide } from "@/lib/guides";
 import { buildSwimToday } from "@/lib/swim-today";
+import { isWinterSeason } from "@/lib/winter-sun";
 import { getBusRoutes, type BusRoute } from "@/lib/buses";
 import { pairSlug } from "@/lib/bus-pairs";
 import { HomeClient, type SwimPickLite, type SwimSideLite } from "@/components/home/HomeClient";
@@ -92,13 +93,16 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   setRequestLocale(locale);
   const m = HOME_META[locale] || HOME_META.en;
   const websiteSchema = buildWebsiteSchema(locale, m.desc);
+  // Hors saison de baignade, la home ne calcule plus la plage du jour : elle
+  // montre où trouver le soleil (lib/winter-sun.ts, demandé par François le 29/10/2026).
+  const winter = isWinterSeason();
 
   const [cities, latestNews, upcomingEvents, latestGuides, swim, busRoutes] = await Promise.all([
     fetchAllCitiesWeather().catch((): CityWeather[] => []),
     getLatestNews(8, locale).catch((): NewsItem[] => []),
     getUpcomingEvents(5).catch((): Event[] => []),
     getEditorialGuides(12).catch((): Guide[] => []),
-    buildSwimToday().catch(() => null),
+    winter ? Promise.resolve(null) : buildSwimToday().catch(() => null),
     getBusRoutes().catch((): BusRoute[] => []),
   ]);
 
@@ -166,6 +170,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         latestGuides={latestGuides}
         swimPick={swimPick}
         swimSides={swimSides}
+        winter={winter}
         boardRoutes={boardRoutes}
         locale={locale}
         services={services}

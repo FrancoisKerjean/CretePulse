@@ -164,6 +164,22 @@
       "east": "Keleti part",
       "central": "Középső part"
     },
+    "winter": {
+      "heroPre": "Sun, buses, weather.",
+      "heroSun": "Right now the sun is out in {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "heroDry": "Right now the driest spot on the island is {city}: {temp}°, no rain. We watch the weather and the buses for you, all day long.",
+      "heroWet": "It's raining across the island right now. Mildest: {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "cta": "Sun over the next 5 days",
+      "weekTitle": "Where to find the sun this week",
+      "rainPct": "rain {pct}%",
+      "wetEverywhere": "rain everywhere",
+      "warmest": "mildest",
+      "driest": "driest",
+      "dryEverywhere": "dry everywhere",
+      "rainAt": "rain: {cities}",
+      "rainCount": "rain at {n} stations",
+      "sky": { "dry": "dry", "wet": "rain" }
+    },
     "tools": {
       "buses": "Buszok",
       "busesLine": "Menetrend & árak",
@@ -176,14 +192,17 @@
       "airbnb": "Airbnb adatok",
       "airbnbLine": "Árak régiónként",
       "weather": "Időjárás",
-      "weatherLine": "10 állomás + tenger"
+      "weatherLine": "10 állomás + tenger",
+      "villages": "Villages",
+      "villagesLine": "28 villages"
     },
     "nextEvents": "Közelgő események",
     "barometer": {
       "sea": "{temp}° a vízben, szél {wind} km/h, levegő {air}°",
       "cruise": "Akár {pax} hajósutas ma {port} kikötőjében",
       "buses": "{count, plural, one {# busz élőben nyomon követve} other {# busz élőben nyomon követve}}",
-      "src": { "weather": "időjárás-állomások", "port": "hivatalos kikötői menetrend", "gps": "GPS, 5 percenként" }
+      "src": { "weather": "időjárás-állomások", "port": "hivatalos kikötői menetrend", "gps": "GPS, 5 percenként" },
+      "sky": "{temp}° in {city}, wind {wind} km/h · {wet, plural, =0 {no station reporting rain} one {rain at # of {total} stations} other {rain at # of {total} stations}}"
     },
     "serviceRail": {
       "title": "Foglaljon közvetlenül",

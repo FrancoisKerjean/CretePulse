@@ -164,6 +164,22 @@
       "east": "Východní pobřeží",
       "central": "Střední pobřeží"
     },
+    "winter": {
+      "heroPre": "Sun, buses, weather.",
+      "heroSun": "Right now the sun is out in {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "heroDry": "Right now the driest spot on the island is {city}: {temp}°, no rain. We watch the weather and the buses for you, all day long.",
+      "heroWet": "It's raining across the island right now. Mildest: {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "cta": "Sun over the next 5 days",
+      "weekTitle": "Where to find the sun this week",
+      "rainPct": "rain {pct}%",
+      "wetEverywhere": "rain everywhere",
+      "warmest": "mildest",
+      "driest": "driest",
+      "dryEverywhere": "dry everywhere",
+      "rainAt": "rain: {cities}",
+      "rainCount": "rain at {n} stations",
+      "sky": { "dry": "dry", "wet": "rain" }
+    },
     "tools": {
       "buses": "Autobusy",
       "busesLine": "Jízdní řády a ceny",
@@ -176,14 +192,17 @@
       "airbnb": "Data Airbnb",
       "airbnbLine": "Ceny podle oblasti",
       "weather": "Počasí",
-      "weatherLine": "10 stanic + moře"
+      "weatherLine": "10 stanic + moře",
+      "villages": "Villages",
+      "villagesLine": "28 villages"
     },
     "nextEvents": "Nadcházející akce",
     "barometer": {
       "sea": "{temp}° ve vodě, vítr {wind} km/h, vzduch {air}°",
       "cruise": "Až {pax} cestujících z výletních lodí dnes v {port}",
       "buses": "{count, plural, one {# autobus sledovaný živě} few {# autobusy sledované živě} many {# autobusu sledovaného živě} other {# autobusů sledovaných živě}}",
-      "src": { "weather": "meteorologické stanice", "port": "oficiální rozpis přístavu", "gps": "GPS, každých 5 min" }
+      "src": { "weather": "meteorologické stanice", "port": "oficiální rozpis přístavu", "gps": "GPS, každých 5 min" },
+      "sky": "{temp}° in {city}, wind {wind} km/h · {wet, plural, =0 {no station reporting rain} one {rain at # of {total} stations} other {rain at # of {total} stations}}"
     },
     "serviceRail": {
       "title": "Rezervujte přímo",

@@ -164,6 +164,22 @@
       "east": "Восточный берег",
       "central": "Центральный берег"
     },
+    "winter": {
+      "heroPre": "Sun, buses, weather.",
+      "heroSun": "Right now the sun is out in {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "heroDry": "Right now the driest spot on the island is {city}: {temp}°, no rain. We watch the weather and the buses for you, all day long.",
+      "heroWet": "It's raining across the island right now. Mildest: {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "cta": "Sun over the next 5 days",
+      "weekTitle": "Where to find the sun this week",
+      "rainPct": "rain {pct}%",
+      "wetEverywhere": "rain everywhere",
+      "warmest": "mildest",
+      "driest": "driest",
+      "dryEverywhere": "dry everywhere",
+      "rainAt": "rain: {cities}",
+      "rainCount": "rain at {n} stations",
+      "sky": { "dry": "dry", "wet": "rain" }
+    },
     "tools": {
       "buses": "Автобусы",
       "busesLine": "Расписание и цены",
@@ -176,14 +192,17 @@
       "airbnb": "Данные Airbnb",
       "airbnbLine": "Цены по районам",
       "weather": "Погода",
-      "weatherLine": "10 станций + море"
+      "weatherLine": "10 станций + море",
+      "villages": "Villages",
+      "villagesLine": "28 villages"
     },
     "nextEvents": "Ближайшие события",
     "barometer": {
       "sea": "{temp}° в воде, ветер {wind} км/ч, воздух {air}°",
       "cruise": "До {pax} круизных пассажиров сегодня в порту {port}",
       "buses": "{count, plural, one {# автобус отслеживается в реальном времени} few {# автобуса отслеживаются в реальном времени} many {# автобусов отслеживаются в реальном времени} other {# автобуса отслеживаются в реальном времени}}",
-      "src": { "weather": "метеостанции", "port": "официальное расписание порта", "gps": "GPS, каждые 5 мин" }
+      "src": { "weather": "метеостанции", "port": "официальное расписание порта", "gps": "GPS, каждые 5 мин" },
+      "sky": "{temp}° in {city}, wind {wind} km/h · {wet, plural, =0 {no station reporting rain} one {rain at # of {total} stations} other {rain at # of {total} stations}}"
     },
     "serviceRail": {
       "title": "Бронируйте напрямую",

@@ -164,6 +164,22 @@
       "east": "東海岸",
       "central": "中央海岸"
     },
+    "winter": {
+      "heroPre": "Sun, buses, weather.",
+      "heroSun": "Right now the sun is out in {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "heroDry": "Right now the driest spot on the island is {city}: {temp}°, no rain. We watch the weather and the buses for you, all day long.",
+      "heroWet": "It's raining across the island right now. Mildest: {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "cta": "Sun over the next 5 days",
+      "weekTitle": "Where to find the sun this week",
+      "rainPct": "rain {pct}%",
+      "wetEverywhere": "rain everywhere",
+      "warmest": "mildest",
+      "driest": "driest",
+      "dryEverywhere": "dry everywhere",
+      "rainAt": "rain: {cities}",
+      "rainCount": "rain at {n} stations",
+      "sky": { "dry": "dry", "wet": "rain" }
+    },
     "tools": {
       "buses": "バス",
       "busesLine": "時刻表と料金",
@@ -176,14 +192,17 @@
       "airbnb": "Airbnbデータ",
       "airbnbLine": "エリア別の価格",
       "weather": "天気",
-      "weatherLine": "10地点+海況"
+      "weatherLine": "10地点+海況",
+      "villages": "Villages",
+      "villagesLine": "28 villages"
     },
     "nextEvents": "これからのイベント",
     "barometer": {
       "sea": "水温{temp}°、風速{wind} km/h、気温{air}°",
       "cruise": "本日{port}に最大{pax}人のクルーズ客",
       "buses": "{count, plural, other {#台のバスをライブ追跡中}}",
-      "src": { "weather": "気象観測所", "port": "港の公式スケジュール", "gps": "GPS、5分ごと" }
+      "src": { "weather": "気象観測所", "port": "港の公式スケジュール", "gps": "GPS、5分ごと" },
+      "sky": "{temp}° in {city}, wind {wind} km/h · {wet, plural, =0 {no station reporting rain} one {rain at # of {total} stations} other {rain at # of {total} stations}}"
     },
     "serviceRail": {
       "title": "直接予約",

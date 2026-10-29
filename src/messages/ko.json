@@ -164,6 +164,22 @@
       "east": "동부 해안",
       "central": "중부 해안"
     },
+    "winter": {
+      "heroPre": "Sun, buses, weather.",
+      "heroSun": "Right now the sun is out in {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "heroDry": "Right now the driest spot on the island is {city}: {temp}°, no rain. We watch the weather and the buses for you, all day long.",
+      "heroWet": "It's raining across the island right now. Mildest: {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "cta": "Sun over the next 5 days",
+      "weekTitle": "Where to find the sun this week",
+      "rainPct": "rain {pct}%",
+      "wetEverywhere": "rain everywhere",
+      "warmest": "mildest",
+      "driest": "driest",
+      "dryEverywhere": "dry everywhere",
+      "rainAt": "rain: {cities}",
+      "rainCount": "rain at {n} stations",
+      "sky": { "dry": "dry", "wet": "rain" }
+    },
     "tools": {
       "buses": "버스",
       "busesLine": "시간표 & 요금",
@@ -176,14 +192,17 @@
       "airbnb": "에어비앤비 데이터",
       "airbnbLine": "지역별 요금",
       "weather": "날씨",
-      "weatherLine": "관측소 10곳 + 바다"
+      "weatherLine": "관측소 10곳 + 바다",
+      "villages": "Villages",
+      "villagesLine": "28 villages"
     },
     "nextEvents": "다가오는 이벤트",
     "barometer": {
       "sea": "수온 {temp}°, 바람 {wind} km/h, 기온 {air}°",
       "cruise": "오늘 {port}에 최대 {pax}명의 크루즈 승객",
       "buses": "{count, plural, other {#대의 버스 실시간 추적 중}}",
-      "src": { "weather": "기상 관측소", "port": "공식 항구 일정", "gps": "GPS, 5분마다" }
+      "src": { "weather": "기상 관측소", "port": "공식 항구 일정", "gps": "GPS, 5분마다" },
+      "sky": "{temp}° in {city}, wind {wind} km/h · {wet, plural, =0 {no station reporting rain} one {rain at # of {total} stations} other {rain at # of {total} stations}}"
     },
     "serviceRail": {
       "title": "직접 예약",

@@ -164,6 +164,22 @@
       "east": "Itärannikko",
       "central": "Keskirannikko"
     },
+    "winter": {
+      "heroPre": "Sun, buses, weather.",
+      "heroSun": "Right now the sun is out in {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "heroDry": "Right now the driest spot on the island is {city}: {temp}°, no rain. We watch the weather and the buses for you, all day long.",
+      "heroWet": "It's raining across the island right now. Mildest: {city}, {temp}°. We watch the weather and the buses for you, all day long.",
+      "cta": "Sun over the next 5 days",
+      "weekTitle": "Where to find the sun this week",
+      "rainPct": "rain {pct}%",
+      "wetEverywhere": "rain everywhere",
+      "warmest": "mildest",
+      "driest": "driest",
+      "dryEverywhere": "dry everywhere",
+      "rainAt": "rain: {cities}",
+      "rainCount": "rain at {n} stations",
+      "sky": { "dry": "dry", "wet": "rain" }
+    },
     "tools": {
       "buses": "Bussit",
       "busesLine": "Aikataulut & hinnat",
@@ -176,14 +192,17 @@
       "airbnb": "Airbnb-data",
       "airbnbLine": "Hinnat alueittain",
       "weather": "Sää",
-      "weatherLine": "10 asemaa + meri"
+      "weatherLine": "10 asemaa + meri",
+      "villages": "Villages",
+      "villagesLine": "28 villages"
     },
     "nextEvents": "Tulevat tapahtumat",
     "barometer": {
       "sea": "{temp}° vedessä, tuuli {wind} km/h, ilma {air}°",
       "cruise": "Jopa {pax} risteilymatkustajaa tänään satamassa {port}",
       "buses": "{count, plural, one {# bussi seurattavana suorana} other {# bussia seurattavana suorana}}",
-      "src": { "weather": "sääasemat", "port": "sataman virallinen aikataulu", "gps": "GPS, 5 minuutin välein" }
+      "src": { "weather": "sääasemat", "port": "sataman virallinen aikataulu", "gps": "GPS, 5 minuutin välein" },
+      "sky": "{temp}° in {city}, wind {wind} km/h · {wet, plural, =0 {no station reporting rain} one {rain at # of {total} stations} other {rain at # of {total} stations}}"
     },
     "serviceRail": {
       "title": "Varaa suoraan",
