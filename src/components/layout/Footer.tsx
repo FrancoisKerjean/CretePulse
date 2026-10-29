@@ -125,7 +125,6 @@ export function Footer() {
             <Link href="/explore" className={linkCls}>{tn("explore")}</Link>
             <Link href="/villages" className={linkCls}>{t("villages")}</Link>
             <Link href="/food" className={linkCls}>{t("food")}</Link>
-            <Link href="/hikes" className={linkCls}>{t("hikes")}</Link>
           </Col>
 
           <Col title={tn("today")}>

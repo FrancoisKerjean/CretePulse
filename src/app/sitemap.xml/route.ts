@@ -17,6 +17,7 @@
 // competing on the same query without 0 click).
 
 import { supabase } from "@/lib/supabase";
+import { HIKES_PUBLISHED } from "@/lib/hikes";
 import { qualityPairSlugs, priorityPairSlugs, pairLastmod } from "@/lib/bus-seo";
 import { MONTHS, CITIES, WEATHER_INDEX_LOCALES } from "@/lib/weather-monthly";
 import { isNewsTranslated, NEWS_INDEXABLE_MAX_AGE_DAYS } from "@/lib/news";
@@ -42,7 +43,7 @@ const STATIC_PAGES = [
   "/events",
   "/weather",
   "/news",
-  "/hikes",
+  // "/hikes" retiré le 29/10/2026 : rubrique hors ligne (HIKES_PUBLISHED, lib/hikes.ts).
   "/food",
   "/articles",
   "/daily",
@@ -243,7 +244,7 @@ export async function GET() {
     fetchSlugs("beaches"),
     fetchSlugs("villages"),
     fetchSlugs("food_places", "food_featured"),
-    fetchSlugs("hikes"),
+    HIKES_PUBLISHED ? fetchSlugs("hikes") : Promise.resolve([] as string[]),
     fetchSlugsWithDate("news", "published_at", "news"),
     fetchSlugsWithDate("guides", "published_at", "guides_published"),
   ]);

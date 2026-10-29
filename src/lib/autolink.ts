@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { supabase } from "./supabase";
+import { HIKES_PUBLISHED } from "./hikes";
 
 export type LinkEntity = { name: string; href: string };
 
@@ -52,7 +53,7 @@ export const getAutolinkIndex = cache(async (locale: string): Promise<LinkEntity
   const [beaches, villages, hikes] = await Promise.all([
     supabase.from("beaches").select(cols),
     supabase.from("villages").select(cols),
-    supabase.from("hikes").select(cols),
+    HIKES_PUBLISHED ? supabase.from("hikes").select(cols) : Promise.resolve({ data: [] }),
   ]);
 
   const out: LinkEntity[] = [];

@@ -15,6 +15,7 @@ import {
   type Guide,
 } from "@/lib/guides";
 import { getAutolinkIndex, autolinkHtml } from "@/lib/autolink";
+import { HIKES_PUBLISHED } from "@/lib/hikes";
 import { resolveArticlePromo, splitAfterSecondH2 } from "@/lib/article-promo";
 import { ArticlePromoSlot } from "@/components/articles/ArticlePromoSlot";
 import type { Locale } from "@/lib/types";
@@ -281,7 +282,12 @@ export default async function ArticleDetailPage({
   const toc = extractToc(content);
   // Auto-link the first mention of known beaches/villages/hikes to their pages (in-body
   // internal links; the most-clicked + best-for-crawl link type, absent from auto articles).
-  const linkedContent = autolinkHtml(content, await getAutolinkIndex(loc), { maxLinks: 6 });
+  // Rubrique randonnées hors ligne (lib/hikes.ts) : les liens écrits en dur dans les
+  // articles vers /hikes mèneraient à un 404, on garde le texte et on retire le lien.
+  const bodyContent = HIKES_PUBLISHED
+    ? content
+    : content.replace(/<a\s[^>]*href="(?:\/[a-z]{2})?\/hikes[^"]*"[^>]*>([\s\S]*?)<\/a>/gi, "$1");
+  const linkedContent = autolinkHtml(bodyContent, await getAutolinkIndex(loc), { maxLinks: 6 });
   // Encarts de service (spec 2026-09-07) : plan résolu au rendu, dans le HTML servi par
   // le CDN. La découpe travaille sur le HTML autolinké et dans la locale servie ; au
   // moindre doute elle retourne null et l'article s'affiche entier, avec le seul encart de fin.

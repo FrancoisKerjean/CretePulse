@@ -74,7 +74,8 @@ const NAV_GROUPS: Array<{ key: string; label: NavLabel; items: NavLink[] }> = [
   {
     key: "discover",
     label: { en: "Discover", fr: "Découvrir", de: "Entdecken", el: "Ανακαλύψτε", it: "Scopri", nl: "Ontdekken", pl: "Odkrywaj", es: "Descubrir", pt: "Descobrir", ru: "Открыть", ja: "発見", ko: "발견", zh: "发现", tr: "Keşfet", sv: "Upptäck", da: "Opdag", no: "Oppdag", fi: "Löydä", cs: "Objevit", hu: "Felfedezés", ro: "Descoperă", ar: "اكتشف" },
-    items: [LINKS.beaches, LINKS.explore, LINKS.villages, LINKS.food, LINKS.hikes],
+    // LINKS.hikes retiré le 29/10/2026 : rubrique hors ligne (HIKES_PUBLISHED, lib/hikes.ts).
+    items: [LINKS.beaches, LINKS.explore, LINKS.villages, LINKS.food],
   },
   {
     key: "today",

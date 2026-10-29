@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { getAllHikes } from "@/lib/hikes";
+import { notFound } from "next/navigation";
+import { getAllHikes, HIKES_PUBLISHED } from "@/lib/hikes";
 import { getLocalizedField, type Locale, type Hike } from "@/lib/types";
 import { Footprints, Mountain, MapPin } from "lucide-react";
 import Link from "next/link";
@@ -66,6 +67,7 @@ export default async function HikesPage({
   setRequestLocale(locale);
   const { difficulty, type } = await searchParams;
   const loc = locale as Locale;
+  if (!HIKES_PUBLISHED) notFound();
 
   let hikes: Hike[] = [];
   try {

@@ -39,11 +39,6 @@ const SEARCH_INDEX: SearchEntry[] = [
     tags: ["food", "restaurant", "taverna", "eat", "cuisine", "essen", "φαγητό"],
   },
   {
-    title: { en: "Hiking in Crete", fr: "Randonnées en Crète", de: "Wandern auf Kreta", el: "Πεζοπορία στην Κρήτη" },
-    path: "/hikes",
-    tags: ["hike", "hiking", "gorge", "trail", "walk", "randonnée", "wandern", "πεζοπορία"],
-  },
-  {
     title: { en: "Bus Routes in Crete", fr: "Lignes de Bus en Crète", de: "Busverbindungen auf Kreta", el: "Λεωφορεία στην Κρήτη" },
     path: "/buses",
     tags: ["bus", "transport", "ktel", "route", "λεωφορείο"],
