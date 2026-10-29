@@ -11,17 +11,32 @@ export const revalidate = 86400;
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 
 const META: Record<string, { title: string; desc: string }> = {
-  en: { title: "Hiking Trails in Crete - Gorges, Mountains & Coasts", desc: "80+ hiking trails in Crete rated by difficulty. Samaria Gorge, Imbros, coastal paths and mountain routes. Distance, elevation and duration for each trail." },
-  fr: { title: "Randonnées en Crète - Gorges, Montagnes & Sentiers", desc: "80+ sentiers de randonnée en Crète notés par difficulté. Gorge de Samaria, Imbros, sentiers côtiers. Distance, dénivelé et durée pour chaque trail." },
-  de: { title: "Wanderwege auf Kreta - Schluchten, Berge & Küste", desc: "80+ Wanderwege auf Kreta nach Schwierigkeit bewertet. Samaria-Schlucht, Imbros, Küstenpfade. Distanz, Höhenprofil und Dauer." },
-  el: { title: "Μονοπάτια Πεζοπορίας στην Κρήτη - Φαράγγια & Βουνά", desc: "80+ μονοπάτια πεζοπορίας στην Κρήτη κατά δυσκολία. Φαράγγι Σαμαριάς, Ιμπρος, παράκτια μονοπάτια. Απόσταση και υψόμετρο." },
+  en: { title: "Hiking Trails in Crete - Gorges, Mountains & Coasts", desc: "50 hiking trails in Crete rated by difficulty, with the elevation gain of each: Samaria Gorge, Imbros, coastal paths and mountain routes." },
+  fr: { title: "Randonnées en Crète - Gorges, Montagnes & Sentiers", desc: "50 sentiers de randonnée en Crète classés par difficulté, avec le dénivelé de chacun : gorge de Samaria, Imbros, sentiers côtiers et routes de montagne." },
+  de: { title: "Wanderwege auf Kreta - Schluchten, Berge & Küste", desc: "50 Wanderwege auf Kreta nach Schwierigkeit, mit dem Höhenunterschied jeder Route: Samaria-Schlucht, Imbros, Küstenpfade und Bergrouten." },
+  el: { title: "Μονοπάτια Πεζοπορίας στην Κρήτη - Φαράγγια & Βουνά", desc: "50 μονοπάτια πεζοπορίας στην Κρήτη κατά δυσκολία, με την υψομετρική διαφορά του καθενός: φαράγγι Σαμαριάς, Ίμπρος, παράκτια και ορεινά μονοπάτια." },
 };
 
-const DIFFICULTY_STYLES: Record<Hike["difficulty"], { label: string; classes: string }> = {
-  easy: { label: "Easy", classes: "bg-green-100 text-green-700" },
-  moderate: { label: "Moderate", classes: "bg-amber-100 text-amber-700" },
-  hard: { label: "Hard", classes: "bg-orange-100 text-orange-700" },
-  expert: { label: "Expert", classes: "bg-red-100 text-red-700" },
+// Libellés de la liste. Les 18 locales retirées redirigent vers /en : 4 suffisent.
+const L: Record<string, {
+  found: (n: number) => string; difficulty: string; type: string; all: string; none: string; clear: string;
+  levels: Record<Hike["difficulty"], string>; types: Record<Hike["type"], string>;
+}> = {
+  en: { found: (n) => `${n} trail${n !== 1 ? "s" : ""}`, difficulty: "Difficulty", type: "Type", all: "All", none: "No trails match the selected filters.", clear: "Clear filters",
+    levels: { easy: "Easy", moderate: "Moderate", hard: "Hard", expert: "Expert" }, types: { gorge: "Gorge", coastal: "Coastal", mountain: "Mountain", cultural: "Cultural" } },
+  fr: { found: (n) => `${n} sentier${n > 1 ? "s" : ""}`, difficulty: "Difficulté", type: "Type", all: "Tous", none: "Aucun sentier ne correspond à ces filtres.", clear: "Effacer les filtres",
+    levels: { easy: "Accessible", moderate: "Moyen", hard: "Difficile", expert: "Expert" }, types: { gorge: "Gorge", coastal: "Côtier", mountain: "Montagne", cultural: "Patrimoine" } },
+  de: { found: (n) => `${n} Wanderweg${n !== 1 ? "e" : ""}`, difficulty: "Schwierigkeit", type: "Typ", all: "Alle", none: "Kein Wanderweg passt zu diesen Filtern.", clear: "Filter zurücksetzen",
+    levels: { easy: "Leicht", moderate: "Mittel", hard: "Schwer", expert: "Experte" }, types: { gorge: "Schlucht", coastal: "Küste", mountain: "Berg", cultural: "Kultur" } },
+  el: { found: (n) => `${n} μονοπάτι${n !== 1 ? "α" : ""}`, difficulty: "Δυσκολία", type: "Τύπος", all: "Όλα", none: "Κανένα μονοπάτι δεν ταιριάζει με τα φίλτρα.", clear: "Καθαρισμός φίλτρων",
+    levels: { easy: "Εύκολο", moderate: "Μέτριο", hard: "Δύσκολο", expert: "Για έμπειρους" }, types: { gorge: "Φαράγγι", coastal: "Παράκτιο", mountain: "Ορεινό", cultural: "Πολιτιστικό" } },
+};
+
+const DIFFICULTY_STYLES: Record<Hike["difficulty"], { classes: string }> = {
+  easy: { classes: "bg-green-100 text-green-700" },
+  moderate: { classes: "bg-amber-100 text-amber-700" },
+  hard: { classes: "bg-orange-100 text-orange-700" },
+  expert: { classes: "bg-red-100 text-red-700" },
 };
 
 const DIFFICULTIES: Hike["difficulty"][] = ["easy", "moderate", "hard", "expert"];
@@ -69,6 +84,9 @@ export default async function HikesPage({
     if (type && h.type !== type) return false;
     return true;
   });
+  const l = L[locale] || L.en;
+  // Un filtre sans fiche derrière mène à une page vide : on ne propose que les types renseignés.
+  const types = TYPES.filter((t) => hikes.some((h) => h.type === t));
 
   return (
     <main className="min-h-screen bg-surface">
@@ -81,19 +99,19 @@ export default async function HikesPage({
           </h1>
         </div>
         <p className="text-text-muted mt-1 mb-8">
-          {filtered.length} trail{filtered.length !== 1 ? "s" : ""} found
+          {l.found(filtered.length)}
         </p>
 
         {/* Filters */}
         <div className="flex flex-wrap gap-3 mb-8">
           {/* Difficulty filter */}
           <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-xs font-medium text-text-muted uppercase tracking-wide">Difficulty:</span>
+            <span className="text-xs font-medium text-text-muted uppercase tracking-wide">{l.difficulty} :</span>
             <Link
               href={`/${locale}/hikes${type ? `?type=${type}` : ""}`}
               className={`text-xs px-3 py-1 rounded-full border transition-colors ${!difficulty ? "bg-sea text-white border-sea" : "border-border text-text-muted hover:border-sea/50"}`}
             >
-              All
+              {l.all}
             </Link>
             {DIFFICULTIES.map((d) => {
               const style = DIFFICULTY_STYLES[d];
@@ -105,22 +123,23 @@ export default async function HikesPage({
                   href={href}
                   className={`text-xs px-3 py-1 rounded-full border transition-colors ${isActive ? style.classes + " border-transparent font-semibold" : "border-border text-text-muted hover:border-sea/50"}`}
                 >
-                  {style.label}
+                  {l.levels[d]}
                 </Link>
               );
             })}
           </div>
 
           {/* Type filter */}
+          {types.length > 0 && (
           <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-xs font-medium text-text-muted uppercase tracking-wide">Type:</span>
+            <span className="text-xs font-medium text-text-muted uppercase tracking-wide">{l.type} :</span>
             <Link
               href={`/${locale}/hikes${difficulty ? `?difficulty=${difficulty}` : ""}`}
               className={`text-xs px-3 py-1 rounded-full border transition-colors capitalize ${!type ? "bg-sea text-white border-sea" : "border-border text-text-muted hover:border-sea/50"}`}
             >
-              All
+              {l.all}
             </Link>
-            {TYPES.map((t) => {
+            {types.map((t) => {
               const isActive = type === t;
               const href = `/${locale}/hikes?type=${t}${difficulty ? `&difficulty=${difficulty}` : ""}`;
               return (
@@ -129,11 +148,12 @@ export default async function HikesPage({
                   href={href}
                   className={`text-xs px-3 py-1 rounded-full border transition-colors capitalize ${isActive ? "bg-sea text-white border-sea font-semibold" : "border-border text-text-muted hover:border-sea/50"}`}
                 >
-                  {t}
+                  {l.types[t]}
                 </Link>
               );
             })}
           </div>
+          )}
         </div>
 
         {/* Excursions GYG : l'index rando = forte intention activité. Tous les
@@ -146,9 +166,9 @@ export default async function HikesPage({
         {filtered.length === 0 ? (
           <div className="text-center py-16 text-text-muted">
             <Footprints className="w-12 h-12 mx-auto mb-4 opacity-30" />
-            <p>No trails match the selected filters.</p>
+            <p>{l.none}</p>
             <Link href={`/${locale}/hikes`} className="text-sea text-sm hover:underline mt-2 inline-block">
-              Clear filters
+              {l.clear}
             </Link>
           </div>
         ) : (
@@ -177,14 +197,18 @@ export default async function HikesPage({
                         {getLocalizedField(hike, "name", loc)}
                       </h2>
                       <span className={`shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${diffStyle.classes}`}>
-                        {diffStyle.label}
+                        {l.levels[hike.difficulty]}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1 text-xs text-text-muted mb-3 capitalize">
-                      <MapPin className="w-3 h-3" />
-                      {hike.type}
-                    </div>
+                    {hike.type ? (
+                      <div className="flex items-center gap-1 text-xs text-text-muted mb-3">
+                        <MapPin className="w-3 h-3" />
+                        {l.types[hike.type]}
+                      </div>
+                    ) : (
+                      <div className="mb-3" />
+                    )}
 
                     {/* Stats row */}
                     <div className="flex flex-wrap gap-3 text-xs text-text-muted">

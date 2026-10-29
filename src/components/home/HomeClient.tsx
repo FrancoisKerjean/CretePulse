@@ -383,7 +383,7 @@ export function HomeClient({ cities, latestNews, upcomingEvents, latestGuides, s
                     <p className="font-data text-5xl font-extrabold tracking-tight leading-[1.08] m-0">
                       {c.temp}<sup className="text-xl opacity-75">°</sup>
                     </p>
-                    <p className="font-data text-[12.5px] opacity-70 m-0 inline-flex items-center gap-1">
+                    <p className="font-data text-[12.5px] opacity-70 m-0 flex items-center gap-1">
                       <WindArrow deg={c.windDir} className="w-3 h-3" /> {c.windSpeed} km/h
                       {c.seaTemp != null && <> · {t("sea")} {c.seaTemp}°</>}
                     </p>
