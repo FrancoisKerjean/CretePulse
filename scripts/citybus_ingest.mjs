@@ -193,6 +193,10 @@ async function commitSupabase(model) {
   const del = (t, f) => pg('DELETE', `/${t}?${f}`, { prefer: 'return=minimal' });
   const selIn = (t, c, v, sel) => pg('GET', `/${t}?${c}=in.(${v.map((x) => encodeURIComponent(x)).join(',')})&select=${sel}`);
 
+  // 01/11/2026 : l'upsert sur code écrasait une ligne OSM/KTEL de même code (même préfixe CHA-).
+  const pris = (await selIn('bus_lines', 'code', model.lines.map((l) => l.code), 'code,source')).filter((r) => r.source !== SOURCE);
+  if (pris.length) throw new Error(`refus : codes déjà pris hors citybus : ${pris.map((r) => `${r.code} (${r.source})`).join(', ')}`);
+
   await upsert('bus_operators', [{ id: CITY.operatorId, name: CITY.operatorName, region: 'east', source_url: CITY.sourceUrl }], 'id');
 
   const stopRows = Object.values(model.stops).map((u) => ({ slug: u.slug, api_code: u.apiCode ?? null, name: u.name, name_el: u.nameEl, lat: u.lat, lng: u.lng, prefecture: CITY.prefecture, coords_source: SOURCE, coords_confidence: 'high', needs_review: false }));
