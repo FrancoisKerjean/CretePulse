@@ -1,9 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkBotId } from "botid/server";
 import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
+import { signupDecision } from "@/lib/newsletter-signup";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Toute réponse hors erreur de saisie est ce même succès muet : un robot ne
+// doit pas pouvoir distinguer « refusé », « déjà envoyé » et « envoyé ».
+const silentOk = () => NextResponse.json({ ok: true });
+
 export async function POST(request: NextRequest) {
+  // 1re ligne contre le « subscription bombing » (17-24/11/2026). BotID exige
+  // l'OIDC du projet Vercel : s'il manque, l'appel lève, on le dit dans les logs
+  // et on retombe sur le plafond et le délai de signupDecision.
+  try {
+    const verdict = await checkBotId();
+    if (verdict.isBot) {
+      console.warn("[newsletter/subscribe] robot écarté par BotID");
+      return silentOk();
+    }
+  } catch (e) {
+    console.error("[newsletter/subscribe] BotID indisponible, repli sur le plafond :", e);
+  }
+
   let body: Record<string, unknown>;
   try {
     body = await request.json();
@@ -12,10 +31,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Honeypot: bots fill this field, humans don't see it
-  if (body.website && String(body.website).trim() !== "") {
-    // Silent rejection · looks like success to the bot
-    return NextResponse.json({ ok: true });
-  }
+  if (body.website && String(body.website).trim() !== "") return silentOk();
 
   const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
   const locale = typeof body.locale === "string" ? body.locale : "en";
@@ -24,36 +40,32 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid email address" }, { status: 422 });
   }
 
-  // Rate limit: same email cannot subscribe again within 5 minutes
-  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-  const { data: recent } = await supabase
-    .from("newsletter_subscribers")
-    .select("id, subscribed_at")
-    .eq("email", email)
-    .gte("subscribed_at", fiveMinutesAgo)
-    .limit(1);
-
-  if (recent && recent.length > 0) {
-    // Silent success · don't reveal rate limiting to scrapers
-    return NextResponse.json({ ok: true });
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const [existingRes, recentRes] = await Promise.all([
+    supabase
+      .from("newsletter_subscribers")
+      .select("id, confirmed, unsubscribed_at, subscribed_at")
+      .eq("email", email)
+      .limit(1),
+    supabase
+      .from("newsletter_subscribers")
+      .select("id", { count: "exact", head: true })
+      .gte("subscribed_at", since),
+  ]);
+  if (existingRes.error || recentRes.error) {
+    console.error("[newsletter/subscribe] Supabase error:", (existingRes.error ?? recentRes.error)?.message);
+    return NextResponse.json({ error: "Subscription failed" }, { status: 500 });
   }
 
-  // Check if already confirmed subscriber
-  const { data: existing } = await supabase
-    .from("newsletter_subscribers")
-    .select("id, confirmed, unsubscribed_at")
-    .eq("email", email)
-    .limit(1);
-
-  if (existing && existing.length > 0) {
-    const sub = existing[0];
-    if (sub.confirmed && !sub.unsubscribed_at) {
-      // Already subscribed · silent success
-      return NextResponse.json({ ok: true });
-    }
-    // Resubscribe or re-confirm: delete old record and reinsert
-    await supabase.from("newsletter_subscribers").delete().eq("email", email);
+  const existing = existingRes.data?.[0] ?? null;
+  const decision = signupDecision({ existing, sentLast24h: recentRes.count ?? 0 });
+  if (decision !== "send") {
+    if (decision === "daily_cap") console.warn("[newsletter/subscribe] plafond quotidien atteint, confirmation non envoyée");
+    return silentOk();
   }
+
+  // Resubscribe or stale pending: delete old record and reinsert
+  if (existing) await supabase.from("newsletter_subscribers").delete().eq("email", email);
 
   const confirm_token = crypto.randomUUID();
 
@@ -78,5 +90,5 @@ export async function POST(request: NextRequest) {
     console.error("[newsletter/subscribe] Email send error:", emailError);
   }
 
-  return NextResponse.json({ ok: true });
+  return silentOk();
 }
