@@ -117,7 +117,7 @@ def test_get_token_posts_client_credentials():
     mock_resp.json.return_value = TOKEN_RESPONSE
 
     with patch("ktel_api.requests.post", return_value=mock_resp) as mock_post:
-        token = get_token("ktelhlmw", "khlmw!1908")
+        token = get_token("client-id", "client-secret")
 
     mock_post.assert_called_once()
     call_kwargs = mock_post.call_args

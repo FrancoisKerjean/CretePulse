@@ -36,6 +36,10 @@ _HHMM_RE = re.compile(r"\b(\d{1,2}:\d{2})\b")
 # ('CHANIA-KASTELI (KISSAMOS)') empechait le segment de matcher (la lookahead
 # exigeait /, une heure ou la fin de ligne) -> ligne Kissamos jetee (fix 13/06).
 _PDF_SEG_RE = re.compile(r"/\s*([A-Z][A-Z0-9 .\-]+?)(?=\s*[/(]|\s*\d{1,2}:\d{2}|\s*$)")
+# Parenthèse AU MILIEU d'un nom de route ('KASTELI (KISSAMOS)-CHANIA', PDF du
+# 14/11/2026) : retirée avant le découpage, sinon le titre est coupé avant le tiret,
+# n'est pas reconnu, et les horaires du retour s'ajoutent à l'aller.
+_INNER_PAREN_RE = re.compile(r"\s*\([A-Z][A-Z .]*\)(?=\s*-)")
 # Annotation "THROUGH X-Y" ou "PASSES THROUGH X-Y" dans les PDFs ektel.
 # Utilisée pour enrichir via_stops des routes qui n'ont pas d'intermédiaires dans
 # leur nom (ex: RETHYMNO-PLAKIAS + *PASSES THROUGH MYRTHIOS-MARIOU).
@@ -502,7 +506,7 @@ def parse_ektel_pdf(text: str, source_url: str = "") -> list[dict]:
         if not line:
             continue
 
-        segments = [s.strip() for s in _PDF_SEG_RE.findall(line)]
+        segments = [s.strip() for s in _PDF_SEG_RE.findall(_INNER_PAREN_RE.sub("", line))]
         # Fallback PDF AEROPORT : le nom anglais est sur sa propre ligne SANS le
         # prefixe grec '/', ex. 'CHANIA-CHANIA AIRPORT' (le grec est au-dessus).
         # _PDF_SEG_RE n'y voit rien -> on accepte une ligne 100% ASCII en forme

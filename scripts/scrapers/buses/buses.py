@@ -46,7 +46,6 @@ SB_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
 # Credentials API backoffice KTEL (enrichissement via_stops herlas).
 # Requis dans .env : HERLAS_API_CLIENT_ID / HERLAS_API_CLIENT_SECRET.
 # Si absents : enrichissement sauté silencieusement (via_stops = NULL).
-# Valeurs connues (spike 18/06/2026) : ktelhlmw / khlmw!1908.
 HERLAS_API_ID = os.environ.get("HERLAS_API_CLIENT_ID", "")
 HERLAS_API_SECRET = os.environ.get("HERLAS_API_CLIENT_SECRET", "")
 UA = "crete.direct-bot/1.0 (+https://crete.direct)"

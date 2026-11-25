@@ -436,3 +436,23 @@ def test_ektel_validity_reads_label_then_filename():
     assert ektel_validity("TIMETABLE VALID FROM 11 -09-2026", "x.pdf") == ("2026-09-11", None)
     assert ektel_validity("télécharger", "CHANIA_FROM-14-11-2026.pdf") == ("2026-11-14", None)
     assert ektel_validity("télécharger", "promo.pdf") == (None, None)
+
+
+def test_parse_ektel_pdf_splits_kasteli_return_with_inner_parenthesis():
+    # PDF CHANIA du 14/11/2026 : le titre retour porte la parenthèse AU MILIEU
+    # ('KASTELI (KISSAMOS)-CHANIA'). Sans correctif, le titre n'était pas reconnu
+    # et les horaires du retour s'ajoutaient à l'aller (14 départs au lieu de 10).
+    from parsers import parse_ektel_pdf
+    text = (
+        "ΧΑΝΙΑ-ΚΑΣΤΕΛΙ/CHANIA-KASTELI (KISSAMOS)\n"
+        "ΚΑΘΕ ΜΕΡΑ/EVERY DAY\n"
+        "07:00 08:30 09:30 11:00 13:00 14:30 15:30 17:30 19:00 21:30\n"
+        "ΚΑΣΤΕΛI-ΧΑΝΙΑ/KASTELI (KISSAMOS)-CHANIA\n"
+        "ΚΑΘΕ ΜΕΡΑ/EVERY DAY\n"
+        "07:00 08:30 09:45 11:00 13:15 14:15 15:30 17:30 19:00 (ΕΩΣ ΣΟΥΔΑ/UNTIL SOUDA) 20:15\n"
+    )
+    by = {(r["from_place"], r["to_place"]): r for r in parse_ektel_pdf(text)}
+    assert by[("Chania", "Kissamos")]["departures"] == [
+        "07:00", "08:30", "09:30", "11:00", "13:00", "14:30", "15:30", "17:30", "19:00", "21:30"]
+    assert by[("Kissamos", "Chania")]["departures"] == [
+        "07:00", "08:30", "09:45", "11:00", "13:15", "14:15", "15:30", "17:30", "19:00", "20:15"]
