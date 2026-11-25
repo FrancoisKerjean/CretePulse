@@ -186,7 +186,7 @@ Points qui changent, pour les loueurs à grille publiée :
 
 L'acceptation est enregistrée (version, date). Choix de Claude, pour tenir la décision 2 (acompte pour tous) :
 
-- **Tout loueur, à grille ou non, accepte les nouvelles conditions avant d'être réservable.** Loueur à grille : par « Publish these prices ». Loueur à devis seulement : une case à cocher, une fois, sur le formulaire de devis.
+- **Tout loueur, à grille ou non, accepte les nouvelles conditions avant d'être réservable.** Loueur à grille : par « Publish these prices ». Loueur à devis seulement : par « Accept these terms » sur la même page privée, sans saisir de tarifs. Le lien de cette page figure dans chaque demande de devis et dans le courrier aux loueurs. (Corrigé le 26/11 : la première version mettait une case sur le formulaire de devis, qu'un loueur non accepté ne voit plus une fois l'interrupteur allumé.)
 - **L'identité de facturation complète** (raison sociale, adresse, numéro de TVA, déjà exigée par `partnerBillingIdentity`) est demandée au même moment. Sans elle, l'acceptation est impossible, car NovAI garderait un acompte qu'elle ne peut pas facturer. 8 des 10 loueurs actifs l'ont déjà ; il manque Auto Smart et Greenways [FACT 2026-11-25].
 - **Interrupteur allumé** : un loueur qui n'a pas accepté ne reçoit plus de demandes. Une demande acceptée avant l'allumage finit dans l'ancien parcours (mise en relation, relance d'issue).
 - Les loueurs en routage `relay` (relais WhatsApp par Kami) n'ont pas de lien pour confirmer : ils sortent du parcours. Aucun des 10 actifs n'est en `relay` [FACT 2026-11-25].
