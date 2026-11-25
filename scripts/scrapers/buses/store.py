@@ -7,10 +7,37 @@ et l'orchestrateur (buses.py) declenche une alerte Telegram.
 from datetime import datetime, timezone
 
 MIN_ROUTES = 3  # sous ce seuil = scrape suspect, on ne touche pas la DB
+# Sous cette part des routes horairées déjà en base = effondrement, on ne touche
+# pas la DB. Constat 25/11/2026 : refonte du site e-ktel, 0 PDF lu, 6 routes
+# curées SANS horaire ont remplacé 150 routes horairées pendant deux mois.
+# Un passage à l'hiver légitime reste au-dessus (herlas 222 -> 160 = 72 %).
+COLLAPSE_RATIO = 0.5
 
 
 def should_commit(rows) -> bool:
     return isinstance(rows, list) and len(rows) >= MIN_ROUTES
+
+
+def _with_departures(rows) -> int:
+    return sum(1 for r in rows if r.get("departures"))
+
+
+def is_collapse(rows, existing_with_departures: int) -> bool:
+    """Vrai si le scrape perd plus de la moitié des routes horairées en base."""
+    return existing_with_departures > 0 and (
+        _with_departures(rows) < COLLAPSE_RATIO * existing_with_departures
+    )
+
+
+def _existing_with_departures(sb, operator_id: str) -> int:
+    """Routes horairées en base pour l'opérateur. Fail-open : 0 si la lecture échoue."""
+    try:
+        data = (
+            sb.table("bus_routes").select("departures").eq("operator_id", operator_id).execute().data
+        ) or []
+    except Exception:
+        return 0
+    return _with_departures(data)
 
 
 def normalize_for_db(operator_id: str, source_url: str, rows: list) -> list:
@@ -79,11 +106,19 @@ def _preserve_scraped_at(sb, operator_id: str, payload: list) -> None:
                 p["via_stops"] = old["via_stops"]
 
 
-def replace_operator_routes(sb, operator_id: str, source_url: str, rows: list) -> int:
+def replace_operator_routes(sb, operator_id: str, source_url: str, rows: list,
+                            force: bool = False) -> int:
     """Remplace toutes les routes de l'operateur en une passe (delete puis insert).
-    Retourne le nombre de lignes ecrites. Leve si should_commit est False."""
+    Retourne le nombre de lignes ecrites. Leve si should_commit est False, ou si
+    le scrape s'effondre face a la base (sauf force=True)."""
     if not should_commit(rows):
         raise ValueError(f"refuse commit: only {len(rows)} routes for {operator_id}")
+    existing = _existing_with_departures(sb, operator_id)
+    if not force and is_collapse(rows, existing):
+        raise ValueError(
+            f"refuse commit: collapse {operator_id}, {_with_departures(rows)} routes "
+            f"horairées contre {existing} en base (forcer : BUSES_FORCE_REPLACE={operator_id})"
+        )
     payload = normalize_for_db(operator_id, source_url, rows)
     _preserve_scraped_at(sb, operator_id, payload)
     sb.table("bus_routes").delete().eq("operator_id", operator_id).execute()

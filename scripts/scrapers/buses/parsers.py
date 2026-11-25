@@ -14,6 +14,7 @@ Chaque route normalisee : from_place, to_place, duration, price_eur,
 frequency, departures(list|None).
 """
 import re
+from datetime import date
 from html import unescape
 from urllib.parse import urljoin
 
@@ -259,28 +260,8 @@ def parse_herlas_detail(html: str) -> list[dict]:
 
 # --- ektel (OUEST) ----------------------------------------------------------
 
-def parse_ektel_index(html: str) -> list[dict]:
-    """Groupes d'horaires ouest + date 'valid from' + lien PDF (curation freshness)."""
-    soup = BeautifulSoup(html, "html.parser")
-    table = soup.select_one("table.table-striped")
-    groups = []
-    if not table:
-        return groups
-    for tr in table.select("tr"):
-        text = tr.get_text(" ", strip=True)
-        if not text or "VALID" not in text.upper():
-            continue
-        label = re.split(r"[›>]", text, maxsplit=1)[0].strip()  # avant le '>'
-        pdf = None
-        a = tr.find("a", href=True)
-        if a:
-            pdf = urljoin(EKTEL_BASE, a["href"])
-        groups.append({"label": label, "valid_from": _to_iso(text), "pdf": pdf})
-    return groups
-
-
 # Routes ouest curees (liaisons reelles, verifiables sur l'index/PDF KTEL).
-# valid_from rafraichi a l'execution via parse_ektel_index. Duree/prix laisses
+# valid_from rafraichi a l'execution via ektel_validity. Duree/prix laisses
 # a None : non verifies ici (regle no-invention) -> la page renvoie au PDF KTEL
 # date pour le detail. frequency = descripteur qualitatif sur (KTEL dessert ces
 # liaisons quotidiennement).
@@ -584,32 +565,49 @@ def parse_ektel_pdf(text: str, source_url: str = "") -> list[dict]:
     return routes
 
 
-def fetch_ektel_pdfs(html_index: str) -> list[tuple[str, str]]:
-    """Depuis le HTML de l'index e-ktel, retourne [(label, pdf_url), …]."""
+# Tolère « 11 -09-2026 » (espace parasite vu dans les libellés e-ktel).
+_VALIDITY_DATE_RE = re.compile(r"(\d{2})\s*-\s*(\d{2})\s*-\s*(\d{4})")
+
+
+def ektel_validity(label: str, url: str) -> tuple[str | None, str | None]:
+    """(début, fin) ISO d'un PDF e-ktel : « ΑΠΟ 16-11-2026 ΕΩΣ 30-11-2026 » dans
+    le libellé, sinon « FROM_16-11-2026_TO_30-11-2026 » dans le nom de fichier."""
+    dates = _VALIDITY_DATE_RE.findall(label or "") or _VALIDITY_DATE_RE.findall(url.rsplit("/", 1)[-1])
+    iso = [f"{y}-{m}-{d}" for d, m, y in dates]
+    return (iso[0] if iso else None, iso[1] if len(iso) > 1 else None)
+
+
+def fetch_ektel_pdfs(html_index: str, today: str | None = None) -> list[tuple[str, str]]:
+    """Depuis le HTML de la page horaires e-ktel, retourne [(label, pdf_url), …] :
+    PDF périmés écartés, PDF en vigueur AVANT les PDF à venir (le dédoublonnage
+    par paire de scrape_ektel garde le premier lu)."""
+    today = today or date.today().isoformat()
     soup = BeautifulSoup(html_index, "html.parser")
     pdfs: list[tuple[str, str]] = []
     for a in soup.select("a[href]"):
         href = unescape(a["href"])
         if ".pdf" not in href.lower():
             continue
-        # e-ktel publie les horaires sous DEUX chemins : /images/pdfs/ (Rethymno,
-        # Sougia, Choria, Airport, Gavdos) et /images/announcements/ (les PDF
-        # "departures from Chania" récents). Filtrer sur pdfs/ seul faisait
-        # perdre TOUT le PDF Chania -> Almyrida/Kalyves absents du graphe
-        # (30 recherches/mois à 0 résultat, constat flux_intent 11/07/2026).
-        if "/images/pdfs/" not in href and "/images/announcements/" not in href:
+        # Ancien site (Joomla) : /images/pdfs/ et /images/announcements/ (le PDF
+        # « departures from Chania », constat flux_intent 11/07/2026). Nouveau
+        # site (WordPress, constat 25/11/2026) : /wp-content/uploads/AAAA/MM/.
+        if not any(p in href for p in ("/images/pdfs/", "/images/announcements/", "/wp-content/uploads/")):
             continue
         full = urljoin(EKTEL_BASE, href)
         label = a.get_text(" ", strip=True)
         pdfs.append((label or full.split("/")[-1], full))
-    # Dédup par URL
+    # Dédup par URL, périmés écartés
     seen, dedup = set(), []
     for lbl, u in pdfs:
         if u in seen:
             continue
         seen.add(u)
-        dedup.append((lbl, u))
-    return dedup
+        start, end = ektel_validity(lbl, u)
+        if end and end < today:
+            continue
+        dedup.append((lbl, u, bool(start and start > today)))
+    dedup.sort(key=lambda t: t[2])  # tri stable : en vigueur d'abord, à venir ensuite
+    return [(lbl, u) for lbl, u, _ in dedup]
 
 
 def apply_curated_overlay(route: dict) -> dict:

@@ -23,7 +23,7 @@ from parsers import (
     EKTEL_BASE,
     parse_herlas_index,
     parse_herlas_detail,
-    parse_ektel_index,
+    ektel_validity,
     parse_ektel_pdf,
     columnize_words,
     fetch_ektel_pdfs,
@@ -51,7 +51,9 @@ HERLAS_API_ID = os.environ.get("HERLAS_API_CLIENT_ID", "")
 HERLAS_API_SECRET = os.environ.get("HERLAS_API_CLIENT_SECRET", "")
 UA = "crete.direct-bot/1.0 (+https://crete.direct)"
 HERLAS_INDEX = HERLAS_BASE + "/en/timetables"
-EKTEL_INDEX = EKTEL_BASE + "/en/services/dromologia"
+# Page « Προγράμματα δρομολογίων » du site WordPress (refonte de l'automne 2026 ;
+# l'ancienne /en/services/dromologia redirige vers une annonce sans PDF).
+EKTEL_INDEX = EKTEL_BASE + "/%cf%80%cf%81%ce%bf%ce%b3%cf%81%ce%ac%ce%bc%ce%bc%ce%b1%cf%84%ce%b1-%ce%b4%cf%81%ce%bf%ce%bc%ce%bf%ce%bb%ce%bf%ce%b3%ce%af%cf%89%ce%bd/"
 MAX_HERLAS_DETAILS = 40  # plafond de pages detail fetchees par run
 
 # Resolution to_slug : nom de destination -> slug bus_destinations.
@@ -224,14 +226,9 @@ def scrape_ektel() -> list:
         routes = [dict(r, season="all") for r in CURATED_EKTEL]
         return enrich_durations(enrich_prices(_attach_to_slug(routes)))
 
-    # Métadonnée freshness pour log
-    groups = parse_ektel_index(idx)
-    dates = [g["valid_from"] for g in groups if g["valid_from"]]
-    valid_from = max(dates) if dates else None
-    log(f"ektel: {len(groups)} groups, latest valid_from={valid_from}")
-
     pdfs = fetch_ektel_pdfs(idx)
-    log(f"ektel: {len(pdfs)} PDFs to parse")
+    dates = [d for d in (ektel_validity(lbl, u)[0] for lbl, u in pdfs) if d]
+    log(f"ektel: {len(pdfs)} PDFs to parse, latest valid_from={max(dates) if dates else None}")
 
     all_routes: list[dict] = []
     seen_keys: set[tuple[str, str]] = set()
@@ -285,7 +282,13 @@ def main():
             failures.append(f"{op_id}: {len(rows)} routes (kept previous data)")
             log(f"SKIP {op_id}: only {len(rows)} routes, previous data preserved")
             continue
-        n = replace_operator_routes(sb, op_id, src, rows)
+        force = op_id in os.environ.get("BUSES_FORCE_REPLACE", "").split(",")
+        try:
+            n = replace_operator_routes(sb, op_id, src, rows, force=force)
+        except ValueError as e:
+            failures.append(f"{op_id}: {e} (kept previous data)")
+            log(f"SKIP {op_id}: {e}")
+            continue
         log(f"OK {op_id}: {n} routes written")
         if op_id == "herlas" and HERLAS_API_ID and HERLAS_API_SECRET:
             try:

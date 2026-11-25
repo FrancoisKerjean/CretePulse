@@ -1,5 +1,5 @@
 import types
-from store import should_commit, MIN_ROUTES, normalize_for_db, replace_operator_routes
+from store import should_commit, MIN_ROUTES, normalize_for_db, replace_operator_routes, is_collapse
 
 
 def test_should_commit_true_when_enough_routes():
@@ -161,3 +161,43 @@ def test_preserve_via_stops_does_not_overwrite_freshly_parsed():
     out = _run(existing, rows)
     # Le nouveau via_stops (plus complet) l'emporte sur l'ancien
     assert out[("Chania", "Heraklion")]["via_stops"] == ["Georgioupolis", "Kavros", "Rethymno", "Bali"]
+
+
+# --- Garde-fou d'effondrement (constat 25/11/2026) ---------------------------
+# Refonte du site e-ktel : 0 PDF lu, 6 routes curées SANS horaire ont remplacé
+# 150 routes horairées, en silence, pendant deux mois.
+
+def _with_dep(n):
+    return [{"from_place": "A", "to_place": f"P{i}", "departures": ["07:00"]} for i in range(n)]
+
+
+def test_is_collapse_when_scrape_lost_most_timetables():
+    rows = [{"from_place": "Chania", "to_place": f"P{i}", "departures": []} for i in range(6)]
+    assert is_collapse(rows, existing_with_departures=150) is True
+
+
+def test_is_collapse_false_on_seasonal_shrink():
+    # herlas 222 -> 160 au passage à l'hiver : réduction légitime, on écrit.
+    assert is_collapse(_with_dep(160), existing_with_departures=222) is False
+
+
+def test_is_collapse_false_on_first_run():
+    assert is_collapse(_with_dep(5), existing_with_departures=0) is False
+
+
+def test_replace_refuses_collapse_and_keeps_previous_data():
+    sb = _FakeSB(_with_dep(150))
+    rows = [{"from_place": "Chania", "to_place": f"P{i}", "departures": []} for i in range(6)]
+    try:
+        replace_operator_routes(sb, "ektel", "http://src", rows)
+        raise AssertionError("aurait dû refuser")
+    except ValueError as e:
+        assert "collapse" in str(e)
+    assert sb.store["inserted"] is None  # rien d'écrit
+
+
+def test_replace_collapse_can_be_forced():
+    sb = _FakeSB(_with_dep(150))
+    rows = [{"from_place": "Chania", "to_place": f"P{i}", "departures": []} for i in range(6)]
+    replace_operator_routes(sb, "ektel", "http://src", rows, force=True)
+    assert len(sb.store["inserted"]) == 6

@@ -53,6 +53,13 @@ renvoie ≥ `MIN_ROUTES` (3) lignes. Sinon la dernière donnée valide est conse
 et une alerte Telegram (`Bot.PLUME`) est envoyée. Jamais de page vide ni de
 périmé silencieux.
 
+Second seuil depuis le 25/11/2026 : si le scrape compte moins de la moitié des
+routes **horairées** déjà en base (`COLLAPSE_RATIO`), rien n'est écrit et la même
+alerte part. Motif : la refonte du site e-ktel avait remplacé 150 routes horairées
+par 6 routes curées sans horaire, en silence, pendant deux mois. Un changement
+légitime de cette ampleur se force par `BUSES_FORCE_REPLACE=ektel` (liste séparée
+par des virgules) pour un passage.
+
 ## Tests
 
 ```bash

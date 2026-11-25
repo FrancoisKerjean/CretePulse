@@ -1,7 +1,8 @@
 """Tests parsers KTEL sur fixtures HTML reelles (committees dans fixtures/).
 Architecture reelle (cf. spec + decision Kami 21/05) :
   - herlas (est) = Next.js : index liste des liens detail `ds=`, page detail = blocs route.
-  - ektel (ouest) = Joomla : index = groupes + dates 'valid from' (curation pour les routes).
+  - ektel (ouest) = WordPress depuis l'automne 2026 : page « programmes » = liens PDF
+    sous /wp-content/uploads/, libellés « ΙΣΧΥΟΥΝ ΑΠΟ jj-mm-aaaa [ΕΩΣ jj-mm-aaaa] ».
 """
 import json
 import os
@@ -10,7 +11,6 @@ import re
 from parsers import (
     parse_herlas_index,
     parse_herlas_detail,
-    parse_ektel_index,
     is_crete_route,
     CURATED_EKTEL,
 )
@@ -70,18 +70,6 @@ def test_parse_herlas_detail_returns_normalized_routes():
 
 
 # --- ektel (ouest) ----------------------------------------------------------
-
-def test_parse_ektel_index_returns_groups_with_dates():
-    groups = parse_ektel_index(_read("ektel_timetables.html"))
-    assert isinstance(groups, list)
-    assert len(groups) > 0
-    g = groups[0]
-    assert "label" in g and "valid_from" in g
-    # au moins un groupe mentionne CHANIA
-    assert any("CHANIA" in (gr["label"] or "").upper() for gr in groups)
-    # au moins une date valid_from au format ISO (YYYY-MM-DD) extraite
-    assert any(gr["valid_from"] and len(gr["valid_from"]) == 10 for gr in groups)
-
 
 def test_is_crete_route_excludes_mainland():
     # intra-Crete : garde
@@ -410,3 +398,41 @@ def test_pdf_seg_regex_captures_parenthesized_name():
     by = _pairs(parse_ektel_pdf(text, source_url="x"))
     assert ("Chania", "Kissamos") in by
     assert "21:30" in by[("Chania", "Kissamos")]["departures"]
+
+
+def test_fetch_ektel_pdfs_accepts_wordpress_uploads():
+    # Refonte du site e-ktel (WordPress, constat 25/11/2026) : les PDF vivent sous
+    # /wp-content/uploads/AAAA/MM/. Les ignorer = 0 PDF lu, réseau ouest vidé
+    # (La Canée -> Kissamos et -> aéroport à 0 résultat depuis octobre).
+    from parsers import fetch_ektel_pdfs
+    html = """
+    <a href="https://www.e-ktel.com/wp-content/uploads/2026/11/CHANIA_FROM-14-11-2026.pdf">›ΔΡΟΜΟΛΟΓΙΑ ΠΟΥ ΙΣΧΥΟΥΝ ΑΠΟ 14-11-2026</a>
+    <a href="https://www.e-ktel.com/wp-content/uploads/2026/09/timed-1.jpg">bandeau</a>
+    """
+    urls = [u for _, u in fetch_ektel_pdfs(html, today="2026-11-25")]
+    assert urls == ["https://www.e-ktel.com/wp-content/uploads/2026/11/CHANIA_FROM-14-11-2026.pdf"]
+
+
+def test_fetch_ektel_pdfs_skips_expired_and_puts_current_before_future():
+    # La page liste deux PDF aéroport (16-30/11 puis 01-22/12) : le dédoublonnage
+    # par paire garde le premier lu, il faut donc lire d'abord celui en vigueur.
+    from parsers import fetch_ektel_pdfs
+    up = "https://www.e-ktel.com/wp-content/uploads/2026/11/"
+    html = f"""
+    <a href="{up}AIRPORT_FROM_01-12-2026_TO_22-12-2026.pdf">›ΔΡΟΜΟΛΟΓΙΑ ΠΟΥ ΙΣΧΥΟΥΝ ΑΠΟ 01-12-2026 ΕΩΣ 22-12-2026</a>
+    <a href="{up}AIRPORT_FROM_16-11-2026_TO_30-11-2026.pdf">›ΔΡΟΜΟΛΟΓΙΑ ΠΟΥ ΙΣΧΥΟΥΝ ΑΠΟ 16-11-2026 ΕΩΣ 30-11-2026</a>
+    <a href="{up}AIRPORT_FROM_01-10-2026_TO_31-10-2026.pdf">›ΔΡΟΜΟΛΟΓΙΑ ΠΟΥ ΙΣΧΥΟΥΝ ΑΠΟ 01-10-2026 ΕΩΣ 31-10-2026</a>
+    """
+    names = [u.rsplit("/", 1)[1] for _, u in fetch_ektel_pdfs(html, today="2026-11-25")]
+    assert names == [
+        "AIRPORT_FROM_16-11-2026_TO_30-11-2026.pdf",
+        "AIRPORT_FROM_01-12-2026_TO_22-12-2026.pdf",
+    ]
+
+
+def test_ektel_validity_reads_label_then_filename():
+    from parsers import ektel_validity
+    assert ektel_validity("›ΔΡΟΜΟΛΟΓΙΑ ΠΟΥ ΙΣΧΥΟΥΝ ΑΠΟ 16-11-2026 ΕΩΣ 30-11-2026", "x.pdf") == ("2026-11-16", "2026-11-30")
+    assert ektel_validity("TIMETABLE VALID FROM 11 -09-2026", "x.pdf") == ("2026-09-11", None)
+    assert ektel_validity("télécharger", "CHANIA_FROM-14-11-2026.pdf") == ("2026-11-14", None)
+    assert ektel_validity("télécharger", "promo.pdf") == (None, None)
