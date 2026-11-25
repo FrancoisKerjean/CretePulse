@@ -1,6 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { withSentryConfig } from "@sentry/nextjs";
+import { withBotId } from "botid/next/config";
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
@@ -82,7 +83,8 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(withNextIntl(nextConfig), {
+// withBotId ajoute les réécritures et en-têtes du défi anti-robot (newsletter, 24/11/2026).
+export default withSentryConfig(withBotId(withNextIntl(nextConfig)), {
   silent: true,
   disableLogger: true,
 });

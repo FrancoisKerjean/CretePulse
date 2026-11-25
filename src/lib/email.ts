@@ -102,8 +102,9 @@ function confirmBody(url: string, lang: string): string {
 
 export async function sendConfirmationEmail(email: string, token: string, locale: string) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
-  const confirmUrl = `${baseUrl}/api/newsletter/confirm?token=${token}`;
   const lang = ["en", "fr", "de", "el"].includes(locale) ? locale : "en";
+  // La page porte un bouton : ouvrir le lien ne confirme rien (antivirus de messagerie).
+  const confirmUrl = `${baseUrl}/${lang}/newsletter/confirm?token=${token}`;
 
   // Sans ce lien, l'abonne reste bloque en non-confirme et ne recoit jamais
   // rien : un refus doit remonter, pas passer pour un envoi reussi.

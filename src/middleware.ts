@@ -89,8 +89,10 @@ export default function middleware(request: NextRequest) {
 // `go` is the non-localized affiliate tracking route (src/app/go/[slug]); without
 // this exclusion next-intl rewrites /go/x to /en/go/x, which 404s and breaks every
 // affiliate link.
+// `149e9513-…` = chemins du défi anti-robot BotID, réécrits vers api.vercel.com par
+// withBotId (next.config.ts) : préfixés en /en/… par next-intl, le défi casse.
 export const config = {
   matcher: [
-    "/((?!api|admin|go|_next|_vercel|sitemap\\.xml|sitemap/|robots\\.txt|feed\\.xml|manifest|favicon\\.ico|icon|.*\\..*).*)",
+    "/((?!api|admin|go|_next|_vercel|149e9513-01fa-4fb0-aad4-566afd725d1b|sitemap\\.xml|sitemap/|robots\\.txt|feed\\.xml|manifest|favicon\\.ico|icon|.*\\..*).*)",
   ],
 };
