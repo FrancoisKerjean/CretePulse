@@ -18,8 +18,7 @@ import { supabaseAdmin } from "./supabase-admin";
 import { newToken, hashToken, siteBase } from "./car-quote";
 import { assertWritten, creditInvoice, type InvoiceRow } from "./car-invoice-server";
 import { secretOk } from "./car-admin-auth";
-import { partnerById } from "./car-partners-db";
-import { depositEur } from "./car-catalogue";
+import { depositEur, takesDeposits } from "./car-catalogue";
 import {
   isDepositBookable, confirmDeadlineMs, shouldSuspendPartner, clientCancelNowEur, SUSPEND_WINDOW_DAYS, DEPOSIT_SWEEP_AGE_MS,
   type RefundReason,
@@ -54,29 +53,53 @@ const PREVIOUS_BOOKING_RESET = {
   cancelled_at: null,
 } as const;
 
+/** Loueur vu de l'acompte : son taux, son nom, et ce qui le rend réservable. */
+export interface DepositPartner {
+  id: number;
+  name: string | null;
+  commission: number | string | null;
+  active: boolean;
+  lead_routing: string;
+  terms_version: string | null;
+  terms_accepted_at: string | null;
+  rates_status: string | null;
+}
+
+const DEPOSIT_PARTNER_COLS = "id, name, commission, active, lead_routing, terms_version, terms_accepted_at, rates_status";
+
+/** Lit le loueur d'une offre. Lève quand la base refuse : jamais d'acompte ni de mise en relation sur une lecture ratée. */
+export async function depositPartner(partnerId: number): Promise<DepositPartner | null> {
+  const { data, error } = await supabaseAdmin
+    .from("car_partners")
+    .select(DEPOSIT_PARTNER_COLS)
+    .eq("id", partnerId)
+    .maybeSingle();
+  if (error) throw new Error(`loueur ${partnerId} illisible: ${error.message}`);
+  return (data as DepositPartner | null) ?? null;
+}
+
 /**
- * Taux d'acompte (commission) des loueurs présents sur une page d'offres, pour
- * afficher « {acompte} aujourd'hui ». Lecture refusée : carte vide, la page
- * montre les offres sans montant et le serveur recalcule au choix.
+ * Loueurs présents sur une page d'offres : taux d'acompte (« {acompte}
+ * aujourd'hui ») et ce qui dit si leur offre se réserve par acompte. Lecture
+ * refusée : carte vide, la page montre les offres sans montant et le serveur
+ * tranche au choix.
  */
-export async function depositRatesFor(partnerIds: number[]): Promise<Map<number, number>> {
+export async function depositPartnersFor(partnerIds: number[]): Promise<Map<number, DepositPartner>> {
   const ids = [...new Set(partnerIds)];
-  const rates = new Map<number, number>();
-  if (ids.length === 0) return rates;
-  const { data, error } = await supabaseAdmin.from("car_partners").select("id, commission").in("id", ids);
+  const out = new Map<number, DepositPartner>();
+  if (ids.length === 0) return out;
+  const { data, error } = await supabaseAdmin.from("car_partners").select(DEPOSIT_PARTNER_COLS).in("id", ids);
   if (error) {
-    console.error("[car-deposit] taux des loueurs illisibles:", error.message);
-    return rates;
+    console.error("[car-deposit] loueurs de la page d'offres illisibles:", error.message);
+    return out;
   }
-  for (const p of (data ?? []) as Array<{ id: number; commission: number | string | null }>) {
-    if (p.commission != null) rates.set(p.id, Number(p.commission));
-  }
-  return rates;
+  for (const p of (data ?? []) as DepositPartner[]) out.set(p.id, p);
+  return out;
 }
 
 export type StartDepositResult =
   | { payUrl: string }
-  | { error: "too_close" | "below_minimum" | "in_progress" | "not_quotable" };
+  | { error: "too_close" | "below_minimum" | "in_progress" | "not_quotable" | "partner_unavailable" };
 
 /**
  * Le client choisit une offre : copie figée de l'option, acompte calculé au
@@ -92,6 +115,9 @@ export type StartDepositResult =
  * Paiement ouvert : rapproché d'abord avec Stripe (reconcilePendingDeposit),
  * comme la route de paiement. Une session finie sans paiement dont le webhook
  * s'est perdu ne bloque plus la page d'offres.
+ *
+ * Le loueur est relu : inactif, sans les conditions 2027, en relais ou
+ * suspendu (grille `paused`), l'offre n'est pas réservable (`partner_unavailable`).
  *
  * `customerPhone` : numéro résolu par l'acceptation, écrit dans la même
  * écriture. Le loueur en a besoin à la confirmation.
@@ -122,10 +148,11 @@ export async function startDeposit(
     return { error: "too_close" };
   }
 
-  // partnerById rend null sur une erreur de lecture : on lève plutôt que
-  // d'inventer un taux, le client verra une erreur et pourra réessayer.
-  const partner = await partnerById(option.partner_id);
+  // Loueur absent : on lève plutôt que d'inventer un taux, le client verra une
+  // erreur et pourra réessayer.
+  const partner = await depositPartner(option.partner_id);
   if (!partner) throw new Error(`startDeposit(${requestId}) loueur ${option.partner_id} illisible`);
+  if (!takesDeposits(partner) || partner.rates_status === "paused") return { error: "partner_unavailable" };
   const rate = Number(partner.commission);
   const deposit = depositEur(option.price, rate);
   if (deposit == null) return { error: "below_minimum" };

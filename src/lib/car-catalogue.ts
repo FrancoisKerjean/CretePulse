@@ -194,6 +194,21 @@ export function isCatalogueEligible(p: {
   return isPartnerBookable(p) && p.lead_routing !== "relay";
 }
 
+/**
+ * Réservable par acompte (spec section 9) : actif, conditions courantes
+ * acceptées, pas en relais. Sinon l'offre finit dans l'ancien parcours de mise
+ * en relation. La suspension (grille `paused`) se juge à part : elle refuse
+ * l'acompte sans rouvrir la mise en relation.
+ */
+export function takesDeposits(p: {
+  active: boolean;
+  terms_version: string | null;
+  terms_accepted_at: string | null;
+  lead_routing: string;
+}): boolean {
+  return p.active && isCatalogueEligible(p);
+}
+
 export type PartnerWithTerms = DbPartner & {
   terms_version: string | null;
   terms_accepted_at: string | null;

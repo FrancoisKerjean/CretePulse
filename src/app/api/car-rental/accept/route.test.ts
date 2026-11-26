@@ -1,15 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { QuoteOption } from "@/lib/car-quotes";
 
-const { from, requestByClientToken, startDeposit, sendConnectionEmails } = vi.hoisted(() => ({
+const { from, requestByClientToken, startDeposit, depositPartner, sendConnectionEmails } = vi.hoisted(() => ({
   from: vi.fn(),
   requestByClientToken: vi.fn(),
   startDeposit: vi.fn(),
+  depositPartner: vi.fn(),
   sendConnectionEmails: vi.fn(async () => undefined),
 }));
 vi.mock("@/lib/supabase-admin", () => ({ supabaseAdmin: { from } }));
 vi.mock("@/lib/car-quotes-db", () => ({ requestByClientToken }));
-vi.mock("@/lib/car-deposit-server", () => ({ startDeposit }));
+vi.mock("@/lib/car-deposit-server", () => ({ startDeposit, depositPartner }));
 vi.mock("@/lib/car-partners-db", () => ({
   partnerById: async () => ({ id: 111, name: "Zorbas Rent a Car", email: "z@example.com", phone: "+30 2810 000000", whatsapp: null, commission: 0.1 }),
 }));
@@ -81,8 +82,49 @@ describe("POST /api/car-rental/accept", () => {
   });
 
   describe("interrupteur allumé", () => {
+    const BOOKABLE = {
+      id: 111, name: "Zorbas Rent a Car", commission: 0.1, active: true, lead_routing: "direct",
+      terms_version: "2027-01", terms_accepted_at: "2026-12-01T00:00:00Z", rates_status: "live",
+    };
     beforeEach(() => {
       process.env.CAR_CATALOGUE_ENABLED = "on";
+      depositPartner.mockResolvedValue(BOOKABLE);
+    });
+
+    it.each([
+      ["sans les conditions 2027", { terms_version: null, terms_accepted_at: null }],
+      ["aux conditions d'une ancienne version", { terms_version: "2026-07" }],
+      ["inactif", { active: false }],
+      ["en relais (aucun lien pour confirmer)", { lead_routing: "relay" }],
+    ])("loueur %s : ancien parcours de mise en relation, aucun acompte (spec section 9)", async (_label, over) => {
+      depositPartner.mockResolvedValue({ ...BOOKABLE, ...over });
+      const updates = wiring({ phone: "+33 6 12 34 56 78" });
+      const res = await POST(req({ token: "tok", option_id: 501 }) as never);
+
+      expect(res.status).toBe(200);
+      expect(depositPartner).toHaveBeenCalledWith(111);
+      expect(startDeposit).not.toHaveBeenCalled();
+      expect(updates.some((u) => u.table === "car_requests" && u.patch.status === "accepted")).toBe(true);
+      expect(sendConnectionEmails).toHaveBeenCalledOnce();
+    });
+
+    it("loueur suspendu : startDeposit refuse, 409 unavailable, aucune mise en relation", async () => {
+      depositPartner.mockResolvedValue({ ...BOOKABLE, rates_status: "paused" });
+      startDeposit.mockResolvedValue({ error: "partner_unavailable" });
+      const updates = wiring({ phone: "+33 6 12 34 56 78" });
+      const res = await POST(req({ token: "tok", option_id: 501 }) as never);
+      expect(res.status).toBe(409);
+      expect(await res.json()).toEqual({ ok: false, unavailable: true });
+      expect(updates).toHaveLength(0);
+      expect(sendConnectionEmails).not.toHaveBeenCalled();
+    });
+
+    it("loueur illisible : jamais l'ancien parcours (aucune coordonnée échangée)", async () => {
+      depositPartner.mockRejectedValue(new Error("db down"));
+      const updates = wiring({ phone: "+33 6 12 34 56 78" });
+      await expect(POST(req({ token: "tok", option_id: 501 }) as never)).rejects.toThrow(/db down/);
+      expect(updates).toHaveLength(0);
+      expect(sendConnectionEmails).not.toHaveBeenCalled();
     });
 
     it("ouvre l'acompte et rend payUrl, sans mise en relation ni passage en accepted", async () => {
@@ -118,6 +160,7 @@ describe("POST /api/car-rental/accept", () => {
       ["too_close", { tooClose: true }],
       ["below_minimum", { belowMinimum: true }],
       ["not_quotable", { notReady: true }],
+      ["partner_unavailable", { unavailable: true }],
     ])("refus %s : 409 avec le drapeau attendu", async (error, flag) => {
       startDeposit.mockResolvedValue({ error });
       const updates = wiring({ phone: "+33 6 12 34 56 78" });

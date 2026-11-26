@@ -531,6 +531,12 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
         });
         setFallbackWhatsapp(String(json.fallbackWhatsapp));
         setView("fallback");
+      } else if (res.ok && json?.ok === false && json.noPartner) {
+        // Acompte allumé : aucun loueur joignable, et jamais de numéro de loueur avant réservation.
+        window.plausible?.("Car Wizard Submit", {
+          props: { status: "no_partner", source, pickup, locale },
+        });
+        setView("noPartner");
       } else {
         window.plausible?.("Car Wizard Submit", {
           props: { status: `http_${res.status}`, source, pickup, locale },

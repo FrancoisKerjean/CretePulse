@@ -7,7 +7,8 @@ import { isOfferExpired } from "@/lib/car-offer-expiry";
 import { requestByClientToken } from "@/lib/car-quotes-db";
 import { rentalDays } from "@/lib/car-pricing";
 import { findChosenOption, sortOptionsByPrice, quotedModelLabel } from "@/lib/car-quotes";
-import { startDeposit } from "@/lib/car-deposit-server";
+import { startDeposit, depositPartner } from "@/lib/car-deposit-server";
+import { takesDeposits } from "@/lib/car-catalogue";
 
 const GEARBOX_LABEL: Record<string, string> = { automatic: "Automatic", manual: "Manual" };
 
@@ -75,7 +76,13 @@ export async function POST(request: NextRequest) {
   // ouvre le paiement de l'acompte et RIEN d'autre. Pas de passage en accepted,
   // pas d'invitations touchées, pas de mise en relation : tout cela n'arrive
   // qu'au paiement puis à la confirmation du loueur.
-  if (process.env.CAR_CATALOGUE_ENABLED === "on") {
+  //
+  // Seulement pour un loueur qui prend l'acompte (actif, conditions 2027, pas
+  // en relais). Sinon, typiquement un devis envoyé avant l'allumage, l'offre
+  // finit dans l'ancien parcours, exactement comme interrupteur éteint (spec
+  // section 9). Lecture refusée : la route lève, jamais de mise en relation.
+  const deposit = process.env.CAR_CATALOGUE_ENABLED === "on" ? await depositPartner(chosen.partner_id) : undefined;
+  if (deposit !== undefined && (deposit === null || takesDeposits(deposit))) {
     // Le loueur a déjà répondu « pas disponible » sur cette offre : repayer
     // mènerait à un second remboursement, frais Stripe perdus.
     if (found.quotes.find((q) => q.id === chosen.invite_id)?.status === "declined") {
@@ -85,6 +92,7 @@ export async function POST(request: NextRequest) {
     if ("payUrl" in out) return NextResponse.json({ ok: true, payUrl: out.payUrl });
     const flag = {
       in_progress: "inProgress", too_close: "tooClose", below_minimum: "belowMinimum", not_quotable: "notReady",
+      partner_unavailable: "unavailable",
     }[out.error];
     return NextResponse.json({ ok: false, [flag]: true }, { status: 409 });
   }

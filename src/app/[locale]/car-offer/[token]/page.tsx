@@ -15,9 +15,9 @@ import { requestByClientToken } from "@/lib/car-quotes-db";
 import { rentalDays } from "@/lib/car-pricing";
 import { curateOffers, quotedModelLabel } from "@/lib/car-quotes";
 import type { QuoteOption } from "@/lib/car-quotes";
-import { depositEur } from "@/lib/car-catalogue";
+import { depositEur, takesDeposits } from "@/lib/car-catalogue";
 import { clientCancelNowEur, isDepositBookable } from "@/lib/car-deposit";
-import { depositRatesFor } from "@/lib/car-deposit-server";
+import { depositPartnersFor } from "@/lib/car-deposit-server";
 import { L, fill, formatEur, formatAthensDeadline, pickCarBookingLocale } from "../../car-booking/content";
 import CancelPanel from "../../car-booking/[token]/CancelPanel";
 
@@ -310,14 +310,24 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
 
   // Acompte par offre (taux du loueur), réservabilité (même règle que le
   // paiement, durée de la session comprise) et offres déclinées par leur loueur.
+  // Un loueur qui ne prend pas l'acompte (inactif, sans les conditions 2027, en
+  // relais) garde la carte de la mise en relation, comme la route d'acceptation
+  // (spec section 9) ; un loueur suspendu n'est plus réservable.
   let depositFor: (o: QuoteOption) => DepositView | undefined = () => undefined;
   if (depositOn && offers.length > 0 && request.status !== "accepted") {
-    const rates = await depositRatesFor(offers.map((o) => o.partner_id));
+    const partners = await depositPartnersFor(offers.map((o) => o.partner_id));
     const bookable = isDepositBookable(Date.now(), request.date_from as string, request.time_from as string | null);
     const declinedInvites = new Set(found.quotes.filter((q) => q.status === "declined").map((q) => q.id));
     depositFor = (o) => {
-      const rate = rates.get(o.partner_id);
-      return { amount: rate === undefined ? undefined : depositEur(o.price, rate), bookable, declined: declinedInvites.has(o.invite_id), dc };
+      const p = partners.get(o.partner_id);
+      if (p && !takesDeposits(p)) return undefined;
+      const rate = p?.commission == null ? undefined : Number(p.commission);
+      return {
+        amount: rate === undefined ? undefined : depositEur(o.price, rate),
+        bookable,
+        declined: declinedInvites.has(o.invite_id) || p?.rates_status === "paused",
+        dc,
+      };
     };
   }
 
@@ -414,14 +424,16 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
     );
   }
 
-  // Etat : une ou plusieurs offres à comparer
+  // Etat : une ou plusieurs offres à comparer. Une carte sans acompte garde les
+  // textes de la mise en relation (« Accepter cette offre », « Accepté ! »).
+  const copyFor = (o: QuoteOption) => (depositFor(o) ? c : baseCopy);
   return (
     <main style={shell}>
       {beacon("offers")}
       <p style={{ margin: "0 0 6px", color: "#008C9E", fontSize: 13, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", textAlign: "center" }}>crete · direct</p>
       <h1 style={{ margin: "0 0 20px", fontSize: 22, color: "#0B3954", fontWeight: 800, textAlign: "center" }}>{c.offersTitle}</h1>
       {curated.shown.map((offer, i) => (
-        <OfferCard key={offer.id} offer={offer} token={token} request={request} locale={locale} c={c}
+        <OfferCard key={offer.id} offer={offer} token={token} request={request} locale={locale} c={copyFor(offer)}
           rank={i + 1} total={offers.length} deposit={depositFor(offer)} />
       ))}
       {curated.folded.length > 0 && (
@@ -430,7 +442,7 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
             {more}
           </summary>
           {curated.folded.map((offer, i) => (
-            <OfferCard key={offer.id} offer={offer} token={token} request={request} locale={locale} c={c}
+            <OfferCard key={offer.id} offer={offer} token={token} request={request} locale={locale} c={copyFor(offer)}
               rank={curated.shown.length + i + 1} total={offers.length} deposit={depositFor(offer)} />
           ))}
         </details>

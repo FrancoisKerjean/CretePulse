@@ -173,3 +173,39 @@ describe("POST /api/car-rental/submit : offres de grille", () => {
     expect(m.notifyOps.mock.calls.some((c) => c[0].title === "Statut 'quoted' non écrit")).toBe(true);
   });
 });
+
+describe("POST /api/car-rental/submit : aucun numéro de loueur avant réservation", () => {
+  beforeEach(() => { vi.clearAllMocks(); wiring(); m.ensurePortalToken.mockResolvedValue("tok-7"); });
+  const call = async () => (await POST(req() as never)).json();
+  const WA = "+30 699 000 0000";
+
+  it("allumé, aucun loueur réservable : ni fallbackWhatsapp ni numéro, vue « pas de partenaire »", async () => {
+    process.env.CAR_CATALOGUE_ENABLED = "on";
+    m.partnersForZoneWithTerms.mockResolvedValue([PARTNER({ whatsapp: WA, terms_version: null, terms_accepted_at: null })]);
+    const json = await call();
+    expect(json).toEqual({ ok: false, noPartner: true });
+    expect(JSON.stringify(json)).not.toContain("699");
+  });
+
+  it("allumé, durée trop courte pour tous les loueurs : ni fallbackWhatsapp ni numéro", async () => {
+    process.env.CAR_CATALOGUE_ENABLED = "on";
+    m.partnersForZoneWithTerms.mockResolvedValue([PARTNER({ whatsapp: WA, min_days: 10 })]);
+    const json = await call();
+    expect(json).toEqual({ ok: false, noPartner: true });
+  });
+
+  it("éteint, aucun e-mail parti : fallbackWhatsapp inchangé", async () => {
+    m.partnersForZoneWithTerms.mockResolvedValue([PARTNER({ whatsapp: WA })]);
+    m.sendAgencyQuoteRequest.mockRejectedValue(new Error("resend down"));
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const json = await call();
+    spy.mockRestore();
+    expect(json).toEqual({ ok: false, fallbackWhatsapp: WA });
+  });
+
+  it("éteint, durée trop courte : fallbackWhatsapp inchangé", async () => {
+    m.partnersForZoneWithTerms.mockResolvedValue([PARTNER({ whatsapp: WA, min_days: 10 })]);
+    const json = await call();
+    expect(json).toEqual({ ok: false, fallbackWhatsapp: WA });
+  });
+});

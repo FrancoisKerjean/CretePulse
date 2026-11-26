@@ -40,7 +40,7 @@ vi.mock("./email", () => ({
 }));
 
 import {
-  startDeposit, depositRatesFor, onDepositSessionExpired,
+  startDeposit, depositPartnersFor, onDepositSessionExpired,
   onDepositPaid, confirmBooking, releaseBooking, refundConfirmed, bookingByConfirmToken,
   resumeClaimedRefund, partnerConfirmUrl, remindPartner, cancelByClient, reconcilePendingDeposit,
 } from "./car-deposit-server";
@@ -74,7 +74,10 @@ const ROW = {
   time_from: "10:00",
 };
 
-const PARTNER = { id: 111, name: "Zorbas Rent a Car", commission: 0.1 };
+const PARTNER = {
+  id: 111, name: "Zorbas Rent a Car", commission: 0.1, active: true, lead_routing: "direct",
+  terms_version: "2027-01", terms_accepted_at: "2026-12-01T00:00:00Z", rates_status: "live",
+};
 
 interface Wiring {
   updates: Array<Record<string, unknown>>;
@@ -274,13 +277,31 @@ describe("startDeposit", () => {
     expect(w.updates).toHaveLength(0);
   });
 
+  it.each([
+    ["suspendu (grille paused)", { rates_status: "paused" }],
+    ["inactif", { active: false }],
+    ["sans les conditions 2027", { terms_version: null, terms_accepted_at: null }],
+    ["en relais", { lead_routing: "relay" }],
+  ])("loueur %s : partner_unavailable, rien écrit", async (_label, over) => {
+    const w = wiring({ partner: { ...PARTNER, ...over } });
+    expect(await startDeposit(25, OPTION, "en", NOW)).toEqual({ error: "partner_unavailable" });
+    expect(w.updates).toHaveLength(0);
+  });
+
+  it("grille en pause par le loueur lui-même (« Fleet full until ») : l'offre déjà faite reste réservable", async () => {
+    // La pause du loueur n'écrit que rates_paused_until (R20) : seule la
+    // suspension par ops ou par la règle des 3 manquements passe la grille en paused.
+    wiring({ partner: { ...PARTNER, rates_paused_until: "2099-01-01" } });
+    expect(await startDeposit(25, OPTION, "en", NOW)).toHaveProperty("payUrl");
+  });
+
   it("lève quand le loueur est illisible, plutôt que d'inventer un taux", async () => {
     wiring({ partner: null });
     await expect(startDeposit(25, OPTION, "en", NOW)).rejects.toThrow(/loueur/);
   });
 });
 
-describe("depositRatesFor", () => {
+describe("depositPartnersFor", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -293,24 +314,24 @@ describe("depositRatesFor", () => {
     return asked;
   }
 
-  it("rend le taux de commission de chaque loueur présent", async () => {
-    const asked = partners({ data: [{ id: 111, commission: 0.1 }, { id: 112, commission: "0.12" }], error: null });
-    const rates = await depositRatesFor([111, 112, 111]);
+  it("rend chaque loueur présent, avec son taux et ce qui le rend réservable", async () => {
+    const asked = partners({ data: [PARTNER, { ...PARTNER, id: 112, commission: "0.12", terms_version: null }], error: null });
+    const map = await depositPartnersFor([111, 112, 111]);
     expect(asked[0]).toEqual([111, 112]);
-    expect(rates.get(111)).toBe(0.1);
-    expect(rates.get(112)).toBe(0.12);
+    expect(map.get(111)).toMatchObject({ commission: 0.1, terms_version: "2027-01" });
+    expect(map.get(112)).toMatchObject({ commission: "0.12", terms_version: null });
   });
 
   it("aucun loueur : aucune lecture", async () => {
     partners({ data: [], error: null });
-    expect((await depositRatesFor([])).size).toBe(0);
+    expect((await depositPartnersFor([])).size).toBe(0);
     expect(from).not.toHaveBeenCalled();
   });
 
   it("lecture refusée : carte vide, la page affiche les offres sans montant d'acompte", async () => {
     const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     partners({ data: null, error: { message: "timeout" } });
-    expect((await depositRatesFor([111])).size).toBe(0);
+    expect((await depositPartnersFor([111])).size).toBe(0);
     expect(errSpy).toHaveBeenCalled();
     errSpy.mockRestore();
   });

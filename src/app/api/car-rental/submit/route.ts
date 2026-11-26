@@ -109,6 +109,19 @@ export async function POST(request: NextRequest) {
   const { sendAgencyQuoteRequest, sendCarLeadEmail, sendLeadKamiSummary, sendCustomerRequestReceived, sendCustomerNewOffer } = await import("@/lib/email");
   const sentNames: string[] = [];
 
+  // Interrupteur lu ici (pas au chargement du module) : offres instantanées
+  // depuis les grilles publiées. Éteint, tout le fan-out reste un appel de devis.
+  const catalogueOn = process.env.CAR_CATALOGUE_ENABLED === "on";
+  // Repli quand aucun loueur n'est joint. Allumé, ⛔ aucun numéro de loueur :
+  // les coordonnées ne s'échangent qu'à la confirmation d'un acompte, et ce
+  // loueur n'a peut-être pas accepté les conditions 2027. Le voyageur voit
+  // « pas encore de partenaire » ; éteint, le WhatsApp du premier loueur, comme avant.
+  const fallback = () => {
+    if (catalogueOn) return NextResponse.json({ ok: false, noPartner: true });
+    const fb = partners[0];
+    return NextResponse.json({ ok: false, fallbackWhatsapp: fb.whatsapp ?? fb.phone });
+  };
+
   if (eligibles.length === 0) {
     // Mesure du 12/08/2026 : la demande 53 (Rethymno, 1 jour) est partie à 8
     // loueurs et n'a produit 0 offre. Luxtrans avait répondu par écrit « 3 day
@@ -135,13 +148,9 @@ export async function POST(request: NextRequest) {
         noAgency: true,
       });
     } catch (e) { console.error("[car-rental/submit] ack email (below min days) failed:", e); }
-    const fb = partners[0];
-    return NextResponse.json({ ok: false, fallbackWhatsapp: fb.whatsapp ?? fb.phone });
+    return fallback();
   }
 
-  // Interrupteur lu ici (pas au chargement du module) : offres instantanées
-  // depuis les grilles publiées. Éteint, tout le fan-out reste un appel de devis.
-  const catalogueOn = process.env.CAR_CATALOGUE_ENABLED === "on";
   let catalogues = new Map<number, { rates: RateRow[]; conditions: CatalogueConditions | null }>();
   if (catalogueOn) {
     try {
@@ -233,7 +242,6 @@ export async function POST(request: NextRequest) {
       url: `${siteBase()}/admin/car-rental`,
     });
 
-    const fb = partners[0];
     try {
       await sendCustomerRequestReceived({
         email: row.customer_email, locale: row.locale,
@@ -242,7 +250,7 @@ export async function POST(request: NextRequest) {
         noAgency: true,
       });
     } catch (e) { console.error("[car-rental/submit] ack email (no agency) failed:", e); }
-    return NextResponse.json({ ok: false, fallbackWhatsapp: fb.whatsapp ?? fb.phone });
+    return fallback();
   }
 
   // Au moins une offre de grille : la demande est déjà devis reçu, le voyageur

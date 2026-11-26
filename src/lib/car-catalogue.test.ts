@@ -9,6 +9,7 @@ import {
   validateRatesInput,
   planFanOut,
   isCatalogueEligible,
+  takesDeposits,
   MAX_CATALOGUE_DAYS,
   type RateRow,
 } from "./car-catalogue";
@@ -263,5 +264,18 @@ describe("isCatalogueEligible", () => {
   it("refuses relay and unbookable partners", () => {
     expect(isCatalogueEligible({ ...base, lead_routing: "relay" })).toBe(false);
     expect(isCatalogueEligible({ ...base, terms_version: null, terms_accepted_at: null })).toBe(false);
+  });
+});
+
+describe("takesDeposits", () => {
+  const base = { active: true, terms_version: CAR_TERMS_VERSION, terms_accepted_at: "2026-12-01T00:00:00Z", lead_routing: "direct" };
+  it("un loueur actif, direct, aux conditions courantes prend l'acompte", () => {
+    expect(takesDeposits(base)).toBe(true);
+  });
+  it("inactif, en relais, ou sans les conditions courantes : ancien parcours", () => {
+    expect(takesDeposits({ ...base, active: false })).toBe(false);
+    expect(takesDeposits({ ...base, lead_routing: "relay" })).toBe(false);
+    expect(takesDeposits({ ...base, terms_version: "2026-07" })).toBe(false);
+    expect(takesDeposits({ ...base, terms_accepted_at: null })).toBe(false);
   });
 });
