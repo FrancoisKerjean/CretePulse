@@ -271,12 +271,14 @@ const MAX_MONEY = 10_000;
 /** Valide et normalise les conditions communes saisies par le loueur (null accepté : aucune condition). */
 export function validateConditionsInput(
   raw: unknown,
-): { ok: true; conditions: CatalogueConditions } | { ok: false; errors: string[] } {
-  if (raw == null) return { ok: true, conditions: {} };
+): { ok: true; conditions: CatalogueConditions; stripped: string[] } | { ok: false; errors: string[] } {
+  if (raw == null) return { ok: true, conditions: {}, stripped: [] };
   if (typeof raw !== "object" || Array.isArray(raw)) return { ok: false, errors: ["Invalid conditions."] };
   const o = raw as Record<string, unknown>;
   const errors: string[] = [];
   const out: CatalogueConditions = {};
+  // Champs dont un téléphone ou un e-mail a été retiré : le portail le dit au loueur.
+  const stripped: string[] = [];
 
   const money = (v: unknown, label: string): number | null | undefined => {
     if (v == null || v === "") return null;
@@ -293,7 +295,9 @@ export function validateConditionsInput(
     const t = v.trim();
     if (t.length > MAX_TEXT) { errors.push(`${label}: ${MAX_TEXT} characters maximum.`); return undefined; }
     // Ces textes s'affichent au client : ni email ni téléphone du loueur (commission).
-    return stripContactDetails(t) || null;
+    const clean = stripContactDetails(t);
+    if (clean !== t.replace(/\s+/g, " ")) stripped.push(label);
+    return clean || null;
   };
 
   if (o.models != null) {
@@ -332,5 +336,5 @@ export function validateConditionsInput(
   }
   if ("cancellation_terms" in o) { const v = text(o.cancellation_terms, "Cancellation terms"); if (v !== undefined) out.cancellation_terms = v; }
 
-  return errors.length ? { ok: false, errors } : { ok: true, conditions: out };
+  return errors.length ? { ok: false, errors } : { ok: true, conditions: out, stripped };
 }

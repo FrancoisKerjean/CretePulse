@@ -2,6 +2,7 @@ import type Stripe from "stripe";
 import { REFUND_WINDOW_HOURS } from "./booking-policy";
 import { STRIPE_MIN_CHARGE_EUR } from "./car-commission";
 import { siteBase } from "./car-quote";
+import { formatWallDate } from "./car-format";
 
 export type DepositStatus =
   | "pending_payment"
@@ -222,6 +223,14 @@ export function partnerViewState(bookingStatus: string | null, refundReason: str
   return "closed";
 }
 
+/** Nom du produit sur la page Stripe, dans la langue du client (anglais hors des quatre). */
+const DEPOSIT_PRODUCT: Record<string, (car: string, partner: string, from: string, to: string) => string> = {
+  en: (car, partner, from, to) => `Deposit: ${car} with ${partner}, ${from} to ${to}`,
+  fr: (car, partner, from, to) => `Acompte : ${car} chez ${partner}, du ${from} au ${to}`,
+  de: (car, partner, from, to) => `Anzahlung: ${car} bei ${partner}, ${from} bis ${to}`,
+  el: (car, partner, from, to) => `Προκαταβολή: ${car} από ${partner}, ${from} έως ${to}`,
+};
+
 export function buildDepositCheckoutParams(i: {
   requestId: number;
   customerEmail: string;
@@ -238,6 +247,7 @@ export function buildDepositCheckoutParams(i: {
     throw new Error(`Deposit ${i.depositEur} EUR is below the Stripe minimum`);
   }
   const base = siteBase();
+  const lang = i.locale in DEPOSIT_PRODUCT ? i.locale : "en";
   const metadata = {
     payment_type: "car_deposit",
     brand: "crete.direct",
@@ -251,7 +261,12 @@ export function buildDepositCheckoutParams(i: {
         price_data: {
           currency: "eur",
           product_data: {
-            name: `Deposit: ${i.carLabel} with ${i.partnerName}, ${i.dateFrom} to ${i.dateTo}`,
+            name: DEPOSIT_PRODUCT[lang](
+              i.carLabel,
+              i.partnerName,
+              formatWallDate(i.dateFrom, null, lang),
+              formatWallDate(i.dateTo, null, lang),
+            ),
           },
           unit_amount: Math.round(i.depositEur * 100),
         },

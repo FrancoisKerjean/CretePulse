@@ -66,7 +66,10 @@ export default function CancelPanel(
     }
   }
 
-  const before = changed ? strings.cancelChanged : expected > 0 ? strings.cancelGetBack : strings.cancelGetBackNothing;
+  // Montant changé et tombé à 0 € : on ne parle pas d'un remboursement qui n'aura pas lieu.
+  const before = changed
+    ? (expected > 0 ? strings.cancelChanged : strings.cancelChangedNothing)
+    : expected > 0 ? strings.cancelGetBack : strings.cancelGetBackNothing;
   return (
     <div className="card-base p-6 flex flex-col gap-4 mt-6">
       <div>

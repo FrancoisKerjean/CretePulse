@@ -6,6 +6,7 @@ import { CAR_CATEGORIES } from "@/lib/car-catalogue";
 import type { CatalogueConditions } from "@/lib/car-catalogue";
 import { CAR_INCLUSION_KEYS, CAR_INCLUSION_LABELS_PARTNER } from "@/lib/car-inclusions";
 import { CAR_ZONES } from "@/lib/car-partners";
+import { carPickupLabel } from "@/lib/car-lead";
 import { IDENTITY_TEXT_FIELDS } from "@/lib/car-partner-identity";
 
 export interface RateDraft { category: string; period_from: string; period_to: string; min_days: string; eur_per_day: string; source: string }
@@ -23,7 +24,6 @@ const IDENTITY_LABEL_EN: Record<string, string> = {
   country: "Country",
   vat_id: "VAT number (with country prefix)",
 };
-const PICKUPS = CAR_ZONES.flatMap((z) => z.pickups);
 const card = { background: "#fff", border: "1px solid #DCE9EE", borderRadius: 20, padding: "24px 22px", marginBottom: 20 } as const;
 const input = { padding: "9px 10px", border: "1px solid #DCE9EE", borderRadius: 10, fontSize: 14, fontFamily: "inherit", width: "100%", boxSizing: "border-box" } as const;
 const label = { display: "block", fontSize: 13, fontWeight: 600, color: "#0B3954", marginBottom: 4 } as const;
@@ -74,6 +74,10 @@ export function PortalForm({
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, ...body }),
       });
       const json = await res.json().catch(() => ({}));
+      // Enregistré, mais un téléphone ou un e-mail a été retiré d'un texte : on le dit.
+      if (res.ok && Array.isArray(json.stripped) && json.stripped.length) {
+        return { ok: true, lines: [`We removed phone numbers and e-mail addresses from: ${json.stripped.join(", ")}. Customers receive your contact details once you confirm a booking.`] };
+      }
       if (res.ok) return { ok: true, lines: [] };
       if (Array.isArray(json.errors)) return { ok: false, lines: json.errors };
       if (Array.isArray(json.missing)) return { ok: false, lines: [`Please complete your billing details first: ${json.missing.map((m: string) => IDENTITY_LABEL_EN[m] ?? m).join(", ")}.`] };
@@ -98,11 +102,13 @@ export function PortalForm({
   async function run(steps: Array<Record<string, unknown>>, success: string) {
     setBusy(true);
     setMsg(null);
+    const notes: string[] = [];
     for (const step of steps) {
       const r = await call(step);
       if (!r.ok) { setMsg({ kind: "err", lines: r.lines }); setBusy(false); return; }
+      notes.push(...r.lines);
     }
-    setMsg({ kind: "ok", lines: [success] });
+    setMsg({ kind: "ok", lines: [success, ...notes] });
     setBusy(false);
     router.refresh();
   }
@@ -219,7 +225,11 @@ export function PortalForm({
             <div key={i} style={{ display: "flex", gap: 6, marginBottom: 6 }}>
               <select aria-label="Pickup point" style={input} value={f.slug} onChange={(e) => setFees((cur) => cur.map((x, idx) => (idx === i ? { ...x, slug: e.target.value } : x)))}>
                 <option value="">Choose…</option>
-                {PICKUPS.map((s) => <option key={s} value={s}>{s}</option>)}
+                {CAR_ZONES.map((z) => (
+                  <optgroup key={z.id} label={z.label ?? z.id}>
+                    {z.pickups.map((s) => <option key={s} value={s}>{carPickupLabel(s)}</option>)}
+                  </optgroup>
+                ))}
               </select>
               <input aria-label="Delivery fee" type="number" min={0} style={{ ...input, width: 110 }} value={f.eur} onChange={(e) => setFees((cur) => cur.map((x, idx) => (idx === i ? { ...x, eur: e.target.value } : x)))} />
               <button type="button" style={ghost} onClick={() => setFees((cur) => cur.filter((_, idx) => idx !== i))}>Remove</button>

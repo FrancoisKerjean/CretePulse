@@ -14,6 +14,8 @@
 //
 // Contrainte DA (gate CI check:da) : aucun tiret cadratin.
 
+import type { RefundReason } from "@/lib/car-deposit";
+
 export const CAR_BOOKING_LOCALES = ["en", "fr", "de", "el"] as const;
 export type CarBookingLocale = (typeof CAR_BOOKING_LOCALES)[number];
 
@@ -41,6 +43,8 @@ export type CarBookingStrings = {
   cancelRetry: string;
   /** Le résultat aurait été pire que l'affiché (R49) : nouveau montant, second clic. */
   cancelChanged: string;
+  /** Idem quand le nouveau montant est 0 € : aucun remboursement à annoncer. */
+  cancelChangedNothing: string;
   /** Annulation refusée parce que l'acompte est déjà rendu (refus, silence ou ops entre-temps). */
   cancelAlreadyRefunded: string;
   depositTitle: string;
@@ -66,6 +70,8 @@ export type CarBookingStrings = {
   contactHeading: string;
   refundedTitle: string;
   refundedBody: string;
+  /** Bandeau de la page d'offres après un remboursement : montant rendu. */
+  refundedAmountBody: string;
   reasonPartnerDeclined: string;
   reasonPartnerTimeout: string;
   reasonClientCancelled: string;
@@ -74,6 +80,15 @@ export type CarBookingStrings = {
   otherOffers: string;
   keptTitle: string;
   keptBody: string;
+};
+
+/** Phrase qui dit au client pourquoi son acompte lui est rendu (pages et e-mails). */
+export const REFUND_REASON_KEY: Record<RefundReason, keyof CarBookingStrings> = {
+  partner_declined: "reasonPartnerDeclined",
+  partner_timeout: "reasonPartnerTimeout",
+  client_cancelled: "reasonClientCancelled",
+  partner_cancelled: "reasonPartnerCancelled",
+  ops: "reasonOps",
 };
 
 /** Remplace chaque `{clé}` d'un gabarit. */
@@ -101,6 +116,8 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
       "The cancellation could not be completed right now. Try again in a few minutes; if it persists, write to hello@crete.direct.",
     cancelChanged:
       "The amount has changed since this page was shown: if you cancel now, you get {amount} back. Click again to confirm.",
+    cancelChangedNothing:
+      "Your booking has changed since this page was shown: pick-up is now less than 48 hours away, so the deposit is kept if you cancel. Click again to confirm.",
     cancelAlreadyRefunded: "This booking is already cancelled and your deposit refunded.",
     depositTitle: "Book your car",
     depositIntro:
@@ -131,6 +148,7 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
     contactHeading: "Rental agency contact",
     refundedTitle: "Your deposit has been refunded",
     refundedBody: "The full deposit goes back to the card you paid with.",
+    refundedAmountBody: "Your deposit of {amount} goes back to the card you paid with.",
     reasonPartnerDeclined: "The rental agency could not confirm this car.",
     reasonPartnerTimeout: "The rental agency did not confirm in time.",
     reasonClientCancelled: "You cancelled this booking.",
@@ -160,6 +178,8 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
       "L'annulation n'a pas pu aboutir pour le moment. Réessayez dans quelques minutes ; si cela persiste, écrivez à hello@crete.direct.",
     cancelChanged:
       "Le montant a changé depuis l'affichage de cette page : si vous annulez maintenant, vous récupérez {amount}. Cliquez à nouveau pour confirmer.",
+    cancelChangedNothing:
+      "Votre réservation a changé depuis l'affichage de cette page : la prise du véhicule est désormais à moins de 48 h, l'acompte est donc conservé si vous annulez. Cliquez à nouveau pour confirmer.",
     cancelAlreadyRefunded: "Cette réservation est déjà annulée et votre acompte remboursé.",
     depositTitle: "Réservez votre voiture",
     depositIntro:
@@ -190,6 +210,7 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
     contactHeading: "Coordonnées du loueur",
     refundedTitle: "Votre acompte a été remboursé",
     refundedBody: "L'intégralité de l'acompte revient sur la carte utilisée pour le paiement.",
+    refundedAmountBody: "Votre acompte de {amount} revient sur la carte utilisée pour le paiement.",
     reasonPartnerDeclined: "Le loueur n'a pas pu confirmer cette voiture.",
     reasonPartnerTimeout: "Le loueur n'a pas confirmé à temps.",
     reasonClientCancelled: "Vous avez annulé cette réservation.",
@@ -219,6 +240,8 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
       "Die Stornierung konnte gerade nicht abgeschlossen werden. Bitte in einigen Minuten erneut versuchen; bei anhaltendem Fehler an hello@crete.direct schreiben.",
     cancelChanged:
       "Der Betrag hat sich seit dem Laden dieser Seite geändert: Wenn Sie jetzt stornieren, erhalten Sie {amount} zurück. Klicken Sie erneut, um zu bestätigen.",
+    cancelChangedNothing:
+      "Ihre Buchung hat sich seit dem Laden dieser Seite geändert: Die Abholung ist jetzt weniger als 48 Stunden entfernt, die Anzahlung wird bei einer Stornierung daher einbehalten. Klicken Sie erneut, um zu bestätigen.",
     cancelAlreadyRefunded: "Diese Buchung ist bereits storniert und Ihre Anzahlung erstattet.",
     depositTitle: "Ihren Mietwagen buchen",
     depositIntro:
@@ -249,6 +272,7 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
     contactHeading: "Kontakt des Vermieters",
     refundedTitle: "Ihre Anzahlung wurde erstattet",
     refundedBody: "Die gesamte Anzahlung geht auf die Karte zurück, mit der Sie bezahlt haben.",
+    refundedAmountBody: "Ihre Anzahlung von {amount} geht auf die Karte zurück, mit der Sie bezahlt haben.",
     reasonPartnerDeclined: "Der Vermieter konnte dieses Auto nicht bestätigen.",
     reasonPartnerTimeout: "Der Vermieter hat nicht rechtzeitig bestätigt.",
     reasonClientCancelled: "Sie haben diese Buchung storniert.",
@@ -278,6 +302,8 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
       "Η ακύρωση δεν ολοκληρώθηκε αυτή τη στιγμή. Δοκιμάστε ξανά σε λίγα λεπτά· αν επιμείνει, γράψτε στο hello@crete.direct.",
     cancelChanged:
       "Το ποσό άλλαξε από τότε που εμφανίστηκε η σελίδα: αν ακυρώσετε τώρα, σας επιστρέφονται {amount}. Πατήστε ξανά για επιβεβαίωση.",
+    cancelChangedNothing:
+      "Η κράτησή σας άλλαξε από τότε που εμφανίστηκε η σελίδα: η παραλαβή απέχει πλέον λιγότερο από 48 ώρες, οπότε η προκαταβολή παρακρατείται αν ακυρώσετε. Πατήστε ξανά για επιβεβαίωση.",
     cancelAlreadyRefunded: "Αυτή η κράτηση έχει ήδη ακυρωθεί και η προκαταβολή σας επιστράφηκε.",
     depositTitle: "Κάντε κράτηση για το αυτοκίνητό σας",
     depositIntro:
@@ -308,6 +334,7 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
     contactHeading: "Στοιχεία επικοινωνίας γραφείου",
     refundedTitle: "Η προκαταβολή σας επιστράφηκε",
     refundedBody: "Ολόκληρη η προκαταβολή επιστρέφει στην κάρτα με την οποία πληρώσατε.",
+    refundedAmountBody: "Η προκαταβολή σας, {amount}, επιστρέφει στην κάρτα με την οποία πληρώσατε.",
     reasonPartnerDeclined: "Το γραφείο δεν μπόρεσε να επιβεβαιώσει αυτό το αυτοκίνητο.",
     reasonPartnerTimeout: "Το γραφείο δεν επιβεβαίωσε εγκαίρως.",
     reasonClientCancelled: "Ακυρώσατε αυτήν την κράτηση.",

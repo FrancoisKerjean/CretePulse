@@ -242,6 +242,12 @@ describe("validateConditionsInput, coordonnées retirées", () => {
     if (!r.ok) return;
     expect(r.conditions.cancellation_terms).toBe("Cancel by WhatsApp or");
     expect(r.conditions.models?.compact?.model).toBe("Fiat Panda, call");
+    expect(r.stripped).toEqual(["Model compact", "Cancellation terms"]);
+  });
+
+  it("nothing stripped: empty list, even when spaces were tidied", () => {
+    const r = validateConditionsInput({ cancellation_terms: "Free   until 48h", models: { compact: { model: "Fiat Panda", gearbox: null } } });
+    expect(r.ok && r.stripped).toEqual([]);
   });
 });
 

@@ -59,7 +59,8 @@ export async function POST(request: NextRequest) {
         // Une grille vide ne peut pas être live ; un loueur qui commence passe en brouillon.
         if (partner.rates_status === "none" || (partner.rates_status === "live" && rates.rows.length === 0)) patch.rates_status = "draft";
         await patchPartner("portal.save_rates", partner.id, patch);
-        return ok();
+        // Enregistré sans les coordonnées : le loueur doit savoir pourquoi son texte a changé.
+        return cond.stripped.length ? NextResponse.json({ ok: true, stripped: cond.stripped }) : ok();
       }
 
       case "accept_terms": {

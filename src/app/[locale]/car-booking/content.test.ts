@@ -58,6 +58,16 @@ describe("contenu /car-booking", () => {
     }
   });
 
+  it("annulation devenue à 0 € : aucun montant, aucun remboursement promis ; bandeau de remboursement chiffré", () => {
+    for (const loc of CAR_BOOKING_LOCALES) {
+      const s = L[loc];
+      expect(s.cancelChangedNothing).not.toContain("{amount}");
+      expect(s.cancelChangedNothing).toMatch(/48/);
+      expect(s.cancelChangedNothing).not.toMatch(/refund|rembours|erstatt|επιστρ/i);
+      expect(s.refundedAmountBody).toContain("{amount}");
+    }
+  });
+
   it("fill remplace chaque gabarit, même répété", () => {
     expect(fill("{a} et {b}, {a}", { a: "1", b: "2" })).toBe("1 et 2, 1");
   });

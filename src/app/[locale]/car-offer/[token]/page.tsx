@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { carPickupLabel } from "@/lib/car-lead";
@@ -16,9 +17,9 @@ import { rentalDays } from "@/lib/car-pricing";
 import { curateOffers, quotedModelLabel } from "@/lib/car-quotes";
 import type { QuoteOption } from "@/lib/car-quotes";
 import { depositEur, takesDeposits } from "@/lib/car-catalogue";
-import { clientCancelNowEur, isDepositBookable } from "@/lib/car-deposit";
+import { clientCancelNowEur, isDepositBookable, type RefundReason } from "@/lib/car-deposit";
 import { depositPartnersFor } from "@/lib/car-deposit-server";
-import { L, fill, pickCarBookingLocale } from "../../car-booking/content";
+import { L, fill, pickCarBookingLocale, REFUND_REASON_KEY } from "../../car-booking/content";
 import { formatEur, formatAthensDeadline, formatWallDate } from "@/lib/car-format";
 import CancelPanel from "../../car-booking/[token]/CancelPanel";
 
@@ -137,6 +138,7 @@ type DepositView = {
   dc: DepositCopy;
 };
 
+const noticeBox = { margin: "0 0 20px", padding: "16px 18px", borderRadius: 14, background: "#ECFDF5", border: "1px solid #A7F3D0", color: "#065F46", fontSize: 15, lineHeight: 1.6 } as const;
 const refusalBox = { margin: 0, padding: "16px 18px", borderRadius: 12, background: "#FEF9EC", color: "#92400E", fontSize: 15, lineHeight: 1.6 } as const;
 
 export const dynamic = "force-dynamic";
@@ -404,7 +406,32 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
     );
   }
 
-  // Etat : déjà accepté
+  // Bandeau après un remboursement (refus, silence, annulation) : le lien
+  // « Gérer » des e-mails mène ici, le client doit y lire que son acompte lui
+  // revient et combien. La demande est rouverte aux autres offres (status
+  // quoted) ou encore en cours de remboursement (status accepted).
+  let refundNotice: ReactNode = null;
+  if (bs === "refunded") {
+    const lang = pickCarBookingLocale(locale);
+    const t = L[lang];
+    const reasonKey = REFUND_REASON_KEY[request.refund_reason as RefundReason];
+    const deposit = Number(request.deposit_eur);
+    refundNotice = (
+      <div role="status" style={noticeBox}>
+        <p style={{ margin: "0 0 4px", fontWeight: 700 }}>{t.refundedTitle}</p>
+        {reasonKey ? <p style={{ margin: "0 0 4px" }}>{t[reasonKey]}</p> : null}
+        <p style={{ margin: 0 }}>
+          {Number.isFinite(deposit) && deposit > 0 ? fill(t.refundedAmountBody, { amount: formatEur(deposit, lang) }) : t.refundedBody}
+        </p>
+      </div>
+    );
+  }
+
+  // Etat : déjà accepté. Remboursement en cours : seul le bandeau, la
+  // réservation n'existe plus.
+  if (request.status === "accepted" && refundNotice) {
+    return <main style={shell}>{beacon("already_accepted")}{refundNotice}</main>;
+  }
   if (request.status === "accepted") {
     return (
       <main style={shell}>
@@ -424,6 +451,7 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
     return (
       <main style={shell}>
         {beacon("none_yet")}
+        {refundNotice}
         <div style={card}>
           <p style={{ margin: "0 0 4px", color: "#008C9E", fontSize: 13, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase" }}>crete · direct</p>
           <h1 style={{ margin: "0 0 8px", fontSize: 20, color: "#0B3954" }}>{c.offersTitle}</h1>
@@ -441,6 +469,7 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
       {beacon("offers")}
       <p style={{ margin: "0 0 6px", color: "#008C9E", fontSize: 13, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", textAlign: "center" }}>crete · direct</p>
       <h1 style={{ margin: "0 0 20px", fontSize: 22, color: "#0B3954", fontWeight: 800, textAlign: "center" }}>{c.offersTitle}</h1>
+      {refundNotice}
       {curated.shown.map((offer, i) => (
         <OfferCard key={offer.id} offer={offer} token={token} request={request} locale={locale} c={copyFor(offer)}
           rank={i + 1} total={offers.length} deposit={depositFor(offer)} />

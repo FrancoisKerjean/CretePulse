@@ -8,7 +8,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { setRequestLocale } from "next-intl/server";
 import {
-  L, pickCarBookingLocale, fill,
+  L, pickCarBookingLocale, fill, REFUND_REASON_KEY,
   type CarBookingLocale, type CarBookingStrings,
 } from "../content";
 import { formatEur, formatAthensDeadline, formatWallDate } from "@/lib/car-format";
@@ -48,14 +48,6 @@ interface BookingRow {
   refund_reason: string | null;
   client_token: string | null;
 }
-
-const REASON_KEY: Record<RefundReason, keyof CarBookingStrings> = {
-  partner_declined: "reasonPartnerDeclined",
-  partner_timeout: "reasonPartnerTimeout",
-  client_cancelled: "reasonClientCancelled",
-  partner_cancelled: "reasonPartnerCancelled",
-  ops: "reasonOps",
-};
 
 function Shell({ children }: { children: ReactNode }) {
   return (
@@ -240,7 +232,7 @@ export default async function CarBookingPage(
   }
 
   if (status === "refunded") {
-    const reasonKey = REASON_KEY[row.refund_reason as RefundReason];
+    const reasonKey = REFUND_REASON_KEY[row.refund_reason as RefundReason];
     return (
       <Shell>
         {beacon}

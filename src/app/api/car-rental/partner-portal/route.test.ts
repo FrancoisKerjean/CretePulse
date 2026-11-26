@@ -124,6 +124,22 @@ describe("POST /api/car-rental/partner-portal", () => {
     expect(patches[0].catalogue_conditions).toEqual({ deposit_hold_eur: 300 });
   });
 
+  it("save_rates : coordonnées retirées d'un texte libre, enregistré et signalé au loueur", async () => {
+    wiring();
+    const res = await POST(req({
+      token: "t", action: "save_rates", rows: [ROW], conditions: { cancellation_terms: "Free until 48h, call +30 694 123 4567" },
+    }) as never);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true, stripped: ["Cancellation terms"] });
+    expect(patches[0].catalogue_conditions).toEqual({ cancellation_terms: "Free until 48h, call" });
+  });
+
+  it("save_rates sans coordonnée : réponse inchangée", async () => {
+    wiring();
+    const res = await POST(req({ token: "t", action: "save_rates", rows: [ROW], conditions: { cancellation_terms: "Free until 48h" } }) as never);
+    expect(await res.json()).toEqual({ ok: true });
+  });
+
   it("save_rates sur une grille déjà live : ne rétrograde pas le statut", async () => {
     wiring({ ...PARTNER, rates_status: "live" });
     await POST(req({ token: "t", action: "save_rates", rows: [ROW], conditions: {} }) as never);

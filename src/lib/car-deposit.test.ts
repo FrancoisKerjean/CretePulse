@@ -95,6 +95,16 @@ describe("car-deposit", () => {
       expect(clientCancelNowEur(s, 41.2, "2027-07-20", "10:00", pickup - 100 * H)).toBeNull();
     }
   });
+  it("names the Stripe product in the client's language, with readable dates", () => {
+    const name = (locale: string) => buildDepositCheckoutParams({ ...INPUT, locale }).line_items?.[0]?.price_data?.product_data?.name;
+    expect(name("fr")).toBe("Acompte : Fiat Panda chez Heronia, du lundi 12 juillet 2027 au lundi 19 juillet 2027");
+    expect(name("en")).toBe("Deposit: Fiat Panda with Heronia, Monday, July 12, 2027 to Monday, July 19, 2027");
+    expect(name("de")).toMatch(/^Anzahlung: Fiat Panda bei Heronia, Montag, 12\. Juli 2027 bis Montag, 19\. Juli 2027$/);
+    expect(name("el")).toMatch(/^Προκαταβολή: Fiat Panda/);
+    // Locale non servie : anglais.
+    expect(name("it")).toBe(name("en"));
+    for (const l of ["en", "fr", "de", "el"]) expect(name(l)).not.toContain(String.fromCharCode(8212));
+  });
   it("suspends a partner after 3 failures", () => {
     expect(shouldSuspendPartner(2)).toBe(false);
     expect(shouldSuspendPartner(3)).toBe(true);

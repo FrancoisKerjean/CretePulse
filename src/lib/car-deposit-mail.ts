@@ -13,8 +13,8 @@
 //
 // Textes relus par François avant tout envoi réel. Aucun tiret cadratin.
 import {
-  L, pickCarBookingLocale, fill,
-  type CarBookingLocale, type CarBookingStrings,
+  L, pickCarBookingLocale, fill, REFUND_REASON_KEY,
+  type CarBookingLocale,
 } from "@/app/[locale]/car-booking/content";
 import { formatEur, formatAthensDeadline, formatWallDate } from "./car-format";
 import { CAR_INSURANCE_HEADING, insuranceSummary } from "./car-inclusions";
@@ -105,14 +105,6 @@ const CLIENT: Record<CarBookingLocale, {
   el: { booking: "Η κράτησή σας", pickup: "Παραλαβή", dropoff: "Επιστροφή", colon: ": ", amountRefunded: "Ποσό επιστροφής: {amount}", manage: "Διαχείριση κράτησης" },
 };
 
-const REASON: Record<RefundReason, keyof CarBookingStrings> = {
-  partner_declined: "reasonPartnerDeclined",
-  partner_timeout: "reasonPartnerTimeout",
-  client_cancelled: "reasonClientCancelled",
-  partner_cancelled: "reasonPartnerCancelled",
-  ops: "reasonOps",
-};
-
 function clientBooking(d: DepositMailData, lang: CarBookingLocale, withAmounts: boolean): string {
   const t = L[lang];
   const c = CLIENT[lang];
@@ -179,7 +171,7 @@ function clientMail(kind: DepositMailKind, d: DepositMailData, lang: CarBookingL
       };
     }
     case "client_refunded": {
-      const reasonKey = d.refundReason ? REASON[d.refundReason] : null;
+      const reasonKey = d.refundReason ? REFUND_REASON_KEY[d.refundReason] : null;
       return {
         subject: t.refundedTitle,
         html:
