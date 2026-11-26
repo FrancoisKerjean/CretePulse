@@ -59,6 +59,9 @@ describe("contenu /car-booking", () => {
       expect(s.cancelGetBackNothing).toMatch(/48/);
       expect(s.cancelledRefunded).toContain("{amount}");
       expect(s.cancelRetry).toContain("hello@crete.direct");
+      // R49 : nouveau montant montré, second clic exigé.
+      expect(s.cancelChanged).toContain("{amount}");
+      expect(s.cancelAlreadyRefunded.length).toBeGreaterThan(20);
     }
   });
 

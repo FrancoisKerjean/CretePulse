@@ -1142,6 +1142,8 @@ describe("après paiement", () => {
     const PICKUP = athensWallToUtcMs("2027-07-20", "10:00");
     const HOUR = 3_600_000;
     const CONFIRMED: Row = { ...AWAITING, booking_status: "confirmed", partner_confirmed_at: "2027-07-13T06:00:00.000Z" };
+    /** En attente, échéance du loueur encore à venir (au plus tard 2 h avant la prise). */
+    const PENDING: Row = { ...AWAITING, confirm_deadline_at: new Date(PICKUP - 2 * HOUR).toISOString() };
     const INVOICE: Row = {
       id: 9, number: "NOVAI-2027-001", request_id: 25, partner_id: 111, amount_eur: 41.2, credited_at: null,
     };
@@ -1150,7 +1152,7 @@ describe("après paiement", () => {
 
     it("en attente du loueur à 3 h de la prise : remboursé intégralement, motif client_cancelled", async () => {
       const now = PICKUP - 3 * HOUR;
-      const db = fakeDb(seed(AWAITING));
+      const db = fakeDb(seed(PENDING));
       expect(await cancelByClient(25, now)).toEqual({ refundedEur: 41.2, status: "refunded" });
       expect(refundsCreate).toHaveBeenCalledTimes(1);
       expect(refundsCreate).toHaveBeenCalledWith(
@@ -1217,6 +1219,8 @@ describe("après paiement", () => {
       const [client] = mailsTo("marie@example.fr");
       expect(subjects("marie@example.fr")).toEqual(["Réservation annulée"]);
       expect(client.html).toContain("moins de 48 heures");
+      // La demande reste close (acompte gardé) : aucun lien vers d'autres offres.
+      expect(client.html).not.toContain("car-offer");
       const [partner] = mailsTo("info@zorbas.gr");
       expect(subjects("info@zorbas.gr")).toEqual([expect.stringMatching(/^Booking cancelled by the customer/)]);
       for (const c of CLIENT_CONTACT) {
@@ -1228,12 +1232,14 @@ describe("après paiement", () => {
     });
 
     it("annulation remboursée : client_cancelled et partner_client_cancelled, jamais client_refunded (R44)", async () => {
-      fakeDb(seed(AWAITING));
+      fakeDb(seed(PENDING));
       await cancelByClient(25, PICKUP - 72 * HOUR);
       expect(subjects("marie@example.fr")).toEqual(["Réservation annulée"]);
       const [client] = mailsTo("marie@example.fr");
       // Espaces insécables d'Intl ramenées à l'espace simple.
       expect(client.html.replace(/[  ]/g, " ")).toContain("41,20 €");
+      // La demande redevient une demande à offres : le client peut en choisir une autre.
+      expect(client.html).toContain('href="https://crete.direct/fr/car-offer/client-tok"');
       const [partner] = mailsTo("info@zorbas.gr");
       expect(partner.subject).toMatch(/^Booking cancelled by the customer/);
       for (const c of CLIENT_CONTACT) expect(partner.html).not.toContain(c);
@@ -1244,18 +1250,18 @@ describe("après paiement", () => {
       "%s : not_cancellable, rien d'écrit, aucun appel Stripe, aucun e-mail",
       async (status) => {
         const db = fakeDb(seed({ ...CONFIRMED, booking_status: status }));
-        expect(await cancelByClient(25, PICKUP - 72 * HOUR)).toEqual({ error: "not_cancellable" });
+        expect(await cancelByClient(25, PICKUP - 72 * HOUR)).toEqual({ error: "not_cancellable", bookingStatus: status });
         expect(db.updates("car_requests")).toHaveLength(0);
         expect(refundsCreate).not.toHaveBeenCalled();
         expect(sendCarDepositMail).not.toHaveBeenCalled();
       },
     );
 
-    it.each([["en attente", AWAITING], ["confirmée", CONFIRMED]])(
+    it.each([["en attente", PENDING], ["confirmée", CONFIRMED]])(
       "prise du véhicule passée (%s) : not_cancellable, rien d'écrit",
       async (_label, request) => {
         const db = fakeDb(seed(request));
-        expect(await cancelByClient(25, PICKUP + HOUR)).toEqual({ error: "not_cancellable" });
+        expect(await cancelByClient(25, PICKUP + HOUR)).toEqual({ error: "not_cancellable", bookingStatus: request.booking_status });
         expect(db.updates("car_requests")).toHaveLength(0);
         expect(refundsCreate).not.toHaveBeenCalled();
       },
@@ -1263,7 +1269,7 @@ describe("après paiement", () => {
 
     it("prise de main perdue : relit et réévalue une fois (confirmée entre-temps, à moins de 48 h : acompte gardé)", async () => {
       let raced = false;
-      const db: ReturnType<typeof fakeDb> = fakeDb(seed(AWAITING), {
+      const db: ReturnType<typeof fakeDb> = fakeDb(seed(PENDING), {
         fail: (op) => {
           // Le loueur confirme entre la lecture et la prise de main du client.
           if (!raced && op.table === "car_requests" && op.kind === "update") {
@@ -1281,7 +1287,7 @@ describe("après paiement", () => {
 
     it("prise de main perdue deux fois : not_cancellable, pas de troisième essai", async () => {
       let claims = 0;
-      const db: ReturnType<typeof fakeDb> = fakeDb(seed(AWAITING), {
+      const db: ReturnType<typeof fakeDb> = fakeDb(seed(PENDING), {
         fail: (op) => {
           if (op.table === "car_requests" && op.kind === "update") {
             claims++;
@@ -1291,14 +1297,14 @@ describe("après paiement", () => {
           return null;
         },
       });
-      expect(await cancelByClient(25, PICKUP - 3 * HOUR)).toEqual({ error: "not_cancellable" });
+      expect(await cancelByClient(25, PICKUP - 3 * HOUR)).toEqual({ error: "not_cancellable", bookingStatus: "refunded" });
       expect(claims).toBe(2);
       expect(refundsCreate).not.toHaveBeenCalled();
       expect(sendCarDepositMail).not.toHaveBeenCalled();
     });
 
     it("Stripe refuse : refund_failed, demande remise en attente, aucun e-mail", async () => {
-      const db = fakeDb(seed(AWAITING));
+      const db = fakeDb(seed(PENDING));
       refundsCreate.mockRejectedValue(new Error("api down"));
       expect(await cancelByClient(25, PICKUP - 3 * HOUR)).toEqual({ error: "refund_failed" });
       expect(db.req()).toMatchObject({ booking_status: "awaiting_partner", refund_reason: null, cancelled_at: null });
@@ -1309,8 +1315,71 @@ describe("après paiement", () => {
       expect(alert).not.toContain("le cron retentera");
     });
 
+    // R49 : jamais un résultat pire que celui affiché avant le clic.
+    it("page d'attente périmée, confirmée à moins de 48 h au clic : changed, aucune prise de main, aucun e-mail", async () => {
+      const db = fakeDb(seed(CONFIRMED));
+      expect(await cancelByClient(25, PICKUP - 3 * HOUR, 41.2)).toEqual({ error: "changed", refundEur: 0 });
+      expect(db.updates("car_requests")).toHaveLength(0);
+      expect(refundsCreate).not.toHaveBeenCalled();
+      expect(sendCarDepositMail).not.toHaveBeenCalled();
+      expect(db.req().booking_status).toBe("confirmed");
+    });
+
+    it("page affichée à 48 h 02, clic à 47 h 59 : changed", async () => {
+      const db = fakeDb(seed(CONFIRMED));
+      expect(await cancelByClient(25, PICKUP - 47 * HOUR - 59 * 60_000, 41.2)).toEqual({ error: "changed", refundEur: 0 });
+      expect(db.updates("car_requests")).toHaveLength(0);
+    });
+
+    it("réévaluation après une prise de main perdue : changed, l'acompte n'est pas gardé", async () => {
+      let raced = false;
+      const db: ReturnType<typeof fakeDb> = fakeDb(seed(PENDING), {
+        fail: (op) => {
+          if (!raced && op.table === "car_requests" && op.kind === "update") {
+            raced = true;
+            Object.assign(db.req(), { booking_status: "confirmed", partner_confirmed_at: "2027-07-20T04:00:00.000Z" });
+          }
+          return null;
+        },
+      });
+      expect(await cancelByClient(25, PICKUP - 3 * HOUR, 41.2)).toEqual({ error: "changed", refundEur: 0 });
+      // Seule la prise de main perdue a été tentée, aucune vers cancelled_kept.
+      expect(db.updates("car_requests").map((u) => u.patch?.booking_status)).toEqual(["refunded"]);
+      expect(db.req().booking_status).toBe("confirmed");
+      expect(refundsCreate).not.toHaveBeenCalled();
+      expect(sendCarDepositMail).not.toHaveBeenCalled();
+    });
+
+    it("montant égal ou meilleur que celui affiché : l'annulation passe", async () => {
+      fakeDb(seed(PENDING));
+      expect(await cancelByClient(25, PICKUP - 3 * HOUR, 41.2)).toEqual({ refundedEur: 41.2, status: "refunded" });
+      vi.clearAllMocks();
+      refundsCreate.mockResolvedValue({ id: "re_1", amount: 4120 });
+      refundsList.mockResolvedValue({ data: [] });
+      sendCarDepositMail.mockResolvedValue(true);
+      fakeDb(seed(PENDING));
+      expect(await cancelByClient(25, PICKUP - 3 * HOUR, 0)).toEqual({ refundedEur: 41.2, status: "refunded" });
+    });
+
+    it("en attente sans acompte lisible (montant 0) : not_cancellable, jamais de prise de main « gardé »", async () => {
+      const db = fakeDb(seed({ ...PENDING, deposit_eur: null }));
+      expect(await cancelByClient(25, PICKUP - 3 * HOUR)).toEqual({ error: "not_cancellable", bookingStatus: "awaiting_partner" });
+      expect(db.updates("car_requests")).toHaveLength(0);
+    });
+
+    it("en attente, échéance du loueur dépassée (cron pas encore passé) : libéré en partner_timeout", async () => {
+      // Échéance le 13/07 à 11:30, clic le 17/07.
+      const db = fakeDb(seed(AWAITING));
+      expect(await cancelByClient(25, PICKUP - 72 * HOUR, 41.2)).toEqual({ refundedEur: 41.2, status: "refunded" });
+      expect(db.req()).toMatchObject({ booking_status: "refunded", refund_reason: "partner_timeout", refund_id: "re_1" });
+      // Le manquement du loueur est compté, comme si le cron était passé.
+      expect(db.invite(77)).toMatchObject({ status: "declined", deposit_failure_reason: "partner_timeout" });
+      expect(subjects("marie@example.fr")).toEqual(["Votre acompte a été remboursé"]);
+      expect(mailsTo("info@zorbas.gr")).toHaveLength(0);
+    });
+
     it("lève quand la lecture est refusée par la base", async () => {
-      fakeDb(seed(AWAITING), { fail: (op) => (op.kind === "select" ? "timeout" : null) });
+      fakeDb(seed(PENDING), { fail: (op) => (op.kind === "select" ? "timeout" : null) });
       await expect(cancelByClient(25, PICKUP - 3 * HOUR)).rejects.toThrow(/timeout/);
       expect(refundsCreate).not.toHaveBeenCalled();
     });

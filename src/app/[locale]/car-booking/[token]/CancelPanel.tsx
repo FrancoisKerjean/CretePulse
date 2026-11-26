@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { fill, formatEur, type CarBookingStrings } from "../content";
 
 /**
@@ -18,8 +19,13 @@ export default function CancelPanel(
     refundEur: number;
   },
 ) {
+  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
+  // Montant affiché, envoyé avec le clic : le serveur refuse un résultat pire
+  // (R49) et rend le montant à jour, affiché avant le second clic.
+  const [expected, setExpected] = useState(refundEur);
+  const [changed, setChanged] = useState(false);
   const [note, setNote] = useState("");
   const eur = (n: number) => formatEur(n, locale);
 
@@ -30,19 +36,24 @@ export default function CancelPanel(
       const r = await fetch("/api/car-rental/booking/cancel", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(auth),
+        body: JSON.stringify({ ...auth, expectedRefundEur: expected }),
       });
       const j = await r.json().catch(() => ({}));
       if (r.ok && j.ok) {
-        // Le résultat fait foi, pas l'annonce d'avant le clic : l'état a pu
-        // changer entre l'affichage et le clic.
         const refunded = Number(j.refundedEur) || 0;
         setNote(refunded > 0 ? fill(strings.cancelledRefunded, { amount: eur(refunded) }) : strings.cancelledNoRefund);
         setDone(true);
+        // La page relit l'état en base et montre la vue de l'annulation.
+        router.refresh();
+        return;
+      }
+      if (r.status === 409 && j.changed) {
+        setExpected(Number(j.refundEur) || 0);
+        setChanged(true);
         return;
       }
       if (r.status === 409) {
-        setNote(strings.cancelTooLate);
+        setNote(j.bookingStatus === "refunded" ? strings.cancelAlreadyRefunded : strings.cancelTooLate);
         setDone(true);
         return;
       }
@@ -54,13 +65,17 @@ export default function CancelPanel(
     }
   }
 
+  const before = changed ? strings.cancelChanged : expected > 0 ? strings.cancelGetBack : strings.cancelGetBackNothing;
   return (
     <div className="card-base p-6 flex flex-col gap-4 mt-6">
       <div>
         <p className="m-0 text-[15px] font-heading font-bold text-text">{strings.cancelTitle}</p>
         {done ? null : (
-          <p className="m-0 mt-1 text-[13.5px] text-text-muted leading-relaxed">
-            {fill(refundEur > 0 ? strings.cancelGetBack : strings.cancelGetBackNothing, { amount: eur(refundEur) })}
+          <p
+            role={changed ? "status" : undefined}
+            className={`m-0 mt-1 text-[13.5px] leading-relaxed ${changed ? "font-bold text-text" : "text-text-muted"}`}
+          >
+            {fill(before, { amount: eur(expected) })}
           </p>
         )}
       </div>

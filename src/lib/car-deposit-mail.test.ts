@@ -132,6 +132,13 @@ describe("depositMail", () => {
     expect(kept).toContain("48");
   });
 
+  it("client_cancelled remboursé : lien vers les autres offres ; acompte gardé : aucun lien", () => {
+    expect(text("client_cancelled", "fr")).toContain('href="https://crete.direct/fr/car-offer/client-tok"');
+    expect(text("client_cancelled", "fr")).toContain("Voir vos autres offres");
+    expect(text("client_cancelled", "fr", { ...DATA, refundedEur: 0 })).not.toContain("car-offer");
+    expect(text("client_cancelled", "en", { ...DATA, offersUrl: null })).not.toContain("car-offer");
+  });
+
   it("partner_client_cancelled : le loueur apprend l'annulation, sans coordonnée du client", () => {
     const t = text("partner_client_cancelled", "fr");
     expect(t).toContain("2027-07-20");

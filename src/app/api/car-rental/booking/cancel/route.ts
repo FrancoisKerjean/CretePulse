@@ -6,6 +6,11 @@
 // un e-mail ne peut renvoyer que vers la page d'offres (R43). Exactement un des
 // deux, sinon 400.
 //
+// `expectedRefundEur` (facultatif) : le montant que le panneau a affiché avant
+// le clic. Un résultat pire n'est jamais exécuté : 409 `changed` avec le
+// nouveau montant, le client reclique (R49). Présent, il doit être un nombre
+// fini >= 0, sinon 400.
+//
 // La règle (48 h, prise passée) et les écritures vivent dans cancelByClient.
 // Plus gardée par CAR_BOOKING_ENABLED (R45) : une réservation avec acompte
 // n'existe que si l'interrupteur de l'acompte était allumé.
@@ -24,6 +29,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if ((token === null) === (offerToken === null)) {
     return NextResponse.json({ ok: false, error: "Send exactly one of token or offerToken" }, { status: 400 });
   }
+  const rawExpected = fields.expectedRefundEur;
+  const expected = typeof rawExpected === "number" && Number.isFinite(rawExpected) && rawExpected >= 0 ? rawExpected : undefined;
+  if (rawExpected !== undefined && expected === undefined) {
+    return NextResponse.json({ ok: false, error: "expectedRefundEur must be a number >= 0" }, { status: 400 });
+  }
 
   const { data: row, error } = await supabaseAdmin
     .from("car_requests")
@@ -39,16 +49,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const requestId = (row as { id: number }).id;
   let out: Awaited<ReturnType<typeof cancelByClient>>;
   try {
-    out = await cancelByClient(requestId, Date.now());
+    out = await cancelByClient(requestId, Date.now(), expected);
   } catch (err) {
     console.error("[car/booking/cancel] annulation en échec", { requestId, error: err instanceof Error ? err.message : String(err) });
     return NextResponse.json({ ok: false, error: "Temporarily unavailable, try again in a few minutes" }, { status: 500 });
   }
 
   if ("error" in out) {
-    if (out.error === "not_cancellable") return NextResponse.json({ ok: false, notCancellable: true }, { status: 409 });
-    // Stripe a refusé : rien n'est annulé (prise de main défaite), ops est prévenu.
-    return NextResponse.json({ ok: false, error: "Refund temporarily unavailable, try again in a few minutes" }, { status: 503 });
+    switch (out.error) {
+      case "not_cancellable":
+        return NextResponse.json({ ok: false, notCancellable: true, bookingStatus: out.bookingStatus }, { status: 409 });
+      case "changed":
+        return NextResponse.json({ ok: false, changed: true, refundEur: out.refundEur }, { status: 409 });
+      case "refund_failed":
+        // Stripe a refusé : rien n'est annulé (prise de main défaite), ops est prévenu.
+        return NextResponse.json({ ok: false, error: "Refund temporarily unavailable, try again in a few minutes" }, { status: 503 });
+    }
   }
   return NextResponse.json({ ok: true, refundedEur: out.refundedEur, status: out.status });
 }

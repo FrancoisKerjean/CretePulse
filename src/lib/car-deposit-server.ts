@@ -938,7 +938,10 @@ export async function releaseBooking(
 async function sendClientCancelMails(row: BookingRow, refundedEur: number): Promise<string[]> {
   const failures: string[] = [];
   const locale = pickCarBookingLocale(row.locale ?? "en");
-  const clientFail = await sendMail("client_cancelled", row.customer_email, mailData(row, locale, { refundedEur }), locale, "client");
+  const clientFail = await sendMail("client_cancelled", row.customer_email, mailData(row, locale, {
+    refundedEur,
+    offersUrl: offersUrlOf(row, locale),
+  }), locale, "client");
   if (clientFail) failures.push(clientFail);
   const partner = await partnerContact(row.quoted_by_partner_id);
   const partnerFail = await sendMail("partner_client_cancelled", partner?.email, mailData(row, "en"), "en", "loueur");
@@ -981,7 +984,13 @@ async function keepDeposit(requestId: number, nowMs: number): Promise<boolean> {
 
 export type CancelByClientResult =
   | { refundedEur: number; status: "refunded" | "cancelled_kept" }
-  | { error: "not_cancellable" | "refund_failed" };
+  /** bookingStatus : état courant, pour dire au client « déjà remboursée » plutôt que « trop tard ». */
+  | { error: "not_cancellable"; bookingStatus: string | null }
+  /** Le résultat serait pire que celui affiché avant le clic : rien n'est fait, refundEur est le montant à jour. */
+  | { error: "changed"; refundEur: number }
+  | { error: "refund_failed" };
+
+const cents = (eur: number) => Math.round(eur * 100);
 
 /**
  * Le client annule (page de réservation ou page d'offres). En attente du
@@ -993,30 +1002,57 @@ export type CancelByClientResult =
  * Prise de main conditionnée à l'état LU : perdue (le loueur confirme, le cron
  * libère), on relit et on réévalue UNE fois sur l'état frais (R46). Stripe
  * refuse : la prise de main est défaite, refund_failed, aucun e-mail.
+ *
+ * `expectedRefundEur` : le montant affiché au client avant son clic. Si l'état
+ * a changé depuis et que le résultat serait PIRE (page d'attente périmée, puis
+ * confirmée à moins de 48 h), rien n'est fait, à chaque passage, AVANT toute
+ * prise de main : `changed` avec le nouveau montant, le client reclique en
+ * connaissance de cause (R49). Égal ou meilleur : on poursuit. Absent : pas de
+ * contrôle.
+ *
+ * En attente avec une échéance déjà dépassée (cron pas encore passé) : c'est le
+ * silence du loueur qui libère, motif partner_timeout, manquement compté.
  */
-export async function cancelByClient(requestId: number, nowMs: number): Promise<CancelByClientResult> {
+export async function cancelByClient(
+  requestId: number,
+  nowMs: number,
+  expectedRefundEur?: number,
+): Promise<CancelByClientResult> {
   for (let attempt = 0; attempt < 2; attempt++) {
     const { data, error } = await supabaseAdmin
       .from("car_requests")
-      .select("booking_status, deposit_eur, date_from, time_from")
+      .select("booking_status, deposit_eur, date_from, time_from, confirm_deadline_at")
       .eq("id", requestId)
       .maybeSingle();
     if (error) throw new Error(`cancelByClient(${requestId}) lecture refusée par la base: ${error.message}`);
-    const row = data as Pick<BookingRow, "booking_status" | "deposit_eur" | "date_from" | "time_from"> | null;
-    if (!row) return { error: "not_cancellable" };
+    const row = data as Pick<BookingRow, "booking_status" | "deposit_eur" | "date_from" | "time_from" | "confirm_deadline_at"> | null;
+    if (!row) return { error: "not_cancellable", bookingStatus: null };
     const status = row.booking_status;
     const refundEur = clientCancelNowEur(status, Number(row.deposit_eur), row.date_from, row.time_from, nowMs);
-    if (refundEur === null) return { error: "not_cancellable" };
+    if (refundEur === null) return { error: "not_cancellable", bookingStatus: status };
+    if (expectedRefundEur !== undefined && cents(refundEur) < cents(expectedRefundEur)) {
+      return { error: "changed", refundEur };
+    }
 
     if (refundEur > 0) {
-      const out = await claimRefund(status as RefundFrom, requestId, "client_cancelled", nowMs);
+      // Même règle que le cron des échéances (échéance strictement passée).
+      const timedOut = status === "awaiting_partner"
+        && row.confirm_deadline_at != null && Date.parse(row.confirm_deadline_at) < nowMs;
+      const out = timedOut
+        ? await releaseBooking(requestId, "partner_timeout", nowMs)
+        : await claimRefund(status as RefundFrom, requestId, "client_cancelled", nowMs);
       if (out === "refunded") return { refundedEur: refundEur, status: "refunded" };
       if (out === "refund_failed") return { error: "refund_failed" };
+    } else if (status !== "confirmed") {
+      // Rien à rendre sans être confirmée : aucun acompte lisible, rien à garder.
+      return { error: "not_cancellable", bookingStatus: status };
     } else if (await keepDeposit(requestId, nowMs)) {
       return { refundedEur: 0, status: "cancelled_kept" };
     }
   }
-  return { error: "not_cancellable" };
+  // Deux prises de main perdues : l'état a encore bougé, on le relit pour le dire.
+  const current = await bookingStatusOf(requestId);
+  return { error: "not_cancellable", bookingStatus: current?.booking_status ?? null };
 }
 
 /**

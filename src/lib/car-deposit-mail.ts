@@ -46,7 +46,7 @@ export interface DepositMailData {
   deadlineIso?: string | null;
   /** Lien « Confirm / Not available » du loueur (partner_request, partner_reminder). */
   confirmUrl?: string;
-  /** Lien des autres offres du client (client_refunded). Absent sur les anciennes demandes. */
+  /** Lien des autres offres du client (client_refunded, client_cancelled remboursé). Absent sur les anciennes demandes. */
   offersUrl?: string | null;
   /**
    * Même page d'offres, où le client suit et annule sa réservation (client_pending,
@@ -190,7 +190,9 @@ function clientMail(kind: DepositMailKind, d: DepositMailData, lang: CarBookingL
           (refunded > 0
             ? P(t.refundedBody) + P(fill(c.amountRefunded, { amount: formatEur(refunded, lang) }))
             : P(t.keptBody)) +
-          clientBooking(d, lang, false),
+          clientBooking(d, lang, false) +
+          // Remboursé, la demande redevient une demande à offres ; gardé, elle reste close.
+          (refunded > 0 && d.offersUrl ? BUTTON(d.offersUrl, t.otherOffers) : ""),
       };
     }
     default:

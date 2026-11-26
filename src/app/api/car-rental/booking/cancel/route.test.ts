@@ -47,7 +47,24 @@ describe("POST /api/car-rental/booking/cancel", () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true, refundedEur: 41.2, status: "refunded" });
     expect(lookups).toEqual([["booking_token_hash", "hash(book-tok)"]]);
-    expect(cancelByClient).toHaveBeenCalledWith(25, expect.any(Number));
+    // Sans montant attendu : comportement d'avant R49.
+    expect(cancelByClient).toHaveBeenCalledWith(25, expect.any(Number), undefined);
+  });
+
+  it("transmet le montant affiché avant le clic (R49)", async () => {
+    wiring();
+    await POST(req({ offerToken: "client-tok", expectedRefundEur: 41.2 }) as never);
+    expect(cancelByClient).toHaveBeenCalledWith(25, expect.any(Number), 41.2);
+    await POST(req({ token: "book-tok", expectedRefundEur: 0 }) as never);
+    expect(cancelByClient).toHaveBeenLastCalledWith(25, expect.any(Number), 0);
+  });
+
+  it("409 changed avec le nouveau montant quand le résultat serait pire que l'affiché", async () => {
+    wiring();
+    cancelByClient.mockResolvedValue({ error: "changed", refundEur: 0 });
+    const res = await POST(req({ offerToken: "client-tok", expectedRefundEur: 41.2 }) as never);
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ ok: false, changed: true, refundEur: 0 });
   });
 
   it("jeton d'offres (lien des e-mails) : cherche par accept_token_hash et annule", async () => {
@@ -72,6 +89,9 @@ describe("POST /api/car-rental/booking/cancel", () => {
     ["jeton qui n'est pas une chaîne", { token: 42 }],
     ["corps qui n'est pas un objet", [1, 2]],
     ["JSON illisible", "{pas du json"],
+    ["montant attendu en texte", { token: "a", expectedRefundEur: "41.2" }],
+    ["montant attendu négatif", { token: "a", expectedRefundEur: -1 }],
+    ["montant attendu nul (null)", { token: "a", expectedRefundEur: null }],
   ])("400 : %s, sans lecture ni annulation", async (_label, body) => {
     wiring();
     const res = await POST(req(body) as never);
@@ -87,12 +107,12 @@ describe("POST /api/car-rental/booking/cancel", () => {
     expect(cancelByClient).not.toHaveBeenCalled();
   });
 
-  it("409 notCancellable quand la réservation ne peut plus être annulée", async () => {
+  it("409 notCancellable avec l'état courant de la réservation", async () => {
     wiring();
-    cancelByClient.mockResolvedValue({ error: "not_cancellable" });
+    cancelByClient.mockResolvedValue({ error: "not_cancellable", bookingStatus: "refunded" });
     const res = await POST(req({ token: "book-tok" }) as never);
     expect(res.status).toBe(409);
-    expect(await res.json()).toEqual({ ok: false, notCancellable: true });
+    expect(await res.json()).toEqual({ ok: false, notCancellable: true, bookingStatus: "refunded" });
   });
 
   it("503 avec un message de nouvel essai quand Stripe refuse le remboursement", async () => {

@@ -49,6 +49,10 @@ export type CarBookingStrings = {
   cancelledNoRefund: string;
   cancelTooLate: string;
   cancelRetry: string;
+  /** Le résultat aurait été pire que l'affiché (R49) : nouveau montant, second clic. */
+  cancelChanged: string;
+  /** Annulation refusée parce que l'acompte est déjà rendu (refus, silence ou ops entre-temps). */
+  cancelAlreadyRefunded: string;
   depositTitle: string;
   depositIntro: string;
   totalLabel: string;
@@ -140,6 +144,9 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
     cancelTooLate: "This booking can no longer be cancelled.",
     cancelRetry:
       "The cancellation could not be completed right now. Try again in a few minutes; if it persists, write to hello@crete.direct.",
+    cancelChanged:
+      "The amount has changed since this page was shown: if you cancel now, you get {amount} back. Click again to confirm.",
+    cancelAlreadyRefunded: "This booking is already cancelled and your deposit refunded.",
     depositTitle: "Book your car",
     depositIntro:
       "You pay a deposit online now. You pay the rest to the rental agency when you pick up the car.",
@@ -207,6 +214,9 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
     cancelTooLate: "Cette réservation ne peut plus être annulée.",
     cancelRetry:
       "L'annulation n'a pas pu aboutir pour le moment. Réessayez dans quelques minutes ; si cela persiste, écrivez à hello@crete.direct.",
+    cancelChanged:
+      "Le montant a changé depuis l'affichage de cette page : si vous annulez maintenant, vous récupérez {amount}. Cliquez à nouveau pour confirmer.",
+    cancelAlreadyRefunded: "Cette réservation est déjà annulée et votre acompte remboursé.",
     depositTitle: "Réservez votre voiture",
     depositIntro:
       "Vous payez un acompte en ligne maintenant. Vous réglez le reste au loueur à la prise du véhicule.",
@@ -274,6 +284,9 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
     cancelTooLate: "Diese Buchung kann nicht mehr storniert werden.",
     cancelRetry:
       "Die Stornierung konnte gerade nicht abgeschlossen werden. Bitte in einigen Minuten erneut versuchen; bei anhaltendem Fehler an hello@crete.direct schreiben.",
+    cancelChanged:
+      "Der Betrag hat sich seit dem Laden dieser Seite geändert: Wenn Sie jetzt stornieren, erhalten Sie {amount} zurück. Klicken Sie erneut, um zu bestätigen.",
+    cancelAlreadyRefunded: "Diese Buchung ist bereits storniert und Ihre Anzahlung erstattet.",
     depositTitle: "Ihren Mietwagen buchen",
     depositIntro:
       "Sie zahlen jetzt online eine Anzahlung. Den Rest zahlen Sie bei der Abholung an den Vermieter.",
@@ -341,6 +354,9 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
     cancelTooLate: "Αυτή η κράτηση δεν μπορεί πλέον να ακυρωθεί.",
     cancelRetry:
       "Η ακύρωση δεν ολοκληρώθηκε αυτή τη στιγμή. Δοκιμάστε ξανά σε λίγα λεπτά· αν επιμείνει, γράψτε στο hello@crete.direct.",
+    cancelChanged:
+      "Το ποσό άλλαξε από τότε που εμφανίστηκε η σελίδα: αν ακυρώσετε τώρα, σας επιστρέφονται {amount}. Πατήστε ξανά για επιβεβαίωση.",
+    cancelAlreadyRefunded: "Αυτή η κράτηση έχει ήδη ακυρωθεί και η προκαταβολή σας επιστράφηκε.",
     depositTitle: "Κάντε κράτηση για το αυτοκίνητό σας",
     depositIntro:
       "Πληρώνετε τώρα online μια προκαταβολή. Το υπόλοιπο το πληρώνετε στο γραφείο κατά την παραλαβή του αυτοκινήτου.",
