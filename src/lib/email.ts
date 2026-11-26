@@ -30,7 +30,7 @@ const EMAIL_FONT = "'Baloo 2', 'Trebuchet MS', system-ui, -apple-system, sans-se
 
 // Coquille commune : bandeau nuit + wordmark point soleil, carte blanche, pied
 // avec lien site et réseaux sociaux. Tout en styles inline (Gmail/Outlook).
-function kalimeraShell(inner: string): string {
+export function kalimeraShell(inner: string): string {
   return `
   <div style="background:${C.surface}; padding:28px 12px; font-family:${EMAIL_FONT};">
     <div style="max-width:480px; margin:0 auto;">
