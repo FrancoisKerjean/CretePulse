@@ -63,6 +63,12 @@ export interface AdminRequest {
   booking_amount_eur?: number | null;
   transfer_id?: string | null;
   refund_amount_eur?: number | null;
+  // Acompte du catalogue (migration 20261126_car_catalogue).
+  deposit_eur?: number | null;
+  confirm_deadline_at?: string | null;
+  booking_paid_at?: string | null;
+  partner_confirmed_at?: string | null;
+  refund_reason?: string | null;
 }
 
 export interface AdminPartner {

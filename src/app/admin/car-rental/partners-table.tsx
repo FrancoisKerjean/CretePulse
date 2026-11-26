@@ -13,6 +13,7 @@ import {
   togglePartnerActive, updatePartner, openPartnerOnboarding, refreshPartnerConnect,
   refreshPartnerRatingAction, updatePartnerIdentity, openPartnerPortal,
 } from "./actions";
+import { LiftSuspensionButton } from "./deposit-actions";
 
 const BASE = "/admin/car-rental";
 
@@ -237,6 +238,7 @@ export function PartnersTable({
                     {" · grille : "}
                     <span className="font-data font-bold text-text">{p.rates_status ?? "none"}</span>
                   </span>
+                  {p.rates_status === "paused" ? <LiftSuspensionButton partnerId={p.id} /> : null}
                   <form action={openPartnerPortal.bind(null, p.id)}>
                     <button className="rounded-full border border-border bg-white px-3 py-1 text-xs font-bold">Portail</button>
                   </form>

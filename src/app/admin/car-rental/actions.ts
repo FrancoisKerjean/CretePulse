@@ -23,6 +23,8 @@ import { ensurePortalToken } from "@/lib/car-catalogue-db";
 import {
   buildIdentityPatch, todayAthens, IDENTITY_TEXT_FIELDS, type IdentityTextField,
 } from "@/lib/car-partner-identity";
+import { confirmBooking, releaseBooking, refundConfirmed } from "@/lib/car-deposit-server";
+import { athensWallToUtcMs, PICKUP_MARGIN_MS } from "@/lib/car-deposit";
 import { commissionOutcomeMessage, missingIdentityLabels } from "@/lib/car-commission-catchup";
 
 const PATH = "/admin/car-rental";
@@ -346,4 +348,96 @@ export async function refreshPartnerRatingAction(id: number) {
             : null;
   if (message) redirect(`${PATH}?tab=partners&error=${encodeURIComponent(message)}`);
   revalidatePath(PATH);
+}
+
+// ---------------------------------------------------------------------------
+// Acomptes : ops agit à la place du loueur. Chaque action rend le résultat de la
+// couche acompte tel quel : l'écran l'affiche, `refund_failed` en erreur.
+
+export async function adminConfirmDeposit(requestId: number) {
+  await guard();
+  const res = await confirmBooking(requestId, "admin");
+  revalidatePath(PATH);
+  return res;
+}
+
+/** Le loueur a refusé (par téléphone par exemple) : c'est un manquement du loueur. */
+export async function adminDeclineDeposit(requestId: number) {
+  await guard();
+  const res = await releaseBooking(requestId, "partner_declined", Date.now());
+  revalidatePath(PATH);
+  return res;
+}
+
+/** Annulation côté ops, sans faute du loueur (ne compte pas pour sa suspension). */
+export async function adminCancelDeposit(requestId: number) {
+  await guard();
+  const res = await releaseBooking(requestId, "ops", Date.now());
+  revalidatePath(PATH);
+  return res;
+}
+
+const REFUND_CONFIRMED_REASONS = ["partner_cancelled", "ops"] as const;
+
+export async function adminRefundConfirmed(requestId: number, reason: "partner_cancelled" | "ops") {
+  await guard();
+  // Server action : l'argument arrive du navigateur, le type TS ne protège de rien.
+  if (!(REFUND_CONFIRMED_REASONS as readonly unknown[]).includes(reason)) throw new Error("Invalid refund reason");
+  const res = await refundConfirmed(requestId, reason);
+  revalidatePath(PATH);
+  return res;
+}
+
+export type ExtendDeadlineResult =
+  | { status: "extended"; deadline: string }
+  | { status: "refused"; reason: "invalid_hours" | "not_found" | "not_awaiting" | "beyond_pickup" };
+
+/**
+ * Prolonge l'échéance du loueur de 1, 2 ou 4 h, depuis l'échéance courante (ou
+ * maintenant si elle est dépassée). Jamais au-delà de la prise en charge moins la
+ * marge : au-delà, le client n'aurait plus le temps de se retourner.
+ */
+export async function adminExtendDeadline(requestId: number, hours: 1 | 2 | 4): Promise<ExtendDeadlineResult> {
+  await guard();
+  if (hours !== 1 && hours !== 2 && hours !== 4) return { status: "refused", reason: "invalid_hours" };
+  const { data: req, error: readErr } = await supabase.from("car_requests")
+    .select("booking_status, confirm_deadline_at, date_from, time_from").eq("id", requestId).maybeSingle();
+  if (readErr) throw new Error(readErr.message);
+  if (!req) return { status: "refused", reason: "not_found" };
+  if (req.booking_status !== "awaiting_partner") return { status: "refused", reason: "not_awaiting" };
+
+  const nowMs = Date.now();
+  const currentMs = req.confirm_deadline_at ? new Date(req.confirm_deadline_at).getTime() : nowMs;
+  const nextMs = Math.max(currentMs, nowMs) + hours * 3600_000;
+  const pickupMs = athensWallToUtcMs(req.date_from, req.time_from ?? "00:00");
+  if (nextMs > pickupMs - PICKUP_MARGIN_MS) return { status: "refused", reason: "beyond_pickup" };
+
+  const deadline = new Date(nextMs).toISOString();
+  // Conditionnelle : si le loueur a confirmé ou le cron libéré entre-temps, 0 ligne.
+  const { data, error } = await supabase.from("car_requests")
+    .update({ confirm_deadline_at: deadline, confirm_reminded_at: null })
+    .eq("id", requestId).eq("booking_status", "awaiting_partner").select();
+  assertWritten("adminExtendDeadline", requestId, error);
+  if (!data || data.length === 0) return { status: "refused", reason: "not_awaiting" };
+  revalidatePath(PATH);
+  return { status: "extended", deadline };
+}
+
+export type LiftSuspensionResult =
+  | { status: "lifted"; ratesStatus: "live" | "draft" }
+  | { status: "refused"; reason: "not_paused" };
+
+/** Lève la suspension d'un loueur : grille en ligne s'il en a une, brouillon sinon. */
+export async function adminLiftSuspension(partnerId: number): Promise<LiftSuspensionResult> {
+  await guard();
+  const { data: rates, error: rErr } = await supabase.from("car_partner_rates")
+    .select("partner_id").eq("partner_id", partnerId).limit(1);
+  if (rErr) throw new Error(rErr.message);
+  const ratesStatus = (rates ?? []).length > 0 ? "live" : "draft";
+  const { data, error } = await supabase.from("car_partners")
+    .update({ rates_status: ratesStatus }).eq("id", partnerId).eq("rates_status", "paused").select();
+  assertWritten("adminLiftSuspension", partnerId, error);
+  if (!data || data.length === 0) return { status: "refused", reason: "not_paused" };
+  revalidatePath(PATH);
+  return { status: "lifted", ratesStatus };
 }

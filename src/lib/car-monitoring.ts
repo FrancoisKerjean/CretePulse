@@ -3,6 +3,7 @@
 // perf loueur. Zéro I/O. Node-safe : importable par scripts/check-car-monitoring.mjs.
 // Réutilise car-quotes.ts et car-offer-expiry.ts (jamais réécrits).
 import { partnerNeedsRelance, clientNeedsRelance, PARTNER_NUDGE_DELAY_MS } from "./car-quotes.ts";
+import type { RefundReason } from "./car-deposit.ts";
 
 const HOUR = 3600000;
 
@@ -21,6 +22,8 @@ export interface MonitorInvite {
   declined_at: string | null;
   relanced_at: string | null;
   closed_notified_at?: string | null;
+  /** 'catalogue' = offre de grille, instantanée par construction (jamais une réponse du loueur). */
+  source?: "catalogue" | "quote";
 }
 
 const isPriced = (i: MonitorInvite): boolean =>
@@ -254,8 +257,10 @@ export function kpis(
     if (priced.length > 0) {
       withQuote++;
       totalQuotes += priced.length;
-      // Correction 1 : délai 1er devis calculé sur les invites ayant un quoted_at
-      const quotedAts = priced.map((i) => i.quoted_at).filter((x): x is string => x != null);
+      // R25 : une offre de grille naît chiffrée à la création de la demande, son
+      // « délai » est nul par construction et écraserait le temps de réponse réel
+      // des loueurs. Elles restent comptées partout ailleurs, pas dans ce délai.
+      const quotedAts = priced.filter((i) => i.source !== "catalogue").map((i) => i.quoted_at).filter((x): x is string => x != null);
       if (quotedAts.length > 0) {
         const firstAtMs = Math.min(...quotedAts.map((x) => new Date(x).getTime()));
         firstQuoteHours.push((firstAtMs - new Date(r.created_at).getTime()) / 3600000);
@@ -322,5 +327,62 @@ export function partnerPerf(partnerId: number, invitesByPartner: Map<number, Mon
     avgQuotePriceEur: avg(priced.map((i) => i.quote_price!)),
     responseRate: invites.length === 0 ? null : (priced.length + invites.filter((i) => i.status === "declined").length) / invites.length,
     avgResponseHours: avg(respHours),
+  };
+}
+
+/** Colonnes d'une demande lues pour les indicateurs d'acompte. */
+export interface DepositKpiRow {
+  booking_status: string | null;
+  deposit_eur: number | null;
+  booking_paid_at: string | null;
+  partner_confirmed_at: string | null;
+  refund_reason: string | null;
+  /** La demande porte au moins une option de source 'catalogue'. */
+  hasCatalogueOption: boolean;
+}
+
+export interface DepositKpis {
+  catalogueCoverage: number;
+  offerToDeposit: number;
+  confirmRate: number;
+  medianConfirmMinutes: number | null;
+  refundsByReason: Record<RefundReason, number>;
+  commissionEur: number;
+}
+
+const REFUND_REASONS: RefundReason[] = ["partner_declined", "partner_timeout", "client_cancelled", "partner_cancelled", "ops"];
+
+/**
+ * Les 6 indicateurs d'acompte, sur les demandes fournies. Un dénominateur nul
+ * donne 0 (jamais NaN).
+ * - catalogueCoverage : demandes avec une option catalogue / demandes.
+ * - offerToDeposit : demandes avec acompte payé (booking_paid_at) / demandes avec
+ *   au moins une option catalogue. Une demande payée sans option catalogue ne peut
+ *   pas exister, le numérateur est donc inclus dans le dénominateur en pratique.
+ * - confirmRate : (confirmed + cancelled_kept) / acomptes payés.
+ * - medianConfirmMinutes : booking_paid_at vers partner_confirmed_at, null sans confirmation.
+ * - refundsByReason : lignes portant un refund_reason, les 5 clés toujours présentes.
+ * - commissionEur : somme des deposit_eur de confirmed + cancelled_kept, au centime.
+ */
+export function depositKpis(rows: DepositKpiRow[]): DepositKpis {
+  const safe = (n: number, d: number): number => (d === 0 ? 0 : n / d);
+  const withCatalogue = rows.filter((r) => r.hasCatalogueOption).length;
+  const paid = rows.filter((r) => r.booking_paid_at != null);
+  const kept = rows.filter((r) => r.booking_status === "confirmed" || r.booking_status === "cancelled_kept");
+  const mins = rows
+    .filter((r) => r.booking_paid_at != null && r.partner_confirmed_at != null)
+    .map((r) => (new Date(r.partner_confirmed_at!).getTime() - new Date(r.booking_paid_at!).getTime()) / 60000);
+  const refundsByReason = Object.fromEntries(REFUND_REASONS.map((k) => [k, 0])) as Record<RefundReason, number>;
+  for (const r of rows) {
+    if (r.refund_reason && r.refund_reason in refundsByReason) refundsByReason[r.refund_reason as RefundReason]++;
+  }
+  const cents = kept.reduce((sum, r) => sum + Math.round((r.deposit_eur ?? 0) * 100), 0);
+  return {
+    catalogueCoverage: safe(withCatalogue, rows.length),
+    offerToDeposit: safe(paid.length, withCatalogue),
+    confirmRate: safe(kept.length, paid.length),
+    medianConfirmMinutes: median(mins),
+    refundsByReason,
+    commissionEur: cents / 100,
   };
 }

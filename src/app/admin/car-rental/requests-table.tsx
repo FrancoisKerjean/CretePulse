@@ -15,6 +15,8 @@ import { carPickupLabel } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { canCancelRequest } from "@/lib/car-quotes";
 import { insuranceSummary, inclusionLabels } from "@/lib/car-inclusions";
+import { formatAthensDeadline } from "@/app/[locale]/car-booking/content";
+import { DepositActions } from "./deposit-actions";
 import { invoiceAdminState, type AdminInvoiceRow } from "@/lib/car-invoice";
 import { commissionCatchUp, missingIdentityLabels, shouldOfferCommissionPaidToggle } from "@/lib/car-commission-catchup";
 import {
@@ -44,6 +46,39 @@ function bookingBadge(r: AdminRequest) {
     <span className={`rounded-full px-2 py-0.5 text-xs ${BOOKING_TONE[state.tone]}`}>
       {state.label}
     </span>
+  );
+}
+
+const DEPOSIT_LABEL: Record<string, string> = {
+  pending_payment: "acompte : paiement en cours",
+  awaiting_partner: "acompte : attend le loueur",
+  confirmed: "acompte : confirmé",
+  refunded: "acompte : remboursé",
+  cancelled_kept: "acompte : gardé",
+};
+const REFUND_LABEL: Record<string, string> = {
+  partner_declined: "refus du loueur", partner_timeout: "loueur sans réponse",
+  client_cancelled: "annulé par le client", partner_cancelled: "annulé par le loueur", ops: "ops",
+};
+
+/** État de l'acompte, échéance en heure d'Athènes et boutons ops selon l'état. */
+function depositBlock(r: AdminRequest) {
+  const st = r.booking_status;
+  if (!st || !DEPOSIT_LABEL[st]) return null;
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-border pt-2 text-sm">
+      <span className="rounded-full border border-sun bg-white px-2 py-0.5 text-xs font-bold">{DEPOSIT_LABEL[st]}</span>
+      {r.deposit_eur != null ? <span className="font-data text-xs">{r.deposit_eur.toFixed(2)} €</span> : null}
+      {st === "awaiting_partner" && r.confirm_deadline_at ? (
+        <span className="text-xs text-text-muted">
+          échéance : <span className="font-data font-bold text-text">{formatAthensDeadline(r.confirm_deadline_at, "fr-FR")}</span> (Athènes)
+        </span>
+      ) : null}
+      {st === "refunded" && r.refund_reason ? (
+        <span className="text-xs text-text-muted">{REFUND_LABEL[r.refund_reason] ?? r.refund_reason}</span>
+      ) : null}
+      <DepositActions requestId={r.id} bookingStatus={st} />
+    </div>
   );
 }
 
@@ -77,6 +112,8 @@ export type AdminQuoteOption = {
   excess_eur: number | null;
   zero_excess_upsell_eur_day: number | null;
   created_at: string | null;
+  /** 'catalogue' = offre de grille ; sinon devis du loueur. */
+  source?: string | null;
 };
 
 const carTypeLabel = (id: string): string =>
@@ -411,6 +448,8 @@ export function RequestsTable({
                 ) : null}
                 <span className="ml-auto text-xs text-text-muted">{invitesByRequest.get(r.id) ?? 0} loueur(s) invité(s)</span>
               </div>
+
+              {depositBlock(r)}
 
               <div className="mt-2 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
                 <div>

@@ -7,7 +7,7 @@ import { isCarAdmin } from "@/lib/car-admin-auth";
 import {
   requestsSummary, type AdminPartner, type AdminRequest,
 } from "@/lib/car-admin";
-import { kpis, reconcileWinnerSnapshot } from "@/lib/car-monitoring";
+import { kpis, depositKpis, reconcileWinnerSnapshot } from "@/lib/car-monitoring";
 import type { MonitorInvite } from "@/lib/car-monitoring";
 import type { AdminInvoiceRow } from "@/lib/car-invoice";
 import { RequestsTable, type AdminQuoteOption } from "./requests-table";
@@ -60,7 +60,7 @@ export default async function CarAdminPage({
         "id, request_id, partner_id, status, quote_price, quote_currency, quote_car_model, created_at, quoted_at, declined_at, relanced_at, closed_notified_at, car_partners(name)"
       ),
       supabase.from("car_quote_options").select(
-        "id, request_id, invite_id, partner_id, price, currency, car_model, gearbox, inclusions, insurance_type, excess_eur, zero_excess_upsell_eur_day, created_at, car_partners(name)"
+        "id, request_id, invite_id, partner_id, price, currency, car_model, gearbox, inclusions, insurance_type, excess_eur, zero_excess_upsell_eur_day, created_at, source, car_partners(name)"
       ).order("price"),
       supabase.from("car_commission_invoices").select(
         "request_id, number, sent_at, paid_at, credited_at, credit_number"
@@ -88,6 +88,8 @@ export default async function CarAdminPage({
     invitesByPartner.set(i.partner_id, (invitesByPartner.get(i.partner_id) ?? 0) + 1);
   }
 
+  // Invites nées d'une offre de grille (instantanées) : exclues du délai de réponse des loueurs.
+  const catalogueInvites = new Set(options.filter((o) => o.source === "catalogue").map((o) => o.invite_id));
   const monitorByRequest = new Map<number, MonitorInvite[]>();
   for (const r of invitesFull) {
     const list = monitorByRequest.get(r.request_id) ?? [];
@@ -97,6 +99,7 @@ export default async function CarAdminPage({
       status: r.status, quote_price: r.quote_price, quote_currency: r.quote_currency,
       quote_car_model: r.quote_car_model, created_at: r.created_at,
       quoted_at: r.quoted_at, declined_at: r.declined_at, relanced_at: r.relanced_at, closed_notified_at: r.closed_notified_at,
+      source: catalogueInvites.has(r.id) ? "catalogue" : "quote",
     });
     monitorByRequest.set(r.request_id, list);
   }
@@ -138,6 +141,13 @@ export default async function CarAdminPage({
   });
   const k7 = kpis(windowReqs(7).map(kpiReq), monitorByRequest, nowMs);
   const k30 = kpis(windowReqs(30).map(kpiReq), monitorByRequest, nowMs);
+
+  const catalogueRequests = new Set(options.filter((o) => o.source === "catalogue").map((o) => o.request_id));
+  const kd = depositKpis(windowReqs(30).map((r) => ({
+    booking_status: r.booking_status ?? null, deposit_eur: r.deposit_eur ?? null,
+    booking_paid_at: r.booking_paid_at ?? null, partner_confirmed_at: r.partner_confirmed_at ?? null,
+    refund_reason: r.refund_reason ?? null, hasCatalogueOption: catalogueRequests.has(r.id),
+  })));
 
   const s = requestsSummary(requests, partnersById);
   const tab = sp.tab === "partners" ? "partners" : "requests";
@@ -181,7 +191,7 @@ export default async function CarAdminPage({
       </section>
 
       {/* Bandeau KPI 7j/30j (onglet requests uniquement) */}
-      {tab === "requests" ? <KpiBand k7={k7} k30={k30} /> : null}
+      {tab === "requests" ? <KpiBand k7={k7} k30={k30} deposit={kd} /> : null}
 
       {/* Onglets */}
       <nav className="mt-6 flex gap-2">
