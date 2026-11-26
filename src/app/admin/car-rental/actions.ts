@@ -19,6 +19,7 @@ import { markInvoicePaid, markInvoiceUnpaid, assertWritten } from "@/lib/car-inv
 import { startPartnerOnboarding, refreshPartnerKyc } from "@/lib/car-connect-server";
 import { refreshPartnerRating } from "@/lib/google-rating-server";
 import { PARTNER_IDENTITY_COLS } from "@/lib/car-invoice";
+import { ensurePortalToken } from "@/lib/car-catalogue-db";
 import {
   buildIdentityPatch, todayAthens, IDENTITY_TEXT_FIELDS, type IdentityTextField,
 } from "@/lib/car-partner-identity";
@@ -292,6 +293,13 @@ export async function updatePartnerIdentity(id: number, formData: FormData) {
   // écrit, et la facturation resterait bloquée sans que personne comprenne.
   assertWritten("updatePartnerIdentity", id, error);
   revalidatePath(PATH);
+}
+
+/** Ouvre le portail privé du loueur (crée son jeton au besoin) : lien à lui transmettre ou à relire. */
+export async function openPartnerPortal(id: number) {
+  await guard();
+  const token = await ensurePortalToken(id);
+  redirect(`/en/car-rates/${token}`);
 }
 
 /** Ouvre l'onboarding Stripe Connect d'un loueur et redirige vers Stripe.

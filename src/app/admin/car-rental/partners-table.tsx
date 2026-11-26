@@ -11,7 +11,7 @@ import { formatRating } from "@/lib/google-rating";
 import { identityFormFields, identityStatus } from "@/lib/car-partner-identity";
 import {
   togglePartnerActive, updatePartner, openPartnerOnboarding, refreshPartnerConnect,
-  refreshPartnerRatingAction, updatePartnerIdentity,
+  refreshPartnerRatingAction, updatePartnerIdentity, openPartnerPortal,
 } from "./actions";
 
 const BASE = "/admin/car-rental";
@@ -221,6 +221,25 @@ export function PartnersTable({
                       </button>
                     </form>
                   ) : null}
+                </div>
+
+                {/* Catalogue 2027 : portail privé du loueur, conditions acceptées, état de la grille. */}
+                <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-border pt-2">
+                  <span className="text-xs text-text-muted">
+                    conditions :{" "}
+                    {p.terms_version && p.terms_accepted_at ? (
+                      <span className="font-data font-bold text-text">
+                        v{p.terms_version} · {new Date(p.terms_accepted_at).toLocaleDateString("fr-FR", { timeZone: "Europe/Athens" })}
+                      </span>
+                    ) : (
+                      <span className="font-bold text-text-muted">non acceptées</span>
+                    )}
+                    {" · grille : "}
+                    <span className="font-data font-bold text-text">{p.rates_status ?? "none"}</span>
+                  </span>
+                  <form action={openPartnerPortal.bind(null, p.id)}>
+                    <button className="rounded-full border border-border bg-white px-3 py-1 text-xs font-bold">Portail</button>
+                  </form>
                 </div>
 
                 {/* Note Google. Jamais saisie à la main : elle vient de Places

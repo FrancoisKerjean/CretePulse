@@ -621,7 +621,7 @@ export async function sendCarLeadEmail(partner: CarLeadPartner, lead: CarLead, q
 /** Appel d'offres : email « aveugle » à UN loueur direct avec son lien de
  *  soumission de prix. Pas de copie Kami (synthèse unique via
  *  sendLeadKamiSummary). Propage l'erreur Resend (la route compte les envois). */
-export async function sendAgencyQuoteRequest(partner: { name: string; email: string }, lead: CarLead, quoteUrl: string) {
+export async function sendAgencyQuoteRequest(partner: { name: string; email: string }, lead: CarLead, quoteUrl: string, portalUrl?: string) {
   const first = partner.name.split(" ")[0];
   const subject = `New rental request · ${lead.pickupLabel} ${lead.dateFrom} → ${lead.dateTo} (${lead.carTypeLabel}${lead.pax ? `, ${lead.pax} pax` : ""})`;
 
@@ -649,6 +649,7 @@ export async function sendAgencyQuoteRequest(partner: { name: string; email: str
       <p style="margin:0 0 20px; color:${C.text}; font-weight:700; font-size:15px;">Our referral commission is 10%, only on confirmed bookings.</p>
       <div style="text-align:center; margin:0 0 16px;">${pillButton(quoteUrl, "Send your price", C.terracotta)}</div>
       <p style="margin:0 0 22px; color:${C.faint}; font-size:12px; line-height:1.6; text-align:center;">No login needed. The customer compares all offers and picks one. Send your best price.</p>
+      ${portalUrl ? `<p style="margin:0 0 22px; color:${C.text}; font-size:14px; line-height:1.6; text-align:center;">Your 2027 prices and terms: <a href="${portalUrl}" style="color:${C.terracotta};">${portalUrl}</a></p>` : ""}
       <p style="margin:0; color:${C.text}; line-height:1.5;"><strong>Kami</strong><br><span style="color:${C.faint}; font-size:13px;">crete.direct</span></p>
   `);
 
@@ -667,6 +668,7 @@ export async function sendAgencyQuoteRequest(partner: { name: string; email: str
     ``,
     `The customer compares all offers and picks one. Send your best price.`,
     ``,
+    ...(portalUrl ? [`Your 2027 prices and terms: ${portalUrl}`, ``] : []),
     `Kami`,
     `crete.direct`,
   ];

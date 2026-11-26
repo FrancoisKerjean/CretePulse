@@ -86,6 +86,10 @@ export interface AdminPartner {
   // jours minimum continue de recevoir des demandes de deux jours. Le filtrage
   // des invitations est un chantier distinct.
   min_days?: number | null;
+  // Catalogue de prix 2027 (portail loueur) : conditions acceptées et état de la grille.
+  terms_version?: string | null;
+  terms_accepted_at?: string | null;
+  rates_status?: string | null;
   // Compte de versement Stripe Connect (migration 20260730_car_booking).
   // Sans lui, le cron de versement garde les fonds du client et le signale.
   stripe_connect_account_id?: string | null;

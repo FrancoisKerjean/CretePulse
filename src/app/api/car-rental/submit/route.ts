@@ -4,6 +4,7 @@ import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 import { validateCarLead, carPickupLabel, carTypeLabelWithExamples } from "@/lib/car-lead";
 import { newToken, hashToken, siteBase } from "@/lib/car-quote";
 import { partnersForZone } from "@/lib/car-partners-db";
+import { ensurePortalToken } from "@/lib/car-catalogue-db";
 import { meetsMinDays, rentalDays } from "@/lib/car-pricing";
 import { notifyOps, echeance } from "@/lib/ops-notify";
 import type { CarLead } from "@/lib/email";
@@ -144,7 +145,14 @@ export async function POST(request: NextRequest) {
       } else {
         const token = newToken();
         await supabase.from("car_quote_invites").insert({ request_id: requestId, partner_id: p.id, quote_token_hash: hashToken(token) });
-        await sendAgencyQuoteRequest({ name: p.name, email: p.email }, lead, `${siteBase()}/en/car-quote/${token}`);
+        // Lien du portail 2027 : jamais bloquant, une demande de devis part même sans lui.
+        let portalUrl: string | undefined;
+        try {
+          portalUrl = `${siteBase()}/en/car-rates/${await ensurePortalToken(p.id)}`;
+        } catch (e) {
+          console.error(`[car-rental/submit] portal token partner ${p.id} failed:`, e);
+        }
+        await sendAgencyQuoteRequest({ name: p.name, email: p.email }, lead, `${siteBase()}/en/car-quote/${token}`, portalUrl);
       }
       sentNames.push(p.name);
     } catch (e) {

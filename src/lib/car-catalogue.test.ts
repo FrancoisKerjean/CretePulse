@@ -3,6 +3,9 @@ import {
   catalogueQuote,
   depositEur,
   fromPricePerDay,
+  isPartnerBookable,
+  validateConditionsInput,
+  CAR_TERMS_VERSION,
   validateRatesInput,
   type RateRow,
 } from "./car-catalogue";
@@ -125,5 +128,56 @@ describe("validateRatesInput", () => {
   });
   it("rejects a non array input", () => {
     expect(validateRatesInput({}).ok).toBe(false);
+  });
+});
+
+describe("isPartnerBookable", () => {
+  it("faux sans acceptation ou avec une ancienne version", () => {
+    expect(isPartnerBookable({ terms_version: null, terms_accepted_at: null })).toBe(false);
+    expect(isPartnerBookable({ terms_version: "2026-01", terms_accepted_at: "2026-02-01T10:00:00Z" })).toBe(false);
+  });
+  it("faux si la version est la bonne mais sans date d'acceptation", () => {
+    expect(isPartnerBookable({ terms_version: "2027-01", terms_accepted_at: null })).toBe(false);
+  });
+  it("vrai pour la version courante avec une date", () => {
+    expect(CAR_TERMS_VERSION).toBe("2027-01");
+    expect(isPartnerBookable({ terms_version: "2027-01", terms_accepted_at: "2026-12-01T10:00:00Z" })).toBe(true);
+  });
+});
+
+describe("validateConditionsInput", () => {
+  it("accepte des conditions complètes et normalise les textes", () => {
+    const res = validateConditionsInput({
+      models: { compact: { model: "  Fiat Panda ", gearbox: "manual" }, suv: { model: "Jimny", gearbox: null } },
+      inclusions: ["unlimited_km", "child_seat"],
+      deposit_hold_eur: "300",
+      child_seat_eur_day: 3,
+      delivery_fees: { heraklion: 15, chania: 0 },
+      cancellation_terms: " Free until 48h ",
+    });
+    expect(res.ok).toBe(true);
+    if (res.ok) {
+      expect(res.conditions.models?.compact).toEqual({ model: "Fiat Panda", gearbox: "manual" });
+      expect(res.conditions.deposit_hold_eur).toBe(300);
+      expect(res.conditions.cancellation_terms).toBe("Free until 48h");
+      expect(res.conditions.delivery_fees).toEqual({ heraklion: 15, chania: 0 });
+    }
+  });
+  it("accepte null et un objet vide", () => {
+    expect(validateConditionsInput(null).ok).toBe(true);
+    expect(validateConditionsInput({}).ok).toBe(true);
+  });
+  it("refuse catégorie, boîte, inclusion et lieu inconnus", () => {
+    expect(validateConditionsInput({ models: { truck: { model: "x", gearbox: null } } }).ok).toBe(false);
+    expect(validateConditionsInput({ models: { city: { model: "x", gearbox: "cvt" } } }).ok).toBe(false);
+    expect(validateConditionsInput({ inclusions: ["wifi"] }).ok).toBe(false);
+    expect(validateConditionsInput({ delivery_fees: { atlantis: 5 } }).ok).toBe(false);
+  });
+  it("refuse les montants hors 0..10000 et les textes trop longs", () => {
+    expect(validateConditionsInput({ deposit_hold_eur: -1 }).ok).toBe(false);
+    expect(validateConditionsInput({ child_seat_eur_day: 10001 }).ok).toBe(false);
+    expect(validateConditionsInput({ delivery_fees: { heraklion: "abc" } }).ok).toBe(false);
+    expect(validateConditionsInput({ cancellation_terms: "x".repeat(301) }).ok).toBe(false);
+    expect(validateConditionsInput({ models: { city: { model: "x".repeat(301), gearbox: null } } }).ok).toBe(false);
   });
 });

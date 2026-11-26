@@ -3,6 +3,8 @@
  * d'une grille (table `car_partner_rates`). Aucun I/O, aucun import serveur.
  */
 import { rentalDays } from "./car-pricing";
+import { CAR_ZONES } from "./car-partners";
+import { isInclusionKey } from "./car-inclusions";
 
 export const CAR_CATEGORIES = ["city", "compact", "sedan", "automatic", "suv"] as const;
 export type CarCategory = (typeof CAR_CATEGORIES)[number];
@@ -159,4 +161,85 @@ export function validateRatesInput(
     }
   }
   return errors.length ? { ok: false, errors } : { ok: true, rows };
+}
+
+/** Version courante des conditions partenaire (le texte vit sur /en/car-partner-terms). */
+export const CAR_TERMS_VERSION = "2027-01";
+
+/** Un loueur n'est réservable que s'il a accepté la version COURANTE des conditions. */
+export function isPartnerBookable(p: {
+  terms_version: string | null;
+  terms_accepted_at: string | null;
+}): boolean {
+  return p.terms_version === CAR_TERMS_VERSION && !!p.terms_accepted_at;
+}
+
+const PICKUP_SLUGS: string[] = CAR_ZONES.flatMap((z) => z.pickups);
+const MAX_TEXT = 300;
+const MAX_MONEY = 10_000;
+
+/** Valide et normalise les conditions communes saisies par le loueur (null accepté : aucune condition). */
+export function validateConditionsInput(
+  raw: unknown,
+): { ok: true; conditions: CatalogueConditions } | { ok: false; errors: string[] } {
+  if (raw == null) return { ok: true, conditions: {} };
+  if (typeof raw !== "object" || Array.isArray(raw)) return { ok: false, errors: ["Conditions invalides."] };
+  const o = raw as Record<string, unknown>;
+  const errors: string[] = [];
+  const out: CatalogueConditions = {};
+
+  const money = (v: unknown, label: string): number | null | undefined => {
+    if (v == null || v === "") return null;
+    const n = typeof v === "string" ? Number(v) : v;
+    if (typeof n !== "number" || !Number.isFinite(n) || n < 0 || n > MAX_MONEY) {
+      errors.push(`${label} : montant invalide (entre 0 et ${MAX_MONEY} €).`);
+      return undefined;
+    }
+    return n;
+  };
+  const text = (v: unknown, label: string): string | null | undefined => {
+    if (v == null) return null;
+    if (typeof v !== "string") { errors.push(`${label} : texte attendu.`); return undefined; }
+    const t = v.trim();
+    if (t.length > MAX_TEXT) { errors.push(`${label} : ${MAX_TEXT} caractères maximum.`); return undefined; }
+    return t || null;
+  };
+
+  if (o.models != null) {
+    if (typeof o.models !== "object" || Array.isArray(o.models)) errors.push("Modèles invalides.");
+    else {
+      const models: NonNullable<CatalogueConditions["models"]> = {};
+      for (const [cat, v] of Object.entries(o.models as Record<string, unknown>)) {
+        if (!isCategory(cat)) { errors.push(`Modèles : catégorie inconnue « ${cat} ».`); continue; }
+        const m = (v && typeof v === "object" ? v : {}) as Record<string, unknown>;
+        const model = text(m.model, `Modèle ${cat}`);
+        const gb = m.gearbox ?? null;
+        if (gb !== null && gb !== "manual" && gb !== "automatic") { errors.push(`Modèle ${cat} : boîte invalide.`); continue; }
+        if (model) models[cat] = { model, gearbox: gb };
+      }
+      out.models = models;
+    }
+  }
+  if (o.inclusions != null) {
+    if (!Array.isArray(o.inclusions) || !o.inclusions.every(isInclusionKey)) errors.push("Inclusions inconnues.");
+    else out.inclusions = [...new Set(o.inclusions as string[])];
+  }
+  if ("deposit_hold_eur" in o) { const v = money(o.deposit_hold_eur, "Caution"); if (v !== undefined) out.deposit_hold_eur = v; }
+  if ("child_seat_eur_day" in o) { const v = money(o.child_seat_eur_day, "Siège enfant"); if (v !== undefined) out.child_seat_eur_day = v; }
+  if (o.delivery_fees != null) {
+    if (typeof o.delivery_fees !== "object" || Array.isArray(o.delivery_fees)) errors.push("Frais de livraison invalides.");
+    else {
+      const fees: Record<string, number> = {};
+      for (const [slug, v] of Object.entries(o.delivery_fees as Record<string, unknown>)) {
+        if (!PICKUP_SLUGS.includes(slug)) { errors.push(`Livraison : lieu inconnu « ${slug} ».`); continue; }
+        if (v == null || v === "") continue;
+        const n = money(v, `Livraison ${slug}`);
+        if (typeof n === "number") fees[slug] = n;
+      }
+      out.delivery_fees = fees;
+    }
+  }
+  if ("cancellation_terms" in o) { const v = text(o.cancellation_terms, "Annulation"); if (v !== undefined) out.cancellation_terms = v; }
+
+  return errors.length ? { ok: false, errors } : { ok: true, conditions: out };
 }
