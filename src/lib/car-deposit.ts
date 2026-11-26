@@ -25,6 +25,12 @@ export const SUSPEND_AFTER_FAILURES = 3;
 export const SUSPEND_WINDOW_DAYS = 30;
 /** 31 min et non 30 : 30 min est la borne basse de Stripe, la latence d'appel la ferait refuser. */
 export const DEPOSIT_CHECKOUT_LIFETIME_S = 1860;
+/**
+ * Au-delà de cet âge (35 min), une session de paiement est finie chez Stripe :
+ * sa durée de vie plus 4 min de marge. Le rapprochement ne double jamais un
+ * webhook plus jeune que ça.
+ */
+export const DEPOSIT_SWEEP_AGE_MS = (DEPOSIT_CHECKOUT_LIFETIME_S + 240) * 1000;
 
 const TZ = "Europe/Athens";
 

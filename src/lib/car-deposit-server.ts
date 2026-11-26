@@ -13,6 +13,7 @@
 // ne refait ni remboursement ni e-mail. Tout ce qui suit une prise de main
 // gagnée est au mieux : un échec prévient ops, il ne défait jamais l'état.
 import { createHmac } from "crypto";
+import type Stripe from "stripe";
 import { supabaseAdmin } from "./supabase-admin";
 import { newToken, hashToken, siteBase } from "./car-quote";
 import { assertWritten, creditInvoice, type InvoiceRow } from "./car-invoice-server";
@@ -20,7 +21,8 @@ import { secretOk } from "./car-admin-auth";
 import { partnerById } from "./car-partners-db";
 import { depositEur } from "./car-catalogue";
 import {
-  isDepositBookable, confirmDeadlineMs, shouldSuspendPartner, clientCancelNowEur, SUSPEND_WINDOW_DAYS, type RefundReason,
+  isDepositBookable, confirmDeadlineMs, shouldSuspendPartner, clientCancelNowEur, SUSPEND_WINDOW_DAYS, DEPOSIT_SWEEP_AGE_MS,
+  type RefundReason,
 } from "./car-deposit";
 import { depositMail, type DepositMailData, type DepositMailKind } from "./car-deposit-mail";
 import { quotedModelLabel, type QuoteOption } from "./car-quotes";
@@ -87,6 +89,10 @@ export type StartDepositResult =
  * rester facturable. La demande doit être `quoted` (sinon `not_quotable`) :
  * c'est la seule que la route de paiement acceptera.
  *
+ * Paiement ouvert : rapproché d'abord avec Stripe (reconcilePendingDeposit),
+ * comme la route de paiement. Une session finie sans paiement dont le webhook
+ * s'est perdu ne bloque plus la page d'offres.
+ *
  * `customerPhone` : numéro résolu par l'acceptation, écrit dans la même
  * écriture. Le loueur en a besoin à la confirmation.
  */
@@ -99,13 +105,17 @@ export async function startDeposit(
 ): Promise<StartDepositResult> {
   const { data: row, error: readError } = await supabaseAdmin
     .from("car_requests")
-    .select("id, status, booking_status, date_from, time_from")
+    .select("id, status, booking_status, booking_session_id, date_from, time_from")
     .eq("id", requestId)
     .maybeSingle();
   if (readError) throw new Error(`startDeposit(${requestId}) lecture refusée par la base: ${readError.message}`);
   if (!row) throw new Error(`startDeposit(${requestId}) demande introuvable`);
 
-  const previous = (row.booking_status as string | null) ?? null;
+  let previous = (row.booking_status as string | null) ?? null;
+  if (previous === "pending_payment" && row.booking_session_id) {
+    const pending = await reconcilePendingDeposit(requestId, row.booking_session_id as string, nowMs);
+    if (pending.state === "released") previous = null;
+  }
   if (previous !== null && previous !== "refunded") return { error: "in_progress" };
   if (row.status !== "quoted") return { error: "not_quotable" };
   if (!isDepositBookable(nowMs, row.date_from as string, row.time_from as string | null)) {
@@ -157,8 +167,8 @@ export async function startDeposit(
 
 /**
  * Session de paiement expirée sans paiement : la demande redevient payable.
- * Appelée par la route de paiement quand Stripe dit « expired », et par le
- * webhook `checkout.session.expired` (tâche 9). Conditionnée à la session ET à
+ * Appelée par le webhook `checkout.session.expired` et par le rapprochement
+ * (reconcilePendingDeposit) quand Stripe dit la session finie. Conditionnée à la session ET à
  * l'état : une autre session, ou un paiement déjà enregistré, ne bouge pas.
  * Rend true quand la demande a été libérée.
  */
@@ -445,6 +455,72 @@ export async function onDepositPaid(
     url: adminUrl(),
   });
   return "recorded";
+}
+
+export type PendingDepositOutcome =
+  /** Session encore payable : rien fait, l'URL permet de reprendre le paiement. */
+  | { state: "open"; url: string | null }
+  /** Paiement dont le webhook s'est perdu : enregistré par onDepositPaid. */
+  | { state: "paid" }
+  /** Session finie sans paiement : la demande redevient payable. */
+  | { state: "released" }
+  /** Rien à trancher : webhook encore en route, ou état déjà changé. */
+  | { state: "unchanged" }
+  /** Stripe illisible ou refuse de fermer la session : rien écrit. */
+  | { state: "unreadable" };
+
+/**
+ * Rapprochement d'une demande en pending_payment avec sa session Stripe, quand
+ * un webhook (completed ou expired) a pu se perdre. Seul chemin commun au cron
+ * des échéances, au choix d'une offre et à la route de paiement.
+ *
+ * - payée (complete + paid) depuis plus de 35 min : onDepositPaid, le même
+ *   chemin idempotent que le webhook ; plus jeune, le webhook est en route ;
+ * - expirée, ou encore « open » au-delà de expires_at (fermée chez Stripe
+ *   d'abord, pour qu'aucun paiement n'y passe après) : onDepositSessionExpired ;
+ * - Stripe illisible : rien écrit.
+ *
+ * Lève quand la base refuse (onDepositPaid, onDepositSessionExpired).
+ */
+export async function reconcilePendingDeposit(
+  requestId: number,
+  sessionId: string,
+  nowMs: number,
+): Promise<PendingDepositOutcome> {
+  let session: Stripe.Checkout.Session;
+  try {
+    session = await stripeClient().checkout.sessions.retrieve(sessionId);
+  } catch (err) {
+    console.error("[car-deposit] rapprochement : session illisible", { requestId, sessionId, ...stripeLogFields(err) });
+    return { state: "unreadable" };
+  }
+
+  if (session.status === "complete") {
+    if (session.payment_status !== "paid") return { state: "unchanged" };
+    if (nowMs - session.created * 1000 < DEPOSIT_SWEEP_AGE_MS) return { state: "unchanged" };
+    const pi = typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id;
+    if (!pi) {
+      console.error("[car-deposit] rapprochement : session payée sans payment_intent", { requestId, sessionId });
+      return { state: "unreadable" };
+    }
+    await onDepositPaid(requestId, sessionId, pi, nowMs);
+    return { state: "paid" };
+  }
+
+  const pastExpiry = session.expires_at != null && nowMs >= session.expires_at * 1000;
+  if (session.status === "open") {
+    if (!pastExpiry) return { state: "open", url: session.url ?? null };
+    try {
+      await stripeClient().checkout.sessions.expire(sessionId);
+    } catch (err) {
+      // Refus typique : la session vient d'être payée. Le webhook ou le passage suivant tranchera.
+      console.error("[car-deposit] rapprochement : session échue non fermée", { requestId, sessionId, ...stripeLogFields(err) });
+      return { state: "unreadable" };
+    }
+  } else if (session.status !== "expired") {
+    return { state: "unchanged" };
+  }
+  return (await onDepositSessionExpired(requestId, sessionId)) ? { state: "released" } : { state: "unchanged" };
 }
 
 /**

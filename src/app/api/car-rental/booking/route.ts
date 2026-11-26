@@ -13,7 +13,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { stripeClient } from "@/lib/stays/stripe-helpers";
 import { hashToken, siteBase } from "@/lib/car-quote";
 import { buildDepositCheckoutParams, isDepositBookable } from "@/lib/car-deposit";
-import { onDepositSessionExpired } from "@/lib/car-deposit-server";
+import { reconcilePendingDeposit, type PendingDepositOutcome } from "@/lib/car-deposit-server";
 import { STRIPE_MIN_CHARGE_EUR } from "@/lib/car-commission";
 import { assertWritten } from "@/lib/car-invoice-server";
 import { classifyStripeFailure, stripeLogFields } from "@/lib/stripe-errors";
@@ -23,17 +23,6 @@ const conflict = (flags: Record<string, unknown>) =>
   NextResponse.json({ ok: false, ...flags }, { status: 409 });
 
 const unavailable = () => NextResponse.json({ ok: false, error: "Unavailable" }, { status: 503 });
-
-/** État de la session chez Stripe ; null si illisible (on ne tranche alors rien). */
-async function checkoutSession(sessionId: string): Promise<{ status: string | null; url: string | null } | null> {
-  try {
-    const s = await stripeClient().checkout.sessions.retrieve(sessionId);
-    return { status: s.status ?? null, url: s.url ?? null };
-  } catch (err) {
-    console.error("[car/deposit] session illisible", { sessionId, ...stripeLogFields(err) });
-    return null;
-  }
-}
 
 /** Demande coincée en pending_payment : un humain doit pouvoir la débloquer. */
 async function alertStuck(requestId: number, cause: string): Promise<void> {
@@ -77,24 +66,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       await alertStuck(row.id, "pending_payment sans booking_session_id (verrou pris, session jamais écrite, ou création en cours)");
       return conflict({ inProgress: true });
     }
-    const session = await checkoutSession(row.booking_session_id);
-    // Session encore ouverte : la page propose de la reprendre.
-    if (session?.status === "open" && session.url) return conflict({ inProgress: true, checkoutUrl: session.url });
-    // Payée (le webhook arrive) ou illisible : on ne libère rien.
-    if (session?.status !== "expired") return conflict({ inProgress: true });
-    // Expirée sans paiement : webhook manqué ou pas encore arrivé, on libère
-    // ici et le client repart sur une session neuve.
-    let released: boolean;
+    // Même rapprochement que le cron et le choix d'une offre.
+    let pending: PendingDepositOutcome;
     try {
-      released = await onDepositSessionExpired(row.id, row.booking_session_id);
+      pending = await reconcilePendingDeposit(row.id, row.booking_session_id, Date.now());
     } catch (err) {
-      console.error("[car/deposit] session expirée non libérée", {
+      console.error("[car/deposit] rapprochement de la session refusé par la base", {
         requestId: row.id,
         error: err instanceof Error ? err.message : String(err),
       });
       return unavailable();
     }
-    if (!released) return conflict({ inProgress: true });
+    // Session encore ouverte : la page propose de la reprendre.
+    if (pending.state === "open" && pending.url) return conflict({ inProgress: true, checkoutUrl: pending.url });
+    // Paiement perdu puis rattrapé ici : la demande attend le loueur.
+    if (pending.state === "paid") return conflict({ alreadySettled: true });
+    // Payée récemment (le webhook arrive) ou illisible : on ne libère rien.
+    if (pending.state !== "released") return conflict({ inProgress: true });
+    // Finie sans paiement : le client repart sur une session neuve.
     bookingStatus = null;
   }
   // Payé, en attente du loueur, confirmé, remboursé ou acompte gardé : on ne

@@ -4,7 +4,7 @@ import { athensWallToUtcMs } from "@/lib/car-deposit";
 const sessionsCreate = vi.fn<(params: unknown) => Promise<{ id: string; url: string }>>(
   async () => ({ id: "cs_live_d1", url: "https://checkout/deposit" }),
 );
-const sessionsRetrieve = vi.fn<(id: string) => Promise<{ id: string; status: string; url: string | null }>>(
+const sessionsRetrieve = vi.fn<(id: string) => Promise<{ id: string; status: string; url: string | null; expires_at?: number }>>(
   async () => ({ id: "cs_live_d0", status: "open", url: "https://checkout/open" }),
 );
 const sessionsExpire = vi.fn<(id: string) => Promise<{ id: string; status: string }>>(
@@ -186,6 +186,17 @@ describe("POST /api/car-rental/booking (acompte)", () => {
     expect(release.patch).toEqual({ booking_status: null, booking_session_id: null });
     expect(release.filters).toContainEqual(["eq", "booking_status", "pending_payment"]);
     expect(release.filters).toContainEqual(["eq", "booking_session_id", "cs_live_d0"]);
+    expect(sessionsCreate).toHaveBeenCalledOnce();
+  });
+
+  it("session encore « open » au-delà de son expires_at : fermée chez Stripe, libérée, nouvelle session", async () => {
+    sessionsRetrieve.mockResolvedValueOnce({ id: "cs_live_d0", status: "open", url: "https://checkout/old", expires_at: Math.floor(NOW / 1000) - 60 });
+    const w = wiring({ row: { booking_status: "pending_payment", booking_session_id: "cs_live_d0" } });
+    const res = await POST(req({ token: "t" }) as never);
+
+    expect(res.status).toBe(200);
+    expect(sessionsExpire).toHaveBeenCalledWith("cs_live_d0");
+    expect(w.updates[0].patch).toEqual({ booking_status: null, booking_session_id: null });
     expect(sessionsCreate).toHaveBeenCalledOnce();
   });
 

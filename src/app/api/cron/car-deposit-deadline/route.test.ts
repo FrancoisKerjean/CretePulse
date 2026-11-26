@@ -4,15 +4,16 @@ import { NextRequest } from "next/server";
 type Row = Record<string, unknown>;
 type Filter = [string, string, unknown];
 
-const { from, releaseBooking, resumeClaimedRefund, remindPartner, notifyOps } = vi.hoisted(() => ({
+const { from, releaseBooking, resumeClaimedRefund, remindPartner, reconcilePendingDeposit, notifyOps } = vi.hoisted(() => ({
   from: vi.fn(),
   releaseBooking: vi.fn(),
   resumeClaimedRefund: vi.fn(),
   remindPartner: vi.fn(),
+  reconcilePendingDeposit: vi.fn(),
   notifyOps: vi.fn(),
 }));
 vi.mock("@/lib/supabase-admin", () => ({ supabaseAdmin: { from } }));
-vi.mock("@/lib/car-deposit-server", () => ({ releaseBooking, resumeClaimedRefund, remindPartner }));
+vi.mock("@/lib/car-deposit-server", () => ({ releaseBooking, resumeClaimedRefund, remindPartner, reconcilePendingDeposit }));
 vi.mock("@/lib/ops-notify", () => ({ notifyOps }));
 
 import { GET } from "./route";
@@ -33,6 +34,10 @@ function fakeDb() {
       select: () => chain,
       eq: (c: string, v: unknown) => (filters.push(["eq", c, v]), chain),
       is: (c: string, v: unknown) => (filters.push(["is", c, v]), chain),
+      not: (c: string, op: string, v: unknown) => {
+        if (op !== "is" || v !== null) throw new Error("not() non simulé");
+        return (filters.push(["notnull", c, null]), chain);
+      },
       lt: (c: string, v: unknown) => (filters.push(["lt", c, v]), chain),
       gt: (c: string, v: unknown) => (filters.push(["gt", c, v]), chain),
       order: () => chain,
@@ -43,6 +48,7 @@ function fakeDb() {
             const x = r[c];
             if (k === "eq") return x === v;
             if (k === "is") return v === null ? x == null : x === v;
+            if (k === "notnull") return x != null;
             if (k === "lt") return x != null && String(x) < String(v);
             return x != null && String(x) > String(v);
           }),
@@ -81,6 +87,7 @@ beforeEach(() => {
   releaseBooking.mockResolvedValue("refunded");
   resumeClaimedRefund.mockResolvedValue("refunded");
   remindPartner.mockResolvedValue("reminded");
+  reconcilePendingDeposit.mockResolvedValue({ state: "unchanged" });
   fakeDb();
 });
 
@@ -101,7 +108,7 @@ describe("GET /api/cron/car-deposit-deadline", () => {
     rows = [awaiting(1, { confirm_deadline_at: iso(NOW - MIN) })];
     const body = await (await GET(req("s3cret"))).json();
     expect(releaseBooking).toHaveBeenCalledWith(1, "partner_timeout", NOW);
-    expect(body).toEqual({ ok: true, released: 1, reminded: 0, resumed: 0, failed: 0 });
+    expect(body).toEqual({ ok: true, released: 1, reminded: 0, resumed: 0, reconciled: 0, failed: 0 });
   });
 
   it("mi-délai passé : un rappel ; déjà rappelée : aucun", async () => {
@@ -121,16 +128,53 @@ describe("GET /api/cron/car-deposit-deadline", () => {
     expect(remindPartner).not.toHaveBeenCalled();
   });
 
-  it("pending_payment vieille de 2 h : jamais touchée", async () => {
-    rows = [{
-      id: 3, booking_status: "pending_payment", booking_paid_at: null, confirm_deadline_at: null,
-      confirm_reminded_at: null, cancelled_at: iso(NOW - 120 * MIN), refund_id: null,
-    }];
+  const pending = (id: number, session: string | null): Row => ({
+    id, booking_status: "pending_payment", booking_session_id: session, booking_paid_at: null, confirm_deadline_at: null,
+    confirm_reminded_at: null, cancelled_at: iso(NOW - 120 * MIN), refund_id: null,
+  });
+
+  it("pending_payment avec session : rapprochée avec Stripe (webhook perdu), comptée en reconciled", async () => {
+    rows = [pending(3, "cs_3"), pending(4, "cs_4")];
+    reconcilePendingDeposit.mockResolvedValueOnce({ state: "paid" }).mockResolvedValueOnce({ state: "released" });
     const body = await (await GET(req("s3cret"))).json();
+    expect(reconcilePendingDeposit).toHaveBeenCalledWith(3, "cs_3", NOW);
+    expect(reconcilePendingDeposit).toHaveBeenCalledWith(4, "cs_4", NOW);
+    expect(releaseBooking).not.toHaveBeenCalled();
+    expect(body).toMatchObject({ reconciled: 2, failed: 0 });
+  });
+
+  it("session encore ouverte ou trop jeune : rien, non comptée", async () => {
+    rows = [pending(3, "cs_3"), pending(4, "cs_4")];
+    reconcilePendingDeposit.mockResolvedValueOnce({ state: "open", url: "https://checkout/x" }).mockResolvedValueOnce({ state: "unchanged" });
+    const body = await (await GET(req("s3cret"))).json();
+    expect(body).toMatchObject({ reconciled: 0, failed: 0 });
+    expect(notifyOps).not.toHaveBeenCalled();
+  });
+
+  it("Stripe illisible : compté en failed, rien d'autre", async () => {
+    rows = [pending(3, "cs_3")];
+    reconcilePendingDeposit.mockResolvedValue({ state: "unreadable" });
+    const body = await (await GET(req("s3cret"))).json();
+    expect(body).toMatchObject({ reconciled: 0, failed: 1 });
+    expect(notifyOps).not.toHaveBeenCalled();
+  });
+
+  it("rapprochement qui lève (base) : compté, ops prévenu, la ligne suivante passe", async () => {
+    rows = [pending(3, "cs_3"), pending(4, "cs_4")];
+    reconcilePendingDeposit.mockRejectedValueOnce(new Error("base down")).mockResolvedValueOnce({ state: "released" });
+    const body = await (await GET(req("s3cret"))).json();
+    expect(body).toMatchObject({ reconciled: 1, failed: 1 });
+    expect(notifyOps).toHaveBeenCalledTimes(1);
+  });
+
+  it("verrou sans session : pas touché (aucun horodatage du verrou en base, voir le rapport F1)", async () => {
+    rows = [pending(3, null)];
+    const body = await (await GET(req("s3cret"))).json();
+    expect(reconcilePendingDeposit).not.toHaveBeenCalled();
     expect(releaseBooking).not.toHaveBeenCalled();
     expect(remindPartner).not.toHaveBeenCalled();
     expect(resumeClaimedRefund).not.toHaveBeenCalled();
-    expect(body).toMatchObject({ released: 0, reminded: 0, resumed: 0, failed: 0 });
+    expect(body).toMatchObject({ released: 0, reminded: 0, resumed: 0, reconciled: 0, failed: 0 });
   });
 
   it("reste d'un crash : repris au-delà de 15 min, pas avant", async () => {
@@ -172,6 +216,6 @@ describe("GET /api/cron/car-deposit-deadline", () => {
 
   it("au plus 50 lignes par catégorie", async () => {
     await GET(req("s3cret"));
-    expect(limits).toEqual([50, 50, 50]);
+    expect(limits).toEqual([50, 50, 50, 50]);
   });
 });

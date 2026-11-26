@@ -17,15 +17,20 @@ vi.mock("./car-quote", async (orig: () => Promise<Record<string, unknown>>) => (
   siteBase: () => "https://crete.direct",
 }));
 
-const { refundsCreate, refundsList, notifyOps, sendCarDepositMail, sendCreditNote } = vi.hoisted(() => ({
+const { refundsCreate, refundsList, sessionsRetrieve, sessionsExpire, notifyOps, sendCarDepositMail, sendCreditNote } = vi.hoisted(() => ({
   refundsCreate: vi.fn(),
   refundsList: vi.fn(),
+  sessionsRetrieve: vi.fn(),
+  sessionsExpire: vi.fn(),
   notifyOps: vi.fn(),
   sendCarDepositMail: vi.fn(),
   sendCreditNote: vi.fn(),
 }));
 vi.mock("./stays/stripe-helpers", () => ({
-  stripeClient: () => ({ refunds: { create: refundsCreate, list: refundsList } }),
+  stripeClient: () => ({
+    refunds: { create: refundsCreate, list: refundsList },
+    checkout: { sessions: { retrieve: sessionsRetrieve, expire: sessionsExpire } },
+  }),
 }));
 vi.mock("./ops-notify", () => ({ notifyOps, echeance: () => "13/07" }));
 vi.mock("./email", () => ({
@@ -37,7 +42,7 @@ vi.mock("./email", () => ({
 import {
   startDeposit, depositRatesFor, onDepositSessionExpired,
   onDepositPaid, confirmBooking, releaseBooking, refundConfirmed, bookingByConfirmToken,
-  resumeClaimedRefund, partnerConfirmUrl, remindPartner, cancelByClient,
+  resumeClaimedRefund, partnerConfirmUrl, remindPartner, cancelByClient, reconcilePendingDeposit,
 } from "./car-deposit-server";
 
 // Mardi 12/07/2027 à 09:00 heure d'Athènes : en pleine plage d'ouverture.
@@ -247,6 +252,26 @@ describe("startDeposit", () => {
   it("lève quand la base refuse l'écriture, jamais de lien de paiement", async () => {
     wiring({ writeError: { message: "permission denied" } });
     await expect(startDeposit(25, OPTION, "en", NOW)).rejects.toThrow(/permission denied/);
+  });
+
+  it("paiement resté ouvert sur une session échue (webhook d'expiration perdu) : libéré, puis nouveau choix", async () => {
+    sessionsRetrieve.mockResolvedValueOnce({ id: "cs_old", status: "expired", url: null, created: 0, expires_at: 0 });
+    const w = wiring({ row: { booking_status: "pending_payment", booking_session_id: "cs_old" } as Partial<typeof ROW> });
+    const out = await startDeposit(25, OPTION, "en", NOW);
+
+    expect(out).toEqual({ payUrl: "https://crete.direct/en/car-booking/book-plain" });
+    expect(sessionsRetrieve).toHaveBeenCalledWith("cs_old");
+    expect(w.updates[0]).toEqual({ booking_status: null, booking_session_id: null });
+    expect(w.updates[1]).toMatchObject({ deposit_eur: 41.2, booking_status: null });
+  });
+
+  it("paiement encore ouvert chez Stripe : in_progress, rien écrit", async () => {
+    sessionsRetrieve.mockResolvedValueOnce({
+      id: "cs_old", status: "open", url: "https://checkout/open", created: NOW / 1000, expires_at: NOW / 1000 + 1860,
+    });
+    const w = wiring({ row: { booking_status: "pending_payment", booking_session_id: "cs_old" } as Partial<typeof ROW> });
+    expect(await startDeposit(25, OPTION, "en", NOW)).toEqual({ error: "in_progress" });
+    expect(w.updates).toHaveLength(0);
   });
 
   it("lève quand le loueur est illisible, plutôt que d'inventer un taux", async () => {
@@ -691,6 +716,86 @@ describe("après paiement", () => {
       fakeDb(seed(REQ), { fail: (op) => (op.table === "car_requests" && op.kind === "update" ? "permission denied" : null) });
       await expect(onDepositPaid(25, "cs_1", "pi_1", PAID_AT)).rejects.toThrow(/permission denied/);
       expect(sendCarDepositMail).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("reconcilePendingDeposit", () => {
+    const MIN = 60_000;
+    // Session ouverte il y a 40 min : sa durée de vie (31 min) et la marge sont passées.
+    const OLD = PAID_AT - 40 * MIN;
+    const session = (over: Record<string, unknown> = {}) => ({
+      id: "cs_1", status: "complete", payment_status: "paid", payment_intent: "pi_1", url: null,
+      created: Math.floor(OLD / 1000), expires_at: Math.floor(OLD / 1000) + 1860, ...over,
+    });
+    beforeEach(() => {
+      sessionsRetrieve.mockReset();
+      sessionsExpire.mockReset();
+      sessionsExpire.mockResolvedValue({ id: "cs_1", status: "expired" });
+    });
+
+    it("paiement dont le webhook s'est perdu : passe en attente du loueur, e-mails au client et au loueur", async () => {
+      const db = fakeDb(seed(REQ));
+      sessionsRetrieve.mockResolvedValue(session());
+      expect(await reconcilePendingDeposit(25, "cs_1", PAID_AT)).toEqual({ state: "paid" });
+      expect(sessionsRetrieve).toHaveBeenCalledWith("cs_1");
+      expect(db.req()).toMatchObject({ booking_status: "awaiting_partner", booking_payment_intent_id: "pi_1", status: "accepted" });
+      expect(mailsTo("marie@example.fr")).toHaveLength(1);
+      expect(mailsTo("info@zorbas.gr")).toHaveLength(1);
+      expect(refundsCreate).not.toHaveBeenCalled();
+    });
+
+    it("payée il y a moins de 35 min : le webhook est en route, rien écrit", async () => {
+      const db = fakeDb(seed(REQ));
+      sessionsRetrieve.mockResolvedValue(session({ created: Math.floor((PAID_AT - 10 * MIN) / 1000) }));
+      expect(await reconcilePendingDeposit(25, "cs_1", PAID_AT)).toEqual({ state: "unchanged" });
+      expect(db.updates("car_requests")).toHaveLength(0);
+      expect(sendCarDepositMail).not.toHaveBeenCalled();
+    });
+
+    it("session expirée sans paiement : verrou libéré", async () => {
+      const db = fakeDb(seed(REQ));
+      sessionsRetrieve.mockResolvedValue(session({ status: "expired", payment_status: "unpaid", payment_intent: null }));
+      expect(await reconcilePendingDeposit(25, "cs_1", PAID_AT)).toEqual({ state: "released" });
+      expect(db.req()).toMatchObject({ booking_status: null, booking_session_id: null });
+      expect(sessionsExpire).not.toHaveBeenCalled();
+    });
+
+    it("session encore ouverte au-delà de expires_at : fermée chez Stripe, puis libérée", async () => {
+      const db = fakeDb(seed(REQ));
+      sessionsRetrieve.mockResolvedValue(session({ status: "open", payment_status: "unpaid", payment_intent: null, url: "https://checkout/x" }));
+      expect(await reconcilePendingDeposit(25, "cs_1", PAID_AT)).toEqual({ state: "released" });
+      expect(sessionsExpire).toHaveBeenCalledWith("cs_1");
+      expect(db.req().booking_status).toBeNull();
+    });
+
+    it("session ouverte et encore valable : rien écrit, l'URL pour reprendre le paiement", async () => {
+      const db = fakeDb(seed(REQ));
+      sessionsRetrieve.mockResolvedValue(session({
+        status: "open", payment_status: "unpaid", payment_intent: null, url: "https://checkout/x",
+        created: Math.floor((PAID_AT - 5 * MIN) / 1000), expires_at: Math.floor((PAID_AT + 26 * MIN) / 1000),
+      }));
+      expect(await reconcilePendingDeposit(25, "cs_1", PAID_AT)).toEqual({ state: "open", url: "https://checkout/x" });
+      expect(db.updates("car_requests")).toHaveLength(0);
+    });
+
+    it("Stripe illisible : rien écrit", async () => {
+      const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const db = fakeDb(seed(REQ));
+      sessionsRetrieve.mockRejectedValue(new Error("api down"));
+      expect(await reconcilePendingDeposit(25, "cs_1", PAID_AT)).toEqual({ state: "unreadable" });
+      expect(db.ops).toHaveLength(0);
+      expect(sendCarDepositMail).not.toHaveBeenCalled();
+      errSpy.mockRestore();
+    });
+
+    it("fermeture refusée par Stripe (payée à la dernière seconde ?) : rien écrit", async () => {
+      const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const db = fakeDb(seed(REQ));
+      sessionsRetrieve.mockResolvedValue(session({ status: "open", payment_status: "unpaid", payment_intent: null }));
+      sessionsExpire.mockRejectedValue(new Error("session is complete"));
+      expect(await reconcilePendingDeposit(25, "cs_1", PAID_AT)).toEqual({ state: "unreadable" });
+      expect(db.ops).toHaveLength(0);
+      errSpy.mockRestore();
     });
   });
 
