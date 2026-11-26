@@ -143,6 +143,24 @@ describe("depositMail", () => {
     expect(t).not.toContain("href=\"null\"");
   });
 
+  it.each([
+    ["en", "You cancelled this booking."],
+    ["fr", "Vous avez annulé cette réservation."],
+    ["de", "Sie haben diese Buchung storniert."],
+    ["el", "Ακυρώσατε αυτήν την κράτηση."],
+  ] as const)("client_cancelled remboursé (%s) : dit d'abord que la réservation est annulée", (lang, lead) => {
+    const t = text("client_cancelled", lang);
+    expect(t).toContain(lead);
+    expect(t.indexOf(lead)).toBeLessThan(t.indexOf("41"));
+  });
+
+  it("intertitres en capitales écrites ; en grec, sans tonos", () => {
+    const el = text("client_pending", "el");
+    expect(el).toContain("Η ΚΡΑΤΗΣΗ ΣΑΣ");
+    expect(el).not.toContain("text-transform");
+    expect(text("client_pending", "fr")).toContain("VOTRE RÉSERVATION");
+  });
+
   it("client_cancelled : montant rendu, ou acompte gardé", () => {
     expect(text("client_cancelled", "fr")).toContain("41,20 €");
     const kept = text("client_cancelled", "fr", { ...DATA, refundedEur: 0 });
@@ -160,7 +178,10 @@ describe("depositMail", () => {
     const t = text("partner_client_cancelled", "fr");
     // Dates lisibles en anglais, sujet compris ; plus d'ISO.
     expect(t).toContain("Tuesday, July 20, 2027 at 10:00");
-    expect(depositMail("partner_client_cancelled", DATA, "fr").subject).toContain("Tuesday, July 20, 2027 to Tuesday, July 27, 2027");
+    // Sujet court, lisible sur un téléphone : lieu, virgule, dates abrégées.
+    expect(flat(depositMail("partner_client_cancelled", DATA, "fr").subject)).toBe(
+      "Booking cancelled by the customer · Heraklion Airport, Tue, Jul 20 to Tue, Jul 27, 2027",
+    );
     expect(t).not.toContain("2027-07-20");
     expect(t).toContain("Heraklion Airport");
     for (const c of CLIENT_CONTACT) expect(t).not.toContain(c);

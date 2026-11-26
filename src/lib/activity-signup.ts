@@ -46,7 +46,7 @@ How it works - 4 steps:
 1. A traveller requests an activity on crete.direct (category, city, date, group size).
 2. We email you the request with a one-click link - no login.
 3. You send your price for the whole group.
-4. The customer compares quotes and picks one — if it's yours, we connect you both directly.
+4. The customer compares quotes and picks one. If it's yours, we connect you both directly.
 
 The deal, in one line: 15% commission only on the bookings we bring you. No subscription, no fixed fee.
 

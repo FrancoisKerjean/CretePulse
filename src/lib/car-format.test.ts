@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatEur, formatAthensDeadline, formatWallDate } from "./car-format";
+import { formatEur, formatAthensDeadline, formatWallDate, mailCaps } from "./car-format";
 
 const LOCALES = ["en", "fr", "de", "el"];
 
@@ -52,5 +52,17 @@ describe("formatWallDate", () => {
   it("aucun tiret cadratin", () => {
     const emDash = String.fromCharCode(8212);
     for (const loc of LOCALES) expect(formatWallDate("2027-07-20", "10:00", loc)).not.toContain(emDash);
+  });
+});
+
+describe("mailCaps", () => {
+  it("grec : capitales sans tonos, tréma gardé, sigma final en Σ", () => {
+    expect(mailCaps("Η κράτησή σας")).toBe("Η ΚΡΑΤΗΣΗ ΣΑΣ");
+    expect(mailCaps("Στοιχεία επικοινωνίας γραφείου")).toBe("ΣΤΟΙΧΕΙΑ ΕΠΙΚΟΙΝΩΝΙΑΣ ΓΡΑΦΕΙΟΥ");
+    expect(mailCaps("Πρωτεΐνη")).toBe("ΠΡΩΤΕΪΝΗ");
+  });
+  it("français et allemand : accents et lettres gardés", () => {
+    expect(mailCaps("Votre réservation")).toBe("VOTRE RÉSERVATION");
+    expect(mailCaps("Ihre Buchung")).toBe("IHRE BUCHUNG");
   });
 });

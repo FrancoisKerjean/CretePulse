@@ -16,7 +16,7 @@ import {
   L, pickCarBookingLocale, fill, REFUND_REASON_KEY,
   type CarBookingLocale,
 } from "@/app/[locale]/car-booking/content";
-import { formatEur, formatAthensDeadline, formatWallDate } from "./car-format";
+import { formatEur, formatAthensDeadline, formatWallDate, mailCaps } from "./car-format";
 import { CAR_INSURANCE_HEADING, insuranceSummary } from "./car-inclusions";
 import type { RefundReason } from "./car-deposit";
 
@@ -85,7 +85,7 @@ const P = (s: string) => `<p style="margin:0 0 14px; color:#0B3954; font-size:14
 const MUTED = (s: string) => `<p style="margin:0 0 14px; color:#5C7886; font-size:13px; line-height:1.6;">${s}</p>`;
 const BOX = (heading: string, lines: string[]) =>
   `<div style="background:#F6FBFC; border:1px solid #DCE9EE; border-radius:14px; padding:14px 16px; margin:0 0 18px;">` +
-  `<p style="margin:0 0 6px; color:#94A3B8; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${heading}</p>` +
+  `<p style="margin:0 0 6px; color:#94A3B8; font-size:12px; font-weight:700; letter-spacing:.05em;">${mailCaps(heading)}</p>` +
   `<p style="margin:0; color:#0B3954; font-size:14px; line-height:1.7;">${lines.join("<br>")}</p></div>`;
 const BUTTON = (href: string, label: string) =>
   `<p style="margin:0 0 18px;"><a href="${esc(href)}" style="display:inline-block; background:#008C9E; color:#ffffff; padding:13px 30px; border-radius:999px; text-decoration:none; font-weight:700; font-size:14px;">${esc(label)}</a></p>`;
@@ -188,7 +188,7 @@ function clientMail(kind: DepositMailKind, d: DepositMailData, lang: CarBookingL
         subject: t.keptTitle,
         html:
           (refunded > 0
-            ? P(t.refundedBody) + P(fill(c.amountRefunded, { amount: formatEur(refunded, lang) }))
+            ? P(t.reasonClientCancelled) + P(t.refundedBody) + P(fill(c.amountRefunded, { amount: formatEur(refunded, lang) }))
             : P(t.keptBody)) +
           clientBooking(d, lang, false) +
           // Remboursé, la demande redevient une demande à offres ; gardé, elle reste close.
@@ -225,7 +225,17 @@ function partnerBooking(d: DepositMailData, withMoney: boolean): string {
 
 const deadlineEn = (d: DepositMailData) => (d.deadlineIso ? formatAthensDeadline(d.deadlineIso, "en") : "");
 /** Pour les sujets : texte brut, jamais échappé (un sujet n'est pas du HTML). */
-const when = (d: DepositMailData) => `${d.pickupLabel} ${at(d.dateFrom, null, "en")} to ${at(d.dateTo, null, "en")}`;
+/** Date abrégée pour un sujet (« Tue, Jul 20 »), l'année sur la seconde seulement. */
+const shortDay = (date: string, withYear: boolean): string => {
+  const [y, m, day] = date.split("-").map(Number);
+  const ms = Date.UTC(y, m - 1, day);
+  if (!Number.isFinite(ms)) return date;
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "short", day: "numeric", month: "short", ...(withYear ? { year: "numeric" } : {}), timeZone: "UTC",
+  }).format(ms);
+};
+/** Fin de sujet loueur, courte pour tenir sur un téléphone : lieu, puis les deux dates. */
+const when = (d: DepositMailData) => `${d.pickupLabel}, ${shortDay(d.dateFrom, false)} to ${shortDay(d.dateTo, true)}`;
 
 function partnerMail(kind: DepositMailKind, d: DepositMailData): DepositMail {
   const hi = P(`Hi ${esc(d.partnerName)},`);

@@ -26,6 +26,15 @@ export function formatAthensDeadline(iso: string, locale: string): string {
   }).format(new Date(iso));
 }
 
+/**
+ * Intertitre d'e-mail en capitales écrites, pas par `text-transform` : en grec,
+ * les capitales perdent le tonos (« Η ΚΡΑΤΗΣΗ ΣΑΣ »), ce que la CSS des
+ * messageries ne fait pas. Le tréma grec reste ; les accents français aussi.
+ */
+export function mailCaps(s: string): string {
+  return (/[Ͱ-Ͽ]/.test(s) ? s.normalize("NFD").replace(/́/g, "").normalize("NFC") : s).toUpperCase();
+}
+
 /** Mot entre la date et l'heure, celui des gabarits d'e-mail. */
 const AT_WORD: Record<string, string> = { en: "at", fr: "à", de: "um", el: "στις" };
 

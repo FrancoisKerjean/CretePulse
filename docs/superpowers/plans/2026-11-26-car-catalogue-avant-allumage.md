@@ -11,7 +11,13 @@ Avec l'interrupteur éteint, rien ici ne peut déplacer d'argent ni faire passer
    - texte de la vue `noPartner` de l'assistant (CarRentalWizard.tsx:612-640), qui contredit l'e-mail `noAgency` ;
    - pas d'alerte quand Stripe refuse une session de façon durable ;
    - « paiement déjà ouvert » affiché après une réconciliation payée.
-4. 🔎 Pas encore réglé : les intertitres en capitales gardent les accents en grec (« Η ΚΡΆΤΗΣΉ ΣΑΣ »), dans tous les e-mails, y compris ceux d'avant la branche.
+4. **E-mail « nouvelle offre » (`sendCustomerQuoteEmail`, email.ts:758) :** il garde les lignes `reassure` de `sharedOfferCopy`, dont « No online prepayment, no card needed to book ». Interrupteur allumé, cette phrase contredit l'acompte, alors que la page d'offre la remplace déjà (car-offer page.tsx:304). Correction : même remplacement dans l'e-mail quand l'offre se réserve par acompte.
+5. ✅ Réglé le 26/11 (branche fix/car-deposit-mails) :
+   - intertitres grecs en capitales sans tonos, dans tous les e-mails ;
+   - phrase d'annulation en tête de l'e-mail client d'annulation ;
+   - sujets loueur courts ;
+   - plus aucun tiret cadratin dans les e-mails en service (sujets « Crete Direct », relance sans offre, accueil partenaire, textes d'offre partagés).
+6. 🔎 Lieu de prise en libellé latin (« Heraklion Airport ») dans les 4 langues : c'est le choix de tout le produit voiture (assistant compris). Il faudrait le changer partout, pas seulement dans les e-mails.
 
 ## Contrôles (Claude, avant allumage)
 - Parcours complet en mode test Stripe : formulaire, offre de grille, paiement 4242, confirmation loueur, annulation à plus de 48 h, échéance dépassée qui rembourse. À faire avec un loueur de test et les adresses de François uniquement. Il faut une clé Stripe de test, la CLI Stripe et la clé service en local, ce qui manque au 26/11.

@@ -11,6 +11,7 @@ import {
   invoiceReminderSubject, invoiceReminderBody, type InvoiceReminderMail,
 } from "./car-commission";
 import { creditMailBody, type CreditMail } from "./car-invoice";
+import { mailCaps } from "./car-format";
 import { outcomeQuestionSubject, outcomeQuestionBody, type OutcomeQuestionMail } from "./car-outcome-followup";
 import type { NewsletterDigest, NewsletterLang } from "./newsletter";
 
@@ -429,10 +430,10 @@ export function affiliateWelcomeBody(
     cls === "quotable"
       ? `
       <p style="margin:0 0 6px; color:${C.text}; font-weight:700; font-size:15px;">How it works</p>
-      <p style="margin:0 0 16px; color:${C.muted}; line-height:1.6;">When a traveller clicks your link and requests a booking, we send you the lead. You only pay <strong>${commissionPct}% on accepted quotes</strong> — no setup fee, no monthly cost, cancel anytime by replying to this email.</p>`
+      <p style="margin:0 0 16px; color:${C.muted}; line-height:1.6;">When a traveller clicks your link and requests a booking, we send you the lead. You only pay <strong>${commissionPct}% on accepted quotes</strong>: no setup fee, no monthly cost, cancel anytime by replying to this email.</p>`
       : `
       <p style="margin:0 0 6px; color:${C.text}; font-weight:700; font-size:15px;">What this means</p>
-      <p style="margin:0 0 16px; color:${C.muted}; line-height:1.6;">We're adding your listing to the crete.direct map, free of charge. Once it's live, travellers planning their trip will find you there. No setup fee, no monthly cost — just visibility.</p>`;
+      <p style="margin:0 0 16px; color:${C.muted}; line-height:1.6;">We're adding your listing to the crete.direct map, free of charge. Once it's live, travellers planning their trip will find you there. No setup fee, no monthly cost, just visibility.</p>`;
 
   return kalimeraShell(`
       <h2 style="margin:0 0 12px; color:${C.text}; font-size:20px;">You're joining the crete.direct map 🗺️</h2>
@@ -440,7 +441,7 @@ export function affiliateWelcomeBody(
       <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 18px; word-break:break-all; font-size:14px; color:${C.sea}; font-weight:700;">${link}</div>
       ${dealSection}
       <p style="margin:0 0 6px; color:${C.text}; font-weight:700; font-size:15px;">Your promo code</p>
-      <p style="margin:0 0 18px; color:${C.muted}; line-height:1.6;">Use <strong>${code}</strong> to reconcile any leads we send you — it lets us match requests to your listing accurately.</p>
+      <p style="margin:0 0 18px; color:${C.muted}; line-height:1.6;">Use <strong>${code}</strong> to reconcile any leads we send you: it lets us match requests to your listing accurately.</p>
       <div style="text-align:center; margin:0 0 18px;">${pillButton("https://crete.direct/explore", "Explore the crete.direct map", C.sea)}</div>
       <p style="margin:0; color:${C.faint}; font-size:12px; text-align:center;">Questions? Just reply to this email, a real person reads it.</p>
   `);
@@ -763,12 +764,12 @@ export async function sendCustomerQuoteEmail(opts: {
   <p style="margin:0 0 6px; color:${C.text}; font-size:14px;">${c.offerFrom} <strong>${q.partnerName}</strong> · ${c.localAgency}</p>
   <p style="margin:0 0 18px; color:${C.muted}; font-size:14px; line-height:1.6;">${c.intro}</p>
   <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 16px;">
-    <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${c.details}</p>
+    <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; letter-spacing:.05em;">${mailCaps(c.details)}</p>
     <p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">
       ${q.pickupLabel}<br>${q.dateFrom} → ${q.dateTo}<br>${q.carTypeLabel}${q.carModel ? `<br><strong>${q.carModel}</strong>` : ""}
     </p>
   </div>
-  ${incl.length ? `<div style="margin:0 0 16px;"><p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${c.included}</p><p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">${incl.map((x) => `✓ ${x}`).join("<br>")}</p></div>` : ""}
+  ${incl.length ? `<div style="margin:0 0 16px;"><p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; letter-spacing:.05em;">${mailCaps(c.included)}</p><p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">${incl.map((x) => `✓ ${x}`).join("<br>")}</p></div>` : ""}
   <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:12px 16px; margin:0 0 18px;">
     ${c.reassure.map((r) => `<p style="margin:0 0 4px; color:${C.text}; font-size:13px;">• ${r}</p>`).join("")}
   </div>
@@ -791,10 +792,10 @@ export async function sendCustomerQuoteEmail(opts: {
 // ── Accusé de réception immédiat au client (trou 3a) ────────────────────────
 
 const ACK_SUBJECT: Record<string, string> = {
-  en: "Your car rental request — Crete Direct",
-  fr: "Votre demande de location — Crete Direct",
-  de: "Ihre Mietwagenanfrage — Crete Direct",
-  el: "Το αίτημα ενοικίασης αυτοκινήτου σας — Crete Direct",
+  en: "Your car rental request · Crete Direct",
+  fr: "Votre demande de location · Crete Direct",
+  de: "Ihre Mietwagenanfrage · Crete Direct",
+  el: "Το αίτημα ενοικίασης αυτοκινήτου σας · Crete Direct",
 };
 
 const ACK_COPY: Record<string, {
@@ -835,7 +836,7 @@ export async function sendCustomerRequestReceived(opts: {
   const inner = `
   <p style="margin:0 0 16px; color:${C.muted}; font-size:14px; line-height:1.6;">${opts.customerName ? `${opts.customerName}, ` : ""}${opts.noAgency ? c.bodyNoAgency : c.bodyOk}</p>
   <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 16px;">
-    <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${c.details}</p>
+    <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; letter-spacing:.05em;">${mailCaps(c.details)}</p>
     <p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">
       ${r.pickupLabel}<br>${r.dateFrom} → ${r.dateTo}<br>${r.carTypeLabel}
     </p>
@@ -957,18 +958,18 @@ export async function sendConnectionEmails(opts: {
   const inner = `
     <p style="margin:0 0 16px; color:${C.muted}; font-size:14px; line-height:1.6;">${customer.name ? `${customer.name}, ` : ""}${c.intro}</p>
     <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 18px;">
-      <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${c.booking}</p>
+      <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; letter-spacing:.05em;">${mailCaps(c.booking)}</p>
       <p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">
         ${quote.pickupLabel}<br>${quote.dateFrom} → ${quote.dateTo}<br>${quote.carTypeLabelClient ?? quote.carTypeLabel}${quote.carModel ? `<br><strong>${quote.carModel}</strong>` : ""}<br><strong>${money(quote.price, quote.currency)}</strong> <span style="color:${C.muted};">${c.totalWord}</span>
       </p>
     </div>
     <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 18px;">
-      <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${c.agency}</p>
+      <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; letter-spacing:.05em;">${mailCaps(c.agency)}</p>
       <p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">
         ${partner.name}<br><a href="tel:${(partner.whatsapp ?? partner.phone).replace(/[^\d+]/g, "")}" style="color:${C.text};">${partner.whatsapp ?? partner.phone}</a><br><a href="mailto:${partner.email}" style="color:${C.text};">${partner.email}</a>
       </p>
     </div>
-    ${insLines.length ? `<div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 18px;"><p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${insHeading[l] ?? insHeading.en}</p><p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">${insLines.map((x) => `• ${x}`).join("<br>")}</p></div>` : ""}
+    ${insLines.length ? `<div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 18px;"><p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; letter-spacing:.05em;">${mailCaps(insHeading[l] ?? insHeading.en)}</p><p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">${insLines.map((x) => `• ${x}`).join("<br>")}</p></div>` : ""}
     <p style="margin:0; color:${C.faint}; font-size:12px; line-height:1.6;">${c.foot}</p>
   `;
   // Symetrique de r1 : sans cet email le client n'a jamais les coordonnees du
@@ -1105,17 +1106,17 @@ export async function sendReviewConfirmationEmail(opts: {
 // ── Cron silence >24h : aucune agence n'a encore soumis de prix ─────────────
 
 const NO_QUOTE_SUBJECT: Record<string, string> = {
-  en: "Update on your car rental request — Crete Direct",
-  fr: "Point sur votre demande de location — Crete Direct",
-  de: "Update zu Ihrer Mietwagenanfrage — Crete Direct",
-  el: "Ενημέρωση για το αίτημα ενοικίασης αυτοκινήτου σας — Crete Direct",
+  en: "Update on your car rental request · Crete Direct",
+  fr: "Point sur votre demande de location · Crete Direct",
+  de: "Update zu Ihrer Mietwagenanfrage · Crete Direct",
+  el: "Ενημέρωση για το αίτημα ενοικίασης αυτοκινήτου σας · Crete Direct",
 };
 
 const NO_QUOTE_BODY: Record<string, string> = {
-  en: "No agency has sent a price yet for your car rental request. We're still on it — we'll email you as soon as we have an offer.",
-  fr: "Aucune agence n'a encore envoyé de prix pour votre demande de location. Nous y travaillons toujours — nous vous écrirons dès que nous avons une offre.",
-  de: "Noch keine Agentur hat einen Preis für Ihre Mietwagenanfrage gesendet. Wir sind noch dran — wir schreiben Ihnen, sobald wir ein Angebot haben.",
-  el: "Καμία εταιρεία δεν έχει στείλει ακόμα τιμή για το αίτημα ενοικίασης αυτοκινήτου σας. Συνεχίζουμε να εργαζόμαστε — θα σας στείλουμε email μόλις έχουμε μια προσφορά.",
+  en: "No agency has sent a price yet for your car rental request. We're still on it and will email you as soon as we have an offer.",
+  fr: "Aucune agence n'a encore envoyé de prix pour votre demande de location. Nous y travaillons toujours et vous écrirons dès que nous aurons une offre.",
+  de: "Noch keine Agentur hat einen Preis für Ihre Mietwagenanfrage gesendet. Wir sind noch dran und schreiben Ihnen, sobald wir ein Angebot haben.",
+  el: "Καμία εταιρεία δεν έχει στείλει ακόμα τιμή για το αίτημα ενοικίασης αυτοκινήτου σας. Συνεχίζουμε να εργαζόμαστε και θα σας στείλουμε email μόλις έχουμε μια προσφορά.",
 };
 
 const NO_QUOTE_FOOT: Record<string, string> = {
@@ -1473,7 +1474,7 @@ export async function sendActivityCustomerRequestReceived(opts: {
   const inner = `
   <p style="margin:0 0 16px; color:${C.muted}; font-size:14px; line-height:1.6;">${opts.customerName ? `${opts.customerName}, ` : ""}${opts.noProvider ? c.bodyNoProvider : c.bodyOk}</p>
   <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 16px;">
-    <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${c.details}</p>
+    <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; letter-spacing:.05em;">${mailCaps(c.details)}</p>
     <p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">
       ${r.categoryLabel}<br>${r.cityLabel}<br>${r.date}
     </p>
@@ -1793,7 +1794,7 @@ export async function sendActivityConnectionEmails(opts: {
   const inner = `
     <p style="margin:0 0 16px; color:${C.muted}; font-size:14px; line-height:1.6;">${customer.name ? `${customer.name}, ` : ""}${c.intro}</p>
     <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 18px;">
-      <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;">${c.provider}</p>
+      <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; letter-spacing:.05em;">${mailCaps(c.provider)}</p>
       <p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">
         ${partner.name}<br><a href="tel:${(partner.whatsapp ?? partner.phone).replace(/[^\d+]/g, "")}" style="color:${C.text};">${partner.whatsapp ?? partner.phone}</a><br><a href="mailto:${partner.email}" style="color:${C.text};">${partner.email}</a>
       </p>
