@@ -7,7 +7,7 @@ import { isOfferExpired } from "@/lib/car-offer-expiry";
 import { requestByClientToken } from "@/lib/car-quotes-db";
 import { rentalDays } from "@/lib/car-pricing";
 import { findChosenOption, sortOptionsByPrice, quotedModelLabel } from "@/lib/car-quotes";
-import { startDeposit, depositPartner } from "@/lib/car-deposit-server";
+import { startDeposit, depositPartner, PREVIOUS_BOOKING_RESET } from "@/lib/car-deposit-server";
 import { takesDeposits } from "@/lib/car-catalogue";
 import { assertWritten } from "@/lib/car-invoice-server";
 
@@ -114,7 +114,11 @@ export async function POST(request: NextRequest) {
   // Écriture conditionnée à l'état lu (quoted, sans acompte ou remboursé) : si
   // un paiement a démarré, ou une autre offre a été acceptée, entre la lecture
   // et ici, 0 ligne et on n'écrase rien.
+  // Après un remboursement, rien de l'acompte ne survit (booking_status,
+  // booking_paid_at...) : sinon la relance d'issue saute la demande et la
+  // commission du loueur n'est jamais facturée.
   const update = supabase.from("car_requests").update({
+    ...(previous === "refunded" ? { ...PREVIOUS_BOOKING_RESET, booking_status: null } : {}),
     status: "accepted", accepted_at: new Date().toISOString(), accept_token_hash: null,
     closure_reason: null, customer_phone: phoneResolu.phone,
     quoted_price: chosen.price, quoted_currency: chosen.currency ?? "EUR",

@@ -10,13 +10,17 @@ const { from, requestByClientToken, startDeposit, depositPartner, sendConnection
 }));
 vi.mock("@/lib/supabase-admin", () => ({ supabaseAdmin: { from } }));
 vi.mock("@/lib/car-quotes-db", () => ({ requestByClientToken }));
-vi.mock("@/lib/car-deposit-server", () => ({ startDeposit, depositPartner }));
+// La vraie remise à zéro (PREVIOUS_BOOKING_RESET) : le test vérifie ce qui part en base.
+vi.mock("@/lib/car-deposit-server", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/car-deposit-server")>()), startDeposit, depositPartner,
+}));
 vi.mock("@/lib/car-partners-db", () => ({
   partnerById: async () => ({ id: 111, name: "Zorbas Rent a Car", email: "z@example.com", phone: "+30 2810 000000", whatsapp: null, commission: 0.1 }),
 }));
 vi.mock("@/lib/email", () => ({ sendConnectionEmails }));
 
 import { POST } from "./route";
+import { shouldRequestCommission } from "@/lib/car-commission";
 
 const OPTION: QuoteOption = {
   id: 501, invite_id: 77, partner_id: 111, partner_name: "Zorbas", price: 412, currency: "EUR",
@@ -227,17 +231,44 @@ describe("POST /api/car-rental/accept", () => {
         expect(sendConnectionEmails).toHaveBeenCalledOnce();
       });
 
-      it("après un remboursement : mise en relation permise, conditionnée à quoted et refunded", async () => {
+      it("après un remboursement : mise en relation permise, conditionnée à quoted et refunded, acompte effacé", async () => {
         const updates = wiring({ phone: "+33 6 12 34 56 78", bookingStatus: "refunded" });
         const res = await POST(req({ token: "tok", option_id: 501 }) as never);
         expect(res.status).toBe(200);
         const accept = updates.find((u) => u.table === "car_requests" && u.patch.status === "accepted");
         expect(accept?.filters).toContainEqual(["eq", "status", "quoted"]);
         expect(accept?.filters).toContainEqual(["eq", "booking_status", "refunded"]);
+        // Rien de l'acompte remboursé ne survit : la demande redevient une mise
+        // en relation ordinaire, relancée sur son issue et facturée en commission.
+        expect(accept?.patch.booking_status).toBeNull();
+        for (const col of [
+          "booking_payment_intent_id", "booking_paid_at", "confirm_deadline_at", "confirm_reminded_at",
+          "partner_confirm_token", "partner_confirmed_at", "refund_reason", "refund_id", "refund_amount_eur", "cancelled_at",
+        ]) {
+          expect(accept?.patch).toHaveProperty(col, null);
+        }
         // Le lien d'offres meurt avec la mise en relation (jeton effacé) : la
         // page d'offres ne peut plus afficher cette demande, bandeau compris.
         expect(accept?.patch.accept_token_hash).toBeNull();
         expect(sendConnectionEmails).toHaveBeenCalledOnce();
+      });
+
+      it("après un remboursement puis une mise en relation : relance d'issue et commission à nouveau dues", async () => {
+        const updates = wiring({ phone: "+33 6 12 34 56 78", bookingStatus: "refunded" });
+        await POST(req({ token: "tok", option_id: 501 }) as never);
+        const accept = updates.find((u) => u.table === "car_requests" && u.patch.status === "accepted");
+        const refundedRow = {
+          ...REQUEST, booking_status: "refunded", booking_paid_at: "2099-06-01T10:00:00Z", refund_reason: "partner_declined",
+        };
+        const after = { ...refundedRow, ...accept?.patch };
+        // Les deux filtres de la relance d'issue (car-outcome-followup-server).
+        expect(after.booking_status).toBeNull();
+        expect(after.booking_paid_at).toBeNull();
+        // Le loueur déclare « loué » : sa commission se facture.
+        expect(shouldRequestCommission({
+          id: 25, outcome: "rented", commission_eur: 41.2, commission_paid_at: null, commission_session_id: null,
+          quoted_by_partner_id: after.quoted_by_partner_id as number, booking_status: after.booking_status as string | null,
+        })).toBe(true);
       });
 
       it("course perdue (0 ligne, paiement ouvert entre-temps) : 409 inProgress relu, aucun e-mail ni invitation", async () => {

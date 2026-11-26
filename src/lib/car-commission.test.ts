@@ -28,6 +28,12 @@ describe("shouldRequestCommission", () => {
     expect(shouldRequestCommission({ ...rented, booking_status: null })).toBe(true);
   });
 
+  // Un acompte remboursé n'a rien gardé : la commission n'est due que si la
+  // mise en relation qui suit remet booking_status à null (accept/route.ts).
+  it("acompte remboursé encore inscrit (refunded) : rien facturé, d'où la remise à zéro à la mise en relation", () => {
+    expect(shouldRequestCommission({ ...rented, booking_status: "refunded" })).toBe(false);
+  });
+
   it("ne demande rien tant que la location n est pas louee", () => {
     expect(shouldRequestCommission({ ...rented, outcome: "lost" })).toBe(false);
     expect(shouldRequestCommission({ ...rented, outcome: null })).toBe(false);

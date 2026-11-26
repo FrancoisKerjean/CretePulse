@@ -39,9 +39,11 @@ const GEARBOX_LABEL: Record<string, string> = { automatic: "Automatic", manual: 
  * Colonnes de la réservation précédente. Un client remboursé (refus ou silence
  * du loueur) peut choisir une autre offre et repayer : rien de l'ancienne
  * réservation ne doit survivre sur la nouvelle, ni échéance, ni jeton loueur,
- * ni motif de remboursement.
+ * ni motif de remboursement. Même remise à zéro pour l'ancien parcours (mise en
+ * relation) après un remboursement : sans elle, la demande garde un acompte
+ * remboursé, échappe à la relance d'issue et à la commission du loueur.
  */
-const PREVIOUS_BOOKING_RESET = {
+export const PREVIOUS_BOOKING_RESET = {
   booking_payment_intent_id: null,
   booking_paid_at: null,
   confirm_deadline_at: null,
