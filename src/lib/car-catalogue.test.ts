@@ -228,3 +228,16 @@ describe("planFanOut", () => {
     expect(r.quote).toEqual([1]);
   });
 });
+
+describe("validateConditionsInput, coordonnées retirées", () => {
+  it("strips phone and email from cancellation terms and model names", () => {
+    const r = validateConditionsInput({
+      cancellation_terms: "Cancel by WhatsApp +30 694 123 4567 or a@b.gr",
+      models: { compact: { model: "Fiat Panda, call 6941234567", gearbox: null } },
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.conditions.cancellation_terms).toBe("Cancel by WhatsApp or");
+    expect(r.conditions.models?.compact?.model).toBe("Fiat Panda, call");
+  });
+});

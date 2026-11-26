@@ -102,13 +102,17 @@ export interface NormalizedOption {
  * Le seuil est de 9 chiffres et non 8, sinon une date ISO (`2026-08-03`, 8
  * chiffres) serait prise pour un numéro.
  */
-function normalizeOptionNote(raw: unknown): string | null {
-  if (typeof raw !== "string") return null;
-  const cleaned = raw
+export function stripContactDetails(raw: string): string {
+  return raw
     .replace(/[\w.+-]+@[\w-]+\.[\w.]+/g, " ")
     .replace(/\+?\d[\d\s().-]{6,}\d/g, (m) => (m.replace(/\D/g, "").length >= 9 ? " " : m))
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function normalizeOptionNote(raw: unknown): string | null {
+  if (typeof raw !== "string") return null;
+  const cleaned = stripContactDetails(raw);
   return cleaned ? cleaned.slice(0, 140) : null;
 }
 

@@ -13,6 +13,7 @@ const m = vi.hoisted(() => ({
   notifyOps: vi.fn(),
   inserts: [] as Array<{ table: string; row: Record<string, unknown> }>,
   requestUpdates: [] as Array<Record<string, unknown>>,
+  updateError: null as { message: string } | null,
 }));
 vi.mock("@/lib/car-catalogue-db", () => ({
   ensurePortalToken: m.ensurePortalToken,
@@ -65,7 +66,7 @@ function wiring() {
       return {
         select: () => ({ eq: () => ({ eq: () => ({ eq: () => ({ gte: () => ({ limit: async () => ({ data: [] }) }) }) }) }) }),
         insert: () => ({ select: () => ({ single: async () => ({ data: { id: 9 }, error: null }) }) }),
-        update: (u: Record<string, unknown>) => { m.requestUpdates.push(u); return { eq: async () => ({ error: null }) }; },
+        update: (u: Record<string, unknown>) => { m.requestUpdates.push(u); return { eq: async () => ({ error: m.updateError }) }; },
       };
     }
     return {
@@ -78,6 +79,7 @@ function wiring() {
   });
   m.inserts.length = 0;
   m.requestUpdates.length = 0;
+  m.updateError = null;
   delete process.env.CAR_CATALOGUE_ENABLED;
   m.liveCataloguesForPartners.mockResolvedValue(new Map());
   m.partnersForZoneWithTerms.mockResolvedValue([PARTNER()]);
@@ -148,5 +150,16 @@ describe("POST /api/car-rental/submit : offres de grille", () => {
     expect(m.requestUpdates).toContainEqual({ status: "email_failed" });
     const msg = JSON.stringify(m.notifyOps.mock.calls[0][0]);
     expect(msg).toContain("conditions 2027 non acceptées");
+  });
+
+  it("statut quoted refusé par la base : offerUrl rendu quand même, ops alertée", async () => {
+    process.env.CAR_CATALOGUE_ENABLED = "on";
+    m.liveCataloguesForPartners.mockResolvedValue(GRID);
+    m.updateError = { message: "boom" };
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const json = await call();
+    spy.mockRestore();
+    expect(json.offerUrl).toMatch(/car-offer\//);
+    expect(m.notifyOps.mock.calls.some((c) => c[0].title === "Statut 'quoted' non écrit")).toBe(true);
   });
 });

@@ -5,6 +5,7 @@
 import { rentalDays } from "./car-pricing";
 import { CAR_ZONES } from "./car-partners";
 import { isInclusionKey } from "./car-inclusions";
+import { stripContactDetails } from "./car-quotes";
 import type { DbPartner } from "./car-partners-db";
 
 export const CAR_CATEGORIES = ["city", "compact", "sedan", "automatic", "suv"] as const;
@@ -262,7 +263,8 @@ export function validateConditionsInput(
     if (typeof v !== "string") { errors.push(`${label}: text expected.`); return undefined; }
     const t = v.trim();
     if (t.length > MAX_TEXT) { errors.push(`${label}: ${MAX_TEXT} characters maximum.`); return undefined; }
-    return t || null;
+    // Ces textes s'affichent au client : ni email ni téléphone du loueur (commission).
+    return stripContactDetails(t) || null;
   };
 
   if (o.models != null) {

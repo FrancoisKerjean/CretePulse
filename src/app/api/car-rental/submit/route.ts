@@ -246,7 +246,21 @@ export async function POST(request: NextRequest) {
   const locale = row.locale ?? "en";
   let offerUrl: string | undefined;
   if (catalogueNames.length > 0) {
-    await supabase.from("car_requests").update({ status: "quoted" }).eq("id", requestId);
+    // Les offres existent : un statut non écrit ne doit jamais coûter un 500 au
+    // voyageur, mais il doit sonner (sinon cron/car-no-quote lui écrit « pas de devis »).
+    try {
+      const { error: stErr } = await supabase.from("car_requests").update({ status: "quoted" }).eq("id", requestId);
+      assertWritten("car_requests.update quoted", requestId, stErr);
+    } catch (e) {
+      console.error("[car-rental/submit] status quoted not written:", e);
+      void notifyOps({
+        title: "Statut 'quoted' non écrit",
+        lines: [`demande ${requestId} · ${row.customer_email}`, "des offres de grille existent mais la demande est restée 'sent'"],
+        action: "passer la demande en quoted à la main",
+        due: echeance(0),
+        url: `${siteBase()}/admin/car-rental`,
+      });
+    }
     offerUrl = `${siteBase()}/${locale}/car-offer/${clientToken}`;
   }
 
