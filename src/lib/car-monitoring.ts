@@ -339,6 +339,8 @@ export interface DepositKpiRow {
   refund_reason: string | null;
   /** La demande porte au moins une option de source 'catalogue'. */
   hasCatalogueOption: boolean;
+  /** La demande porte au moins une option, de grille ou de devis. */
+  hasOption: boolean;
 }
 
 export interface DepositKpis {
@@ -357,8 +359,8 @@ const REFUND_REASONS: RefundReason[] = ["partner_declined", "partner_timeout", "
  * donne null (affiché n/d, jamais un ratio inventé).
  * - catalogueCoverage : demandes avec une option catalogue / demandes.
  * - offerToDeposit : demandes avec acompte payé (booking_paid_at) / demandes avec
- *   au moins une option catalogue. Une demande payée sans option catalogue ne peut
- *   pas exister, le numérateur est donc inclus dans le dénominateur en pratique.
+ *   au moins une option, de grille ou de devis (l'acompte vaut pour les deux). Le
+ *   numérateur ne compte que des demandes du dénominateur : jamais plus de 100 %.
  * - confirmRate : (confirmed + cancelled_kept) / acomptes payés.
  * - medianConfirmMinutes : booking_paid_at vers partner_confirmed_at, null sans confirmation.
  * - refundsByReason : lignes portant un refund_reason, les 5 clés toujours présentes.
@@ -367,6 +369,7 @@ const REFUND_REASONS: RefundReason[] = ["partner_declined", "partner_timeout", "
 export function depositKpis(rows: DepositKpiRow[]): DepositKpis {
   const safe = (n: number, d: number): number | null => (d === 0 ? null : n / d);
   const withCatalogue = rows.filter((r) => r.hasCatalogueOption).length;
+  const withOption = rows.filter((r) => r.hasOption);
   const paid = rows.filter((r) => r.booking_paid_at != null);
   const kept = rows.filter((r) => r.booking_status === "confirmed" || r.booking_status === "cancelled_kept");
   const mins = rows
@@ -379,7 +382,7 @@ export function depositKpis(rows: DepositKpiRow[]): DepositKpis {
   const cents = kept.reduce((sum, r) => sum + Math.round((r.deposit_eur ?? 0) * 100), 0);
   return {
     catalogueCoverage: safe(withCatalogue, rows.length),
-    offerToDeposit: safe(paid.length, withCatalogue),
+    offerToDeposit: safe(withOption.filter((r) => r.booking_paid_at != null).length, withOption.length),
     confirmRate: safe(kept.length, paid.length),
     medianConfirmMinutes: median(mins),
     refundsByReason,

@@ -143,10 +143,12 @@ export default async function CarAdminPage({
   const k30 = kpis(windowReqs(30).map(kpiReq), monitorByRequest, nowMs);
 
   const catalogueRequests = new Set(options.filter((o) => o.source === "catalogue").map((o) => o.request_id));
+  const requestsWithOption = new Set(options.map((o) => o.request_id));
   const kd = depositKpis(windowReqs(30).map((r) => ({
     booking_status: r.booking_status ?? null, deposit_eur: r.deposit_eur ?? null,
     booking_paid_at: r.booking_paid_at ?? null, partner_confirmed_at: r.partner_confirmed_at ?? null,
     refund_reason: r.refund_reason ?? null, hasCatalogueOption: catalogueRequests.has(r.id),
+    hasOption: requestsWithOption.has(r.id),
   })));
 
   const s = requestsSummary(requests, partnersById);

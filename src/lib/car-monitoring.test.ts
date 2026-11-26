@@ -3,31 +3,39 @@ import { depositKpis, kpis, type MonitorInvite, type DepositKpiRow } from "./car
 
 const row = (o: Partial<DepositKpiRow>): DepositKpiRow => ({
   booking_status: null, deposit_eur: null, booking_paid_at: null, partner_confirmed_at: null,
-  refund_reason: null, hasCatalogueOption: false, ...o,
+  refund_reason: null, hasCatalogueOption: false, hasOption: false, ...o,
 });
 
 // Jeu de 5 demandes :
 // 1 confirmée (catalogue, payée, 30 min), 2 cancelled_kept (catalogue, payée, 90 min),
 // 3 remboursée partner_declined (catalogue, payée), 4 sans acompte (catalogue),
-// 5 devis classique seul.
+// 5 devis classique seul, 6 sans aucune option.
 const FIVE: DepositKpiRow[] = [
   row({ booking_status: "confirmed", deposit_eur: 33.333, booking_paid_at: "2026-12-01T10:00:00Z",
-        partner_confirmed_at: "2026-12-01T10:30:00Z", hasCatalogueOption: true }),
+        partner_confirmed_at: "2026-12-01T10:30:00Z", hasCatalogueOption: true, hasOption: true }),
   row({ booking_status: "cancelled_kept", deposit_eur: 20.005, booking_paid_at: "2026-12-02T10:00:00Z",
-        partner_confirmed_at: "2026-12-02T11:30:00Z", refund_reason: "client_cancelled", hasCatalogueOption: true }),
+        partner_confirmed_at: "2026-12-02T11:30:00Z", refund_reason: "client_cancelled", hasCatalogueOption: true, hasOption: true }),
   row({ booking_status: "refunded", deposit_eur: 50, booking_paid_at: "2026-12-03T10:00:00Z",
-        refund_reason: "partner_declined", hasCatalogueOption: true }),
-  row({ booking_status: "pending_payment", deposit_eur: 40, hasCatalogueOption: true }),
+        refund_reason: "partner_declined", hasCatalogueOption: true, hasOption: true }),
+  row({ booking_status: "pending_payment", deposit_eur: 40, hasCatalogueOption: true, hasOption: true }),
+  row({ hasOption: true }),
   row({}),
 ];
 
 describe("depositKpis", () => {
   const k = depositKpis(FIVE);
   it("couverture catalogue = demandes avec une option catalogue / demandes", () => {
-    expect(k.catalogueCoverage).toBeCloseTo(4 / 5);
+    expect(k.catalogueCoverage).toBeCloseTo(4 / 6);
   });
-  it("offre -> acompte = acomptes payés / demandes avec option catalogue", () => {
-    expect(k.offerToDeposit).toBeCloseTo(3 / 4);
+  it("offre -> acompte = acomptes payés / demandes avec au moins une option (grille ou devis)", () => {
+    expect(k.offerToDeposit).toBeCloseTo(3 / 5);
+  });
+  it("offre -> acompte ne dépasse jamais 100 % : les acomptes sur devis comptent dans le dénominateur", () => {
+    // Trois acomptes payés sur des devis, aucune option de grille : 3/0 avant, 1 maintenant.
+    const quotesOnly = [1, 2, 3].map((d) => row({ booking_paid_at: `2026-12-0${d}T10:00:00Z`, hasOption: true }));
+    expect(depositKpis(quotesOnly).offerToDeposit).toBe(1);
+    // Payé mais options non chargées : jamais compté au numérateur sans le dénominateur.
+    expect(depositKpis([row({ booking_paid_at: "2026-12-01T10:00:00Z" }), row({ hasOption: true })]).offerToDeposit).toBe(0);
   });
   it("taux de confirmation = (confirmed + cancelled_kept) / acomptes payés", () => {
     expect(k.confirmRate).toBeCloseTo(2 / 3);
