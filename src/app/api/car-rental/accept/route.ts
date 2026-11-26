@@ -94,6 +94,8 @@ export async function POST(request: NextRequest) {
     const flag = {
       in_progress: "inProgress", too_close: "tooClose", below_minimum: "belowMinimum", not_quotable: "notReady",
       partner_unavailable: "unavailable",
+      // Réservation déjà payée : la page se recharge et affiche son état réel.
+      booked: "booked",
     }[out.error];
     return NextResponse.json({ ok: false, [flag]: true }, { status: 409 });
   }

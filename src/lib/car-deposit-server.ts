@@ -100,22 +100,27 @@ export async function depositPartnersFor(partnerIds: number[]): Promise<Map<numb
 
 export type StartDepositResult =
   | { payUrl: string }
-  | { error: "too_close" | "below_minimum" | "in_progress" | "not_quotable" | "partner_unavailable" };
+  | { error: "too_close" | "below_minimum" | "in_progress" | "not_quotable" | "partner_unavailable" | "booked" };
+
+/** Réservation déjà payée : la page d'offres a une vue pour chacun de ces états. */
+const BOOKED = new Set(["awaiting_partner", "confirmed", "cancelled_kept"]);
 
 /**
  * Le client choisit une offre : copie figée de l'option, acompte calculé au
  * taux de commission du loueur, jeton de paiement neuf. `status` ne change
  * pas : la demande reste `quoted` jusqu'au paiement (webhook).
  *
- * Démarrage possible depuis `booking_status` vide ou `refunded`. Tout autre
- * état (paiement ouvert, attente du loueur, confirmée, acompte gardé) rend
- * `in_progress` : une demande dont l'acompte a été gardé est close et doit
- * rester facturable. La demande doit être `quoted` (sinon `not_quotable`) :
- * c'est la seule que la route de paiement acceptera.
+ * Démarrage possible depuis `booking_status` vide ou `refunded`. Un paiement
+ * ouvert rend `in_progress`. Une réservation déjà payée (attente du loueur,
+ * confirmée, acompte gardé) rend `booked` : la page d'offres se recharge et
+ * affiche cet état réel. Une demande dont l'acompte a été gardé est close et
+ * doit rester facturable. La demande doit être `quoted` (sinon
+ * `not_quotable`) : c'est la seule que la route de paiement acceptera.
  *
  * Paiement ouvert : rapproché d'abord avec Stripe (reconcilePendingDeposit),
  * comme la route de paiement. Une session finie sans paiement dont le webhook
- * s'est perdu ne bloque plus la page d'offres.
+ * s'est perdu ne bloque plus la page d'offres ; un paiement dont le webhook
+ * s'est perdu est enregistré, et rend `booked`.
  *
  * Le loueur est relu : inactif, sans les conditions 2027, en relais ou
  * suspendu (grille `paused`), l'offre n'est pas réservable (`partner_unavailable`).
@@ -142,7 +147,10 @@ export async function startDeposit(
   if (previous === "pending_payment" && row.booking_session_id) {
     const pending = await reconcilePendingDeposit(requestId, row.booking_session_id as string, nowMs);
     if (pending.state === "released") previous = null;
+    // Paiement perdu puis enregistré ici (onDepositPaid) : la demande attend le loueur.
+    else if (pending.state === "paid") previous = "awaiting_partner";
   }
+  if (previous !== null && BOOKED.has(previous)) return { error: "booked" };
   if (previous !== null && previous !== "refunded") return { error: "in_progress" };
   if (row.status !== "quoted") return { error: "not_quotable" };
   if (!isDepositBookable(nowMs, row.date_from as string, row.time_from as string | null)) {
@@ -604,6 +612,49 @@ export async function reconcilePendingDeposit(
     return { state: "unchanged" };
   }
   return (await onDepositSessionExpired(requestId, sessionId)) ? { state: "released" } : { state: "unchanged" };
+}
+
+/** Âge du verrou au-delà duquel une session illisible n'est plus un incident passager (~4 passages du cron). */
+const UNREADABLE_ALERT_AGE_MS = 60 * 60_000;
+
+/**
+ * Session de paiement que Stripe refuse de lire de façon durable. Le cron
+ * l'appelle à chaque passage où le rapprochement rend « illisible ».
+ *
+ * Le compteur de passages ratés est l'âge du verrou (booking_locked_at) : une
+ * session lisible est tranchée par le rapprochement dès 35 min, une demande
+ * encore en attente après 1 h a donc vu environ 4 passages ratés. Prise de
+ * main : booking_locked_at remis à null sous condition (même session, verrou
+ * de plus d'une heure) ; seul l'appel qui écrit la ligne prévient ops, une
+ * seule fois. Rien d'autre ne bouge : le rapprochement continue à chaque
+ * passage et tranchera dès que Stripe répond. Un verrou sans date (d'avant la
+ * migration 20261127) ne sonne jamais.
+ *
+ * Lève quand la base refuse.
+ */
+// SHORTCUT: l'âge du verrou tient lieu de compteur de passages ratés (la migration n'ajoute qu'une colonne), une session lisible puis illisible au-delà d'1 h sonne au 1er échec ; passer à un vrai compteur si une alerte part sur une session qui n'a raté qu'un passage.
+export async function alertUnreadableDeposit(requestId: number, sessionId: string, nowMs: number): Promise<boolean> {
+  const { data, error } = await supabaseAdmin
+    .from("car_requests")
+    .update({ booking_locked_at: null })
+    .eq("id", requestId)
+    .eq("booking_status", "pending_payment")
+    .eq("booking_session_id", sessionId)
+    .lt("booking_locked_at", new Date(nowMs - UNREADABLE_ALERT_AGE_MS).toISOString())
+    .select("id");
+  assertWritten("alertUnreadableDeposit", requestId, error);
+  if ((data?.length ?? 0) !== 1) return false;
+  await notifyOps({
+    title: "Acompte voiture : Stripe ne lit plus la session de paiement depuis plus d'une heure",
+    lines: [
+      `demande ${requestId}, session ${sessionId}`,
+      "la demande reste en pending_payment : ni enregistrée comme payée, ni libérée",
+      "le cron retente à chaque passage ; cette alerte ne reviendra pas pour cette session",
+    ],
+    action: "ouvrir la session dans le tableau de bord Stripe : payée sans réservation, ou expirée, la demande attend Stripe",
+    url: adminUrl(),
+  });
+  return true;
 }
 
 /**

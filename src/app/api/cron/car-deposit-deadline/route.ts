@@ -14,7 +14,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { assertCron } from "@/lib/cron-auth";
 import { notifyOps } from "@/lib/ops-notify";
-import { releaseBooking, resumeClaimedRefund, remindPartner, reconcilePendingDeposit, releaseStaleLock } from "@/lib/car-deposit-server";
+import {
+  releaseBooking, resumeClaimedRefund, remindPartner, reconcilePendingDeposit, releaseStaleLock, alertUnreadableDeposit,
+} from "@/lib/car-deposit-server";
 import { reminderDueMs, DEPOSIT_SWEEP_AGE_MS } from "@/lib/car-deposit";
 
 export const dynamic = "force-dynamic";
@@ -129,8 +131,12 @@ export async function GET(req: NextRequest) {
       try {
         const out = await reconcilePendingDeposit(r.id, r.booking_session_id as string, nowMs);
         if (out.state === "paid" || out.state === "released") counts.reconciled++;
-        // Stripe illisible : rien écrit, le passage suivant retente.
-        else if (out.state === "unreadable") counts.failed++;
+        // Stripe illisible : rien écrit, le passage suivant retente. Au-delà
+        // d'une heure de refus, une alerte ops, une seule (alertUnreadableDeposit).
+        else if (out.state === "unreadable") {
+          counts.failed++;
+          await alertUnreadableDeposit(r.id, r.booking_session_id as string, nowMs);
+        }
       } catch (err) {
         await fail("rapprochement", r.id, err);
       }

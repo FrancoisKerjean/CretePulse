@@ -17,6 +17,7 @@ import { isCallablePhone } from "@/lib/car-lead";
 // Acompte (interrupteur allumé) : l'API rend `payUrl` et le client part payer ;
 // ses refus (paiement déjà ouvert, trop proche du départ, acompte sous le
 // minimum, loueur qui a décliné) s'affichent avec les textes de `refusals`.
+// Réservation déjà payée (`booked`) : la page se recharge sur sa vue réelle.
 export interface AcceptRefusals {
   inProgress: string; tooClose: string; belowMinimum: string; unavailable: string; notReady: string;
 }
@@ -69,6 +70,12 @@ export function AcceptButton({
         // Le bouton reste en « envoi » pendant la navigation vers le paiement.
         track("pay");
         window.location.assign(json.payUrl);
+        return;
+      } else if (res.status === 409 && json.booked === true) {
+        // Réservation déjà payée (paiement rattrapé, autre onglet) : la page
+        // d'offres sait afficher son état réel, on la recharge.
+        track("booked");
+        window.location.reload();
         return;
       } else if (res.status === 409 && refusal) {
         setState(refusal);

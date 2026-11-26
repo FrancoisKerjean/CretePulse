@@ -434,7 +434,9 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
   }
 
   // Etat : déjà accepté. Remboursement en cours : seul le bandeau, la
-  // réservation n'existe plus.
+  // réservation n'existe plus. accepted + refunded n'est JAMAIS une mise en
+  // relation faite après un remboursement : l'ancien parcours efface
+  // accept_token_hash, la page n'est alors plus joignable par ce jeton (404).
   if (request.status === "accepted" && refundNotice) {
     return <main style={shell}>{beacon("already_accepted")}{refundNotice}</main>;
   }

@@ -4,17 +4,20 @@ import { NextRequest } from "next/server";
 type Row = Record<string, unknown>;
 type Filter = [string, string, unknown];
 
-const { from, releaseBooking, resumeClaimedRefund, remindPartner, reconcilePendingDeposit, releaseStaleLock, notifyOps } = vi.hoisted(() => ({
+const { from, releaseBooking, resumeClaimedRefund, remindPartner, reconcilePendingDeposit, releaseStaleLock, alertUnreadableDeposit, notifyOps } = vi.hoisted(() => ({
   from: vi.fn(),
   releaseBooking: vi.fn(),
   resumeClaimedRefund: vi.fn(),
   remindPartner: vi.fn(),
   reconcilePendingDeposit: vi.fn(),
   releaseStaleLock: vi.fn(),
+  alertUnreadableDeposit: vi.fn(),
   notifyOps: vi.fn(),
 }));
 vi.mock("@/lib/supabase-admin", () => ({ supabaseAdmin: { from } }));
-vi.mock("@/lib/car-deposit-server", () => ({ releaseBooking, resumeClaimedRefund, remindPartner, reconcilePendingDeposit, releaseStaleLock }));
+vi.mock("@/lib/car-deposit-server", () => ({
+  releaseBooking, resumeClaimedRefund, remindPartner, reconcilePendingDeposit, releaseStaleLock, alertUnreadableDeposit,
+}));
 vi.mock("@/lib/ops-notify", () => ({ notifyOps }));
 
 import { GET } from "./route";
@@ -90,6 +93,7 @@ beforeEach(() => {
   remindPartner.mockResolvedValue("reminded");
   reconcilePendingDeposit.mockResolvedValue({ state: "unchanged" });
   releaseStaleLock.mockResolvedValue(true);
+  alertUnreadableDeposit.mockResolvedValue(false);
   fakeDb();
 });
 
@@ -153,12 +157,26 @@ describe("GET /api/cron/car-deposit-deadline", () => {
     expect(notifyOps).not.toHaveBeenCalled();
   });
 
-  it("Stripe illisible : compté en failed, rien d'autre", async () => {
+  it("Stripe illisible : compté en failed, la base décide d'une alerte durable", async () => {
     rows = [pending(3, "cs_3")];
     reconcilePendingDeposit.mockResolvedValue({ state: "unreadable" });
     const body = await (await GET(req("s3cret"))).json();
     expect(body).toMatchObject({ reconciled: 0, failed: 1 });
+    // Une heure de refus : alertUnreadableDeposit prévient ops, une seule fois.
+    expect(alertUnreadableDeposit).toHaveBeenCalledWith(3, "cs_3", NOW);
     expect(notifyOps).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["paid", { state: "paid" }],
+    ["released", { state: "released" }],
+    ["open", { state: "open", url: "https://checkout/x" }],
+    ["unchanged", { state: "unchanged" }],
+  ])("session lisible (%s) : jamais d'alerte durable", async (_label, outcome) => {
+    rows = [pending(3, "cs_3")];
+    reconcilePendingDeposit.mockResolvedValue(outcome);
+    await GET(req("s3cret"));
+    expect(alertUnreadableDeposit).not.toHaveBeenCalled();
   });
 
   it("rapprochement qui lève (base) : compté, ops prévenu, la ligne suivante passe", async () => {

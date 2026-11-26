@@ -185,6 +185,8 @@ describe("POST /api/car-rental/accept", () => {
       ["below_minimum", { belowMinimum: true }],
       ["not_quotable", { notReady: true }],
       ["partner_unavailable", { unavailable: true }],
+      // Réservation déjà payée : la page se recharge et affiche son état réel.
+      ["booked", { booked: true }],
     ])("refus %s : 409 avec le drapeau attendu", async (error, flag) => {
       startDeposit.mockResolvedValue({ error });
       const updates = wiring({ phone: "+33 6 12 34 56 78" });

@@ -99,6 +99,9 @@ type Strings = {
   npBody: string; // {place}
   npPartnersCta: string;
   npSuggest: string;
+  /** Demande enregistrée mais aucun loueur joignable (interrupteur allumé) : même message que l'e-mail noAgency. */
+  rcvTitle: string;
+  rcvBody: string;
   fromPrice: string; // {price} : montant déjà formaté dans la langue (formatEur)
 };
 
@@ -152,6 +155,8 @@ const T: Record<string, Strings> = {
     npBody: "We don't have a vetted rental partner around {place} yet. No request was sent: we only forward requests to agencies we actually work with.",
     npPartnersCta: "Run a local rental agency? Become a partner",
     npSuggest: "Closest area we cover:",
+    rcvTitle: "Request received",
+    rcvBody: "We received your request, but no partner agency is available for these criteria right now. We'll get back to you.",
     fromPrice: "from {price}/day",
   },
   fr: {
@@ -203,6 +208,8 @@ const T: Record<string, Strings> = {
     npBody: "Nous n'avons pas encore d'agence de location partenaire vérifiée autour de {place}. Aucune demande n'a été envoyée : nous ne transmettons des demandes qu'aux agences avec lesquelles nous travaillons vraiment.",
     npPartnersCta: "Vous êtes une agence locale ? Devenez partenaire",
     npSuggest: "Zone couverte la plus proche :",
+    rcvTitle: "Demande reçue",
+    rcvBody: "Nous avons bien reçu votre demande, mais aucune agence partenaire n'est disponible pour ces critères pour le moment. Nous revenons vers vous.",
     fromPrice: "à partir de {price}/jour",
   },
   de: {
@@ -254,6 +261,8 @@ const T: Record<string, Strings> = {
     npBody: "Rund um {place} haben wir noch keine geprüfte Partneragentur. Es wurde keine Anfrage gesendet: Wir leiten Anfragen nur an Agenturen weiter, mit denen wir wirklich zusammenarbeiten.",
     npPartnersCta: "Sie führen eine lokale Agentur? Partner werden",
     npSuggest: "Nächstgelegene abgedeckte Gegend:",
+    rcvTitle: "Anfrage erhalten",
+    rcvBody: "Wir haben Ihre Anfrage erhalten, aber momentan ist keine Partneragentur für diese Kriterien verfügbar. Wir melden uns bei Ihnen.",
     fromPrice: "ab {price}/Tag",
   },
   el: {
@@ -305,11 +314,15 @@ const T: Record<string, Strings> = {
     npBody: "Δεν έχουμε ακόμη ελεγμένο συνεργαζόμενο γραφείο ενοικίασης γύρω από το {place}. Δεν στάλθηκε κανένα αίτημα: προωθούμε αιτήματα μόνο σε γραφεία με τα οποία πραγματικά συνεργαζόμαστε.",
     npPartnersCta: "Είστε τοπικό γραφείο; Γίνετε συνεργάτης",
     npSuggest: "Πλησιέστερη καλυπτόμενη περιοχή:",
+    rcvTitle: "Το αίτημα ελήφθη",
+    rcvBody: "Λάβαμε το αίτημά σας, αλλά αυτή τη στιγμή δεν υπάρχει διαθέσιμη συνεργαζόμενη εταιρεία για αυτά τα κριτήρια. Θα επικοινωνήσουμε μαζί σας.",
     fromPrice: "από {price}/ημέρα",
   },
 };
 
-type View = "steps" | "noPartner" | "sent" | "fallback";
+// noPartner : zone non couverte, AVANT tout envoi (aucune demande partie).
+// received : demande enregistrée, aucun loueur joignable (interrupteur allumé).
+type View = "steps" | "noPartner" | "sent" | "fallback" | "received";
 
 const INPUT_CLS =
   "w-full rounded-xl border-[1.5px] border-border bg-white px-3.5 py-2.5 text-[15px] text-text focus:outline-none focus:border-sea transition-colors";
@@ -533,11 +546,13 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
         setFallbackWhatsapp(String(json.fallbackWhatsapp));
         setView("fallback");
       } else if (res.ok && json?.ok === false && json.noPartner) {
-        // Acompte allumé : aucun loueur joignable, et jamais de numéro de loueur avant réservation.
+        // Acompte allumé : aucun loueur joignable, et jamais de numéro de loueur
+        // avant réservation. La demande est enregistrée et ops prévenu : l'écran
+        // dit la même chose que l'e-mail noAgency, jamais « aucune demande envoyée ».
         window.plausible?.("Car Wizard Submit", {
           props: { status: "no_partner", source, pickup, locale },
         });
-        setView("noPartner");
+        setView("received");
       } else {
         window.plausible?.("Car Wizard Submit", {
           props: { status: `http_${res.status}`, source, pickup, locale },
@@ -580,6 +595,17 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
         <p className="mt-2 text-[15px] text-text-muted max-w-xl mx-auto">
           {t.sentBody}
         </p>
+        <div className="max-w-sm mx-auto">{recap}</div>
+      </div>
+    );
+  }
+
+  if (view === "received") {
+    return (
+      <div ref={rootRef} data-testid="car-wizard-received" className="card-base p-7 sm:p-10 text-center scroll-mt-24">
+        <CiMark className="w-12 h-12 text-lagoon-deep mx-auto" />
+        <h2 className="mt-4 font-heading font-extrabold text-2xl text-text">{t.rcvTitle}</h2>
+        <p className="mt-2 text-[15px] text-text-muted max-w-xl mx-auto">{t.rcvBody}</p>
         <div className="max-w-sm mx-auto">{recap}</div>
       </div>
     );

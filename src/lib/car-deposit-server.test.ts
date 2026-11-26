@@ -43,7 +43,7 @@ import {
   startDeposit, depositPartnersFor, onDepositSessionExpired,
   onDepositPaid, confirmBooking, releaseBooking, refundConfirmed, bookingByConfirmToken,
   resumeClaimedRefund, partnerConfirmUrl, remindPartner, cancelByClient, reconcilePendingDeposit,
-  releaseStaleLock,
+  releaseStaleLock, alertUnreadableDeposit,
 } from "./car-deposit-server";
 
 // Mardi 12/07/2027 à 09:00 heure d'Athènes : en pleine plage d'ouverture.
@@ -179,11 +179,19 @@ describe("startDeposit", () => {
     },
   );
 
-  it.each(["pending_payment", "awaiting_partner", "confirmed", "cancelled_kept"])(
-    "refuse in_progress quand booking_status vaut %s, sans rien écrire",
+  it("refuse in_progress quand un paiement est ouvert (pending_payment), sans rien écrire", async () => {
+    const w = wiring({ row: { booking_status: "pending_payment" } });
+    expect(await startDeposit(25, OPTION, "en", NOW)).toEqual({ error: "in_progress" });
+    expect(w.updates).toHaveLength(0);
+  });
+
+  // La page d'offres a une vue pour chacun de ces états : on la lui renvoie
+  // plutôt que « un paiement est déjà ouvert », qui serait faux.
+  it.each(["awaiting_partner", "confirmed", "cancelled_kept"])(
+    "réservation déjà payée (%s) : booked, l'état réel, sans rien écrire",
     async (status) => {
       const w = wiring({ row: { booking_status: status } });
-      expect(await startDeposit(25, OPTION, "en", NOW)).toEqual({ error: "in_progress" });
+      expect(await startDeposit(25, OPTION, "en", NOW)).toEqual({ error: "booked" });
       expect(w.updates).toHaveLength(0);
     },
   );
@@ -834,6 +842,14 @@ describe("après paiement", () => {
       errSpy.mockRestore();
     });
 
+    it("startDeposit qui rattrape un paiement perdu : booked, plus « paiement déjà ouvert »", async () => {
+      const db = fakeDb(seed(REQ));
+      sessionsRetrieve.mockResolvedValue(session());
+      expect(await startDeposit(25, OPTION, "fr", PAID_AT)).toEqual({ error: "booked" });
+      expect(db.req()).toMatchObject({ booking_status: "awaiting_partner", status: "accepted" });
+      expect(mailsTo("marie@example.fr")).toHaveLength(1);
+    });
+
     it("fermeture refusée par Stripe (payée à la dernière seconde ?) : rien écrit", async () => {
       const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       const db = fakeDb(seed(REQ));
@@ -902,6 +918,65 @@ describe("après paiement", () => {
     it("lève quand la base refuse l'écriture, sans alerte", async () => {
       fakeDb(seed(locked(40)), { fail: (op) => (op.kind === "update" ? "permission denied" : null) });
       await expect(releaseStaleLock(25, PAID_AT)).rejects.toThrow(/permission denied/);
+      expect(notifyOps).not.toHaveBeenCalled();
+    });
+  });
+
+  // Session que Stripe refuse de lire de façon durable : le cron l'appelle à
+  // chaque passage « illisible », la base décide s'il faut alerter.
+  describe("alertUnreadableDeposit", () => {
+    const MIN = 60_000;
+    const pendingSince = (ageMin: number | null, over: Row = {}): Row => ({
+      ...REQ,
+      booking_locked_at: ageMin === null ? null : new Date(PAID_AT - ageMin * MIN).toISOString(),
+      ...over,
+    });
+
+    it("verrou de plus d'une heure (environ 4 passages ratés) : une alerte, la demande reste en attente", async () => {
+      const db = fakeDb(seed(pendingSince(70)));
+      expect(await alertUnreadableDeposit(25, "cs_1", PAID_AT)).toBe(true);
+      expect(db.req()).toMatchObject({ booking_status: "pending_payment", booking_session_id: "cs_1", status: "quoted" });
+      const claim = db.updates("car_requests")[0];
+      expect(claim.patch).toEqual({ booking_locked_at: null });
+      expect(claim.filters).toContainEqual(["eq", "booking_status", "pending_payment"]);
+      expect(claim.filters).toContainEqual(["eq", "booking_session_id", "cs_1"]);
+      expect(claim.filters).toContainEqual(["lt", "booking_locked_at", new Date(PAID_AT - 60 * MIN).toISOString()]);
+      expect(notifyOps).toHaveBeenCalledOnce();
+      expect(JSON.stringify(notifyOps.mock.calls)).toContain("cs_1");
+      expect(sessionsRetrieve).not.toHaveBeenCalled();
+      expect(refundsCreate).not.toHaveBeenCalled();
+    });
+
+    it("passages suivants toujours illisibles : une seule alerte", async () => {
+      fakeDb(seed(pendingSince(70)));
+      expect(await alertUnreadableDeposit(25, "cs_1", PAID_AT)).toBe(true);
+      expect(await alertUnreadableDeposit(25, "cs_1", PAID_AT + 15 * MIN)).toBe(false);
+      expect(await alertUnreadableDeposit(25, "cs_1", PAID_AT + 30 * MIN)).toBe(false);
+      expect(notifyOps).toHaveBeenCalledOnce();
+    });
+
+    it("verrou de 30 min : pas encore durable, aucune alerte", async () => {
+      const db = fakeDb(seed(pendingSince(30)));
+      expect(await alertUnreadableDeposit(25, "cs_1", PAID_AT)).toBe(false);
+      expect(db.req().booking_locked_at).toBe(new Date(PAID_AT - 30 * MIN).toISOString());
+      expect(notifyOps).not.toHaveBeenCalled();
+    });
+
+    it("la demande porte une autre session : aucune alerte", async () => {
+      fakeDb(seed(pendingSince(70, { booking_session_id: "cs_2" })));
+      expect(await alertUnreadableDeposit(25, "cs_1", PAID_AT)).toBe(false);
+      expect(notifyOps).not.toHaveBeenCalled();
+    });
+
+    it("verrou sans date (d'avant la migration) : aucune alerte", async () => {
+      fakeDb(seed(pendingSince(null)));
+      expect(await alertUnreadableDeposit(25, "cs_1", PAID_AT)).toBe(false);
+      expect(notifyOps).not.toHaveBeenCalled();
+    });
+
+    it("lève quand la base refuse, sans alerte", async () => {
+      fakeDb(seed(pendingSince(70)), { fail: (op) => (op.kind === "update" ? "permission denied" : null) });
+      await expect(alertUnreadableDeposit(25, "cs_1", PAID_AT)).rejects.toThrow(/permission denied/);
       expect(notifyOps).not.toHaveBeenCalled();
     });
   });
