@@ -31,10 +31,14 @@ const REQUEST = {
   customer_name: "Nina", customer_email: "n@example.com", customer_phone: null as string | null,
 };
 
-function wiring(opts: { phone?: string | null; inviteStatus?: string } = {}) {
+function wiring(opts: { phone?: string | null; inviteStatus?: string; bookingStatus?: string | null } = {}) {
   const updates: Array<{ table: string; patch: Record<string, unknown> }> = [];
   requestByClientToken.mockResolvedValue({
-    request: { ...REQUEST, customer_phone: opts.phone === undefined ? null : opts.phone },
+    request: {
+      ...REQUEST,
+      customer_phone: opts.phone === undefined ? null : opts.phone,
+      booking_status: opts.bookingStatus ?? null,
+    },
     quotes: [{ id: 77, partner_id: 111, partner_name: "Zorbas", status: opts.inviteStatus ?? "quoted", quote_price: 412, quoted_at: null }],
     options: [OPTION],
   });
@@ -116,6 +120,7 @@ describe("POST /api/car-rental/accept", () => {
       ["in_progress", { inProgress: true }],
       ["too_close", { tooClose: true }],
       ["below_minimum", { belowMinimum: true }],
+      ["not_quotable", { notReady: true }],
     ])("refus %s : 409 avec le drapeau attendu", async (error, flag) => {
       startDeposit.mockResolvedValue({ error });
       const updates = wiring({ phone: "+33 6 12 34 56 78" });
@@ -135,5 +140,48 @@ describe("POST /api/car-rental/accept", () => {
       expect(await res.json()).toEqual({ ok: false, unavailable: true });
       expect(startDeposit).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe("POST /api/car-rental/accept?decline=1", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env.CAR_CATALOGUE_ENABLED = "on";
+  });
+
+  function declineReq(): Request {
+    return new Request("http://localhost/api/car-rental/accept?decline=1", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ token: "tok" }),
+    });
+  }
+
+  it.each(["pending_payment", "awaiting_partner", "confirmed", "cancelled_kept"])(
+    "refuse de fermer la demande quand booking_status vaut %s : 409 inProgress, rien d'écrit",
+    async (bookingStatus) => {
+      // Un acompte payable ou payé : fermer la demande laisserait de l'argent
+      // sans réservation en face.
+      const updates = wiring({ bookingStatus });
+      const res = await POST(declineReq() as never);
+      expect(res.status).toBe(409);
+      expect(await res.json()).toEqual({ ok: false, inProgress: true });
+      expect(updates).toHaveLength(0);
+    },
+  );
+
+  it("sans acompte en cours, le désistement ferme la demande comme avant", async () => {
+    const updates = wiring({ bookingStatus: null });
+    const res = await POST(declineReq() as never);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true, declined: true });
+    expect(updates.some((u) => u.patch.status === "declined_by_client")).toBe(true);
+  });
+
+  it("après un remboursement, le client peut encore tout refuser", async () => {
+    const updates = wiring({ bookingStatus: "refunded" });
+    const res = await POST(declineReq() as never);
+    expect(res.status).toBe(200);
+    expect(updates.some((u) => u.patch.status === "declined_by_client")).toBe(true);
   });
 });

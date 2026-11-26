@@ -13,8 +13,9 @@ const sessionsExpire = vi.fn<(id: string) => Promise<{ id: string; status: strin
 vi.mock("@/lib/stays/stripe-helpers", () => ({
   stripeClient: () => ({ checkout: { sessions: { create: sessionsCreate, retrieve: sessionsRetrieve, expire: sessionsExpire } } }),
 }));
-const { from } = vi.hoisted(() => ({ from: vi.fn() }));
+const { from, notifyOps } = vi.hoisted(() => ({ from: vi.fn(), notifyOps: vi.fn<(n: unknown) => Promise<boolean>>(async () => true) }));
 vi.mock("@/lib/supabase-admin", () => ({ supabaseAdmin: { from } }));
+vi.mock("@/lib/ops-notify", () => ({ notifyOps, echeance: () => "12/07" }));
 vi.mock("@/lib/car-quote", async (orig: () => Promise<Record<string, unknown>>) => ({
   ...(await orig()),
   hashToken: (t: string) => `hash(${t})`,
@@ -58,14 +59,22 @@ function wiring(opts: {
   row?: Partial<typeof ROW> | null;
   lockRows?: unknown[];
   sessionWriteError?: { message: string } | null;
+  /** Hash relu après un verrou perdu : un autre onglet a pu changer d'offre. */
+  rereadHash?: string;
+  /** Lignes libérées par onDepositSessionExpired. */
+  expiredRows?: unknown[];
+  releaseError?: { message: string } | null;
 } = {}): Wiring {
   const w: Wiring = { updates: [] };
   from.mockImplementation((table: string) => {
     if (table !== "car_requests") throw new Error(`table inattendue : ${table}`);
     return {
-      select: () => ({
+      select: (cols: string) => ({
         eq: () => ({
-          maybeSingle: async () => ({ data: opts.row === null ? null : { ...ROW, ...opts.row }, error: null }),
+          maybeSingle: async () => {
+            if (cols === "booking_token_hash") return { data: { booking_token_hash: opts.rereadHash ?? "hash(t)" }, error: null };
+            return { data: opts.row === null ? null : { ...ROW, ...opts.row }, error: null };
+          },
         }),
       }),
       update: (patch: Record<string, unknown>) => {
@@ -75,9 +84,14 @@ function wiring(opts: {
           eq: (col: string, val: unknown) => { entry.filters.push(["eq", col, val]); return chain; },
           is: (col: string, val: unknown) => { entry.filters.push(["is", col, val]); return chain; },
           select: async () => {
+            // Verrou : null vers pending_payment.
             if (patch.booking_status === "pending_payment") return { data: opts.lockRows ?? [{ id: 25 }], error: null };
-            if ("booking_session_id" in patch) return { data: [{ id: 25 }], error: opts.sessionWriteError ?? null };
-            return { data: [{ id: 25 }], error: null };
+            // Session expirée libérée (onDepositSessionExpired).
+            if (patch.booking_status === null && "booking_session_id" in patch) return { data: opts.expiredRows ?? [{ id: 25 }], error: null };
+            // Verrou relâché après une panne.
+            if (patch.booking_status === null) return { data: [{ id: 25 }], error: opts.releaseError ?? null };
+            // Identifiant de la nouvelle session.
+            return { data: [{ id: 25 }], error: opts.sessionWriteError ?? null };
           },
         };
         return chain;
@@ -122,12 +136,26 @@ describe("POST /api/car-rental/booking (acompte)", () => {
     expect(sessionPatch).toBeDefined();
   });
 
-  it("verrou optimiste : null vers pending_payment, conditionné à quoted et booking_status vide", async () => {
+  it("verrou optimiste : null vers pending_payment, conditionné à quoted, booking_status vide et au jeton lu", async () => {
     const w = wiring();
     await POST(req({ token: "t" }) as never);
     const lock = w.updates.find((u) => u.patch.booking_status === "pending_payment");
     expect(lock?.filters).toContainEqual(["is", "booking_status", null]);
     expect(lock?.filters).toContainEqual(["eq", "status", "quoted"]);
+    // Le verrou porte sur l'offre dont on a lu l'acompte, pas sur la demande en général.
+    expect(lock?.filters).toContainEqual(["eq", "booking_token_hash", "hash(t)"]);
+    // Aucune ancienne référence de session ne survit au verrou.
+    expect(lock?.patch).toHaveProperty("booking_session_id", null);
+  });
+
+  it("onglet périmé : un autre onglet a choisi une autre offre, 409 linkInvalid et aucune session", async () => {
+    // A lit l'acompte de X ; B choisit Y, ce qui change le jeton ; le verrou de A
+    // ne doit pas prendre la demande, sinon A paierait X sur une demande figée sur Y.
+    wiring({ lockRows: [], rereadHash: "hash(autre)" });
+    const res = await POST(req({ token: "t" }) as never);
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ ok: false, linkInvalid: true });
+    expect(sessionsCreate).not.toHaveBeenCalled();
   });
 
   it("n'est pas gardée par l'interrupteur : une demande n'a de deposit_eur que s'il était allumé", async () => {
@@ -146,28 +174,48 @@ describe("POST /api/car-rental/booking (acompte)", () => {
     expect(w.updates).toHaveLength(0);
   });
 
-  it("pending_payment : pas de checkoutUrl quand la session n'est plus ouverte", async () => {
-    sessionsRetrieve.mockResolvedValueOnce({ id: "cs_live_d0", status: "expired", url: null } as never);
-    wiring({ row: { booking_status: "pending_payment", booking_session_id: "cs_live_d0" } });
+  it("pending_payment sur une session expirée : la demande est libérée et une nouvelle session créée", async () => {
+    // Webhook d'expiration manqué : sans cela le client resterait bloqué.
+    sessionsRetrieve.mockResolvedValueOnce({ id: "cs_live_d0", status: "expired", url: null });
+    const w = wiring({ row: { booking_status: "pending_payment", booking_session_id: "cs_live_d0" } });
     const res = await POST(req({ token: "t" }) as never);
-    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect((await res.json()).url).toBe("https://checkout/deposit");
+    const release = w.updates[0];
+    expect(release.patch).toEqual({ booking_status: null, booking_session_id: null });
+    expect(release.filters).toContainEqual(["eq", "booking_status", "pending_payment"]);
+    expect(release.filters).toContainEqual(["eq", "booking_session_id", "cs_live_d0"]);
+    expect(sessionsCreate).toHaveBeenCalledOnce();
+  });
+
+  it("session expirée mais déjà reprise ailleurs : 409 inProgress, aucune session", async () => {
+    sessionsRetrieve.mockResolvedValueOnce({ id: "cs_live_d0", status: "expired", url: null });
+    wiring({ row: { booking_status: "pending_payment", booking_session_id: "cs_live_d0" }, expiredRows: [] });
+    const res = await POST(req({ token: "t" }) as never);
     expect(res.status).toBe(409);
-    expect(json.inProgress).toBe(true);
-    expect(json).not.toHaveProperty("checkoutUrl");
+    expect(await res.json()).toEqual({ ok: false, inProgress: true });
+    expect(sessionsCreate).not.toHaveBeenCalled();
   });
 
-  it("pending_payment : pas de checkoutUrl quand la session est déjà payée", async () => {
-    sessionsRetrieve.mockResolvedValueOnce({ id: "cs_live_d0", status: "complete", url: null } as never);
-    wiring({ row: { booking_status: "pending_payment", booking_session_id: "cs_live_d0" } });
-    expect(await (await POST(req({ token: "t" }) as never)).json()).not.toHaveProperty("checkoutUrl");
+  it("pending_payment sur une session payée : 409 sans checkoutUrl et sans libérer (le webhook arrive)", async () => {
+    sessionsRetrieve.mockResolvedValueOnce({ id: "cs_live_d0", status: "complete", url: null });
+    const w = wiring({ row: { booking_status: "pending_payment", booking_session_id: "cs_live_d0" } });
+    const res = await POST(req({ token: "t" }) as never);
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ ok: false, inProgress: true });
+    expect(w.updates).toHaveLength(0);
+    expect(sessionsCreate).not.toHaveBeenCalled();
   });
 
-  it("pending_payment sans session encore écrite : 409 inProgress sans appel Stripe", async () => {
+  it("pending_payment sans session écrite : 409 inProgress sans appel Stripe, ops prévenu", async () => {
     wiring({ row: { booking_status: "pending_payment", booking_session_id: null } });
     const res = await POST(req({ token: "t" }) as never);
     expect(res.status).toBe(409);
     expect(await res.json()).toEqual({ ok: false, inProgress: true });
     expect(sessionsRetrieve).not.toHaveBeenCalled();
+    expect(notifyOps).toHaveBeenCalledOnce();
+    expect(JSON.stringify(notifyOps.mock.calls)).toContain("25");
   });
 
   it("pending_payment : une session illisible chez Stripe ne casse pas la réponse", async () => {
@@ -247,6 +295,17 @@ describe("POST /api/car-rental/booking (acompte)", () => {
     expect(release).toBeDefined();
     // On ne relâche que NOTRE verrou, jamais un état posé depuis par le webhook.
     expect(release?.filters).toContainEqual(["eq", "booking_status", "pending_payment"]);
+    expect(notifyOps).not.toHaveBeenCalled();
+    errSpy.mockRestore();
+  });
+
+  it("panne Stripe puis verrou impossible à relâcher : ops prévenu, la demande resterait bloquée", async () => {
+    wiring({ releaseError: { message: "timeout" } });
+    sessionsCreate.mockRejectedValueOnce(new Error("boom"));
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await POST(req({ token: "t" }) as never);
+    expect(res.status).toBe(502);
+    expect(notifyOps).toHaveBeenCalledOnce();
     errSpy.mockRestore();
   });
 

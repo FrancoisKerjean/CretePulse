@@ -11,25 +11,39 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { stripeClient } from "@/lib/stays/stripe-helpers";
-import { hashToken } from "@/lib/car-quote";
+import { hashToken, siteBase } from "@/lib/car-quote";
 import { buildDepositCheckoutParams, isDepositBookable } from "@/lib/car-deposit";
+import { onDepositSessionExpired } from "@/lib/car-deposit-server";
 import { STRIPE_MIN_CHARGE_EUR } from "@/lib/car-commission";
 import { assertWritten } from "@/lib/car-invoice-server";
 import { classifyStripeFailure, stripeLogFields } from "@/lib/stripe-errors";
+import { notifyOps, echeance } from "@/lib/ops-notify";
 
 const conflict = (flags: Record<string, unknown>) =>
   NextResponse.json({ ok: false, ...flags }, { status: 409 });
 
-/** URL de la session encore payable, pour que la page propose « reprendre le paiement ». */
-async function openCheckoutUrl(sessionId: string | null): Promise<string | null> {
-  if (!sessionId) return null;
+const unavailable = () => NextResponse.json({ ok: false, error: "Unavailable" }, { status: 503 });
+
+/** État de la session chez Stripe ; null si illisible (on ne tranche alors rien). */
+async function checkoutSession(sessionId: string): Promise<{ status: string | null; url: string | null } | null> {
   try {
     const s = await stripeClient().checkout.sessions.retrieve(sessionId);
-    return s.status === "open" && s.url ? s.url : null;
+    return { status: s.status ?? null, url: s.url ?? null };
   } catch (err) {
     console.error("[car/deposit] session illisible", { sessionId, ...stripeLogFields(err) });
     return null;
   }
+}
+
+/** Demande coincée en pending_payment : un humain doit pouvoir la débloquer. */
+async function alertStuck(requestId: number, cause: string): Promise<void> {
+  await notifyOps({
+    title: "Acompte voiture : paiement bloqué",
+    lines: [`demande ${requestId}`, cause],
+    action: "si l'état persiste, remettre booking_status à null sur la demande",
+    due: echeance(0),
+    url: `${siteBase()}/admin/car-rental`,
+  });
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -38,29 +52,54 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   // La locale finit dans les URLs de retour de Stripe : deux lettres ou rien.
   const locale = typeof body.locale === "string" && /^[a-z]{2}$/.test(body.locale) ? body.locale : "en";
 
+  const tokenHash = hashToken(token);
   const { data: row, error: readError } = await supabaseAdmin
     .from("car_requests")
     .select(
       "id, status, booking_status, booking_session_id, deposit_eur, partner_name, quoted_car_model, customer_email, date_from, date_to, time_from",
     )
-    .eq("booking_token_hash", hashToken(token))
+    .eq("booking_token_hash", tokenHash)
     .maybeSingle();
   if (readError) {
     console.error("[car/deposit] lecture de la demande refusée", { error: readError.message });
-    return NextResponse.json({ ok: false, error: "Unavailable" }, { status: 503 });
+    return unavailable();
   }
   if (!row) return NextResponse.json({ ok: false, error: "Not found" }, { status: 404 });
 
   const deposit = row.deposit_eur == null ? NaN : Number(row.deposit_eur);
   if (!Number.isFinite(deposit) || deposit < STRIPE_MIN_CHARGE_EUR) return conflict({ notReady: true });
 
-  if (row.booking_status === "pending_payment") {
-    const checkoutUrl = await openCheckoutUrl(row.booking_session_id);
-    return conflict({ inProgress: true, ...(checkoutUrl ? { checkoutUrl } : {}) });
+  let bookingStatus: string | null = row.booking_status;
+  if (bookingStatus === "pending_payment") {
+    if (!row.booking_session_id) {
+      // Verrou pris, identifiant de session jamais écrit. Peut aussi être un
+      // double clic pendant la création : l'alerte le dit.
+      await alertStuck(row.id, "pending_payment sans booking_session_id (verrou pris, session jamais écrite, ou création en cours)");
+      return conflict({ inProgress: true });
+    }
+    const session = await checkoutSession(row.booking_session_id);
+    // Session encore ouverte : la page propose de la reprendre.
+    if (session?.status === "open" && session.url) return conflict({ inProgress: true, checkoutUrl: session.url });
+    // Payée (le webhook arrive) ou illisible : on ne libère rien.
+    if (session?.status !== "expired") return conflict({ inProgress: true });
+    // Expirée sans paiement : webhook manqué ou pas encore arrivé, on libère
+    // ici et le client repart sur une session neuve.
+    let released: boolean;
+    try {
+      released = await onDepositSessionExpired(row.id, row.booking_session_id);
+    } catch (err) {
+      console.error("[car/deposit] session expirée non libérée", {
+        requestId: row.id,
+        error: err instanceof Error ? err.message : String(err),
+      });
+      return unavailable();
+    }
+    if (!released) return conflict({ inProgress: true });
+    bookingStatus = null;
   }
   // Payé, en attente du loueur, confirmé, remboursé ou acompte gardé : on ne
   // représente jamais de session.
-  if (row.booking_status != null) return conflict({ alreadySettled: true });
+  if (bookingStatus != null) return conflict({ alreadySettled: true });
   if (row.status !== "quoted") return conflict({ notReady: true });
 
   const nowMs = Date.now();
@@ -68,19 +107,31 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (!isDepositBookable(nowMs, row.date_from, row.time_from)) return conflict({ tooClose: true });
 
   // Verrou optimiste AVANT l'appel Stripe : deux clics sur « payer » ne créent
-  // pas deux sessions, donc pas deux prélèvements possibles.
+  // pas deux sessions, donc pas deux prélèvements possibles. Il porte aussi sur
+  // le jeton lu : si un autre onglet a choisi une autre offre entre-temps
+  // (nouveau jeton, nouvel acompte), ce verrou ne prend rien, sinon le client
+  // paierait l'acompte lu ici sur une demande figée sur l'autre offre.
   const { data: locked, error: lockError } = await supabaseAdmin
     .from("car_requests")
-    .update({ booking_status: "pending_payment" })
+    .update({ booking_status: "pending_payment", booking_session_id: null })
     .eq("id", row.id)
+    .eq("booking_token_hash", tokenHash)
     .eq("status", "quoted")
     .is("booking_status", null)
     .select("id");
   if (lockError) {
     console.error("[car/deposit] verrou refusé par la base", { requestId: row.id, error: lockError.message });
-    return NextResponse.json({ ok: false, error: "Unavailable" }, { status: 503 });
+    return unavailable();
   }
-  if (!locked || locked.length === 0) return conflict({ inProgress: true });
+  if (!locked || locked.length === 0) {
+    // Relecture pour dire au client lequel des deux : lien périmé ou paiement déjà ouvert.
+    const { data: current } = await supabaseAdmin
+      .from("car_requests")
+      .select("booking_token_hash")
+      .eq("id", row.id)
+      .maybeSingle();
+    return conflict(current && current.booking_token_hash !== tokenHash ? { linkInvalid: true } : { inProgress: true });
+  }
 
   // Ne relâche que NOTRE verrou : un état posé entre-temps par le webhook reste.
   const releaseLock = async () => {
@@ -95,6 +146,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         requestId: row.id,
         error: error.message,
       });
+      await alertStuck(row.id, `verrou non relâché après un échec de création de session (${error.message})`);
     }
   };
 

@@ -33,7 +33,7 @@ export default function BookingPanel(
       else if (j.tooClose) setError(strings.tooClose);
       else if (j.notReady) setError(strings.notReady);
       else if (j.alreadySettled) setError(strings.errorUnavailable);
-      else if (r.status === 404) setError(strings.linkInvalid);
+      else if (j.linkInvalid || r.status === 404) setError(strings.linkInvalid);
       else setError(strings.error);
     } catch {
       setError(strings.error);

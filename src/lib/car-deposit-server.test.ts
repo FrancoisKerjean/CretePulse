@@ -13,7 +13,7 @@ vi.mock("./car-quote", async (orig: () => Promise<Record<string, unknown>>) => (
   siteBase: () => "https://crete.direct",
 }));
 
-import { startDeposit, depositRatesFor } from "./car-deposit-server";
+import { startDeposit, depositRatesFor, onDepositSessionExpired } from "./car-deposit-server";
 
 // Mardi 12/07/2027 à 09:00 heure d'Athènes : en pleine plage d'ouverture.
 const NOW = athensWallToUtcMs("2027-07-12", "09:00");
@@ -133,7 +133,17 @@ describe("startDeposit", () => {
     await startDeposit(25, OPTION, "en", NOW);
     expect(w.filters).toContainEqual(["eq", "id", 25]);
     expect(w.filters).toContainEqual(["is", "booking_status", null]);
+    expect(w.filters).toContainEqual(["eq", "status", "quoted"]);
   });
+
+  it.each(["sent", "accepted", "cancelled", "declined_by_client"])(
+    "refuse not_quotable quand la demande est « %s », sans rien écrire",
+    async (status) => {
+      const w = wiring({ row: { status } });
+      expect(await startDeposit(25, OPTION, "en", NOW)).toEqual({ error: "not_quotable" });
+      expect(w.updates).toHaveLength(0);
+    },
+  );
 
   it.each(["pending_payment", "awaiting_partner", "confirmed", "cancelled_kept"])(
     "refuse in_progress quand booking_status vaut %s, sans rien écrire",
@@ -253,5 +263,32 @@ describe("depositRatesFor", () => {
     expect((await depositRatesFor([111])).size).toBe(0);
     expect(errSpy).toHaveBeenCalled();
     errSpy.mockRestore();
+  });
+});
+
+describe("onDepositSessionExpired", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("libère la demande quand la session expirée est bien la sienne, toujours pending_payment", async () => {
+    const w = wiring();
+    expect(await onDepositSessionExpired(25, "cs_old")).toBe(true);
+    expect(w.updates).toEqual([{ booking_status: null, booking_session_id: null }]);
+    expect(w.filters).toEqual([
+      ["eq", "id", 25],
+      ["eq", "booking_status", "pending_payment"],
+      ["eq", "booking_session_id", "cs_old"],
+    ]);
+  });
+
+  it("autre session ou autre état : 0 ligne, rien de libéré", async () => {
+    wiring({ writtenRows: [] });
+    expect(await onDepositSessionExpired(25, "cs_other")).toBe(false);
+  });
+
+  it("lève quand la base refuse l'écriture", async () => {
+    wiring({ writeError: { message: "permission denied" } });
+    await expect(onDepositSessionExpired(25, "cs_old")).rejects.toThrow(/permission denied/);
   });
 });

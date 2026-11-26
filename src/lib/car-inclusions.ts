@@ -44,10 +44,10 @@ export function isInsuranceType(v: unknown): v is CarInsuranceType {
 
 // Libellés du type de couverture, côté client (4 langues).
 export const CAR_INSURANCE_LABELS: Record<string, Record<CarInsuranceType, string>> = {
-  en: { all_risk_zero: "All-risk — zero excess", cdw_excess: "Collision damage waiver (CDW)" },
-  fr: { all_risk_zero: "Tous risques — franchise zéro", cdw_excess: "Rachat de franchise (CDW)" },
-  de: { all_risk_zero: "Vollkasko — ohne Selbstbeteiligung", cdw_excess: "Haftungsreduzierung (CDW)" },
-  el: { all_risk_zero: "Πλήρης κάλυψη — μηδενική απαλλαγή", cdw_excess: "Μείωση ευθύνης (CDW)" },
+  en: { all_risk_zero: "All-risk, zero excess", cdw_excess: "Collision damage waiver (CDW)" },
+  fr: { all_risk_zero: "Tous risques, franchise zéro", cdw_excess: "Rachat de franchise (CDW)" },
+  de: { all_risk_zero: "Vollkasko, ohne Selbstbeteiligung", cdw_excess: "Haftungsreduzierung (CDW)" },
+  el: { all_risk_zero: "Πλήρης κάλυψη, μηδενική απαλλαγή", cdw_excess: "Μείωση ευθύνης (CDW)" },
 };
 
 // Libellés côté loueur (EN, pattern QuoteForm hardcodé EN).

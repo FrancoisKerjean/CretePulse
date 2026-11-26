@@ -12,6 +12,9 @@ import { startDeposit } from "@/lib/car-deposit-server";
 
 const GEARBOX_LABEL: Record<string, string> = { automatic: "Automatic", manual: "Manual" };
 
+/** États d'acompte qui interdisent de fermer la demande. */
+const DEPOSIT_HOLDS = new Set(["pending_payment", "awaiting_partner", "confirmed", "cancelled_kept"]);
+
 // Le client choisit une OFFRE précise (option) parmi toutes les variantes de
 // tous les loueurs (page /car-offer/{token}). On snapshot cette option sur
 // car_requests (retro-compat admin/commissions) et on met client + loueur choisi
@@ -27,6 +30,11 @@ export async function POST(request: NextRequest) {
   const found = await requestByClientToken(token);
   if (!found) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const { request: row, options } = found;
+  // Un acompte payable ou payé tient la demande : le client ne peut pas la
+  // fermer d'un clic, il y aurait de l'argent sans réservation en face.
+  if (decline && DEPOSIT_HOLDS.has(row.booking_status as string)) {
+    return NextResponse.json({ ok: false, inProgress: true }, { status: 409 });
+  }
   if (row.status === "accepted") return NextResponse.json({ ok: true, already: true });
   if (row.status === "declined_by_client") return NextResponse.json({ ok: true, declined: true });
 
@@ -76,7 +84,9 @@ export async function POST(request: NextRequest) {
     }
     const out = await startDeposit(row.id as number, chosen, (row.locale as string) || "en", Date.now(), phoneResolu.phone);
     if ("payUrl" in out) return NextResponse.json({ ok: true, payUrl: out.payUrl });
-    const flag = { in_progress: "inProgress", too_close: "tooClose", below_minimum: "belowMinimum" }[out.error];
+    const flag = {
+      in_progress: "inProgress", too_close: "tooClose", below_minimum: "belowMinimum", not_quotable: "notReady",
+    }[out.error];
     return NextResponse.json({ ok: false, [flag]: true }, { status: 409 });
   }
 

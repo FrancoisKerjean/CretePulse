@@ -64,6 +64,7 @@ const DEPOSIT_COPY: Record<string, DepositCopy> = {
       tooClose: "Too close to departure to book online.",
       belowMinimum: "This offer cannot be booked online.",
       unavailable: "No longer available from this agency.",
+      notReady: "This offer cannot be booked right now. Try again in a few minutes.",
     },
   },
   fr: {
@@ -82,6 +83,7 @@ const DEPOSIT_COPY: Record<string, DepositCopy> = {
       tooClose: "Trop proche du départ pour réserver en ligne.",
       belowMinimum: "Cette offre ne peut pas être réservée en ligne.",
       unavailable: "Plus disponible chez cette agence.",
+      notReady: "Cette offre ne peut pas être réservée pour le moment. Réessayez dans quelques minutes.",
     },
   },
   de: {
@@ -100,6 +102,7 @@ const DEPOSIT_COPY: Record<string, DepositCopy> = {
       tooClose: "Zu kurz vor der Abholung für eine Online-Buchung.",
       belowMinimum: "Dieses Angebot kann nicht online gebucht werden.",
       unavailable: "Bei dieser Vermietung nicht mehr verfügbar.",
+      notReady: "Dieses Angebot kann gerade nicht gebucht werden. Versuchen Sie es in einigen Minuten erneut.",
     },
   },
   el: {
@@ -118,6 +121,7 @@ const DEPOSIT_COPY: Record<string, DepositCopy> = {
       tooClose: "Πολύ κοντά στην αναχώρηση για online κράτηση.",
       belowMinimum: "Αυτή η προσφορά δεν μπορεί να κρατηθεί online.",
       unavailable: "Δεν είναι πλέον διαθέσιμο από αυτό το γραφείο.",
+      notReady: "Αυτή η προσφορά δεν μπορεί να κρατηθεί αυτή τη στιγμή. Δοκιμάστε ξανά σε λίγα λεπτά.",
     },
   },
 };
@@ -381,7 +385,8 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
           ))}
         </details>
       )}
-      <DeclineButton token={token} label={c.declineLink} doneText={c.declineDone} offers={offers.length} />
+      <DeclineButton token={token} label={c.declineLink} doneText={c.declineDone} offers={offers.length}
+        inProgressText={depositOn ? dc.refusals.inProgress : undefined} />
     </main>
   );
 }

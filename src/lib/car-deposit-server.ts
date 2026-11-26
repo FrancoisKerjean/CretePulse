@@ -55,7 +55,7 @@ export async function depositRatesFor(partnerIds: number[]): Promise<Map<number,
 
 export type StartDepositResult =
   | { payUrl: string }
-  | { error: "too_close" | "below_minimum" | "in_progress" };
+  | { error: "too_close" | "below_minimum" | "in_progress" | "not_quotable" };
 
 /**
  * Le client choisit une offre : copie figée de l'option, acompte calculé au
@@ -65,7 +65,8 @@ export type StartDepositResult =
  * Démarrage possible depuis `booking_status` vide ou `refunded`. Tout autre
  * état (paiement ouvert, attente du loueur, confirmée, acompte gardé) rend
  * `in_progress` : une demande dont l'acompte a été gardé est close et doit
- * rester facturable.
+ * rester facturable. La demande doit être `quoted` (sinon `not_quotable`) :
+ * c'est la seule que la route de paiement acceptera.
  *
  * `customerPhone` : numéro résolu par l'acceptation, écrit dans la même
  * écriture. Le loueur en a besoin à la confirmation.
@@ -79,7 +80,7 @@ export async function startDeposit(
 ): Promise<StartDepositResult> {
   const { data: row, error: readError } = await supabaseAdmin
     .from("car_requests")
-    .select("id, booking_status, date_from, time_from")
+    .select("id, status, booking_status, date_from, time_from")
     .eq("id", requestId)
     .maybeSingle();
   if (readError) throw new Error(`startDeposit(${requestId}) lecture refusée par la base: ${readError.message}`);
@@ -87,6 +88,7 @@ export async function startDeposit(
 
   const previous = (row.booking_status as string | null) ?? null;
   if (previous !== null && previous !== "refunded") return { error: "in_progress" };
+  if (row.status !== "quoted") return { error: "not_quotable" };
   if (!isDepositBookable(nowMs, row.date_from as string, row.time_from as string | null)) {
     return { error: "too_close" };
   }
@@ -125,11 +127,30 @@ export async function startDeposit(
 
   // Écriture conditionnée à l'état lu : si un paiement a démarré entre la
   // lecture et ici, 0 ligne, et on n'écrase rien.
-  const update = supabaseAdmin.from("car_requests").update(patch).eq("id", requestId);
+  const update = supabaseAdmin.from("car_requests").update(patch).eq("id", requestId).eq("status", "quoted");
   const guarded = previous === null ? update.is("booking_status", null) : update.eq("booking_status", "refunded");
   const { data: written, error } = await guarded.select("id");
   assertWritten("startDeposit", requestId, error);
   if (!written || written.length === 0) return { error: "in_progress" };
 
   return { payUrl: `${siteBase()}/${locale}/car-booking/${token}` };
+}
+
+/**
+ * Session de paiement expirée sans paiement : la demande redevient payable.
+ * Appelée par la route de paiement quand Stripe dit « expired », et par le
+ * webhook `checkout.session.expired` (tâche 9). Conditionnée à la session ET à
+ * l'état : une autre session, ou un paiement déjà enregistré, ne bouge pas.
+ * Rend true quand la demande a été libérée.
+ */
+export async function onDepositSessionExpired(requestId: number, sessionId: string): Promise<boolean> {
+  const { data, error } = await supabaseAdmin
+    .from("car_requests")
+    .update({ booking_status: null, booking_session_id: null })
+    .eq("id", requestId)
+    .eq("booking_status", "pending_payment")
+    .eq("booking_session_id", sessionId)
+    .select("id");
+  assertWritten("onDepositSessionExpired", requestId, error);
+  return (data?.length ?? 0) === 1;
 }

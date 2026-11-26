@@ -17,10 +17,13 @@ import { isCallablePhone } from "@/lib/car-lead";
 // Acompte (interrupteur allumé) : l'API rend `payUrl` et le client part payer ;
 // ses refus (paiement déjà ouvert, trop proche du départ, acompte sous le
 // minimum, loueur qui a décliné) s'affichent avec les textes de `refusals`.
-export interface AcceptRefusals { inProgress: string; tooClose: string; belowMinimum: string; unavailable: string }
+export interface AcceptRefusals {
+  inProgress: string; tooClose: string; belowMinimum: string; unavailable: string; notReady: string;
+}
 type Refusal = keyof AcceptRefusals;
 const REFUSAL_EVENT: Record<Refusal, string> = {
   inProgress: "in_progress", tooClose: "too_close", belowMinimum: "below_minimum", unavailable: "unavailable",
+  notReady: "not_ready",
 };
 
 export function AcceptButton({

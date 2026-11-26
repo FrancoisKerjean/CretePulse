@@ -5,13 +5,15 @@ import { useState } from "react";
 // Bouton « aucune de ces offres ne me convient » (désistement client). Ferme la
 // demande côté client et coupe les relances, sans email aux loueurs.
 export function DeclineButton({
-  token, label, doneText, offers = 0,
+  token, label, doneText, offers = 0, inProgressText,
 }: {
   token: string; label: string; doneText: string;
+  /** Acompte : texte affiché quand un paiement ouvert ou payé empêche de fermer la demande. */
+  inProgressText?: string;
   /** Nombre d'offres refusees d'un bloc : un refus sur 9 ne dit pas la meme chose qu'un refus sur 1. */
   offers?: number;
 }) {
-  const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
+  const [state, setState] = useState<"idle" | "sending" | "done" | "error" | "inProgress">("idle");
 
   async function decline() {
     setState("sending");
@@ -23,7 +25,8 @@ export function DeclineButton({
       });
       const json = await res.json();
       const ok = res.ok && json.ok;
-      setState(ok ? "done" : "error");
+      const held = res.status === 409 && json.inProgress === true && !!inProgressText;
+      setState(ok ? "done" : held ? "inProgress" : "error");
       // Le refus explicite est le signal le plus rare du tunnel : UN seul sur 31
       // demandes en juillet-aout. Chacun compte, il faut donc le compter.
       window.plausible?.("car_offer_decline", {
@@ -53,6 +56,9 @@ export function DeclineButton({
       >
         {state === "sending" ? "…" : label}
       </button>
+      {state === "inProgress" && (
+        <p style={{ margin: "8px auto 0", maxWidth: 520, color: "#92400E", fontSize: 13, lineHeight: 1.5 }}>{inProgressText}</p>
+      )}
       {state === "error" && (
         <p style={{ margin: "8px 0 0", color: "#B91C1C", fontSize: 13 }}>Something went wrong. Please try again.</p>
       )}
