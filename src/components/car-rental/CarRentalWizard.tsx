@@ -18,13 +18,10 @@ import { useGeoPosition } from "@/components/geo/useGeoPosition";
 import { CiCompass, CiMark, CiPlane } from "@/components/icons";
 import { CarPriceEstimate } from "@/components/car-rental/CarPriceEstimate";
 import { formatEur } from "@/lib/car-format";
+import { pickupLabel as pickupLabelFor } from "@/lib/car-pickup-labels";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/** "chania-airport" → "Chania Airport". */
-function pickupLabel(slug: string): string {
-  return slug.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
-}
 
 /** Date locale YYYY-MM-DD (pas d'UTC : les défauts suivent le fuseau du visiteur). */
 function isoLocal(d: Date): string {
@@ -352,6 +349,7 @@ export function CarRentalWizard({
   locale, servedZones, initialPickup: initialPickupProp, initialSource, depositOn = false,
 }: CarRentalWizardProps) {
   const t = T[locale] || T.en;
+  const pickupLabel = (slug: string) => pickupLabelFor(slug, locale);
   const sp = useSearchParams();
 
   // ?pickup= ou prop initialPickup valide (slug connu d'une zone) → étape 2 directement.

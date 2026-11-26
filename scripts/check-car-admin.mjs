@@ -104,6 +104,11 @@ ok("waHref strip non-digits + encode", waHref("+30 697 414-7291", "a b\nc") === 
 // est cet argent, sinon un versement en attente reste invisible.
 ok("aucun etat quand le voyageur n a rien engage", bookingState({}) === null);
 ok("aucun etat sur booking_status null", bookingState({ booking_status: null }) === null);
+// M14 : parcours acompte (deposit_eur renseigne) = le bloc acompte porte l'etat ;
+// l'ancien badge lisait booking_amount_eur, jamais ecrit, et affichait 0.00 EUR.
+ok("parcours acompte : pas d'ancien badge (awaiting_partner)", bookingState({ booking_status: "awaiting_partner", deposit_eur: 51 }) === null);
+ok("parcours acompte : pas d'ancien badge (refunded)", bookingState({ booking_status: "refunded", deposit_eur: 51, refund_amount_eur: 51 }) === null);
+ok("parcours acompte : pas d'ancien badge (pending_payment)", bookingState({ booking_status: "pending_payment", deposit_eur: 51 }) === null);
 
 const bPending = bookingState({ booking_status: "pending_payment", booking_amount_eur: 120 });
 ok("paiement en cours n est pas un encaissement", bPending.tone === "neutral" && bPending.paid === false);

@@ -14,7 +14,11 @@ import { mailCaps } from "./car-format";
 import { outcomeQuestionSubject, outcomeQuestionBody, type OutcomeQuestionMail } from "./car-outcome-followup";
 import type { NewsletterDigest, NewsletterLang } from "./newsletter";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Créé au premier envoi, pas au chargement du module : sans RESEND_API_KEY
+// (dev local, preview), le constructeur lève « Missing API key » et faisait
+// tomber en 500 toute page qui importe ce fichier, dont l'admin (M15).
+let resendInstance: Resend | null = null;
+const resendClient = (): Resend => (resendInstance ??= new Resend(process.env.RESEND_API_KEY));
 
 const FROM_EMAIL = "Crete Direct <hello@crete.direct>";
 
@@ -107,7 +111,7 @@ export async function sendConfirmationEmail(email: string, token: string, locale
 
   // Sans ce lien, l'abonne reste bloque en non-confirme et ne recoit jamais
   // rien : un refus doit remonter, pas passer pour un envoi reussi.
-  assertSent(await resend.emails.send({
+  assertSent(await resendClient().emails.send({
     from: FROM_EMAIL,
     to: email,
     subject: CONFIRM_SUBJECTS[lang] || CONFIRM_SUBJECTS.en,
@@ -181,7 +185,7 @@ function welcomeBody(lang: string): string {
 export async function sendWelcomeEmail(email: string, locale: string) {
   const lang = ["en", "fr", "de", "el"].includes(locale) ? locale : "en";
 
-  assertSent(await resend.emails.send({
+  assertSent(await resendClient().emails.send({
     from: FROM_EMAIL,
     to: email,
     subject: WELCOME_SUBJECTS[lang] || WELCOME_SUBJECTS.en,
@@ -389,7 +393,7 @@ export async function sendNewsletterDigest(
   const token = unsubscribeToken(email);
   const unsubscribeUrl = `${site}/api/newsletter/unsubscribe?token=${encodeURIComponent(token)}`;
 
-  const { error } = await resend.emails.send({
+  const { error } = await resendClient().emails.send({
     from: FROM_EMAIL,
     to: email,
     subject: DIGEST_SUBJECTS[lang] || DIGEST_SUBJECTS.en,
@@ -454,7 +458,7 @@ export async function sendAffiliateWelcome(a: AffiliateWelcome): Promise<void> {
     code: a.code,
     commissionPct: a.commissionPct,
   });
-  const { error } = await resend.emails.send({
+  const { error } = await resendClient().emails.send({
     from: FROM_EMAIL,
     to: a.email,
     replyTo: "hello@crete.direct",
@@ -543,7 +547,7 @@ export async function sendCarLeadEmail(partner: CarLeadPartner, lead: CarLead, q
       ``,
       `Répondre au client : reply direct à cet email (reply-to = client).`,
     ];
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await resendClient().emails.send({
       from: FROM_EMAIL,
       to: RELAY_EMAIL,
       replyTo: lead.customerEmail,
@@ -584,7 +588,7 @@ export async function sendCarLeadEmail(partner: CarLeadPartner, lead: CarLead, q
   ];
   // L'email au loueur est le seul critique : on propage son erreur pour que la
   // route marque email_failed + fallback WhatsApp.
-  const { data, error } = await resend.emails.send({
+  const { data, error } = await resendClient().emails.send({
     from: FROM_EMAIL,
     to: partner.email,
     replyTo: RELAY_EMAIL,
@@ -603,7 +607,7 @@ export async function sendCarLeadEmail(partner: CarLeadPartner, lead: CarLead, q
       ``,
       `Prochaine étape : ${partner.name} répond son prix → transmettre au client → si OK, mise en relation.`,
     ];
-    reportSend(await resend.emails.send({
+    reportSend(await resendClient().emails.send({
       from: FROM_EMAIL,
       to: RELAY_EMAIL,
       replyTo: lead.customerEmail,
@@ -672,7 +676,7 @@ export async function sendAgencyQuoteRequest(partner: { name: string; email: str
     `crete.direct`,
   ];
 
-  const { data, error } = await resend.emails.send({
+  const { data, error } = await resendClient().emails.send({
     from: FROM_EMAIL, to: partner.email, replyTo: RELAY_EMAIL, subject, html, text: lines.join("\n"),
   });
   if (error) throw new Error(`Resend: ${error.message}`);
@@ -691,7 +695,7 @@ export async function sendLeadKamiSummary(lead: CarLead, partnerNames: string[])
     `Premier qui soumet son prix gagne. Le client reçoit l'offre automatiquement ; tu es en copie à l'acceptation.`,
   ];
   try {
-    reportSend(await resend.emails.send({
+    reportSend(await resendClient().emails.send({
       from: FROM_EMAIL, to: RELAY_EMAIL, replyTo: lead.customerEmail,
       subject: `[Lead voiture · suivi] ${subject}`, text: lines.join("\n"),
     }), "synthese Kami lead voiture");
@@ -778,7 +782,7 @@ export async function sendCustomerRequestReceived(opts: {
     </p>
   </div>
 `;
-  const { data, error } = await resend.emails.send({
+  const { data, error } = await resendClient().emails.send({
     from: FROM_EMAIL,
     to: opts.email,
     replyTo: RELAY_EMAIL,
@@ -878,7 +882,7 @@ export async function sendConnectionEmails(opts: {
     `Please contact the customer to secure the booking. Thanks!`,
     `Kami · crete.direct`,
   ];
-  const r1 = await resend.emails.send({
+  const r1 = await resendClient().emails.send({
     from: FROM_EMAIL,
     to: partner.email,
     cc: RELAY_EMAIL,
@@ -911,7 +915,7 @@ export async function sendConnectionEmails(opts: {
   // Symetrique de r1 : sans cet email le client n'a jamais les coordonnees du
   // loueur, alors que le loueur, lui, a deja les siennes. La reservation est
   // acceptee des deux cotes et personne ne peut se joindre.
-  assertSent(await resend.emails.send({
+  assertSent(await resendClient().emails.send({
     from: FROM_EMAIL,
     to: customer.email,
     // Le loueur en tete : « repondre » depuis le mobile du client doit l'atteindre
@@ -989,7 +993,7 @@ export async function sendSelectionEmail(email: string, locale: string, places: 
       <p style="margin:0 0 8px; color:${C.muted}; line-height:1.6;">${c.intro}</p>
       <table style="width:100%; border-collapse:collapse;">${rows}</table>
   `);
-  const { data, error } = await resend.emails.send({
+  const { data, error } = await resendClient().emails.send({
     from: FROM_EMAIL,
     to: email,
     subject: SELECTION_SUBJECTS[lang],
@@ -1031,7 +1035,7 @@ export async function sendReviewConfirmationEmail(opts: {
   const confirmUrl = `${base}/api/reviews/confirm?token=${encodeURIComponent(opts.confirmToken)}`;
   const deleteUrl  = `${base}/api/reviews/delete?token=${encodeURIComponent(opts.deleteToken)}`;
   // Double opt-in : sans cet email l'avis reste en attente indefiniment.
-  assertSent(await resend.emails.send({
+  assertSent(await resendClient().emails.send({
     from: `crete.direct <${process.env.RESEND_FROM ?? "noreply@crete.direct"}>`,
     to: opts.email,
     subject: REVIEW_SUBJECT[l],
@@ -1069,7 +1073,7 @@ export async function sendCustomerNoQuoteYet(opts: { email: string; locale: stri
   <p style="margin:0 0 16px; color:${C.muted}; font-size:14px; line-height:1.6;">${greeting}${NO_QUOTE_BODY[l]}</p>
   <p style="margin:0; color:${C.faint}; font-size:12px; text-align:center; line-height:1.6;">${NO_QUOTE_FOOT[l]}</p>
 `;
-  const { data, error } = await resend.emails.send({
+  const { data, error } = await resendClient().emails.send({
     from: FROM_EMAIL,
     to: opts.email,
     replyTo: RELAY_EMAIL,
@@ -1122,7 +1126,7 @@ export async function sendCustomerNewOffer(opts: {
   <div style="text-align:center; margin:0 0 18px;">${pillButton(opts.offersUrl, c.cta, C.lagoonDeep)}</div>
   <p style="margin:0; color:${C.faint}; font-size:12px; text-align:center; line-height:1.6;">Questions ? Répondez à cet email, une vraie personne le lit.</p>
 `;
-  const { error } = await resend.emails.send({
+  const { error } = await resendClient().emails.send({
     from: FROM_EMAIL,
     to: opts.email,
     replyTo: RELAY_EMAIL,
@@ -1141,7 +1145,7 @@ export async function sendCustomerNewOffer(opts: {
 /** Relance loueur qui n'a pas encore chiffré (1× max). EN, best-effort. */
 export async function sendPartnerRelance(email: string, partnerName: string, quoteUrl: string): Promise<void> {
   const first = partnerName.split(" ")[0] || partnerName;
-  const { error } = await resend.emails.send({
+  const { error } = await resendClient().emails.send({
     from: FROM_EMAIL,
     to: email,
     replyTo: RELAY_EMAIL,
@@ -1200,7 +1204,7 @@ export async function sendCustomerRelance(opts: {
   <div style="text-align:center; margin:0 0 18px;">${pillButton(opts.offersUrl, c.cta, C.lagoonDeep)}</div>
   <p style="margin:0; color:${C.faint}; font-size:12px; text-align:center; line-height:1.6;">Questions ? Répondez à cet email, une vraie personne le lit.</p>
 `;
-  const { error } = await resend.emails.send({
+  const { error } = await resendClient().emails.send({
     from: FROM_EMAIL,
     to: opts.email,
     replyTo: RELAY_EMAIL,
@@ -1237,7 +1241,7 @@ export async function sendProjetLeadEmail(lead: ProjetLead) {
     `Repondre au contact : reply direct (reply-to = ${lead.email}).`,
   ].filter((l) => l !== ``);
 
-  const { data, error } = await resend.emails.send({
+  const { data, error } = await resendClient().emails.send({
     from: FROM_EMAIL,
     to: PROJET_LEAD_TO,
     cc: PROJET_LEAD_CC,
@@ -1351,7 +1355,7 @@ export async function sendActivityQuoteRequest(
     `crete.direct`,
   ];
 
-  const { data, error } = await resend.emails.send({
+  const { data, error } = await resendClient().emails.send({
     from: FROM_EMAIL,
     to: partner.email,
     replyTo: RELAY_EMAIL,
@@ -1416,7 +1420,7 @@ export async function sendActivityCustomerRequestReceived(opts: {
     </p>
   </div>
 `;
-  const { data, error } = await resend.emails.send({
+  const { data, error } = await resendClient().emails.send({
     from: FROM_EMAIL,
     to: opts.email,
     replyTo: RELAY_EMAIL,
@@ -1475,7 +1479,7 @@ export async function sendActivityCustomerNewOffer(opts: {
   <div style="text-align:center; margin:0 0 18px;">${pillButton(opts.offersUrl, c.cta, C.lagoonDeep)}</div>
   <p style="margin:0; color:${C.faint}; font-size:12px; text-align:center; line-height:1.6;">Questions? Reply to this email, a real person reads it.</p>
 `;
-  const { error } = await resend.emails.send({
+  const { error } = await resendClient().emails.send({
     from: FROM_EMAIL,
     to: opts.email,
     replyTo: RELAY_EMAIL,
@@ -1528,7 +1532,7 @@ export async function sendActivityCustomerRelance(opts: {
   <div style="text-align:center; margin:0 0 18px;">${pillButton(opts.offersUrl, c.cta, C.lagoonDeep)}</div>
   <p style="margin:0; color:${C.faint}; font-size:12px; text-align:center; line-height:1.6;">Questions? Reply to this email, a real person reads it.</p>
 `;
-  const { error } = await resend.emails.send({
+  const { error } = await resendClient().emails.send({
     from: FROM_EMAIL,
     to: opts.email,
     replyTo: RELAY_EMAIL,
@@ -1572,7 +1576,7 @@ export async function sendActivityCustomerNoQuoteYet(opts: {
   <p style="margin:0 0 16px; color:${C.muted}; font-size:14px; line-height:1.6;">${greeting}${ACT_NO_QUOTE_BODY[l]}</p>
   <p style="margin:0; color:${C.faint}; font-size:12px; text-align:center; line-height:1.6;">${ACT_NO_QUOTE_FOOT[l]}</p>
 `;
-  const { data, error } = await resend.emails.send({
+  const { data, error } = await resendClient().emails.send({
     from: FROM_EMAIL,
     to: opts.email,
     replyTo: RELAY_EMAIL,
@@ -1592,7 +1596,7 @@ export async function sendActivityPartnerRelance(
   quoteUrl: string,
 ): Promise<void> {
   const first = partnerName.split(" ")[0] || partnerName;
-  const { error } = await resend.emails.send({
+  const { error } = await resendClient().emails.send({
     from: FROM_EMAIL,
     to: email,
     replyTo: RELAY_EMAIL,
@@ -1621,7 +1625,7 @@ export async function sendActivityPartnerNotChosen(
   partnerName: string,
 ): Promise<void> {
   const first = partnerName.split(" ")[0] || partnerName;
-  const { error } = await resend.emails.send({
+  const { error } = await resendClient().emails.send({
     from: FROM_EMAIL,
     to: email,
     replyTo: RELAY_EMAIL,
@@ -1716,7 +1720,7 @@ export async function sendActivityConnectionEmails(opts: {
     `Please contact the traveller to confirm the details. Thanks!`,
     `Kami · crete.direct`,
   ];
-  const r1 = await resend.emails.send({
+  const r1 = await resendClient().emails.send({
     from: FROM_EMAIL,
     to: partner.email,
     cc: RELAY_EMAIL,
@@ -1737,7 +1741,7 @@ export async function sendActivityConnectionEmails(opts: {
     </div>
     <p style="margin:0; color:${C.faint}; font-size:12px; line-height:1.6;">${c.foot}</p>
   `;
-  assertSent(await resend.emails.send({
+  assertSent(await resendClient().emails.send({
     from: FROM_EMAIL,
     to: customer.email,
     // Meme raison que cote voiture : « repondre » doit atteindre le prestataire.
@@ -1775,7 +1779,7 @@ export async function sendActivityLeadKamiSummary(
     `Premier qui soumet son prix gagne. Le client reçoit l'offre automatiquement ; tu es en copie à l'acceptation.`,
   ];
   try {
-    reportSend(await resend.emails.send({
+    reportSend(await resendClient().emails.send({
       from: FROM_EMAIL,
       to: RELAY_EMAIL,
       replyTo: lead.customerEmail,
@@ -1798,7 +1802,7 @@ export async function sendPartnerCommissionRequest(
   m: CommissionMail,
 ): Promise<boolean> {
   try {
-    const res = await resend.emails.send({
+    const res = await resendClient().emails.send({
       from: FROM_EMAIL,
       to: partnerEmail,
       replyTo: "hello@crete.direct",
@@ -1819,7 +1823,7 @@ export async function sendPartnerCommissionRequest(
  */
 export async function sendCreditNote(partnerEmail: string, m: CreditMail): Promise<boolean> {
   try {
-    const res = await resend.emails.send({
+    const res = await resendClient().emails.send({
       from: FROM_EMAIL,
       to: partnerEmail,
       replyTo: "hello@crete.direct",
@@ -1845,7 +1849,7 @@ export async function sendPartnerOutcomeQuestion(
   m: OutcomeQuestionMail,
 ): Promise<boolean> {
   try {
-    const res = await resend.emails.send({
+    const res = await resendClient().emails.send({
       from: FROM_EMAIL,
       to: partnerEmail,
       replyTo: "hello@crete.direct",
@@ -1863,7 +1867,7 @@ export async function sendPartnerOutcomeQuestion(
 /** Rappel J+15 d'une facture de commission due (cron car-outcome-followup). Best-effort, `reminded_at` est écrit avant. */
 export async function sendInvoiceReminder(partnerEmail: string, m: InvoiceReminderMail): Promise<boolean> {
   try {
-    const res = await resend.emails.send({
+    const res = await resendClient().emails.send({
       from: FROM_EMAIL,
       to: partnerEmail,
       replyTo: "hello@crete.direct",
@@ -1887,7 +1891,7 @@ export async function sendInvoiceReminder(partnerEmail: string, m: InvoiceRemind
  */
 export async function sendCarDepositMail(to: string, mail: { subject: string; html: string }): Promise<boolean> {
   try {
-    const res = await resend.emails.send({
+    const res = await resendClient().emails.send({
       from: FROM_EMAIL,
       to,
       replyTo: "hello@crete.direct",

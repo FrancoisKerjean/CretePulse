@@ -7,6 +7,7 @@ let fail = 0;
 const ok = (n, c) => { console.log(c ? `ok - ${n}` : `FAIL - ${n}`); if (!c) fail++; };
 
 ok("chania-airport -> chania-west", zoneForPickup("chania-airport")?.id === "chania-west");
+ok("heraklion-airport -> heraklion-center", zoneForPickup("heraklion-airport")?.id === "heraklion-center");
 ok("partner west = Auto Smart", partnerForPickup("chania")?.name === "Auto Smart Car Rental");
 ok("partner rethymno = Auto Smart", partnerForPickup("rethymno")?.name === "Auto Smart Car Rental");
 ok("partner heraklion = Auto Smart", partnerForPickup("heraklion")?.name === "Auto Smart Car Rental");

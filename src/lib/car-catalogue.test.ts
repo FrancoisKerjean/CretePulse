@@ -285,3 +285,12 @@ describe("takesDeposits", () => {
     expect(takesDeposits({ ...base, terms_accepted_at: null })).toBe(false);
   });
 });
+
+describe("portalRateSource (M12)", () => {
+  it("traduit la provenance amorcée en anglais, laisse le reste", async () => {
+    const { portalRateSource } = await import("./car-catalogue");
+    expect(portalRateSource("devis 2026, médiane de 4")).toBe("Prefilled from your 2026 quotes (median of 4)");
+    expect(portalRateSource("own price list")).toBe("own price list");
+    expect(portalRateSource(null)).toBe("");
+  });
+});

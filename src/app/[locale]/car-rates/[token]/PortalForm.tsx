@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CAR_CATEGORIES } from "@/lib/car-catalogue";
+import { CAR_CATEGORIES, portalRateSource } from "@/lib/car-catalogue";
 import type { CatalogueConditions } from "@/lib/car-catalogue";
 import { CAR_INCLUSION_KEYS, CAR_INCLUSION_LABELS_PARTNER } from "@/lib/car-inclusions";
 import { CAR_ZONES } from "@/lib/car-partners";
@@ -61,6 +61,7 @@ export function PortalForm({
   const [cancellation, setCancellation] = useState(c.cancellation_terms ?? "");
   const [fees, setFees] = useState<Fee[]>(Object.entries(c.delivery_fees ?? {}).map(([slug, eur]) => ({ slug, eur: String(eur) })));
   const [agree, setAgree] = useState(false);
+  const canPublishTerms = termsAccepted || agree;
   const [until, setUntil] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; lines: string[] } | null>(null);
@@ -151,31 +152,37 @@ export function PortalForm({
           One line per category, period and minimum rental length. The price applies to every day of the rental; the longest minimum
           that fits the rental length wins. Periods of the same category and minimum must not overlap.
         </p>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14, minWidth: 640 }}>
-            <thead>
-              <tr style={{ textAlign: "left", color: "#5C7886", fontSize: 12 }}>
-                <th>Category</th><th>From</th><th>To</th><th>Min. days</th><th>EUR / day</th><th />
-              </tr>
-            </thead>
-            <tbody>
-              {rates.map((r, i) => (
-                <tr key={i} style={{ verticalAlign: "top" }}>
-                  <td style={{ paddingRight: 6, paddingBottom: 8 }}>
-                    <select aria-label="Category" style={input} value={r.category} onChange={(e) => patchRate(i, { category: e.target.value })}>
-                      {CAR_CATEGORIES.map((k) => <option key={k} value={k}>{CATEGORY_LABEL[k]}</option>)}
-                    </select>
-                    {r.source ? <div style={{ color: "#8A9BA5", fontSize: 11, marginTop: 3 }}>{r.source}</div> : null}
-                  </td>
-                  <td style={{ paddingRight: 6 }}><input aria-label="From" type="date" style={input} value={r.period_from} onChange={(e) => patchRate(i, { period_from: e.target.value })} /></td>
-                  <td style={{ paddingRight: 6 }}><input aria-label="To" type="date" style={input} value={r.period_to} onChange={(e) => patchRate(i, { period_to: e.target.value })} /></td>
-                  <td style={{ paddingRight: 6, width: 90 }}><input aria-label="Minimum days" type="number" min={1} step={1} style={input} value={r.min_days} onChange={(e) => patchRate(i, { min_days: e.target.value })} /></td>
-                  <td style={{ paddingRight: 6, width: 100 }}><input aria-label="Euro per day" type="number" min={0} step="0.5" style={input} value={r.eur_per_day} onChange={(e) => patchRate(i, { eur_per_day: e.target.value })} /></td>
-                  <td><button type="button" style={ghost} aria-label="Remove line" onClick={() => setRates((cur) => cur.filter((_, idx) => idx !== i))}>Remove</button></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        {/* Grille en cartes empilées sur téléphone, en lignes au-delà de 640 px (M13). */}
+        <div className="hidden sm:grid gap-2 text-[12px] text-[#5C7886] mb-1" style={{ gridTemplateColumns: "1.4fr 1fr 1fr 90px 100px auto" }}>
+          <span>Category</span><span>From</span><span>To</span><span>Min. days</span><span>EUR / day</span><span />
+        </div>
+        <div className="flex flex-col gap-3 sm:gap-2">
+          {rates.map((r, i) => (
+            <div key={i} className="grid grid-cols-2 gap-2 p-3 rounded-xl border border-[#DCE9EE] sm:p-0 sm:border-0 sm:items-start sm:[grid-template-columns:1.4fr_1fr_1fr_90px_100px_auto]">
+              <label className="col-span-2 sm:col-span-1 text-[12px] text-[#5C7886]">
+                <span className="sm:hidden">Category</span>
+                <select aria-label="Category" style={input} value={r.category} onChange={(e) => patchRate(i, { category: e.target.value })}>
+                  {CAR_CATEGORIES.map((k) => <option key={k} value={k}>{CATEGORY_LABEL[k]}</option>)}
+                </select>
+                {r.source ? <span className="block" style={{ color: "#8A9BA5", fontSize: 11, marginTop: 3 }}>{portalRateSource(r.source)}</span> : null}
+              </label>
+              <label className="text-[12px] text-[#5C7886]"><span className="sm:hidden">From</span>
+                <input aria-label="From" type="date" style={input} value={r.period_from} onChange={(e) => patchRate(i, { period_from: e.target.value })} />
+              </label>
+              <label className="text-[12px] text-[#5C7886]"><span className="sm:hidden">To</span>
+                <input aria-label="To" type="date" style={input} value={r.period_to} onChange={(e) => patchRate(i, { period_to: e.target.value })} />
+              </label>
+              <label className="text-[12px] text-[#5C7886]"><span className="sm:hidden">Min. days</span>
+                <input aria-label="Minimum days" type="number" min={1} step={1} style={input} value={r.min_days} onChange={(e) => patchRate(i, { min_days: e.target.value })} />
+              </label>
+              <label className="text-[12px] text-[#5C7886]"><span className="sm:hidden">EUR / day</span>
+                <input aria-label="Euro per day" type="number" min={0} step="0.5" style={input} value={r.eur_per_day} onChange={(e) => patchRate(i, { eur_per_day: e.target.value })} />
+              </label>
+              <div className="col-span-2 sm:col-span-1">
+                <button type="button" style={ghost} aria-label="Remove line" onClick={() => setRates((cur) => cur.filter((_, idx) => idx !== i))}>Remove</button>
+              </div>
+            </div>
+          ))}
         </div>
         <button type="button" style={{ ...ghost, marginTop: 8 }}
           onClick={() => setRates((cur) => [...cur, { category: "compact", period_from: "", period_to: "", min_days: "1", eur_per_day: "", source: "" }])}>
@@ -252,18 +259,23 @@ export function PortalForm({
         <p style={{ margin: "0 0 10px", fontSize: 14, color: "#0B3954" }}>
           Please read the <a href="/en/car-partner-terms" target="_blank" rel="noreferrer" style={{ color: "#008C9E" }}>2027 partner terms</a>.
         </p>
-        <label style={{ display: "block", fontSize: 14, color: "#0B3954", marginBottom: 14 }}>
-          <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} /> I accept these terms
-        </label>
+        {/* Conditions déjà acceptées : plus de case ni de bouton d'acceptation (M13). */}
+        {termsAccepted ? null : (
+          <label style={{ display: "block", fontSize: 14, color: "#0B3954", marginBottom: 14 }}>
+            <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} /> I accept these terms
+          </label>
+        )}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-          <button type="button" disabled={busy || !agree || !hasRates || suspended} style={{ ...btn("#E2725B"), opacity: busy || !agree || !hasRates || suspended ? 0.5 : 1 }}
+          <button type="button" disabled={busy || !canPublishTerms || !hasRates || suspended} style={{ ...btn("#E2725B"), opacity: busy || !canPublishTerms || !hasRates || suspended ? 0.5 : 1 }}
             onClick={() => run([saveIdentity, saveRates, { action: "accept_terms", publish: true }], "Your prices are published.")}>
             Publish these prices
           </button>
-          <button type="button" disabled={busy || !agree} style={{ ...btn("#0B3954"), opacity: busy || !agree ? 0.5 : 1 }}
-            onClick={() => run([saveIdentity, { action: "accept_terms", publish: false }], "Terms accepted.")}>
-            Accept these terms
-          </button>
+          {termsAccepted ? null : (
+            <button type="button" disabled={busy || !agree} style={{ ...btn("#0B3954"), opacity: busy || !agree ? 0.5 : 1 }}
+              onClick={() => run([saveIdentity, { action: "accept_terms", publish: false }], "Terms accepted.")}>
+              Accept these terms
+            </button>
+          )}
         </div>
       </section>
 

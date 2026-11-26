@@ -6,7 +6,7 @@ import { partnerViewState } from "@/lib/car-deposit";
 import { carPickupLabel, carTypeLabelWithExamples } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { insuranceSummary } from "@/lib/car-inclusions";
-import { formatEur, formatAthensDeadline } from "@/lib/car-format";
+import { formatEur, formatAthensDeadline, formatWallDate } from "@/lib/car-format";
 import { ConfirmButtons, StateNotice, type StateTexts } from "./ConfirmButtons";
 
 // Lien privé du loueur : jamais mis en cache (aucune écriture ISR), jamais indexé.
@@ -28,7 +28,6 @@ const STATES: StateTexts = {
   closed: { title: "Link no longer valid", body: "This link is no longer valid." },
 };
 
-const hhmm = (t: string | null) => (t ? ` at ${t.slice(0, 5)}` : "");
 
 /** Échéance passée ? Page rendue à chaque requête (force-dynamic) : l'horloge est lue une fois par rendu. */
 const deadlinePassed = (iso: string | null) => (iso ? Date.parse(iso) < Date.now() : false);
@@ -86,8 +85,8 @@ export default async function CarConfirmPage({ params }: { params: Promise<{ loc
         ) : null}
 
         <div style={recap}>
-          <div><strong>Pick-up:</strong> {booking.pickup_slug ? carPickupLabel(booking.pickup_slug) : "-"}, {booking.date_from}{hhmm(booking.time_from)}</div>
-          <div><strong>Return:</strong> {booking.date_to}{hhmm(booking.time_to)}</div>
+          <div><strong>Pick-up:</strong> {booking.pickup_slug ? carPickupLabel(booking.pickup_slug) : "-"}, {formatWallDate(booking.date_from, booking.time_from, "en")}</div>
+          <div><strong>Return:</strong> {formatWallDate(booking.date_to, booking.time_to, "en")}</div>
           <div><strong>Car:</strong> {car}</div>
           {insurance.length ? <div><strong>Insurance:</strong> {insurance.join(" · ")}</div> : null}
           <div><strong>Total price:</strong> {formatEur(total, "en")}</div>

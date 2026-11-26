@@ -338,3 +338,10 @@ export function validateConditionsInput(
 
   return errors.length ? { ok: false, errors } : { ok: true, conditions: out, stripped };
 }
+
+/** Provenance d'une ligne amorcée, en anglais pour le portail loueur (M12). La base garde le texte du seed. */
+export function portalRateSource(source: string | null | undefined): string {
+  if (!source) return "";
+  const m = /^devis 2026, médiane de (\d+)$/.exec(source.trim());
+  return m ? `Prefilled from your 2026 quotes (median of ${m[1]})` : source;
+}

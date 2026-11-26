@@ -8,6 +8,7 @@ import { CAR_TYPES_DATA, type CarTypeData } from "./car-types-data.ts";
 import { SLUG_COORDS } from "./taxi-fare.ts";
 import { isChildSeatKey } from "./car-child-seats.ts";
 import { SHORT_STAY_MIN_DAYS, rentalDays } from "./car-pricing.ts";
+import { pickupLabel } from "./car-pickup-labels.ts";
 
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -47,8 +48,8 @@ export function resolveAcceptPhone(
   return { ok: false };
 }
 
-export const carPickupLabel = (slug: string): string =>
-  slug.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
+/** Libellé anglais d'un point de prise (e-mails loueur, page loueur, back-office). */
+export const carPickupLabel = (slug: string): string => pickupLabel(slug, "en");
 
 /** Libellé du type de véhicule enrichi de quelques modèles concrets, pour que
  *  le loueur/le client visualisent la catégorie (ex. « Compact (VW Polo,

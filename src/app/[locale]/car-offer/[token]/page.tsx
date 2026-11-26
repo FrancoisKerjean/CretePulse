@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { carPickupLabel } from "@/lib/car-lead";
+import { pickupLabel } from "@/lib/car-pickup-labels";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { AcceptButton, type AcceptRefusals } from "./AcceptButton";
 import { isCallablePhone } from "@/lib/car-lead";
@@ -246,7 +246,7 @@ function OfferCard({
 
       <div style={{ background: "#F6FBFC", border: "1px solid #DCE9EE", borderRadius: 14, padding: "14px 16px", marginBottom: 22, color: "#0B3954", fontSize: 14, lineHeight: 1.8 }}>
         <p style={{ margin: "0 0 6px", color: "#94A3B8", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em" }}>{c.request}</p>
-        <div>{carPickupLabel(request.pickup_slug as string)}</div>
+        <div>{pickupLabel(request.pickup_slug as string, locale)}</div>
         {/* Dates lisibles en mode acompte ; carte de mise en relation inchangée. */}
         <div>
           {deposit
@@ -394,7 +394,7 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
               <div style={{ background: "#F6FBFC", border: "1px solid #DCE9EE", borderRadius: 14, padding: "14px 16px", margin: "18px 0 14px", color: "#0B3954", fontSize: 14, lineHeight: 1.8 }}>
                 {partner ? <div><strong>{partner}</strong></div> : null}
                 <div>
-                  {carPickupLabel(request.pickup_slug as string)} · {formatWallDate(request.date_from as string, request.time_from as string | null, lang)}
+                  {pickupLabel(request.pickup_slug as string, lang)} · {formatWallDate(request.date_from as string, request.time_from as string | null, lang)}
                   {" → "}{formatWallDate(request.date_to as string, request.time_to as string | null, lang)}
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>

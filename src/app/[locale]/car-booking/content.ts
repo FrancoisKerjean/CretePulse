@@ -37,6 +37,10 @@ export type CarBookingStrings = {
   cancelGetBackNothing: string;
   cancelSubmit: string;
   cancelling: string;
+  /** Second temps de l'annulation (G4) : rien ne part au premier clic. */
+  cancelAsk: string;
+  cancelConfirm: string;
+  cancelKeep: string;
   cancelledRefunded: string;
   cancelledNoRefund: string;
   cancelTooLate: string;
@@ -109,6 +113,9 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
       "Pick-up is less than 48 hours away: if you cancel now, you get {amount} back and the deposit is kept.",
     cancelSubmit: "Cancel my booking",
     cancelling: "Cancelling",
+    cancelAsk: "Are you sure? A cancelled booking can't be restored.",
+    cancelConfirm: "Yes, cancel",
+    cancelKeep: "Keep my booking",
     cancelledRefunded: "Booking cancelled. The refund of {amount} is on its way to your card.",
     cancelledNoRefund: "Booking cancelled. The deposit is kept.",
     cancelTooLate: "This booking can no longer be cancelled.",
@@ -171,6 +178,9 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
       "La prise du véhicule est dans moins de 48 heures : si vous annulez maintenant, vous récupérez {amount} et l'acompte est conservé.",
     cancelSubmit: "Annuler ma réservation",
     cancelling: "Annulation en cours",
+    cancelAsk: "Vous confirmez ? Une réservation annulée ne peut pas être rétablie.",
+    cancelConfirm: "Oui, annuler",
+    cancelKeep: "Garder ma réservation",
     cancelledRefunded: "Réservation annulée. Le remboursement de {amount} est en route vers votre carte.",
     cancelledNoRefund: "Réservation annulée. L'acompte est conservé.",
     cancelTooLate: "Cette réservation ne peut plus être annulée.",
@@ -233,6 +243,9 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
       "Die Abholung ist in weniger als 48 Stunden: Wenn Sie jetzt stornieren, erhalten Sie {amount} zurück und die Anzahlung wird einbehalten.",
     cancelSubmit: "Buchung stornieren",
     cancelling: "Stornierung läuft",
+    cancelAsk: "Sind Sie sicher? Eine stornierte Buchung lässt sich nicht wiederherstellen.",
+    cancelConfirm: "Ja, stornieren",
+    cancelKeep: "Buchung behalten",
     cancelledRefunded: "Buchung storniert. Die Erstattung von {amount} ist auf dem Weg zu Ihrer Karte.",
     cancelledNoRefund: "Buchung storniert. Die Anzahlung wird einbehalten.",
     cancelTooLate: "Diese Buchung kann nicht mehr storniert werden.",
@@ -295,6 +308,9 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
       "Η παραλαβή είναι σε λιγότερο από 48 ώρες: αν ακυρώσετε τώρα, σας επιστρέφονται {amount} και η προκαταβολή παρακρατείται.",
     cancelSubmit: "Ακύρωση κράτησης",
     cancelling: "Ακύρωση σε εξέλιξη",
+    cancelAsk: "Είστε σίγουροι; Μια ακυρωμένη κράτηση δεν μπορεί να επανέλθει.",
+    cancelConfirm: "Ναι, ακύρωση",
+    cancelKeep: "Διατήρηση της κράτησης",
     cancelledRefunded: "Η κράτηση ακυρώθηκε. Η επιστροφή {amount} είναι καθ' οδόν προς την κάρτα σας.",
     cancelledNoRefund: "Η κράτηση ακυρώθηκε. Η προκαταβολή παρακρατείται.",
     cancelTooLate: "Αυτή η κράτηση δεν μπορεί πλέον να ακυρωθεί.",

@@ -26,6 +26,7 @@ export const TAXI_TARIFF = {
 export const SLUG_COORDS: Record<string, [number, number]> = {
   // Est (herlas)
   "heraklion": [35.3387, 25.1442],
+  "heraklion-airport": [35.3397, 25.1803],
   "agios-nikolaos": [35.1909, 25.7136],
   "ierapetra": [35.0114, 25.7411],
   "sitia": [35.2078, 26.1029],

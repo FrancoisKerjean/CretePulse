@@ -17,7 +17,7 @@ import CancelPanel from "./CancelPanel";
 import { DepositPaidBeacon } from "./DepositPaidBeacon";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { hashToken } from "@/lib/car-quote";
-import { carPickupLabel } from "@/lib/car-lead";
+import { pickupLabel } from "@/lib/car-pickup-labels";
 import { clientCancelNowEur, isDepositBookable, type RefundReason } from "@/lib/car-deposit";
 import { CAR_INSURANCE_HEADING, insuranceSummary } from "@/lib/car-inclusions";
 
@@ -91,7 +91,7 @@ function Recap({ row, t, lang, paid }: { row: BookingRow; t: CarBookingStrings; 
         ) : null}
         {row.partner_name ? <p className="m-0 mt-1 text-[14px] text-text-muted">{row.partner_name}</p> : null}
         <p className="m-0 mt-1 text-[14px] text-text-muted">
-          {row.pickup_slug ? `${carPickupLabel(row.pickup_slug)} · ` : ""}
+          {row.pickup_slug ? `${pickupLabel(row.pickup_slug, lang)} · ` : ""}
           {formatWallDate(row.date_from, row.time_from, lang)} → {formatWallDate(row.date_to, row.time_to, lang)}
         </p>
       </div>

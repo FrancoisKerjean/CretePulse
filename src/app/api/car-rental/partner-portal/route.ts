@@ -6,7 +6,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { assertWritten } from "@/lib/car-invoice-server";
 import { partnerBillingIdentity } from "@/lib/car-invoice";
 import { buildIdentityPatch, IDENTITY_TEXT_FIELDS, normalizeVat, todayAthens, type IdentityTextField } from "@/lib/car-partner-identity";
-import { CAR_TERMS_VERSION, isoToUtc, validateConditionsInput, validateRatesInput } from "@/lib/car-catalogue";
+import { CAR_TERMS_VERSION, isPartnerBookable, isoToUtc, validateConditionsInput, validateRatesInput } from "@/lib/car-catalogue";
 import { partnerByPortalToken, ratesForPartner, replaceRates, type PortalPartner } from "@/lib/car-catalogue-db";
 
 export const dynamic = "force-dynamic";
@@ -66,10 +66,11 @@ export async function POST(request: NextRequest) {
       case "accept_terms": {
         const identity = partnerBillingIdentity(partner);
         if (!identity.ok) return NextResponse.json({ ok: false, missing: identity.missing }, { status: 422 });
-        const patch: Record<string, unknown> = {
-          terms_version: CAR_TERMS_VERSION,
-          terms_accepted_at: new Date().toISOString(),
-        };
+        // Version courante déjà acceptée : on garde la date d'origine (preuve
+        // d'acceptation), publier ne doit pas la réécrire.
+        const patch: Record<string, unknown> = isPartnerBookable(partner)
+          ? {}
+          : { terms_version: CAR_TERMS_VERSION, terms_accepted_at: new Date().toISOString() };
         if (body.publish === true) {
           // Une suspension (ops ou 3 échecs) ne se lève pas depuis le portail.
           if (partner.rates_status === "paused") return NextResponse.json({ ok: false, suspended: true, error: "Your prices are suspended, contact crete.direct." }, { status: 409 });
@@ -77,6 +78,7 @@ export async function POST(request: NextRequest) {
           patch.rates_status = "live";
           patch.rates_published_at = new Date().toISOString();
         }
+        if (Object.keys(patch).length === 0) return ok();
         await patchPartner("portal.accept_terms", partner.id, patch);
         return ok();
       }

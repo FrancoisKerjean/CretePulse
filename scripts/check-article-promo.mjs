@@ -304,7 +304,7 @@ ok("l'arrivée se lit dans le titre, les mots-clés et le slug, jamais dans le c
   const body = "<p>Only 30 minutes from Heraklion airport, this beach is quiet.</p>" + H2x3;
   const p = planArticlePromo(guide({ slug: "quiet-beach", category: "beaches", title: "A quiet beach in the south", content: body }));
   assert.equal(p.mid.kind, "car", "le van ne passe pas devant sur un mot du corps");
-  assert.equal(p.mid.pickup, "heraklion", "le corps sert toujours à la détection des lieux");
+  assert.equal(p.mid.pickup, "heraklion-airport", "le corps sert toujours à la détection des lieux (aéroport d Héraklion = point de prise depuis G3)");
   assert.equal(p.end.kind, "bus", "Heraklion est un lieu bus : ligne plages de la table");
   const t = planArticlePromo(guide({ slug: "cha-to-reth", category: "beaches", title: "Getting from Chania Airport to Rethymno" }));
   assert.deepEqual(kinds(t), ["van", "car"]);

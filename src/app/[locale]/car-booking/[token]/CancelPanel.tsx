@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { fill, type CarBookingStrings } from "../content";
 import { formatEur } from "@/lib/car-format";
+import { primaryCancelAction, type CancelPhase } from "../cancel-flow";
 
 /**
  * Qui annule : le jeton de réservation (page /car-booking) ou le jeton d'offres
@@ -28,6 +29,7 @@ export default function CancelPanel(
   const [expected, setExpected] = useState(refundEur);
   const [changed, setChanged] = useState(false);
   const [note, setNote] = useState("");
+  const [phase, setPhase] = useState<CancelPhase>("idle");
   const eur = (n: number) => formatEur(n, locale);
 
   async function cancel() {
@@ -76,22 +78,40 @@ export default function CancelPanel(
         <p className="m-0 text-[15px] font-heading font-bold text-text">{strings.cancelTitle}</p>
         {done ? null : (
           <p
-            role={changed ? "status" : undefined}
-            className={`m-0 mt-1 text-[13.5px] leading-relaxed ${changed ? "font-bold text-text" : "text-text-muted"}`}
+            role={changed || phase === "confirm" ? "status" : undefined}
+            className={`m-0 mt-1 text-[13.5px] leading-relaxed ${changed || phase === "confirm" ? "font-bold text-text" : "text-text-muted"}`}
           >
             {fill(before, { amount: eur(expected) })}
           </p>
         )}
+        {!done && phase === "confirm" ? (
+          <p className="m-0 mt-1 text-[13.5px] leading-relaxed text-text">{strings.cancelAsk}</p>
+        ) : null}
       </div>
       {done ? null : (
-        <button
-          type="button"
-          onClick={cancel}
-          disabled={busy}
-          className="self-start inline-flex items-center justify-center bg-white text-text-muted border border-border rounded-full px-5 py-2.5 text-[14px] font-heading font-bold hover:border-text-muted transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {busy ? strings.cancelling : strings.cancelSubmit}
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => (primaryCancelAction(phase) === "send" ? cancel() : setPhase("confirm"))}
+            disabled={busy}
+            className={`inline-flex items-center justify-center rounded-full px-5 py-2.5 text-[14px] font-heading font-bold transition-all disabled:opacity-60 disabled:cursor-not-allowed ${
+              phase === "confirm"
+                ? "bg-night text-white border border-night hover:opacity-90"
+                : "bg-white text-text-muted border border-border hover:border-text-muted"
+            }`}
+          >
+            {busy ? strings.cancelling : phase === "confirm" ? strings.cancelConfirm : strings.cancelSubmit}
+          </button>
+          {phase === "confirm" && !busy ? (
+            <button
+              type="button"
+              onClick={() => { setPhase("idle"); setChanged(false); }}
+              className="inline-flex items-center justify-center bg-white text-text border border-border rounded-full px-5 py-2.5 text-[14px] font-heading font-bold hover:border-text-muted transition-all"
+            >
+              {strings.cancelKeep}
+            </button>
+          ) : null}
+        </div>
       )}
       {note && (
         <p role="status" className="m-0 text-[14px] font-heading font-bold text-text">

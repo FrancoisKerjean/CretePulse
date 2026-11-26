@@ -146,6 +146,8 @@ export interface BookingRow {
   booking_amount_eur?: number | null;
   transfer_id?: string | null;
   refund_amount_eur?: number | null;
+  /** Parcours acompte (2027) : son etat s'affiche dans le bloc acompte, pas ici. */
+  deposit_eur?: number | null;
 }
 
 export interface BookingState {
@@ -167,6 +169,10 @@ const money = (n: number | null | undefined): string => (Number(n) || 0).toFixed
 export function bookingState(row: BookingRow): BookingState | null {
   const status = row.booking_status;
   if (!status) return null;
+  // Parcours acompte : le bloc acompte du back-office porte deja l'etat et le
+  // montant (deposit_eur). Ce badge-ci lit booking_amount_eur, que ce parcours
+  // n'ecrit jamais : il afficherait 0.00 EUR et des statuts bruts (M14).
+  if (row.deposit_eur != null) return null;
 
   if (status === "pending_payment") {
     return {

@@ -15,7 +15,7 @@ export interface CarLandingRef {
 
 export const CAR_LANDINGS = [
   { slug: "chania-airport", pickup: "chania-airport", kind: "airport", code: "CHQ" },
-  { slug: "heraklion-airport", pickup: "heraklion", kind: "airport", code: "HER" },
+  { slug: "heraklion-airport", pickup: "heraklion-airport", kind: "airport", code: "HER" },
   { slug: "souda-port", pickup: "chania", kind: "port" },
   { slug: "heraklion-port", pickup: "heraklion", kind: "port" },
   // Villes et zones touristiques (Lot B car-demand, 10/07/2026). slug === pickup :

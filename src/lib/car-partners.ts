@@ -25,7 +25,7 @@ export interface CarPartner {
 export const CAR_ZONES: CarZone[] = [
   { id: "chania-west", label: "Chania & the west", pickups: ["chania-airport", "chania", "platanias", "kissamos", "paleochora", "kalyves", "georgioupolis"] },
   { id: "rethymno", label: "Rethymno", pickups: ["rethymno", "plakias", "panormo", "bali"] },
-  { id: "heraklion-center", label: "Heraklion & central", pickups: ["heraklion", "hersonissos", "malia", "matala", "agia-galini", "gouves"] },
+  { id: "heraklion-center", label: "Heraklion & central", pickups: ["heraklion-airport", "heraklion", "hersonissos", "malia", "matala", "agia-galini", "gouves"] },
   { id: "lasithi-east", label: "Lasithi & the east", pickups: ["agios-nikolaos", "elounda", "sitia", "ierapetra", "makry-gyalos", "sisi"] },
 ];
 

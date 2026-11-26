@@ -59,7 +59,9 @@ describe("/[locale]/car-confirm/[token]", () => {
     expect(html).toContain("Confirm");
     expect(html).toContain("Not available");
     expect(html).toContain("Heraklion Airport");
-    expect(html).toContain("2027-07-20");
+    // M4 : date lisible (formatWallDate), plus l ISO brut.
+    expect(html).toContain("Tuesday, July 20, 2027");
+    expect(html).not.toContain("2027-07-20 at");
     expect(html).toContain("Fiat Panda · Manual");
     expect(html).toContain("€412");
     expect(html).toContain("€370.80");

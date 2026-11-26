@@ -27,6 +27,7 @@
       "id": "heraklion-center",
       "label": "Heraklion & central",
       "pickups": [
+        "heraklion-airport",
         "heraklion",
         "hersonissos",
         "malia",

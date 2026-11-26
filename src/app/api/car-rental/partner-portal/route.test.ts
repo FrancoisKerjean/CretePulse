@@ -97,6 +97,14 @@ describe("POST /api/car-rental/partner-portal", () => {
     expect(typeof patches[0].rates_published_at).toBe("string");
   });
 
+  it("publier quand la version courante est déjà acceptée : la date d'acceptation d'origine reste (M13)", async () => {
+    wiring({ ...PARTNER, terms_version: "2027-01", terms_accepted_at: "2027-01-10T10:00:00.000Z" }, [ROW]);
+    const res = await POST(req({ token: "t", action: "accept_terms", publish: true }) as never);
+    expect(res.status).toBe(200);
+    expect(patches[0].rates_status).toBe("live");
+    expect(patches[0]).not.toHaveProperty("terms_accepted_at");
+  });
+
   it("save_rates invalide (chevauchement) : 400 avec errors, rien d'écrit", async () => {
     wiring();
     const rows = [ROW, { ...ROW, period_from: "2027-06-15", period_to: "2027-07-15" }];
