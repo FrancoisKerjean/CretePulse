@@ -52,6 +52,9 @@ export function isoToUtc(s: string): number | null {
   return new Date(ms).toISOString().slice(0, 10) === s ? ms : null;
 }
 
+/** Plafond de durée d'un calcul de grille : la route publique ne doit pas boucler sur des millions de jours. */
+export const MAX_CATALOGUE_DAYS = 90;
+
 const isCategory = (c: string): c is CarCategory => (CAR_CATEGORIES as readonly string[]).includes(c);
 
 /**
@@ -87,6 +90,7 @@ export function catalogueQuote(
   req: CatalogueRequest,
 ): { total: number; days: number } | null {
   const days = rentalDays(req.dateFrom, req.dateTo, req.timeFrom, req.timeTo);
+  if (days > MAX_CATALOGUE_DAYS) return null;
   const lines = linesForStay(rates, req.category, req.dateFrom, days);
   if (!lines) return null;
   const sum = lines.reduce((acc, l) => acc + l.eur_per_day, 0);
@@ -101,6 +105,7 @@ export function fromPricePerDay(
   category: CarCategory,
 ): number | null {
   const days = rentalDays(req.dateFrom, req.dateTo, req.timeFrom, req.timeTo);
+  if (days > MAX_CATALOGUE_DAYS) return null;
   const lines = linesForStay(rates, category, req.dateFrom, days);
   return lines ? Math.min(...lines.map((l) => l.eur_per_day)) : null;
 }
@@ -180,6 +185,15 @@ export function isPartnerBookable(p: {
   return p.terms_version === CAR_TERMS_VERSION && !!p.terms_accepted_at;
 }
 
+/** Éligible aux offres de grille : conditions courantes acceptées et pas en relais (aucun lien pour confirmer). */
+export function isCatalogueEligible(p: {
+  terms_version: string | null;
+  terms_accepted_at: string | null;
+  lead_routing: string;
+}): boolean {
+  return isPartnerBookable(p) && p.lead_routing !== "relay";
+}
+
 export type PartnerWithTerms = DbPartner & {
   terms_version: string | null;
   terms_accepted_at: string | null;
@@ -215,7 +229,7 @@ export function planFanOut(input: {
   const catalogue: CatalogueOffer[] = [];
   const quote: number[] = [];
   for (const p of input.partners) {
-    if (!isPartnerBookable(p) || p.lead_routing === "relay") continue;
+    if (!isCatalogueEligible(p)) continue;
     const cat = input.catalogues.get(p.id);
     const q = cat ? catalogueQuote(cat.rates, cat.conditions, input.req) : null;
     if (!cat || !q) { quote.push(p.id); continue; }

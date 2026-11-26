@@ -98,6 +98,7 @@ type Strings = {
   npBody: string; // {place}
   npPartnersCta: string;
   npSuggest: string;
+  fromPrice: string; // {price}
 };
 
 const T: Record<string, Strings> = {
@@ -150,6 +151,7 @@ const T: Record<string, Strings> = {
     npBody: "We don't have a vetted rental partner around {place} yet. No request was sent: we only forward requests to agencies we actually work with.",
     npPartnersCta: "Run a local rental agency? Become a partner",
     npSuggest: "Closest area we cover:",
+    fromPrice: "from {price} €/day",
   },
   fr: {
     title1: "Où récupérez-vous la voiture ?",
@@ -200,6 +202,7 @@ const T: Record<string, Strings> = {
     npBody: "Nous n'avons pas encore d'agence de location partenaire vérifiée autour de {place}. Aucune demande n'a été envoyée : nous ne transmettons des demandes qu'aux agences avec lesquelles nous travaillons vraiment.",
     npPartnersCta: "Vous êtes une agence locale ? Devenez partenaire",
     npSuggest: "Zone couverte la plus proche :",
+    fromPrice: "à partir de {price} €/jour",
   },
   de: {
     title1: "Wo holen Sie das Auto ab?",
@@ -250,6 +253,7 @@ const T: Record<string, Strings> = {
     npBody: "Rund um {place} haben wir noch keine geprüfte Partneragentur. Es wurde keine Anfrage gesendet: Wir leiten Anfragen nur an Agenturen weiter, mit denen wir wirklich zusammenarbeiten.",
     npPartnersCta: "Sie führen eine lokale Agentur? Partner werden",
     npSuggest: "Nächstgelegene abgedeckte Gegend:",
+    fromPrice: "ab {price} €/Tag",
   },
   el: {
     title1: "Πού θα παραλάβετε το αυτοκίνητο;",
@@ -300,6 +304,7 @@ const T: Record<string, Strings> = {
     npBody: "Δεν έχουμε ακόμη ελεγμένο συνεργαζόμενο γραφείο ενοικίασης γύρω από το {place}. Δεν στάλθηκε κανένα αίτημα: προωθούμε αιτήματα μόνο σε γραφεία με τα οποία πραγματικά συνεργαζόμαστε.",
     npPartnersCta: "Είστε τοπικό γραφείο; Γίνετε συνεργάτης",
     npSuggest: "Πλησιέστερη καλυπτόμενη περιοχή:",
+    fromPrice: "από {price} €/ημέρα",
   },
 };
 
@@ -352,6 +357,8 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
   const [submitError, setSubmitError] = useState(false);
   const [fallbackWhatsapp, setFallbackWhatsapp] = useState<string | null>(null);
   const [nearRequested, setNearRequested] = useState(false);
+  const [realPrices, setRealPrices] = useState<Record<string, number>>({});
+  const pricesKeyRef = useRef("");
   const funnelStartedRef = useRef(false);
   const viewTrackedRef = useRef(false);
 
@@ -431,6 +438,25 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
   }, [nearRequested, pos]);
 
   const served = pickup ? servedZones.includes(zoneForPickup(pickup)?.id ?? "") : false;
+  // Prix réels des loueurs : un appel par jeu (retrait, dates, heures) à l'entrée de l'étape 3.
+  // Échec silencieux : sans prix, l'estimation de marché reste affichée.
+  useEffect(() => {
+    if (step !== 3 || !pickup) return;
+    const qs = new URLSearchParams({ pickup, dateFrom, dateTo });
+    if (timeFrom) qs.set("timeFrom", timeFrom);
+    if (timeTo) qs.set("timeTo", timeTo);
+    const key = qs.toString();
+    if (pricesKeyRef.current === key) return;
+    pricesKeyRef.current = key;
+    setRealPrices({});
+    fetch(`/api/car-rental/catalogue-from?${key}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (pricesKeyRef.current === key && d?.prices && typeof d.prices === "object") setRealPrices(d.prices);
+      })
+      .catch(() => {});
+  }, [step, pickup, dateFrom, dateTo, timeFrom, timeTo]);
+
   const carTypeDef = CAR_TYPES.find((c) => c.id === carType) ?? null;
 
   // Pickup servi le plus proche du pickup non servi choisi (suggestion honnête).
@@ -804,6 +830,11 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
                   </span>
                 )}
                 <span className="text-center font-data text-xs text-text-muted">{c.pax} pax</span>
+                {realPrices[c.id] != null && (
+                  <span data-testid={`car-from-${c.id}`} className="text-center font-data text-xs font-bold text-sea">
+                    {t.fromPrice.replace("{price}", String(realPrices[c.id]))}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -886,7 +917,7 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
               </div>
             </div>
           </div>
-          {carType && (
+          {carType && realPrices[carType] == null && (
             <CarPriceEstimate
               carType={carType}
               dateFrom={dateFrom}

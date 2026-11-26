@@ -8,6 +8,8 @@ import {
   CAR_TERMS_VERSION,
   validateRatesInput,
   planFanOut,
+  isCatalogueEligible,
+  MAX_CATALOGUE_DAYS,
   type RateRow,
 } from "./car-catalogue";
 
@@ -239,5 +241,27 @@ describe("validateConditionsInput, coordonnées retirées", () => {
     if (!r.ok) return;
     expect(r.conditions.cancellation_terms).toBe("Cancel by WhatsApp or");
     expect(r.conditions.models?.compact?.model).toBe("Fiat Panda, call");
+  });
+});
+
+describe("MAX_CATALOGUE_DAYS", () => {
+  it("returns null beyond the cap, for the quote and the from-price", () => {
+    const wide: RateRow[] = [R("2027-01-01", "2030-12-31", 1, 40)];
+    const req = { dateFrom: "2027-01-01", dateTo: "2027-01-01" };
+    expect(MAX_CATALOGUE_DAYS).toBe(90);
+    expect(fromPricePerDay(wide, { ...req, dateTo: "2027-03-31" }, "compact")).toBe(40);
+    expect(fromPricePerDay(wide, { ...req, dateTo: "2027-04-02" }, "compact")).toBeNull();
+    expect(catalogueQuote(wide, null, { ...REQ_7D, dateFrom: "2027-01-01", dateTo: "2030-12-31" })).toBeNull();
+  });
+});
+
+describe("isCatalogueEligible", () => {
+  const base = { terms_version: CAR_TERMS_VERSION, terms_accepted_at: "2026-12-01T00:00:00Z", lead_routing: "direct" as const };
+  it("accepts a bookable direct partner", () => {
+    expect(isCatalogueEligible(base)).toBe(true);
+  });
+  it("refuses relay and unbookable partners", () => {
+    expect(isCatalogueEligible({ ...base, lead_routing: "relay" })).toBe(false);
+    expect(isCatalogueEligible({ ...base, terms_version: null, terms_accepted_at: null })).toBe(false);
   });
 });
