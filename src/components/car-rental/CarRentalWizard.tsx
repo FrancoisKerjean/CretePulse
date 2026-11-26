@@ -457,6 +457,8 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
       .catch(() => {});
   }, [step, pickup, dateFrom, dateTo, timeFrom, timeTo]);
 
+  // Un prix réel connu remplace l'estimation de marché, à toutes les étapes.
+  const showEstimate = !!carType && realPrices[carType] == null;
   const carTypeDef = CAR_TYPES.find((c) => c.id === carType) ?? null;
 
   // Pickup servi le plus proche du pickup non servi choisi (suggestion honnête).
@@ -917,7 +919,7 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
               </div>
             </div>
           </div>
-          {carType && realPrices[carType] == null && (
+          {showEstimate && carType && (
             <CarPriceEstimate
               carType={carType}
               dateFrom={dateFrom}
@@ -935,7 +937,7 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
       {step === 4 && (
         <div data-testid="car-step-4">
           <h2 className="font-heading font-extrabold text-xl text-text mb-5">{t.title4}</h2>
-          {carType && (
+          {showEstimate && carType && (
             <CarPriceEstimate
               carType={carType}
               dateFrom={dateFrom}

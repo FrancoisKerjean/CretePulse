@@ -33,6 +33,7 @@ describe("GET catalogue-from", () => {
   it("switch off: empty prices, no database read", async () => {
     vi.stubEnv("CAR_CATALOGUE_ENABLED", "off");
     const res = await call(QS);
+    expect(res.headers.get("Cache-Control")).toBe("private, max-age=300");
     expect(await res.json()).toEqual({ prices: {} });
     expect(db.partnersForZoneWithTerms).not.toHaveBeenCalled();
     expect(db.liveCataloguesForPartners).not.toHaveBeenCalled();

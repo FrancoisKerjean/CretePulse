@@ -12,6 +12,7 @@ import { zoneForPickup } from "@/lib/car-partners";
 import { meetsMinDays, rentalDays } from "@/lib/car-pricing";
 
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
+const CACHE = { "Cache-Control": "private, max-age=300" };
 const bad = (error: string) => NextResponse.json({ error }, { status: 400 });
 
 /** Prix « à partir de » par catégorie : le plus bas des loueurs réservables pour ce retrait et ces dates. */
@@ -33,7 +34,7 @@ export async function GET(request: Request) {
   if ((to - from) / 86_400_000 > MAX_CATALOGUE_DAYS) return bad(`Rental too long (${MAX_CATALOGUE_DAYS} days maximum).`);
   if ((timeFrom && !TIME.test(timeFrom)) || (timeTo && !TIME.test(timeTo))) return bad("Invalid time (HH:MM expected).");
 
-  if (process.env.CAR_CATALOGUE_ENABLED !== "on") return NextResponse.json({ prices: {} });
+  if (process.env.CAR_CATALOGUE_ENABLED !== "on") return NextResponse.json({ prices: {} }, { headers: CACHE });
 
   const days = rentalDays(dateFrom, dateTo, timeFrom, timeTo);
   const partners = (await partnersForZoneWithTerms(zone.id)).filter(
@@ -50,5 +51,5 @@ export async function GET(request: Request) {
       if (v != null && (prices[c] == null || v < prices[c]!)) prices[c] = v;
     }
   }
-  return NextResponse.json({ prices }, { headers: { "Cache-Control": "private, max-age=300" } });
+  return NextResponse.json({ prices }, { headers: CACHE });
 }
