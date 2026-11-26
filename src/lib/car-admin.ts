@@ -96,10 +96,9 @@ export interface AdminPartner {
   terms_version?: string | null;
   terms_accepted_at?: string | null;
   rates_status?: string | null;
-  // Compte de versement Stripe Connect (migration 20260730_car_booking).
-  // Sans lui, le cron de versement garde les fonds du client et le signale.
-  stripe_connect_account_id?: string | null;
-  kyc_status?: string | null;
+  // Les colonnes Stripe Connect de 20260730_car_booking (stripe_connect_account_id,
+  // kyc_status) restent en base mais plus rien ne les lit : le versement au
+  // loueur est parti avec le paiement total, l'acompte reste sur le compte plateforme.
   // Note Google (migration 20260730_partner_google_rating), relevée par
   // Places API. `google_rating_at` sans note = fiche cherchée, non trouvée.
   google_place_id?: string | null;

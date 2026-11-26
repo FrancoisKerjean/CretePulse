@@ -28,7 +28,7 @@ export default function BookingPanel(
       }
       // Codes machine posés par lib/stripe-errors : on affiche notre phrase,
       // jamais le détail renvoyé par le prestataire.
-      if (j.code === "payment_provider" || j.code === "payouts_unavailable") setError(strings.errorPayment);
+      if (j.code === "payment_provider") setError(strings.errorPayment);
       else if (j.inProgress) setError(strings.pendingNoSession);
       else if (j.tooClose) setError(strings.tooClose);
       else if (j.notReady) setError(strings.notReady);

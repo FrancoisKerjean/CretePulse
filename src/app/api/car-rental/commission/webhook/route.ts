@@ -54,10 +54,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     (event.data.object as { metadata?: Record<string, string> })?.metadata ?? {};
   const requestId = Number(meta.car_request_id);
 
-  // Trois flux passent par cet endpoint : la commission facturée au loueur
-  // (modèle hors ligne), le paiement du voyageur (tunnel en ligne de juillet)
-  // et l'acompte (catalogue). Tout le reste appartient à une autre marque du
-  // compte et sort en 200 muet.
+  // Deux flux passent par cet endpoint : la commission facturée au loueur
+  // (modèle hors ligne) et l'acompte (catalogue). Tout le reste appartient à
+  // une autre marque du compte et sort en 200 muet.
   const paymentType = meta.payment_type;
   if (
     (paymentType !== "car_commission" && paymentType !== "car_deposit") ||

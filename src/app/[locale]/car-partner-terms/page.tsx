@@ -68,7 +68,7 @@ const TERMS: Clause[] = [
   },
   {
     title: "At the counter",
-    body: "You collect the rest of the rental price at the counter: the confirmed price minus the deposit (90% with a 10% deposit). You charge nothing else than the options the traveller chooses on site. Charging more than the confirmed price at the counter means exclusion from crete.direct. If the rental ends up shorter or longer, our commission does not change: it is based on the confirmed price.",
+    body: "You collect the rest of the rental price at the counter: the confirmed price minus the deposit (90% with a 10% deposit). You charge nothing other than the options the traveller chooses on site. Charging more than the confirmed price at the counter means exclusion from crete.direct. If the rental ends up shorter or longer, our commission does not change: it is based on the confirmed price.",
   },
   {
     title: "No exclusivity, leave whenever you want",

@@ -14,19 +14,12 @@ describe("contenu /car-booking", () => {
     }
   });
 
-  it("ne presente JAMAIS l option comme une assurance", () => {
-    // Distribuer de l assurance est une activite reglementee que crete.direct
-    // n exerce pas. Le mot est interdit dans toutes les langues.
+  it("ne parle JAMAIS d'assurance", () => {
+    // Distribuer de l'assurance est une activité réglementée que crete.direct
+    // n'exerce pas. Le mot est interdit dans toutes les langues.
     for (const loc of CAR_BOOKING_LOCALES) {
       const all = Object.values(L[loc]).join(" ");
       expect(all).not.toMatch(/assurance|insurance|Versicherung|ασφάλ/i);
-    }
-  });
-
-  it("annonce partout la fenetre de 48 h et l absence de remboursement sans option", () => {
-    for (const loc of CAR_BOOKING_LOCALES) {
-      expect(L[loc].optionHelp).toMatch(/48/);
-      expect(L[loc].optionHelp.length).toBeGreaterThan(40);
     }
   });
 

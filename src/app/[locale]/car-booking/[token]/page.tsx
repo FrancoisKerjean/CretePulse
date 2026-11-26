@@ -153,18 +153,6 @@ export default async function CarBookingPage(
   const status = row.booking_status;
   const partnerName = row.partner_name ?? "";
 
-  // Paiement total de juillet (jamais armé) : vue d'origine gardée jusqu'à son
-  // retrait en tâche 15. Plus annulable en ligne : la route d'annulation ne
-  // connaît que l'acompte (R45).
-  if (status === "paid" || status === "transferred") {
-    return (
-      <Shell>
-        <Title>{t.paidTitle}</Title>
-        <Lead>{t.paidBody}</Lead>
-      </Shell>
-    );
-  }
-
   // Ce que rendrait une annulation maintenant ; null quand elle n'est plus
   // possible (prise passée, ou aucun acompte en jeu) : pas de panneau.
   const refundNow = clientCancelNowEur(status, Number(row.deposit_eur), row.date_from, row.time_from, Date.now());

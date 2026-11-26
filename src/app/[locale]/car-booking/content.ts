@@ -1,18 +1,16 @@
-// Contenu i18n de /car-booking (paiement en ligne d'une location acceptee).
-// en/fr/de/el rediges a la main, les autres locales retombent sur l'anglais,
-// meme convention que /stays.
+// Contenu i18n de /car-booking : acompte d'une offre choisie, puis suivi de la
+// réservation. en/fr/de/el rédigés à la main, les autres locales retombent sur
+// l'anglais, même convention que /stays.
 //
 // Acompte (spec 2026-11-25) : les clés `deposit*`, `pending*`, `awaiting*`,
 // `confirmed*`, `refunded*`, `reason*` et `kept*` servent la page par état de
-// réservation ; les clés `cancel*` servent l'annulation par le client (CancelPanel,
-// sur cette page et sur la page d'offres). Les clés du paiement total (option à 5 EUR, h1, intro, submit,
-// paid*) partent avec lui en tâche 15. Les intitulés d'assurance viennent de
-// car-inclusions.ts, jamais d'ici (voir le test).
+// réservation ; les clés `cancel*` servent l'annulation par le client
+// (CancelPanel, sur cette page et sur la page d'offres). Les intitulés
+// d'assurance viennent de car-inclusions.ts, jamais d'ici.
 //
-// ⚠️ Vocabulaire verrouille : l'option d'annulation n'est JAMAIS presentee comme
-// une assurance. Distribuer de l'assurance est une activite reglementee que
-// crete.direct n'exerce pas. Le gate check:car-booking le verifie cote Stripe,
-// et le test de ce module le verifie cote page.
+// ⚠️ Vocabulaire verrouillé : aucun texte de ce module ne parle d'assurance.
+// Distribuer de l'assurance est une activité réglementée que crete.direct
+// n'exerce pas ; le test de ce module le vérifie.
 //
 // Contrainte DA (gate CI check:da) : aucun tiret cadratin.
 
@@ -26,18 +24,10 @@ export function pickCarBookingLocale(locale: string): CarBookingLocale {
 }
 
 export type CarBookingStrings = {
-  h1: string;
-  intro: string;
-  optionLabel: string;
-  optionHelp: string;
-  optionPrice: string;
-  submit: string;
   redirecting: string;
   error: string;
   errorPayment: string;
   errorUnavailable: string;
-  paidTitle: string;
-  paidBody: string;
   cancelTitle: string;
   /** Avant le clic, quand l'acompte est rendu. */
   cancelGetBack: string;
@@ -93,22 +83,11 @@ export function fill(template: string, values: Record<string, string>): string {
 
 export const L: Record<CarBookingLocale, CarBookingStrings> = {
   en: {
-    h1: "Confirm and pay your car rental",
-    intro:
-      "You pay crete.direct. The rental company is paid 48 hours before pick-up, once your booking is final.",
-    optionLabel: "Add the cancellation option",
-    optionHelp:
-      "Full refund if you cancel more than 48 hours before pick-up. Without it, a cancellation is not refunded.",
-    optionPrice: "5 EUR",
-    submit: "Pay and confirm",
     redirecting: "Redirecting to the payment page",
     error: "Error",
     errorPayment:
       "Payment is temporarily unavailable. Try again in a few minutes; if it persists, write to hello@crete.direct.",
     errorUnavailable: "This booking is no longer payable.",
-    paidTitle: "Your car is booked",
-    paidBody:
-      "The rental company has your details and will confirm the pick-up arrangements.",
     cancelTitle: "Cancel this booking",
     cancelGetBack: "If you cancel now, you get {amount} back on your card.",
     cancelGetBackNothing:
@@ -163,22 +142,11 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
       "This booking was cancelled less than 48 hours before pick-up: the deposit is kept, as stated in the cancellation terms.",
   },
   fr: {
-    h1: "Confirmez et réglez votre location",
-    intro:
-      "Vous payez crete.direct. Le loueur est payé 48 heures avant la prise du véhicule, une fois votre réservation définitive.",
-    optionLabel: "Ajouter l'option annulation",
-    optionHelp:
-      "Remboursement intégral si vous annulez plus de 48 heures avant la prise du véhicule. Sans elle, une annulation n'est pas remboursée.",
-    optionPrice: "5 EUR",
-    submit: "Payer et confirmer",
     redirecting: "Redirection vers la page de paiement",
     error: "Erreur",
     errorPayment:
       "Le paiement est momentanément indisponible. Réessayez dans quelques minutes ; si cela persiste, écrivez à hello@crete.direct.",
     errorUnavailable: "Cette réservation n'est plus payable.",
-    paidTitle: "Votre voiture est réservée",
-    paidBody:
-      "Le loueur a vos coordonnées et vous confirme les modalités de prise en charge.",
     cancelTitle: "Annuler cette réservation",
     cancelGetBack: "Si vous annulez maintenant, vous récupérez {amount} sur votre carte.",
     cancelGetBackNothing:
@@ -233,22 +201,11 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
       "Cette réservation a été annulée moins de 48 heures avant la prise du véhicule : l'acompte est conservé, comme prévu par les conditions d'annulation.",
   },
   de: {
-    h1: "Mietwagen bestätigen und bezahlen",
-    intro:
-      "Sie zahlen an crete.direct. Der Vermieter wird 48 Stunden vor Abholung bezahlt, sobald Ihre Buchung endgültig ist.",
-    optionLabel: "Stornooption hinzufügen",
-    optionHelp:
-      "Volle Erstattung bei Stornierung mehr als 48 Stunden vor Abholung. Ohne sie wird eine Stornierung nicht erstattet.",
-    optionPrice: "5 EUR",
-    submit: "Bezahlen und bestätigen",
     redirecting: "Weiterleitung zur Zahlungsseite",
     error: "Fehler",
     errorPayment:
       "Die Zahlung ist vorübergehend nicht verfügbar. Bitte in einigen Minuten erneut versuchen; bei anhaltendem Fehler an hello@crete.direct schreiben.",
     errorUnavailable: "Diese Buchung ist nicht mehr zahlbar.",
-    paidTitle: "Ihr Mietwagen ist gebucht",
-    paidBody:
-      "Der Vermieter hat Ihre Daten und bestätigt die Abholung.",
     cancelTitle: "Diese Buchung stornieren",
     cancelGetBack: "Wenn Sie jetzt stornieren, erhalten Sie {amount} auf Ihre Karte zurück.",
     cancelGetBackNothing:
@@ -303,22 +260,11 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
       "Diese Buchung wurde weniger als 48 Stunden vor Abholung storniert: Die Anzahlung wird gemäß den Stornobedingungen einbehalten.",
   },
   el: {
-    h1: "Επιβεβαιώστε και πληρώστε την ενοικίαση",
-    intro:
-      "Πληρώνετε το crete.direct. Ο εκμισθωτής πληρώνεται 48 ώρες πριν την παραλαβή, μόλις η κράτησή σας οριστικοποιηθεί.",
-    optionLabel: "Προσθήκη επιλογής ακύρωσης",
-    optionHelp:
-      "Πλήρης επιστροφή χρημάτων αν ακυρώσετε πάνω από 48 ώρες πριν την παραλαβή. Χωρίς αυτήν, η ακύρωση δεν επιστρέφεται.",
-    optionPrice: "5 EUR",
-    submit: "Πληρωμή και επιβεβαίωση",
     redirecting: "Ανακατεύθυνση στη σελίδα πληρωμής",
     error: "Σφάλμα",
     errorPayment:
       "Η πληρωμή δεν είναι προσωρινά διαθέσιμη. Δοκιμάστε ξανά σε λίγα λεπτά· αν επιμείνει, γράψτε στο hello@crete.direct.",
     errorUnavailable: "Αυτή η κράτηση δεν είναι πλέον πληρωτέα.",
-    paidTitle: "Το αυτοκίνητό σας κρατήθηκε",
-    paidBody:
-      "Ο εκμισθωτής έχει τα στοιχεία σας και θα επιβεβαιώσει την παραλαβή.",
     cancelTitle: "Ακύρωση αυτής της κράτησης",
     cancelGetBack: "Αν ακυρώσετε τώρα, σας επιστρέφονται {amount} στην κάρτα σας.",
     cancelGetBackNothing:
