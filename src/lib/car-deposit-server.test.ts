@@ -43,6 +43,7 @@ import {
   startDeposit, depositPartnersFor, onDepositSessionExpired,
   onDepositPaid, confirmBooking, releaseBooking, refundConfirmed, bookingByConfirmToken,
   resumeClaimedRefund, partnerConfirmUrl, remindPartner, cancelByClient, reconcilePendingDeposit,
+  releaseStaleLock,
 } from "./car-deposit-server";
 
 // Mardi 12/07/2027 à 09:00 heure d'Athènes : en pleine plage d'ouverture.
@@ -264,7 +265,7 @@ describe("startDeposit", () => {
 
     expect(out).toEqual({ payUrl: "https://crete.direct/en/car-booking/book-plain" });
     expect(sessionsRetrieve).toHaveBeenCalledWith("cs_old");
-    expect(w.updates[0]).toEqual({ booking_status: null, booking_session_id: null });
+    expect(w.updates[0]).toEqual({ booking_status: null, booking_session_id: null, booking_locked_at: null });
     expect(w.updates[1]).toMatchObject({ deposit_eur: 41.2, booking_status: null });
   });
 
@@ -345,7 +346,8 @@ describe("onDepositSessionExpired", () => {
   it("libère la demande quand la session expirée est bien la sienne, toujours pending_payment", async () => {
     const w = wiring();
     expect(await onDepositSessionExpired(25, "cs_old")).toBe(true);
-    expect(w.updates).toEqual([{ booking_status: null, booking_session_id: null }]);
+    // Sorti de pending_payment : la date du verrou part avec lui.
+    expect(w.updates).toEqual([{ booking_status: null, booking_session_id: null, booking_locked_at: null }]);
     expect(w.filters).toEqual([
       ["eq", "id", 25],
       ["eq", "booking_status", "pending_payment"],
@@ -462,6 +464,8 @@ const REQ: Row = {
   accepted_at: null,
   booking_status: "pending_payment",
   booking_session_id: "cs_1",
+  // Verrou posé par la route de paiement, 2 min avant la session.
+  booking_locked_at: new Date(PAID_AT - 2 * 60_000).toISOString(),
   booking_payment_intent_id: null,
   booking_paid_at: null,
   booking_token_hash: "bookhash",
@@ -498,6 +502,7 @@ const AWAITING: Row = {
   status: "accepted",
   accepted_at: new Date(PAID_AT).toISOString(),
   booking_status: "awaiting_partner",
+  booking_locked_at: null,
   booking_payment_intent_id: "pi_1",
   booking_paid_at: new Date(PAID_AT).toISOString(),
   confirm_deadline_at: DEADLINE_ISO,
@@ -600,6 +605,8 @@ describe("après paiement", () => {
         status: "accepted",
         accepted_at: new Date(PAID_AT).toISOString(),
         partner_confirm_token: "deadbeefhash",
+        // Sorti de pending_payment : plus de date de verrou.
+        booking_locked_at: null,
       });
     });
 
@@ -795,7 +802,7 @@ describe("après paiement", () => {
       const db = fakeDb(seed(REQ));
       sessionsRetrieve.mockResolvedValue(session({ status: "expired", payment_status: "unpaid", payment_intent: null }));
       expect(await reconcilePendingDeposit(25, "cs_1", PAID_AT)).toEqual({ state: "released" });
-      expect(db.req()).toMatchObject({ booking_status: null, booking_session_id: null });
+      expect(db.req()).toMatchObject({ booking_status: null, booking_session_id: null, booking_locked_at: null });
       expect(sessionsExpire).not.toHaveBeenCalled();
     });
 
@@ -835,6 +842,67 @@ describe("après paiement", () => {
       expect(await reconcilePendingDeposit(25, "cs_1", PAID_AT)).toEqual({ state: "unreadable" });
       expect(db.ops).toHaveLength(0);
       errSpy.mockRestore();
+    });
+  });
+
+  // Verrou pending_payment sans session : la fonction de paiement est morte
+  // entre la pose du verrou et l'écriture de la session. Aucun argent n'a pu
+  // être pris (le client n'a jamais reçu d'URL de paiement).
+  describe("releaseStaleLock", () => {
+    const MIN = 60_000;
+    const locked = (ageMin: number | null, over: Row = {}): Row => ({
+      ...REQ,
+      booking_session_id: null,
+      booking_locked_at: ageMin === null ? null : new Date(PAID_AT - ageMin * MIN).toISOString(),
+      ...over,
+    });
+
+    it("verrou sans session de 40 min : libéré vers l'état d'avant, une alerte ops", async () => {
+      const db = fakeDb(seed(locked(40)));
+      expect(await releaseStaleLock(25, PAID_AT)).toBe(true);
+      expect(db.req()).toMatchObject({ booking_status: null, booking_session_id: null, booking_locked_at: null });
+      const claim = db.updates("car_requests")[0];
+      expect(claim.filters).toContainEqual(["eq", "booking_status", "pending_payment"]);
+      expect(claim.filters).toContainEqual(["is", "booking_session_id", null]);
+      expect(claim.filters).toContainEqual(["lt", "booking_locked_at", new Date(PAID_AT - 35 * MIN).toISOString()]);
+      expect(notifyOps).toHaveBeenCalledOnce();
+      expect(JSON.stringify(notifyOps.mock.calls)).toContain("demande 25");
+      expect(refundsCreate).not.toHaveBeenCalled();
+      expect(sendCarDepositMail).not.toHaveBeenCalled();
+    });
+
+    it("deux passages : une seule alerte", async () => {
+      fakeDb(seed(locked(40)));
+      expect(await releaseStaleLock(25, PAID_AT)).toBe(true);
+      expect(await releaseStaleLock(25, PAID_AT)).toBe(false);
+      expect(notifyOps).toHaveBeenCalledOnce();
+    });
+
+    it("verrou de 10 min (création peut-être en cours) : intact, aucune alerte", async () => {
+      const db = fakeDb(seed(locked(10)));
+      expect(await releaseStaleLock(25, PAID_AT)).toBe(false);
+      expect(db.req()).toMatchObject({ booking_status: "pending_payment", booking_locked_at: new Date(PAID_AT - 10 * MIN).toISOString() });
+      expect(notifyOps).not.toHaveBeenCalled();
+    });
+
+    it("verrou avec session : pas touché (le rapprochement Stripe s'en occupe)", async () => {
+      const db = fakeDb(seed(locked(40, { booking_session_id: "cs_1" })));
+      expect(await releaseStaleLock(25, PAID_AT)).toBe(false);
+      expect(db.req()).toMatchObject({ booking_status: "pending_payment", booking_session_id: "cs_1" });
+      expect(notifyOps).not.toHaveBeenCalled();
+    });
+
+    it("verrou sans date (posé avant la migration) : ignoré", async () => {
+      const db = fakeDb(seed(locked(null)));
+      expect(await releaseStaleLock(25, PAID_AT)).toBe(false);
+      expect(db.req().booking_status).toBe("pending_payment");
+      expect(notifyOps).not.toHaveBeenCalled();
+    });
+
+    it("lève quand la base refuse l'écriture, sans alerte", async () => {
+      fakeDb(seed(locked(40)), { fail: (op) => (op.kind === "update" ? "permission denied" : null) });
+      await expect(releaseStaleLock(25, PAID_AT)).rejects.toThrow(/permission denied/);
+      expect(notifyOps).not.toHaveBeenCalled();
     });
   });
 

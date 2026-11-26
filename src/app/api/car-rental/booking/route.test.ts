@@ -134,6 +134,8 @@ describe("POST /api/car-rental/booking (acompte)", () => {
 
     const sessionPatch = w.updates.find((u) => u.patch.booking_session_id === "cs_live_d1");
     expect(sessionPatch).toBeDefined();
+    // L'écriture de la session garde la date du verrou.
+    expect(sessionPatch?.patch).not.toHaveProperty("booking_locked_at");
   });
 
   it("verrou optimiste : null vers pending_payment, conditionné à quoted, booking_status vide et au jeton lu", async () => {
@@ -146,6 +148,8 @@ describe("POST /api/car-rental/booking (acompte)", () => {
     expect(lock?.filters).toContainEqual(["eq", "booking_token_hash", "hash(t)"]);
     // Aucune ancienne référence de session ne survit au verrou.
     expect(lock?.patch).toHaveProperty("booking_session_id", null);
+    // Verrou daté : le cron libère un verrou resté sans session (fonction tuée entre les deux).
+    expect(lock?.patch).toHaveProperty("booking_locked_at", new Date(NOW).toISOString());
   });
 
   it("onglet périmé : un autre onglet a choisi une autre offre, 409 linkInvalid et aucune session", async () => {
@@ -183,7 +187,7 @@ describe("POST /api/car-rental/booking (acompte)", () => {
     expect(res.status).toBe(200);
     expect((await res.json()).url).toBe("https://checkout/deposit");
     const release = w.updates[0];
-    expect(release.patch).toEqual({ booking_status: null, booking_session_id: null });
+    expect(release.patch).toEqual({ booking_status: null, booking_session_id: null, booking_locked_at: null });
     expect(release.filters).toContainEqual(["eq", "booking_status", "pending_payment"]);
     expect(release.filters).toContainEqual(["eq", "booking_session_id", "cs_live_d0"]);
     expect(sessionsCreate).toHaveBeenCalledOnce();
@@ -196,7 +200,7 @@ describe("POST /api/car-rental/booking (acompte)", () => {
 
     expect(res.status).toBe(200);
     expect(sessionsExpire).toHaveBeenCalledWith("cs_live_d0");
-    expect(w.updates[0].patch).toEqual({ booking_status: null, booking_session_id: null });
+    expect(w.updates[0].patch).toEqual({ booking_status: null, booking_session_id: null, booking_locked_at: null });
     expect(sessionsCreate).toHaveBeenCalledOnce();
   });
 
@@ -306,6 +310,8 @@ describe("POST /api/car-rental/booking (acompte)", () => {
     expect(release).toBeDefined();
     // On ne relâche que NOTRE verrou, jamais un état posé depuis par le webhook.
     expect(release?.filters).toContainEqual(["eq", "booking_status", "pending_payment"]);
+    // Sorti de pending_payment : plus de date de verrou.
+    expect(release?.patch).toHaveProperty("booking_locked_at", null);
     expect(notifyOps).not.toHaveBeenCalled();
     errSpy.mockRestore();
   });

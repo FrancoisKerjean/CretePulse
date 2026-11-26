@@ -29,7 +29,7 @@ async function alertStuck(requestId: number, cause: string): Promise<void> {
   await notifyOps({
     title: "Acompte voiture : paiement bloqué",
     lines: [`demande ${requestId}`, cause],
-    action: "si l'état persiste, remettre booking_status à null sur la demande",
+    action: "rien à faire : le cron des échéances libère un verrou sans session au bout de 35 minutes ; si l'alerte revient souvent, regarder les journaux de la route de paiement",
     due: echeance(0),
     url: `${siteBase()}/admin/car-rental`,
   });
@@ -100,9 +100,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   // le jeton lu : si un autre onglet a choisi une autre offre entre-temps
   // (nouveau jeton, nouvel acompte), ce verrou ne prend rien, sinon le client
   // paierait l'acompte lu ici sur une demande figée sur l'autre offre.
+  // Daté : une fonction tuée avant d'écrire la session laisserait sinon la
+  // demande bloquée ; le cron des échéances libère ce verrou après 35 min.
   const { data: locked, error: lockError } = await supabaseAdmin
     .from("car_requests")
-    .update({ booking_status: "pending_payment", booking_session_id: null })
+    .update({ booking_status: "pending_payment", booking_session_id: null, booking_locked_at: new Date(nowMs).toISOString() })
     .eq("id", row.id)
     .eq("booking_token_hash", tokenHash)
     .eq("status", "quoted")
@@ -126,7 +128,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const releaseLock = async () => {
     const { error } = await supabaseAdmin
       .from("car_requests")
-      .update({ booking_status: null })
+      .update({ booking_status: null, booking_locked_at: null })
       .eq("id", row.id)
       .eq("booking_status", "pending_payment")
       .select("id");

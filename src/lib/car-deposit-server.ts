@@ -203,13 +203,49 @@ export async function startDeposit(
 export async function onDepositSessionExpired(requestId: number, sessionId: string): Promise<boolean> {
   const { data, error } = await supabaseAdmin
     .from("car_requests")
-    .update({ booking_status: null, booking_session_id: null })
+    .update({ booking_status: null, booking_session_id: null, booking_locked_at: null })
     .eq("id", requestId)
     .eq("booking_status", "pending_payment")
     .eq("booking_session_id", sessionId)
     .select("id");
   assertWritten("onDepositSessionExpired", requestId, error);
   return (data?.length ?? 0) === 1;
+}
+
+/**
+ * Verrou pending_payment resté SANS session au-delà de 35 min : la route de
+ * paiement est morte entre la pose du verrou et l'écriture de la session. Le
+ * client n'a jamais reçu d'URL de paiement, aucun argent n'a pu être pris. La
+ * demande revient à l'état d'avant le verrou (booking_status vide), comme une
+ * session expirée.
+ *
+ * Prise de main conditionnée (pending_payment, aucune session, verrou daté et
+ * assez vieux) : seul l'appel qui écrit la ligne prévient ops, une seule fois.
+ * Un verrou sans date (posé avant la migration 20261127) n'est jamais touché.
+ * Lève quand la base refuse.
+ */
+export async function releaseStaleLock(requestId: number, nowMs: number): Promise<boolean> {
+  const { data, error } = await supabaseAdmin
+    .from("car_requests")
+    .update({ booking_status: null, booking_locked_at: null })
+    .eq("id", requestId)
+    .eq("booking_status", "pending_payment")
+    .is("booking_session_id", null)
+    .lt("booking_locked_at", new Date(nowMs - DEPOSIT_SWEEP_AGE_MS).toISOString())
+    .select("id");
+  assertWritten("releaseStaleLock", requestId, error);
+  if ((data?.length ?? 0) !== 1) return false;
+  await notifyOps({
+    title: "Acompte voiture : verrou de paiement sans session, libéré",
+    lines: [
+      `demande ${requestId}`,
+      "verrou pending_payment sans session Stripe depuis plus de 35 minutes : la route de paiement s'est arrêtée entre les deux",
+      "aucun argent pris (aucune URL de paiement donnée) ; la demande est de nouveau payable",
+    ],
+    action: "rien à faire ; si l'alerte revient, regarder les journaux de la route de paiement",
+    url: adminUrl(),
+  });
+  return true;
 }
 
 // ── Après paiement ──────────────────────────────────────────────────────────
@@ -417,6 +453,7 @@ export async function onDepositPaid(
     .from("car_requests")
     .update({
       booking_status: "awaiting_partner",
+      booking_locked_at: null,
       booking_paid_at: paidAt,
       booking_payment_intent_id: paymentIntentId,
       confirm_deadline_at: new Date(deadlineMs).toISOString(),

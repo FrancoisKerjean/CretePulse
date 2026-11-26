@@ -4,16 +4,17 @@ import { NextRequest } from "next/server";
 type Row = Record<string, unknown>;
 type Filter = [string, string, unknown];
 
-const { from, releaseBooking, resumeClaimedRefund, remindPartner, reconcilePendingDeposit, notifyOps } = vi.hoisted(() => ({
+const { from, releaseBooking, resumeClaimedRefund, remindPartner, reconcilePendingDeposit, releaseStaleLock, notifyOps } = vi.hoisted(() => ({
   from: vi.fn(),
   releaseBooking: vi.fn(),
   resumeClaimedRefund: vi.fn(),
   remindPartner: vi.fn(),
   reconcilePendingDeposit: vi.fn(),
+  releaseStaleLock: vi.fn(),
   notifyOps: vi.fn(),
 }));
 vi.mock("@/lib/supabase-admin", () => ({ supabaseAdmin: { from } }));
-vi.mock("@/lib/car-deposit-server", () => ({ releaseBooking, resumeClaimedRefund, remindPartner, reconcilePendingDeposit }));
+vi.mock("@/lib/car-deposit-server", () => ({ releaseBooking, resumeClaimedRefund, remindPartner, reconcilePendingDeposit, releaseStaleLock }));
 vi.mock("@/lib/ops-notify", () => ({ notifyOps }));
 
 import { GET } from "./route";
@@ -88,6 +89,7 @@ beforeEach(() => {
   resumeClaimedRefund.mockResolvedValue("refunded");
   remindPartner.mockResolvedValue("reminded");
   reconcilePendingDeposit.mockResolvedValue({ state: "unchanged" });
+  releaseStaleLock.mockResolvedValue(true);
   fakeDb();
 });
 
@@ -108,7 +110,7 @@ describe("GET /api/cron/car-deposit-deadline", () => {
     rows = [awaiting(1, { confirm_deadline_at: iso(NOW - MIN) })];
     const body = await (await GET(req("s3cret"))).json();
     expect(releaseBooking).toHaveBeenCalledWith(1, "partner_timeout", NOW);
-    expect(body).toEqual({ ok: true, released: 1, reminded: 0, resumed: 0, reconciled: 0, failed: 0 });
+    expect(body).toEqual({ ok: true, released: 1, reminded: 0, resumed: 0, reconciled: 0, unlocked: 0, failed: 0 });
   });
 
   it("mi-délai passé : un rappel ; déjà rappelée : aucun", async () => {
@@ -167,14 +169,59 @@ describe("GET /api/cron/car-deposit-deadline", () => {
     expect(notifyOps).toHaveBeenCalledTimes(1);
   });
 
-  it("verrou sans session : pas touché (aucun horodatage du verrou en base, voir le rapport F1)", async () => {
-    rows = [pending(3, null)];
+  // Verrou pending_payment sans session : la fonction de paiement est morte
+  // entre le verrou et l'écriture de la session (F1c).
+  const lockedAgo = (id: number, ageMin: number | null): Row => ({
+    ...pending(id, null), booking_locked_at: ageMin === null ? null : iso(NOW - ageMin * MIN),
+  });
+
+  it("verrou sans session de 40 min : libéré, compté en unlocked, sans passer par Stripe", async () => {
+    rows = [lockedAgo(3, 40)];
     const body = await (await GET(req("s3cret"))).json();
+    expect(releaseStaleLock).toHaveBeenCalledTimes(1);
+    expect(releaseStaleLock).toHaveBeenCalledWith(3, NOW);
     expect(reconcilePendingDeposit).not.toHaveBeenCalled();
     expect(releaseBooking).not.toHaveBeenCalled();
-    expect(remindPartner).not.toHaveBeenCalled();
-    expect(resumeClaimedRefund).not.toHaveBeenCalled();
-    expect(body).toMatchObject({ released: 0, reminded: 0, resumed: 0, reconciled: 0, failed: 0 });
+    expect(body).toEqual({ ok: true, released: 0, reminded: 0, resumed: 0, reconciled: 0, unlocked: 1, failed: 0 });
+  });
+
+  it("verrou sans session de 10 min (création peut-être en cours) : intact", async () => {
+    rows = [lockedAgo(3, 10)];
+    const body = await (await GET(req("s3cret"))).json();
+    expect(releaseStaleLock).not.toHaveBeenCalled();
+    expect(body.unlocked).toBe(0);
+  });
+
+  it("verrou sans date (posé avant la migration) : ignoré comme avant", async () => {
+    rows = [lockedAgo(3, null)];
+    const body = await (await GET(req("s3cret"))).json();
+    expect(releaseStaleLock).not.toHaveBeenCalled();
+    expect(reconcilePendingDeposit).not.toHaveBeenCalled();
+    expect(body).toMatchObject({ released: 0, reminded: 0, resumed: 0, reconciled: 0, unlocked: 0, failed: 0 });
+  });
+
+  it("verrou avec session de 40 min : chemin F1 (rapprochement Stripe), jamais la libération sans session", async () => {
+    rows = [{ ...pending(3, "cs_3"), booking_locked_at: iso(NOW - 40 * MIN) }];
+    reconcilePendingDeposit.mockResolvedValueOnce({ state: "released" });
+    const body = await (await GET(req("s3cret"))).json();
+    expect(reconcilePendingDeposit).toHaveBeenCalledWith(3, "cs_3", NOW);
+    expect(releaseStaleLock).not.toHaveBeenCalled();
+    expect(body).toMatchObject({ reconciled: 1, unlocked: 0 });
+  });
+
+  it("libération déjà faite par un passage concurrent : non comptée", async () => {
+    rows = [lockedAgo(3, 40)];
+    releaseStaleLock.mockResolvedValue(false);
+    const body = await (await GET(req("s3cret"))).json();
+    expect(body).toMatchObject({ unlocked: 0, failed: 0 });
+  });
+
+  it("libération qui lève (base) : comptée en failed, ops prévenu, la ligne suivante passe", async () => {
+    rows = [lockedAgo(3, 50), lockedAgo(4, 40)];
+    releaseStaleLock.mockRejectedValueOnce(new Error("base down")).mockResolvedValueOnce(true);
+    const body = await (await GET(req("s3cret"))).json();
+    expect(body).toMatchObject({ unlocked: 1, failed: 1 });
+    expect(notifyOps).toHaveBeenCalledTimes(1);
   });
 
   it("reste d'un crash : repris au-delà de 15 min, pas avant", async () => {
@@ -216,6 +263,6 @@ describe("GET /api/cron/car-deposit-deadline", () => {
 
   it("au plus 50 lignes par catégorie", async () => {
     await GET(req("s3cret"));
-    expect(limits).toEqual([50, 50, 50, 50]);
+    expect(limits).toEqual([50, 50, 50, 50, 50]);
   });
 });

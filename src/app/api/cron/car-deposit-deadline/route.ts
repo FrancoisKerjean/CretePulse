@@ -5,17 +5,17 @@
 // (webhook completed ou expired perdu) : voir reconcilePendingDeposit.
 //
 // Un verrou pending_payment SANS session (fonction tuée entre le verrou et
-// l'écriture de la session) n'est pas balayé : la base ne date pas le verrou,
-// on ne peut pas le distinguer d'une création en cours. La route de paiement
-// prévient ops quand le client retombe dessus.
+// l'écriture de la session) est libéré quand sa date (booking_locked_at) a
+// plus de 35 min : plus jeune, la création est peut-être en cours. Un verrou
+// sans date (posé avant la migration 20261127) n'est pas touché.
 // Volontairement sans CAR_CATALOGUE_ENABLED : une réservation déjà payée doit
 // être traitée même si l'interrupteur est coupé.
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { assertCron } from "@/lib/cron-auth";
 import { notifyOps } from "@/lib/ops-notify";
-import { releaseBooking, resumeClaimedRefund, remindPartner, reconcilePendingDeposit } from "@/lib/car-deposit-server";
-import { reminderDueMs } from "@/lib/car-deposit";
+import { releaseBooking, resumeClaimedRefund, remindPartner, reconcilePendingDeposit, releaseStaleLock } from "@/lib/car-deposit-server";
+import { reminderDueMs, DEPOSIT_SWEEP_AGE_MS } from "@/lib/car-deposit";
 
 export const dynamic = "force-dynamic";
 
@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
 
   const nowMs = Date.now();
   const nowIso = new Date(nowMs).toISOString();
-  const counts = { released: 0, reminded: 0, resumed: 0, reconciled: 0, failed: 0 };
+  const counts = { released: 0, reminded: 0, resumed: 0, reconciled: 0, unlocked: 0, failed: 0 };
 
   // Une ligne qui lève ne doit pas arrêter les suivantes : comptée, signalée.
   const fail = async (what: string, id: number, err: unknown) => {
@@ -88,6 +88,13 @@ export async function GET(req: NextRequest) {
       .not("booking_session_id", "is", null)
       .order("id", { ascending: true })
       .limit(BATCH));
+    const unsessioned = await read("des verrous sans session", table()
+      .select("id")
+      .eq("booking_status", "pending_payment")
+      .is("booking_session_id", null)
+      .lt("booking_locked_at", new Date(nowMs - DEPOSIT_SWEEP_AGE_MS).toISOString())
+      .order("booking_locked_at", { ascending: true })
+      .limit(BATCH));
 
     for (const r of expired) {
       try {
@@ -126,6 +133,14 @@ export async function GET(req: NextRequest) {
         else if (out.state === "unreadable") counts.failed++;
       } catch (err) {
         await fail("rapprochement", r.id, err);
+      }
+    }
+    for (const r of unsessioned) {
+      try {
+        // false : un passage concurrent l'a déjà libéré, ou la session vient d'être écrite.
+        if (await releaseStaleLock(r.id, nowMs)) counts.unlocked++;
+      } catch (err) {
+        await fail("verrou sans session", r.id, err);
       }
     }
   } catch (err) {
