@@ -195,11 +195,15 @@ export async function POST(request: NextRequest) {
         const token = newToken();
         await supabase.from("car_quote_invites").insert({ request_id: requestId, partner_id: p.id, quote_token_hash: hashToken(token) });
         // Lien du portail 2027 : jamais bloquant, une demande de devis part même sans lui.
+        // Interrupteur coupé : pas de lien, le partenaire ne découvre pas le portail 2027
+        // avant la revue des conditions et le courrier de lancement.
         let portalUrl: string | undefined;
-        try {
-          portalUrl = `${siteBase()}/en/car-rates/${await ensurePortalToken(p.id)}`;
-        } catch (e) {
-          console.error(`[car-rental/submit] portal token partner ${p.id} failed:`, e);
+        if (catalogueOn) {
+          try {
+            portalUrl = `${siteBase()}/en/car-rates/${await ensurePortalToken(p.id)}`;
+          } catch (e) {
+            console.error(`[car-rental/submit] portal token partner ${p.id} failed:`, e);
+          }
         }
         await sendAgencyQuoteRequest({ name: p.name, email: p.email }, lead, `${siteBase()}/en/car-quote/${token}`, portalUrl);
       }

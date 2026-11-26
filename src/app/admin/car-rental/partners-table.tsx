@@ -10,7 +10,7 @@ import { partnerPerf, type MonitorInvite } from "@/lib/car-monitoring";
 import { formatRating } from "@/lib/google-rating";
 import { identityFormFields, identityStatus } from "@/lib/car-partner-identity";
 import {
-  togglePartnerActive, updatePartner, openPartnerOnboarding, refreshPartnerConnect,
+  togglePartnerActive, updatePartner,
   refreshPartnerRatingAction, updatePartnerIdentity, openPartnerPortal,
 } from "./actions";
 import { LiftSuspensionButton } from "./deposit-actions";
@@ -194,34 +194,6 @@ export function PartnersTable({
                       {p.active ? "Désactiver" : "Activer"}
                     </button>
                   </form>
-                </div>
-
-                {/* Compte de versement Stripe. Sans lui, le cron garde les fonds
-                    du client et le signale : ce bloc est le seul chemin pour
-                    débloquer un loueur. */}
-                <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-border pt-2">
-                  <span className="text-xs text-text-muted">
-                    versement :{" "}
-                    {p.kyc_status === "complete" ? (
-                      <span className="font-bold text-ok">compte prêt</span>
-                    ) : p.stripe_connect_account_id ? (
-                      <span className="font-bold text-text">onboarding en cours</span>
-                    ) : (
-                      <span className="font-bold text-terracotta">aucun compte</span>
-                    )}
-                  </span>
-                  <form action={openPartnerOnboarding.bind(null, p.id)}>
-                    <button className="rounded-full border border-border bg-white px-3 py-1 text-xs font-bold">
-                      {p.stripe_connect_account_id ? "Reprendre l'onboarding" : "Ouvrir le compte de versement"}
-                    </button>
-                  </form>
-                  {p.stripe_connect_account_id ? (
-                    <form action={refreshPartnerConnect.bind(null, p.id)}>
-                      <button className="rounded-full border border-border bg-white px-3 py-1 text-xs font-bold">
-                        Rafraîchir
-                      </button>
-                    </form>
-                  ) : null}
                 </div>
 
                 {/* Catalogue 2027 : portail privé du loueur, conditions acceptées, état de la grille. */}

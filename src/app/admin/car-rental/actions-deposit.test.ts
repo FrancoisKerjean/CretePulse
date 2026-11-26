@@ -16,7 +16,6 @@ vi.mock("@/lib/car-commission-server", () => ({ requestCommission: vi.fn() }));
 vi.mock("@/lib/car-invoice-credit", () => ({
   creditCommissionInvoice: vi.fn(), resendCommissionInvoice: vi.fn(), expireCommissionSession: vi.fn(),
 }));
-vi.mock("@/lib/car-connect-server", () => ({ startPartnerOnboarding: vi.fn(), refreshPartnerKyc: vi.fn() }));
 vi.mock("@/lib/google-rating-server", () => ({ refreshPartnerRating: vi.fn() }));
 const { from } = vi.hoisted(() => ({ from: vi.fn() }));
 vi.mock("@/lib/supabase-admin", () => ({ supabaseAdmin: { from } }));

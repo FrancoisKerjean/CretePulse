@@ -1,17 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { QuoteOption } from "@/lib/car-quotes";
 
-const { from, requestByClientToken, startDeposit, startBookingAfterAccept, sendConnectionEmails } = vi.hoisted(() => ({
+const { from, requestByClientToken, startDeposit, sendConnectionEmails } = vi.hoisted(() => ({
   from: vi.fn(),
   requestByClientToken: vi.fn(),
   startDeposit: vi.fn(),
-  startBookingAfterAccept: vi.fn(async () => null),
   sendConnectionEmails: vi.fn(async () => undefined),
 }));
 vi.mock("@/lib/supabase-admin", () => ({ supabaseAdmin: { from } }));
 vi.mock("@/lib/car-quotes-db", () => ({ requestByClientToken }));
 vi.mock("@/lib/car-deposit-server", () => ({ startDeposit }));
-vi.mock("@/lib/car-booking-server", () => ({ startBookingAfterAccept }));
 vi.mock("@/lib/car-partners-db", () => ({
   partnerById: async () => ({ id: 111, name: "Zorbas Rent a Car", email: "z@example.com", phone: "+30 2810 000000", whatsapp: null, commission: 0.1 }),
 }));
@@ -97,7 +95,6 @@ describe("POST /api/car-rental/accept", () => {
       // Le téléphone saisi part avec l'acompte : le loueur en a besoin à la confirmation.
       expect(startDeposit).toHaveBeenCalledWith(25, OPTION, "fr", expect.any(Number), "+33 6 12 34 56 78");
       expect(updates).toHaveLength(0);
-      expect(startBookingAfterAccept).not.toHaveBeenCalled();
       expect(sendConnectionEmails).not.toHaveBeenCalled();
     });
 

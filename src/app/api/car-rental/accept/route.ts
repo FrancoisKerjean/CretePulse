@@ -7,7 +7,6 @@ import { isOfferExpired } from "@/lib/car-offer-expiry";
 import { requestByClientToken } from "@/lib/car-quotes-db";
 import { rentalDays } from "@/lib/car-pricing";
 import { findChosenOption, sortOptionsByPrice, quotedModelLabel } from "@/lib/car-quotes";
-import { startBookingAfterAccept } from "@/lib/car-booking-server";
 import { startDeposit } from "@/lib/car-deposit-server";
 
 const GEARBOX_LABEL: Record<string, string> = { automatic: "Automatic", manual: "Manual" };
@@ -108,16 +107,6 @@ export async function POST(request: NextRequest) {
     .eq("request_id", row.id).eq("status", "quoted").neq("id", chosen.invite_id);
 
   const locale = (row.locale as string) || "en";
-
-  // Tunnel voyageur arme : on ouvre un paiement au lieu de mettre client et
-  // loueur en relation. Les coordonnees ne partent qu'apres encaissement, sinon
-  // le client aurait le numero du loueur et aucune raison de payer ici.
-  // Desarme (defaut), startBookingAfterAccept rend null et le flux historique
-  // continue sans rien changer.
-  const booking = await startBookingAfterAccept(row.id as number, locale);
-  if (booking) {
-    return NextResponse.json({ ok: true, payUrl: booking.payUrl });
-  }
 
   const ct = CAR_TYPES_DATA.find((c) => c.id === row.car_type);
   const carTypeLabel = carTypeLabelWithExamples(ct, "en", row.car_type as string);

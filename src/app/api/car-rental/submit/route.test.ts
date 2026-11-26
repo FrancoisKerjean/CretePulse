@@ -92,7 +92,16 @@ const req = () =>
 describe("POST /api/car-rental/submit : lien du portail", () => {
   beforeEach(() => { vi.clearAllMocks(); wiring(); });
 
-  it("passe le lien du portail à sendAgencyQuoteRequest", async () => {
+  it("interrupteur coupé : pas de lien du portail, ensurePortalToken n'est pas appelé", async () => {
+    m.ensurePortalToken.mockResolvedValue("tok-7");
+    await POST(req() as never);
+    expect(m.sendAgencyQuoteRequest).toHaveBeenCalledTimes(1);
+    expect(m.sendAgencyQuoteRequest.mock.calls[0][3]).toBeUndefined();
+    expect(m.ensurePortalToken).not.toHaveBeenCalled();
+  });
+
+  it("interrupteur allumé : passe le lien du portail à sendAgencyQuoteRequest", async () => {
+    process.env.CAR_CATALOGUE_ENABLED = "on";
     m.ensurePortalToken.mockResolvedValue("tok-7");
     await POST(req() as never);
     expect(m.sendAgencyQuoteRequest).toHaveBeenCalledTimes(1);
@@ -100,6 +109,7 @@ describe("POST /api/car-rental/submit : lien du portail", () => {
   });
 
   it("si ensurePortalToken échoue, la demande part quand même sans le lien", async () => {
+    process.env.CAR_CATALOGUE_ENABLED = "on";
     m.ensurePortalToken.mockRejectedValue(new Error("db down"));
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     await POST(req() as never);

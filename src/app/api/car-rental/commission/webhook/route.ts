@@ -10,7 +10,6 @@ import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { stripeClient } from "@/lib/stays/stripe-helpers";
-import { transferDueAt } from "@/lib/booking-policy";
 import { markInvoicePaid } from "@/lib/car-invoice-server";
 import { onDepositPaid, onDepositSessionExpired } from "@/lib/car-deposit-server";
 import { notifyOps } from "@/lib/ops-notify";
@@ -58,7 +57,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   // compte et sort en 200 muet.
   const paymentType = meta.payment_type;
   if (
-    (paymentType !== "car_commission" && paymentType !== "car_booking" && paymentType !== "car_deposit") ||
+    (paymentType !== "car_commission" && paymentType !== "car_deposit") ||
     meta.brand !== "crete.direct" ||
     !Number.isInteger(requestId) ||
     requestId <= 0
@@ -107,35 +106,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       });
       return NextResponse.json({ error: "deposit handling failed" }, { status: 500 });
     }
-  }
-
-  if (event.type === "checkout.session.completed" && paymentType === "car_booking") {
-    const obj = event.data.object as { payment_intent?: string };
-    // On relit la date de debut pour poser l'echeance de versement : elle doit
-    // etre calculee par booking-policy, jamais recopiee depuis le client.
-    const { data: row } = await supabaseAdmin
-      .from("car_requests")
-      .select("id, date_from")
-      .eq("id", requestId)
-      .maybeSingle();
-
-    const { error } = await supabaseAdmin
-      .from("car_requests")
-      .update({
-        booking_status: "paid",
-        booking_paid_at: new Date().toISOString(),
-        booking_payment_intent_id: obj.payment_intent ?? null,
-        transfer_due_at: row?.date_from ? transferDueAt(row.date_from) : null,
-      })
-      .eq("id", requestId);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-    // Mise en relation SEULEMENT ici : avant paiement, le client aurait le
-    // numero du loueur et aucune raison de payer sur crete.direct.
-    const { notifyBookingPaid } = await import("@/lib/car-booking-server");
-    await notifyBookingPaid(requestId);
-
-    return NextResponse.json({ received: true, booking: true });
   }
 
   if (event.type === "checkout.session.completed") {

@@ -12,7 +12,6 @@ import {
 } from "./car-commission";
 import { creditMailBody, type CreditMail } from "./car-invoice";
 import { outcomeQuestionSubject, outcomeQuestionBody, type OutcomeQuestionMail } from "./car-outcome-followup";
-import { bookingPaidPartnerBody, bookingPaidCustomerBody, type BookingPaidInfo } from "./car-booking";
 import type { NewsletterDigest, NewsletterLang } from "./newsletter";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -1962,31 +1961,5 @@ export async function sendCarDepositMail(to: string, mail: { subject: string; ht
   } catch (e) {
     console.error("[sendCarDepositMail] échec:", e);
     return false;
-  }
-}
-
-/** Reservation voiture payee en ligne : coordonnees echangees, jamais avant. */
-export async function sendCarBookingPaidEmails(
-  partnerEmail: string,
-  info: BookingPaidInfo,
-): Promise<void> {
-  const subject = `Booking paid · ${info.pickupLabel} ${info.dateFrom} → ${info.dateTo}`;
-  try {
-    reportSend(await resend.emails.send({
-      from: FROM_EMAIL, to: partnerEmail, replyTo: info.customerEmail,
-      subject: `[crete.direct] ${subject}`,
-      text: bookingPaidPartnerBody(info),
-    }), "reservation voiture payee, loueur");
-  } catch (e) {
-    console.error("[sendCarBookingPaidEmails] loueur:", e);
-  }
-  try {
-    reportSend(await resend.emails.send({
-      from: FROM_EMAIL, to: info.customerEmail, replyTo: "hello@crete.direct",
-      subject,
-      text: bookingPaidCustomerBody(info),
-    }), "reservation voiture payee, client");
-  } catch (e) {
-    console.error("[sendCarBookingPaidEmails] client:", e);
   }
 }
