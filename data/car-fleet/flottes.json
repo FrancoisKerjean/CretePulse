@@ -1,0 +1,3059 @@
+[
+ {
+  "id": 134,
+  "name": "Autochoice Rent a Car",
+  "website": "https://autochoice-rentacar.gr",
+  "fleetPageUrl": "https://autochoice-rentacar.gr/our-fleet/",
+  "siteStatus": "site lu",
+  "ignoredQuoteText": [],
+  "models": [
+   {
+    "model": "Fiat 500",
+    "category": "city",
+    "gearbox": "manual",
+    "fuel": "gasoline",
+    "seats": 4,
+    "photoUrl": "https://autochoice-rentacar.gr/wp-content/uploads/2025/02/rent-a-fiat-500-hybrid-in-crete.jpg",
+    "photoWidth": 1880,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "Small (500 Hybrid)",
+    "sources": [
+     "https://autochoice-rentacar.gr/our-fleet/",
+     "devis 2026 (x22)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Fiat Panda",
+    "category": "city",
+    "gearbox": "manual",
+    "fuel": "hybrid",
+    "seats": 5,
+    "photoUrl": "https://autochoice-rentacar.gr/wp-content/uploads/2026/07/Fiat-panda.jpg",
+    "photoWidth": 1880,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "Small (Panda Hybrid)",
+    "sources": [
+     "https://autochoice-rentacar.gr/our-fleet/"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Kia Picanto",
+    "category": "city",
+    "gearbox": "automatic",
+    "fuel": "gasoline",
+    "seats": 5,
+    "photoUrl": "https://autochoice-rentacar.gr/wp-content/uploads/2026/07/Kia-picanto.jpg",
+    "photoWidth": 1880,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "Small",
+    "sources": [
+     "https://autochoice-rentacar.gr/our-fleet/",
+     "devis 2026 (x4)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Citroën C3",
+    "category": "compact",
+    "gearbox": "manual",
+    "fuel": "gasoline",
+    "seats": 5,
+    "photoUrl": "https://autochoice-rentacar.gr/wp-content/uploads/2025/02/Citroen-C3.jpg",
+    "photoWidth": 1880,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "Family (C3) + SUV (C3 2025, diesel)",
+    "sources": [
+     "https://autochoice-rentacar.gr/our-fleet/"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Dacia Sandero",
+    "category": "compact",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x2)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "MG3",
+    "category": "compact",
+    "gearbox": "automatic",
+    "fuel": "hybrid",
+    "seats": 5,
+    "photoUrl": "https://autochoice-rentacar.gr/wp-content/uploads/2025/03/rent-a-mg3-hybrid-in-crete.jpg",
+    "photoWidth": 1880,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "Family (MG3 Hybrid+)",
+    "sources": [
+     "https://autochoice-rentacar.gr/our-fleet/",
+     "devis 2026 (x2)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Opel Corsa",
+    "category": "compact",
+    "gearbox": "automatic",
+    "fuel": "gasoline",
+    "seats": 5,
+    "photoUrl": "https://autochoice-rentacar.gr/wp-content/uploads/2025/02/rent-an-opel-corsa-auto-in-crete.jpg",
+    "photoWidth": 1880,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "Family (Corsa Automatic)",
+    "sources": [
+     "https://autochoice-rentacar.gr/our-fleet/"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Renault Clio",
+    "category": "compact",
+    "gearbox": "both",
+    "fuel": "diesel",
+    "seats": 5,
+    "photoUrl": "https://autochoice-rentacar.gr/wp-content/uploads/2025/10/rent-a-renault-clio-in-crete.jpg",
+    "photoWidth": 1880,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "Family (Clio 2025)",
+    "sources": [
+     "https://autochoice-rentacar.gr/our-fleet/",
+     "devis 2026 (x8)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "BMW X1",
+    "category": "suv",
+    "gearbox": "automatic",
+    "fuel": "gasoline",
+    "seats": 5,
+    "photoUrl": "https://autochoice-rentacar.gr/wp-content/uploads/2025/02/rent-a-bmw-x1-in-crete.jpg",
+    "photoWidth": 1880,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "SUV",
+    "sources": [
+     "https://autochoice-rentacar.gr/our-fleet/"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "BMW X2",
+    "category": "suv",
+    "gearbox": "automatic",
+    "fuel": "hybrid",
+    "seats": 5,
+    "photoUrl": "https://autochoice-rentacar.gr/wp-content/uploads/2025/03/rent-a-bmw-x2-in-crete.jpg",
+    "photoWidth": 1880,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "SUV",
+    "sources": [
+     "https://autochoice-rentacar.gr/our-fleet/"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Jeep Compass",
+    "category": "suv",
+    "gearbox": "automatic",
+    "fuel": "hybrid",
+    "seats": 5,
+    "photoUrl": "https://autochoice-rentacar.gr/wp-content/uploads/2025/02/rent-a-jeep-compass-ddct-e-hybrid-in-crete.jpg",
+    "photoWidth": 1880,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "SUV (Compass DDCT E-Hybrid)",
+    "sources": [
+     "https://autochoice-rentacar.gr/our-fleet/"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Kia Stonic",
+    "category": "suv",
+    "gearbox": "manual",
+    "fuel": "gasoline",
+    "seats": 5,
+    "photoUrl": "https://autochoice-rentacar.gr/wp-content/uploads/2025/02/rent-a-kia-stonic-in-crete.jpg",
+    "photoWidth": 1880,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "SUV",
+    "sources": [
+     "https://autochoice-rentacar.gr/our-fleet/",
+     "devis 2026 (x2)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Mini Countryman",
+    "category": "suv",
+    "gearbox": "manual",
+    "fuel": "gasoline",
+    "seats": 5,
+    "photoUrl": "https://autochoice-rentacar.gr/wp-content/uploads/2025/02/rent-a-mini-countryman-in-crete.jpg",
+    "photoWidth": 1880,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "SUV",
+    "sources": [
+     "https://autochoice-rentacar.gr/our-fleet/"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Peugeot 2008",
+    "category": "suv",
+    "gearbox": "automatic",
+    "fuel": "hybrid",
+    "seats": 5,
+    "photoUrl": "https://autochoice-rentacar.gr/wp-content/uploads/2025/03/rent-a-peugeot-2008-in-crete.jpg",
+    "photoWidth": 1880,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "SUV (2008 Hybrid)",
+    "sources": [
+     "https://autochoice-rentacar.gr/our-fleet/",
+     "devis 2026 (x2)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Tesla Model Y",
+    "category": "suv",
+    "gearbox": "automatic",
+    "fuel": "electric",
+    "seats": 5,
+    "photoUrl": "https://autochoice-rentacar.gr/wp-content/uploads/2025/02/rent-a-tesla-y-in-crete.jpg",
+    "photoWidth": 1880,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "Electric",
+    "sources": [
+     "https://autochoice-rentacar.gr/our-fleet/"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "VW Taigo",
+    "category": "suv",
+    "gearbox": "manual",
+    "fuel": "gasoline",
+    "seats": 5,
+    "photoUrl": "https://autochoice-rentacar.gr/wp-content/uploads/2026/07/Wv-taigo.jpg",
+    "photoWidth": 1880,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "SUV",
+    "sources": [
+     "https://autochoice-rentacar.gr/our-fleet/",
+     "devis 2026 (x2)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Dacia Jogger",
+    "category": "other",
+    "gearbox": "manual",
+    "fuel": "gasoline",
+    "seats": 7,
+    "photoUrl": "https://autochoice-rentacar.gr/wp-content/uploads/2025/02/rent-a-dacia-jogger-in-crete.jpg",
+    "photoWidth": 1880,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "SUV 7 places",
+    "sources": [
+     "https://autochoice-rentacar.gr/our-fleet/"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Mercedes Vito",
+    "category": "other",
+    "gearbox": "automatic",
+    "fuel": "gasoline",
+    "seats": 8,
+    "photoUrl": "https://autochoice-rentacar.gr/wp-content/uploads/2025/02/rent-a-mercedes-vito-in-crete.jpg",
+    "photoWidth": 1880,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "Mini Van",
+    "sources": [
+     "https://autochoice-rentacar.gr/our-fleet/"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Mini Cooper Cabrio",
+    "category": "other",
+    "gearbox": "automatic",
+    "fuel": "gasoline",
+    "seats": 4,
+    "photoUrl": "https://autochoice-rentacar.gr/wp-content/uploads/2025/02/rent-a-mini-cooper-cabrio-in-crete.jpg",
+    "photoWidth": 1880,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "Cabrio",
+    "sources": [
+     "https://autochoice-rentacar.gr/our-fleet/"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Mini Cooper Cabrio JCW",
+    "category": "other",
+    "gearbox": "automatic",
+    "fuel": "gasoline",
+    "seats": 4,
+    "photoUrl": "https://autochoice-rentacar.gr/wp-content/uploads/2025/02/rent-a-mini-cooper-cabrio-jcw-in-crete.jpg",
+    "photoWidth": 1880,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "Cabrio",
+    "sources": [
+     "https://autochoice-rentacar.gr/our-fleet/"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Renault Trafic",
+    "category": "other",
+    "gearbox": "manual",
+    "fuel": "gasoline",
+    "seats": 9,
+    "photoUrl": "https://autochoice-rentacar.gr/wp-content/uploads/2025/02/rent-a-renault-trafic-in-crete.jpg",
+    "photoWidth": 1880,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "Mini Van",
+    "sources": [
+     "https://autochoice-rentacar.gr/our-fleet/"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Toyota Proace City",
+    "category": "other",
+    "gearbox": "manual",
+    "fuel": "diesel",
+    "seats": 7,
+    "photoUrl": "https://autochoice-rentacar.gr/wp-content/uploads/2025/03/rent-a-toyota-proace-in-crete.jpg",
+    "photoWidth": 1880,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "Mini Van",
+    "sources": [
+     "https://autochoice-rentacar.gr/our-fleet/"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Toyota Proace City",
+    "category": "other",
+    "gearbox": "automatic",
+    "fuel": "diesel",
+    "seats": 7,
+    "photoUrl": "https://autochoice-rentacar.gr/wp-content/uploads/2026/07/Totoya-proace-2026.jpg",
+    "photoWidth": 1880,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "Mini Van",
+    "sources": [
+     "https://autochoice-rentacar.gr/our-fleet/"
+    ],
+    "confirmed": false
+   }
+  ]
+ },
+ {
+  "id": 105,
+  "name": "Beepit Rental Cars",
+  "website": "https://www.beepit.gr",
+  "fleetPageUrl": "https://beepit.gr/fleet",
+  "siteStatus": "site lu",
+  "ignoredQuoteText": [],
+  "models": [
+   {
+    "model": "Citroën C1",
+    "category": "city",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x10)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Fiat Panda",
+    "category": "city",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://beepit.gr/images/fleet/vehicles/fiat-panda.webp",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Mini / Economy",
+    "sources": [
+     "https://beepit.gr/fleet",
+     "devis 2026 (x2)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Kia Picanto",
+    "category": "city",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://beepit.gr/images/fleet/vehicles/kia-picanto-auto.webp",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Automatic",
+    "sources": [
+     "https://beepit.gr/fleet"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Toyota Aygo",
+    "category": "city",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://beepit.gr/images/fleet/vehicles/toyota-aygo.webp",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Mini / Economy",
+    "sources": [
+     "https://beepit.gr/fleet",
+     "devis 2026 (x16)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Citroën C3",
+    "category": "compact",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://beepit.gr/images/fleet/vehicles/citroen-c3.webp",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Compact",
+    "sources": [
+     "https://beepit.gr/fleet",
+     "devis 2026 (x2)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "DS 3",
+    "category": "compact",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x10)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Peugeot 208",
+    "category": "compact",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x2)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Seat Ibiza",
+    "category": "compact",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://beepit.gr/images/fleet/vehicles/seat-ibiza-auto.webp",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Automatic",
+    "sources": [
+     "https://beepit.gr/fleet"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Toyota Yaris",
+    "category": "compact",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x2)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "VW Polo",
+    "category": "compact",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://beepit.gr/images/fleet/vehicles/vw-polo.webp",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Mini / Economy",
+    "sources": [
+     "https://beepit.gr/fleet",
+     "devis 2026 (x14)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Fiat Tipo SW",
+    "category": "sedan",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://storage.googleapis.com/cityrent/74287404-1e10-40a9-b4c9-1e0920ae3f2a/car_type_image/12/Fiat%20Tipo%20SW.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Station Wagon",
+    "sources": [
+     "https://beepit.gr/fleet"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Peugeot 308 SW",
+    "category": "sedan",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://beepit.gr/images/fleet/vehicles/peugeot-308-sw.webp",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Automatic",
+    "sources": [
+     "https://beepit.gr/fleet"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Seat Leon",
+    "category": "sedan",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://beepit.gr/images/fleet/vehicles/seat-leon-auto.webp",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Automatic",
+    "sources": [
+     "https://beepit.gr/fleet"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Toyota Corolla",
+    "category": "sedan",
+    "gearbox": "both",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://beepit.gr/images/fleet/vehicles/toyota-corolla.webp",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Compact",
+    "sources": [
+     "https://beepit.gr/fleet"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "VW Golf",
+    "category": "sedan",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://beepit.gr/images/fleet/vehicles/vw-golf.webp",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Compact",
+    "sources": [
+     "https://beepit.gr/fleet"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "BMW X1",
+    "category": "suv",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://beepit.gr/images/fleet/vehicles/bmw-x1-auto.webp",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Luxury",
+    "sources": [
+     "https://beepit.gr/fleet"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Dacia Duster",
+    "category": "suv",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://storage.googleapis.com/cityrent/74287404-1e10-40a9-b4c9-1e0920ae3f2a/car_type_image/19/Dacia%20Duster.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "SUV",
+    "sources": [
+     "https://beepit.gr/fleet"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Jeep Renegade",
+    "category": "suv",
+    "gearbox": "both",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://beepit.gr/images/fleet/vehicles/jeep-renegade.webp",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "SUV",
+    "sources": [
+     "https://beepit.gr/fleet"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Kia Stonic",
+    "category": "suv",
+    "gearbox": "both",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://beepit.gr/images/fleet/vehicles/kia-stonic.webp",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "SUV",
+    "sources": [
+     "https://beepit.gr/fleet"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Nissan Juke",
+    "category": "suv",
+    "gearbox": "both",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://beepit.gr/images/fleet/vehicles/nissan-juke.webp",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "SUV",
+    "sources": [
+     "https://beepit.gr/fleet",
+     "devis 2026 (x2)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Nissan Qashqai",
+    "category": "suv",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://beepit.gr/images/fleet/vehicles/nissan-qashqai.webp",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "SUV",
+    "sources": [
+     "https://beepit.gr/fleet"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Peugeot 2008",
+    "category": "suv",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x2)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Peugeot 3008",
+    "category": "suv",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://beepit.gr/images/fleet/vehicles/peugeot-3008.webp",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Compact (site) : SUV en réalité",
+    "sources": [
+     "https://beepit.gr/fleet"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Citroën Grand Picasso",
+    "category": "other",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 7,
+    "photoUrl": "https://beepit.gr/images/fleet/vehicles/citroen-grand-picasso.webp",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Minibus",
+    "sources": [
+     "https://beepit.gr/fleet"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Fiat 500c",
+    "category": "other",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 4,
+    "photoUrl": "https://beepit.gr/images/fleet/vehicles/fiat-500c.webp",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Cabrio",
+    "sources": [
+     "https://beepit.gr/fleet"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Opel Vivaro",
+    "category": "other",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": 9,
+    "photoUrl": "https://storage.googleapis.com/cityrent/74287404-1e10-40a9-b4c9-1e0920ae3f2a/car_type_image/15/Opel%20Vivaro.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Minibus",
+    "sources": [
+     "https://beepit.gr/fleet"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Renault Trafic",
+    "category": "other",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 9,
+    "photoUrl": "https://beepit.gr/images/fleet/vehicles/renault-traffic.webp",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Minibus",
+    "sources": [
+     "https://beepit.gr/fleet"
+    ],
+    "confirmed": false
+   }
+  ]
+ },
+ {
+  "id": 81,
+  "name": "Globe Travel Rent a Car",
+  "website": "https://globetravel.gr",
+  "fleetPageUrl": "https://globetravel.gr/en/rental-car.1.Classic-Cars",
+  "siteStatus": "site lu",
+  "ignoredQuoteText": [],
+  "models": [
+   {
+    "model": "Fiat Panda",
+    "category": "city",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://globetravel.gr/photos/p34p.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Classic Cars",
+    "sources": [
+     "https://globetravel.gr/en/rental-car.1.Classic-Cars"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Hyundai i10",
+    "category": "city",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://globetravel.gr/photos/p35p.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Classic Cars",
+    "sources": [
+     "https://globetravel.gr/en/rental-car.1.Classic-Cars"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Skoda Citigo",
+    "category": "city",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://globetravel.gr/photos/p23p.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Classic Cars",
+    "sources": [
+     "https://globetravel.gr/en/rental-car.1.Classic-Cars"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Toyota Aygo",
+    "category": "city",
+    "gearbox": "both",
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x4)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Toyota Aygo X",
+    "category": "city",
+    "gearbox": "both",
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://globetravel.gr/photos/p68p.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Classic Cars",
+    "sources": [
+     "https://globetravel.gr/en/rental-car.1.Classic-Cars",
+     "devis 2026 (x10)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Toyota Aygo X Open Top",
+    "category": "city",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://globetravel.gr/photos/p59p.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Classic Cars",
+    "sources": [
+     "https://globetravel.gr/en/rental-car.1.Classic-Cars"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "VW up!",
+    "category": "city",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://globetravel.gr/photos/p55p.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Classic Cars",
+    "sources": [
+     "https://globetravel.gr/en/rental-car.1.Classic-Cars",
+     "devis 2026 (x4)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Hyundai i20",
+    "category": "compact",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://globetravel.gr/photos/p53p.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Classic Cars",
+    "sources": [
+     "https://globetravel.gr/en/rental-car.1.Classic-Cars"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Skoda Fabia",
+    "category": "compact",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://globetravel.gr/photos/p54p.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Classic Cars",
+    "sources": [
+     "https://globetravel.gr/en/rental-car.1.Classic-Cars",
+     "devis 2026 (x4)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Toyota Yaris",
+    "category": "compact",
+    "gearbox": null,
+    "fuel": "hybrid",
+    "seats": null,
+    "photoUrl": "https://globetravel.gr/photos/p50p.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Classic Cars",
+    "sources": [
+     "https://globetravel.gr/en/rental-car.1.Classic-Cars",
+     "devis 2026 (x3)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Toyota Yaris Hybrid",
+    "category": "compact",
+    "gearbox": null,
+    "fuel": "hybrid",
+    "seats": null,
+    "photoUrl": "https://globetravel.gr/photos/p64p.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Classic Cars",
+    "sources": [
+     "https://globetravel.gr/en/rental-car.1.Classic-Cars"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "VW Polo",
+    "category": "compact",
+    "gearbox": "both",
+    "fuel": "petrol",
+    "seats": null,
+    "photoUrl": "https://globetravel.gr/photos/p60p.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Classic Cars",
+    "sources": [
+     "https://globetravel.gr/en/rental-car.1.Classic-Cars",
+     "devis 2026 (x18)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "VW Polo TSI Turbo",
+    "category": "compact",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://globetravel.gr/photos/p13p.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Classic Cars",
+    "sources": [
+     "https://globetravel.gr/en/rental-car.1.Classic-Cars"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Audi A3",
+    "category": "sedan",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://globetravel.gr/photos/p20p.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Classic Cars",
+    "sources": [
+     "https://globetravel.gr/en/rental-car.1.Classic-Cars"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Hyundai Bayon",
+    "category": "suv",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://globetravel.gr/photos/p77p.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Classic Cars",
+    "sources": [
+     "https://globetravel.gr/en/rental-car.1.Classic-Cars"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Toyota C-HR",
+    "category": "suv",
+    "gearbox": null,
+    "fuel": "hybrid",
+    "seats": null,
+    "photoUrl": "https://globetravel.gr/photos/p74p.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Classic Cars",
+    "sources": [
+     "https://globetravel.gr/en/rental-car.1.Classic-Cars",
+     "devis 2026 (x1)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Toyota Yaris Cross",
+    "category": "suv",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://globetravel.gr/photos/p69p.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Classic Cars",
+    "sources": [
+     "https://globetravel.gr/en/rental-car.1.Classic-Cars"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "VW T-Cross",
+    "category": "suv",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://globetravel.gr/photos/p78p.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Classic Cars",
+    "sources": [
+     "https://globetravel.gr/en/rental-car.1.Classic-Cars"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Fiat 500 Cabrio",
+    "category": "other",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://globetravel.gr/photos/p57p.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Classic Cars",
+    "sources": [
+     "https://globetravel.gr/en/rental-car.1.Classic-Cars"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Toyota Proace 7 places",
+    "category": "other",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://globetravel.gr/photos/p67p.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Classic Cars",
+    "sources": [
+     "https://globetravel.gr/en/rental-car.1.Classic-Cars"
+    ],
+    "confirmed": false
+   }
+  ]
+ },
+ {
+  "id": 31,
+  "name": "Greenways Rent a Car",
+  "website": "https://greenways.gr",
+  "fleetPageUrl": "https://greenways.gr/vehicles/all",
+  "siteStatus": "site lu",
+  "ignoredQuoteText": [],
+  "models": [
+   {
+    "model": "Fiat Panda",
+    "category": "city",
+    "gearbox": "manual",
+    "fuel": "gasoline",
+    "seats": 4,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/economy-2018-07-24-15-55-46-43.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Economy A/C (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all",
+     "devis 2026 (x15)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Hyundai i10",
+    "category": "city",
+    "gearbox": "manual",
+    "fuel": "gasoline",
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/compact-ac-2018-07-25-13-58-39-77.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Compact A/C (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Kia Picanto",
+    "category": "city",
+    "gearbox": "both",
+    "fuel": "gasoline",
+    "seats": 4,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/economy-2018-07-24-15-55-46-43.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Economy A/C (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all",
+     "devis 2026 (x25)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Peugeot 108",
+    "category": "city",
+    "gearbox": "manual",
+    "fuel": "gasoline",
+    "seats": 4,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/economy-open-top-2018-07-25-13-53-42-58.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Economy Open Top",
+    "sources": [
+     "https://greenways.gr/vehicles/all",
+     "devis 2026 (x2)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Suzuki Celerio",
+    "category": "city",
+    "gearbox": "both",
+    "fuel": "gasoline",
+    "seats": 4,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/economy-2018-07-24-15-55-46-43.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Economy A/C (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all",
+     "devis 2026 (x25)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Hyundai i20",
+    "category": "compact",
+    "gearbox": "manual",
+    "fuel": "gasoline",
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/family-plus-ac-2018-07-24-15-46-49-31.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Family A/C (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all",
+     "devis 2026 (x10)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Mazda 2",
+    "category": "compact",
+    "gearbox": "manual",
+    "fuel": "gasoline",
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/family-plus-ac-2018-07-24-15-46-49-31.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Family A/C (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all",
+     "devis 2026 (x10)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Nissan Micra",
+    "category": "compact",
+    "gearbox": "manual",
+    "fuel": "gasoline",
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/compact-ac-2018-07-25-13-58-39-77.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Compact A/C (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Opel Corsa",
+    "category": "compact",
+    "gearbox": "manual",
+    "fuel": "gasoline",
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/family-plus-ac-2018-07-24-15-46-49-31.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Family A/C (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all",
+     "devis 2026 (x10)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Peugeot 208",
+    "category": "compact",
+    "gearbox": "manual",
+    "fuel": "gasoline",
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/family-plus-ac-2018-07-24-15-46-49-31.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Family A/C (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all",
+     "devis 2026 (x10)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Skoda Fabia",
+    "category": "compact",
+    "gearbox": "automatic",
+    "fuel": "gasoline",
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/compact-automatic-2018-07-25-14-01-36-49.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Compact A/C Automatic (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all",
+     "devis 2026 (x2)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "VW Polo",
+    "category": "compact",
+    "gearbox": "automatic",
+    "fuel": "gasoline",
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/compact-automatic-2018-07-25-14-01-36-49.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Compact A/C Automatic (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all",
+     "devis 2026 (x2)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Peugeot 301",
+    "category": "sedan",
+    "gearbox": "manual",
+    "fuel": "gasoline",
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/family-plus-2022-03-29-13-12-02-17.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Family Plus (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all",
+     "devis 2026 (x2)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Skoda Octavia",
+    "category": "sedan",
+    "gearbox": "automatic",
+    "fuel": "gasoline",
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/family-automatic-2018-07-25-14-26-36-43.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Family A/C Automatic (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Skoda Rapid",
+    "category": "sedan",
+    "gearbox": "manual",
+    "fuel": "gasoline",
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/family-plus-2022-03-29-13-12-02-17.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Family Plus (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all",
+     "devis 2026 (x2)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "VW Golf",
+    "category": "sedan",
+    "gearbox": "automatic",
+    "fuel": "gasoline",
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/family-automatic-2018-07-25-14-26-36-43.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Family A/C Automatic (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "BMW X2",
+    "category": "suv",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/premium-suv-automatic-2022-05-09-09-47-37-81.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Premium SUV",
+    "sources": [
+     "https://greenways.gr/vehicles/all"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Dacia Sandero Stepway",
+    "category": "suv",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/small-suv-2022-07-05-11-32-36-88.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Small SUV (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Jeep Compass",
+    "category": "suv",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/automatic-suv-2018-07-31-16-18-42-78.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "SUV A/C Automatic (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Jeep Renegade",
+    "category": "suv",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/4wd-automatic-grand-jeep-2022-03-29-13-15-18-81.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Grand Jeep 4WD (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Kia Sportage",
+    "category": "suv",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/luxury-suv-2018-07-31-16-12-28-39.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Luxury SUV (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Kia Stonic",
+    "category": "suv",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/small-suv-2022-07-05-11-32-36-88.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Small SUV (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Mini Cooper Countryman",
+    "category": "suv",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/Mini_SUV_Automatic-2022-05-28-15-54-45-16.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Mini SUV",
+    "sources": [
+     "https://greenways.gr/vehicles/all"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Nissan Qashqai",
+    "category": "suv",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/luxury-suv-2018-07-31-16-12-28-39.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Luxury SUV (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Nissan X-Trail",
+    "category": "suv",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/automatic-suv-2018-07-31-16-18-42-78.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "SUV A/C Automatic (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Opel Crossland",
+    "category": "suv",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/small-suv-2022-07-05-11-32-36-88.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Small SUV (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Skoda Kamiq",
+    "category": "suv",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/4wd-automatic-grand-jeep-2022-03-29-13-15-18-81.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Grand Jeep 4WD (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all",
+     "devis 2026 (x2)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Skoda Kodiaq",
+    "category": "suv",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/automatic-suv-2018-07-31-16-18-42-78.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "SUV A/C Automatic (photo de groupe)",
+    "sources": [
+     "https://greenways.gr/vehicles/all"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "VW T-Roc",
+    "category": "suv",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": 4,
+    "photoUrl": "https://greenways.gr/storage/uploads/vehicles/cabrio-automatic-luxury-A/C-2021-06-01-13-11-59-16.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Cabrio SUV (URL avec « / » dans le nom, à vérifier)",
+    "sources": [
+     "https://greenways.gr/vehicles/all"
+    ],
+    "confirmed": false
+   }
+  ]
+ },
+ {
+  "id": 137,
+  "name": "IQ Car Rentals",
+  "website": "https://iqcarrentals.com",
+  "fleetPageUrl": "https://iqcarrentals.com/ (accueil ; pas de page flotte dédiée)",
+  "siteStatus": "site lu",
+  "ignoredQuoteText": [],
+  "models": [
+   {
+    "model": "Fiat Panda",
+    "category": "city",
+    "gearbox": "manual",
+    "fuel": "diesel",
+    "seats": 5,
+    "photoUrl": "https://iqcarrentals.com/wp-content/uploads/elementor/thumbs/fiat-panda-r0m56b3y1mctk0j2e1pkagyc76tndo1v0l4bnrfnwk.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Mini Elite M",
+    "sources": [
+     "https://iqcarrentals.com/ (accueil ; pas de page flotte dédiée)",
+     "devis 2026 (x20)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Kia Picanto",
+    "category": "city",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x2)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Citroën C3",
+    "category": "compact",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://iqcarrentals.com/wp-content/uploads/elementor/thumbs/citroen-c3-dual-tone-r0m56b3y1mctk0j2e1pkagyc76tndo1v0l4bnrfnwk.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Compact M (C3 dual tone)",
+    "sources": [
+     "https://iqcarrentals.com/ (accueil ; pas de page flotte dédiée)",
+     "devis 2026 (x8)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Peugeot 208",
+    "category": "compact",
+    "gearbox": "automatic",
+    "fuel": "gasoline",
+    "seats": 5,
+    "photoUrl": "https://iqcarrentals.com/wp-content/uploads/elementor/thumbs/peugeot-208-auto-gasoline-r0m56989nya8wslsp0wb5hff0f2wy9uecbtcp7ig90.webp",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Compact A",
+    "sources": [
+     "https://iqcarrentals.com/ (accueil ; pas de page flotte dédiée)",
+     "devis 2026 (x4)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Skoda Fabia",
+    "category": "compact",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x4)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Citroën C3 Aircross",
+    "category": "suv",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://iqcarrentals.com/wp-content/uploads/elementor/thumbs/citroen-c3-aircross-r0m56a63usbj8ekfjjaxpz6vlsya5yy4oggu6hh22s.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Compact Crossover M",
+    "sources": [
+     "https://iqcarrentals.com/ (accueil ; pas de page flotte dédiée)",
+     "devis 2026 (x2)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "MG ZS",
+    "category": "suv",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://iqcarrentals.com/wp-content/uploads/elementor/thumbs/mg-zs-r0m568afh48yl6n5uihokznyf17jqkqo075v7xjuf8.png",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Standard SUV A",
+    "sources": [
+     "https://iqcarrentals.com/ (accueil ; pas de page flotte dédiée)",
+     "devis 2026 (x1)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Toyota Proace City Verso",
+    "category": "other",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://iqcarrentals.com/wp-content/uploads/elementor/thumbs/toyota-proace-city-verso-r0m56989nya8wslsp0wb5hff0f2wy9uecbtcp7ig90.webp",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Minivan",
+    "sources": [
+     "https://iqcarrentals.com/ (accueil ; pas de page flotte dédiée)"
+    ],
+    "confirmed": false
+   }
+  ]
+ },
+ {
+  "id": 16,
+  "name": "Luxtrans Crete (Cretecar)",
+  "website": "https://cretecar.rent",
+  "fleetPageUrl": "https://cretecar.rent/our-fleet-heraklion-crete-rent-a-car-and-private-transfers/",
+  "siteStatus": "site lu",
+  "ignoredQuoteText": [
+   "Dont have avaliable",
+   "Sorry but we don't have available cars"
+  ],
+  "models": [
+   {
+    "model": "Toyota Aygo X",
+    "category": "city",
+    "gearbox": "both",
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://cretecar.rent/wp-content/uploads/2024/10/Toyota-Aygo-X-Manual-crete-rent-a-car.jpg",
+    "photoWidth": 600,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "Group B",
+    "sources": [
+     "https://cretecar.rent/our-fleet-heraklion-crete-rent-a-car-and-private-transfers/",
+     "devis 2026 (x11)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "VW up!",
+    "category": "city",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x1)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Citroën C3",
+    "category": "compact",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x27)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "MG3",
+    "category": "compact",
+    "gearbox": "automatic",
+    "fuel": "hybrid",
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x2)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Skoda Fabia",
+    "category": "compact",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://cretecar.rent/wp-content/uploads/2024/10/NEW-Skoda-Fabia-manual-crete-rent-a-car.jpg",
+    "photoWidth": 600,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "(groupe non lu ; alt Automatic, fichier manual)",
+    "sources": [
+     "https://cretecar.rent/our-fleet-heraklion-crete-rent-a-car-and-private-transfers/"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Suzuki Swift",
+    "category": "compact",
+    "gearbox": "both",
+    "fuel": "hybrid",
+    "seats": null,
+    "photoUrl": "https://cretecar.rent/wp-content/uploads/2024/10/Suzuki-Swift-crete-rent-a-car.jpg",
+    "photoWidth": 600,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "Group CA1",
+    "sources": [
+     "https://cretecar.rent/our-fleet-heraklion-crete-rent-a-car-and-private-transfers/",
+     "devis 2026 (x42)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "VW Polo",
+    "category": "compact",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://cretecar.rent/wp-content/uploads/2024/10/VW-Polo-Automatic-crete-rent-a-car.jpg",
+    "photoWidth": 600,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "(groupe non lu)",
+    "sources": [
+     "https://cretecar.rent/our-fleet-heraklion-crete-rent-a-car-and-private-transfers/",
+     "devis 2026 (x27)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Audi A3 Sedan",
+    "category": "sedan",
+    "gearbox": "automatic",
+    "fuel": "diesel",
+    "seats": null,
+    "photoUrl": "https://cretecar.rent/wp-content/uploads/2024/10/Audi-A3-Sedan-Automatic-crete-rent-a-car.jpg",
+    "photoWidth": 600,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "Group DA",
+    "sources": [
+     "https://cretecar.rent/our-fleet-heraklion-crete-rent-a-car-and-private-transfers/",
+     "devis 2026 (x4)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "BMW 116",
+    "category": "sedan",
+    "gearbox": "manual",
+    "fuel": "diesel",
+    "seats": null,
+    "photoUrl": "https://cretecar.rent/wp-content/uploads/2024/10/BMW-116-Manual-Diesel-crete-rent-a-car.jpg",
+    "photoWidth": 600,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "(groupe non lu)",
+    "sources": [
+     "https://cretecar.rent/our-fleet-heraklion-crete-rent-a-car-and-private-transfers/"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Nissan Pulsar",
+    "category": "sedan",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://cretecar.rent/wp-content/uploads/2024/10/Nissan-Pulsar-Automatic-crete-rent-a-car.jpg",
+    "photoWidth": 600,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "(groupe non lu)",
+    "sources": [
+     "https://cretecar.rent/our-fleet-heraklion-crete-rent-a-car-and-private-transfers/"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Toyota Corolla Hybrid",
+    "category": "sedan",
+    "gearbox": null,
+    "fuel": "hybrid",
+    "seats": null,
+    "photoUrl": "https://cretecar.rent/wp-content/uploads/2024/10/Toyota-Corola-Hybrid-crete-rent-a-car.jpg",
+    "photoWidth": 600,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "Hybrid group",
+    "sources": [
+     "https://cretecar.rent/our-fleet-heraklion-crete-rent-a-car-and-private-transfers/"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "BYD Atto 3",
+    "category": "suv",
+    "gearbox": null,
+    "fuel": "electric",
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x1)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Dacia Duster",
+    "category": "suv",
+    "gearbox": null,
+    "fuel": "diesel",
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x2)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Kia Soul",
+    "category": "suv",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://cretecar.rent/wp-content/uploads/2024/10/KIA-Soul-Automatic.jpg",
+    "photoWidth": 600,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "(groupe non lu)",
+    "sources": [
+     "https://cretecar.rent/our-fleet-heraklion-crete-rent-a-car-and-private-transfers/",
+     "devis 2026 (x2)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Kia Stonic",
+    "category": "suv",
+    "gearbox": "both",
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://cretecar.rent/wp-content/uploads/2024/10/KIA-Stonic-Automatic-crete-rent-a-car.jpg",
+    "photoWidth": 600,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "Group DA (auto) / manuel",
+    "sources": [
+     "https://cretecar.rent/our-fleet-heraklion-crete-rent-a-car-and-private-transfers/",
+     "devis 2026 (x16)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Peugeot 2008",
+    "category": "suv",
+    "gearbox": "automatic",
+    "fuel": "hybrid",
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x3)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "VW T-Cross",
+    "category": "suv",
+    "gearbox": "both",
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x14)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "VW Taigo",
+    "category": "suv",
+    "gearbox": "both",
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://cretecar.rent/wp-content/uploads/2024/10/VW-Taigo-Automatic-crete-rent-a-car.jpg",
+    "photoWidth": 600,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "Group D / DA",
+    "sources": [
+     "https://cretecar.rent/our-fleet-heraklion-crete-rent-a-car-and-private-transfers/"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Toyota Proace City",
+    "category": "other",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://cretecar.rent/wp-content/uploads/2024/10/Toyota-Proace-CIty-Automatic-crete-rent-a-car.jpg",
+    "photoWidth": 600,
+    "photoWidthBasis": "attribut width de la page",
+    "photoTooSmall": false,
+    "siteGroup": "Group EA",
+    "sources": [
+     "https://cretecar.rent/our-fleet-heraklion-crete-rent-a-car-and-private-transfers/"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "VW Transporter T6",
+    "category": "other",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://cretecar.rent/wp-content/uploads/2024/10/WV-Transporter-T6-manual-crete-rent-a-car.jpg",
+    "photoWidth": 1536,
+    "photoWidthBasis": "variante 1536 px existe (original plus grand)",
+    "photoTooSmall": false,
+    "siteGroup": "Group F",
+    "sources": [
+     "https://cretecar.rent/our-fleet-heraklion-crete-rent-a-car-and-private-transfers/"
+    ],
+    "confirmed": false
+   }
+  ]
+ },
+ {
+  "id": 100,
+  "name": "RoadCrete",
+  "website": null,
+  "fleetPageUrl": null,
+  "siteStatus": "pas de site",
+  "ignoredQuoteText": [],
+  "models": [
+   {
+    "model": "Fiat Panda",
+    "category": "city",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x10)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Kia Picanto",
+    "category": "city",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x7)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Toyota Aygo X",
+    "category": "city",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x2)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Citroën C3",
+    "category": "compact",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x3)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Peugeot 208",
+    "category": "compact",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x2)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Fiat Tipo",
+    "category": "sedan",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x2)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Peugeot 308",
+    "category": "sedan",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x2)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Citroën C3 Aircross",
+    "category": "suv",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x2)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Ford Puma",
+    "category": "suv",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x1)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Jeep Compass",
+    "category": "suv",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x2)"
+    ],
+    "confirmed": false
+   }
+  ]
+ },
+ {
+  "id": 120,
+  "name": "Zakros Tours",
+  "website": "https://www.zakrostours.com/",
+  "fleetPageUrl": "https://www.zakrostours.com/EN/CarRentalModels.php",
+  "siteStatus": "site lu",
+  "ignoredQuoteText": [
+   "La restitution de la voiture à Héraklion ne pose pas de problème."
+  ],
+  "models": [
+   {
+    "model": "Fiat 500",
+    "category": "city",
+    "gearbox": "manual",
+    "fuel": "hybrid",
+    "seats": 4,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Fiat_500.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "City car (groupe B2)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Fiat Panda",
+    "category": "city",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 4,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Fiat_Panda_12.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Super Mini (groupe B1)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Hyundai i10",
+    "category": "city",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/NoBgd/Hyundai_i10_NoBgd-160x80.png",
+    "photoWidth": 160,
+    "photoWidthBasis": "nom de fichier",
+    "photoTooSmall": true,
+    "siteGroup": "Super mini class (page CarRental.php, vignette)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Peugeot 107",
+    "category": "city",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Peugeot_107.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Super Mini (groupe A1)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Seat Mii",
+    "category": "city",
+    "gearbox": "both",
+    "fuel": null,
+    "seats": 4,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Seat_Mii.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Super Mini (groupe B1)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Dacia Sandero Stepway",
+    "category": "compact",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Dacia_Sandero_Stepway.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Compact (groupe EA)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Fiat Grande Punto",
+    "category": "compact",
+    "gearbox": "both",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Fiat_Grande_Punto.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Economy (groupe C1)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Ford Fiesta",
+    "category": "compact",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Ford_Fiesta.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Economy (groupe C2)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Nissan Micra",
+    "category": "compact",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Nissan_Micra.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Economy (groupe CA)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Opel Corsa",
+    "category": "compact",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Opel_Corsa.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Economy (groupe C2)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Renault Clio",
+    "category": "compact",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Renault_Clio.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Economy (groupe C2)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Seat Ibiza",
+    "category": "compact",
+    "gearbox": "manual",
+    "fuel": "diesel",
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Seat_Ibiza.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Economy (groupe C1)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Skoda Fabia",
+    "category": "compact",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Skoda_Fabia.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Economy (groupe C2)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "VW Polo",
+    "category": "compact",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/VW_Polo.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Economy (groupe C2)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Hyundai i30",
+    "category": "sedan",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Hyundai_i30.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Compact (groupe D1)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Hyundai i30 Fastback",
+    "category": "sedan",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Hyundai_i30_Fastback.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Compact (groupe D2)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Nissan Pulsar",
+    "category": "sedan",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Nissan_Pulsar.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Compact (groupe DA3)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Opel Astra",
+    "category": "sedan",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Opel_Astra.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Compact (groupe D2)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Seat Leon",
+    "category": "sedan",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Seat_Leon.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Compact (groupe D1)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Seat Toledo",
+    "category": "sedan",
+    "gearbox": "both",
+    "fuel": "diesel",
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Seat_Toledo.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Small family (groupe D3)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Skoda Octavia",
+    "category": "sedan",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Skoda_Octavia.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Small family (groupe D3)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Dacia Duster",
+    "category": "suv",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Dacia_Duster.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "SUV (groupe L2)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Hyundai Tucson",
+    "category": "suv",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Hyundai_Tucson.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "SUV (groupe L1)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Jeep Renegade",
+    "category": "suv",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Jeep_Renegade.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "SUV (groupe L3)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Kia Stonic",
+    "category": "suv",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Kia_Stonic.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "SUV (groupe E1)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php",
+     "devis 2026 (x2)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Seat Arona",
+    "category": "suv",
+    "gearbox": "both",
+    "fuel": "diesel",
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Seat_Arona.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "SUV (groupe E1)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Skoda Yeti",
+    "category": "suv",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Skoda_Yeti.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "SUV (groupe L2)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Citroën C4 Grand Picasso",
+    "category": "other",
+    "gearbox": "manual",
+    "fuel": "diesel",
+    "seats": 7,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Citroen_C4.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "MPV (groupe F1)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Opel Astra ST",
+    "category": "other",
+    "gearbox": "automatic",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Opel_Astra_ST.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Station Wagon (groupe DA3)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Renault Grand Scenic",
+    "category": "other",
+    "gearbox": "automatic",
+    "fuel": "diesel",
+    "seats": 7,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/Renault_Grand_Scenic.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "MPV (groupe FA)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "VW Transporter",
+    "category": "other",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 9,
+    "photoUrl": "https://www.zakrostours.com/Images/Cars/VW_Transporter.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Mini Bus (groupe G1)",
+    "sources": [
+     "https://www.zakrostours.com/EN/CarRentalModels.php"
+    ],
+    "confirmed": false
+   }
+  ]
+ },
+ {
+  "id": 111,
+  "name": "Zorbas Rent a Car",
+  "website": "https://www.zorbasrentacar.gr",
+  "fleetPageUrl": "https://www.zorbasrentacar.gr/index.php/en/our-fleet",
+  "siteStatus": "site lu",
+  "ignoredQuoteText": [
+   "710"
+  ],
+  "models": [
+   {
+    "model": "Fiat Panda",
+    "category": "city",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 4,
+    "photoUrl": "https://www.zorbasrentacar.gr/administrator/components/com_vikrentcar/resources/vthumb_1fiat_panda_750_x_498.jpg",
+    "photoWidth": 750,
+    "photoWidthBasis": "nom de fichier",
+    "photoTooSmall": false,
+    "siteGroup": "Economy",
+    "sources": [
+     "https://www.zorbasrentacar.gr/index.php/en/our-fleet",
+     "devis 2026 (x22)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Hyundai i10",
+    "category": "city",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x28)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Kia Picanto",
+    "category": "city",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x2)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Mitsubishi Space Star",
+    "category": "city",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x4)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Nissan Micra",
+    "category": "compact",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zorbasrentacar.gr/administrator/components/com_vikrentcar/resources/1nissan_micra_577_x_433.jpg",
+    "photoWidth": 577,
+    "photoWidthBasis": "nom de fichier",
+    "photoTooSmall": false,
+    "siteGroup": "Medium",
+    "sources": [
+     "https://www.zorbasrentacar.gr/index.php/en/our-fleet",
+     "devis 2026 (x2)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Opel Corsa",
+    "category": "compact",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zorbasrentacar.gr/administrator/components/com_vikrentcar/resources/opel_corsa_535_x_467.jpg",
+    "photoWidth": 535,
+    "photoWidthBasis": "nom de fichier",
+    "photoTooSmall": false,
+    "siteGroup": "Intermediate",
+    "sources": [
+     "https://www.zorbasrentacar.gr/index.php/en/our-fleet",
+     "devis 2026 (x7)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Seat Ibiza",
+    "category": "compact",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x9)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Honda Insight",
+    "category": "sedan",
+    "gearbox": "automatic",
+    "fuel": "hybrid",
+    "seats": 5,
+    "photoUrl": "https://www.zorbasrentacar.gr/administrator/components/com_vikrentcar/resources/vthumb_2014-honda-insight_2400_x_1800.jpg",
+    "photoWidth": 2400,
+    "photoWidthBasis": "nom de fichier",
+    "photoTooSmall": false,
+    "siteGroup": "(non précisé ; hybride d'après l'URL)",
+    "sources": [
+     "https://www.zorbasrentacar.gr/index.php/en/our-fleet",
+     "devis 2026 (x6)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Seat Toledo",
+    "category": "sedan",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zorbasrentacar.gr/administrator/components/com_vikrentcar/resources/vthumb_toledo.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Full",
+    "sources": [
+     "https://www.zorbasrentacar.gr/index.php/en/our-fleet"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Nissan X-Trail",
+    "category": "suv",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zorbasrentacar.gr/administrator/components/com_vikrentcar/resources/vthumb_nissan-x-trail-2.0-mid-monarch_630_x_330.jpg",
+    "photoWidth": 630,
+    "photoWidthBasis": "nom de fichier",
+    "photoTooSmall": false,
+    "siteGroup": "SUV 4WD",
+    "sources": [
+     "https://www.zorbasrentacar.gr/index.php/en/our-fleet",
+     "devis 2026 (x1)"
+    ],
+    "confirmed": true
+   },
+   {
+    "model": "Renault Kadjar",
+    "category": "suv",
+    "gearbox": null,
+    "fuel": null,
+    "seats": null,
+    "photoUrl": null,
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": null,
+    "sources": [
+     "devis 2026 (x2)"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Kia Carens",
+    "category": "other",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 7,
+    "photoUrl": "https://www.zorbasrentacar.gr/administrator/components/com_vikrentcar/resources/3451378d-1771-0be2-1540-c0a4a41bd1a4_kia-carens_369_200_2_.jpg",
+    "photoWidth": 369,
+    "photoWidthBasis": "nom de fichier",
+    "photoTooSmall": true,
+    "siteGroup": "Mini van 7 seater",
+    "sources": [
+     "https://www.zorbasrentacar.gr/index.php/en/our-fleet"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "Skoda Roomster",
+    "category": "other",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 5,
+    "photoUrl": "https://www.zorbasrentacar.gr/administrator/components/com_vikrentcar/resources/roomster.jpg",
+    "photoWidth": null,
+    "photoWidthBasis": null,
+    "photoTooSmall": false,
+    "siteGroup": "Family",
+    "sources": [
+     "https://www.zorbasrentacar.gr/index.php/en/our-fleet"
+    ],
+    "confirmed": false
+   },
+   {
+    "model": "VW Transporter",
+    "category": "other",
+    "gearbox": "manual",
+    "fuel": null,
+    "seats": 9,
+    "photoUrl": "https://www.zorbasrentacar.gr/administrator/components/com_vikrentcar/resources/b9510838-9234-0067-3b1e-ba7da28c22b7_vw-transporter_369_200_2_.jpg",
+    "photoWidth": 369,
+    "photoWidthBasis": "nom de fichier",
+    "photoTooSmall": true,
+    "siteGroup": "Mini bus 9 seater",
+    "sources": [
+     "https://www.zorbasrentacar.gr/index.php/en/our-fleet"
+    ],
+    "confirmed": false
+   }
+  ]
+ }
+]
