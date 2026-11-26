@@ -19,6 +19,7 @@ import { setRequestLocale } from "next-intl/server";
 import { invoiceByToken } from "@/lib/car-invoice-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { carPickupLabel } from "@/lib/car-lead";
+import { todayAthens } from "@/lib/car-partner-identity";
 import { ratePercentLabel, partnerBillingIdentity, PARTNER_IDENTITY_COLS } from "@/lib/car-invoice";
 
 export const dynamic = "force-dynamic";
@@ -37,6 +38,8 @@ export const metadata: Metadata = { robots: { index: false, follow: false } };
 // de ce fichier respectent la regle.
 const EUR = (n: number) => `€${Number(n).toFixed(2)}`;
 const day = (iso: string) => new Date(iso).toISOString().slice(0, 10);
+// Date de l'acompte : jour civil d'Athènes (le client paie parfois après 21h UTC).
+const depositDay = (iso: string) => todayAthens(new Date(iso));
 
 /**
  * Coordonnees bancaires, lues de l environnement et de NULLE PART ailleurs :
@@ -125,9 +128,10 @@ export default async function InvoicePage({
   // « Perdu » du back-office n emet aucun avoir, mais il doit couper le
   // paiement : sinon le lien deja parti par email encaisse une location qui n a
   // pas eu lieu.
+  const offsetEarly = invoice.settlement === "deposit_compensation";
   const state = invoice.credited_at
     ? "credited"
-    : invoice.paid_at
+    : invoice.paid_at || offsetEarly
       ? "paid"
       : req?.outcome === "lost"
         ? "lost"
@@ -248,7 +252,7 @@ export default async function InvoicePage({
       {state === "paid" && offset && (
         <p className="mb-6 rounded-xl bg-ok/10 px-5 py-3 font-bold text-ok">
           Paid by offset against the deposit collected on{" "}
-          {day((req?.booking_paid_at as string | null | undefined) ?? (invoice.paid_at as string))}. Nothing left
+          {depositDay((req?.booking_paid_at as string | null | undefined) ?? invoice.paid_at ?? invoice.issued_at)}. Nothing left
           to do.
         </p>
       )}

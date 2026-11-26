@@ -23,6 +23,11 @@ describe("shouldRequestCommission", () => {
     expect(shouldRequestCommission(rented)).toBe(true);
   });
 
+  it("ne demande jamais une commission déjà gardée sur l'acompte (booking_status non nul)", () => {
+    expect(shouldRequestCommission({ ...rented, booking_status: "confirmed" })).toBe(false);
+    expect(shouldRequestCommission({ ...rented, booking_status: null })).toBe(true);
+  });
+
   it("ne demande rien tant que la location n est pas louee", () => {
     expect(shouldRequestCommission({ ...rented, outcome: "lost" })).toBe(false);
     expect(shouldRequestCommission({ ...rented, outcome: null })).toBe(false);

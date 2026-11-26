@@ -434,6 +434,21 @@ describe("page facture · réglée par compensation", () => {
     expect(html).not.toContain("payment due on receipt");
   });
 
+  it("compensation avec paid_at nul : toujours réglée, jamais de bouton ni de virement; date d'Athènes", async () => {
+    process.env.NOVAI_IBAN = "FR7630006000011234567890189";
+    process.env.NOVAI_BIC = "AGRIFRPP";
+    // 22:30 UTC le 10/07 = 00:30 le 11/07 à Athènes.
+    wiring(
+      { ...INVOICE, settlement: "deposit_compensation", paid_at: null },
+      { ...REQUEST, booking_paid_at: "2026-07-10T22:30:00.000Z" },
+    );
+    const html = await render();
+    expect(html).toContain("collected on 2026-07-11");
+    expect(html).not.toContain("by card");
+    expect(html).not.toContain("Bank transfer");
+    expect(html).not.toContain("FR7630006000011234567890189");
+  });
+
   it("une facture réglée autrement garde son affichage", async () => {
     wiring({ ...INVOICE, paid_at: "2026-08-11T09:00:00.000Z" });
     const html = await render();

@@ -372,6 +372,7 @@ export function RequestsTable({
             {
               id: r.id,
               outcome: r.outcome ?? null,
+              booking_status: r.booking_status ?? null,
               commission_eur: r.commission_eur ?? null,
               commission_paid_at: r.commission_paid_at ?? null,
               commission_session_id: r.commission_session_id ?? null,

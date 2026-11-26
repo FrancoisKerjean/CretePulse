@@ -62,6 +62,8 @@ export interface DepositMailData {
   insurance?: { type: string | null; excessEur: number | null; upsellPerDay: number | null };
   /** Lu par client_confirmed seulement. */
   partnerContact?: { name: string; phone: string | null; whatsapp: string | null; email: string | null; address: string | null };
+  /** Lu par partner_invoice : confirmed ou cancelled_kept (le texte diffère). */
+  bookingStatus?: string | null;
   /** Lu par partner_invoice seulement : montants lus de la facture, jamais recalculés. */
   invoice?: { number: string; url: string; baseEur: number; ratePct: string; commissionEur: number; depositPaidOn: string };
   /** Lu par partner_rates_expiring seulement. */
@@ -289,11 +291,15 @@ function partnerMail(kind: DepositMailKind, d: DepositMailData): DepositMail {
     case "partner_invoice": {
       const inv = d.invoice;
       if (!inv) throw new Error("depositMail: partner_invoice sans facture");
+      const kept = d.bookingStatus === "cancelled_kept";
       return {
         subject: `Commission invoice ${inv.number} · already settled · ${when(d)}`,
         html:
           hi +
-          P("The rental below starts today. Here is the commission invoice for it. <strong>It is already settled: there is nothing to pay.</strong>") +
+          P(kept
+            ? "The customer cancelled less than 48 hours before pickup. The deposit is kept as our commission and settles this invoice. <strong>It is already settled: there is nothing to pay.</strong>"
+            : "Here is the commission invoice for the rental below. <strong>It is already settled: there is nothing to pay.</strong>") +
+          partnerBooking(d, false) +
           BOX("Invoice", [
             `Invoice: <strong>${esc(inv.number)}</strong>`,
             `Rental price quoted and accepted: ${formatEur(inv.baseEur, "en")}`,
@@ -301,7 +307,9 @@ function partnerMail(kind: DepositMailKind, d: DepositMailData): DepositMail {
             `Commission: <strong>${formatEur(inv.commissionEur, "en")}</strong>`,
             `Settled by offset against the deposit collected on ${esc(inv.depositPaidOn)}`,
           ]) +
-          MUTED("The customer paid this deposit online, and crete.direct keeps it as its commission. You collect the rest at the counter.") +
+          (kept
+            ? ""
+            : MUTED("The customer paid this deposit online, and crete.direct keeps it as its commission. You collect the rest of the rental price at the counter.")) +
           BUTTON(inv.url, "View the invoice") +
           SIGN,
       };

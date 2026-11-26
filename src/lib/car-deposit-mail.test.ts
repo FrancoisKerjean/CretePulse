@@ -201,4 +201,17 @@ describe("depositMail", () => {
     expect(m.html).toContain("https://crete.direct/en/car-rates/portal-tok");
     for (const c of CLIENT_CONTACT) expect(m.html).not.toContain(c);
   });
+
+  it("partner_invoice : confirmed et cancelled_kept disent chacun le vrai", () => {
+    const ok = flat(depositMail("partner_invoice", { ...DATA, bookingStatus: "confirmed" }, "en").html);
+    expect(ok).toContain("rental below");
+    expect(ok).toContain("Pick-up: Heraklion Airport");
+    expect(ok).toContain("collect the rest");
+    expect(ok).not.toContain("starts today");
+    const kept = flat(depositMail("partner_invoice", { ...DATA, bookingStatus: "cancelled_kept" }, "en").html);
+    expect(kept).toContain("cancelled less than 48 hours before pickup. The deposit is kept as our commission and settles this invoice.");
+    expect(kept).not.toContain("collect the rest");
+    expect(kept).not.toContain("counter");
+    expect(kept).not.toContain(EM_DASH);
+  });
 });

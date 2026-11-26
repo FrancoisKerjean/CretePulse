@@ -418,6 +418,13 @@ describe("ensureCommissionCheckout", () => {
     expect(sessionsCreate).not.toHaveBeenCalled();
   });
 
+  it("facture réglée par compensation : aucune session, même si paid_at est nul", async () => {
+    wiring();
+    invoiceByToken.mockResolvedValueOnce({ ...INVOICE, paid_at: null, settlement: "deposit_compensation" });
+    expect(await ensureCommissionCheckout("tok")).toEqual({ error: "already_paid" });
+    expect(sessionsCreate).not.toHaveBeenCalled();
+  });
+
   it("facture avoiree : plus rien a encaisser", async () => {
     wiring();
     invoiceByToken.mockResolvedValueOnce({ ...INVOICE, credited_at: "2026-08-02T10:00:00.000Z" });

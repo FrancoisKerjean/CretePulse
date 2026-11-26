@@ -71,7 +71,7 @@ export async function requestCommission(requestId: number): Promise<CommissionOu
   const { data: req } = await supabaseAdmin
     .from("car_requests")
     .select(
-      "id, outcome, commission_eur, commission_paid_at, commission_session_id, quoted_by_partner_id, final_amount_eur, date_from, date_to",
+      "id, outcome, booking_status, commission_eur, commission_paid_at, commission_session_id, quoted_by_partner_id, final_amount_eur, date_from, date_to",
     )
     .eq("id", requestId)
     .maybeSingle();
@@ -264,6 +264,8 @@ export async function ensureCommissionCheckout(
 ): Promise<{ url: string } | { error: string }> {
   const invoice = await invoiceByToken(token);
   if (!invoice) return { error: "not_found" };
+  // Réglée par compensation avec l'acompte : jamais de paiement à ouvrir, quoi que dise paid_at.
+  if (invoice.settlement === "deposit_compensation") return { error: "already_paid" };
   if (invoice.paid_at) return { error: "already_paid" };
   if (invoice.credited_at) return { error: "credited" };
 

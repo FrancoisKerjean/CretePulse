@@ -17,6 +17,8 @@ export interface CommissionCandidate {
   commission_paid_at: string | null;
   commission_session_id: string | null;
   quoted_by_partner_id: number | null;
+  /** Non nul = réservation avec acompte : la commission est déjà gardée sur l'acompte. */
+  booking_status?: string | null;
 }
 
 /**
@@ -28,6 +30,8 @@ export interface CommissionCandidate {
  * rejouer la facturation lui en enverrait une seconde.
  */
 export function shouldRequestCommission(req: CommissionCandidate): boolean {
+  // Jamais demander à payer une commission déjà prélevée sur l'acompte.
+  if (req.booking_status) return false;
   if (req.outcome !== "rented") return false;
   if (req.commission_paid_at) return false;
   if (req.commission_session_id) return false;

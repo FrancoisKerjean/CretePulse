@@ -10,12 +10,13 @@ const h = vi.hoisted(() => ({
   invoiceForRequest: vi.fn(),
   createInvoiceForRequest: vi.fn(),
   markInvoicePaid: vi.fn(),
-  markInvoiceSent: vi.fn(),
   rotateInvoiceToken: vi.fn(),
   ensurePortalToken: vi.fn(),
   notifyOps: vi.fn(),
   sendCarDepositMail: vi.fn(),
   claimResult: { data: [{ id: 1 }] as unknown, error: null as unknown },
+  sendClaim: { data: [{ id: 1 }] as unknown, error: null as unknown },
+  reread: null as null | string,
   updateError: null as null | { message: string },
 }));
 
@@ -31,6 +32,10 @@ function chain(table: string) {
   q.then = (res: (v: unknown) => unknown) => {
     if (call.op === "update") {
       const isClaim = table === "car_partners" && call.filters.some((f) => f[0] === "is" && f[1] === "rates_expiry_reminded_at");
+      const isSendClaim = table === "car_commission_invoices"
+        && (call.payload as Row).sent_at != null
+        && call.filters.some((f) => f[0] === "is" && f[1] === "sent_at");
+      if (isSendClaim) return Promise.resolve(h.sendClaim).then(res);
       return Promise.resolve(
         isClaim && (call.payload as Row).rates_expiry_reminded_at !== null
           ? h.claimResult
@@ -39,7 +44,12 @@ function chain(table: string) {
     }
     return Promise.resolve({ data: h.tables[table] ?? [], error: null }).then(res);
   };
-  q.maybeSingle = async () => ({ data: ((h.tables[table] as Row[]) ?? [])[0] ?? null, error: null });
+  q.maybeSingle = async () => {
+    if (table === "car_requests" && h.reread !== null && call.filters.some((f) => f[0] === "select" && f[1] === "booking_status")) {
+      return { data: { booking_status: h.reread }, error: null };
+    }
+    return { data: ((h.tables[table] as Row[]) ?? [])[0] ?? null, error: null };
+  };
   return q;
 }
 
@@ -48,7 +58,6 @@ vi.mock("./car-invoice-server", () => ({
   invoiceForRequest: h.invoiceForRequest,
   createInvoiceForRequest: h.createInvoiceForRequest,
   markInvoicePaid: h.markInvoicePaid,
-  markInvoiceSent: h.markInvoiceSent,
   rotateInvoiceToken: h.rotateInvoiceToken,
   assertWritten: (op: string, id: number, error: { message: string } | null) => {
     if (error) throw new Error(`${op}(${id}) refuse: ${error.message}`);
@@ -98,7 +107,8 @@ beforeEach(() => {
   h.invoiceForRequest.mockResolvedValue(null);
   h.createInvoiceForRequest.mockImplementation(async (i: { requestId: number }) => created(i.requestId));
   h.markInvoicePaid.mockResolvedValue(undefined);
-  h.markInvoiceSent.mockResolvedValue(undefined);
+  h.sendClaim = { data: [{ id: 1 }], error: null };
+  h.reread = "confirmed";
   h.rotateInvoiceToken.mockResolvedValue("rotated-tok");
   h.ensurePortalToken.mockResolvedValue("portal-tok");
   h.notifyOps.mockResolvedValue(true);
@@ -122,18 +132,23 @@ describe("runDepositInvoicePass", () => {
     expect(mail.html).toContain("F-2026-001");
     expect(mail.html).toContain("2026-11-10");
     expect(mail.html + mail.subject).not.toContain(EM_DASH);
-    expect(h.markInvoiceSent).toHaveBeenCalledWith(101);
+    const claim = h.calls.find((c) => (c.payload as Row | undefined)?.sent_at != null)!;
+    expect(claim.filters).toContainEqual(["eq", "id", 101]);
+    expect(claim.filters).toContainEqual(["is", "sent_at", null]);
     expect(h.notifyOps).not.toHaveBeenCalled();
   });
 
-  it("l'ordre est : facture, règlement, paiement, envoi, marque envoyée", async () => {
+  it("l'ordre est : facture, paiement, verrou d'envoi, jeton, e-mail", async () => {
     const order: string[] = [];
-    h.createInvoiceForRequest.mockImplementation(async () => { order.push("create"); return created(1); });
+    h.createInvoiceForRequest.mockImplementation(async () => { order.push("create"); return created(1, { token: null, reused: true }); });
     h.markInvoicePaid.mockImplementation(async () => { order.push("paid"); });
+    h.rotateInvoiceToken.mockImplementation(async () => {
+      order.push(`rotate@claims=${h.calls.filter((c) => (c.payload as Row | undefined)?.sent_at != null).length}`);
+      return "r";
+    });
     h.sendCarDepositMail.mockImplementation(async () => { order.push("mail"); return true; });
-    h.markInvoiceSent.mockImplementation(async () => { order.push("sent"); });
     await runDepositInvoicePass("2026-11-26");
-    expect(order).toEqual(["create", "paid", "mail", "sent"]);
+    expect(order).toEqual(["create", "paid", "rotate@claims=1", "mail"]);
   });
 
   it("sélectionne confirmed et cancelled_kept, prise <= aujourd'hui, au plus 100 lignes", async () => {
@@ -167,7 +182,6 @@ describe("runDepositInvoicePass", () => {
     expect(h.rotateInvoiceToken).toHaveBeenCalledWith(101);
     expect(h.sendCarDepositMail).toHaveBeenCalledTimes(1);
     expect(h.sendCarDepositMail.mock.calls[0][1].html).toContain("/en/invoice/rotated-tok");
-    expect(h.markInvoiceSent).toHaveBeenCalledWith(101);
   });
 
   it("une facture avoirée est ignorée", async () => {
@@ -182,8 +196,91 @@ describe("runDepositInvoicePass", () => {
     h.sendCarDepositMail.mockResolvedValue(false);
     const r = await runDepositInvoicePass("2026-11-26");
     expect(r).toEqual({ invoiced: 0, failed: [1] });
-    expect(h.markInvoiceSent).not.toHaveBeenCalled();
+    const release = h.calls.filter((c) => c.table === "car_commission_invoices" && c.op === "update").pop()!;
+    expect(release.payload).toEqual({ sent_at: null });
     expect(h.notifyOps).toHaveBeenCalledTimes(1);
+  });
+
+  it("facture réutilisée déjà envoyée (lecture initiale ratée) : ni rotation ni e-mail", async () => {
+    h.createInvoiceForRequest.mockResolvedValue({ invoice: INVOICE(1, { sent_at: "2026-11-26T06:00:05Z" }), token: null, reused: true });
+    const r = await runDepositInvoicePass("2026-11-26");
+    expect(r).toEqual({ invoiced: 0, failed: [] });
+    expect(h.rotateInvoiceToken).not.toHaveBeenCalled();
+    expect(h.sendCarDepositMail).not.toHaveBeenCalled();
+  });
+
+  it("verrou d'envoi perdu (0 ligne) : ni rotation ni e-mail", async () => {
+    h.sendClaim = { data: [], error: null };
+    h.createInvoiceForRequest.mockResolvedValue({ invoice: INVOICE(1), token: null, reused: true });
+    const r = await runDepositInvoicePass("2026-11-26");
+    expect(r).toEqual({ invoiced: 0, failed: [] });
+    expect(h.rotateInvoiceToken).not.toHaveBeenCalled();
+    expect(h.sendCarDepositMail).not.toHaveBeenCalled();
+  });
+
+  it("rotation du jeton qui lève : le verrou est rendu", async () => {
+    h.createInvoiceForRequest.mockResolvedValue({ invoice: INVOICE(1), token: null, reused: true });
+    h.rotateInvoiceToken.mockRejectedValue(new Error("refus"));
+    const r = await runDepositInvoicePass("2026-11-26");
+    expect(r.failed).toEqual([1]);
+    const release = h.calls.filter((c) => c.table === "car_commission_invoices" && c.op === "update").pop()!;
+    expect(release.payload).toEqual({ sent_at: null });
+  });
+
+  it("réservation remboursée entre la sélection et la facture : ni paiement ni e-mail, alerte avoir", async () => {
+    h.reread = "refunded";
+    const r = await runDepositInvoicePass("2026-11-26");
+    expect(r).toEqual({ invoiced: 0, failed: [1] });
+    expect(h.markInvoicePaid).not.toHaveBeenCalled();
+    expect(h.sendCarDepositMail).not.toHaveBeenCalled();
+    expect(JSON.stringify(h.notifyOps.mock.calls[0][0])).toContain("avoir à émettre");
+  });
+
+  it("échec le dernier jour de la fenêtre : alerte « à facturer à la main » nommant la demande", async () => {
+    h.tables.car_requests = [reqRow(5, { date_from: "2026-10-12" })];
+    h.createInvoiceForRequest.mockRejectedValue(new Error("boom"));
+    await runDepositInvoicePass("2026-11-26");
+    const txt = JSON.stringify(h.notifyOps.mock.calls[0][0]);
+    expect(txt).toContain("dernière tentative automatique, à facturer à la main");
+    expect(txt).toContain("demande 5");
+  });
+
+  it("un échec avant le dernier jour de la fenêtre n'ajoute pas cette ligne", async () => {
+    h.createInvoiceForRequest.mockRejectedValue(new Error("boom"));
+    await runDepositInvoicePass("2026-11-26");
+    expect(JSON.stringify(h.notifyOps.mock.calls[0][0])).not.toContain("à facturer à la main");
+  });
+
+  it("une passe qui rend exactement 100 lignes alerte les ops (plafond)", async () => {
+    h.tables.car_requests = Array.from({ length: 100 }, (_, i) => reqRow(i + 1));
+    h.invoiceForRequest.mockImplementation(async (id: number) => INVOICE(id, { sent_at: "2026-11-26T06:00:05Z" }));
+    await runDepositInvoicePass("2026-11-26");
+    expect(h.notifyOps).toHaveBeenCalledTimes(1);
+    expect(JSON.stringify(h.notifyOps.mock.calls[0][0])).toContain("plafond");
+  });
+
+  it("l'e-mail dit la vérité selon le statut, avec la location et la date d'acompte à Athènes", async () => {
+    // 22:30 UTC le 10/11 = 00:30 le 11/11 à Athènes.
+    h.tables.car_requests = [reqRow(1, { booking_paid_at: "2026-11-10T22:30:00.000Z" })];
+    await runDepositInvoicePass("2026-11-26");
+    const confirmed = h.sendCarDepositMail.mock.calls[0][1].html as string;
+    expect(confirmed).not.toContain("starts today");
+    expect(confirmed).toContain("collect the rest");
+    expect(confirmed).toContain("Pick-up");
+    expect(confirmed).toContain("2026-11-26");
+    expect(confirmed).toContain("Fiat Panda");
+    expect(confirmed).toContain("2026-11-11");
+    expect(confirmed).not.toContain(EM_DASH);
+
+    h.sendCarDepositMail.mockClear();
+    h.tables.car_requests = [reqRow(2, { booking_status: "cancelled_kept" })];
+    await runDepositInvoicePass("2026-11-26");
+    const kept = h.sendCarDepositMail.mock.calls[0][1].html as string;
+    expect(kept).toContain("cancelled less than 48 hours before pickup");
+    expect(kept).toContain("settles this invoice");
+    expect(kept).not.toContain("collect the rest");
+    expect(kept).not.toContain("counter");
+    expect(kept).not.toContain(EM_DASH);
   });
 
   it("une ligne qui lève n'arrête pas la suivante", async () => {
@@ -216,7 +313,8 @@ describe("runDepositInvoicePass", () => {
 });
 
 describe("runRatesExpiryReminderPass", () => {
-  const grid = (to: string) => [{ partner_id: 9, period_to: "2026-06-30" }, { partner_id: 9, period_to: to }];
+  // Le mock ne trie pas : la requête réelle rend la plus tardive d'abord (order desc, limit 1).
+  const grid = (to: string) => [{ partner_id: 9, period_to: to }];
   const livePartner = { ...PARTNER, rates_status: "live", rates_expiry_reminded_at: null };
 
   it("une grille qui finit dans 30 jours reçoit un rappel avec le lien du portail", async () => {
@@ -231,6 +329,28 @@ describe("runRatesExpiryReminderPass", () => {
     const sel = h.calls.find((c) => c.table === "car_partners")!;
     expect(sel.filters).toContainEqual(["eq", "rates_status", "live"]);
     expect(sel.filters).toContainEqual(["is", "rates_expiry_reminded_at", null]);
+    const rq = h.calls.find((c) => c.table === "car_partner_rates")!;
+    expect(rq.filters).toContainEqual(["order", "period_to", { ascending: false }]);
+    expect(rq.filters).toContainEqual(["limit", 1]);
+  });
+
+  it("le lien du portail est calculé AVANT la revendication; s'il échoue, rien n'est revendiqué", async () => {
+    h.tables.car_partners = [livePartner];
+    h.tables.car_partner_rates = grid("2026-12-10");
+    h.ensurePortalToken.mockRejectedValue(new Error("refus"));
+    const r = await runRatesExpiryReminderPass("2026-11-26");
+    expect(r).toEqual({ reminded: 0 });
+    expect(h.calls.some((c) => c.table === "car_partners" && c.op === "update")).toBe(false);
+  });
+
+  it("envoi qui lève : la revendication est rendue", async () => {
+    h.tables.car_partners = [livePartner];
+    h.tables.car_partner_rates = grid("2026-12-10");
+    h.sendCarDepositMail.mockRejectedValue(new Error("resend down"));
+    const r = await runRatesExpiryReminderPass("2026-11-26");
+    expect(r).toEqual({ reminded: 0 });
+    const undo = h.calls.filter((c) => c.table === "car_partners" && c.op === "update").pop()!;
+    expect(undo.payload).toEqual({ rates_expiry_reminded_at: null });
   });
 
   it("le rappel est revendiqué par une écriture conditionnelle AVANT l'envoi", async () => {

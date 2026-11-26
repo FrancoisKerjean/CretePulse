@@ -5,18 +5,21 @@
 // compensation avec cet acompte : aucune demande de paiement.
 //
 // ⛔ Une facture est une pièce comptable. Le numéro n'est demandé qu'à la
-// création (createInvoiceForRequest réutilise l'existante), et `sent_at` est le
-// verrou d'envoi : au plus un e-mail par facture, une facture à moitié faite
-// (créée, jamais envoyée) est terminée le lendemain sans second numéro.
+// création (createInvoiceForRequest réutilise l'existante). `sent_at` est le
+// verrou d'envoi, pris par une écriture conditionnelle AVANT le jeton et l'e-mail :
+// au plus un e-mail par facture, même si deux passes se croisent ou si une lecture
+// a échoué. Une facture à moitié faite (créée, jamais envoyée) est terminée le
+// lendemain sans second numéro.
 import { supabaseAdmin } from "./supabase-admin";
 import {
-  invoiceForRequest, createInvoiceForRequest, markInvoicePaid, markInvoiceSent,
+  invoiceForRequest, createInvoiceForRequest, markInvoicePaid,
   rotateInvoiceToken, assertWritten,
 } from "./car-invoice-server";
 import { partnerBillingIdentity, ratePercentLabel, PARTNER_IDENTITY_COLS } from "./car-invoice";
 import { depositMail, type DepositMailData } from "./car-deposit-mail";
 import { ensurePortalToken } from "./car-catalogue-db";
 import { siteBase } from "./car-quote";
+import { todayAthens } from "./car-partner-identity";
 import { carPickupLabel } from "./car-lead";
 import { notifyOps, echeance } from "./ops-notify";
 
@@ -41,7 +44,8 @@ interface DepositRequest {
 // SHORTCUT: au plus 100 demandes par passe, dans une fenêtre de prise de 45 jours
 // (la jointure « sans facture ou facture non envoyée » se filtre ici, PostgREST ne
 // fait pas d'anti-jointure). Plafond : 100 réservations avec acompte sur 45 jours.
-// Déclencheur : 60 réservations par fenêtre, passer le filtre en RPC SQL.
+// Déclencheur : la passe rend exactement 100 lignes (alerte ops), ou une ligne
+// échoue le dernier jour de la fenêtre (alerte ops) : passer alors le filtre en RPC SQL.
 const MAX_PER_RUN = 100;
 const WINDOW_DAYS = 45;
 
@@ -63,6 +67,21 @@ async function alertOps(title: string, lines: string[]): Promise<void> {
   } catch (e) {
     console.error("[car/deposit-invoice] notification d'exploitation échouée", e);
   }
+}
+
+async function sendMail(to: string, mail: { subject: string; html: string }): Promise<boolean> {
+  const { sendCarDepositMail } = await import("./email");
+  return sendCarDepositMail(to, mail);
+}
+
+/** Rend le verrou d'envoi : sent_at redevient nul, le passage de demain réessaie. */
+async function releaseSentClaim(invoiceId: number): Promise<void> {
+  const { error } = await supabaseAdmin
+    .from("car_commission_invoices")
+    .update({ sent_at: null })
+    .eq("id", invoiceId)
+    .select("id");
+  assertWritten("releaseSentClaim", invoiceId, error);
 }
 
 async function invoiceOne(row: DepositRequest): Promise<"done" | "skipped"> {
@@ -95,7 +114,20 @@ async function invoiceOne(row: DepositRequest): Promise<"done" | "skipped"> {
     amount: row.deposit_eur,
   });
   const invoice = created.invoice;
-  if (invoice.credited_at) return "skipped";
+  // invoiceForRequest avale les erreurs de lecture : la facture « réutilisée » peut
+  // être une facture déjà envoyée que la lecture du début n'a pas vue.
+  if (invoice.credited_at || invoice.sent_at) return "skipped";
+
+  // Un remboursement concurrent (refundConfirmed) a pu passer entre la sélection et ici.
+  const { data: fresh, error: fErr } = await supabaseAdmin
+    .from("car_requests").select("booking_status").eq("id", row.id).maybeSingle();
+  if (fErr) throw new Error(`relecture de la réservation refusée: ${fErr.message}`);
+  const status = (fresh as { booking_status: string | null } | null)?.booking_status ?? null;
+  if (status !== "confirmed" && status !== "cancelled_kept") {
+    throw new Error(
+      `facture ${invoice.number} émise sur une réservation remboursée (${status ?? "inconnue"}), avoir à émettre`,
+    );
+  }
 
   const { error: sErr } = await supabaseAdmin
     .from("car_commission_invoices")
@@ -105,39 +137,50 @@ async function invoiceOne(row: DepositRequest): Promise<"done" | "skipped"> {
   assertWritten("settlement", invoice.id, sErr);
   await markInvoicePaid(row.id);
 
-  // Le jeton n'est lisible qu'à la création : un lien déjà perdu se refait.
-  const token = created.token ?? (await rotateInvoiceToken(invoice.id));
+  // Verrou d'envoi : écriture conditionnelle de sent_at AVANT le jeton et l'e-mail.
+  // Deux passes qui se croisent ne passent pas toutes les deux (0 ligne = perdu).
+  const { data: won, error: cErr } = await supabaseAdmin
+    .from("car_commission_invoices")
+    .update({ sent_at: new Date().toISOString() })
+    .eq("id", invoice.id)
+    .is("sent_at", null)
+    .select("id");
+  assertWritten("claimInvoiceSend", invoice.id, cErr);
+  if (!won || won.length !== 1) return "skipped";
 
-  const mail = depositMail(
-    "partner_invoice",
-    {
-      ...BLANK,
-      partnerName: partner.name as string,
-      pickupLabel: row.pickup_slug ? carPickupLabel(row.pickup_slug) : "",
-      dateFrom: row.date_from,
-      dateTo: row.date_to,
-      // Montants LUS de la facture, jamais recalculés.
-      invoice: {
-        number: invoice.number,
-        url: `${siteBase()}/en/invoice/${token}`,
-        baseEur: Number(invoice.base_amount_eur),
-        ratePct: ratePercentLabel(Number(invoice.rate)),
-        commissionEur: Number(invoice.amount_eur),
-        depositPaidOn: (row.booking_paid_at ?? invoice.issued_at).slice(0, 10),
+  try {
+    // Le jeton n'est lisible qu'à la création : un lien déjà perdu se refait, mais
+    // seulement une fois le verrou gagné (la rotation tue le lien déjà envoyé).
+    const token = created.token ?? (await rotateInvoiceToken(invoice.id));
+    const mail = depositMail(
+      "partner_invoice",
+      {
+        ...BLANK,
+        partnerName: partner.name as string,
+        carLabel: row.quoted_car_model ?? row.car_type ?? "",
+        pickupLabel: row.pickup_slug ? carPickupLabel(row.pickup_slug) : "",
+        dateFrom: row.date_from,
+        dateTo: row.date_to,
+        bookingStatus: row.booking_status,
+        // Montants LUS de la facture, jamais recalculés.
+        invoice: {
+          number: invoice.number,
+          url: `${siteBase()}/en/invoice/${token}`,
+          baseEur: Number(invoice.base_amount_eur),
+          ratePct: ratePercentLabel(Number(invoice.rate)),
+          commissionEur: Number(invoice.amount_eur),
+          // Jour civil d'Athènes de l'acompte, pas la date UTC.
+          depositPaidOn: todayAthens(new Date(row.booking_paid_at ?? invoice.issued_at)),
+        },
       },
-    },
-    "en",
-  );
-  const sent = await sendMail(partner.email as string, mail);
-  // sent_at reste nul : le passage de demain renverra, une seule fois.
-  if (!sent) throw new Error("envoi de la facture refusé");
-  await markInvoiceSent(invoice.id);
+      "en",
+    );
+    if (!(await sendMail(partner.email as string, mail))) throw new Error("envoi de la facture refusé");
+  } catch (e) {
+    await releaseSentClaim(invoice.id);
+    throw e;
+  }
   return "done";
-}
-
-async function sendMail(to: string, mail: { subject: string; html: string }): Promise<boolean> {
-  const { sendCarDepositMail } = await import("./email");
-  return sendCarDepositMail(to, mail);
 }
 
 export async function runDepositInvoicePass(todayIso: string): Promise<{ invoiced: number; failed: number[] }> {
@@ -155,16 +198,28 @@ export async function runDepositInvoicePass(todayIso: string): Promise<{ invoice
     return { invoiced: 0, failed: [] };
   }
 
+  const rows = (data ?? []) as DepositRequest[];
+  // Plafond atteint : des réservations peuvent rester hors de la passe (déclencheur du SHORTCUT).
+  if (rows.length === MAX_PER_RUN) {
+    await alertOps("Facturation des acomptes : plafond de 100 lignes atteint", [
+      "Des réservations peuvent rester sans facture : passer le filtre en RPC SQL.",
+    ]);
+  }
+  const lastWindowDay = addDays(todayIso, -WINDOW_DAYS);
   let invoiced = 0;
   const failed: number[] = [];
   const reasons: string[] = [];
-  for (const row of (data ?? []) as DepositRequest[]) {
+  for (const row of rows) {
     try {
       if ((await invoiceOne(row)) === "done") invoiced++;
     } catch (e) {
       failed.push(row.id);
       const msg = e instanceof Error ? e.message : String(e);
       reasons.push(`demande ${row.id} : ${msg}`);
+      // Demain la demande sort de la fenêtre : la commission encaissée resterait non facturée.
+      if (row.date_from === lastWindowDay) {
+        reasons.push(`demande ${row.id} : dernière tentative automatique, à facturer à la main`);
+      }
       console.error("[car/deposit-invoice] échec", { requestId: row.id, error: msg });
     }
   }
@@ -190,31 +245,27 @@ export async function runRatesExpiryReminderPass(todayIso: string): Promise<{ re
     return { reminded: 0 };
   }
   const list = (partners ?? []) as Array<{ id: number; name: string; email: string | null }>;
-  if (list.length === 0) return { reminded: 0 };
-
-  const { data: rates, error: rErr } = await supabaseAdmin
-    .from("car_partner_rates")
-    .select("partner_id, period_to")
-    .in("partner_id", list.map((p) => p.id));
-  if (rErr) {
-    console.error("[car/rates-expiry] lecture des grilles refusée", { error: rErr.message });
-    await alertOps("Rappel d'échéance des grilles : lecture refusée", [rErr.message]);
-    return { reminded: 0 };
-  }
-  const lastDay = new Map<number, string>();
-  for (const r of (rates ?? []) as Array<{ partner_id: number; period_to: string }>) {
-    if (!lastDay.get(r.partner_id) || r.period_to > (lastDay.get(r.partner_id) as string)) {
-      lastDay.set(r.partner_id, r.period_to);
-    }
-  }
 
   const horizon = addDays(todayIso, REMINDER_DAYS);
   let reminded = 0;
   for (const p of list) {
-    const last = lastDay.get(p.id);
-    // Une grille déjà expirée est rappelée aussi (une fois) ; sans ligne, rien à dire.
-    if (!last || last > horizon || !p.email) continue;
+    let claimed = false;
     try {
+      // Une seule ligne par loueur, la plus tardive : aucun plafond de lignes à craindre.
+      const { data: latest, error: rErr } = await supabaseAdmin
+        .from("car_partner_rates")
+        .select("period_to")
+        .eq("partner_id", p.id)
+        .order("period_to", { ascending: false })
+        .limit(1);
+      if (rErr) throw new Error(`lecture de la grille refusée: ${rErr.message}`);
+      const last = ((latest ?? []) as Array<{ period_to: string }>)[0]?.period_to;
+      // Une grille déjà expirée est rappelée aussi (une fois) ; sans ligne, rien à dire.
+      if (!last || last > horizon || !p.email) continue;
+
+      // Le lien AVANT la revendication : un échec ici ne consomme aucun rappel.
+      const portalUrl = `${siteBase()}/en/car-rates/${await ensurePortalToken(p.id)}`;
+
       // On revendique AVANT d'envoyer : deux passes qui se croisent n'envoient qu'un e-mail.
       const { data: won, error: cErr } = await supabaseAdmin
         .from("car_partners")
@@ -224,22 +275,21 @@ export async function runRatesExpiryReminderPass(todayIso: string): Promise<{ re
         .select("id");
       assertWritten("ratesExpiryClaim", p.id, cErr);
       if (!won || won.length !== 1) continue;
+      claimed = true;
 
-      const portalUrl = `${siteBase()}/en/car-rates/${await ensurePortalToken(p.id)}`;
       const ok = await sendMail(
         p.email,
         depositMail("partner_rates_expiring", { ...BLANK, partnerName: p.name, ratesExpiry: { lastDay: last, portalUrl } }, "en"),
       );
-      if (ok) {
-        reminded++;
-      } else {
+      if (!ok) throw new Error("envoi refusé");
+      reminded++;
+    } catch (e) {
+      if (claimed) {
         // Rend la revendication : le passage de demain réessaie.
         const { error: uErr } = await supabaseAdmin
           .from("car_partners").update({ rates_expiry_reminded_at: null }).eq("id", p.id).select("id");
-        assertWritten("ratesExpiryRelease", p.id, uErr);
-        console.error("[car/rates-expiry] envoi refusé", { partnerId: p.id });
+        if (uErr) console.error("[car/rates-expiry] revendication non rendue", { partnerId: p.id, error: uErr.message });
       }
-    } catch (e) {
       console.error("[car/rates-expiry] échec", { partnerId: p.id, error: e instanceof Error ? e.message : String(e) });
     }
   }
