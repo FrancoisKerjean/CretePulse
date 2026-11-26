@@ -13,10 +13,20 @@ import { isCallablePhone } from "@/lib/car-lead";
 // n'est pas touché. Déclencheur : demande 33, Zakros Tours, 9 jours de silence
 // faute de numéro de rappel.
 // `needsPhone` est faux pour les 62 % qui l'ont déjà donné : on ne redemande rien.
+//
+// Acompte (interrupteur allumé) : l'API rend `payUrl` et le client part payer ;
+// ses refus (paiement déjà ouvert, trop proche du départ, acompte sous le
+// minimum, loueur qui a décliné) s'affichent avec les textes de `refusals`.
+export interface AcceptRefusals { inProgress: string; tooClose: string; belowMinimum: string; unavailable: string }
+type Refusal = keyof AcceptRefusals;
+const REFUSAL_EVENT: Record<Refusal, string> = {
+  inProgress: "in_progress", tooClose: "too_close", belowMinimum: "below_minimum", unavailable: "unavailable",
+};
+
 export function AcceptButton({
   token, optionId, label, doneText, expiredText,
   needsPhone = false, phoneLabel = "", phoneHint = "", phoneError = "",
-  rank = 0, offers = 0,
+  rank = 0, offers = 0, refusals,
 }: {
   token: string; optionId: number; label: string; doneText: string; expiredText: string;
   needsPhone?: boolean; phoneLabel?: string; phoneHint?: string; phoneError?: string;
@@ -24,8 +34,9 @@ export function AcceptButton({
   rank?: number;
   /** Nombre total d'offres affichees, pour lire le rang relativement au choix offert. */
   offers?: number;
+  refusals?: AcceptRefusals;
 }) {
-  const [state, setState] = useState<"idle" | "sending" | "done" | "expired" | "error" | "phone">("idle");
+  const [state, setState] = useState<"idle" | "sending" | "done" | "expired" | "error" | "phone" | Refusal>("idle");
   const [phone, setPhone] = useState("");
 
   async function accept() {
@@ -50,7 +61,16 @@ export function AcceptButton({
         body: JSON.stringify({ token, option_id: optionId, ...(needsPhone ? { phone: phone.trim() } : {}) }),
       });
       const json = await res.json();
-      if (res.status === 410 || json.expired) {
+      const refusal = (Object.keys(REFUSAL_EVENT) as Refusal[]).find((k) => json[k] === true);
+      if (typeof json.payUrl === "string" && json.payUrl) {
+        // Le bouton reste en « envoi » pendant la navigation vers le paiement.
+        track("pay");
+        window.location.assign(json.payUrl);
+        return;
+      } else if (res.status === 409 && refusal) {
+        setState(refusal);
+        track(REFUSAL_EVENT[refusal]);
+      } else if (res.status === 410 || json.expired) {
         setState("expired");
         track("expired");
       } else if (res.status === 422 && json.phoneRequired) {
@@ -88,6 +108,14 @@ export function AcceptButton({
     return (
       <p style={{ margin: 0, padding: "16px 18px", borderRadius: 12, background: "#FEF9EC", color: "#92400E", fontSize: 15, lineHeight: 1.6 }}>
         {expiredText}
+      </p>
+    );
+  }
+
+  if (state in REFUSAL_EVENT) {
+    return (
+      <p role="status" style={{ margin: 0, padding: "16px 18px", borderRadius: 12, background: "#FEF9EC", color: "#92400E", fontSize: 15, lineHeight: 1.6 }}>
+        {refusals?.[state as Refusal] ?? expiredText}
       </p>
     );
   }

@@ -8,6 +8,7 @@ import { requestByClientToken } from "@/lib/car-quotes-db";
 import { rentalDays } from "@/lib/car-pricing";
 import { findChosenOption, sortOptionsByPrice, quotedModelLabel } from "@/lib/car-quotes";
 import { startBookingAfterAccept } from "@/lib/car-booking-server";
+import { startDeposit } from "@/lib/car-deposit-server";
 
 const GEARBOX_LABEL: Record<string, string> = { automatic: "Automatic", manual: "Manual" };
 
@@ -61,6 +62,22 @@ export async function POST(request: NextRequest) {
   const phoneResolu = resolveAcceptPhone(row.customer_phone as string | null, typeof body.phone === "string" ? body.phone : undefined);
   if (!phoneResolu.ok) {
     return NextResponse.json({ ok: false, phoneRequired: true }, { status: 422 });
+  }
+
+  // Catalogue et acompte (interrupteur lu à chaque appel) : choisir une offre
+  // ouvre le paiement de l'acompte et RIEN d'autre. Pas de passage en accepted,
+  // pas d'invitations touchées, pas de mise en relation : tout cela n'arrive
+  // qu'au paiement puis à la confirmation du loueur.
+  if (process.env.CAR_CATALOGUE_ENABLED === "on") {
+    // Le loueur a déjà répondu « pas disponible » sur cette offre : repayer
+    // mènerait à un second remboursement, frais Stripe perdus.
+    if (found.quotes.find((q) => q.id === chosen.invite_id)?.status === "declined") {
+      return NextResponse.json({ ok: false, unavailable: true }, { status: 409 });
+    }
+    const out = await startDeposit(row.id as number, chosen, (row.locale as string) || "en", Date.now(), phoneResolu.phone);
+    if ("payUrl" in out) return NextResponse.json({ ok: true, payUrl: out.payUrl });
+    const flag = { in_progress: "inProgress", too_close: "tooClose", below_minimum: "belowMinimum" }[out.error];
+    return NextResponse.json({ ok: false, [flag]: true }, { status: 409 });
   }
 
   const partner = await partnerById(chosen.partner_id);

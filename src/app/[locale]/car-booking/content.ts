@@ -2,6 +2,12 @@
 // en/fr/de/el rediges a la main, les autres locales retombent sur l'anglais,
 // meme convention que /stays.
 //
+// Acompte (spec 2026-11-25) : les clés `deposit*`, `pending*`, `awaiting*`,
+// `confirmed*`, `refunded*`, `reason*` et `kept*` servent la page par état de
+// réservation. Les clés du paiement total (option à 5 EUR, h1, intro, submit,
+// paid*) partent avec lui en tâche 15. Les intitulés d'assurance viennent de
+// car-inclusions.ts, jamais d'ici (voir le test).
+//
 // ⚠️ Vocabulaire verrouille : l'option d'annulation n'est JAMAIS presentee comme
 // une assurance. Distribuer de l'assurance est une activite reglementee que
 // crete.direct n'exerce pas. Le gate check:car-booking le verifie cote Stripe,
@@ -38,7 +44,67 @@ export type CarBookingStrings = {
   cancelledRefunded: string;
   cancelledNoRefund: string;
   cancelTooLate: string;
+  depositTitle: string;
+  depositIntro: string;
+  totalLabel: string;
+  depositLabel: string;
+  depositPaidLabel: string;
+  restLabel: string;
+  depositConfirmRule: string;
+  depositCancelRule: string;
+  depositPay: string;
+  tooClose: string;
+  notReady: string;
+  linkInvalid: string;
+  pendingTitle: string;
+  pendingBody: string;
+  continuePayment: string;
+  pendingNoSession: string;
+  awaitingTitle: string;
+  awaitingBody: string;
+  confirmedTitle: string;
+  confirmedBody: string;
+  contactHeading: string;
+  refundedTitle: string;
+  refundedBody: string;
+  reasonPartnerDeclined: string;
+  reasonPartnerTimeout: string;
+  reasonClientCancelled: string;
+  reasonPartnerCancelled: string;
+  reasonOps: string;
+  otherOffers: string;
+  keptTitle: string;
+  keptBody: string;
 };
+
+/** Remplace chaque `{clé}` d'un gabarit. */
+export function fill(template: string, values: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/g, (all, key: string) => values[key] ?? all);
+}
+
+/** Montant en euros dans la langue du client, centimes seulement s'il y en a. */
+export function formatEur(eur: number, locale: string): string {
+  const cents = Math.round(eur * 100) % 100 !== 0;
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: "EUR",
+    minimumFractionDigits: cents ? 2 : 0,
+    maximumFractionDigits: 2,
+  }).format(eur);
+}
+
+/** Échéance de confirmation, toujours écrite à l'heure d'Athènes (celle du loueur). */
+export function formatAthensDeadline(iso: string, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    timeZone: "Europe/Athens",
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(new Date(iso));
+}
 
 export const L: Record<CarBookingLocale, CarBookingStrings> = {
   en: {
@@ -65,6 +131,44 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
     cancelledRefunded: "Booking cancelled. Your refund is on its way.",
     cancelledNoRefund: "Booking cancelled. No refund applies.",
     cancelTooLate: "This booking can no longer be cancelled.",
+    depositTitle: "Book your car",
+    depositIntro:
+      "You pay a deposit online now. You pay the rest to the rental agency when you pick up the car.",
+    totalLabel: "Total price",
+    depositLabel: "Deposit, paid today",
+    depositPaidLabel: "Deposit paid",
+    restLabel: "To pay at the counter",
+    depositConfirmRule:
+      "The rental agency confirms within 4 opening hours (8:00 to 22:00, Greek time). Otherwise your deposit is refunded in full.",
+    depositCancelRule:
+      "Free cancellation up to 48 hours before pick-up: your deposit is refunded in full. Later, or if you do not show up, the deposit is kept.",
+    depositPay: "Pay {deposit}",
+    tooClose: "Too close to departure to book online.",
+    notReady: "This offer cannot be paid online.",
+    linkInvalid: "This booking link is no longer valid.",
+    pendingTitle: "Payment in progress",
+    pendingBody:
+      "If you have just paid, your payment is being recorded: refresh this page in a minute.",
+    continuePayment: "Continue the payment",
+    pendingNoSession:
+      "The payment page is no longer open. Try again in a few minutes.",
+    awaitingTitle: "Deposit paid, awaiting confirmation",
+    awaitingBody:
+      "{partner} confirms your car by {deadline} (Athens time) at the latest. Otherwise your deposit is refunded in full. We email you as soon as it is confirmed.",
+    confirmedTitle: "Your booking is confirmed",
+    confirmedBody: "{partner} expects you at pick-up. You pay the rest at the counter.",
+    contactHeading: "Rental agency contact",
+    refundedTitle: "Your deposit has been refunded",
+    refundedBody: "The full deposit goes back to the card you paid with.",
+    reasonPartnerDeclined: "The rental agency could not confirm this car.",
+    reasonPartnerTimeout: "The rental agency did not confirm in time.",
+    reasonClientCancelled: "You cancelled this booking.",
+    reasonPartnerCancelled: "The rental agency cancelled this booking.",
+    reasonOps: "Our team cancelled this booking.",
+    otherOffers: "See your other offers",
+    keptTitle: "Booking cancelled",
+    keptBody:
+      "This booking was cancelled less than 48 hours before pick-up: the deposit is kept, as stated in the cancellation terms.",
   },
   fr: {
     h1: "Confirmez et réglez votre location",
@@ -90,6 +194,44 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
     cancelledRefunded: "Réservation annulée. Votre remboursement est en route.",
     cancelledNoRefund: "Réservation annulée. Aucun remboursement ne s'applique.",
     cancelTooLate: "Cette réservation ne peut plus être annulée.",
+    depositTitle: "Réservez votre voiture",
+    depositIntro:
+      "Vous payez un acompte en ligne maintenant. Vous réglez le reste au loueur à la prise du véhicule.",
+    totalLabel: "Prix total",
+    depositLabel: "Acompte, payé aujourd'hui",
+    depositPaidLabel: "Acompte payé",
+    restLabel: "À régler au comptoir",
+    depositConfirmRule:
+      "Le loueur confirme sous 4 heures d'ouverture (8 h à 22 h, heure grecque). Sinon, votre acompte vous est remboursé intégralement.",
+    depositCancelRule:
+      "Annulation gratuite jusqu'à 48 heures avant la prise du véhicule : votre acompte vous est remboursé intégralement. Plus tard, ou si vous ne vous présentez pas, l'acompte est conservé.",
+    depositPay: "Payer {deposit}",
+    tooClose: "Trop proche du départ pour réserver en ligne.",
+    notReady: "Cette offre ne peut pas être payée en ligne.",
+    linkInvalid: "Ce lien de réservation n'est plus valide.",
+    pendingTitle: "Paiement en cours",
+    pendingBody:
+      "Si vous venez de payer, votre paiement est en cours d'enregistrement : actualisez cette page dans une minute.",
+    continuePayment: "Reprendre le paiement",
+    pendingNoSession:
+      "La page de paiement n'est plus ouverte. Réessayez dans quelques minutes.",
+    awaitingTitle: "Acompte payé, en attente de confirmation",
+    awaitingBody:
+      "{partner} confirme votre voiture au plus tard le {deadline} (heure d'Athènes). Sinon, votre acompte vous est remboursé intégralement. Nous vous écrivons dès la confirmation.",
+    confirmedTitle: "Votre réservation est confirmée",
+    confirmedBody: "{partner} vous attend à la prise du véhicule. Vous réglez le reste au comptoir.",
+    contactHeading: "Coordonnées du loueur",
+    refundedTitle: "Votre acompte a été remboursé",
+    refundedBody: "L'intégralité de l'acompte revient sur la carte utilisée pour le paiement.",
+    reasonPartnerDeclined: "Le loueur n'a pas pu confirmer cette voiture.",
+    reasonPartnerTimeout: "Le loueur n'a pas confirmé à temps.",
+    reasonClientCancelled: "Vous avez annulé cette réservation.",
+    reasonPartnerCancelled: "Le loueur a annulé cette réservation.",
+    reasonOps: "Notre équipe a annulé cette réservation.",
+    otherOffers: "Voir vos autres offres",
+    keptTitle: "Réservation annulée",
+    keptBody:
+      "Cette réservation a été annulée moins de 48 heures avant la prise du véhicule : l'acompte est conservé, comme prévu par les conditions d'annulation.",
   },
   de: {
     h1: "Mietwagen bestätigen und bezahlen",
@@ -115,6 +257,44 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
     cancelledRefunded: "Buchung storniert. Ihre Erstattung ist unterwegs.",
     cancelledNoRefund: "Buchung storniert. Es erfolgt keine Erstattung.",
     cancelTooLate: "Diese Buchung kann nicht mehr storniert werden.",
+    depositTitle: "Ihren Mietwagen buchen",
+    depositIntro:
+      "Sie zahlen jetzt online eine Anzahlung. Den Rest zahlen Sie bei der Abholung an den Vermieter.",
+    totalLabel: "Gesamtpreis",
+    depositLabel: "Anzahlung, heute bezahlt",
+    depositPaidLabel: "Anzahlung bezahlt",
+    restLabel: "Am Schalter zu zahlen",
+    depositConfirmRule:
+      "Der Vermieter bestätigt innerhalb von 4 Geschäftsstunden (8 bis 22 Uhr griechischer Zeit). Andernfalls wird Ihre Anzahlung vollständig erstattet.",
+    depositCancelRule:
+      "Kostenlose Stornierung bis 48 Stunden vor Abholung: Ihre Anzahlung wird vollständig erstattet. Danach oder bei Nichterscheinen wird die Anzahlung einbehalten.",
+    depositPay: "{deposit} bezahlen",
+    tooClose: "Zu kurz vor der Abholung für eine Online-Buchung.",
+    notReady: "Dieses Angebot kann nicht online bezahlt werden.",
+    linkInvalid: "Dieser Buchungslink ist nicht mehr gültig.",
+    pendingTitle: "Zahlung läuft",
+    pendingBody:
+      "Wenn Sie gerade bezahlt haben, wird Ihre Zahlung erfasst: Laden Sie diese Seite in einer Minute neu.",
+    continuePayment: "Zahlung fortsetzen",
+    pendingNoSession:
+      "Die Zahlungsseite ist nicht mehr geöffnet. Versuchen Sie es in einigen Minuten erneut.",
+    awaitingTitle: "Anzahlung bezahlt, Bestätigung ausstehend",
+    awaitingBody:
+      "{partner} bestätigt Ihren Mietwagen spätestens am {deadline} (Athener Zeit). Andernfalls wird Ihre Anzahlung vollständig erstattet. Wir schreiben Ihnen, sobald die Bestätigung vorliegt.",
+    confirmedTitle: "Ihre Buchung ist bestätigt",
+    confirmedBody: "{partner} erwartet Sie bei der Abholung. Den Rest zahlen Sie am Schalter.",
+    contactHeading: "Kontakt des Vermieters",
+    refundedTitle: "Ihre Anzahlung wurde erstattet",
+    refundedBody: "Die gesamte Anzahlung geht auf die Karte zurück, mit der Sie bezahlt haben.",
+    reasonPartnerDeclined: "Der Vermieter konnte dieses Auto nicht bestätigen.",
+    reasonPartnerTimeout: "Der Vermieter hat nicht rechtzeitig bestätigt.",
+    reasonClientCancelled: "Sie haben diese Buchung storniert.",
+    reasonPartnerCancelled: "Der Vermieter hat diese Buchung storniert.",
+    reasonOps: "Unser Team hat diese Buchung storniert.",
+    otherOffers: "Ihre anderen Angebote ansehen",
+    keptTitle: "Buchung storniert",
+    keptBody:
+      "Diese Buchung wurde weniger als 48 Stunden vor Abholung storniert: Die Anzahlung wird gemäß den Stornobedingungen einbehalten.",
   },
   el: {
     h1: "Επιβεβαιώστε και πληρώστε την ενοικίαση",
@@ -140,5 +320,43 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
     cancelledRefunded: "Η κράτηση ακυρώθηκε. Η επιστροφή χρημάτων είναι καθ' οδόν.",
     cancelledNoRefund: "Η κράτηση ακυρώθηκε. Δεν προβλέπεται επιστροφή.",
     cancelTooLate: "Αυτή η κράτηση δεν μπορεί πλέον να ακυρωθεί.",
+    depositTitle: "Κάντε κράτηση για το αυτοκίνητό σας",
+    depositIntro:
+      "Πληρώνετε τώρα online μια προκαταβολή. Το υπόλοιπο το πληρώνετε στο γραφείο κατά την παραλαβή του αυτοκινήτου.",
+    totalLabel: "Συνολική τιμή",
+    depositLabel: "Προκαταβολή, σήμερα",
+    depositPaidLabel: "Προκαταβολή που πληρώθηκε",
+    restLabel: "Πληρωμή στο γκισέ",
+    depositConfirmRule:
+      "Το γραφείο επιβεβαιώνει μέσα σε 4 ώρες λειτουργίας (8:00 έως 22:00, ώρα Ελλάδας). Αλλιώς η προκαταβολή σας επιστρέφεται ολόκληρη.",
+    depositCancelRule:
+      "Δωρεάν ακύρωση έως 48 ώρες πριν την παραλαβή: η προκαταβολή σας επιστρέφεται ολόκληρη. Αργότερα, ή αν δεν εμφανιστείτε, η προκαταβολή παρακρατείται.",
+    depositPay: "Πληρωμή {deposit}",
+    tooClose: "Πολύ κοντά στην αναχώρηση για online κράτηση.",
+    notReady: "Αυτή η προσφορά δεν μπορεί να πληρωθεί online.",
+    linkInvalid: "Αυτός ο σύνδεσμος κράτησης δεν ισχύει πλέον.",
+    pendingTitle: "Πληρωμή σε εξέλιξη",
+    pendingBody:
+      "Αν μόλις πληρώσατε, η πληρωμή σας καταχωρείται: ανανεώστε τη σελίδα σε ένα λεπτό.",
+    continuePayment: "Συνέχεια πληρωμής",
+    pendingNoSession:
+      "Η σελίδα πληρωμής δεν είναι πλέον ανοιχτή. Δοκιμάστε ξανά σε λίγα λεπτά.",
+    awaitingTitle: "Η προκαταβολή πληρώθηκε, αναμονή επιβεβαίωσης",
+    awaitingBody:
+      "Το {partner} επιβεβαιώνει το αυτοκίνητό σας το αργότερο έως {deadline} (ώρα Αθήνας). Αλλιώς η προκαταβολή σας επιστρέφεται ολόκληρη. Θα σας γράψουμε μόλις επιβεβαιωθεί.",
+    confirmedTitle: "Η κράτησή σας επιβεβαιώθηκε",
+    confirmedBody: "Το {partner} σας περιμένει στην παραλαβή. Το υπόλοιπο πληρώνεται στο γκισέ.",
+    contactHeading: "Στοιχεία επικοινωνίας γραφείου",
+    refundedTitle: "Η προκαταβολή σας επιστράφηκε",
+    refundedBody: "Ολόκληρη η προκαταβολή επιστρέφει στην κάρτα με την οποία πληρώσατε.",
+    reasonPartnerDeclined: "Το γραφείο δεν μπόρεσε να επιβεβαιώσει αυτό το αυτοκίνητο.",
+    reasonPartnerTimeout: "Το γραφείο δεν επιβεβαίωσε εγκαίρως.",
+    reasonClientCancelled: "Ακυρώσατε αυτήν την κράτηση.",
+    reasonPartnerCancelled: "Το γραφείο ακύρωσε αυτήν την κράτηση.",
+    reasonOps: "Η ομάδα μας ακύρωσε αυτήν την κράτηση.",
+    otherOffers: "Δείτε τις άλλες προσφορές σας",
+    keptTitle: "Η κράτηση ακυρώθηκε",
+    keptBody:
+      "Η κράτηση ακυρώθηκε λιγότερο από 48 ώρες πριν την παραλαβή: η προκαταβολή παρακρατείται, όπως προβλέπουν οι όροι ακύρωσης.",
   },
 };

@@ -121,6 +121,25 @@ export function isBookableOnline(nowMs: number, pickupMs: number): boolean {
 }
 
 /**
+ * Réservable en ligne avec acompte, vu de `nowMs` : on juge au pire moment du
+ * paiement, la fin de vie de la session Stripe, pas à l'instant du clic. Une
+ * heure de prise absente (anciennes demandes) vaut 00:00 : on refuse plutôt
+ * que d'accepter trop tard. Une date absente n'est jamais réservable.
+ * Seule règle de réservabilité : choix, paiement et pages l'appellent tous.
+ */
+export function isDepositBookable(
+  nowMs: number,
+  dateFrom: string | null | undefined,
+  timeFrom: string | null | undefined,
+): boolean {
+  if (!dateFrom) return false;
+  return isBookableOnline(
+    nowMs + DEPOSIT_CHECKOUT_LIFETIME_S * 1000,
+    athensWallToUtcMs(dateFrom, timeFrom || "00:00"),
+  );
+}
+
+/**
  * Rappel au loueur à mi-délai en temps ouvert (pas en temps mural : un milieu
  * mural tomberait la nuit pour tout paiement entre 18:00 et 08:00).
  */

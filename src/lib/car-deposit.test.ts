@@ -6,6 +6,7 @@ import {
   clientCancelRefundEur,
   confirmDeadlineMs,
   isBookableOnline,
+  isDepositBookable,
   reminderDueMs,
   shouldSuspendPartner,
 } from "./car-deposit";
@@ -97,5 +98,19 @@ describe("car-deposit", () => {
   it("refuses a deposit below the Stripe minimum or not finite", () => {
     expect(() => buildDepositCheckoutParams({ ...INPUT, depositEur: 0.3 })).toThrow();
     expect(() => buildDepositCheckoutParams({ ...INPUT, depositEur: NaN })).toThrow();
+  });
+
+  it("isDepositBookable counts the Stripe session lifetime and reads a missing time as 00:00", () => {
+    const now = at("2027-07-12", "09:00");
+    // 09:00 + 31 min -> deadline 13:31, pick-up must be at 15:31 or later.
+    expect(isDepositBookable(now, "2027-07-12", "15:31")).toBe(true);
+    expect(isDepositBookable(now, "2027-07-12", "15:30")).toBe(false);
+    expect(isBookableOnline(now, at("2027-07-12", "15:30"))).toBe(true);
+    // Postgres time columns come back with seconds.
+    expect(isDepositBookable(now, "2027-07-12", "15:31:00")).toBe(true);
+    const evening = at("2027-07-11", "20:00");
+    expect(isDepositBookable(evening, "2027-07-12", null)).toBe(false);
+    expect(isDepositBookable(evening, "2027-07-12", "18:00")).toBe(true);
+    expect(isDepositBookable(now, "", "18:00")).toBe(false);
   });
 });

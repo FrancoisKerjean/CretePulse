@@ -56,6 +56,9 @@ export const CAR_INSURANCE_LABELS_PARTNER: Record<CarInsuranceType, string> = {
   cdw_excess: "Damage waiver (with excess)",
 };
 
+// Titre du bloc couverture, page d'offres et page de réservation (4 langues).
+export const CAR_INSURANCE_HEADING: Record<string, string> = { en: "Insurance", fr: "Assurance", de: "Versicherung", el: "Ασφάλιση" };
+
 const INSURANCE_EXCESS_WORD: Record<string, string> = { en: "Excess", fr: "Franchise", de: "Selbstbeteiligung", el: "Απαλλαγή" };
 const INSURANCE_ZERO_UPSELL_WORD: Record<string, string> = {
   en: "Zero-excess option", fr: "Option zéro franchise", de: "Option ohne Selbstbeteiligung", el: "Επιλογή μηδενικής απαλλαγής",

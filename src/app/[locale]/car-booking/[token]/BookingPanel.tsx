@@ -2,10 +2,12 @@
 import { useState } from "react";
 import type { CarBookingStrings } from "../content";
 
+// Bouton de paiement de l'acompte. Sert aussi à « reprendre le paiement » quand
+// une session est déjà ouverte : la route rend alors 409 avec l'URL de cette
+// session (checkoutUrl), et on y renvoie le client au lieu d'en créer une autre.
 export default function BookingPanel(
-  { token, locale, strings }: { token: string; locale: string; strings: CarBookingStrings },
+  { token, locale, strings, label }: { token: string; locale: string; strings: CarBookingStrings; label: string },
 ) {
-  const [hasOption, setHasOption] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -16,20 +18,23 @@ export default function BookingPanel(
       const r = await fetch("/api/car-rental/booking", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ token, locale, hasOption }),
+        body: JSON.stringify({ token, locale }),
       });
       const j = await r.json();
-      if (j.url) {
-        window.location.href = j.url;
+      const next = j.url ?? j.checkoutUrl;
+      if (typeof next === "string" && next) {
+        window.location.assign(next);
         return;
       }
-      // Codes machine poses par lib/stripe-errors : on affiche notre phrase,
-      // jamais le detail renvoye par le prestataire.
-      if (j.code === "payment_provider" || j.code === "payouts_unavailable") {
-        setError(strings.errorPayment);
-        return;
-      }
-      setError(r.status === 409 ? strings.errorUnavailable : strings.error);
+      // Codes machine posés par lib/stripe-errors : on affiche notre phrase,
+      // jamais le détail renvoyé par le prestataire.
+      if (j.code === "payment_provider" || j.code === "payouts_unavailable") setError(strings.errorPayment);
+      else if (j.inProgress) setError(strings.pendingNoSession);
+      else if (j.tooClose) setError(strings.tooClose);
+      else if (j.notReady) setError(strings.notReady);
+      else if (j.alreadySettled) setError(strings.errorUnavailable);
+      else if (r.status === 404) setError(strings.linkInvalid);
+      else setError(strings.error);
     } catch {
       setError(strings.error);
     } finally {
@@ -38,31 +43,14 @@ export default function BookingPanel(
   }
 
   return (
-    <div className="card-base p-6 flex flex-col gap-5">
-      <label className="flex items-start gap-3 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={hasOption}
-          onChange={(e) => setHasOption(e.target.checked)}
-          className="mt-1 h-4 w-4 accent-lagoon-deep"
-        />
-        <span>
-          <span className="block text-[15px] font-heading font-bold text-text">
-            {strings.optionLabel} · {strings.optionPrice}
-          </span>
-          <span className="block mt-1 text-[13.5px] text-text-muted leading-relaxed">
-            {strings.optionHelp}
-          </span>
-        </span>
-      </label>
-
+    <div className="card-base p-6 flex flex-col gap-4">
       <button
         type="button"
         onClick={pay}
         disabled={busy}
         className="inline-flex items-center justify-center gap-2 bg-sun text-text rounded-full px-6 py-3 text-[15px] font-heading font-bold hover:brightness-105 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        {busy ? strings.redirecting : strings.submit}
+        {busy ? strings.redirecting : label}
       </button>
 
       {error && (
