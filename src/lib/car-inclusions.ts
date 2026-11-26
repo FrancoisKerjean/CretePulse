@@ -1,6 +1,6 @@
 // Inclusions optionnelles d'un devis loueur. Stockées en base comme clés
 // canoniques (jsonb array) ; libellés traduits à l'affichage.
-import { formatEur } from "./car-format";
+import { formatEur } from "./car-format.ts";
 
 export const CAR_INCLUSION_KEYS = [
   "basic_insurance", "unlimited_km", "second_driver",
