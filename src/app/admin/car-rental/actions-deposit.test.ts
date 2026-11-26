@@ -43,7 +43,7 @@ function wire(db: Db) {
       Object.assign(chain, {
         eq: () => chain,
         limit: () => chain,
-        maybeSingle: async () => ({ data: table === "car_requests" ? db.request : null, error: null }),
+        maybeSingle: async () => ({ data: table === "car_requests" && db.request ? { ...db.request } : null, error: null }),
         then: (res: (v: unknown) => unknown) =>
           Promise.resolve({ data: table === "car_partner_rates" ? db.rates : [], error: null }).then(res),
       });
@@ -55,11 +55,14 @@ function wire(db: Db) {
       const chain: Record<string, unknown> = {};
       Object.assign(chain, {
         eq: (c: string, v: unknown) => { filters.push([c, v]); return chain; },
+        is: (c: string, v: unknown) => { filters.push([c, v]); return chain; },
         select: async () => {
           if (db.writeError) return { data: null, error: db.writeError };
           const matches =
             table === "car_requests"
-              ? filters.every(([c, v]) => c !== "booking_status" || db.request?.booking_status === v)
+              ? filters.every(([c, v]) =>
+                  (c !== "booking_status" || db.request?.booking_status === v) &&
+                  (c !== "confirm_deadline_at" || db.request?.confirm_deadline_at === v))
               : filters.every(([c, v]) => c !== "rates_status" || db.partnerStatus === v);
           return { data: matches ? [{ id: 1 }] : [], error: null };
         },
@@ -179,6 +182,29 @@ describe("adminExtendDeadline", () => {
       };
     });
     expect(await adminExtendDeadline(7, 1)).toEqual({ status: "refused", reason: "not_awaiting" });
+  });
+  it("refuse quand l'échéance a changé entre la lecture et l'écriture, sans seconde écriture", async () => {
+    const db = base(); wire(db);
+    const real = from.getMockImplementation()!;
+    from.mockImplementation((t: string) => {
+      const o = real(t);
+      return {
+        ...o,
+        update: (p: Record<string, unknown>) => {
+          const c = o.update(p);
+          db.request!.confirm_deadline_at = "2026-12-01T13:00:00.000Z"; // autre onglet passé avant
+          return c;
+        },
+      };
+    });
+    expect(await adminExtendDeadline(7, 1)).toEqual({ status: "refused", reason: "changed" });
+    expect(db.updates).toHaveLength(1);
+    expect(db.updates[0].filters).toContainEqual(["confirm_deadline_at", "2026-12-01T12:00:00.000Z"]);
+  });
+  it("échéance absente : écriture filtrée sur null", async () => {
+    const db = base(); db.request!.confirm_deadline_at = null; wire(db);
+    expect((await adminExtendDeadline(7, 1)).status).toBe("extended");
+    expect(db.updates[0].filters).toContainEqual(["confirm_deadline_at", null]);
   });
   it("refuse au-delà de la prise en charge moins la marge de 2 h", async () => {
     // 15:00 Athènes (UTC+2) = 13:00Z, limite 11:00Z ; échéance 12:00Z déjà au-delà

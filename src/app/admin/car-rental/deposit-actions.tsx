@@ -38,6 +38,7 @@ const EXTEND_REFUSED: Record<string, string> = {
   invalid_hours: "Durée invalide.",
   not_found: "Demande introuvable.",
   not_awaiting: "Plus en attente du loueur, rechargez la page.",
+  changed: "L'échéance a changé entre-temps, rechargez la page.",
   beyond_pickup: "Impossible : l'échéance dépasserait la prise en charge moins la marge de 2 h.",
 };
 

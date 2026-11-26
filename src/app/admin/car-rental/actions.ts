@@ -390,7 +390,7 @@ export async function adminRefundConfirmed(requestId: number, reason: "partner_c
 
 export type ExtendDeadlineResult =
   | { status: "extended"; deadline: string }
-  | { status: "refused"; reason: "invalid_hours" | "not_found" | "not_awaiting" | "beyond_pickup" };
+  | { status: "refused"; reason: "invalid_hours" | "not_found" | "not_awaiting" | "beyond_pickup" | "changed" };
 
 /**
  * Prolonge l'échéance du loueur de 1, 2 ou 4 h, depuis l'échéance courante (ou
@@ -414,11 +414,20 @@ export async function adminExtendDeadline(requestId: number, hours: 1 | 2 | 4): 
 
   const deadline = new Date(nextMs).toISOString();
   // Conditionnelle : si le loueur a confirmé ou le cron libéré entre-temps, 0 ligne.
-  const { data, error } = await supabase.from("car_requests")
+  // Filtrée aussi sur l'échéance lue : deux clics (ou deux onglets) partis de la
+  // même valeur ne s'écrasent pas, le second est refusé au lieu de mentir.
+  const upd = supabase.from("car_requests")
     .update({ confirm_deadline_at: deadline, confirm_reminded_at: null })
-    .eq("id", requestId).eq("booking_status", "awaiting_partner").select();
+    .eq("id", requestId).eq("booking_status", "awaiting_partner");
+  const { data, error } = await (req.confirm_deadline_at
+    ? upd.eq("confirm_deadline_at", req.confirm_deadline_at)
+    : upd.is("confirm_deadline_at", null)).select();
   assertWritten("adminExtendDeadline", requestId, error);
-  if (!data || data.length === 0) return { status: "refused", reason: "not_awaiting" };
+  if (!data || data.length === 0) {
+    // Statut ou échéance modifiés entre la lecture et l'écriture : on relit pour dire lequel.
+    const { data: now } = await supabase.from("car_requests").select("booking_status").eq("id", requestId).maybeSingle();
+    return { status: "refused", reason: now?.booking_status === "awaiting_partner" ? "changed" : "not_awaiting" };
+  }
   revalidatePath(PATH);
   return { status: "extended", deadline };
 }

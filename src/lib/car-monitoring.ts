@@ -342,9 +342,9 @@ export interface DepositKpiRow {
 }
 
 export interface DepositKpis {
-  catalogueCoverage: number;
-  offerToDeposit: number;
-  confirmRate: number;
+  catalogueCoverage: number | null;
+  offerToDeposit: number | null;
+  confirmRate: number | null;
   medianConfirmMinutes: number | null;
   refundsByReason: Record<RefundReason, number>;
   commissionEur: number;
@@ -354,7 +354,7 @@ const REFUND_REASONS: RefundReason[] = ["partner_declined", "partner_timeout", "
 
 /**
  * Les 6 indicateurs d'acompte, sur les demandes fournies. Un dénominateur nul
- * donne 0 (jamais NaN).
+ * donne null (affiché n/d, jamais un ratio inventé).
  * - catalogueCoverage : demandes avec une option catalogue / demandes.
  * - offerToDeposit : demandes avec acompte payé (booking_paid_at) / demandes avec
  *   au moins une option catalogue. Une demande payée sans option catalogue ne peut
@@ -365,7 +365,7 @@ const REFUND_REASONS: RefundReason[] = ["partner_declined", "partner_timeout", "
  * - commissionEur : somme des deposit_eur de confirmed + cancelled_kept, au centime.
  */
 export function depositKpis(rows: DepositKpiRow[]): DepositKpis {
-  const safe = (n: number, d: number): number => (d === 0 ? 0 : n / d);
+  const safe = (n: number, d: number): number | null => (d === 0 ? null : n / d);
   const withCatalogue = rows.filter((r) => r.hasCatalogueOption).length;
   const paid = rows.filter((r) => r.booking_paid_at != null);
   const kept = rows.filter((r) => r.booking_status === "confirmed" || r.booking_status === "cancelled_kept");

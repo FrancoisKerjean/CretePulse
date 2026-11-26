@@ -46,11 +46,11 @@ describe("depositKpis", () => {
   it("commission = somme des deposit_eur confirmed + cancelled_kept, au centime", () => {
     expect(k.commissionEur).toBe(53.34);
   });
-  it("aucune demande : zéros, jamais NaN", () => {
+  it("aucune demande : ratios null (n/d), jamais NaN", () => {
     const z = depositKpis([]);
-    expect(z.catalogueCoverage).toBe(0);
-    expect(z.offerToDeposit).toBe(0);
-    expect(z.confirmRate).toBe(0);
+    expect(z.catalogueCoverage).toBeNull();
+    expect(z.offerToDeposit).toBeNull();
+    expect(z.confirmRate).toBeNull();
     expect(z.commissionEur).toBe(0);
   });
 });
