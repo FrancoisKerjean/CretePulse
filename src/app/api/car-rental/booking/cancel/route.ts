@@ -1,93 +1,54 @@
-// Annulation d'une location payee en ligne.
+// Annulation d'une réservation avec acompte par le client (tâche 11).
 //
-// Les fonds n'ont pas encore quitte le compte plateforme : le remboursement est
-// un simple `refunds.create`, SANS `reverse_transfer`, puisqu'il n'y a rien a
-// reprendre au loueur. C'est tout l'interet d'encaisser d'abord. Une fois le
-// transfert parti (`transferred`), l'annulation est refusee : la fenetre de
-// remboursement est fermee par construction, les deux seuils etant egaux.
+// Deux portes vers la même annulation : le jeton de réservation (page
+// /car-booking, `{ token }`) ou le jeton d'offres (page /car-offer, lien des
+// e-mails, `{ offerToken }`). Seul le hash du jeton de réservation est stocké :
+// un e-mail ne peut renvoyer que vers la page d'offres (R43). Exactement un des
+// deux, sinon 400.
 //
-// On rembourse la TOTALITE, option comprise. Ce n'est plus une contrainte
-// technique mais un choix produit : « annulation dans les delais, tout est
-// rendu » se dit mieux, et l'option reste rentable sur ceux qui n'annulent pas.
-//
-// Plan : docs/superpowers/plans/2026-07-29-car-rental-tunnel-voyageur.md
+// La règle (48 h, prise passée) et les écritures vivent dans cancelByClient.
+// Plus gardée par CAR_BOOKING_ENABLED (R45) : une réservation avec acompte
+// n'existe que si l'interrupteur de l'acompte était allumé.
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { stripeClient } from "@/lib/stays/stripe-helpers";
 import { hashToken } from "@/lib/car-quote";
-import { refundDueEur } from "@/lib/booking-policy";
-import { classifyStripeFailure, stripeLogFields } from "@/lib/stripe-errors";
+import { cancelByClient } from "@/lib/car-deposit-server";
 
-const enabled = (): boolean => process.env.CAR_BOOKING_ENABLED === "on";
-
-/** Heures restantes avant la prise du vehicule. Negatif si elle est passee. */
-function hoursUntil(dateFrom: string): number {
-  return (new Date(`${dateFrom}T00:00:00.000Z`).getTime() - Date.now()) / 3_600_000;
-}
+const nonEmpty = (v: unknown): string | null => (typeof v === "string" && v !== "" ? v : null);
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  if (!enabled()) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const body: unknown = await request.json().catch(() => null);
+  const fields = body !== null && typeof body === "object" && !Array.isArray(body) ? (body as Record<string, unknown>) : {};
+  const token = nonEmpty(fields.token);
+  const offerToken = nonEmpty(fields.offerToken);
+  if ((token === null) === (offerToken === null)) {
+    return NextResponse.json({ ok: false, error: "Send exactly one of token or offerToken" }, { status: 400 });
+  }
 
-  const body = await request.json().catch(() => ({}));
-  const token = typeof body.token === "string" ? body.token : "";
-
-  const { data: row } = await supabaseAdmin
+  const { data: row, error } = await supabaseAdmin
     .from("car_requests")
-    .select(
-      "id, booking_status, booking_amount_eur, cancellation_option, booking_payment_intent_id, date_from, transfer_id",
-    )
-    .eq("booking_token_hash", hashToken(token))
+    .select("id")
+    .eq(token !== null ? "booking_token_hash" : "accept_token_hash", hashToken(token ?? offerToken ?? ""))
     .maybeSingle();
-
+  if (error) {
+    console.error("[car/booking/cancel] lecture refusée par la base", { error: error.message });
+    return NextResponse.json({ ok: false, error: "Temporarily unavailable, try again in a few minutes" }, { status: 500 });
+  }
   if (!row) return NextResponse.json({ ok: false, error: "Not found" }, { status: 404 });
-  if (row.booking_status !== "paid" || row.transfer_id) {
-    return NextResponse.json({ ok: false, error: "Not cancellable" }, { status: 409 });
+
+  const requestId = (row as { id: number }).id;
+  let out: Awaited<ReturnType<typeof cancelByClient>>;
+  try {
+    out = await cancelByClient(requestId, Date.now());
+  } catch (err) {
+    console.error("[car/booking/cancel] annulation en échec", { requestId, error: err instanceof Error ? err.message : String(err) });
+    return NextResponse.json({ ok: false, error: "Temporarily unavailable, try again in a few minutes" }, { status: 500 });
   }
 
-  const paidEur = Number(row.booking_amount_eur) || 0;
-
-  const refundEur = refundDueEur({
-    hasOption: row.cancellation_option === true,
-    hoursUntilStart: hoursUntil(row.date_from),
-    amountPaidEur: paidEur,
-  });
-
-  if (refundEur > 0) {
-    try {
-      const refund = await stripeClient().refunds.create({
-        payment_intent: row.booking_payment_intent_id,
-        amount: Math.round(refundEur * 100),
-      });
-      await supabaseAdmin
-        .from("car_requests")
-        .update({
-          booking_status: "refunded",
-          cancelled_at: new Date().toISOString(),
-          refund_id: refund.id,
-          refund_amount_eur: refundEur,
-        })
-        .eq("id", row.id);
-    } catch (err) {
-      const failure = classifyStripeFailure(err);
-      console.error("[car/booking/cancel] remboursement refuse", {
-        requestId: row.id,
-        failure: failure.code,
-        ...stripeLogFields(err),
-      });
-      // Rien n'est ecrit : la reservation reste payee et l'annulation rejouable.
-      // Marquer l'annulation sans avoir rembourse laisserait un client sans
-      // location ET sans argent.
-      return NextResponse.json(
-        { ok: false, code: failure.code, error: failure.message },
-        { status: failure.status },
-      );
-    }
-    return NextResponse.json({ ok: true, refundedEur: refundEur });
+  if ("error" in out) {
+    if (out.error === "not_cancellable") return NextResponse.json({ ok: false, notCancellable: true }, { status: 409 });
+    // Stripe a refusé : rien n'est annulé (prise de main défaite), ops est prévenu.
+    return NextResponse.json({ ok: false, error: "Refund temporarily unavailable, try again in a few minutes" }, { status: 503 });
   }
-
-  await supabaseAdmin
-    .from("car_requests")
-    .update({ booking_status: "cancelled", cancelled_at: new Date().toISOString() })
-    .eq("id", row.id);
-  return NextResponse.json({ ok: true, refundedEur: 0 });
+  return NextResponse.json({ ok: true, refundedEur: out.refundedEur, status: out.status });
 }

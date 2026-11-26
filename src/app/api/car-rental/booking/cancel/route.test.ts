@@ -1,135 +1,126 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const refundsCreate = vi.fn(async () => ({ id: "re_1" }));
-vi.mock("@/lib/stays/stripe-helpers", () => ({
-  stripeClient: () => ({ refunds: { create: refundsCreate } }),
-}));
-const { from } = vi.hoisted(() => ({ from: vi.fn() }));
+const { from, cancelByClient } = vi.hoisted(() => ({ from: vi.fn(), cancelByClient: vi.fn() }));
 vi.mock("@/lib/supabase-admin", () => ({ supabaseAdmin: { from } }));
 vi.mock("@/lib/car-quote", async (orig: () => Promise<Record<string, unknown>>) => ({
   ...(await orig()),
   hashToken: (t: string) => `hash(${t})`,
 }));
+// Le calcul et les écritures sont testés dans car-deposit-server.test.ts (fausse
+// base, Stripe simulé) : ici, seulement l'authentification par jeton et les codes.
+vi.mock("@/lib/car-deposit-server", () => ({ cancelByClient }));
 
 import { POST } from "./route";
 
-function req(body: unknown = { token: "t" }): Request {
+function req(body: unknown): Request {
   return new Request("http://localhost/api/car-rental/booking/cancel", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
+    body: typeof body === "string" ? body : JSON.stringify(body),
   });
 }
 
-/** Depart dans longtemps : la fenetre de remboursement est ouverte. */
-const FAR = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10);
-/** Depart demain : la fenetre est fermee (moins de 48 h). */
-const SOON = new Date(Date.now() + 20 * 3_600_000).toISOString().slice(0, 10);
-
-const PAID = {
-  id: 25, booking_status: "paid", booking_amount_eur: 315,
-  cancellation_option: true, booking_payment_intent_id: "pi_b1",
-  date_from: FAR, transfer_id: null,
-};
-
-function wiring(row: unknown = PAID) {
-  const updates: Array<Record<string, unknown>> = [];
+/** Lecture de la demande par jeton : rend `row` et note la colonne et la valeur cherchées. */
+function wiring(row: unknown = { id: 25 }, error: { message: string } | null = null) {
+  const lookups: Array<[string, unknown]> = [];
   from.mockImplementation(() => ({
-    select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: row }) }) }),
-    update: (patch: Record<string, unknown>) => {
-      updates.push(patch);
-      return { eq: async () => ({ error: null }) };
-    },
+    select: () => ({
+      eq: (col: string, val: unknown) => {
+        lookups.push([col, val]);
+        return { maybeSingle: async () => ({ data: row, error }) };
+      },
+    }),
   }));
-  return updates;
+  return lookups;
 }
 
 describe("POST /api/car-rental/booking/cancel", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.CAR_BOOKING_ENABLED = "on";
+    vi.unstubAllEnvs();
+    cancelByClient.mockResolvedValue({ refundedEur: 41.2, status: "refunded" });
   });
 
-  it("rembourse integralement avec l option, hors des 48 h", async () => {
-    const updates = wiring();
-    const res = await POST(req() as never);
-
+  it("jeton de réservation : cherche par booking_token_hash et annule", async () => {
+    const lookups = wiring();
+    const res = await POST(req({ token: "book-tok" }) as never);
     expect(res.status).toBe(200);
-    const json = await res.json();
-    // TOUT est rendu, option comprise : Stripe reverse proportionnellement et
-    // ne permet aucun reglage fin, une retenue partielle laisserait des centimes
-    // indus chez le loueur comme chez nous.
-    expect(json.refundedEur).toBe(315);
-    // Aucun reverse_transfer : rien n a ete transfere, les fonds sont chez nous.
-    expect(refundsCreate).toHaveBeenCalledWith({
-      payment_intent: "pi_b1",
-      amount: 31_500,
-    });
-    expect(updates[0].booking_status).toBe("refunded");
-    expect(updates[0].refund_amount_eur).toBe(315);
-    expect(updates[0].cancelled_at).toBeTruthy();
+    expect(await res.json()).toEqual({ ok: true, refundedEur: 41.2, status: "refunded" });
+    expect(lookups).toEqual([["booking_token_hash", "hash(book-tok)"]]);
+    expect(cancelByClient).toHaveBeenCalledWith(25, expect.any(Number));
   });
 
-  it("ne reprend rien au loueur : il n a encore rien recu", async () => {
+  it("jeton d'offres (lien des e-mails) : cherche par accept_token_hash et annule", async () => {
+    const lookups = wiring();
+    cancelByClient.mockResolvedValue({ refundedEur: 0, status: "cancelled_kept" });
+    const res = await POST(req({ offerToken: "client-tok" }) as never);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true, refundedEur: 0, status: "cancelled_kept" });
+    expect(lookups).toEqual([["accept_token_hash", "hash(client-tok)"]]);
+  });
+
+  it("n'est plus gardée par CAR_BOOKING_ENABLED (R45)", async () => {
+    vi.stubEnv("CAR_BOOKING_ENABLED", "");
     wiring();
-    await POST(req() as never);
-    const call = refundsCreate.mock.calls[0][0] as unknown as Record<string, unknown>;
-    expect(call.reverse_transfer).toBeUndefined();
+    expect((await POST(req({ token: "book-tok" }) as never)).status).toBe(200);
   });
 
-  it("annule sans rembourser quand l option n a pas ete prise", async () => {
-    const updates = wiring({ ...PAID, cancellation_option: false, booking_amount_eur: 310 });
-    const res = await POST(req() as never);
-
-    expect(res.status).toBe(200);
-    expect((await res.json()).refundedEur).toBe(0);
-    expect(refundsCreate).not.toHaveBeenCalled();
-    expect(updates[0].booking_status).toBe("cancelled");
-  });
-
-  it("annule sans rembourser dans les 48 h, meme avec l option", async () => {
-    const updates = wiring({ ...PAID, date_from: SOON });
-    const res = await POST(req() as never);
-
-    expect((await res.json()).refundedEur).toBe(0);
-    expect(refundsCreate).not.toHaveBeenCalled();
-    expect(updates[0].booking_status).toBe("cancelled");
-  });
-
-  it("refuse d annuler une reservation deja versee au loueur", async () => {
-    // A ce stade l'argent est parti : rembourser exigerait de le reprendre, ce
-    // que ce modele existe precisement pour eviter.
-    wiring({ ...PAID, booking_status: "transferred", transfer_id: "tr_1" });
-    const res = await POST(req() as never);
-    expect(res.status).toBe(409);
-    expect(refundsCreate).not.toHaveBeenCalled();
-  });
-
-  it("refuse une seconde annulation", async () => {
-    wiring({ ...PAID, booking_status: "refunded" });
-    expect((await POST(req() as never)).status).toBe(409);
-    expect(refundsCreate).not.toHaveBeenCalled();
+  it.each([
+    ["les deux jetons", { token: "a", offerToken: "b" }],
+    ["aucun jeton", {}],
+    ["jetons vides", { token: "", offerToken: "" }],
+    ["jeton qui n'est pas une chaîne", { token: 42 }],
+    ["corps qui n'est pas un objet", [1, 2]],
+    ["JSON illisible", "{pas du json"],
+  ])("400 : %s, sans lecture ni annulation", async (_label, body) => {
+    wiring();
+    const res = await POST(req(body) as never);
+    expect(res.status).toBe(400);
+    expect((await res.json()).ok).toBe(false);
+    expect(from).not.toHaveBeenCalled();
+    expect(cancelByClient).not.toHaveBeenCalled();
   });
 
   it("404 sur un jeton inconnu", async () => {
     wiring(null);
-    expect((await POST(req() as never)).status).toBe(404);
+    expect((await POST(req({ offerToken: "nope" }) as never)).status).toBe(404);
+    expect(cancelByClient).not.toHaveBeenCalled();
   });
 
-  it("habille une panne Stripe et ne marque rien d annule", async () => {
-    const updates = wiring();
-    refundsCreate.mockRejectedValueOnce(
-      Object.assign(new Error("charge already refunded"), { requestId: "req_ref_1" }) as never,
-    );
+  it("409 notCancellable quand la réservation ne peut plus être annulée", async () => {
+    wiring();
+    cancelByClient.mockResolvedValue({ error: "not_cancellable" });
+    const res = await POST(req({ token: "book-tok" }) as never);
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ ok: false, notCancellable: true });
+  });
+
+  it("503 avec un message de nouvel essai quand Stripe refuse le remboursement", async () => {
+    wiring();
+    cancelByClient.mockResolvedValue({ error: "refund_failed" });
+    const res = await POST(req({ token: "book-tok" }) as never);
+    expect(res.status).toBe(503);
+    const json = await res.json();
+    expect(json.ok).toBe(false);
+    expect(json.error).toMatch(/try again/i);
+  });
+
+  it("500 quand l'annulation lève (base refusée), sans détail interne", async () => {
+    wiring();
+    cancelByClient.mockRejectedValue(new Error("permission denied for table car_requests"));
     const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await POST(req({ token: "book-tok" }) as never);
+    expect(res.status).toBe(500);
+    expect(JSON.stringify(await res.json())).not.toContain("permission denied");
+    expect(errSpy).toHaveBeenCalled();
+    errSpy.mockRestore();
+  });
 
-    const res = await POST(req() as never);
-
-    expect(res.status).toBe(502);
-    expect((await res.json()).code).toBe("payment_provider");
-    // Rien n'est ecrit : la reservation reste payee, l'annulation est rejouable.
-    expect(updates).toHaveLength(0);
-    expect(JSON.stringify(errSpy.mock.calls)).toContain("req_ref_1");
+  it("500 quand la lecture par jeton est refusée, sans annuler", async () => {
+    wiring(null, { message: "timeout" });
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    expect((await POST(req({ token: "book-tok" }) as never)).status).toBe(500);
+    expect(cancelByClient).not.toHaveBeenCalled();
     errSpy.mockRestore();
   });
 });

@@ -4,7 +4,8 @@
 //
 // Acompte (spec 2026-11-25) : les clés `deposit*`, `pending*`, `awaiting*`,
 // `confirmed*`, `refunded*`, `reason*` et `kept*` servent la page par état de
-// réservation. Les clés du paiement total (option à 5 EUR, h1, intro, submit,
+// réservation ; les clés `cancel*` servent l'annulation par le client (CancelPanel,
+// sur cette page et sur la page d'offres). Les clés du paiement total (option à 5 EUR, h1, intro, submit,
 // paid*) partent avec lui en tâche 15. Les intitulés d'assurance viennent de
 // car-inclusions.ts, jamais d'ici (voir le test).
 //
@@ -38,12 +39,16 @@ export type CarBookingStrings = {
   paidTitle: string;
   paidBody: string;
   cancelTitle: string;
-  cancelBody: string;
+  /** Avant le clic, quand l'acompte est rendu. */
+  cancelGetBack: string;
+  /** Avant le clic, à moins de 48 h d'une réservation confirmée : 0 rendu. */
+  cancelGetBackNothing: string;
   cancelSubmit: string;
   cancelling: string;
   cancelledRefunded: string;
   cancelledNoRefund: string;
   cancelTooLate: string;
+  cancelRetry: string;
   depositTitle: string;
   depositIntro: string;
   totalLabel: string;
@@ -125,12 +130,16 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
     paidBody:
       "The rental company has your details and will confirm the pick-up arrangements.",
     cancelTitle: "Cancel this booking",
-    cancelBody: "Check your refund conditions before confirming.",
+    cancelGetBack: "If you cancel now, you get {amount} back on your card.",
+    cancelGetBackNothing:
+      "Pick-up is less than 48 hours away: if you cancel now, you get {amount} back and the deposit is kept.",
     cancelSubmit: "Cancel my booking",
     cancelling: "Cancelling",
-    cancelledRefunded: "Booking cancelled. Your refund is on its way.",
-    cancelledNoRefund: "Booking cancelled. No refund applies.",
+    cancelledRefunded: "Booking cancelled. The refund of {amount} is on its way to your card.",
+    cancelledNoRefund: "Booking cancelled. The deposit is kept.",
     cancelTooLate: "This booking can no longer be cancelled.",
+    cancelRetry:
+      "The cancellation could not be completed right now. Try again in a few minutes; if it persists, write to hello@crete.direct.",
     depositTitle: "Book your car",
     depositIntro:
       "You pay a deposit online now. You pay the rest to the rental agency when you pick up the car.",
@@ -188,12 +197,16 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
     paidBody:
       "Le loueur a vos coordonnées et vous confirme les modalités de prise en charge.",
     cancelTitle: "Annuler cette réservation",
-    cancelBody: "Vérifiez vos conditions de remboursement avant de confirmer.",
+    cancelGetBack: "Si vous annulez maintenant, vous récupérez {amount} sur votre carte.",
+    cancelGetBackNothing:
+      "La prise du véhicule est dans moins de 48 heures : si vous annulez maintenant, vous récupérez {amount} et l'acompte est conservé.",
     cancelSubmit: "Annuler ma réservation",
     cancelling: "Annulation en cours",
-    cancelledRefunded: "Réservation annulée. Votre remboursement est en route.",
-    cancelledNoRefund: "Réservation annulée. Aucun remboursement ne s'applique.",
+    cancelledRefunded: "Réservation annulée. Le remboursement de {amount} est en route vers votre carte.",
+    cancelledNoRefund: "Réservation annulée. L'acompte est conservé.",
     cancelTooLate: "Cette réservation ne peut plus être annulée.",
+    cancelRetry:
+      "L'annulation n'a pas pu aboutir pour le moment. Réessayez dans quelques minutes ; si cela persiste, écrivez à hello@crete.direct.",
     depositTitle: "Réservez votre voiture",
     depositIntro:
       "Vous payez un acompte en ligne maintenant. Vous réglez le reste au loueur à la prise du véhicule.",
@@ -251,12 +264,16 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
     paidBody:
       "Der Vermieter hat Ihre Daten und bestätigt die Abholung.",
     cancelTitle: "Diese Buchung stornieren",
-    cancelBody: "Prüfen Sie Ihre Erstattungsbedingungen, bevor Sie bestätigen.",
+    cancelGetBack: "Wenn Sie jetzt stornieren, erhalten Sie {amount} auf Ihre Karte zurück.",
+    cancelGetBackNothing:
+      "Die Abholung ist in weniger als 48 Stunden: Wenn Sie jetzt stornieren, erhalten Sie {amount} zurück und die Anzahlung wird einbehalten.",
     cancelSubmit: "Buchung stornieren",
     cancelling: "Stornierung läuft",
-    cancelledRefunded: "Buchung storniert. Ihre Erstattung ist unterwegs.",
-    cancelledNoRefund: "Buchung storniert. Es erfolgt keine Erstattung.",
+    cancelledRefunded: "Buchung storniert. Die Erstattung von {amount} ist auf dem Weg zu Ihrer Karte.",
+    cancelledNoRefund: "Buchung storniert. Die Anzahlung wird einbehalten.",
     cancelTooLate: "Diese Buchung kann nicht mehr storniert werden.",
+    cancelRetry:
+      "Die Stornierung konnte gerade nicht abgeschlossen werden. Bitte in einigen Minuten erneut versuchen; bei anhaltendem Fehler an hello@crete.direct schreiben.",
     depositTitle: "Ihren Mietwagen buchen",
     depositIntro:
       "Sie zahlen jetzt online eine Anzahlung. Den Rest zahlen Sie bei der Abholung an den Vermieter.",
@@ -314,12 +331,16 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
     paidBody:
       "Ο εκμισθωτής έχει τα στοιχεία σας και θα επιβεβαιώσει την παραλαβή.",
     cancelTitle: "Ακύρωση αυτής της κράτησης",
-    cancelBody: "Ελέγξτε τους όρους επιστροφής πριν επιβεβαιώσετε.",
+    cancelGetBack: "Αν ακυρώσετε τώρα, σας επιστρέφονται {amount} στην κάρτα σας.",
+    cancelGetBackNothing:
+      "Η παραλαβή είναι σε λιγότερο από 48 ώρες: αν ακυρώσετε τώρα, σας επιστρέφονται {amount} και η προκαταβολή παρακρατείται.",
     cancelSubmit: "Ακύρωση κράτησης",
     cancelling: "Ακύρωση σε εξέλιξη",
-    cancelledRefunded: "Η κράτηση ακυρώθηκε. Η επιστροφή χρημάτων είναι καθ' οδόν.",
-    cancelledNoRefund: "Η κράτηση ακυρώθηκε. Δεν προβλέπεται επιστροφή.",
+    cancelledRefunded: "Η κράτηση ακυρώθηκε. Η επιστροφή {amount} είναι καθ' οδόν προς την κάρτα σας.",
+    cancelledNoRefund: "Η κράτηση ακυρώθηκε. Η προκαταβολή παρακρατείται.",
     cancelTooLate: "Αυτή η κράτηση δεν μπορεί πλέον να ακυρωθεί.",
+    cancelRetry:
+      "Η ακύρωση δεν ολοκληρώθηκε αυτή τη στιγμή. Δοκιμάστε ξανά σε λίγα λεπτά· αν επιμείνει, γράψτε στο hello@crete.direct.",
     depositTitle: "Κάντε κράτηση για το αυτοκίνητό σας",
     depositIntro:
       "Πληρώνετε τώρα online μια προκαταβολή. Το υπόλοιπο το πληρώνετε στο γραφείο κατά την παραλαβή του αυτοκινήτου.",

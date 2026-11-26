@@ -4,6 +4,7 @@ import {
   DEPOSIT_CHECKOUT_LIFETIME_S,
   buildDepositCheckoutParams,
   clientCancelRefundEur,
+  clientCancelNowEur,
   confirmDeadlineMs,
   isBookableOnline,
   isDepositBookable,
@@ -77,6 +78,22 @@ describe("car-deposit", () => {
     expect(clientCancelRefundEur("confirmed", 41.2, 48)).toBe(41.2);
     expect(clientCancelRefundEur("confirmed", 41.2, 47.9)).toBe(0);
     expect(clientCancelRefundEur("refunded", 41.2, 100)).toBe(0);
+  });
+  it("client cancellation now: hours from the Athens pick-up time, closed once pick-up has passed", () => {
+    const H = 3_600_000;
+    const pickup = at("2027-07-20", "10:00");
+    expect(clientCancelNowEur("confirmed", 41.2, "2027-07-20", "10:00", pickup - 48 * H)).toBe(41.2);
+    // Postgres rend l'heure avec ses secondes.
+    expect(clientCancelNowEur("confirmed", 41.2, "2027-07-20", "10:00:00", pickup - 47 * H)).toBe(0);
+    expect(clientCancelNowEur("awaiting_partner", 41.2, "2027-07-20", "10:00", pickup - H)).toBe(41.2);
+    expect(clientCancelNowEur("awaiting_partner", 41.2, "2027-07-20", "10:00", pickup)).toBeNull();
+    expect(clientCancelNowEur("confirmed", 41.2, "2027-07-20", "10:00", pickup + 1)).toBeNull();
+    // Sans heure de prise : 00:00.
+    expect(clientCancelNowEur("confirmed", 41.2, "2027-07-20", null, at("2027-07-18", "00:00"))).toBe(41.2);
+    expect(clientCancelNowEur("confirmed", 41.2, "2027-07-20", null, at("2027-07-18", "00:01"))).toBe(0);
+    for (const s of ["pending_payment", "refunded", "cancelled_kept", null]) {
+      expect(clientCancelNowEur(s, 41.2, "2027-07-20", "10:00", pickup - 100 * H)).toBeNull();
+    }
   });
   it("suspends a partner after 3 failures", () => {
     expect(shouldSuspendPartner(2)).toBe(false);

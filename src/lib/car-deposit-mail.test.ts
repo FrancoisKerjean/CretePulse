@@ -21,6 +21,7 @@ const DATA: DepositMailData = {
   deadlineIso: new Date(athensWallToUtcMs("2027-07-13", "11:30")).toISOString(),
   confirmUrl: "https://crete.direct/en/car-confirm/conf-plain",
   offersUrl: "https://crete.direct/fr/car-offer/client-tok",
+  manageUrl: "https://crete.direct/fr/car-offer/client-tok",
   refundReason: "partner_declined",
   refundedEur: 41.2,
   insurance: { type: "cdw_excess", excessEur: 800, upsellPerDay: 9 },
@@ -86,6 +87,24 @@ describe("depositMail", () => {
     expect(t).toContain("Airport road 1, 71601 Heraklion");
     expect(t).toContain("370,80 €");
   });
+
+  it.each(["client_pending", "client_confirmed"] as const)(
+    "%s : bouton « Gérer ma réservation » vers la page d'offres, dans les 4 langues (R43)",
+    (kind) => {
+      const labels: Record<string, string> = {
+        en: "Manage my booking", fr: "Gérer ma réservation", de: "Buchung verwalten", el: "Διαχείριση κράτησης",
+      };
+      for (const [loc, label] of Object.entries(labels)) {
+        const t = text(kind, loc);
+        expect(t, loc).toContain('href="https://crete.direct/fr/car-offer/client-tok"');
+        expect(t, loc).toContain(label);
+      }
+      // Ancienne demande sans jeton client : pas de bouton du tout.
+      const without = text(kind, "en", { ...DATA, manageUrl: null });
+      expect(without).not.toContain("car-offer");
+      expect(without).not.toContain("Manage my booking");
+    },
+  );
 
   it("partner_confirmed : nom, téléphone et e-mail du client", () => {
     const t = text("partner_confirmed", "fr");

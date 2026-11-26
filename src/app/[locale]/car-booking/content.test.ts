@@ -51,6 +51,17 @@ describe("contenu /car-booking", () => {
     }
   });
 
+  it("annulation client : chaque langue dit avant le clic ce qui est rendu, et après le clic le montant", () => {
+    for (const loc of CAR_BOOKING_LOCALES) {
+      const s = L[loc];
+      expect(s.cancelGetBack).toContain("{amount}");
+      expect(s.cancelGetBackNothing).toContain("{amount}");
+      expect(s.cancelGetBackNothing).toMatch(/48/);
+      expect(s.cancelledRefunded).toContain("{amount}");
+      expect(s.cancelRetry).toContain("hello@crete.direct");
+    }
+  });
+
   it("fill remplace chaque gabarit, même répété", () => {
     expect(fill("{a} et {b}, {a}", { a: "1", b: "2" })).toBe("1 et 2, 1");
   });

@@ -20,7 +20,7 @@ import { secretOk } from "./car-admin-auth";
 import { partnerById } from "./car-partners-db";
 import { depositEur } from "./car-catalogue";
 import {
-  isDepositBookable, confirmDeadlineMs, shouldSuspendPartner, SUSPEND_WINDOW_DAYS, type RefundReason,
+  isDepositBookable, confirmDeadlineMs, shouldSuspendPartner, clientCancelNowEur, SUSPEND_WINDOW_DAYS, type RefundReason,
 } from "./car-deposit";
 import { depositMail, type DepositMailData, type DepositMailKind } from "./car-deposit-mail";
 import { quotedModelLabel, type QuoteOption } from "./car-quotes";
@@ -244,6 +244,14 @@ async function partnerContact(partnerId: number | null): Promise<PartnerContact 
   return (data as PartnerContact | null) ?? null;
 }
 
+/**
+ * Page d'offres du client : il y choisit une autre offre après un
+ * remboursement, et y suit ou annule sa réservation en cours (R43). Null sur
+ * les anciennes demandes sans jeton client.
+ */
+const offersUrlOf = (row: BookingRow, locale: string): string | null =>
+  row.client_token ? `${siteBase()}/${locale}/car-offer/${row.client_token}` : null;
+
 function mailData(row: BookingRow, locale: string, extra: Partial<DepositMailData> = {}): DepositMailData {
   const ct = CAR_TYPES_DATA.find((c) => c.id === row.car_type);
   return {
@@ -414,7 +422,9 @@ export async function onDepositPaid(
   const locale = pickCarBookingLocale(row.locale ?? "en");
   const confirmUrl = partnerConfirmUrl(requestId, paymentIntentId);
   const partner = await partnerContact(row.quoted_by_partner_id);
-  const clientFail = await sendMail("client_pending", row.customer_email, mailData(row, locale), locale, "client");
+  const clientFail = await sendMail("client_pending", row.customer_email, mailData(row, locale, {
+    manageUrl: offersUrlOf(row, locale),
+  }), locale, "client");
   if (clientFail) failures.push(clientFail);
   const partnerFail = await sendMail("partner_request", partner?.email, mailData(row, "en", { confirmUrl }), "en", "loueur");
   if (partnerFail) {
@@ -471,6 +481,7 @@ export async function confirmBooking(
       .join(", ");
     const { formatPhoneWithCountryCode } = await import("./email");
     const clientFail = await sendMail("client_confirmed", row.customer_email, mailData(row, locale, {
+      manageUrl: offersUrlOf(row, locale),
       partnerContact: {
         name: partner.name ?? row.partner_name ?? "",
         phone: partner.phone,
@@ -589,7 +600,11 @@ async function claimRefund(
         `Stripe : ${errText(err)}`,
         revertError
           ? `⚠️ demande restée en refunded SANS remboursement (${errText(revertError)}) : la reprise automatique retentera`
-          : `demande remise en ${from}${from === "awaiting_partner" ? ", le cron retentera" : ""}`,
+          : `demande remise en ${from}${
+            reason === "client_cancelled"
+              ? ", le client a reçu « réessayez dans quelques minutes », rien n'est annulé"
+              : from === "awaiting_partner" ? ", le cron retentera" : ""
+          }`,
       ],
       action: "si l'échec persiste, rembourser à la main dans Stripe : la tentative suivante le verra",
       url: adminUrl(),
@@ -778,10 +793,19 @@ async function finishRefund(
     }
   }
 
-  const locale = pickCarBookingLocale(row.locale ?? "en");
-  const offersUrl = row.client_token ? `${siteBase()}/${locale}/car-offer/${row.client_token}` : null;
-  const clientFail = await sendMail("client_refunded", row.customer_email, mailData(row, locale, { refundReason: reason, offersUrl }), locale, "client");
-  if (clientFail) failures.push(clientFail);
+  // Annulation par le client : il reçoit la confirmation de SON annulation et
+  // le loueur apprend que la voiture est libre. Sinon le client apprend le
+  // remboursement et son motif. Jamais les deux (R44).
+  if (reason === "client_cancelled") {
+    failures.push(...(await sendClientCancelMails(row, Number(row.deposit_eur))));
+  } else {
+    const locale = pickCarBookingLocale(row.locale ?? "en");
+    const clientFail = await sendMail("client_refunded", row.customer_email, mailData(row, locale, {
+      refundReason: reason,
+      offersUrl: offersUrlOf(row, locale),
+    }), locale, "client");
+    if (clientFail) failures.push(clientFail);
+  }
 
   if (PARTNER_FAULTS.has(reason) && row.quoted_by_partner_id != null) {
     try {
@@ -893,7 +917,8 @@ async function suspendIfRepeated(partnerId: number, requestId: number, reason: R
 /**
  * Libère un acompte pas encore confirmé : refus du loueur, échéance dépassée
  * (cron), ops ou client. Rembourse intégralement, remet la demande en offres et
- * prévient le client avec le lien de ses autres offres.
+ * prévient le client avec le lien de ses autres offres (motif client_cancelled :
+ * e-mails d'annulation au client et au loueur, voir finishRefund).
  */
 export async function releaseBooking(
   requestId: number,
@@ -902,6 +927,96 @@ export async function releaseBooking(
 ): Promise<"refunded" | "not_releasable" | "refund_failed"> {
   const out = await claimRefund("awaiting_partner", requestId, reason, nowMs);
   return out === "not_claimed" ? "not_releasable" : out;
+}
+
+/**
+ * E-mails d'une annulation par le client : client_cancelled au client (montant
+ * rendu, 0 quand l'acompte est gardé) et partner_client_cancelled au loueur,
+ * en anglais et ⛔ sans aucune coordonnée du client (le loueur peut ne pas les
+ * avoir encore). Rend les échecs pour ops.
+ */
+async function sendClientCancelMails(row: BookingRow, refundedEur: number): Promise<string[]> {
+  const failures: string[] = [];
+  const locale = pickCarBookingLocale(row.locale ?? "en");
+  const clientFail = await sendMail("client_cancelled", row.customer_email, mailData(row, locale, { refundedEur }), locale, "client");
+  if (clientFail) failures.push(clientFail);
+  const partner = await partnerContact(row.quoted_by_partner_id);
+  const partnerFail = await sendMail("partner_client_cancelled", partner?.email, mailData(row, "en"), "en", "loueur");
+  if (partnerFail) failures.push(partnerFail, "prévenir le loueur que la voiture est libre");
+  return failures;
+}
+
+/**
+ * Annulation à moins de 48 h d'une réservation confirmée : prise de main
+ * confirmed → cancelled_kept (avec cancelled_at), AUCUN appel Stripe.
+ * L'acompte reste la commission : facture du premier jour comme une location
+ * faite (tâche 12), invitations inchangées. Rend false quand la prise de main
+ * est perdue.
+ */
+async function keepDeposit(requestId: number, nowMs: number): Promise<boolean> {
+  const { data: claimed, error } = await supabaseAdmin
+    .from("car_requests")
+    .update({ booking_status: "cancelled_kept", cancelled_at: new Date(nowMs).toISOString() })
+    .eq("id", requestId)
+    .eq("booking_status", "confirmed")
+    .select(BOOKING_COLS);
+  assertWritten("cancelByClient:gardé", requestId, error);
+  const row = (claimed as BookingRow[] | null)?.[0];
+  if (!row) return false;
+
+  const failures = await sendClientCancelMails(row, 0);
+  await notifyOps({
+    title: `Réservation voiture annulée par le client à moins de 48 h, acompte gardé : ${row.partner_name ?? "loueur"}`,
+    lines: [
+      `demande ${requestId}`,
+      `acompte ${Number(row.deposit_eur)} € gardé, prise le ${row.date_from}`,
+      "facture de commission au premier jour de location, comme une location faite",
+      ...failures,
+    ],
+    ...(failures.length ? { action: "reprendre à la main les points ci-dessus", url: adminUrl() } : {}),
+    silent: failures.length === 0,
+  });
+  return true;
+}
+
+export type CancelByClientResult =
+  | { refundedEur: number; status: "refunded" | "cancelled_kept" }
+  | { error: "not_cancellable" | "refund_failed" };
+
+/**
+ * Le client annule (page de réservation ou page d'offres). En attente du
+ * loueur, ou confirmée à 48 h ou plus de la prise : remboursement intégral par
+ * la prise de main commune (motif client_cancelled). Confirmée à moins de
+ * 48 h : acompte gardé. Prise du véhicule passée, ou aucun acompte en jeu :
+ * not_cancellable.
+ *
+ * Prise de main conditionnée à l'état LU : perdue (le loueur confirme, le cron
+ * libère), on relit et on réévalue UNE fois sur l'état frais (R46). Stripe
+ * refuse : la prise de main est défaite, refund_failed, aucun e-mail.
+ */
+export async function cancelByClient(requestId: number, nowMs: number): Promise<CancelByClientResult> {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const { data, error } = await supabaseAdmin
+      .from("car_requests")
+      .select("booking_status, deposit_eur, date_from, time_from")
+      .eq("id", requestId)
+      .maybeSingle();
+    if (error) throw new Error(`cancelByClient(${requestId}) lecture refusée par la base: ${error.message}`);
+    const row = data as Pick<BookingRow, "booking_status" | "deposit_eur" | "date_from" | "time_from"> | null;
+    if (!row) return { error: "not_cancellable" };
+    const status = row.booking_status;
+    const refundEur = clientCancelNowEur(status, Number(row.deposit_eur), row.date_from, row.time_from, nowMs);
+    if (refundEur === null) return { error: "not_cancellable" };
+
+    if (refundEur > 0) {
+      const out = await claimRefund(status as RefundFrom, requestId, "client_cancelled", nowMs);
+      if (out === "refunded") return { refundedEur: refundEur, status: "refunded" };
+      if (out === "refund_failed") return { error: "refund_failed" };
+    } else if (await keepDeposit(requestId, nowMs)) {
+      return { refundedEur: 0, status: "cancelled_kept" };
+    }
+  }
+  return { error: "not_cancellable" };
 }
 
 /**

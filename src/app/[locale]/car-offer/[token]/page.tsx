@@ -16,9 +16,10 @@ import { rentalDays } from "@/lib/car-pricing";
 import { curateOffers, quotedModelLabel } from "@/lib/car-quotes";
 import type { QuoteOption } from "@/lib/car-quotes";
 import { depositEur } from "@/lib/car-catalogue";
-import { isDepositBookable } from "@/lib/car-deposit";
+import { clientCancelNowEur, isDepositBookable } from "@/lib/car-deposit";
 import { depositRatesFor } from "@/lib/car-deposit-server";
-import { fill, formatEur } from "../../car-booking/content";
+import { L, fill, formatEur, formatAthensDeadline, pickCarBookingLocale } from "../../car-booking/content";
+import CancelPanel from "../../car-booking/[token]/CancelPanel";
 
 const GEARBOX_LABEL: Record<string, string> = { automatic: "Automatic", manual: "Manual" };
 
@@ -334,6 +335,55 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
       })}
     />
   );
+
+  // Etat : réservation avec acompte en cours ou annulée avec acompte gardé. Les
+  // e-mails du client pointent ici (seul le hash du jeton de réservation est
+  // stocké) : il y suit sa réservation et peut l'annuler (R43). Lu sur
+  // booking_status, qui n'existe qu'avec l'acompte, et non sur l'interrupteur :
+  // l'éteindre ne doit pas priver un client qui a payé de sa page.
+  const bs = request.booking_status as string | null;
+  if (bs === "awaiting_partner" || bs === "confirmed" || bs === "cancelled_kept") {
+    const lang = pickCarBookingLocale(locale);
+    const t = L[lang];
+    const partner = (request.partner_name as string | null) ?? "";
+    const deposit = Number(request.deposit_eur);
+    const deadline = request.confirm_deadline_at as string | null;
+    const title = bs === "awaiting_partner" ? t.awaitingTitle : bs === "confirmed" ? t.confirmedTitle : t.keptTitle;
+    const body = bs === "cancelled_kept"
+      ? t.keptBody
+      : bs === "confirmed"
+        ? fill(t.confirmedBody, { partner })
+        : deadline
+          ? fill(t.awaitingBody, { partner, deadline: formatAthensDeadline(deadline, lang) })
+          : t.depositConfirmRule;
+    const refundNow = clientCancelNowEur(bs, deposit, request.date_from as string, request.time_from as string | null, Date.now());
+    return (
+      <main style={shell}>
+        {beacon("already_accepted")}
+        <div style={card}>
+          <p style={{ margin: "0 0 4px", color: "#008C9E", fontSize: 13, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase" }}>crete · direct</p>
+          <h1 style={{ margin: "0 0 8px", fontSize: 21, color: "#0B3954" }}>{title}</h1>
+          <p style={{ margin: 0, color: "#5C7886", fontSize: 15, lineHeight: 1.6 }}>{body}</p>
+          {bs === "cancelled_kept" ? null : (
+            <>
+              <div style={{ background: "#F6FBFC", border: "1px solid #DCE9EE", borderRadius: 14, padding: "14px 16px", margin: "18px 0 14px", color: "#0B3954", fontSize: 14, lineHeight: 1.8 }}>
+                {partner ? <div><strong>{partner}</strong></div> : null}
+                <div>{carPickupLabel(request.pickup_slug as string)} · {request.date_from as string} → {request.date_to as string}</div>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+                  <span>{t.depositPaidLabel}</span>
+                  <strong>{formatEur(deposit, lang)}</strong>
+                </div>
+              </div>
+              <p style={{ margin: 0, color: "#5C7886", fontSize: 13, lineHeight: 1.6 }}>{t.depositCancelRule}</p>
+            </>
+          )}
+        </div>
+        {refundNow === null ? null : (
+          <CancelPanel auth={{ offerToken: token }} strings={t} locale={lang} refundEur={refundNow} />
+        )}
+      </main>
+    );
+  }
 
   // Etat : déjà accepté
   if (request.status === "accepted") {

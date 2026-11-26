@@ -17,7 +17,7 @@ import { DepositPaidBeacon } from "./DepositPaidBeacon";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { hashToken } from "@/lib/car-quote";
 import { carPickupLabel } from "@/lib/car-lead";
-import { isDepositBookable, type RefundReason } from "@/lib/car-deposit";
+import { clientCancelNowEur, isDepositBookable, type RefundReason } from "@/lib/car-deposit";
 import { CAR_INSURANCE_HEADING, insuranceSummary } from "@/lib/car-inclusions";
 
 export const metadata: Metadata = {
@@ -25,12 +25,11 @@ export const metadata: Metadata = {
 };
 
 const COLS =
-  "status, booking_status, cancellation_option, deposit_eur, quoted_price, quoted_car_model, quoted_insurance_type, quoted_excess_eur, quoted_zero_excess_upsell_eur_day, quoted_by_partner_id, partner_name, pickup_slug, date_from, date_to, time_from, confirm_deadline_at, refund_reason, client_token";
+  "status, booking_status, deposit_eur, quoted_price, quoted_car_model, quoted_insurance_type, quoted_excess_eur, quoted_zero_excess_upsell_eur_day, quoted_by_partner_id, partner_name, pickup_slug, date_from, date_to, time_from, confirm_deadline_at, refund_reason, client_token";
 
 interface BookingRow {
   status: string;
   booking_status: string | null;
-  cancellation_option: boolean | null;
   deposit_eur: number | null;
   quoted_price: number | null;
   quoted_car_model: string | null;
@@ -152,16 +151,23 @@ export default async function CarBookingPage(
   const partnerName = row.partner_name ?? "";
 
   // Paiement total de juillet (jamais armé) : vue d'origine gardée jusqu'à son
-  // retrait en tâche 15.
+  // retrait en tâche 15. Plus annulable en ligne : la route d'annulation ne
+  // connaît que l'acompte (R45).
   if (status === "paid" || status === "transferred") {
     return (
       <Shell>
         <Title>{t.paidTitle}</Title>
         <Lead>{t.paidBody}</Lead>
-        {row.cancellation_option === true && status === "paid" ? <CancelPanel token={token} strings={t} /> : null}
       </Shell>
     );
   }
+
+  // Ce que rendrait une annulation maintenant ; null quand elle n'est plus
+  // possible (prise passée, ou aucun acompte en jeu) : pas de panneau.
+  const refundNow = clientCancelNowEur(status, Number(row.deposit_eur), row.date_from, row.time_from, Date.now());
+  const cancelPanel = refundNow === null
+    ? null
+    : <CancelPanel auth={{ token }} strings={t} locale={lang} refundEur={refundNow} />;
 
   if (status === "pending_payment") {
     return (
@@ -198,6 +204,7 @@ export default async function CarBookingPage(
         </header>
         <Recap row={row} t={t} lang={lang} paid />
         <Rules lines={[t.depositCancelRule]} />
+        {cancelPanel}
       </Shell>
     );
   }
@@ -236,6 +243,7 @@ export default async function CarBookingPage(
           </div>
         ) : null}
         <Rules lines={[t.depositCancelRule]} />
+        {cancelPanel}
       </Shell>
     );
   }

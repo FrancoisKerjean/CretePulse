@@ -157,6 +157,26 @@ export function clientCancelRefundEur(
   return 0;
 }
 
+/**
+ * Ce que le client récupère s'il annule à `nowMs`, ou null quand il ne peut
+ * plus annuler : aucun acompte en jeu (paiement ouvert, déjà remboursé, déjà
+ * gardé) ou prise du véhicule passée. Heures comptées depuis l'heure murale de
+ * prise à Athènes, 00:00 sans heure ; 48 h pile = remboursé. Seule règle de
+ * l'annulation client : la route et les deux pages l'appellent.
+ */
+export function clientCancelNowEur(
+  status: string | null,
+  depositEur: number,
+  dateFrom: string,
+  timeFrom: string | null | undefined,
+  nowMs: number,
+): number | null {
+  if (status !== "awaiting_partner" && status !== "confirmed") return null;
+  const hours = (athensWallToUtcMs(dateFrom, timeFrom || "00:00") - nowMs) / 3_600_000;
+  if (hours <= 0) return null;
+  return clientCancelRefundEur(status, depositEur, hours);
+}
+
 export function shouldSuspendPartner(failuresInWindow: number): boolean {
   return failuresInWindow >= SUSPEND_AFTER_FAILURES;
 }

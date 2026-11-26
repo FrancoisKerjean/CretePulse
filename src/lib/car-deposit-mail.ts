@@ -48,6 +48,12 @@ export interface DepositMailData {
   confirmUrl?: string;
   /** Lien des autres offres du client (client_refunded). Absent sur les anciennes demandes. */
   offersUrl?: string | null;
+  /**
+   * Même page d'offres, où le client suit et annule sa réservation (client_pending,
+   * client_confirmed) : seul le hash du jeton de réservation est stocké, un
+   * e-mail ne peut pas renvoyer vers /car-booking. Absent sur les anciennes demandes.
+   */
+  manageUrl?: string | null;
   refundReason?: RefundReason | null;
   /** client_cancelled : montant rendu, 0 quand l'acompte est gardé. */
   refundedEur?: number;
@@ -83,12 +89,12 @@ const rest = (d: DepositMailData) => Math.round((d.totalEur - d.depositEur) * 10
 // ── Côté client (en, fr, de, el) ────────────────────────────────────────────
 
 const CLIENT: Record<CarBookingLocale, {
-  booking: string; pickup: string; dropoff: string; at: string; colon: string; amountRefunded: string;
+  booking: string; pickup: string; dropoff: string; at: string; colon: string; amountRefunded: string; manage: string;
 }> = {
-  en: { booking: "Your booking", pickup: "Pick-up", dropoff: "Return", at: "at", colon: ": ", amountRefunded: "Amount refunded: {amount}" },
-  fr: { booking: "Votre réservation", pickup: "Prise du véhicule", dropoff: "Retour", at: "à", colon: " : ", amountRefunded: "Montant remboursé : {amount}" },
-  de: { booking: "Ihre Buchung", pickup: "Abholung", dropoff: "Rückgabe", at: "um", colon: ": ", amountRefunded: "Erstatteter Betrag: {amount}" },
-  el: { booking: "Η κράτησή σας", pickup: "Παραλαβή", dropoff: "Επιστροφή", at: "στις", colon: ": ", amountRefunded: "Ποσό επιστροφής: {amount}" },
+  en: { booking: "Your booking", pickup: "Pick-up", dropoff: "Return", at: "at", colon: ": ", amountRefunded: "Amount refunded: {amount}", manage: "Manage my booking" },
+  fr: { booking: "Votre réservation", pickup: "Prise du véhicule", dropoff: "Retour", at: "à", colon: " : ", amountRefunded: "Montant remboursé : {amount}", manage: "Gérer ma réservation" },
+  de: { booking: "Ihre Buchung", pickup: "Abholung", dropoff: "Rückgabe", at: "um", colon: ": ", amountRefunded: "Erstatteter Betrag: {amount}", manage: "Buchung verwalten" },
+  el: { booking: "Η κράτησή σας", pickup: "Παραλαβή", dropoff: "Επιστροφή", at: "στις", colon: ": ", amountRefunded: "Ποσό επιστροφής: {amount}", manage: "Διαχείριση κράτησης" },
 };
 
 const REASON: Record<RefundReason, keyof CarBookingStrings> = {
@@ -139,7 +145,8 @@ function clientMail(kind: DepositMailKind, d: DepositMailData, lang: CarBookingL
             : t.depositConfirmRule) +
           clientBooking(d, lang, true) +
           clientInsurance(d, lang) +
-          MUTED(t.depositCancelRule),
+          MUTED(t.depositCancelRule) +
+          (d.manageUrl ? BUTTON(d.manageUrl, c.manage) : ""),
       };
     case "client_confirmed": {
       const p = d.partnerContact;
@@ -159,7 +166,8 @@ function clientMail(kind: DepositMailKind, d: DepositMailData, lang: CarBookingL
           (contact.length ? BOX(t.contactHeading, contact) : "") +
           clientBooking(d, lang, true) +
           clientInsurance(d, lang) +
-          MUTED(t.depositCancelRule),
+          MUTED(t.depositCancelRule) +
+          (d.manageUrl ? BUTTON(d.manageUrl, c.manage) : ""),
       };
     }
     case "client_refunded": {
