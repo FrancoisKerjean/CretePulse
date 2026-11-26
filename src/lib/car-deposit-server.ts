@@ -608,6 +608,8 @@ async function claimRefund(
  * fait les mêmes étapes que le remboursement d'origine. Échec : ops prévenu, la
  * ligne reste telle quelle (aucun retour arrière, l'argent est peut-être parti).
  */
+const RESUME_MIN_AGE_MS = 15 * 60_000;
+
 export async function resumeClaimedRefund(
   requestId: number,
   nowMs: number,
@@ -618,6 +620,8 @@ export async function resumeClaimedRefund(
     .eq("id", requestId)
     .eq("booking_status", "refunded")
     .is("refund_id", null)
+    // Une reprise ne traverse jamais une prise de main encore en vol.
+    .lt("cancelled_at", new Date(nowMs - RESUME_MIN_AGE_MS).toISOString())
     .maybeSingle();
   if (error) throw new Error(`resumeClaimedRefund(${requestId}) lecture refusée par la base: ${error.message}`);
   const row = data as BookingRow | null;
@@ -646,6 +650,54 @@ export async function resumeClaimedRefund(
     return "refund_failed";
   }
   return finishRefund(row, from, reason, refundId, nowMs);
+}
+
+/**
+ * Rappel au loueur à mi-délai. Prise de main d'abord : `confirm_reminded_at`
+ * écrit sous condition (en attente, jamais rappelé, échéance pas passée), et
+ * seul l'appel qui écrit 1 ligne envoie. Deux passages qui se chevauchent
+ * n'envoient donc jamais deux rappels. Un échec d'envoi va à ops avec le lien,
+ * sans nouvel essai : le rappel est marqué fait.
+ */
+export async function remindPartner(
+  requestId: number,
+  nowMs: number,
+): Promise<"reminded" | "not_claimed" | "reminder_failed"> {
+  const nowIso = new Date(nowMs).toISOString();
+  const { data: claimed, error } = await supabaseAdmin
+    .from("car_requests")
+    .update({ confirm_reminded_at: nowIso })
+    .eq("id", requestId)
+    .eq("booking_status", "awaiting_partner")
+    .is("confirm_reminded_at", null)
+    .gt("confirm_deadline_at", nowIso)
+    .select(BOOKING_COLS);
+  assertWritten("remindPartner", requestId, error);
+  const row = (claimed as BookingRow[] | null)?.[0];
+  if (!row) return "not_claimed";
+
+  let failure: string | null;
+  let confirmUrl: string | null = null;
+  try {
+    if (!row.booking_payment_intent_id) throw new Error("aucun payment_intent enregistré sur la demande");
+    confirmUrl = partnerConfirmUrl(requestId, row.booking_payment_intent_id);
+    const partner = await partnerContact(row.quoted_by_partner_id);
+    failure = await sendMail("partner_reminder", partner?.email, mailData(row, "en", { confirmUrl }), "en", "loueur");
+  } catch (err) {
+    failure = `rappel au loueur non parti : ${errText(err)}`;
+  }
+  if (!failure) return "reminded";
+  await notifyOps({
+    title: `Acompte voiture : rappel non parti chez ${row.partner_name ?? "le loueur"}`,
+    lines: [
+      `demande ${requestId}`,
+      failure,
+      ...(confirmUrl ? [`lien de confirmation à transmettre au loueur : ${confirmUrl}`] : []),
+    ],
+    action: "appeler le loueur avant l'échéance ; le rappel n'est pas retenté",
+    url: adminUrl(),
+  });
+  return "reminder_failed";
 }
 
 /**
@@ -685,7 +737,7 @@ async function finishRefund(
     await notifyOps({
       title: "Acompte voiture : remboursé chez Stripe mais non inscrit sur la demande",
       lines: [`demande ${requestId}, motif ${reason}`, `remboursement ${refundId}`, `base : ${recErr.message}`],
-      action: "la reprise automatique finira (sans second remboursement) ; sinon inscrire refund_id à la main",
+      action: "ne rien écrire à la main : la reprise automatique (cron, sous 15 minutes) finit tout, invitations, e-mail et avoir, sans second remboursement ; écrire refund_id à la main l'en empêcherait",
       url: adminUrl(),
     });
     return "refunded";

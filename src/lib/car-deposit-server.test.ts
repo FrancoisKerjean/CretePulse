@@ -37,7 +37,7 @@ vi.mock("./email", () => ({
 import {
   startDeposit, depositRatesFor, onDepositSessionExpired,
   onDepositPaid, confirmBooking, releaseBooking, refundConfirmed, bookingByConfirmToken,
-  resumeClaimedRefund, partnerConfirmUrl,
+  resumeClaimedRefund, partnerConfirmUrl, remindPartner,
 } from "./car-deposit-server";
 
 // Mardi 12/07/2027 à 09:00 heure d'Athènes : en pleine plage d'ouverture.
@@ -344,6 +344,8 @@ function matches(r: Row, [kind, col, val]: Filter): boolean {
     case "is": return val === null ? v == null : v === val;
     case "in": return (val as unknown[]).includes(v);
     case "notnull": return v != null;
+    case "lt": return v != null && String(v) < String(val);
+    case "gt": return v != null && String(v) > String(val);
     case "gte": return v != null && String(v) >= String(val);
     default: throw new Error(`filtre non simulé: ${kind}`);
   }
@@ -389,6 +391,8 @@ function fakeDb(seed: Record<string, Row[]>, opts: { fail?: (op: Op) => string |
         return chain;
       },
       gte(c: string, v: unknown) { op.filters.push(["gte", c, v]); return chain; },
+      lt(c: string, v: unknown) { op.filters.push(["lt", c, v]); return chain; },
+      gt(c: string, v: unknown) { op.filters.push(["gt", c, v]); return chain; },
       maybeSingle() { op.single = true; return Promise.resolve(run()); },
       then(res: (x: unknown) => unknown, rej?: (e: unknown) => unknown) { return Promise.resolve(run()).then(res, rej); },
     };
@@ -1067,6 +1071,21 @@ describe("après paiement", () => {
       expect(sendCarDepositMail).not.toHaveBeenCalled();
     });
 
+    it("prise de main de moins de 15 minutes : not_stuck, aucun appel Stripe", async () => {
+      fakeDb(seed(STUCK));
+      expect(await resumeClaimedRefund(25, CLAIM_MS + 5 * 60_000)).toBe("not_stuck");
+      expect(refundsList).not.toHaveBeenCalled();
+      expect(refundsCreate).not.toHaveBeenCalled();
+    });
+
+    it("base refuse l'inscription : l'alerte interdit d'écrire refund_id à la main", async () => {
+      fakeDb(seed(STUCK), { fail: (op) => (op.table === "car_requests" && op.kind === "update" ? "db down" : null) });
+      refundsList.mockResolvedValue({ data: [{ id: "re_9", status: "succeeded" }] });
+      expect(await resumeClaimedRefund(25, LATER)).toBe("refunded");
+      const alert = notifyOps.mock.calls.at(-1)![0] as { action: string };
+      expect(alert.action).toMatch(/ne rien écrire à la main/);
+    });
+
     it("échec : ops prévenu, ligne laissée telle quelle (aucun retour arrière)", async () => {
       const db = fakeDb(seed(STUCK));
       refundsCreate.mockRejectedValue(new Error("api down"));
@@ -1082,6 +1101,39 @@ describe("après paiement", () => {
       expect(await resumeClaimedRefund(25, LATER)).toBe("refunded");
       expect(await resumeClaimedRefund(25, LATER)).toBe("not_stuck");
       expect(mailsTo("marie@example.fr")).toHaveLength(1);
+    });
+  });
+
+  describe("remindPartner", () => {
+    const DUE = PAID_AT + 60 * 60_000;
+
+    it("rappel : lien reconstruit, e-mail au loueur, confirm_reminded_at écrit", async () => {
+      const db = fakeDb(seed(AWAITING));
+      expect(await remindPartner(25, DUE)).toBe("reminded");
+      expect(db.req().confirm_reminded_at).toBe(new Date(DUE).toISOString());
+      const mails = mailsTo("info@zorbas.gr");
+      expect(mails).toHaveLength(1);
+      expect(mails[0].html).toContain(partnerConfirmUrl(25, "pi_1"));
+    });
+
+    it("prise de main perdue (déjà rappelé) : 0 e-mail", async () => {
+      fakeDb(seed({ ...AWAITING, confirm_reminded_at: "2027-07-12T20:00:00.000Z" }));
+      expect(await remindPartner(25, DUE)).toBe("not_claimed");
+      expect(sendCarDepositMail).not.toHaveBeenCalled();
+    });
+
+    it("échéance passée : pas de rappel", async () => {
+      fakeDb(seed(AWAITING));
+      expect(await remindPartner(25, Date.parse(DEADLINE_ISO) + 1)).toBe("not_claimed");
+      expect(sendCarDepositMail).not.toHaveBeenCalled();
+    });
+
+    it("envoi refusé : ops prévenu avec le lien, rappel non retenté", async () => {
+      const db = fakeDb(seed(AWAITING));
+      sendCarDepositMail.mockResolvedValue(false);
+      expect(await remindPartner(25, DUE)).toBe("reminder_failed");
+      expect(JSON.stringify(notifyOps.mock.calls.at(-1))).toContain(partnerConfirmUrl(25, "pi_1"));
+      expect(db.req().confirm_reminded_at).not.toBeNull();
     });
   });
 
