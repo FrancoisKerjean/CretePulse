@@ -36,12 +36,15 @@ export interface CatalogueRequest {
   timeTo?: string | null;
 }
 
+const MAX_RATE_ROWS = 200;
+const MAX_SOURCE = 120;
+
 const round2 = (n: number): number => Math.round(n * 100) / 100;
 const DAY_MS = 86_400_000;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** ms UTC d'une date ISO réelle, null si format faux ou date impossible (2027-02-30). */
-function isoToUtc(s: string): number | null {
+export function isoToUtc(s: string): number | null {
   if (!ISO_DATE.test(s)) return null;
   const ms = Date.UTC(Number(s.slice(0, 4)), Number(s.slice(5, 7)) - 1, Number(s.slice(8, 10)));
   return new Date(ms).toISOString().slice(0, 10) === s ? ms : null;
@@ -111,7 +114,8 @@ export function depositEur(total: number, rate: number): number | null {
 export function validateRatesInput(
   raw: unknown,
 ): { ok: true; rows: RateRow[] } | { ok: false; errors: string[] } {
-  if (!Array.isArray(raw)) return { ok: false, errors: ["La grille doit être une liste de lignes."] };
+  if (!Array.isArray(raw)) return { ok: false, errors: ["The price grid must be a list of lines."] };
+  if (raw.length > MAX_RATE_ROWS) return { ok: false, errors: [`Too many lines (${MAX_RATE_ROWS} maximum).`] };
   const errors: string[] = [];
   const rows: RateRow[] = [];
   const ranges: { from: number; to: number }[] = [];
@@ -119,22 +123,22 @@ export function validateRatesInput(
   raw.forEach((item, idx) => {
     const n = idx + 1;
     const o = (item && typeof item === "object" ? item : {}) as Record<string, unknown>;
-    const err = (msg: string) => errors.push(`Ligne ${n} : ${msg}`);
+    const err = (msg: string) => errors.push(`Line ${n}: ${msg}`);
     const before = errors.length;
 
     const category = typeof o.category === "string" ? o.category : "";
-    if (!isCategory(category)) err("catégorie inconnue.");
+    if (!isCategory(category)) err("unknown category.");
 
     const from = typeof o.period_from === "string" ? isoToUtc(o.period_from) : null;
     const to = typeof o.period_to === "string" ? isoToUtc(o.period_to) : null;
-    if (from == null || to == null) err("date invalide (format AAAA-MM-JJ attendu).");
-    else if (from > to) err("période à l'envers.");
+    if (from == null || to == null) err("invalid date (format YYYY-MM-DD expected).");
+    else if (from > to) err("the period ends before it starts.");
 
     const minRaw = typeof o.min_days === "string" && o.min_days.trim() !== "" ? Number(o.min_days) : o.min_days;
-    if (typeof minRaw !== "number" || !Number.isInteger(minRaw) || minRaw < 1) err("palier minimum invalide (entier ≥ 1).");
+    if (typeof minRaw !== "number" || !Number.isInteger(minRaw) || minRaw < 1) err("invalid minimum days (whole number, 1 or more).");
 
     const eurRaw = typeof o.eur_per_day === "string" && o.eur_per_day.trim() !== "" ? Number(o.eur_per_day) : o.eur_per_day;
-    if (typeof eurRaw !== "number" || !Number.isFinite(eurRaw) || eurRaw <= 0 || eurRaw > 1000) err("prix par jour invalide (entre 0 et 1000 €).");
+    if (typeof eurRaw !== "number" || !Number.isFinite(eurRaw) || eurRaw <= 0 || eurRaw > 1000) err("invalid price per day (between 0 and 1000 EUR).");
 
     if (errors.length > before) return;
     rows.push({
@@ -143,7 +147,7 @@ export function validateRatesInput(
       period_to: o.period_to as string,
       min_days: minRaw as number,
       eur_per_day: eurRaw as number,
-      source: typeof o.source === "string" && o.source !== "" ? o.source : null,
+      source: typeof o.source === "string" && o.source !== "" ? o.source.slice(0, MAX_SOURCE) : null,
     });
     ranges.push({ from: from as number, to: to as number });
   });
@@ -154,9 +158,9 @@ export function validateRatesInput(
       const b = rows[j];
       if (a.category !== b.category) continue;
       if (a.period_from === b.period_from && a.min_days === b.min_days) {
-        errors.push(`Doublon : ${a.category}, début ${a.period_from}, palier ${a.min_days} jours.`);
+        errors.push(`Duplicate: ${a.category}, start ${a.period_from}, minimum ${a.min_days} days.`);
       } else if (a.min_days === b.min_days && ranges[i].from <= ranges[j].to && ranges[j].from <= ranges[i].to) {
-        errors.push(`Chevauchement : ${a.category}, palier ${a.min_days} jours, ${a.period_from} et ${b.period_from}.`);
+        errors.push(`Overlap: ${a.category}, minimum ${a.min_days} days, periods starting ${a.period_from} and ${b.period_from}.`);
       }
     }
   }
@@ -183,7 +187,7 @@ export function validateConditionsInput(
   raw: unknown,
 ): { ok: true; conditions: CatalogueConditions } | { ok: false; errors: string[] } {
   if (raw == null) return { ok: true, conditions: {} };
-  if (typeof raw !== "object" || Array.isArray(raw)) return { ok: false, errors: ["Conditions invalides."] };
+  if (typeof raw !== "object" || Array.isArray(raw)) return { ok: false, errors: ["Invalid conditions."] };
   const o = raw as Record<string, unknown>;
   const errors: string[] = [];
   const out: CatalogueConditions = {};
@@ -192,54 +196,54 @@ export function validateConditionsInput(
     if (v == null || v === "") return null;
     const n = typeof v === "string" ? Number(v) : v;
     if (typeof n !== "number" || !Number.isFinite(n) || n < 0 || n > MAX_MONEY) {
-      errors.push(`${label} : montant invalide (entre 0 et ${MAX_MONEY} €).`);
+      errors.push(`${label}: invalid amount (between 0 and ${MAX_MONEY} EUR).`);
       return undefined;
     }
     return n;
   };
   const text = (v: unknown, label: string): string | null | undefined => {
     if (v == null) return null;
-    if (typeof v !== "string") { errors.push(`${label} : texte attendu.`); return undefined; }
+    if (typeof v !== "string") { errors.push(`${label}: text expected.`); return undefined; }
     const t = v.trim();
-    if (t.length > MAX_TEXT) { errors.push(`${label} : ${MAX_TEXT} caractères maximum.`); return undefined; }
+    if (t.length > MAX_TEXT) { errors.push(`${label}: ${MAX_TEXT} characters maximum.`); return undefined; }
     return t || null;
   };
 
   if (o.models != null) {
-    if (typeof o.models !== "object" || Array.isArray(o.models)) errors.push("Modèles invalides.");
+    if (typeof o.models !== "object" || Array.isArray(o.models)) errors.push("Invalid models.");
     else {
       const models: NonNullable<CatalogueConditions["models"]> = {};
       for (const [cat, v] of Object.entries(o.models as Record<string, unknown>)) {
-        if (!isCategory(cat)) { errors.push(`Modèles : catégorie inconnue « ${cat} ».`); continue; }
+        if (!isCategory(cat)) { errors.push(`Models: unknown category "${cat}".`); continue; }
         const m = (v && typeof v === "object" ? v : {}) as Record<string, unknown>;
-        const model = text(m.model, `Modèle ${cat}`);
+        const model = text(m.model, `Model ${cat}`);
         const gb = m.gearbox ?? null;
-        if (gb !== null && gb !== "manual" && gb !== "automatic") { errors.push(`Modèle ${cat} : boîte invalide.`); continue; }
+        if (gb !== null && gb !== "manual" && gb !== "automatic") { errors.push(`Model ${cat}: invalid gearbox.`); continue; }
         if (model) models[cat] = { model, gearbox: gb };
       }
       out.models = models;
     }
   }
   if (o.inclusions != null) {
-    if (!Array.isArray(o.inclusions) || !o.inclusions.every(isInclusionKey)) errors.push("Inclusions inconnues.");
+    if (!Array.isArray(o.inclusions) || !o.inclusions.every(isInclusionKey)) errors.push("Unknown inclusions.");
     else out.inclusions = [...new Set(o.inclusions as string[])];
   }
-  if ("deposit_hold_eur" in o) { const v = money(o.deposit_hold_eur, "Caution"); if (v !== undefined) out.deposit_hold_eur = v; }
-  if ("child_seat_eur_day" in o) { const v = money(o.child_seat_eur_day, "Siège enfant"); if (v !== undefined) out.child_seat_eur_day = v; }
+  if ("deposit_hold_eur" in o) { const v = money(o.deposit_hold_eur, "Deposit"); if (v !== undefined) out.deposit_hold_eur = v; }
+  if ("child_seat_eur_day" in o) { const v = money(o.child_seat_eur_day, "Child seat"); if (v !== undefined) out.child_seat_eur_day = v; }
   if (o.delivery_fees != null) {
-    if (typeof o.delivery_fees !== "object" || Array.isArray(o.delivery_fees)) errors.push("Frais de livraison invalides.");
+    if (typeof o.delivery_fees !== "object" || Array.isArray(o.delivery_fees)) errors.push("Invalid delivery fees.");
     else {
       const fees: Record<string, number> = {};
       for (const [slug, v] of Object.entries(o.delivery_fees as Record<string, unknown>)) {
-        if (!PICKUP_SLUGS.includes(slug)) { errors.push(`Livraison : lieu inconnu « ${slug} ».`); continue; }
+        if (!PICKUP_SLUGS.includes(slug)) { errors.push(`Delivery: unknown pickup point "${slug}".`); continue; }
         if (v == null || v === "") continue;
-        const n = money(v, `Livraison ${slug}`);
+        const n = money(v, `Delivery ${slug}`);
         if (typeof n === "number") fees[slug] = n;
       }
       out.delivery_fees = fees;
     }
   }
-  if ("cancellation_terms" in o) { const v = text(o.cancellation_terms, "Annulation"); if (v !== undefined) out.cancellation_terms = v; }
+  if ("cancellation_terms" in o) { const v = text(o.cancellation_terms, "Cancellation terms"); if (v !== undefined) out.cancellation_terms = v; }
 
   return errors.length ? { ok: false, errors } : { ok: true, conditions: out };
 }

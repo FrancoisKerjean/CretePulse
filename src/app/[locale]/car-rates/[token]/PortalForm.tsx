@@ -6,12 +6,22 @@ import { CAR_CATEGORIES } from "@/lib/car-catalogue";
 import type { CatalogueConditions } from "@/lib/car-catalogue";
 import { CAR_INCLUSION_KEYS, CAR_INCLUSION_LABELS_PARTNER } from "@/lib/car-inclusions";
 import { CAR_ZONES } from "@/lib/car-partners";
-import { IDENTITY_FIELD_LABELS, IDENTITY_TEXT_FIELDS } from "@/lib/car-partner-identity";
+import { IDENTITY_TEXT_FIELDS } from "@/lib/car-partner-identity";
 
 export interface RateDraft { category: string; period_from: string; period_to: string; min_days: string; eur_per_day: string; source: string }
 
 const CATEGORY_LABEL: Record<string, string> = {
   city: "City car", compact: "Compact", sedan: "Sedan", automatic: "Automatic", suv: "SUV",
+};
+// Libellés anglais propres au portail (l'admin garde ses libellés français).
+const IDENTITY_LABEL_EN: Record<string, string> = {
+  legal_name: "Legal name",
+  legal_form: "Legal form",
+  address_line: "Address",
+  postal_code: "Postal code",
+  city: "City",
+  country: "Country",
+  vat_id: "VAT number (with country prefix)",
 };
 const PICKUPS = CAR_ZONES.flatMap((z) => z.pickups);
 const card = { background: "#fff", border: "1px solid #DCE9EE", borderRadius: 20, padding: "24px 22px", marginBottom: 20 } as const;
@@ -25,7 +35,7 @@ type Fee = { slug: string; eur: string };
 
 // Client : poste sur /api/car-rental/partner-portal (jeton en clair, depuis l'URL).
 export function PortalForm({
-  token, partnerName, identity, initialRates, initialConditions, status, pausedUntil, termsAccepted, termsVersion,
+  token, partnerName, identity, initialRates, initialConditions, status, suspended, fleetFullUntil, termsAccepted, termsVersion,
 }: {
   token: string;
   partnerName: string;
@@ -33,7 +43,8 @@ export function PortalForm({
   initialRates: RateDraft[];
   initialConditions: CatalogueConditions;
   status: string;
-  pausedUntil: string | null;
+  suspended: boolean;
+  fleetFullUntil: string | null;
   termsAccepted: boolean;
   termsVersion: string;
 }) {
@@ -54,7 +65,8 @@ export function PortalForm({
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; lines: string[] } | null>(null);
 
-  const patchRate = (i: number, up: Partial<RateDraft>) => setRates((cur) => cur.map((r, idx) => (idx === i ? { ...r, ...up } : r)));
+  // Une valeur modifiée n'a plus la provenance amorcée : on efface la source grise.
+  const patchRate = (i: number, up: Partial<RateDraft>) => setRates((cur) => cur.map((r, idx) => (idx === i ? { ...r, ...up, source: "" } : r)));
 
   async function call(body: Record<string, unknown>): Promise<{ ok: boolean; lines: string[] }> {
     try {
@@ -64,7 +76,7 @@ export function PortalForm({
       const json = await res.json().catch(() => ({}));
       if (res.ok) return { ok: true, lines: [] };
       if (Array.isArray(json.errors)) return { ok: false, lines: json.errors };
-      if (Array.isArray(json.missing)) return { ok: false, lines: [`Please complete your billing details first: ${json.missing.map((m: string) => IDENTITY_FIELD_LABELS[m] ?? m).join(", ")}.`] };
+      if (Array.isArray(json.missing)) return { ok: false, lines: [`Please complete your billing details first: ${json.missing.map((m: string) => IDENTITY_LABEL_EN[m] ?? m).join(", ")}.`] };
       return { ok: false, lines: [typeof json.error === "string" ? json.error : "Something went wrong, please try again."] };
     } catch {
       return { ok: false, lines: ["Network error, please try again."] };
@@ -98,7 +110,6 @@ export function PortalForm({
   const saveIdentity = { action: "save_identity", values: ident };
   const saveRates = { action: "save_rates", rows: ratesPayload(), conditions: conditionsPayload() };
   const hasRates = rates.length > 0;
-  const paused = status === "paused";
 
   return (
     <div>
@@ -107,9 +118,9 @@ export function PortalForm({
       <p style={{ margin: "0 0 20px", color: "#5C7886", fontSize: 14, lineHeight: 1.6 }}>
         Fill in your billing details, your price per day and your conditions. Once you accept the partner terms and publish,
         customers see your prices and can book. You can change everything here at any time.
-        Status: <strong>{status === "none" ? "not started" : status}</strong>
-        {status === "live" ? " (customers can see your prices)" : ""}
-        {paused && pausedUntil ? ` until ${pausedUntil}` : ""}.
+        Status: <strong>{suspended ? "suspended" : status === "none" ? "not started" : status}</strong>
+        {status === "live" && !suspended && !fleetFullUntil ? " (customers can see your prices)" : ""}
+        {fleetFullUntil ? ` (hidden until ${fleetFullUntil})` : ""}.
       </p>
 
       <section style={card}>
@@ -118,7 +129,7 @@ export function PortalForm({
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
           {IDENTITY_TEXT_FIELDS.map((f) => (
             <div key={f}>
-              <label style={label} htmlFor={`id-${f}`}>{IDENTITY_FIELD_LABELS[f].replace(/^./, (s) => s.toUpperCase())}</label>
+              <label style={label} htmlFor={`id-${f}`}>{IDENTITY_LABEL_EN[f]}</label>
               <input id={`id-${f}`} style={input} maxLength={200} value={ident[f] ?? ""} onChange={(e) => setIdent({ ...ident, [f]: e.target.value })} />
             </div>
           ))}
@@ -235,7 +246,7 @@ export function PortalForm({
           <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} /> I accept these terms
         </label>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-          <button type="button" disabled={busy || !agree || !hasRates} style={{ ...btn("#E2725B"), opacity: busy || !agree || !hasRates ? 0.5 : 1 }}
+          <button type="button" disabled={busy || !agree || !hasRates || suspended} style={{ ...btn("#E2725B"), opacity: busy || !agree || !hasRates || suspended ? 0.5 : 1 }}
             onClick={() => run([saveIdentity, saveRates, { action: "accept_terms", publish: true }], "Your prices are published.")}>
             Publish these prices
           </button>
@@ -248,9 +259,11 @@ export function PortalForm({
 
       <section style={card}>
         <h2 style={h2}>4. Fleet full</h2>
-        {paused ? (
+        {suspended ? (
+          <p style={{ margin: 0, color: "#991B1B", fontSize: 14 }}>Your prices are suspended, contact crete.direct.</p>
+        ) : fleetFullUntil ? (
           <>
-            <p style={{ margin: "0 0 10px", color: "#5C7886", fontSize: 14 }}>Your prices are hidden{pausedUntil ? ` until ${pausedUntil}` : ""}.</p>
+            <p style={{ margin: "0 0 10px", color: "#5C7886", fontSize: 14 }}>Fleet full until {fleetFullUntil}. Your prices are hidden until then.</p>
             <button type="button" disabled={busy} style={btn("#0B3954")} onClick={() => run([{ action: "resume" }], "Your prices are back.")}>Resume</button>
           </>
         ) : (

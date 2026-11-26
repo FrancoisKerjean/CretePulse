@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { partnerByPortalToken, ratesForPartner } from "@/lib/car-catalogue-db";
-import { CAR_TERMS_VERSION } from "@/lib/car-catalogue";
+import { CAR_TERMS_VERSION, isPartnerBookable } from "@/lib/car-catalogue";
+import { todayAthens } from "@/lib/car-partner-identity";
 import { PortalForm } from "./PortalForm";
 
 // Lien privé par loueur : jamais mis en cache (aucune écriture ISR), jamais indexé.
@@ -38,8 +39,9 @@ export default async function CarRatesPage({ params }: { params: Promise<{ local
         }))}
         initialConditions={partner.catalogue_conditions ?? {}}
         status={partner.rates_status}
-        pausedUntil={partner.rates_paused_until}
-        termsAccepted={partner.terms_version === CAR_TERMS_VERSION && !!partner.terms_accepted_at}
+        suspended={partner.rates_status === "paused"}
+        fleetFullUntil={partner.rates_paused_until && partner.rates_paused_until >= todayAthens() ? partner.rates_paused_until : null}
+        termsAccepted={isPartnerBookable(partner)}
         termsVersion={CAR_TERMS_VERSION}
       />
     </main>

@@ -109,7 +109,7 @@ const trim = (v: string | null | undefined): string => (typeof v === "string" ? 
  * numero. L equivalence est verrouillee par un test qui compare la valeur
  * stockee a celle rendue par `partnerBillingIdentity`.
  */
-const normalizeVat = (raw: string): string => trim(raw).replace(/\s+/g, "").toUpperCase();
+export const normalizeVat = (raw: string): string => trim(raw).replace(/\s+/g, "").toUpperCase();
 
 /**
  * Un numero de TVA a-t-il la forme d un identifiant intracommunautaire ?

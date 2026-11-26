@@ -146,22 +146,52 @@ describe("POST /api/car-rental/partner-portal", () => {
     expect(patches[0].vat_verified_at).toBe("2026-11-01");
   });
 
-  it("pause : date passée refusée, date valide écrit paused", async () => {
-    wiring();
-    expect((await POST(req({ token: "t", action: "pause", until: "2020-01-01" }) as never)).status).toBe(400);
-    expect((await POST(req({ token: "t", action: "pause", until: "pas-une-date" }) as never)).status).toBe(400);
+  it("pause : date invalide ou passée refusée (400), date valide n'écrit QUE rates_paused_until", async () => {
+    wiring({ ...PARTNER, rates_status: "live" });
+    for (const until of ["2020-01-01", "pas-une-date", "2027-13-01", "2027-02-30"]) {
+      expect((await POST(req({ token: "t", action: "pause", until }) as never)).status).toBe(400);
+    }
+    expect((await POST(req({ token: "t", action: "pause" }) as never)).status).toBe(400);
     expect(patches).toHaveLength(0);
     const ok = await POST(req({ token: "t", action: "pause", until: "2099-01-01" }) as never);
     expect(ok.status).toBe(200);
-    expect(patches[0]).toMatchObject({ rates_status: "paused", rates_paused_until: "2099-01-01" });
+    expect(patches[0]).toEqual({ rates_paused_until: "2099-01-01" });
   });
 
-  it("resume : live si conditions acceptées et grille, sinon draft", async () => {
-    wiring({ ...PARTNER, terms_version: "2027-01", terms_accepted_at: "2026-12-01T00:00:00Z", rates_status: "paused" }, [ROW]);
-    await POST(req({ token: "t", action: "resume" }) as never);
-    expect(patches[0]).toMatchObject({ rates_status: "live", rates_paused_until: null });
+  it("resume : efface seulement la date de pause", async () => {
+    wiring({ ...PARTNER, rates_status: "live", rates_paused_until: "2099-01-01" });
+    const res = await POST(req({ token: "t", action: "resume" }) as never);
+    expect(res.status).toBe(200);
+    expect(patches[0]).toEqual({ rates_paused_until: null });
+  });
+
+  it("publish pendant une suspension : 409 suspended, aucune écriture", async () => {
     wiring({ ...PARTNER, rates_status: "paused" }, [ROW]);
-    await POST(req({ token: "t", action: "resume" }) as never);
-    expect(patches[0]).toMatchObject({ rates_status: "draft", rates_paused_until: null });
+    const res = await POST(req({ token: "t", action: "accept_terms", publish: true }) as never);
+    expect(res.status).toBe(409);
+    expect((await res.json()).suspended).toBe(true);
+    expect(patches).toHaveLength(0);
+  });
+
+  it("save_rates vide sur une grille live : repasse en draft", async () => {
+    wiring({ ...PARTNER, rates_status: "live" });
+    await POST(req({ token: "t", action: "save_rates", rows: [], conditions: {} }) as never);
+    expect(patches[0].rates_status).toBe("draft");
+  });
+
+  it("plus de 200 lignes : 400", async () => {
+    wiring();
+    const rows = Array.from({ length: 201 }, () => ROW);
+    expect((await POST(req({ token: "t", action: "save_rates", rows, conditions: {} }) as never)).status).toBe(400);
+  });
+
+  it("erreur base sur la lecture du jeton : 500 JSON propre", async () => {
+    wiring();
+    db.partnerByPortalToken.mockRejectedValueOnce(new Error("db down"));
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await POST(req({ token: "t", action: "resume" }) as never);
+    expect(res.status).toBe(500);
+    expect((await res.json()).ok).toBe(false);
+    spy.mockRestore();
   });
 });

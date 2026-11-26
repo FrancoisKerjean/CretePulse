@@ -5,15 +5,11 @@ import { NextResponse, type NextRequest } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { assertWritten } from "@/lib/car-invoice-server";
 import { partnerBillingIdentity } from "@/lib/car-invoice";
-import { buildIdentityPatch, IDENTITY_TEXT_FIELDS, todayAthens, type IdentityTextField } from "@/lib/car-partner-identity";
-import { CAR_TERMS_VERSION, isPartnerBookable, validateConditionsInput, validateRatesInput } from "@/lib/car-catalogue";
+import { buildIdentityPatch, IDENTITY_TEXT_FIELDS, normalizeVat, todayAthens, type IdentityTextField } from "@/lib/car-partner-identity";
+import { CAR_TERMS_VERSION, isoToUtc, validateConditionsInput, validateRatesInput } from "@/lib/car-catalogue";
 import { partnerByPortalToken, ratesForPartner, replaceRates, type PortalPartner } from "@/lib/car-catalogue-db";
 
 export const dynamic = "force-dynamic";
-
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
-const isRealIsoDate = (s: unknown): s is string =>
-  typeof s === "string" && ISO_DATE.test(s) && new Date(`${s}T00:00:00Z`).toISOString().slice(0, 10) === s;
 
 async function patchPartner(op: string, id: number, patch: Record<string, unknown>): Promise<void> {
   const { error } = await supabaseAdmin.from("car_partners").update(patch).eq("id", id).select();
@@ -34,10 +30,10 @@ export async function POST(request: NextRequest) {
   }
   if (typeof body.token !== "string" || !body.token || typeof body.action !== "string") return bad("Invalid body");
 
-  const partner: PortalPartner | null = await partnerByPortalToken(body.token);
-  if (!partner) return bad("Not found", 404);
-
   try {
+    const partner: PortalPartner | null = await partnerByPortalToken(body.token);
+    if (!partner) return bad("Not found", 404);
+
     switch (body.action) {
       case "save_identity": {
         const input = (body.values && typeof body.values === "object" ? body.values : {}) as Record<string, unknown>;
@@ -45,8 +41,7 @@ export async function POST(request: NextRequest) {
         for (const f of IDENTITY_TEXT_FIELDS) values[f] = typeof input[f] === "string" ? (input[f] as string).slice(0, 200) : "";
         // Le loueur ne crée jamais d'attestation VIES : elle ne survit que si le
         // numéro de TVA est inchangé (même normalisation que le stockage).
-        const norm = (v: unknown) => (typeof v === "string" ? v.trim().replace(/\s+/g, "").toUpperCase() : "");
-        const unchanged = norm(values.vat_id) === norm(partner.vat_id);
+        const unchanged = normalizeVat(values.vat_id ?? "") === normalizeVat(partner.vat_id ?? "");
         const patch = buildIdentityPatch({
           values, vatVerified: unchanged && !!partner.vat_verified_at, current: partner, today: todayAthens(),
         });
@@ -61,7 +56,8 @@ export async function POST(request: NextRequest) {
         if (!rates.ok || !cond.ok) return NextResponse.json({ ok: false, errors }, { status: 400 });
         await replaceRates(partner.id, rates.rows);
         const patch: Record<string, unknown> = { catalogue_conditions: cond.conditions };
-        if (partner.rates_status === "none") patch.rates_status = "draft";
+        // Une grille vide ne peut pas être live ; un loueur qui commence passe en brouillon.
+        if (partner.rates_status === "none" || (partner.rates_status === "live" && rates.rows.length === 0)) patch.rates_status = "draft";
         await patchPartner("portal.save_rates", partner.id, patch);
         return ok();
       }
@@ -74,6 +70,8 @@ export async function POST(request: NextRequest) {
           terms_accepted_at: new Date().toISOString(),
         };
         if (body.publish === true) {
+          // Une suspension (ops ou 3 échecs) ne se lève pas depuis le portail.
+          if (partner.rates_status === "paused") return NextResponse.json({ ok: false, suspended: true, error: "Your prices are suspended, contact crete.direct." }, { status: 409 });
           if ((await ratesForPartner(partner.id)).length === 0) return bad("Add at least one price line first", 422);
           patch.rates_status = "live";
           patch.rates_published_at = new Date().toISOString();
@@ -83,17 +81,14 @@ export async function POST(request: NextRequest) {
       }
 
       case "pause": {
-        if (!isRealIsoDate(body.until) || body.until < todayAthens()) return bad("Invalid date");
-        await patchPartner("portal.pause", partner.id, { rates_status: "paused", rates_paused_until: body.until });
+        // « Fleet full until » : seule la date bouge, le statut reste (la date expire seule).
+        if (typeof body.until !== "string" || isoToUtc(body.until) == null || body.until < todayAthens()) return bad("Invalid date");
+        await patchPartner("portal.pause", partner.id, { rates_paused_until: body.until });
         return ok();
       }
 
       case "resume": {
-        const canBeLive = isPartnerBookable(partner) && (await ratesForPartner(partner.id)).length > 0;
-        await patchPartner("portal.resume", partner.id, {
-          rates_paused_until: null,
-          rates_status: canBeLive ? "live" : "draft",
-        });
+        await patchPartner("portal.resume", partner.id, { rates_paused_until: null });
         return ok();
       }
 

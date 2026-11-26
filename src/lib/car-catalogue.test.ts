@@ -105,7 +105,7 @@ describe("validateRatesInput", () => {
   it("rejects a duplicate key", () => {
     const r = validateRatesInput([ROW("2027-07-01", "2027-07-31", 3), ROW("2027-07-01", "2027-07-10", 3)]);
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.errors.join(" ")).toMatch(/doublon/i);
+    if (!r.ok) expect(r.errors.join(" ")).toMatch(/duplicate/i);
   });
   it("rejects an unknown category", () => {
     expect(validateRatesInput([ROW("2027-07-01", "2027-07-31", 3, { category: "van" })]).ok).toBe(false);
@@ -128,6 +128,19 @@ describe("validateRatesInput", () => {
   });
   it("rejects a non array input", () => {
     expect(validateRatesInput({}).ok).toBe(false);
+  });
+});
+
+describe("validateRatesInput, bornes et anglais", () => {
+  it("refuse plus de 200 lignes et plafonne source à 120 caractères", () => {
+    const many = Array.from({ length: 201 }, () => ({ category: "city", period_from: "2027-06-01", period_to: "2027-06-02", min_days: 1, eur_per_day: 30 }));
+    expect(validateRatesInput(many).ok).toBe(false);
+    const r = validateRatesInput([{ category: "city", period_from: "2027-06-01", period_to: "2027-06-02", min_days: 1, eur_per_day: 30, source: "x".repeat(300) }]);
+    expect(r.ok && r.rows[0].source?.length).toBe(120);
+  });
+  it("messages en anglais", () => {
+    const r = validateRatesInput([{ category: "boat" }]);
+    expect(!r.ok && r.errors.join(" ")).toMatch(/unknown category/);
   });
 });
 
