@@ -6,11 +6,20 @@ vi.mock("@/lib/supabase-admin", () => ({ supabaseAdmin: { from } }));
 const m = vi.hoisted(() => ({
   ensurePortalToken: vi.fn(),
   sendAgencyQuoteRequest: vi.fn(),
-  partnersForZone: vi.fn(),
+  partnersForZoneWithTerms: vi.fn(),
+  liveCataloguesForPartners: vi.fn(),
+  sendCustomerNewOffer: vi.fn(),
+  sendCustomerRequestReceived: vi.fn(),
+  notifyOps: vi.fn(),
+  inserts: [] as Array<{ table: string; row: Record<string, unknown> }>,
+  requestUpdates: [] as Array<Record<string, unknown>>,
 }));
-vi.mock("@/lib/car-catalogue-db", () => ({ ensurePortalToken: m.ensurePortalToken }));
-vi.mock("@/lib/car-partners-db", () => ({ partnersForZone: m.partnersForZone }));
-vi.mock("@/lib/ops-notify", () => ({ notifyOps: vi.fn(), echeance: () => "" }));
+vi.mock("@/lib/car-catalogue-db", () => ({
+  ensurePortalToken: m.ensurePortalToken,
+  partnersForZoneWithTerms: m.partnersForZoneWithTerms,
+  liveCataloguesForPartners: m.liveCataloguesForPartners,
+}));
+vi.mock("@/lib/ops-notify", () => ({ notifyOps: m.notifyOps, echeance: () => "" }));
 vi.mock("@/lib/car-quote", async (orig: () => Promise<Record<string, unknown>>) => ({
   ...(await orig()),
   siteBase: () => "https://crete.direct",
@@ -32,10 +41,23 @@ vi.mock("@/lib/email", () => ({
   sendAgencyQuoteRequest: m.sendAgencyQuoteRequest,
   sendCarLeadEmail: vi.fn(),
   sendLeadKamiSummary: vi.fn(),
-  sendCustomerRequestReceived: vi.fn(),
+  sendCustomerRequestReceived: m.sendCustomerRequestReceived,
+  sendCustomerNewOffer: m.sendCustomerNewOffer,
 }));
 
 import { POST } from "./route";
+
+const PARTNER = (extra: Record<string, unknown> = {}) => ({
+  id: 7, name: "Lux Trans", email: "l@example.com", phone: "1", whatsapp: null, lead_routing: "direct", min_days: null,
+  terms_version: "2027-01", terms_accepted_at: "2026-12-01T00:00:00Z",
+  default_insurance_type: "cdw_excess", default_excess_eur: 500, default_zero_excess_upsell_eur_day: 8,
+  ...extra,
+});
+// 7 jours de juin 2027, catégorie compact : 7 x 40 EUR
+const GRID = new Map([[7, {
+  rates: [{ category: "compact", period_from: "2027-06-01", period_to: "2027-06-30", min_days: 3, eur_per_day: 40 }],
+  conditions: { models: { compact: { model: "Fiat Panda", gearbox: "manual" } }, inclusions: ["cdw"], cancellation_terms: "Free until 48h" },
+}]]);
 
 function wiring() {
   from.mockImplementation((table: string) => {
@@ -43,14 +65,22 @@ function wiring() {
       return {
         select: () => ({ eq: () => ({ eq: () => ({ eq: () => ({ gte: () => ({ limit: async () => ({ data: [] }) }) }) }) }) }),
         insert: () => ({ select: () => ({ single: async () => ({ data: { id: 9 }, error: null }) }) }),
-        update: () => ({ eq: async () => ({ error: null }) }),
+        update: (u: Record<string, unknown>) => { m.requestUpdates.push(u); return { eq: async () => ({ error: null }) }; },
       };
     }
-    return { insert: async () => ({ error: null }) };
+    return {
+      insert: (row: Record<string, unknown>) => {
+        m.inserts.push({ table, row });
+        const res = { error: null, data: { id: 55 } };
+        return Object.assign(Promise.resolve(res), { select: () => ({ single: async () => res }) });
+      },
+    };
   });
-  m.partnersForZone.mockResolvedValue([
-    { id: 7, name: "Lux Trans", email: "l@example.com", phone: "1", whatsapp: null, lead_routing: "direct", min_days: null },
-  ]);
+  m.inserts.length = 0;
+  m.requestUpdates.length = 0;
+  delete process.env.CAR_CATALOGUE_ENABLED;
+  m.liveCataloguesForPartners.mockResolvedValue(new Map());
+  m.partnersForZoneWithTerms.mockResolvedValue([PARTNER()]);
   m.sendAgencyQuoteRequest.mockResolvedValue({});
 }
 
@@ -74,5 +104,49 @@ describe("POST /api/car-rental/submit : lien du portail", () => {
     expect(m.sendAgencyQuoteRequest).toHaveBeenCalledTimes(1);
     expect(m.sendAgencyQuoteRequest.mock.calls[0][3]).toBeUndefined();
     spy.mockRestore();
+  });
+});
+
+describe("POST /api/car-rental/submit : offres de grille", () => {
+  beforeEach(() => { vi.clearAllMocks(); wiring(); m.ensurePortalToken.mockResolvedValue("tok-7"); });
+  const call = async () => (await POST(req() as never)).json();
+
+  it("interrupteur éteint : aucune ligne de grille, pas d'offerUrl", async () => {
+    const json = await call();
+    expect(json).toEqual({ ok: true });
+    expect(m.inserts.some((i) => i.table === "car_quote_options")).toBe(false);
+    expect(m.liveCataloguesForPartners).not.toHaveBeenCalled();
+    expect(m.sendAgencyQuoteRequest).toHaveBeenCalledTimes(1);
+    expect(m.sendCustomerNewOffer).not.toHaveBeenCalled();
+  });
+
+  it("allumé + grille couvrante : offre instantanée, aucun devis demandé au loueur", async () => {
+    process.env.CAR_CATALOGUE_ENABLED = "on";
+    m.liveCataloguesForPartners.mockResolvedValue(GRID);
+    const json = await call();
+    expect(json.ok).toBe(true);
+    expect(json.offerUrl).toMatch(/^https:\/\/crete\.direct\/en\/car-offer\/.+/);
+    const invite = m.inserts.find((i) => i.table === "car_quote_invites")!.row;
+    expect(invite.status).toBe("quoted");
+    expect(invite.quote_price).toBe(280);
+    const opt = m.inserts.find((i) => i.table === "car_quote_options")!.row;
+    expect(opt).toMatchObject({ source: "catalogue", price: 280, car_model: "Fiat Panda", gearbox: "manual", note: "Free until 48h", currency: "EUR" });
+    expect(m.requestUpdates).toContainEqual({ status: "quoted" });
+    expect(m.sendAgencyQuoteRequest).not.toHaveBeenCalled();
+    expect(m.sendCustomerNewOffer).toHaveBeenCalledTimes(1);
+    expect(m.sendCustomerRequestReceived).not.toHaveBeenCalled();
+  });
+
+  it("allumé + loueur sans conditions 2027 : branche aucun loueur joignable", async () => {
+    process.env.CAR_CATALOGUE_ENABLED = "on";
+    m.partnersForZoneWithTerms.mockResolvedValue([PARTNER({ terms_version: null, terms_accepted_at: null })]);
+    m.liveCataloguesForPartners.mockResolvedValue(GRID);
+    const json = await call();
+    expect(json.ok).toBe(false);
+    expect(m.sendAgencyQuoteRequest).not.toHaveBeenCalled();
+    expect(m.inserts.some((i) => i.table === "car_quote_options")).toBe(false);
+    expect(m.requestUpdates).toContainEqual({ status: "email_failed" });
+    const msg = JSON.stringify(m.notifyOps.mock.calls[0][0]);
+    expect(msg).toContain("conditions 2027 non acceptées");
   });
 });

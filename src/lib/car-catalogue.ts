@@ -5,6 +5,7 @@
 import { rentalDays } from "./car-pricing";
 import { CAR_ZONES } from "./car-partners";
 import { isInclusionKey } from "./car-inclusions";
+import type { DbPartner } from "./car-partners-db";
 
 export const CAR_CATEGORIES = ["city", "compact", "sedan", "automatic", "suv"] as const;
 export type CarCategory = (typeof CAR_CATEGORIES)[number];
@@ -176,6 +177,61 @@ export function isPartnerBookable(p: {
   terms_accepted_at: string | null;
 }): boolean {
   return p.terms_version === CAR_TERMS_VERSION && !!p.terms_accepted_at;
+}
+
+export type PartnerWithTerms = DbPartner & {
+  terms_version: string | null;
+  terms_accepted_at: string | null;
+  default_insurance_type: string | null;
+  default_excess_eur: number | null;
+  default_zero_excess_upsell_eur_day: number | null;
+};
+
+export interface CatalogueOffer {
+  partnerId: number;
+  total: number;
+  carModel: string | null;
+  gearbox: string | null;
+  inclusions: string[];
+  insuranceType: string | null;
+  excessEur: number | null;
+  zeroExcessUpsellEurDay: number | null;
+  note: string | null;
+}
+
+/**
+ * Répartit les loueurs éligibles : offre instantanée (grille couvrante) ou
+ * demande de devis. Interrupteur éteint : tous en devis. Allumé : les loueurs
+ * non réservables et ceux en relais (aucun lien pour confirmer) sont exclus.
+ */
+export function planFanOut(input: {
+  enabled: boolean;
+  partners: PartnerWithTerms[];
+  catalogues: Map<number, { rates: RateRow[]; conditions: CatalogueConditions | null }>;
+  req: CatalogueRequest;
+}): { catalogue: CatalogueOffer[]; quote: number[] } {
+  if (!input.enabled) return { catalogue: [], quote: input.partners.map((p) => p.id) };
+  const catalogue: CatalogueOffer[] = [];
+  const quote: number[] = [];
+  for (const p of input.partners) {
+    if (!isPartnerBookable(p) || p.lead_routing === "relay") continue;
+    const cat = input.catalogues.get(p.id);
+    const q = cat ? catalogueQuote(cat.rates, cat.conditions, input.req) : null;
+    if (!cat || !q) { quote.push(p.id); continue; }
+    const model = isCategory(input.req.category) ? cat.conditions?.models?.[input.req.category] : undefined;
+    catalogue.push({
+      partnerId: p.id,
+      total: q.total,
+      carModel: model?.model ?? null,
+      gearbox: model?.gearbox ?? null,
+      inclusions: cat.conditions?.inclusions ?? [],
+      insuranceType: p.default_insurance_type,
+      excessEur: p.default_excess_eur,
+      zeroExcessUpsellEurDay: p.default_zero_excess_upsell_eur_day,
+      note: cat.conditions?.cancellation_terms ?? null,
+    });
+  }
+  return { catalogue, quote };
 }
 
 const PICKUP_SLUGS: string[] = CAR_ZONES.flatMap((z) => z.pickups);

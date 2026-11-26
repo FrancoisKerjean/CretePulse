@@ -5,7 +5,7 @@ import { assertWritten } from "./car-invoice-server";
 import { PARTNER_IDENTITY_COLS, type PartnerLegalRow } from "./car-invoice";
 import { newToken } from "./car-quote";
 import { todayAthens } from "./car-partner-identity";
-import type { CatalogueConditions, RateRow } from "./car-catalogue";
+import type { CatalogueConditions, PartnerWithTerms, RateRow } from "./car-catalogue";
 
 export type RatesStatus = "none" | "draft" | "live" | "paused";
 
@@ -121,4 +121,20 @@ export async function liveCataloguesForPartners(
     });
   }
   return out;
+}
+
+const TERMS_COLS =
+  "id, name, email, phone, whatsapp, zone_ids, commission, lead_routing, active, min_days, terms_version, terms_accepted_at, default_insurance_type, default_excess_eur, default_zero_excess_upsell_eur_day";
+
+/** Comme partnersForZone, avec les conditions 2027 et l'assurance par défaut (offres de grille). */
+export async function partnersForZoneWithTerms(zoneId: string): Promise<PartnerWithTerms[]> {
+  try {
+    const { data, error } = await supabaseAdmin.from("car_partners")
+      .select(TERMS_COLS).eq("active", true).contains("zone_ids", [zoneId]);
+    if (error) { console.error("[car-catalogue-db] partnersForZoneWithTerms:", error.message); return []; }
+    return (data ?? []) as PartnerWithTerms[];
+  } catch (e) {
+    console.error("[car-catalogue-db] partnersForZoneWithTerms (exception):", e instanceof Error ? e.message : e);
+    return [];
+  }
 }

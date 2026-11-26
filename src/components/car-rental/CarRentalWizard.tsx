@@ -491,6 +491,11 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
             source,
           },
         });
+        // Offre de grille immédiate : le voyageur va droit à sa page d'offres.
+        if (typeof json.offerUrl === "string" && json.offerUrl) {
+          window.location.assign(json.offerUrl);
+          return;
+        }
         setView("sent");
       } else if (res.ok && json?.ok === false && json.fallbackWhatsapp) {
         window.plausible?.("Car Wizard Submit", {

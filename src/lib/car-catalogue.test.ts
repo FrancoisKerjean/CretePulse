@@ -7,6 +7,7 @@ import {
   validateConditionsInput,
   CAR_TERMS_VERSION,
   validateRatesInput,
+  planFanOut,
   type RateRow,
 } from "./car-catalogue";
 
@@ -192,5 +193,38 @@ describe("validateConditionsInput", () => {
     expect(validateConditionsInput({ delivery_fees: { heraklion: "abc" } }).ok).toBe(false);
     expect(validateConditionsInput({ cancellation_terms: "x".repeat(301) }).ok).toBe(false);
     expect(validateConditionsInput({ models: { city: { model: "x".repeat(301), gearbox: null } } }).ok).toBe(false);
+  });
+});
+
+describe("planFanOut", () => {
+  const P = (id: number, extra: Record<string, unknown> = {}) => ({
+    id, name: `P${id}`, email: `p${id}@x.com`, phone: null, whatsapp: null, zone_ids: [], commission: 0.1,
+    lead_routing: "direct" as const, active: true, min_days: null,
+    terms_version: CAR_TERMS_VERSION, terms_accepted_at: "2026-12-01T00:00:00Z",
+    default_insurance_type: "cdw_excess", default_excess_eur: 500, default_zero_excess_upsell_eur_day: 8,
+    ...extra,
+  });
+  const cats = new Map([
+    [1, { rates: RATES, conditions: { models: { compact: { model: "Fiat Panda", gearbox: "manual" as const } }, inclusions: ["cdw"], cancellation_terms: "Free until 48h" } }],
+  ]);
+  const partners = [P(1), P(2), P(3, { terms_version: null, terms_accepted_at: null }), P(4, { lead_routing: "relay" })];
+
+  it("switch off: everything goes to quote", () => {
+    const r = planFanOut({ enabled: false, partners, catalogues: cats, req: REQ_7D });
+    expect(r.catalogue).toEqual([]);
+    expect(r.quote).toEqual([1, 2, 3, 4]);
+  });
+  it("switch on: grid covers -> catalogue, no grid -> quote, unbookable and relay excluded", () => {
+    const r = planFanOut({ enabled: true, partners, catalogues: cats, req: REQ_7D });
+    expect(r.catalogue).toEqual([{
+      partnerId: 1, total: 320, carModel: "Fiat Panda", gearbox: "manual", inclusions: ["cdw"],
+      insuranceType: "cdw_excess", excessEur: 500, zeroExcessUpsellEurDay: 8, note: "Free until 48h",
+    }]);
+    expect(r.quote).toEqual([2]);
+  });
+  it("switch on: a live grid that does not cover the request falls back to quote", () => {
+    const r = planFanOut({ enabled: true, partners: [P(1)], catalogues: cats, req: { ...REQ_7D, category: "suv" } });
+    expect(r.catalogue).toEqual([]);
+    expect(r.quote).toEqual([1]);
   });
 });

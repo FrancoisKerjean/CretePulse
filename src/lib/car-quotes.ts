@@ -71,6 +71,7 @@ export interface QuoteOption {
   zero_excess_upsell_eur_day: number | null; // surcoût /jour pour passer à zéro franchise
   note: string | null;          // mot du loueur au client (coordonnées déjà retirées)
   created_at: string | null;    // horodatage de l'option (pour l'expiry)
+  source: "quote" | "catalogue"; // devis du loueur ou offre calculée sur sa grille
 }
 
 /** Option normalisée prête à insérer (colonnes DB). */
