@@ -5,9 +5,18 @@
 // moment ou la chute Google du 19/07 est attribuee au volume declare au
 // sitemap. Les deux gardes ci-dessous sont donc du fond, pas du detail : elles
 // disent la decision, et la feront tomber si quelqu un la defait sans le savoir.
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { readFileSync } from "node:fs";
+vi.mock("next-intl/server", () => ({ setRequestLocale: () => {} }));
+import { renderToStaticMarkup } from "react-dom/server";
 import { generateMetadata } from "./page";
+import CarPartnerTermsPage from "./page";
+import { CAR_TERMS_VERSION } from "@/lib/car-catalogue";
+
+async function pageText(): Promise<string> {
+  const el = await CarPartnerTermsPage({ params: Promise.resolve({ locale: "en" }) });
+  return renderToStaticMarkup(el);
+}
 
 describe("car-partner-terms", () => {
   it("ne s indexe pas et ne transmet pas de jus de lien", async () => {
@@ -25,5 +34,29 @@ describe("car-partner-terms", () => {
   it("n est pas declaree au sitemap", () => {
     const sitemap = readFileSync("src/app/sitemap.xml/route.ts", "utf8");
     expect(sitemap).not.toContain("car-partner-terms");
+  });
+
+  it("affiche la version courante des conditions", async () => {
+    expect(CAR_TERMS_VERSION).toBe("2027-01");
+    expect(await pageText()).toContain(`Version ${CAR_TERMS_VERSION}`);
+  });
+
+  it("ne dit plus que le voyageur paie le loueur seul, ni que nous n annulons rien", async () => {
+    const html = await pageText();
+    expect(html).not.toContain("We do not sell, hold or cancel anything");
+    expect(html).not.toContain("the traveller pays you directly");
+  });
+
+  it("porte l acompte, la confirmation sous 4 heures et l annulation a 48 heures", async () => {
+    const html = await pageText();
+    expect(html).toContain("deposit");
+    expect(html).toContain("4 opening hours");
+    expect(html).toContain("48 hours");
+  });
+
+  it("ne contient aucun tiret cadratin ni mention de Kairos", async () => {
+    const html = await pageText();
+    expect(html).not.toContain(String.fromCharCode(8212));
+    expect(html).not.toMatch(/kairos/i);
   });
 });

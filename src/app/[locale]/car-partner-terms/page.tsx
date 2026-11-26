@@ -11,13 +11,14 @@
 //   liste y est explicite, une page nouvelle n y entre pas toute seule ;
 // - une seule URL se communique aux loueurs : /en/car-partner-terms.
 //
-// ⛔ Le contenu ne promet QUE ce qui existe aujourd hui. Le tunnel de paiement
-// en ligne est ecrit mais desarme (CAR_BOOKING_ENABLED absent) : la clause 4 dit
-// donc l etat actuel, et annonce que tout changement arrivera par ecrit AVANT,
-// jamais decouvert sur une reservation. C est exactement l engagement pris a
-// Zorbas le 30/07.
+// ⛔ Version 2027-01 : modele grille publiee + acompte en ligne garde comme
+// commission. La page est publique quel que soit l interrupteur du tunnel, et
+// lue AVANT sa mise en service : la phrase d en-tete dit que les conditions ne
+// s appliquent qu a partir de l acceptation sur la page privee du loueur.
+// La version affichee vient de CAR_TERMS_VERSION (src/lib/car-catalogue.ts).
 import { setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
+import { CAR_TERMS_VERSION } from "@/lib/car-catalogue";
 
 export const revalidate = 86400;
 
@@ -30,36 +31,48 @@ interface Clause {
 
 const TERMS: Clause[] = [
   {
-    title: "Requests, not subscriptions",
-    body: "A traveller describes the car they need: pick-up point, dates and times, category, number of passengers. Every partner covering that area receives the same request at the same time. You send your price in one click, or you pass. No subscription, no listing fee, no exclusivity, no dashboard to log into, and no penalty for passing on a request.",
+    title: "Requests, price grids and quotes",
+    body: "A traveller describes the car they need: pick-up point, dates and times, category, number of passengers. If you have published a price grid, your price for those dates is shown to the traveller straight away. If not, you receive the request and send a quote in one click, or you pass. No subscription, no listing fee, no exclusivity, and no penalty for passing on a request.",
   },
   {
-    title: "The traveller's contact details reach you only when they choose you",
-    body: "Until the traveller accepts your quote, you receive the booking details but never their name, email or phone number. This protects you as much as us: no partner can be approached behind another's back, and every quote is judged on the car and the price alone. The moment the traveller accepts, we introduce you both by email and step out of the conversation.",
+    title: "The traveller's contact details reach you only once you confirm",
+    body: "Until you confirm a booking, you receive its details but never the traveller's name, email or phone number, and the traveller never receives yours. This protects you as much as us: no partner can be approached behind another's back. When you confirm, we send each side the other's contact details, and we step out of the conversation.",
   },
   {
-    title: "The price you send is firm for those dates",
-    body: "Your quote is an all-inclusive total for the exact dates and times of the request, in euros, VAT included. We show the traveller what it works out to per day, and your quoted price is what they expect to pay at the counter. If a request is ambiguous, ask us before quoting: a price corrected after the traveller has seen it costs both of us more than a question.",
+    title: "Your published prices are binding",
+    body: "A published price is an all-inclusive total in euros, VAT included, for the dates and times of the booking. It binds you for every booking you confirm. The same applies to a quote you send by hand: the price is firm for those dates. Change your grid whenever you want: a change applies to new bookings only.",
   },
   {
-    title: "The traveller pays you directly",
-    body: "Today there is no online prepayment on crete.direct: the traveller pays you at pick-up, by your usual means, and you collect 100% of the rental. We never hold your money. If that ever changes, the new rules will be sent to you in writing before they apply, never discovered on a booking.",
+    title: "The online deposit: our mandate to collect it",
+    body: "The traveller pays an advance online when booking, called the deposit in these terms. It equals your commission rate (10% of the rental price unless agreed otherwise in writing). You give crete.direct a mandate to collect this deposit in your name and to keep it as payment of our commission. We hold nothing else of yours. If we refund the traveller, the deposit is not kept and no commission is due.",
   },
   {
-    title: "Commission: 10% of the rental, only on rentals that actually happen",
-    body: "Our fee is 10% of the quoted rental price, due only when the rental takes place. A cancelled booking, a no-show, or a request you passed on generates nothing. We invoice you once the rental has started; the invoice is payable on receipt by bank transfer or card. If a booking is cancelled after we have invoiced, tell us and we issue a credit note.",
+    title: "Commission: only on rentals that take place, or that are cancelled late",
+    body: "Our commission is your commission rate applied to the confirmed rental price (10% unless agreed otherwise in writing). It is due when the rental takes place, or when the traveller cancels late or does not show up (see point 8). We invoice you on the first day of the rental. The invoice is settled by offset against the deposit we already collected, so you pay nothing more. A booking that is declined, released or cancelled in time generates nothing.",
   },
   {
     title: "The invoice is intra-EU, so we need your VAT number",
     body: "We are a French company invoicing a Greek business, so the commission is an intra-EU supply of services under the reverse charge: no VAT is charged, and you account for it yourself. The invoice is only valid if it carries your VAT number, alongside your legal name and registered address. That is why we ask for those four items once, and why no invoice can be issued before we have them. They also feed the monthly EU recapitulative statement we are required to file.",
   },
   {
-    title: "Cancellations: your policy applies, ours does not exist",
-    body: "We do not sell, hold or cancel anything. Tell us your cancellation and no-show conditions once, in a line or two, and we show them to travellers before they choose you. Any booking cancelled by either side must be reported to us, and no commission is due on it.",
+    title: "Confirm or decline within 4 opening hours",
+    body: "When a traveller pays the deposit, you receive an email with the dates, pick-up point, category, total price and the amount to collect at the counter, with two buttons: Confirm and Not available. You have 4 opening hours to answer. Opening hours are 08:00 to 22:00, Athens time, counted from the payment. Example: a payment at 10:00 is due at 14:00 the same day, a payment at 21:30 is due at 11:30 the next day. With no answer, the booking is released and the traveller is refunded in full.",
+  },
+  {
+    title: "If the traveller cancels",
+    body: "Free up to 48 hours before pick-up: the deposit is refunded in full and no commission is due. Later than that, or if the traveller does not show up: we keep the deposit as commission and invoice it to you like a completed rental. We tell you when a traveller cancels.",
+  },
+  {
+    title: "If you cancel, or have no car at the counter",
+    body: "If you decline, let the deadline pass, cancel after confirming, or have no car at the counter, the traveller is refunded in full. If the commission invoice was already issued, we issue a credit note. Three such failures within 30 days (declined, timed out or cancelled after confirmation) suspend your published prices until we have spoken.",
+  },
+  {
+    title: "At the counter",
+    body: "You collect the rest of the rental price at the counter: the confirmed price minus the deposit (90% with a 10% deposit). You charge nothing else than the options the traveller chooses on site. Charging more than the confirmed price at the counter means exclusion from crete.direct. If the rental ends up shorter or longer, our commission does not change: it is based on the confirmed price.",
   },
   {
     title: "No exclusivity, leave whenever you want",
-    body: "Either side can end this by a single email, with no notice and no penalty. Requests already accepted are honoured, and commission already due on completed rentals remains payable. Your coverage area is yours to define, and to change at any time: tell us and we stop sending requests outside it.",
+    body: "Either side can end this by a single email, with no notice and no penalty. Bookings already confirmed are honoured, and commission already due remains payable. Your coverage area is yours to define, and to change at any time: tell us and we stop sending requests outside it.",
   },
 ];
 
@@ -75,7 +88,7 @@ export async function generateMetadata({
   return {
     title: "Car rental partner terms · crete.direct",
     description:
-      "How the crete.direct car rental partnership works: you quote or pass, the traveller pays you directly, 10% commission only on rentals that actually happen.",
+      "How the crete.direct car rental partnership works: published prices, an online deposit kept as commission, confirmation within 4 opening hours, the rest paid at the counter.",
     robots: { index: false, follow: false },
     alternates: { canonical: `https://crete.direct/${locale}/car-partner-terms` },
   };
@@ -94,13 +107,17 @@ export default async function CarPartnerTermsPage({
       <article className="mx-auto max-w-3xl px-4 py-12">
         <header className="mb-10">
           <p className="text-xs font-semibold uppercase tracking-widest text-sea">
-            crete.direct · Car rental partner terms · v1, August 2026
+            crete.direct · Car rental partner terms · {`Version ${CAR_TERMS_VERSION}`}
           </p>
           <h1 className="mb-4 mt-2 text-3xl font-bold text-sea">How the partnership works</h1>
           <p className="max-w-2xl text-text">
             crete.direct sends car rental requests from travellers to local agencies in Crete, and
-            introduces the two sides once the traveller has chosen a quote. Eight points, and
+            introduces the two sides once the booking is confirmed. {TERMS.length} points, and
             nothing hidden behind them.
+          </p>
+          <p className="mt-3 max-w-2xl text-sm text-text">
+            These terms apply to bookings made through crete.direct from the date you accept them
+            on your partner page.
           </p>
         </header>
 
@@ -155,7 +172,7 @@ export default async function CarPartnerTermsPage({
             France. Commission invoices are issued by NovAI SAS.
           </p>
           <p className="mt-2">
-            These terms apply to requests sent from the date above. Any change is sent to active
+            Any change is sent to active
             partners by email before it takes effect. Questions:{" "}
             <a href={`mailto:${CONTACT}`} className="font-semibold text-sea hover:underline">
               {CONTACT}
