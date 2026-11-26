@@ -133,7 +133,8 @@ export default async function CarRentalPage(
 
         {/* Île client : useSearchParams() exige un boundary Suspense (Next 16) */}
         <Suspense fallback={null}>
-          <CarRentalWizard locale={locale} servedZones={servedZones} />
+          {/* Interrupteur lu au rendu serveur ; un changement de variable passe par un redéploiement. */}
+          <CarRentalWizard locale={locale} servedZones={servedZones} depositOn={process.env.CAR_CATALOGUE_ENABLED === "on"} />
         </Suspense>
 
         <section className="mt-12">

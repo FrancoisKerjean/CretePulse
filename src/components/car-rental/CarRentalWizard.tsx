@@ -90,6 +90,8 @@ type Strings = {
   sending: string;
   sentTitle: string;
   sentBody: string; // {partner}
+  /** Interrupteur allumé : même écran, sans promettre « aucun prépaiement ». */
+  sentBodyDeposit: string;
   fallbackTitle: string;
   fallbackBody: string;
   whatsappCta: string;
@@ -146,6 +148,7 @@ const T: Record<string, Strings> = {
     sending: "Sending…",
     sentTitle: "Request sent",
     sentBody: "Request sent. Local rental agencies are preparing their price · you'll get the best offer by email shortly. No prepayment.",
+    sentBodyDeposit: "Request sent. Local rental agencies are preparing their price · you'll get the best offer by email shortly. If you choose an offer bookable online, a 10% deposit books the car and you pay the rest at pick-up.",
     fallbackTitle: "The email didn't go through",
     fallbackBody: "Our email to the agency failed. Reach them directly on WhatsApp · your request is ready to send.",
     whatsappCta: "Open WhatsApp",
@@ -199,6 +202,7 @@ const T: Record<string, Strings> = {
     sending: "Envoi…",
     sentTitle: "Demande envoyée",
     sentBody: "Demande envoyée. Les agences locales préparent leur prix : vous recevrez la meilleure offre par email très vite. Aucun prépaiement.",
+    sentBodyDeposit: "Demande envoyée. Les agences locales préparent leur prix : vous recevrez la meilleure offre par email très vite. Si vous choisissez une offre réservable en ligne, un acompte de 10\u00a0% réserve la voiture et vous réglez le reste à la prise du véhicule.",
     fallbackTitle: "L'email n'est pas parti",
     fallbackBody: "Notre email vers l'agence a échoué. Contactez-la directement sur WhatsApp : votre demande est prête à envoyer.",
     whatsappCta: "Ouvrir WhatsApp",
@@ -252,6 +256,7 @@ const T: Record<string, Strings> = {
     sending: "Wird gesendet…",
     sentTitle: "Anfrage gesendet",
     sentBody: "Anfrage gesendet. Lokale Autovermietungen bereiten ihren Preis vor · Sie erhalten das beste Angebot in Kürze per E-Mail. Keine Vorauszahlung.",
+    sentBodyDeposit: "Anfrage gesendet. Lokale Autovermietungen bereiten ihren Preis vor · Sie erhalten das beste Angebot in Kürze per E-Mail. Wählen Sie ein online buchbares Angebot, sichert eine Anzahlung von 10\u00a0% das Auto, den Rest zahlen Sie bei der Abholung.",
     fallbackTitle: "E-Mail nicht zugestellt",
     fallbackBody: "Unsere E-Mail an die Agentur ist fehlgeschlagen. Kontaktieren Sie sie direkt per WhatsApp · Ihre Anfrage ist vorbereitet.",
     whatsappCta: "WhatsApp öffnen",
@@ -305,6 +310,7 @@ const T: Record<string, Strings> = {
     sending: "Αποστολή…",
     sentTitle: "Το αίτημα στάλθηκε",
     sentBody: "Το αίτημα στάλθηκε. Τα τοπικά γραφεία ετοιμάζουν την τιμή τους · θα λάβετε σύντομα την καλύτερη προσφορά με email. Καμία προπληρωμή.",
+    sentBodyDeposit: "Το αίτημα στάλθηκε. Τα τοπικά γραφεία ετοιμάζουν την τιμή τους · θα λάβετε σύντομα την καλύτερη προσφορά με email. Αν επιλέξετε προσφορά με online κράτηση, μια προκαταβολή 10% κλείνει το αυτοκίνητο και το υπόλοιπο το πληρώνετε κατά την παραλαβή.",
     fallbackTitle: "Το email δεν στάλθηκε",
     fallbackBody: "Το email προς το γραφείο απέτυχε. Επικοινωνήστε απευθείας μέσω WhatsApp · το αίτημά σας είναι έτοιμο για αποστολή.",
     whatsappCta: "Άνοιγμα WhatsApp",
@@ -334,9 +340,17 @@ type CarRentalWizardProps = {
   initialPickup?: string;
   /** Source d'attribution par défaut de la page hôte (ex : landing-chania-airport), supplantée par ?source=. */
   initialSource?: string;
+  /**
+   * Interrupteur CAR_CATALOGUE_ENABLED, lu par la page serveur (jamais d'env
+   * côté client). Allumé, l'écran d'envoi annonce l'acompte au lieu de
+   * « aucun prépaiement ».
+   */
+  depositOn?: boolean;
 };
 
-export function CarRentalWizard({ locale, servedZones, initialPickup: initialPickupProp, initialSource }: CarRentalWizardProps) {
+export function CarRentalWizard({
+  locale, servedZones, initialPickup: initialPickupProp, initialSource, depositOn = false,
+}: CarRentalWizardProps) {
   const t = T[locale] || T.en;
   const sp = useSearchParams();
 
@@ -593,7 +607,7 @@ export function CarRentalWizard({ locale, servedZones, initialPickup: initialPic
         <CiMark className="w-12 h-12 text-lagoon-deep mx-auto" />
         <h2 className="mt-4 font-heading font-extrabold text-2xl text-text">{t.sentTitle}</h2>
         <p className="mt-2 text-[15px] text-text-muted max-w-xl mx-auto">
-          {t.sentBody}
+          {depositOn ? t.sentBodyDeposit : t.sentBody}
         </p>
         <div className="max-w-sm mx-auto">{recap}</div>
       </div>

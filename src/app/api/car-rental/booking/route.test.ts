@@ -59,6 +59,8 @@ function wiring(opts: {
   row?: Partial<typeof ROW> | null;
   lockRows?: unknown[];
   sessionWriteError?: { message: string } | null;
+  /** Lignes rendues par l'écriture de l'identifiant de session (0 : verrou perdu entre-temps). */
+  sessionWriteRows?: unknown[];
   /** Hash relu après un verrou perdu : un autre onglet a pu changer d'offre. */
   rereadHash?: string;
   /** Lignes libérées par onDepositSessionExpired. */
@@ -91,7 +93,7 @@ function wiring(opts: {
             // Verrou relâché après une panne.
             if (patch.booking_status === null) return { data: [{ id: 25 }], error: opts.releaseError ?? null };
             // Identifiant de la nouvelle session.
-            return { data: [{ id: 25 }], error: opts.sessionWriteError ?? null };
+            return { data: opts.sessionWriteRows ?? [{ id: 25 }], error: opts.sessionWriteError ?? null };
           },
         };
         return chain;
@@ -340,6 +342,32 @@ describe("POST /api/car-rental/booking (acompte)", () => {
     expect(json).not.toHaveProperty("url");
     expect(sessionsExpire).toHaveBeenCalledWith("cs_live_d1");
     expect(w.updates.some((u) => u.patch.booking_status === null)).toBe(true);
+    errSpy.mockRestore();
+  });
+
+  it("identifiant de session écrit sous condition : notre verrou, encore sans session", async () => {
+    const w = wiring();
+    await POST(req({ token: "t" }) as never);
+    const write = w.updates.find((u) => u.patch.booking_session_id === "cs_live_d1");
+    expect(write?.filters).toContainEqual(["eq", "id", 25]);
+    expect(write?.filters).toContainEqual(["eq", "booking_status", "pending_payment"]);
+    expect(write?.filters).toContainEqual(["is", "booking_session_id", null]);
+  });
+
+  it("verrou perdu avant l'écriture de la session (0 ligne) : session fermée, 503, l'état d'un autre n'est pas touché", async () => {
+    // Le cron a pu libérer le verrou (35 min) et un autre onglet le reprendre :
+    // l'identifiant n'est pas écrit sur son verrou, et on ne le relâche pas.
+    const w = wiring({ sessionWriteRows: [] });
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await POST(req({ token: "t" }) as never);
+
+    expect(res.status).toBe(503);
+    const json = await res.json();
+    expect(json.code).toBe("payment_provider");
+    expect(json).not.toHaveProperty("url");
+    expect(sessionsExpire).toHaveBeenCalledWith("cs_live_d1");
+    expect(w.updates.some((u) => u.patch.booking_status === null)).toBe(false);
     errSpy.mockRestore();
   });
 

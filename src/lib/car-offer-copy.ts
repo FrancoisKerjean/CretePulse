@@ -1,6 +1,6 @@
-// Shared copy for the car-rental offer: used by BOTH the customer email and the offer page.
-// Source of truth: values were verified in src/lib/email.ts QUOTE_COPY.
-// DO NOT edit strings here without updating both surfaces.
+// Textes de l'offre de location, lus par la page d'offres seule. L'e-mail
+// « nouvelle offre » (sendCustomerNewOffer) n'en reprend rien, et surtout pas
+// `reassure` ni `steps` : email-new-offer.test.ts le vérifie.
 
 export interface SharedOfferCopy {
   offerFrom: string;

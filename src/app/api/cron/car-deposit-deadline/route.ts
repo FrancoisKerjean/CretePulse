@@ -50,9 +50,8 @@ export async function GET(req: NextRequest) {
   const nowIso = new Date(nowMs).toISOString();
   const counts = { released: 0, reminded: 0, resumed: 0, reconciled: 0, unlocked: 0, failed: 0 };
 
-  // Une ligne qui lève ne doit pas arrêter les suivantes : comptée, signalée.
-  const fail = async (what: string, id: number, err: unknown) => {
-    counts.failed++;
+  // Prévient ops sans compter : sert aussi à une étape déjà comptée en failed.
+  const report = async (what: string, id: number, err: unknown) => {
     console.error(`[cron/car-deposit-deadline] ${what}`, id, err);
     await notifyOps({
       title: `Acompte voiture : échéance non traitée (${what})`,
@@ -60,6 +59,11 @@ export async function GET(req: NextRequest) {
       action: "le prochain passage (15 min) retentera ; sinon voir l'admin",
       url: ADMIN_URL,
     });
+  };
+  // Une ligne qui lève ne doit pas arrêter les suivantes : comptée, signalée.
+  const fail = async (what: string, id: number, err: unknown) => {
+    counts.failed++;
+    await report(what, id, err);
   };
 
   const table = () => supabaseAdmin.from("car_requests");
@@ -131,11 +135,18 @@ export async function GET(req: NextRequest) {
       try {
         const out = await reconcilePendingDeposit(r.id, r.booking_session_id as string, nowMs);
         if (out.state === "paid" || out.state === "released") counts.reconciled++;
-        // Stripe illisible : rien écrit, le passage suivant retente. Au-delà
-        // d'une heure de refus, une alerte ops, une seule (alertUnreadableDeposit).
+        // Stripe illisible : rien écrit, le passage suivant retente. Paiement
+        // ouvert depuis plus d'1 h (2 passages ratés au minimum) : une alerte
+        // ops, une seule (alertUnreadableDeposit).
         else if (out.state === "unreadable") {
           counts.failed++;
-          await alertUnreadableDeposit(r.id, r.booking_session_id as string, nowMs);
+          // Passage déjà compté : une panne de l'alerte n'est ni recomptée, ni
+          // prise pour une panne du rapprochement.
+          try {
+            await alertUnreadableDeposit(r.id, r.booking_session_id as string, nowMs);
+          } catch (err) {
+            await report("alerte « Stripe illisible »", r.id, err);
+          }
         }
       } catch (err) {
         await fail("rapprochement", r.id, err);

@@ -616,16 +616,19 @@ export async function reconcilePendingDeposit(
   return (await onDepositSessionExpired(requestId, sessionId)) ? { state: "released" } : { state: "unchanged" };
 }
 
-/** Âge du verrou au-delà duquel une session illisible n'est plus un incident passager (~4 passages du cron). */
+/** Âge du verrou au-delà duquel une session illisible n'est plus un incident passager (2 passages ratés au minimum). */
 const UNREADABLE_ALERT_AGE_MS = 60 * 60_000;
 
 /**
  * Session de paiement que Stripe refuse de lire de façon durable. Le cron
  * l'appelle à chaque passage où le rapprochement rend « illisible ».
  *
- * Le compteur de passages ratés est l'âge du verrou (booking_locked_at) : une
- * session lisible est tranchée par le rapprochement dès 35 min, une demande
- * encore en attente après 1 h a donc vu environ 4 passages ratés. Prise de
+ * Le compteur de passages ratés est l'âge du verrou (booking_locked_at). Une
+ * session lisible est tranchée par le rapprochement vers 35 min (31 min si elle
+ * a échu, 35 min si elle est payée). Une demande encore en attente au-delà
+ * d'1 h a donc raté chaque passage tombé entre 35 min et 1 h : un au moins avec
+ * le cron toutes les 15 min, plus celui de l'alerte. Soit 2 passages ratés au
+ * minimum, davantage si Stripe refusait la session dès le début. Prise de
  * main : booking_locked_at remis à null sous condition (même session, verrou
  * de plus d'une heure) ; seul l'appel qui écrit la ligne prévient ops, une
  * seule fois. Rien d'autre ne bouge : le rapprochement continue à chaque
@@ -634,7 +637,7 @@ const UNREADABLE_ALERT_AGE_MS = 60 * 60_000;
  *
  * Lève quand la base refuse.
  */
-// SHORTCUT: l'âge du verrou tient lieu de compteur de passages ratés (la migration n'ajoute qu'une colonne), une session lisible puis illisible au-delà d'1 h sonne au 1er échec ; passer à un vrai compteur si une alerte part sur une session qui n'a raté qu'un passage.
+// SHORTCUT: l'âge du verrou tient lieu de compteur de passages ratés (la migration n'ajoute qu'une colonne) : l'alerte peut partir après 2 passages ratés, pas 4, et une session restée lisible mais en attente au-delà d'1 h sonne dès son 1er échec ; passer à un vrai compteur si une alerte part sur une session que Stripe ne refusait que depuis un ou deux passages.
 export async function alertUnreadableDeposit(requestId: number, sessionId: string, nowMs: number): Promise<boolean> {
   const { data, error } = await supabaseAdmin
     .from("car_requests")
@@ -647,7 +650,7 @@ export async function alertUnreadableDeposit(requestId: number, sessionId: strin
   assertWritten("alertUnreadableDeposit", requestId, error);
   if ((data?.length ?? 0) !== 1) return false;
   await notifyOps({
-    title: "Acompte voiture : Stripe ne lit plus la session de paiement depuis plus d'une heure",
+    title: "Acompte voiture : Stripe ne lit plus une session de paiement ouverte depuis plus d'une heure",
     lines: [
       `demande ${requestId}, session ${sessionId}`,
       "la demande reste en pending_payment : ni enregistrée comme payée, ni libérée",

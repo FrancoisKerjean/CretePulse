@@ -162,7 +162,7 @@ describe("GET /api/cron/car-deposit-deadline", () => {
     reconcilePendingDeposit.mockResolvedValue({ state: "unreadable" });
     const body = await (await GET(req("s3cret"))).json();
     expect(body).toMatchObject({ reconciled: 0, failed: 1 });
-    // Une heure de refus : alertUnreadableDeposit prévient ops, une seule fois.
+    // Paiement ouvert depuis plus d'1 h : alertUnreadableDeposit prévient ops, une seule fois.
     expect(alertUnreadableDeposit).toHaveBeenCalledWith(3, "cs_3", NOW);
     expect(notifyOps).not.toHaveBeenCalled();
   });
@@ -177,6 +177,18 @@ describe("GET /api/cron/car-deposit-deadline", () => {
     reconcilePendingDeposit.mockResolvedValue(outcome);
     await GET(req("s3cret"));
     expect(alertUnreadableDeposit).not.toHaveBeenCalled();
+  });
+
+  it("alerte durable qui lève (base) : comptée une fois, ops prévenu au nom de l'alerte, la ligne suivante passe", async () => {
+    rows = [pending(3, "cs_3"), pending(4, "cs_4")];
+    reconcilePendingDeposit.mockResolvedValueOnce({ state: "unreadable" }).mockResolvedValueOnce({ state: "released" });
+    alertUnreadableDeposit.mockRejectedValueOnce(new Error("base down"));
+    const body = await (await GET(req("s3cret"))).json();
+    expect(body).toMatchObject({ reconciled: 1, failed: 1 });
+    expect(notifyOps).toHaveBeenCalledTimes(1);
+    const title = String((notifyOps.mock.calls[0] as unknown as [{ title: string }])[0].title);
+    expect(title).toMatch(/alerte/i);
+    expect(title).not.toMatch(/rapprochement/);
   });
 
   it("rapprochement qui lève (base) : compté, ops prévenu, la ligne suivante passe", async () => {

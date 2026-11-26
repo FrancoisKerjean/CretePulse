@@ -932,7 +932,7 @@ describe("après paiement", () => {
       ...over,
     });
 
-    it("verrou de plus d'une heure (environ 4 passages ratés) : une alerte, la demande reste en attente", async () => {
+    it("verrou de plus d'une heure (2 passages ratés au minimum) : une alerte, la demande reste en attente", async () => {
       const db = fakeDb(seed(pendingSince(70)));
       expect(await alertUnreadableDeposit(25, "cs_1", PAID_AT)).toBe(true);
       expect(db.req()).toMatchObject({ booking_status: "pending_payment", booking_session_id: "cs_1", status: "quoted" });

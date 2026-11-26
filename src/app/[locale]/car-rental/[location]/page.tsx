@@ -254,6 +254,7 @@ export default async function CarLocationPage(
             servedZones={servedZones}
             initialPickup={loc.pickup}
             initialSource={`landing-${loc.slug}`}
+            depositOn={process.env.CAR_CATALOGUE_ENABLED === "on"}
           />
         </Suspense>
 

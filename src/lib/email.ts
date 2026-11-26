@@ -1,9 +1,8 @@
 import { unsubscribeToken } from "@/lib/newsletter-token";
 import { Resend } from "resend";
 import { buildCarWaMessage, waHref } from "./car-admin";
-import { inclusionLabels, insuranceSummary } from "@/lib/car-inclusions";
+import { insuranceSummary } from "@/lib/car-inclusions";
 import { CAR_CHILD_SEAT_LABELS_PARTNER, type CarChildSeatKey } from "@/lib/car-child-seats";
-import { sharedOfferCopy } from "@/lib/car-offer-copy";
 import { affiliateClass } from "@/lib/affiliate";
 import { assertSent, reportSend } from "./resend-response";
 import {
@@ -699,7 +698,7 @@ export async function sendLeadKamiSummary(lead: CarLead, partnerNames: string[])
   } catch (e) { console.error("[sendLeadKamiSummary] échec:", e); }
 }
 
-// ── Devis voiture : prix au client + mise en relation ──────────────────────
+// ── Devis voiture : mise en relation après acceptation ─────────────────────
 
 export interface CarQuoteInfo {
   pickupLabel: string; dateFrom: string; dateTo: string; carTypeLabel: string;
@@ -725,69 +724,6 @@ export interface CarQuoteInfo {
 
 const money = (price: number, currency: string): string =>
   currency === "EUR" ? `€${price}` : `${price} ${currency}`;
-
-const QUOTE_SUBJECT: Record<string, string> = {
-  en: "Your car rental quote for Crete",
-  fr: "Votre devis de location de voiture en Crète",
-  de: "Ihr Mietwagen-Angebot für Kreta",
-  el: "Η προσφορά ενοικίασης αυτοκινήτου στην Κρήτη",
-};
-
-const QUOTE_COPY: Record<string, {
-  intro: string; details: string; cta: string; foot: string;
-}> = {
-  en: {
-    intro: "Good news, we received a price for your car rental request.", details: "Your request", cta: "Accept this offer", foot: "Accept and we connect you directly with the rental agency to finalise. Didn't request this? Just ignore this email.",
-  },
-  fr: {
-    intro: "Bonne nouvelle, nous avons reçu un prix pour votre demande de location de voiture.", details: "Votre demande", cta: "Accepter cette offre", foot: "En acceptant, nous vous mettons directement en relation avec l'agence de location pour finaliser. Vous n'êtes pas à l'origine de cette demande ? Ignorez cet email.",
-  },
-  de: {
-    intro: "Gute Nachrichten, wir haben einen Preis für Ihre Mietwagenanfrage erhalten.", details: "Ihre Anfrage", cta: "Angebot annehmen", foot: "Nach der Annahme verbinden wir Sie direkt mit der Autovermietung. Keine Anfrage gestellt? Ignorieren Sie diese E-Mail.",
-  },
-  el: {
-    intro: "Καλά νέα, λάβαμε μια τιμή για το αίτημα ενοικίασης αυτοκινήτου σας.", details: "Το αίτημά σας", cta: "Αποδοχή προσφοράς", foot: "Με την αποδοχή, σας συνδέουμε απευθείας με το γραφείο ενοικίασης. Δεν κάνατε εσείς το αίτημα; Αγνοήστε αυτό το email.",
-  },
-};
-
-/** Email HTML au client avec le prix soumis par le loueur + bouton d'acceptation. */
-export async function sendCustomerQuoteEmail(opts: {
-  email: string; locale: string; customerName: string; acceptUrl: string; quote: CarQuoteInfo;
-}) {
-  const l = QUOTE_SUBJECT[opts.locale] ? opts.locale : "en";
-  const c = { ...QUOTE_COPY[l], ...sharedOfferCopy(l) };
-  const q = opts.quote;
-  const perDay = q.days > 0 ? Math.round(q.price / q.days) : q.price;
-  const incl = inclusionLabels(q.inclusions, l);
-  const inner = `
-  <p style="margin:0 0 6px; color:${C.text}; font-size:18px; font-weight:800;">${opts.customerName ? `${opts.customerName}, ` : ""}${money(q.price, q.currency)} <span style="font-weight:600; font-size:14px; color:${C.muted};">${c.total} · ~${money(perDay, q.currency)} ${c.perDay}</span></p>
-  <p style="margin:0 0 6px; color:${C.text}; font-size:14px;">${c.offerFrom} <strong>${q.partnerName}</strong> · ${c.localAgency}</p>
-  <p style="margin:0 0 18px; color:${C.muted}; font-size:14px; line-height:1.6;">${c.intro}</p>
-  <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:14px 16px; margin:0 0 16px;">
-    <p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; letter-spacing:.05em;">${mailCaps(c.details)}</p>
-    <p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">
-      ${q.pickupLabel}<br>${q.dateFrom} → ${q.dateTo}<br>${q.carTypeLabel}${q.carModel ? `<br><strong>${q.carModel}</strong>` : ""}
-    </p>
-  </div>
-  ${incl.length ? `<div style="margin:0 0 16px;"><p style="margin:0 0 6px; color:${C.faint}; font-size:12px; font-weight:700; letter-spacing:.05em;">${mailCaps(c.included)}</p><p style="margin:0; color:${C.text}; font-size:14px; line-height:1.7;">${incl.map((x) => `✓ ${x}`).join("<br>")}</p></div>` : ""}
-  <div style="background:${C.surface}; border:1px solid ${C.border}; border-radius:14px; padding:12px 16px; margin:0 0 18px;">
-    ${c.reassure.map((r) => `<p style="margin:0 0 4px; color:${C.text}; font-size:13px;">• ${r}</p>`).join("")}
-  </div>
-  <div style="text-align:center; margin:0 0 14px;">${pillButton(opts.acceptUrl, c.cta, C.lagoonDeep)}</div>
-  <p style="margin:0 0 4px; color:${C.faint}; font-size:12px; font-weight:700;">${c.details}:</p>
-  <p style="margin:0 0 14px; color:${C.muted}; font-size:12px; line-height:1.7;">${c.steps.map((s, i) => `${i + 1}. ${s}`).join("<br>")}</p>
-  <p style="margin:0; color:${C.faint}; font-size:12px; line-height:1.6;">${c.foot}</p>
-`;
-  const { data, error } = await resend.emails.send({
-    from: FROM_EMAIL,
-    to: opts.email,
-    replyTo: RELAY_EMAIL,
-    subject: `${QUOTE_SUBJECT[l]} · ${money(q.price, q.currency)}`,
-    html: kalimeraShell(inner),
-  });
-  if (error) throw new Error(`Resend: ${error.message}`);
-  return data;
-}
 
 // ── Accusé de réception immédiat au client (trou 3a) ────────────────────────
 

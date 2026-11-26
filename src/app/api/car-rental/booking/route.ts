@@ -170,13 +170,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: false, code: failure.code, error: failure.message }, { status: failure.status });
   }
 
+  // Écriture conditionnée à NOTRE verrou, encore sans session. 0 ligne : le
+  // verrou a été libéré entre-temps (cron après 35 min) et peut-être repris
+  // par un autre onglet ; on n'écrit pas notre session sur son verrou.
+  let lockLost = false;
   try {
-    const { error } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from("car_requests")
       .update({ booking_session_id: session.id })
       .eq("id", row.id)
+      .eq("booking_status", "pending_payment")
+      .is("booking_session_id", null)
       .select("id");
     assertWritten("booking_session_id", row.id, error);
+    if ((data?.length ?? 0) !== 1) {
+      lockLost = true;
+      throw new Error("verrou perdu avant l'écriture de la session");
+    }
   } catch (err) {
     // Sans l'identifiant en base, un paiement sur cette session serait pris
     // pour une session étrangère et remboursé : on ne la donne pas au client,
@@ -191,7 +201,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch (expireErr) {
       console.error("[car/deposit] session non fermée", { sessionId: session.id, ...stripeLogFields(expireErr) });
     }
-    await releaseLock();
+    // Verrou perdu : l'état n'est plus le nôtre, on ne le relâche pas.
+    if (!lockLost) await releaseLock();
     return NextResponse.json(
       { ok: false, code: "payment_provider", error: "Payment temporarily unavailable" },
       { status: 503 },

@@ -42,8 +42,9 @@ const MORE_OFFERS: Record<string, string> = {
 };
 
 // Acompte (interrupteur CAR_CATALOGUE_ENABLED) : textes qui remplacent ceux de
-// la mise en relation. Interrupteur éteint, rien de ceci n'est lu et la page
-// reste celle d'aujourd'hui.
+// la mise en relation. Interrupteur éteint, seuls les refus (`refusals`) sont
+// lus : un acompte ouvert avant l'extinction suit son cours, et la mise en
+// relation comme le refus de toutes les offres répondent alors 409.
 type DepositCopy = {
   intro: string; phoneHint: string; dueLine: string; confirmLine: string; cancelLine: string;
   book: string; bookPlain: string; declined: string; alreadyTitle: string; alreadyBody: string;
@@ -158,7 +159,7 @@ type Copy = {
 
 const COPY: Record<string, Copy> = {
   en: {
-    title: "Your car rental quotes", intro: "Choose the offer that suits you. Accept one and we connect you directly with the rental agency.", request: "Your request", accept: "Accept this offer", done: "Accepted! The rental agency now has your details and will contact you. Check your inbox for their contact info.", expired: "This offer link is no longer valid.", expiredOffer: "This offer has expired. Send a new request and local agencies will quote you again.", alreadyTitle: "Already accepted", alreadyBody: "You already accepted an offer. The rental agency will contact you, and their details are in your inbox.", noOffers: "Your offers are on the way — check back shortly.", offersTitle: "Your car rental offers", declineLink: "None of these offers suits me", declineDone: "Noted, no problem. This request is now closed.",
+    title: "Your car rental quotes", intro: "Choose the offer that suits you. Accept one and we connect you directly with the rental agency.", request: "Your request", accept: "Accept this offer", done: "Accepted! The rental agency now has your details and will contact you. Check your inbox for their contact info.", expired: "This offer link is no longer valid.", expiredOffer: "This offer has expired. Send a new request and local agencies will quote you again.", alreadyTitle: "Already accepted", alreadyBody: "You already accepted an offer. The rental agency will contact you, and their details are in your inbox.", noOffers: "Your offers are on the way, check back shortly.", offersTitle: "Your car rental offers", declineLink: "None of these offers suits me", declineDone: "Noted, no problem. This request is now closed.",
     phoneLabel: "Your phone / WhatsApp", phoneHint: "The agency calls or texts you to confirm the car. This is the only step left.", phoneError: "Please enter a number the agency can reach you on.",
   },
   fr: {
@@ -166,7 +167,7 @@ const COPY: Record<string, Copy> = {
     phoneLabel: "Votre téléphone / WhatsApp", phoneHint: "L'agence vous appelle ou vous écrit pour confirmer la voiture. C'est la dernière étape.", phoneError: "Indiquez un numéro sur lequel l'agence peut vous joindre.",
   },
   de: {
-    title: "Ihre Mietwagen-Angebote", intro: "Wählen Sie das passende Angebot. Nehmen Sie eines an und wir verbinden Sie direkt mit der Autovermietung.", request: "Ihre Anfrage", accept: "Angebot annehmen", done: "Angenommen! Die Autovermietung hat nun Ihre Daten und wird Sie kontaktieren. Ihre Kontaktdaten finden Sie in Ihrem Postfach.", expired: "Dieser Angebotslink ist nicht mehr gültig.", expiredOffer: "Dieses Angebot ist abgelaufen. Stellen Sie eine neue Anfrage und lokale Agenturen machen Ihnen wieder ein Angebot.", alreadyTitle: "Bereits angenommen", alreadyBody: "Sie haben bereits ein Angebot angenommen. Die Vermietung wird Sie kontaktieren, ihre Daten sind in Ihrem Postfach.", noOffers: "Ihre Angebote sind unterwegs — schauen Sie bald wieder vorbei.", offersTitle: "Ihre Mietwagen-Angebote", declineLink: "Keines dieser Angebote passt mir", declineDone: "Notiert, kein Problem. Ihre Anfrage ist nun geschlossen.",
+    title: "Ihre Mietwagen-Angebote", intro: "Wählen Sie das passende Angebot. Nehmen Sie eines an und wir verbinden Sie direkt mit der Autovermietung.", request: "Ihre Anfrage", accept: "Angebot annehmen", done: "Angenommen! Die Autovermietung hat nun Ihre Daten und wird Sie kontaktieren. Ihre Kontaktdaten finden Sie in Ihrem Postfach.", expired: "Dieser Angebotslink ist nicht mehr gültig.", expiredOffer: "Dieses Angebot ist abgelaufen. Stellen Sie eine neue Anfrage und lokale Agenturen machen Ihnen wieder ein Angebot.", alreadyTitle: "Bereits angenommen", alreadyBody: "Sie haben bereits ein Angebot angenommen. Die Vermietung wird Sie kontaktieren, ihre Daten sind in Ihrem Postfach.", noOffers: "Ihre Angebote sind unterwegs, schauen Sie bald wieder vorbei.", offersTitle: "Ihre Mietwagen-Angebote", declineLink: "Keines dieser Angebote passt mir", declineDone: "Notiert, kein Problem. Ihre Anfrage ist nun geschlossen.",
     phoneLabel: "Ihr Telefon / WhatsApp", phoneHint: "Die Vermietung ruft Sie an oder schreibt Ihnen, um das Auto zu bestätigen. Das ist der letzte Schritt.", phoneError: "Bitte geben Sie eine Nummer an, unter der die Vermietung Sie erreicht.",
   },
   el: {
@@ -189,9 +190,9 @@ function OfferCard({
   /** Présent seulement interrupteur allumé. */
   deposit?: DepositView;
   /**
-   * Textes des refus (409), interrupteur allumé, pour TOUTES les cartes : une
-   * offre sans acompte refusée pendant un paiement ouvert doit le dire, et
-   * non afficher « offre expirée ».
+   * Textes des refus (409), pour TOUTES les cartes et interrupteur éteint
+   * compris : une offre sans acompte refusée pendant un paiement ouvert doit
+   * le dire, et non afficher « offre expirée ».
    */
   refusals?: AcceptRefusals;
 }) {
@@ -472,7 +473,9 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
   // Etat : une ou plusieurs offres à comparer. Une carte sans acompte garde les
   // textes de la mise en relation (« Accepter cette offre », « Accepté ! »).
   const copyFor = (o: QuoteOption) => (depositFor(o) ? c : baseCopy);
-  const refusals = depositOn ? dc.refusals : undefined;
+  // Interrupteur éteint aussi : un paiement ouvert avant l'extinction bloque la
+  // mise en relation (409 inProgress), le client doit lire pourquoi.
+  const refusals = dc.refusals;
   return (
     <main style={shell}>
       {beacon("offers")}
@@ -495,7 +498,7 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
         </details>
       )}
       <DeclineButton token={token} label={c.declineLink} doneText={c.declineDone} offers={offers.length}
-        inProgressText={depositOn ? dc.refusals.inProgress : undefined} />
+        inProgressText={dc.refusals.inProgress} />
     </main>
   );
 }
