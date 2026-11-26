@@ -122,6 +122,22 @@ export function confirmDeadlineMs(paidAtMs: number): number {
   return addOpenMinutes(paidAtMs, CONFIRM_OPEN_MINUTES);
 }
 
+/**
+ * Échéance d'un acompte payé : 240 minutes ouvertes depuis `startMs`, la
+ * création de la session Stripe (un webhook rejoué des heures plus tard donne
+ * la même échéance), plafonnée à la prise moins la marge de 2 h. Heure de
+ * prise absente : 00:00, comme isDepositBookable.
+ */
+export function bookingDeadlineMs(
+  startMs: number,
+  dateFrom: string | null | undefined,
+  timeFrom: string | null | undefined,
+): number {
+  const deadline = confirmDeadlineMs(startMs);
+  if (!dateFrom) return deadline;
+  return Math.min(deadline, athensWallToUtcMs(dateFrom, timeFrom || "00:00") - PICKUP_MARGIN_MS);
+}
+
 export function isBookableOnline(nowMs: number, pickupMs: number): boolean {
   return confirmDeadlineMs(nowMs) <= pickupMs - PICKUP_MARGIN_MS;
 }

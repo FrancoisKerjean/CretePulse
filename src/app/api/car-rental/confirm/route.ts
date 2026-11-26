@@ -41,7 +41,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       await confirmBooking(booking.id, "partner");
     } else if ((await releaseBooking(booking.id, "partner_declined", Date.now())) === "refund_failed") {
       // Remboursement refusé par Stripe : la réservation est remise en attente
-      // et ops est prévenu. Le loueur peut réessayer.
+      // et ops est prévenu, le loueur peut réessayer. Stripe muet : le refus
+      // reste pris, la reprise automatique finit le remboursement.
       return unavailable();
     }
 

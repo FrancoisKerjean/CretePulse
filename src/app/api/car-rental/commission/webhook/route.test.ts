@@ -201,7 +201,7 @@ describe("POST /api/car-rental/commission/webhook : acompte", () => {
   const DEPOSIT_META = { car_request_id: "25", payment_type: "car_deposit", brand: "crete.direct" };
 
   function depositEvent(type: string, id = "evt_dep") {
-    return { id, type, data: { object: { id: "cs_d1", payment_intent: "pi_d1", metadata: DEPOSIT_META } } };
+    return { id, type, data: { object: { id: "cs_d1", payment_intent: "pi_d1", created: 1_800_000_000, metadata: DEPOSIT_META } } };
   }
 
   /** Registre seul : l'acompte ne touche car_requests que par car-deposit-server. */
@@ -232,7 +232,8 @@ describe("POST /api/car-rental/commission/webhook : acompte", () => {
     const res = await POST(req() as never);
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({ received: true, deposit: "recorded" });
-    expect(onDepositPaid).toHaveBeenCalledWith(25, "cs_d1", "pi_d1", expect.any(Number));
+    // Échéance comptée depuis la création de la session (secondes Stripe), pas depuis le traitement.
+    expect(onDepositPaid).toHaveBeenCalledWith(25, "cs_d1", "pi_d1", 1_800_000_000_000, expect.any(Number));
     expect(markInvoicePaidMock).not.toHaveBeenCalled();
   });
 

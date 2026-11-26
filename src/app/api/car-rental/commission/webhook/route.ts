@@ -20,11 +20,14 @@ import { notifyOps } from "@/lib/ops-notify";
  * traitement échoue, l'appelant décide alors du rejeu.
  */
 async function handleDeposit(event: Stripe.Event, requestId: number): Promise<string> {
-  const session = event.data.object as { id: string; payment_intent?: string | { id: string } | null };
+  const session = event.data.object as { id: string; created?: number; payment_intent?: string | { id: string } | null };
   if (event.type === "checkout.session.completed") {
     const pi = typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id;
     if (!pi) throw new Error(`session ${session.id} payée sans payment_intent`);
-    return onDepositPaid(requestId, session.id, pi, Date.now());
+    const now = Date.now();
+    // L'échéance du loueur part de la création de la session (secondes Stripe),
+    // pas de ce traitement : un rejeu tardif ne la repousse pas.
+    return onDepositPaid(requestId, session.id, pi, typeof session.created === "number" ? session.created * 1000 : now, now);
   }
   if (event.type === "checkout.session.expired") {
     return (await onDepositSessionExpired(requestId, session.id)) ? "released" : "not_released";

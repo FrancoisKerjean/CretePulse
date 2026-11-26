@@ -62,7 +62,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       case "changed":
         return NextResponse.json({ ok: false, changed: true, refundEur: out.refundEur }, { status: 409 });
       case "refund_failed":
-        // Stripe a refusé : rien n'est annulé (prise de main défaite), ops est prévenu.
+        // Stripe a refusé : rien n'est annulé (prise de main défaite). Stripe
+        // muet : l'annulation reste prise, la reprise automatique rembourse.
+        // Ops est prévenu dans les deux cas.
         return NextResponse.json({ ok: false, error: "Refund temporarily unavailable, try again in a few minutes" }, { status: 503 });
     }
   }

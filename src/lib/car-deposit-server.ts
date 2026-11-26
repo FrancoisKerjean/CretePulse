@@ -20,7 +20,7 @@ import { assertWritten, creditInvoice, type InvoiceRow } from "./car-invoice-ser
 import { secretOk } from "./car-admin-auth";
 import { depositEur, takesDeposits } from "./car-catalogue";
 import {
-  isDepositBookable, confirmDeadlineMs, shouldSuspendPartner, clientCancelNowEur, SUSPEND_WINDOW_DAYS, DEPOSIT_SWEEP_AGE_MS,
+  isDepositBookable, bookingDeadlineMs, shouldSuspendPartner, clientCancelNowEur, SUSPEND_WINDOW_DAYS, DEPOSIT_SWEEP_AGE_MS,
   type RefundReason,
 } from "./car-deposit";
 import { depositMail, type DepositMailData, type DepositMailKind } from "./car-deposit-mail";
@@ -381,6 +381,10 @@ async function bookingStatusOf(requestId: number): Promise<{ booking_status: str
  * session qui n'est pas celle de la demande (onglet périmé, second paiement)
  * est remboursé et signalé à ops, sans rien écraser.
  *
+ * L'échéance part de `sessionCreatedMs` (création de la session, en ms) et
+ * non de l'heure de traitement : un rejeu tardif ne la repousse pas. Elle est
+ * plafonnée à la prise moins 2 h (bookingDeadlineMs).
+ *
  * Lève quand la base refuse : le webhook supprime alors l'événement du
  * registre et rend 500, et Stripe rejoue.
  */
@@ -388,19 +392,33 @@ export async function onDepositPaid(
   requestId: number,
   sessionId: string,
   paymentIntentId: string,
+  sessionCreatedMs: number,
   nowMs: number,
 ): Promise<"recorded" | "session_mismatch"> {
   const paidAt = new Date(nowMs).toISOString();
   // Dérivé AVANT toute écriture : sans secret, rien n'est pris en main et
   // Stripe rejoue, plutôt qu'un paiement enregistré sans lien loueur.
   const token = partnerConfirmToken(requestId, paymentIntentId);
+  // Prise du véhicule, pour plafonner l'échéance. Demande introuvable : la
+  // prise de main ci-dessous n'écrira rien (session étrangère).
+  const { data: pickup, error: pickupError } = await supabaseAdmin
+    .from("car_requests")
+    .select("date_from, time_from")
+    .eq("id", requestId)
+    .maybeSingle();
+  if (pickupError) throw new Error(`onDepositPaid(${requestId}) lecture refusée par la base: ${pickupError.message}`);
+  const deadlineMs = bookingDeadlineMs(
+    sessionCreatedMs,
+    (pickup as { date_from?: string } | null)?.date_from,
+    (pickup as { time_from?: string | null } | null)?.time_from,
+  );
   const { data: claimed, error } = await supabaseAdmin
     .from("car_requests")
     .update({
       booking_status: "awaiting_partner",
       booking_paid_at: paidAt,
       booking_payment_intent_id: paymentIntentId,
-      confirm_deadline_at: new Date(confirmDeadlineMs(nowMs)).toISOString(),
+      confirm_deadline_at: new Date(deadlineMs).toISOString(),
       // Seul le hash va en base ; le clair ne vit que dans le lien de l'e-mail.
       partner_confirm_token: hashToken(token),
       status: "accepted",
@@ -530,7 +548,7 @@ export async function reconcilePendingDeposit(
       console.error("[car-deposit] rapprochement : session payée sans payment_intent", { requestId, sessionId });
       return { state: "unreadable" };
     }
-    await onDepositPaid(requestId, sessionId, pi, nowMs);
+    await onDepositPaid(requestId, sessionId, pi, session.created * 1000, nowMs);
     return { state: "paid" };
   }
 
@@ -631,11 +649,22 @@ async function existingRefundId(pi: string): Promise<string | null> {
 }
 
 /**
+ * La création a échoué ET la liste est illisible : Stripe ne dit pas si le
+ * remboursement est parti (réponse perdue). `cause` est l'erreur de création.
+ */
+class RefundUnknownError extends Error {
+  constructor(readonly cause: unknown, listError: unknown) {
+    super(`${errText(cause)} ; remboursements illisibles : ${errText(listError)}`);
+  }
+}
+
+/**
  * Identifiant du remboursement de `pi`, créé si besoin. Avant de conclure à
  * l'échec, on regarde chez Stripe : un remboursement parti malgré une réponse
  * perdue, ou fait à la main comme l'alerte le demande, existe déjà. L'ignorer
  * remettrait en attente (donc confirmable) une réservation remboursée. Lève
- * quand aucun remboursement n'existe, ou quand Stripe ne répond pas.
+ * quand aucun remboursement n'existe (erreur de création), ou
+ * RefundUnknownError quand la liste aussi est illisible.
  */
 async function refundOnce(pi: string | null, key: string, listFirst: boolean): Promise<string> {
   if (!pi) throw new Error("aucun payment_intent enregistré sur la demande");
@@ -646,7 +675,12 @@ async function refundOnce(pi: string | null, key: string, listFirst: boolean): P
   try {
     return (await stripeClient().refunds.create({ payment_intent: pi }, { idempotencyKey: key })).id;
   } catch (err) {
-    const existing = await existingRefundId(pi).catch(() => null);
+    let existing: string | null;
+    try {
+      existing = await existingRefundId(pi);
+    } catch (listErr) {
+      throw new RefundUnknownError(err, listErr);
+    }
     if (existing) return existing;
     throw err;
   }
@@ -655,9 +689,12 @@ async function refundOnce(pi: string | null, key: string, listFirst: boolean): P
 /**
  * Rembourse un acompte depuis `from` : prise de main `from` → refunded (motif et
  * cancelled_at) AVANT tout appel Stripe, pour qu'une confirmation concurrente
- * ne puisse plus gagner. Aucun remboursement chez Stripe : retour à `from` et
- * ops prévenu. Un crash entre la prise et l'inscription du remboursement laisse
- * refunded sans refund_id : resumeClaimedRefund le reprend.
+ * ne puisse plus gagner. Aucun remboursement chez Stripe (liste lue) : retour à
+ * `from` et ops prévenu. Stripe muet (création et liste en échec) : la ligne
+ * reste refunded sans refund_id, jamais de retour à un état confirmable ;
+ * resumeClaimedRefund, qui liste d'abord, la règle au passage suivant du cron.
+ * Un crash entre la prise et l'inscription du remboursement laisse aussi
+ * refunded sans refund_id, repris de la même façon.
  */
 async function claimRefund(
   from: RefundFrom,
@@ -682,6 +719,20 @@ async function claimRefund(
   try {
     refundId = await refundOnce(pi, refundKey(from, requestId, pi ?? "", Date.parse(claimIso)), false);
   } catch (err) {
+    if (err instanceof RefundUnknownError) {
+      console.error(`[car-deposit] ${op} : remboursement incertain`, { requestId, reason, ...stripeLogFields(err.cause) });
+      await notifyOps({
+        title: "Acompte voiture : remboursement peut-être parti, Stripe muet",
+        lines: [
+          `demande ${requestId}, motif ${reason}, paiement ${pi ?? "absent"}`,
+          `Stripe : ${err.message}`,
+          "demande laissée en refunded sans refund_id : plus confirmable ; la reprise automatique (cron, sous 15 à 30 minutes) regarde chez Stripe avant tout nouvel essai",
+        ],
+        action: "rien à écrire à la main ; si l'alerte revient, vérifier le paiement dans Stripe",
+        url: adminUrl(),
+      });
+      return "refund_failed";
+    }
     console.error(`[car-deposit] ${op} : remboursement refusé`, { requestId, reason, ...stripeLogFields(err) });
     let revertError: unknown = null;
     try {
@@ -1104,7 +1155,8 @@ const cents = (eur: number) => Math.round(eur * 100);
  *
  * Prise de main conditionnée à l'état LU : perdue (le loueur confirme, le cron
  * libère), on relit et on réévalue UNE fois sur l'état frais (R46). Stripe
- * refuse : la prise de main est défaite, refund_failed, aucun e-mail.
+ * refuse : la prise de main est défaite, refund_failed, aucun e-mail. Stripe
+ * muet : refund_failed aussi, mais l'annulation reste prise (claimRefund).
  *
  * `expectedRefundEur` : le montant affiché au client avant son clic. Si l'état
  * a changé depuis et que le résultat serait PIRE (page d'attente périmée, puis

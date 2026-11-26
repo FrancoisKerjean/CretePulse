@@ -27,12 +27,12 @@ function useAction() {
 const releaseMsg = (r: "refunded" | "not_releasable" | "refund_failed"): Msg =>
   r === "refunded" ? { ok: true, text: "Acompte remboursé, la demande est repassée en offres." }
   : r === "not_releasable" ? { ok: false, text: "Plus libérable : l'état a changé, rechargez la page." }
-  : { ok: false, text: "REMBOURSEMENT ÉCHOUÉ : l'argent n'est pas parti, à reprendre dans Stripe." };
+  : { ok: false, text: "REMBOURSEMENT NON FAIT ou incertain : lire l'alerte ops avant d'agir dans Stripe." };
 
 const refundMsg = (r: "refunded" | "not_refundable" | "refund_failed"): Msg =>
   r === "refunded" ? { ok: true, text: "Réservation remboursée." }
   : r === "not_refundable" ? { ok: false, text: "Plus remboursable : l'état a changé, rechargez la page." }
-  : { ok: false, text: "REMBOURSEMENT ÉCHOUÉ : l'argent n'est pas parti, à reprendre dans Stripe." };
+  : { ok: false, text: "REMBOURSEMENT NON FAIT ou incertain : lire l'alerte ops avant d'agir dans Stripe." };
 
 const EXTEND_REFUSED: Record<string, string> = {
   invalid_hours: "Durée invalide.",
