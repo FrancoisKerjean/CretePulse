@@ -9,10 +9,11 @@ import { rentalDays } from "@/lib/car-pricing";
 import { findChosenOption, sortOptionsByPrice, quotedModelLabel } from "@/lib/car-quotes";
 import { startDeposit, depositPartner } from "@/lib/car-deposit-server";
 import { takesDeposits } from "@/lib/car-catalogue";
+import { assertWritten } from "@/lib/car-invoice-server";
 
 const GEARBOX_LABEL: Record<string, string> = { automatic: "Automatic", manual: "Manual" };
 
-/** États d'acompte qui interdisent de fermer la demande. */
+/** États d'acompte qui interdisent de fermer la demande, ou de la passer par l'ancien parcours. */
 const DEPOSIT_HOLDS = new Set(["pending_payment", "awaiting_partner", "confirmed", "cancelled_kept"]);
 
 // Le client choisit une OFFRE précise (option) parmi toutes les variantes de
@@ -97,10 +98,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, [flag]: true }, { status: 409 });
   }
 
+  // Ancien parcours (mise en relation). Jamais pendant un acompte payable ou
+  // payé : sur une page qui mélange des offres avec et sans acompte, un acompte
+  // payé chez A finirait rattaché à B. Même réponse que la branche acompte.
+  const previous = (row.booking_status as string | null) ?? null;
+  if (previous !== null && DEPOSIT_HOLDS.has(previous)) {
+    return NextResponse.json({ ok: false, inProgress: true }, { status: 409 });
+  }
+
   const partner = await partnerById(chosen.partner_id);
   const gearboxLabel = chosen.gearbox ? GEARBOX_LABEL[chosen.gearbox] : null;
   const carModelSnapshot = quotedModelLabel(chosen.car_model, gearboxLabel);
-  await supabase.from("car_requests").update({
+  // Écriture conditionnée à l'état lu (quoted, sans acompte ou remboursé) : si
+  // un paiement a démarré, ou une autre offre a été acceptée, entre la lecture
+  // et ici, 0 ligne et on n'écrase rien.
+  const update = supabase.from("car_requests").update({
     status: "accepted", accepted_at: new Date().toISOString(), accept_token_hash: null,
     closure_reason: null, customer_phone: phoneResolu.phone,
     quoted_price: chosen.price, quoted_currency: chosen.currency ?? "EUR",
@@ -109,7 +121,20 @@ export async function POST(request: NextRequest) {
     quoted_zero_excess_upsell_eur_day: chosen.zero_excess_upsell_eur_day,
     quoted_at: chosen.created_at, quoted_by_partner_id: chosen.partner_id,
     partner_name: partner?.name ?? chosen.partner_name, partner_email: partner?.email ?? null,
-  }).eq("id", row.id);
+  }).eq("id", row.id).eq("status", "quoted");
+  const guarded = previous === "refunded" ? update.eq("booking_status", "refunded") : update.is("booking_status", null);
+  const { data: written, error: writeError } = await guarded.select("id");
+  assertWritten("car-rental/accept", row.id as number, writeError);
+  if (!written || written.length === 0) {
+    // Course perdue : on relit pour dire au client lequel des deux, paiement
+    // ouvert ou demande qui n'attend plus de choix. Ni invitation ni e-mail.
+    const { data: current } = await supabase.from("car_requests").select("booking_status").eq("id", row.id).maybeSingle();
+    const state = (current?.booking_status as string | null | undefined) ?? null;
+    return NextResponse.json(
+      { ok: false, ...(state !== null && DEPOSIT_HOLDS.has(state) ? { inProgress: true } : { notReady: true }) },
+      { status: 409 },
+    );
+  }
   await supabase.from("car_quote_invites").update({ status: "chosen" }).eq("id", chosen.invite_id);
   await supabase.from("car_quote_invites").update({ status: "not_chosen" })
     .eq("request_id", row.id).eq("status", "quoted").neq("id", chosen.invite_id);

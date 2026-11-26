@@ -176,7 +176,7 @@ const COPY: Record<string, Copy> = {
 };
 
 function OfferCard({
-  offer, token, request, locale, c, rank, total, deposit,
+  offer, token, request, locale, c, rank, total, deposit, refusals,
 }: {
   offer: QuoteOption;
   token: string;
@@ -188,6 +188,12 @@ function OfferCard({
   total: number;
   /** Présent seulement interrupteur allumé. */
   deposit?: DepositView;
+  /**
+   * Textes des refus (409), interrupteur allumé, pour TOUTES les cartes : une
+   * offre sans acompte refusée pendant un paiement ouvert doit le dire, et
+   * non afficher « offre expirée ».
+   */
+  refusals?: AcceptRefusals;
 }) {
   const expired = isOfferExpired(offer.created_at, request.date_from as string, Date.now());
   const ct = CAR_TYPES_DATA.find((cc) => cc.id === (request.car_type as string));
@@ -285,7 +291,7 @@ function OfferCard({
           doneText={c.done} expiredText={c.expiredOffer}
           needsPhone={!isCallablePhone(request.customer_phone as string | null)}
           phoneLabel={c.phoneLabel} phoneHint={c.phoneHint} phoneError={c.phoneError}
-          rank={rank} offers={total} refusals={deposit?.dc.refusals} />
+          rank={rank} offers={total} refusals={refusals} />
       )}
     </div>
   );
@@ -464,6 +470,7 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
   // Etat : une ou plusieurs offres à comparer. Une carte sans acompte garde les
   // textes de la mise en relation (« Accepter cette offre », « Accepté ! »).
   const copyFor = (o: QuoteOption) => (depositFor(o) ? c : baseCopy);
+  const refusals = depositOn ? dc.refusals : undefined;
   return (
     <main style={shell}>
       {beacon("offers")}
@@ -472,7 +479,7 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
       {refundNotice}
       {curated.shown.map((offer, i) => (
         <OfferCard key={offer.id} offer={offer} token={token} request={request} locale={locale} c={copyFor(offer)}
-          rank={i + 1} total={offers.length} deposit={depositFor(offer)} />
+          rank={i + 1} total={offers.length} deposit={depositFor(offer)} refusals={refusals} />
       ))}
       {curated.folded.length > 0 && (
         <details style={{ margin: "4px 0 16px" }}>
@@ -481,7 +488,7 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
           </summary>
           {curated.folded.map((offer, i) => (
             <OfferCard key={offer.id} offer={offer} token={token} request={request} locale={locale} c={copyFor(offer)}
-              rank={curated.shown.length + i + 1} total={offers.length} deposit={depositFor(offer)} />
+              rank={curated.shown.length + i + 1} total={offers.length} deposit={depositFor(offer)} refusals={refusals} />
           ))}
         </details>
       )}

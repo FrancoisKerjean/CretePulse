@@ -30,8 +30,17 @@ const REQUEST = {
   customer_name: "Nina", customer_email: "n@example.com", customer_phone: null as string | null,
 };
 
-function wiring(opts: { phone?: string | null; inviteStatus?: string; bookingStatus?: string | null } = {}) {
-  const updates: Array<{ table: string; patch: Record<string, unknown> }> = [];
+function wiring(opts: {
+  phone?: string | null;
+  inviteStatus?: string;
+  bookingStatus?: string | null;
+  /** Lignes rendues par l'écriture de la mise en relation (0 : course perdue). */
+  writtenRows?: unknown[];
+  writeError?: { message: string } | null;
+  /** booking_status relu après une course perdue. */
+  rereadStatus?: string | null;
+} = {}) {
+  const updates: Array<{ table: string; patch: Record<string, unknown>; filters: Array<[string, string, unknown]> }> = [];
   requestByClientToken.mockResolvedValue({
     request: {
       ...REQUEST,
@@ -43,16 +52,22 @@ function wiring(opts: { phone?: string | null; inviteStatus?: string; bookingSta
   });
   from.mockImplementation((table: string) => ({
     update: (patch: Record<string, unknown>) => {
-      updates.push({ table, patch });
+      const entry = { table, patch, filters: [] as Array<[string, string, unknown]> };
+      updates.push(entry);
       const chain = {
-        eq: () => chain,
-        neq: () => chain,
-        is: () => chain,
-        select: async () => ({ data: [{ id: 25 }], error: null }),
+        eq: (c: string, v: unknown) => (entry.filters.push(["eq", c, v]), chain),
+        neq: (c: string, v: unknown) => (entry.filters.push(["neq", c, v]), chain),
+        is: (c: string, v: unknown) => (entry.filters.push(["is", c, v]), chain),
+        select: async () => table === "car_requests"
+          ? { data: opts.writtenRows ?? [{ id: 25 }], error: opts.writeError ?? null }
+          : { data: [{ id: 25 }], error: null },
         then: (ok: (v: unknown) => unknown) => Promise.resolve({ data: null, error: null }).then(ok),
       };
       return chain;
     },
+    select: () => ({
+      eq: () => ({ maybeSingle: async () => ({ data: { booking_status: opts.rereadStatus ?? null }, error: null }) }),
+    }),
   }));
   return updates;
 }
@@ -79,6 +94,15 @@ describe("POST /api/car-rental/accept", () => {
     expect(startDeposit).not.toHaveBeenCalled();
     expect(updates.some((u) => u.table === "car_requests" && u.patch.status === "accepted")).toBe(true);
     expect(sendConnectionEmails).toHaveBeenCalledOnce();
+  });
+
+  it("interrupteur éteint, acompte encore payable d'avant l'extinction : 409 inProgress, rien écrit", async () => {
+    const updates = wiring({ phone: "+33 6 12 34 56 78", bookingStatus: "pending_payment" });
+    const res = await POST(req({ token: "tok", option_id: 501 }) as never);
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ ok: false, inProgress: true });
+    expect(updates).toHaveLength(0);
+    expect(sendConnectionEmails).not.toHaveBeenCalled();
   });
 
   describe("interrupteur allumé", () => {
@@ -169,6 +193,73 @@ describe("POST /api/car-rental/accept", () => {
       expect(await res.json()).toEqual({ ok: false, ...flag });
       expect(updates).toHaveLength(0);
       expect(sendConnectionEmails).not.toHaveBeenCalled();
+    });
+
+    // Page mélangée : offres avec et sans acompte. Sans ces gardes, un acompte
+    // payé chez A pouvait finir rattaché à B (revue finale, casse 1).
+    describe("ancien parcours (loueur sans acompte) pendant un acompte", () => {
+      beforeEach(() => {
+        depositPartner.mockResolvedValue({ ...BOOKABLE, terms_version: null, terms_accepted_at: null });
+      });
+
+      it.each(["pending_payment", "awaiting_partner", "confirmed", "cancelled_kept"])(
+        "booking_status %s : 409 inProgress comme la branche acompte, rien écrit, aucun e-mail",
+        async (bookingStatus) => {
+          const updates = wiring({ phone: "+33 6 12 34 56 78", bookingStatus });
+          const res = await POST(req({ token: "tok", option_id: 501 }) as never);
+          expect(res.status).toBe(409);
+          expect(await res.json()).toEqual({ ok: false, inProgress: true });
+          expect(updates).toHaveLength(0);
+          expect(startDeposit).not.toHaveBeenCalled();
+          expect(sendConnectionEmails).not.toHaveBeenCalled();
+        },
+      );
+
+      it("sans acompte : mise en relation conditionnée à quoted et à booking_status vide", async () => {
+        const updates = wiring({ phone: "+33 6 12 34 56 78" });
+        const res = await POST(req({ token: "tok", option_id: 501 }) as never);
+        expect(res.status).toBe(200);
+        const accept = updates.find((u) => u.table === "car_requests" && u.patch.status === "accepted");
+        expect(accept?.filters).toContainEqual(["eq", "status", "quoted"]);
+        expect(accept?.filters).toContainEqual(["is", "booking_status", null]);
+        expect(sendConnectionEmails).toHaveBeenCalledOnce();
+      });
+
+      it("après un remboursement : mise en relation permise, conditionnée à quoted et refunded", async () => {
+        const updates = wiring({ phone: "+33 6 12 34 56 78", bookingStatus: "refunded" });
+        const res = await POST(req({ token: "tok", option_id: 501 }) as never);
+        expect(res.status).toBe(200);
+        const accept = updates.find((u) => u.table === "car_requests" && u.patch.status === "accepted");
+        expect(accept?.filters).toContainEqual(["eq", "status", "quoted"]);
+        expect(accept?.filters).toContainEqual(["eq", "booking_status", "refunded"]);
+        // Le lien d'offres meurt avec la mise en relation (jeton effacé) : la
+        // page d'offres ne peut plus afficher cette demande, bandeau compris.
+        expect(accept?.patch.accept_token_hash).toBeNull();
+        expect(sendConnectionEmails).toHaveBeenCalledOnce();
+      });
+
+      it("course perdue (0 ligne, paiement ouvert entre-temps) : 409 inProgress relu, aucun e-mail ni invitation", async () => {
+        const updates = wiring({ phone: "+33 6 12 34 56 78", writtenRows: [], rereadStatus: "pending_payment" });
+        const res = await POST(req({ token: "tok", option_id: 501 }) as never);
+        expect(res.status).toBe(409);
+        expect(await res.json()).toEqual({ ok: false, inProgress: true });
+        expect(updates.filter((u) => u.table === "car_quote_invites")).toHaveLength(0);
+        expect(sendConnectionEmails).not.toHaveBeenCalled();
+      });
+
+      it("course perdue sans acompte en face (offre acceptée dans un autre onglet) : 409 notReady", async () => {
+        wiring({ phone: "+33 6 12 34 56 78", writtenRows: [], rereadStatus: null });
+        const res = await POST(req({ token: "tok", option_id: 501 }) as never);
+        expect(res.status).toBe(409);
+        expect(await res.json()).toEqual({ ok: false, notReady: true });
+        expect(sendConnectionEmails).not.toHaveBeenCalled();
+      });
+
+      it("base qui refuse l'écriture : lève, aucun e-mail", async () => {
+        wiring({ phone: "+33 6 12 34 56 78", writeError: { message: "permission denied" } });
+        await expect(POST(req({ token: "tok", option_id: 501 }) as never)).rejects.toThrow(/permission denied/);
+        expect(sendConnectionEmails).not.toHaveBeenCalled();
+      });
     });
 
     it("une offre dont le loueur a décliné n'est plus payable", async () => {
