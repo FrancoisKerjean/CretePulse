@@ -17,14 +17,18 @@ const unavailable = () =>
   NextResponse.json({ ok: false, error: "Temporarily unavailable, please try again in a few minutes." }, { status: 503 });
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  let body: Record<string, unknown>;
+  let body: unknown;
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ ok: false, error: "Invalid JSON" }, { status: 400 });
   }
-  const token = typeof body.token === "string" ? body.token : "";
-  const decision = body.decision;
+  // null, tableau, nombre ou chaîne : JSON valide, mais pas une requête.
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return NextResponse.json({ ok: false, error: "Invalid request" }, { status: 400 });
+  }
+  const { token: rawToken, decision } = body as Record<string, unknown>;
+  const token = typeof rawToken === "string" ? rawToken : "";
   if (!token || (decision !== "confirm" && decision !== "decline")) {
     return NextResponse.json({ ok: false, error: "Invalid request" }, { status: 400 });
   }

@@ -133,6 +133,16 @@ describe("depositMail", () => {
     expect(t).toContain("&lt;script&gt;");
   });
 
+  it.each(["partner_request", "partner_reminder", "partner_confirmed", "partner_client_cancelled"] as const)(
+    "%s : sujet en texte brut (jamais échappé), corps échappé",
+    (kind) => {
+      const m = depositMail(kind, { ...DATA, pickupLabel: "Chania & Souda port" }, "en");
+      expect(m.subject).toContain("Chania & Souda port");
+      expect(m.subject).not.toContain("&amp;");
+      expect(m.html).toContain("Chania &amp; Souda port");
+    },
+  );
+
   it("aucun texte, dans aucune langue, ne contient de tiret cadratin ni le mot Kairos", () => {
     for (const kind of DEPOSIT_MAIL_KINDS) {
       for (const locale of ["en", "fr", "de", "el"]) {

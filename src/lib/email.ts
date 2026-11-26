@@ -1942,7 +1942,6 @@ export async function sendInvoiceReminder(partnerEmail: string, m: InvoiceRemind
   }
 }
 
-/** Reservation voiture payee en ligne : coordonnees echangees, jamais avant. */
 /**
  * E-mails de l'acompte voiture (car-deposit-mail.ts rend sujet et corps). Même
  * expéditeur que les autres e-mails voiture, réponse vers crete.direct, corps
@@ -1966,6 +1965,7 @@ export async function sendCarDepositMail(to: string, mail: { subject: string; ht
   }
 }
 
+/** Reservation voiture payee en ligne : coordonnees echangees, jamais avant. */
 export async function sendCarBookingPaidEmails(
   partnerEmail: string,
   info: BookingPaidInfo,

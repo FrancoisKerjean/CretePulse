@@ -39,6 +39,12 @@ describe("POST /api/car-rental/confirm", () => {
     expect(bookingByConfirmToken).not.toHaveBeenCalled();
   });
 
+  it.each(["null", "[]", "42", '"confirm"'])("400 sur un JSON valide qui n'est pas un objet (%s)", async (raw) => {
+    const res = await POST(req(raw) as never);
+    expect(res.status).toBe(400);
+    expect(bookingByConfirmToken).not.toHaveBeenCalled();
+  });
+
   it("404 sur un jeton inconnu, rien d'appelé", async () => {
     bookingByConfirmToken.mockResolvedValueOnce(null);
     const res = await POST(req({ token: "t", decision: "confirm" }) as never);

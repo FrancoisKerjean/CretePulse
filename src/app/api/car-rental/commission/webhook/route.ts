@@ -52,9 +52,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     (event.data.object as { metadata?: Record<string, string> })?.metadata ?? {};
   const requestId = Number(meta.car_request_id);
 
-  // Trois flux passent par cet endpoint : la commission facturee au loueur
-  // (modele hors ligne), le paiement du voyageur (tunnel en ligne de juillet)
-  // et l'acompte (catalogue). Tout le reste appartient a une autre marque du
+  // Trois flux passent par cet endpoint : la commission facturée au loueur
+  // (modèle hors ligne), le paiement du voyageur (tunnel en ligne de juillet)
+  // et l'acompte (catalogue). Tout le reste appartient à une autre marque du
   // compte et sort en 200 muet.
   const paymentType = meta.payment_type;
   if (
@@ -84,11 +84,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const deposit = await handleDeposit(event, requestId);
       return NextResponse.json({ received: true, deposit });
     } catch (err) {
-      // L'evenement est deja au registre : sans le retirer, le rejeu de Stripe
-      // ressortirait en « duplicate » et un acompte encaisse resterait bloque
+      // L'événement est déjà au registre : sans le retirer, le rejeu de Stripe
+      // ressortirait en « duplicate » et un acompte encaissé resterait bloqué
       // en pending_payment. On le retire, puis 500 pour que Stripe rejoue.
       const message = err instanceof Error ? err.message : String(err);
-      console.error("[car/deposit] traitement du webhook en echec", { eventId: event.id, requestId, message });
+      console.error("[car/deposit] traitement du webhook en échec", { eventId: event.id, requestId, message });
       const { error: delErr } = await supabaseAdmin
         .from("stripe_webhook_events")
         .delete()

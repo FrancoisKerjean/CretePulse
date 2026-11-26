@@ -12,9 +12,11 @@
 // course (« Confirm » contre le cron, webhook rejoué) écrit 0 ligne, relit, et
 // ne refait ni remboursement ni e-mail. Tout ce qui suit une prise de main
 // gagnée est au mieux : un échec prévient ops, il ne défait jamais l'état.
+import { createHmac } from "crypto";
 import { supabaseAdmin } from "./supabase-admin";
 import { newToken, hashToken, siteBase } from "./car-quote";
-import { assertWritten, invoiceForRequest, creditInvoice } from "./car-invoice-server";
+import { assertWritten, creditInvoice, type InvoiceRow } from "./car-invoice-server";
+import { secretOk } from "./car-admin-auth";
 import { partnerById } from "./car-partners-db";
 import { depositEur } from "./car-catalogue";
 import {
@@ -176,7 +178,7 @@ export async function onDepositSessionExpired(requestId: number, sessionId: stri
 
 /** Colonnes relues par chaque prise de main : état, montants et de quoi écrire les e-mails. */
 const BOOKING_COLS =
-  "id, locale, booking_status, booking_session_id, booking_payment_intent_id, deposit_option_id, deposit_eur, quoted_price, quoted_car_model, quoted_insurance_type, quoted_excess_eur, quoted_zero_excess_upsell_eur_day, quoted_by_partner_id, partner_name, pickup_slug, car_type, date_from, time_from, date_to, time_to, confirm_deadline_at, client_token, customer_name, customer_email, customer_phone";
+  "id, locale, booking_status, booking_session_id, booking_payment_intent_id, deposit_option_id, deposit_eur, quoted_price, quoted_car_model, quoted_insurance_type, quoted_excess_eur, quoted_zero_excess_upsell_eur_day, quoted_by_partner_id, partner_name, pickup_slug, car_type, date_from, time_from, date_to, time_to, confirm_deadline_at, partner_confirmed_at, refund_reason, cancelled_at, client_token, customer_name, customer_email, customer_phone";
 
 interface BookingRow {
   id: number;
@@ -200,6 +202,9 @@ interface BookingRow {
   date_to: string;
   time_to: string | null;
   confirm_deadline_at: string | null;
+  partner_confirmed_at: string | null;
+  refund_reason: string | null;
+  cancelled_at: string | null;
   client_token: string | null;
   customer_name: string | null;
   customer_email: string | null;
@@ -275,8 +280,14 @@ async function sendMail(
   who: string,
 ): Promise<string | null> {
   if (!to) return `e-mail ${kind} au ${who} non parti : adresse absente`;
-  const { sendCarDepositMail } = await import("./email");
-  return (await sendCarDepositMail(to, depositMail(kind, data, locale))) ? null : `e-mail ${kind} au ${who} refusé par Resend`;
+  // Appelé après une prise de main gagnée : une panne de rendu ou d'envoi est
+  // une ligne pour ops, jamais une exception qui ferait rejouer le webhook.
+  try {
+    const { sendCarDepositMail } = await import("./email");
+    return (await sendCarDepositMail(to, depositMail(kind, data, locale))) ? null : `e-mail ${kind} au ${who} refusé par Resend`;
+  } catch (err) {
+    return `e-mail ${kind} au ${who} non parti : ${errText(err)}`;
+  }
 }
 
 /** Invitation de l'option payée (une option appartient à une invitation). */
@@ -289,6 +300,23 @@ async function chosenInviteId(optionId: number | null): Promise<number | null> {
     .maybeSingle();
   if (error) throw new Error(`option ${optionId} illisible: ${error.message}`);
   return (data?.invite_id as number | undefined) ?? null;
+}
+
+/**
+ * Jeton du lien « Confirm » du loueur, DÉRIVÉ de la demande et du paiement par
+ * HMAC du secret d'admin : ops peut reconstruire le lien à tout moment
+ * (e-mail perdu, rappel du cron) sans que le clair soit stocké. La base ne
+ * garde que hashToken(jeton). Bumper le label v1 révoque tous les liens.
+ */
+function partnerConfirmToken(requestId: number, paymentIntentId: string): string {
+  const secret = process.env.CAR_ADMIN_SECRET;
+  if (!secretOk(secret)) throw new Error("CAR_ADMIN_SECRET absent ou trop court : lien loueur impossible");
+  return createHmac("sha256", secret).update(`car-confirm-v1:${requestId}:${paymentIntentId}`).digest("base64url");
+}
+
+/** Lien « Confirm » du loueur, reconstructible depuis la demande et son paiement. */
+export function partnerConfirmUrl(requestId: number, paymentIntentId: string): string {
+  return `${siteBase()}/en/car-confirm/${partnerConfirmToken(requestId, paymentIntentId)}`;
 }
 
 async function bookingStatusOf(requestId: number): Promise<{ booking_status: string | null; booking_session_id: string | null } | null> {
@@ -318,7 +346,9 @@ export async function onDepositPaid(
   nowMs: number,
 ): Promise<"recorded" | "session_mismatch"> {
   const paidAt = new Date(nowMs).toISOString();
-  const token = newToken();
+  // Dérivé AVANT toute écriture : sans secret, rien n'est pris en main et
+  // Stripe rejoue, plutôt qu'un paiement enregistré sans lien loueur.
+  const token = partnerConfirmToken(requestId, paymentIntentId);
   const { data: claimed, error } = await supabaseAdmin
     .from("car_requests")
     .update({
@@ -382,13 +412,13 @@ export async function onDepositPaid(
   }
 
   const locale = pickCarBookingLocale(row.locale ?? "en");
-  const confirmUrl = `${siteBase()}/en/car-confirm/${token}`;
+  const confirmUrl = partnerConfirmUrl(requestId, paymentIntentId);
   const partner = await partnerContact(row.quoted_by_partner_id);
   const clientFail = await sendMail("client_pending", row.customer_email, mailData(row, locale), locale, "client");
   if (clientFail) failures.push(clientFail);
   const partnerFail = await sendMail("partner_request", partner?.email, mailData(row, "en", { confirmUrl }), "en", "loueur");
   if (partnerFail) {
-    // Le jeton n'existe en clair nulle part ailleurs : ops doit pouvoir le transmettre.
+    // Ops transmet le lien (reconstructible via partnerConfirmUrl).
     failures.push(partnerFail, `lien de confirmation à transmettre au loueur : ${confirmUrl}`);
   }
 
@@ -469,23 +499,63 @@ export async function confirmBooking(
   return "confirmed";
 }
 
+type RefundFrom = "awaiting_partner" | "confirmed";
+
 /**
- * Rembourse un acompte depuis `from` : prise de main `from` → refunded AVANT
- * tout appel Stripe, pour qu'une confirmation concurrente ne puisse plus gagner.
- * Stripe refuse : retour à `from` (refund_reason effacé) et ops prévenu ; la clé
- * d'idempotence étant stable, la tentative suivante ne remboursera pas deux fois.
+ * Clé d'idempotence d'un remboursement : une par prise de main. L'instant de la
+ * prise (cancelled_at) en fait partie : une prise suivante ne rejoue pas, chez
+ * Stripe, l'erreur mise en cache 24 h sur la précédente. La reprise
+ * (resumeClaimedRefund) reconstruit la même clé depuis cancelled_at.
  */
-async function refundBooking(
-  from: "awaiting_partner" | "confirmed",
+const refundKey = (from: RefundFrom, requestId: number, pi: string, claimMs: number) =>
+  `${from === "confirmed" ? "car-deposit-refund-confirmed" : "car-deposit-refund"}-${requestId}-${pi}-${claimMs}`;
+
+/** Remboursement déjà fait sur ce paiement (réponse perdue, ou fait à la main), hors échecs. */
+async function existingRefundId(pi: string): Promise<string | null> {
+  const list = await stripeClient().refunds.list({ payment_intent: pi, limit: 10 });
+  return list.data.find((r) => r.status !== "failed" && r.status !== "canceled")?.id ?? null;
+}
+
+/**
+ * Identifiant du remboursement de `pi`, créé si besoin. Avant de conclure à
+ * l'échec, on regarde chez Stripe : un remboursement parti malgré une réponse
+ * perdue, ou fait à la main comme l'alerte le demande, existe déjà. L'ignorer
+ * remettrait en attente (donc confirmable) une réservation remboursée. Lève
+ * quand aucun remboursement n'existe, ou quand Stripe ne répond pas.
+ */
+async function refundOnce(pi: string | null, key: string, listFirst: boolean): Promise<string> {
+  if (!pi) throw new Error("aucun payment_intent enregistré sur la demande");
+  if (listFirst) {
+    const existing = await existingRefundId(pi);
+    if (existing) return existing;
+  }
+  try {
+    return (await stripeClient().refunds.create({ payment_intent: pi }, { idempotencyKey: key })).id;
+  } catch (err) {
+    const existing = await existingRefundId(pi).catch(() => null);
+    if (existing) return existing;
+    throw err;
+  }
+}
+
+/**
+ * Rembourse un acompte depuis `from` : prise de main `from` → refunded (motif et
+ * cancelled_at) AVANT tout appel Stripe, pour qu'une confirmation concurrente
+ * ne puisse plus gagner. Aucun remboursement chez Stripe : retour à `from` et
+ * ops prévenu. Un crash entre la prise et l'inscription du remboursement laisse
+ * refunded sans refund_id : resumeClaimedRefund le reprend.
+ */
+async function claimRefund(
+  from: RefundFrom,
   requestId: number,
   reason: RefundReason,
   nowMs: number,
-  keyPrefix: string,
 ): Promise<"refunded" | "not_claimed" | "refund_failed"> {
   const op = from === "confirmed" ? "refundConfirmed" : "releaseBooking";
+  const claimIso = new Date(nowMs).toISOString();
   const { data: claimed, error } = await supabaseAdmin
     .from("car_requests")
-    .update({ booking_status: "refunded", refund_reason: reason })
+    .update({ booking_status: "refunded", refund_reason: reason, cancelled_at: claimIso })
     .eq("id", requestId)
     .eq("booking_status", from)
     .select(BOOKING_COLS);
@@ -496,19 +566,14 @@ async function refundBooking(
   const pi = row.booking_payment_intent_id;
   let refundId: string;
   try {
-    if (!pi) throw new Error("aucun payment_intent enregistré sur la demande");
-    const refund = await stripeClient().refunds.create(
-      { payment_intent: pi },
-      { idempotencyKey: `${keyPrefix}${requestId}-${pi}` },
-    );
-    refundId = refund.id;
+    refundId = await refundOnce(pi, refundKey(from, requestId, pi ?? "", Date.parse(claimIso)), false);
   } catch (err) {
     console.error(`[car-deposit] ${op} : remboursement refusé`, { requestId, reason, ...stripeLogFields(err) });
     let revertError: unknown = null;
     try {
       const { error: revErr } = await supabaseAdmin
         .from("car_requests")
-        .update({ booking_status: from, refund_reason: null })
+        .update({ booking_status: from, refund_reason: null, cancelled_at: null })
         .eq("id", requestId)
         .eq("booking_status", "refunded")
         .is("refund_id", null)
@@ -523,41 +588,114 @@ async function refundBooking(
         `demande ${requestId}, motif ${reason}, paiement ${pi ?? "absent"}`,
         `Stripe : ${errText(err)}`,
         revertError
-          ? `⚠️ demande restée en refunded SANS remboursement (${errText(revertError)}) : remettre booking_status à ${from}`
+          ? `⚠️ demande restée en refunded SANS remboursement (${errText(revertError)}) : la reprise automatique retentera`
           : `demande remise en ${from}${from === "awaiting_partner" ? ", le cron retentera" : ""}`,
       ],
-      action: "vérifier dans Stripe si le remboursement est parti, sinon le faire à la main",
+      action: "si l'échec persiste, rembourser à la main dans Stripe : la tentative suivante le verra",
       url: adminUrl(),
     });
     if (revertError) throw revertError;
     return "refund_failed";
   }
+  return finishRefund(row, from, reason, refundId, nowMs);
+}
 
-  // L'argent est rendu : tout ce qui suit est au mieux, un échec va à ops.
+/**
+ * Reprise d'un remboursement pris en main mais jamais inscrit (crash ou base
+ * refusée entre la prise et refund_id) : booking_status refunded ET refund_id
+ * nul. Le cron des échéances (tâche 10) balaie ces lignes au-delà de 15 min.
+ * Regarde d'abord chez Stripe, puis rembourse avec la clé reconstruite, puis
+ * fait les mêmes étapes que le remboursement d'origine. Échec : ops prévenu, la
+ * ligne reste telle quelle (aucun retour arrière, l'argent est peut-être parti).
+ */
+export async function resumeClaimedRefund(
+  requestId: number,
+  nowMs: number,
+): Promise<"refunded" | "refund_failed" | "not_stuck"> {
+  const { data, error } = await supabaseAdmin
+    .from("car_requests")
+    .select(BOOKING_COLS)
+    .eq("id", requestId)
+    .eq("booking_status", "refunded")
+    .is("refund_id", null)
+    .maybeSingle();
+  if (error) throw new Error(`resumeClaimedRefund(${requestId}) lecture refusée par la base: ${error.message}`);
+  const row = data as BookingRow | null;
+  if (!row || !row.cancelled_at || !row.refund_reason) return "not_stuck";
+
+  // Seule une réservation confirmée porte partner_confirmed_at (remis à null
+  // par startDeposit au choix suivant) : c'est elle qui dit d'où venait la prise.
+  const from: RefundFrom = row.partner_confirmed_at ? "confirmed" : "awaiting_partner";
+  const reason = row.refund_reason as RefundReason;
+  const pi = row.booking_payment_intent_id;
+  let refundId: string;
+  try {
+    refundId = await refundOnce(pi, refundKey(from, requestId, pi ?? "", Date.parse(row.cancelled_at)), true);
+  } catch (err) {
+    console.error("[car-deposit] reprise : remboursement toujours pas fait", { requestId, reason, ...stripeLogFields(err) });
+    await notifyOps({
+      title: "Acompte voiture : remboursement pris en main mais toujours pas fait",
+      lines: [
+        `demande ${requestId}, motif ${reason}, paiement ${pi ?? "absent"}`,
+        `Stripe : ${errText(err)}`,
+        "la demande reste en refunded sans refund_id, la reprise retentera",
+      ],
+      action: "rembourser à la main dans Stripe si l'échec persiste : la reprise suivante le verra",
+      url: adminUrl(),
+    });
+    return "refund_failed";
+  }
+  return finishRefund(row, from, reason, refundId, nowMs);
+}
+
+/**
+ * Tout ce qui suit un remboursement fait : inscription sur la demande, puis
+ * invitations, avoir, e-mail, suspension et ops. L'inscription est conditionnée
+ * à refund_id nul : deux reprises concurrentes n'envoient pas deux e-mails.
+ * Refusée par la base : alerte et arrêt, la reprise finira (elle retrouvera le
+ * remboursement chez Stripe, sans en créer un second).
+ */
+async function finishRefund(
+  row: BookingRow,
+  from: RefundFrom,
+  reason: RefundReason,
+  refundId: string,
+  nowMs: number,
+): Promise<"refunded"> {
+  const op = from === "confirmed" ? "refundConfirmed" : "releaseBooking";
+  const requestId = row.id;
+  const nowIso = new Date(nowMs).toISOString();
+  const { data: recorded, error: recErr } = await supabaseAdmin
+    .from("car_requests")
+    .update({
+      refund_id: refundId,
+      refund_amount_eur: Number(row.deposit_eur),
+      // La demande redevient une demande à offres : le client peut en choisir
+      // une autre et repayer. Le jeton de réservation reste, pour que son
+      // lien affiche « remboursé » (startDeposit en pose un neuf au choix suivant).
+      status: "quoted",
+      accepted_at: null,
+    })
+    .eq("id", requestId)
+    .eq("booking_status", "refunded")
+    .is("refund_id", null)
+    .select("id");
+  if (recErr) {
+    console.error(`[car-deposit] ${op} : remboursement fait mais non inscrit`, { requestId, refundId, error: recErr.message });
+    await notifyOps({
+      title: "Acompte voiture : remboursé chez Stripe mais non inscrit sur la demande",
+      lines: [`demande ${requestId}, motif ${reason}`, `remboursement ${refundId}`, `base : ${recErr.message}`],
+      action: "la reprise automatique finira (sans second remboursement) ; sinon inscrire refund_id à la main",
+      url: adminUrl(),
+    });
+    return "refunded";
+  }
+  // 0 ligne : une reprise concurrente a déjà tout inscrit et tout envoyé.
+  if (!recorded || recorded.length === 0) return "refunded";
+
+  // L'argent est rendu et inscrit : tout ce qui suit est au mieux, un échec va à ops.
   const notes: string[] = [];
   const failures: string[] = [];
-  const nowIso = new Date(nowMs).toISOString();
-  try {
-    const { error: e } = await supabaseAdmin
-      .from("car_requests")
-      .update({
-        refund_id: refundId,
-        refund_amount_eur: Number(row.deposit_eur),
-        cancelled_at: nowIso,
-        // La demande redevient une demande à offres : le client peut en choisir
-        // une autre et repayer. Le jeton de réservation reste, pour que son
-        // lien affiche « remboursé » (startDeposit en pose un neuf au choix suivant).
-        status: "quoted",
-        accepted_at: null,
-      })
-      .eq("id", requestId)
-      .eq("booking_status", "refunded")
-      .select("id");
-    assertWritten(`${op}:remboursement`, requestId, e);
-  } catch (err) {
-    failures.push(`remboursement ${refundId} fait mais non inscrit sur la demande : ${errText(err)}`);
-  }
-
   try {
     const inviteId = await chosenInviteId(row.deposit_option_id);
     if (inviteId != null) {
@@ -618,11 +756,20 @@ async function refundBooking(
  * ce qui reste à faire dans `failures`.
  */
 async function creditAfterRefund(row: BookingRow, reason: RefundReason, notes: string[], failures: string[]): Promise<void> {
-  // invoiceForRequest rend null aussi sur une lecture refusée : la ligne ops
-  // le dit, pour qu'une facture non avoirée ne passe pas inaperçue.
-  const invoice = await invoiceForRequest(row.id);
+  // Lecture vérifiée (invoiceForRequest confond « aucune facture » et « lecture
+  // refusée ») : une facture à avoir ne doit pas passer pour inexistante.
+  const { data, error } = await supabaseAdmin
+    .from("car_commission_invoices")
+    .select("id, number, partner_id, amount_eur, credited_at")
+    .eq("request_id", row.id)
+    .maybeSingle();
+  if (error) {
+    failures.push(`facture de commission illisible (${error.message}) : vérifier s'il faut un avoir`);
+    return;
+  }
+  const invoice = data as Pick<InvoiceRow, "id" | "number" | "partner_id" | "amount_eur" | "credited_at"> | null;
   if (!invoice) {
-    notes.push("aucune facture de commission trouvée, rien à avoir");
+    notes.push("aucune facture de commission émise, rien à avoir");
     return;
   }
   if (invoice.credited_at) {
@@ -701,7 +848,7 @@ export async function releaseBooking(
   reason: RefundReason,
   nowMs: number,
 ): Promise<"refunded" | "not_releasable" | "refund_failed"> {
-  const out = await refundBooking("awaiting_partner", requestId, reason, nowMs, "car-deposit-refund-");
+  const out = await claimRefund("awaiting_partner", requestId, reason, nowMs);
   return out === "not_claimed" ? "not_releasable" : out;
 }
 
@@ -713,7 +860,7 @@ export async function refundConfirmed(
   requestId: number,
   reason: "partner_cancelled" | "ops",
 ): Promise<"refunded" | "not_refundable" | "refund_failed"> {
-  const out = await refundBooking("confirmed", requestId, reason, Date.now(), "car-deposit-refund-confirmed-");
+  const out = await claimRefund("confirmed", requestId, reason, Date.now());
   return out === "not_claimed" ? "not_refundable" : out;
 }
 

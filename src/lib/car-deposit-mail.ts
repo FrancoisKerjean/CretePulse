@@ -214,7 +214,8 @@ function partnerBooking(d: DepositMailData, withMoney: boolean): string {
 }
 
 const deadlineEn = (d: DepositMailData) => (d.deadlineIso ? formatAthensDeadline(d.deadlineIso, "en") : "");
-const when = (d: DepositMailData) => `${esc(d.pickupLabel)} ${d.dateFrom} to ${d.dateTo}`;
+/** Pour les sujets : texte brut, jamais échappé (un sujet n'est pas du HTML). */
+const when = (d: DepositMailData) => `${d.pickupLabel} ${d.dateFrom} to ${d.dateTo}`;
 
 function partnerMail(kind: DepositMailKind, d: DepositMailData): DepositMail {
   const hi = P(`Hi ${esc(d.partnerName)},`);
