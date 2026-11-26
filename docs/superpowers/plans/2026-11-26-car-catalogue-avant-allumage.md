@@ -4,14 +4,14 @@ Branche `feat/car-catalogue`, livrée éteinte. État au 26/11/2026, après la r
 Avec l'interrupteur éteint, rien ici ne peut déplacer d'argent ni faire passer une coordonnée : la revue finale a vérifié que les parcours voyageur sont inchangés, hors la ligne d'assurance désormais traduite.
 
 ## Verrous de code (une petite branche avant l'allumage)
-1. **Accept par l'ancien chemin pendant un paiement en cours.** Dans `src/app/api/car-rental/accept/route.ts`, le chemin de mise en relation doit répondre 409 `inProgress` quand `booking_status` est dans `DEPOSIT_HOLDS`. Sa mise à jour doit aussi être conditionnée à `status = 'quoted'`. Sans cela, sur une page qui mélange des offres avec et sans acompte, un acompte payé chez A peut se retrouver rattaché à B.
-2. **Verrou `pending_payment` sans id de session.** Il est posé si la fonction meurt entre la pose du verrou et l'écriture de la session. Corriger par une migration `booking_locked_at timestamptz`, puis la libération par le cron `car-deposit-deadline` après 35 min, avec une seule alerte. Aucun argent n'est pris dans ce cas.
-3. Mineurs, à régler dans la même branche :
-   - après un remboursement, l'ancien chemin laisse `booking_status = refunded` avec `status = accepted` (car-offer page.tsx:432) ;
-   - texte de la vue `noPartner` de l'assistant (CarRentalWizard.tsx:612-640), qui contredit l'e-mail `noAgency` ;
-   - pas d'alerte quand Stripe refuse une session de façon durable ;
-   - « paiement déjà ouvert » affiché après une réconciliation payée.
-4. **E-mail « nouvelle offre » (`sendCustomerQuoteEmail`, email.ts:758) :** il garde les lignes `reassure` de `sharedOfferCopy`, dont « No online prepayment, no card needed to book ». Interrupteur allumé, cette phrase contredit l'acompte, alors que la page d'offre la remplace déjà (car-offer page.tsx:304). Correction : même remplacement dans l'e-mail quand l'offre se réserve par acompte.
+1. ✅ Réglé le 26/11 (branche feat/car-allumage, 84a16d8). **Accept par l'ancien chemin pendant un paiement en cours.** Dans `src/app/api/car-rental/accept/route.ts`, le chemin de mise en relation doit répondre 409 `inProgress` quand `booking_status` est dans `DEPOSIT_HOLDS`. Sa mise à jour doit aussi être conditionnée à `status = 'quoted'`. Sans cela, sur une page qui mélange des offres avec et sans acompte, un acompte payé chez A peut se retrouver rattaché à B.
+2. ✅ Réglé le 26/11 (branche feat/car-allumage, bc59055), ⚠️ migration `supabase/migrations/20261127_car_booking_locked_at.sql` à appliquer en prod AVANT le ship du code. **Verrou `pending_payment` sans id de session.** Il est posé si la fonction meurt entre la pose du verrou et l'écriture de la session. Corriger par une migration `booking_locked_at timestamptz`, puis la libération par le cron `car-deposit-deadline` après 35 min, avec une seule alerte. Aucun argent n'est pris dans ce cas.
+3. ✅ Réglé le 26/11 (branche feat/car-allumage, d9fe46c). Mineurs, à régler dans la même branche :
+   - après un remboursement, l'ancien chemin laisse `booking_status = refunded` avec `status = accepted` (car-offer page.tsx:432) : rien à changer, l'ancien chemin efface `accept_token_hash`, la page n'est plus joignable dans cet état (commentaire posé) ;
+   - texte de la vue `noPartner` de l'assistant (CarRentalWizard.tsx:612-640), qui contredit l'e-mail `noAgency` : nouvelle vue « demande reçue » ;
+   - pas d'alerte quand Stripe refuse une session de façon durable : une alerte après 1 h de verrou, une seule ;
+   - « paiement déjà ouvert » affiché après une réconciliation payée : `booked`, la page se recharge sur l'état réel.
+4. ✅ Sans objet, vérifié le 26/11 (branche feat/car-allumage, f2cbd2d) : `sendCustomerQuoteEmail` n'a plus d'appelant depuis 8e5799b (08/07/2026). L'e-mail envoyé à chaque offre est `sendCustomerNewOffer`, sans ces lignes ; un test le fige dans les 4 langues. La fonction morte reste à supprimer ou non. **E-mail « nouvelle offre » (`sendCustomerQuoteEmail`, email.ts:758) :** il garde les lignes `reassure` de `sharedOfferCopy`, dont « No online prepayment, no card needed to book ». Interrupteur allumé, cette phrase contredit l'acompte, alors que la page d'offre la remplace déjà (car-offer page.tsx:304). Correction : même remplacement dans l'e-mail quand l'offre se réserve par acompte.
 5. ✅ Réglé le 26/11 (branche fix/car-deposit-mails) :
    - intertitres grecs en capitales sans tonos, dans tous les e-mails ;
    - phrase d'annulation en tête de l'e-mail client d'annulation ;
