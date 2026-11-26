@@ -1,16 +1,33 @@
 // Acompte en ligne (interrupteur CAR_CATALOGUE_ENABLED) : accès base du choix
-// d'une offre. Le calcul pur vit dans car-deposit.ts et car-catalogue.ts.
+// d'une offre, du paiement, de la confirmation du loueur et du remboursement.
+// Le calcul pur vit dans car-deposit.ts et car-catalogue.ts, les textes des
+// e-mails dans car-deposit-mail.ts.
 //
 // Choisir une offre ne met PERSONNE en relation : on fige l'offre et l'acompte
 // sur la demande, puis le client paie sur /car-booking/{jeton}. Les coordonnées
 // ne s'échangent qu'à la confirmation du loueur.
+//
+// Chaque transition après paiement est une PRISE DE MAIN : une écriture
+// conditionnée à l'état de départ, qui ne touche qu'une ligne. Le perdant d'une
+// course (« Confirm » contre le cron, webhook rejoué) écrit 0 ligne, relit, et
+// ne refait ni remboursement ni e-mail. Tout ce qui suit une prise de main
+// gagnée est au mieux : un échec prévient ops, il ne défait jamais l'état.
 import { supabaseAdmin } from "./supabase-admin";
 import { newToken, hashToken, siteBase } from "./car-quote";
-import { assertWritten } from "./car-invoice-server";
+import { assertWritten, invoiceForRequest, creditInvoice } from "./car-invoice-server";
 import { partnerById } from "./car-partners-db";
 import { depositEur } from "./car-catalogue";
-import { isDepositBookable } from "./car-deposit";
+import {
+  isDepositBookable, confirmDeadlineMs, shouldSuspendPartner, SUSPEND_WINDOW_DAYS, type RefundReason,
+} from "./car-deposit";
+import { depositMail, type DepositMailData, type DepositMailKind } from "./car-deposit-mail";
 import { quotedModelLabel, type QuoteOption } from "./car-quotes";
+import { carPickupLabel, carTypeLabelWithExamples } from "./car-lead";
+import { CAR_TYPES_DATA } from "./car-types-data";
+import { stripeClient } from "./stays/stripe-helpers";
+import { stripeLogFields } from "./stripe-errors";
+import { notifyOps } from "./ops-notify";
+import { pickCarBookingLocale, formatAthensDeadline } from "@/app/[locale]/car-booking/content";
 
 const GEARBOX_LABEL: Record<string, string> = { automatic: "Automatic", manual: "Manual" };
 
@@ -153,4 +170,585 @@ export async function onDepositSessionExpired(requestId: number, sessionId: stri
     .select("id");
   assertWritten("onDepositSessionExpired", requestId, error);
   return (data?.length ?? 0) === 1;
+}
+
+// ── Après paiement ──────────────────────────────────────────────────────────
+
+/** Colonnes relues par chaque prise de main : état, montants et de quoi écrire les e-mails. */
+const BOOKING_COLS =
+  "id, locale, booking_status, booking_session_id, booking_payment_intent_id, deposit_option_id, deposit_eur, quoted_price, quoted_car_model, quoted_insurance_type, quoted_excess_eur, quoted_zero_excess_upsell_eur_day, quoted_by_partner_id, partner_name, pickup_slug, car_type, date_from, time_from, date_to, time_to, confirm_deadline_at, client_token, customer_name, customer_email, customer_phone";
+
+interface BookingRow {
+  id: number;
+  locale: string | null;
+  booking_status: string | null;
+  booking_session_id: string | null;
+  booking_payment_intent_id: string | null;
+  deposit_option_id: number | null;
+  deposit_eur: number | string | null;
+  quoted_price: number | string | null;
+  quoted_car_model: string | null;
+  quoted_insurance_type: string | null;
+  quoted_excess_eur: number | null;
+  quoted_zero_excess_upsell_eur_day: number | null;
+  quoted_by_partner_id: number | null;
+  partner_name: string | null;
+  pickup_slug: string | null;
+  car_type: string | null;
+  date_from: string;
+  time_from: string | null;
+  date_to: string;
+  time_to: string | null;
+  confirm_deadline_at: string | null;
+  client_token: string | null;
+  customer_name: string | null;
+  customer_email: string | null;
+  customer_phone: string | null;
+}
+
+interface PartnerContact {
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  whatsapp: string | null;
+  address_line: string | null;
+  postal_code: string | null;
+  city: string | null;
+}
+
+/** Un paiement de cette session déjà traité : un rejeu n'a plus rien à faire. */
+const RECORDED = new Set(["awaiting_partner", "confirmed", "refunded", "cancelled_kept"]);
+/** Manquements du loueur : consignés sur son invitation, comptés pour la suspension. */
+const PARTNER_FAULTS = new Set<RefundReason>(["partner_declined", "partner_timeout", "partner_cancelled"]);
+
+const DAY_MS = 86_400_000;
+const adminUrl = () => `${siteBase()}/admin/car-rental`;
+const errText = (err: unknown) => (err instanceof Error ? err.message : String(err));
+
+async function partnerContact(partnerId: number | null): Promise<PartnerContact | null> {
+  if (partnerId == null) return null;
+  const { data, error } = await supabaseAdmin
+    .from("car_partners")
+    .select("name, email, phone, whatsapp, address_line, postal_code, city")
+    .eq("id", partnerId)
+    .maybeSingle();
+  if (error) {
+    console.error("[car-deposit] loueur illisible", { partnerId, error: error.message });
+    return null;
+  }
+  return (data as PartnerContact | null) ?? null;
+}
+
+function mailData(row: BookingRow, locale: string, extra: Partial<DepositMailData> = {}): DepositMailData {
+  const ct = CAR_TYPES_DATA.find((c) => c.id === row.car_type);
+  return {
+    partnerName: row.partner_name ?? "",
+    carLabel: row.quoted_car_model || carTypeLabelWithExamples(ct, locale, row.car_type ?? ""),
+    pickupLabel: row.pickup_slug ? carPickupLabel(row.pickup_slug) : "",
+    dateFrom: row.date_from,
+    timeFrom: row.time_from,
+    dateTo: row.date_to,
+    timeTo: row.time_to,
+    totalEur: Number(row.quoted_price),
+    depositEur: Number(row.deposit_eur),
+    deadlineIso: row.confirm_deadline_at,
+    insurance: {
+      type: row.quoted_insurance_type,
+      excessEur: row.quoted_excess_eur,
+      upsellPerDay: row.quoted_zero_excess_upsell_eur_day,
+    },
+    ...extra,
+  };
+}
+
+/**
+ * Envoie un e-mail de l'acompte. Rend une ligne pour ops en cas d'échec, null
+ * sinon. Le module e-mail est chargé à l'envoi : il construit son client Resend
+ * à l'import, ce que les lecteurs de ce module (page d'offres, route de
+ * paiement) n'ont pas à payer.
+ */
+async function sendMail(
+  kind: DepositMailKind,
+  to: string | null | undefined,
+  data: DepositMailData,
+  locale: string,
+  who: string,
+): Promise<string | null> {
+  if (!to) return `e-mail ${kind} au ${who} non parti : adresse absente`;
+  const { sendCarDepositMail } = await import("./email");
+  return (await sendCarDepositMail(to, depositMail(kind, data, locale))) ? null : `e-mail ${kind} au ${who} refusé par Resend`;
+}
+
+/** Invitation de l'option payée (une option appartient à une invitation). */
+async function chosenInviteId(optionId: number | null): Promise<number | null> {
+  if (optionId == null) return null;
+  const { data, error } = await supabaseAdmin
+    .from("car_quote_options")
+    .select("invite_id")
+    .eq("id", optionId)
+    .maybeSingle();
+  if (error) throw new Error(`option ${optionId} illisible: ${error.message}`);
+  return (data?.invite_id as number | undefined) ?? null;
+}
+
+async function bookingStatusOf(requestId: number): Promise<{ booking_status: string | null; booking_session_id: string | null } | null> {
+  const { data, error } = await supabaseAdmin
+    .from("car_requests")
+    .select("booking_status, booking_session_id")
+    .eq("id", requestId)
+    .maybeSingle();
+  if (error) throw new Error(`car_requests(${requestId}) relecture refusée par la base: ${error.message}`);
+  return (data as { booking_status: string | null; booking_session_id: string | null } | null) ?? null;
+}
+
+/**
+ * Paiement de l'acompte reçu (webhook `checkout.session.completed`). Prise de
+ * main pending_payment → awaiting_partner sur CETTE session : un rejeu du même
+ * paiement rend « recorded » sans renvoyer d'e-mail. Un paiement sur une
+ * session qui n'est pas celle de la demande (onglet périmé, second paiement)
+ * est remboursé et signalé à ops, sans rien écraser.
+ *
+ * Lève quand la base refuse : le webhook supprime alors l'événement du
+ * registre et rend 500, et Stripe rejoue.
+ */
+export async function onDepositPaid(
+  requestId: number,
+  sessionId: string,
+  paymentIntentId: string,
+  nowMs: number,
+): Promise<"recorded" | "session_mismatch"> {
+  const paidAt = new Date(nowMs).toISOString();
+  const token = newToken();
+  const { data: claimed, error } = await supabaseAdmin
+    .from("car_requests")
+    .update({
+      booking_status: "awaiting_partner",
+      booking_paid_at: paidAt,
+      booking_payment_intent_id: paymentIntentId,
+      confirm_deadline_at: new Date(confirmDeadlineMs(nowMs)).toISOString(),
+      // Seul le hash va en base ; le clair ne vit que dans le lien de l'e-mail.
+      partner_confirm_token: hashToken(token),
+      status: "accepted",
+      accepted_at: paidAt,
+    })
+    .eq("id", requestId)
+    .eq("booking_session_id", sessionId)
+    .eq("booking_status", "pending_payment")
+    .select(BOOKING_COLS);
+  assertWritten("onDepositPaid", requestId, error);
+  const row = (claimed as BookingRow[] | null)?.[0];
+
+  if (!row) {
+    const current = await bookingStatusOf(requestId);
+    if (current?.booking_session_id === sessionId) {
+      if (RECORDED.has(current.booking_status ?? "")) return "recorded";
+      // Même session, toujours payable : une autre livraison est en train de
+      // l'écrire. On ne tranche rien, Stripe rejouera.
+      throw new Error(`onDepositPaid(${requestId}) session ${sessionId} en état ${current.booking_status}, rien tranché`);
+    }
+    await stripeClient().refunds.create(
+      { payment_intent: paymentIntentId },
+      { idempotencyKey: `car-deposit-mismatch-${paymentIntentId}` },
+    );
+    await notifyOps({
+      title: "Acompte voiture : paiement sur une session qui n'est plus celle de la demande, remboursé",
+      lines: [
+        `demande ${requestId}`,
+        `session payée ${sessionId}, paiement ${paymentIntentId}`,
+        `demande : ${current ? `${current.booking_status ?? "sans réservation"}, session ${current.booking_session_id ?? "aucune"}` : "introuvable"}`,
+      ],
+      action: "vérifier dans Stripe que le remboursement est parti ; rien d'autre n'a été modifié",
+      url: adminUrl(),
+    });
+    return "session_mismatch";
+  }
+
+  const failures: string[] = [];
+  try {
+    const inviteId = await chosenInviteId(row.deposit_option_id);
+    if (inviteId == null) throw new Error(`option ${row.deposit_option_id} introuvable`);
+    const chosen = await supabaseAdmin.from("car_quote_invites").update({ status: "chosen" }).eq("id", inviteId).select("id");
+    assertWritten("onDepositPaid:chosen", inviteId, chosen.error);
+    const others = await supabaseAdmin
+      .from("car_quote_invites")
+      .update({ status: "not_chosen" })
+      .eq("request_id", requestId)
+      .eq("status", "quoted")
+      .neq("id", inviteId)
+      .select("id");
+    assertWritten("onDepositPaid:not_chosen", requestId, others.error);
+  } catch (err) {
+    failures.push(`invitations non mises à jour : ${errText(err)}`);
+  }
+
+  const locale = pickCarBookingLocale(row.locale ?? "en");
+  const confirmUrl = `${siteBase()}/en/car-confirm/${token}`;
+  const partner = await partnerContact(row.quoted_by_partner_id);
+  const clientFail = await sendMail("client_pending", row.customer_email, mailData(row, locale), locale, "client");
+  if (clientFail) failures.push(clientFail);
+  const partnerFail = await sendMail("partner_request", partner?.email, mailData(row, "en", { confirmUrl }), "en", "loueur");
+  if (partnerFail) {
+    // Le jeton n'existe en clair nulle part ailleurs : ops doit pouvoir le transmettre.
+    failures.push(partnerFail, `lien de confirmation à transmettre au loueur : ${confirmUrl}`);
+  }
+
+  const name = row.partner_name ?? "le loueur";
+  await notifyOps({
+    title: `Acompte voiture payé : ${name} doit confirmer avant ${formatAthensDeadline(row.confirm_deadline_at ?? paidAt, "fr")}`,
+    lines: [
+      `demande ${requestId}`,
+      `acompte ${Number(row.deposit_eur)} €, total ${Number(row.quoted_price)} €`,
+      `prise le ${row.date_from}${row.pickup_slug ? `, ${carPickupLabel(row.pickup_slug)}` : ""}`,
+      ...failures,
+    ],
+    action: "sans confirmation à l'approche de l'échéance, appeler le loueur ; l'admin peut confirmer en son nom",
+    url: adminUrl(),
+  });
+  return "recorded";
+}
+
+/**
+ * Le loueur (ou ops depuis l'admin) confirme. Prise de main awaiting_partner →
+ * confirmed, acceptée même après l'échéance tant que le cron n'est pas passé :
+ * rien n'a encore été dit au client. C'est le SEUL moment où chacun reçoit les
+ * coordonnées de l'autre, et seulement pour l'appel qui a gagné.
+ */
+export async function confirmBooking(
+  requestId: number,
+  by: "partner" | "admin",
+): Promise<"confirmed" | "already_confirmed" | "not_awaiting"> {
+  const { data: claimed, error } = await supabaseAdmin
+    .from("car_requests")
+    .update({ booking_status: "confirmed", partner_confirmed_at: new Date().toISOString() })
+    .eq("id", requestId)
+    .eq("booking_status", "awaiting_partner")
+    .select(BOOKING_COLS);
+  assertWritten("confirmBooking", requestId, error);
+  const row = (claimed as BookingRow[] | null)?.[0];
+  if (!row) {
+    const current = await bookingStatusOf(requestId);
+    return current?.booking_status === "confirmed" ? "already_confirmed" : "not_awaiting";
+  }
+
+  const failures: string[] = [];
+  const locale = pickCarBookingLocale(row.locale ?? "en");
+  const partner = await partnerContact(row.quoted_by_partner_id);
+  if (!partner) {
+    failures.push("loueur illisible : aucune mise en relation envoyée, à faire à la main");
+  } else {
+    const address = [partner.address_line, [partner.postal_code, partner.city].filter(Boolean).join(" ")]
+      .filter(Boolean)
+      .join(", ");
+    const { formatPhoneWithCountryCode } = await import("./email");
+    const clientFail = await sendMail("client_confirmed", row.customer_email, mailData(row, locale, {
+      partnerContact: {
+        name: partner.name ?? row.partner_name ?? "",
+        phone: partner.phone,
+        whatsapp: partner.whatsapp,
+        email: partner.email,
+        address: address || null,
+      },
+    }), locale, "client");
+    if (clientFail) failures.push(clientFail);
+    const partnerFail = await sendMail("partner_confirmed", partner.email, mailData(row, "en", {
+      customer: {
+        name: row.customer_name ?? "",
+        phone: formatPhoneWithCountryCode(row.customer_phone, row.locale ?? "en"),
+        email: row.customer_email ?? "",
+      },
+    }), "en", "loueur");
+    if (partnerFail) failures.push(partnerFail);
+  }
+
+  await notifyOps({
+    title: `Réservation voiture confirmée : ${row.partner_name ?? "loueur"}`,
+    lines: [`demande ${requestId}`, by === "admin" ? "confirmée depuis l'admin" : "confirmée par le loueur", ...failures],
+    ...(failures.length ? { action: "mettre client et loueur en relation à la main", url: adminUrl() } : {}),
+    silent: failures.length === 0,
+  });
+  return "confirmed";
+}
+
+/**
+ * Rembourse un acompte depuis `from` : prise de main `from` → refunded AVANT
+ * tout appel Stripe, pour qu'une confirmation concurrente ne puisse plus gagner.
+ * Stripe refuse : retour à `from` (refund_reason effacé) et ops prévenu ; la clé
+ * d'idempotence étant stable, la tentative suivante ne remboursera pas deux fois.
+ */
+async function refundBooking(
+  from: "awaiting_partner" | "confirmed",
+  requestId: number,
+  reason: RefundReason,
+  nowMs: number,
+  keyPrefix: string,
+): Promise<"refunded" | "not_claimed" | "refund_failed"> {
+  const op = from === "confirmed" ? "refundConfirmed" : "releaseBooking";
+  const { data: claimed, error } = await supabaseAdmin
+    .from("car_requests")
+    .update({ booking_status: "refunded", refund_reason: reason })
+    .eq("id", requestId)
+    .eq("booking_status", from)
+    .select(BOOKING_COLS);
+  assertWritten(op, requestId, error);
+  const row = (claimed as BookingRow[] | null)?.[0];
+  if (!row) return "not_claimed";
+
+  const pi = row.booking_payment_intent_id;
+  let refundId: string;
+  try {
+    if (!pi) throw new Error("aucun payment_intent enregistré sur la demande");
+    const refund = await stripeClient().refunds.create(
+      { payment_intent: pi },
+      { idempotencyKey: `${keyPrefix}${requestId}-${pi}` },
+    );
+    refundId = refund.id;
+  } catch (err) {
+    console.error(`[car-deposit] ${op} : remboursement refusé`, { requestId, reason, ...stripeLogFields(err) });
+    let revertError: unknown = null;
+    try {
+      const { error: revErr } = await supabaseAdmin
+        .from("car_requests")
+        .update({ booking_status: from, refund_reason: null })
+        .eq("id", requestId)
+        .eq("booking_status", "refunded")
+        .is("refund_id", null)
+        .select("id");
+      assertWritten(`${op}:retour`, requestId, revErr);
+    } catch (e) {
+      revertError = e;
+    }
+    await notifyOps({
+      title: "Acompte voiture : remboursement refusé par Stripe",
+      lines: [
+        `demande ${requestId}, motif ${reason}, paiement ${pi ?? "absent"}`,
+        `Stripe : ${errText(err)}`,
+        revertError
+          ? `⚠️ demande restée en refunded SANS remboursement (${errText(revertError)}) : remettre booking_status à ${from}`
+          : `demande remise en ${from}${from === "awaiting_partner" ? ", le cron retentera" : ""}`,
+      ],
+      action: "vérifier dans Stripe si le remboursement est parti, sinon le faire à la main",
+      url: adminUrl(),
+    });
+    if (revertError) throw revertError;
+    return "refund_failed";
+  }
+
+  // L'argent est rendu : tout ce qui suit est au mieux, un échec va à ops.
+  const notes: string[] = [];
+  const failures: string[] = [];
+  const nowIso = new Date(nowMs).toISOString();
+  try {
+    const { error: e } = await supabaseAdmin
+      .from("car_requests")
+      .update({
+        refund_id: refundId,
+        refund_amount_eur: Number(row.deposit_eur),
+        cancelled_at: nowIso,
+        // La demande redevient une demande à offres : le client peut en choisir
+        // une autre et repayer. Le jeton de réservation reste, pour que son
+        // lien affiche « remboursé » (startDeposit en pose un neuf au choix suivant).
+        status: "quoted",
+        accepted_at: null,
+      })
+      .eq("id", requestId)
+      .eq("booking_status", "refunded")
+      .select("id");
+    assertWritten(`${op}:remboursement`, requestId, e);
+  } catch (err) {
+    failures.push(`remboursement ${refundId} fait mais non inscrit sur la demande : ${errText(err)}`);
+  }
+
+  try {
+    const inviteId = await chosenInviteId(row.deposit_option_id);
+    if (inviteId != null) {
+      // Manquement du loueur : son offre est grisée et le manquement survit à
+      // un nouveau choix du client. Sinon (ops, client) l'offre reste choisissable.
+      const patch = PARTNER_FAULTS.has(reason)
+        ? { status: "declined", deposit_failure_reason: reason, deposit_failed_at: nowIso }
+        : { status: "quoted" };
+      const { error: e } = await supabaseAdmin.from("car_quote_invites").update(patch).eq("id", inviteId).select("id");
+      assertWritten(`${op}:invitation`, inviteId, e);
+    }
+    const { error: e2 } = await supabaseAdmin
+      .from("car_quote_invites")
+      .update({ status: "quoted" })
+      .eq("request_id", requestId)
+      .eq("status", "not_chosen")
+      .select("id");
+    assertWritten(`${op}:autres_invitations`, requestId, e2);
+  } catch (err) {
+    failures.push(`invitations non remises en offres : ${errText(err)}`);
+  }
+
+  if (from === "confirmed") {
+    try {
+      await creditAfterRefund(row, reason, notes, failures);
+    } catch (err) {
+      failures.push(`avoir non émis : ${errText(err)}`);
+    }
+  }
+
+  const locale = pickCarBookingLocale(row.locale ?? "en");
+  const offersUrl = row.client_token ? `${siteBase()}/${locale}/car-offer/${row.client_token}` : null;
+  const clientFail = await sendMail("client_refunded", row.customer_email, mailData(row, locale, { refundReason: reason, offersUrl }), locale, "client");
+  if (clientFail) failures.push(clientFail);
+
+  if (PARTNER_FAULTS.has(reason) && row.quoted_by_partner_id != null) {
+    try {
+      await suspendIfRepeated(row.quoted_by_partner_id, requestId, reason, nowMs);
+    } catch (err) {
+      failures.push(`règle de suspension non appliquée : ${errText(err)}`);
+    }
+  }
+
+  await notifyOps({
+    title: `Acompte voiture remboursé : ${row.partner_name ?? "loueur"} (${reason})`,
+    lines: [`demande ${requestId}`, `remboursement ${refundId}, ${Number(row.deposit_eur)} €`, ...notes, ...failures],
+    ...(failures.length ? { action: "reprendre à la main les points ci-dessus", url: adminUrl() } : {}),
+    silent: failures.length === 0,
+  });
+  return "refunded";
+}
+
+/**
+ * Avoir de la facture de commission, si elle est déjà émise (premier jour de
+ * location). La facture d'un acompte est réglée par compensation, donc déjà
+ * « payée » : on passe par creditInvoice directement, creditCommissionInvoice
+ * refusant une facture payée. Ce qui s'est passé va dans `notes` (ops le lit),
+ * ce qui reste à faire dans `failures`.
+ */
+async function creditAfterRefund(row: BookingRow, reason: RefundReason, notes: string[], failures: string[]): Promise<void> {
+  // invoiceForRequest rend null aussi sur une lecture refusée : la ligne ops
+  // le dit, pour qu'une facture non avoirée ne passe pas inaperçue.
+  const invoice = await invoiceForRequest(row.id);
+  if (!invoice) {
+    notes.push("aucune facture de commission trouvée, rien à avoir");
+    return;
+  }
+  if (invoice.credited_at) {
+    notes.push(`facture ${invoice.number} déjà avoirée`);
+    return;
+  }
+  const why = reason === "partner_cancelled"
+    ? "booking cancelled by the rental agency, deposit refunded to the customer"
+    : "booking cancelled, deposit refunded to the customer";
+  const creditNumber = await creditInvoice(invoice.id, invoice.number, why);
+  if (!creditNumber) {
+    notes.push(`facture ${invoice.number} avoirée par un autre appel`);
+    return;
+  }
+  const partner = await partnerContact(invoice.partner_id);
+  if (!partner?.email) {
+    failures.push(`avoir ${creditNumber} émis, loueur sans e-mail : le lui envoyer`);
+    return;
+  }
+  const { sendCreditNote } = await import("./email");
+  const sent = await sendCreditNote(partner.email, {
+    creditNumber,
+    number: invoice.number,
+    partnerName: partner.name ?? "",
+    amountEur: Number(invoice.amount_eur),
+    reason: why,
+  });
+  if (sent) notes.push(`avoir ${creditNumber} émis et envoyé au loueur`);
+  else failures.push(`avoir ${creditNumber} émis, e-mail refusé : le renvoyer`);
+}
+
+/**
+ * Trois manquements en 30 jours (refus, silence, annulation après
+ * confirmation), comptés sur les invitations : la grille passe `paused`.
+ * Écriture conditionnée à « pas déjà paused » : une seule alerte par suspension.
+ */
+async function suspendIfRepeated(partnerId: number, requestId: number, reason: RefundReason, nowMs: number): Promise<void> {
+  const since = new Date(nowMs - SUSPEND_WINDOW_DAYS * DAY_MS).toISOString();
+  const { count, error } = await supabaseAdmin
+    .from("car_quote_invites")
+    .select("id", { count: "exact", head: true })
+    .eq("partner_id", partnerId)
+    .not("deposit_failure_reason", "is", null)
+    .gte("deposit_failed_at", since);
+  if (error) throw new Error(`manquements du loueur ${partnerId} illisibles: ${error.message}`);
+  if (!shouldSuspendPartner(count ?? 0)) return;
+
+  const { data, error: e } = await supabaseAdmin
+    .from("car_partners")
+    .update({ rates_status: "paused" })
+    .eq("id", partnerId)
+    .neq("rates_status", "paused")
+    .select("id, name");
+  assertWritten("suspendIfRepeated", partnerId, e);
+  const paused = (data as Array<{ name: string | null }> | null)?.[0];
+  if (!paused) return;
+  await notifyOps({
+    title: `Loueur suspendu : ${paused.name ?? `loueur ${partnerId}`}`,
+    lines: [
+      `${count} manquements en ${SUSPEND_WINDOW_DAYS} jours (refus, absence de réponse ou annulation après confirmation)`,
+      `dernier : demande ${requestId}, motif ${reason}`,
+      "sa grille est en pause : plus aucune offre de grille de sa part",
+    ],
+    action: "voir avec le loueur ; la suspension se lève depuis l'admin",
+    url: adminUrl(),
+  });
+}
+
+/**
+ * Libère un acompte pas encore confirmé : refus du loueur, échéance dépassée
+ * (cron), ops ou client. Rembourse intégralement, remet la demande en offres et
+ * prévient le client avec le lien de ses autres offres.
+ */
+export async function releaseBooking(
+  requestId: number,
+  reason: RefundReason,
+  nowMs: number,
+): Promise<"refunded" | "not_releasable" | "refund_failed"> {
+  const out = await refundBooking("awaiting_partner", requestId, reason, nowMs, "car-deposit-refund-");
+  return out === "not_claimed" ? "not_releasable" : out;
+}
+
+/**
+ * Rembourse une réservation déjà confirmée : le loueur annule, ou n'a pas de
+ * voiture au comptoir (ops). Avoir si la facture de commission existe déjà.
+ */
+export async function refundConfirmed(
+  requestId: number,
+  reason: "partner_cancelled" | "ops",
+): Promise<"refunded" | "not_refundable" | "refund_failed"> {
+  const out = await refundBooking("confirmed", requestId, reason, Date.now(), "car-deposit-refund-confirmed-");
+  return out === "not_claimed" ? "not_refundable" : out;
+}
+
+/** Colonnes de la page loueur : ⛔ aucune coordonnée du client. */
+const CONFIRM_COLS =
+  "id, booking_status, refund_reason, partner_name, quoted_car_model, car_type, pickup_slug, date_from, time_from, date_to, time_to, quoted_price, deposit_eur, quoted_insurance_type, quoted_excess_eur, quoted_zero_excess_upsell_eur_day, confirm_deadline_at";
+
+export interface ConfirmBooking {
+  id: number;
+  booking_status: string | null;
+  refund_reason: string | null;
+  partner_name: string | null;
+  quoted_car_model: string | null;
+  car_type: string | null;
+  pickup_slug: string | null;
+  date_from: string;
+  time_from: string | null;
+  date_to: string;
+  time_to: string | null;
+  quoted_price: number | string | null;
+  deposit_eur: number | string | null;
+  quoted_insurance_type: string | null;
+  quoted_excess_eur: number | null;
+  quoted_zero_excess_upsell_eur_day: number | null;
+  confirm_deadline_at: string | null;
+}
+
+/** Réservation désignée par le lien du loueur (jeton haché en base). Lève si la lecture est refusée. */
+export async function bookingByConfirmToken(token: string): Promise<ConfirmBooking | null> {
+  if (!token) return null;
+  const { data, error } = await supabaseAdmin
+    .from("car_requests")
+    .select(CONFIRM_COLS)
+    .eq("partner_confirm_token", hashToken(token))
+    .maybeSingle();
+  if (error) throw new Error(`bookingByConfirmToken lecture refusée par la base: ${error.message}`);
+  return (data as ConfirmBooking | null) ?? null;
 }

@@ -12,6 +12,26 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { stripeClient } from "@/lib/stays/stripe-helpers";
 import { transferDueAt } from "@/lib/booking-policy";
 import { markInvoicePaid } from "@/lib/car-invoice-server";
+import { onDepositPaid, onDepositSessionExpired } from "@/lib/car-deposit-server";
+import { notifyOps } from "@/lib/ops-notify";
+
+/**
+ * Acompte voiture (catalogue et acompte, spec 2026-11-25) : paiement reçu ou
+ * session expirée sans paiement. Rend l'issue pour la réponse ; lève quand le
+ * traitement échoue, l'appelant décide alors du rejeu.
+ */
+async function handleDeposit(event: Stripe.Event, requestId: number): Promise<string> {
+  const session = event.data.object as { id: string; payment_intent?: string | { id: string } | null };
+  if (event.type === "checkout.session.completed") {
+    const pi = typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id;
+    if (!pi) throw new Error(`session ${session.id} payée sans payment_intent`);
+    return onDepositPaid(requestId, session.id, pi, Date.now());
+  }
+  if (event.type === "checkout.session.expired") {
+    return (await onDepositSessionExpired(requestId, session.id)) ? "released" : "not_released";
+  }
+  return "ignored";
+}
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const sig = request.headers.get("stripe-signature") ?? "";
@@ -32,12 +52,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     (event.data.object as { metadata?: Record<string, string> })?.metadata ?? {};
   const requestId = Number(meta.car_request_id);
 
-  // Deux flux passent par cet endpoint : la commission facturee au loueur
-  // (modele hors ligne) et le paiement du voyageur (tunnel en ligne). Tout le
-  // reste appartient a une autre marque du compte et sort en 200 muet.
+  // Trois flux passent par cet endpoint : la commission facturee au loueur
+  // (modele hors ligne), le paiement du voyageur (tunnel en ligne de juillet)
+  // et l'acompte (catalogue). Tout le reste appartient a une autre marque du
+  // compte et sort en 200 muet.
   const paymentType = meta.payment_type;
   if (
-    (paymentType !== "car_commission" && paymentType !== "car_booking") ||
+    (paymentType !== "car_commission" && paymentType !== "car_booking" && paymentType !== "car_deposit") ||
     meta.brand !== "crete.direct" ||
     !Number.isInteger(requestId) ||
     requestId <= 0
@@ -56,6 +77,36 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ received: true, duplicate: true });
     }
     return NextResponse.json({ error: "ledger error" }, { status: 500 });
+  }
+
+  if (paymentType === "car_deposit") {
+    try {
+      const deposit = await handleDeposit(event, requestId);
+      return NextResponse.json({ received: true, deposit });
+    } catch (err) {
+      // L'evenement est deja au registre : sans le retirer, le rejeu de Stripe
+      // ressortirait en « duplicate » et un acompte encaisse resterait bloque
+      // en pending_payment. On le retire, puis 500 pour que Stripe rejoue.
+      const message = err instanceof Error ? err.message : String(err);
+      console.error("[car/deposit] traitement du webhook en echec", { eventId: event.id, requestId, message });
+      const { error: delErr } = await supabaseAdmin
+        .from("stripe_webhook_events")
+        .delete()
+        .eq("stripe_event_id", event.id)
+        .eq("scope", "car");
+      await notifyOps({
+        title: "Acompte voiture : webhook Stripe en échec",
+        lines: [
+          `demande ${requestId}, événement ${event.id} (${event.type})`,
+          message,
+          delErr
+            ? `⚠️ registre NON nettoyé (${delErr.message}) : le rejeu de Stripe sera ignoré, traiter à la main`
+            : "registre nettoyé, Stripe rejouera l'événement",
+        ],
+        action: delErr ? "traiter le paiement à la main depuis l'admin" : "surveiller le rejeu",
+      });
+      return NextResponse.json({ error: "deposit handling failed" }, { status: 500 });
+    }
   }
 
   if (event.type === "checkout.session.completed" && paymentType === "car_booking") {

@@ -31,3 +31,32 @@ describe("sendPartnerCommissionRequest", () => {
     await expect(sendPartnerCommissionRequest("a@b.c", mail)).resolves.toBe(false);
   });
 });
+
+describe("sendCarDepositMail", () => {
+  const m = { subject: "Deposit received", html: "<p>Body</p>" };
+
+  it("envoie depuis crete.direct, réponse vers crete.direct, corps dans l'habillage du site", async () => {
+    send.mockResolvedValue({ data: { id: "re_1" }, error: null });
+    const { sendCarDepositMail } = await import("./email");
+    await expect(sendCarDepositMail("a@b.c", m)).resolves.toBe(true);
+    const arg = send.mock.calls[0][0];
+    expect(arg.from).toContain("crete.direct");
+    expect(arg.replyTo).toBe("hello@crete.direct");
+    expect(arg.to).toBe("a@b.c");
+    expect(arg.subject).toBe("Deposit received");
+    expect(arg.html).toContain("<p>Body</p>");
+    expect(JSON.stringify(arg).toLowerCase()).not.toContain("kairos");
+  });
+
+  it("rend false quand Resend refuse, sans lever", async () => {
+    send.mockResolvedValue({ data: null, error: { message: "domain not verified" } });
+    const { sendCarDepositMail } = await import("./email");
+    await expect(sendCarDepositMail("a@b.c", m)).resolves.toBe(false);
+  });
+
+  it("rend false quand l appel jette", async () => {
+    send.mockRejectedValue(new Error("network"));
+    const { sendCarDepositMail } = await import("./email");
+    await expect(sendCarDepositMail("a@b.c", m)).resolves.toBe(false);
+  });
+});

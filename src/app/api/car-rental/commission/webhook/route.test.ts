@@ -8,6 +8,13 @@ const { from } = vi.hoisted(() => ({ from: vi.fn() }));
 vi.mock("@/lib/supabase-admin", () => ({ supabaseAdmin: { from } }));
 const { markInvoicePaidMock } = vi.hoisted(() => ({ markInvoicePaidMock: vi.fn() }));
 vi.mock("@/lib/car-invoice-server", () => ({ markInvoicePaid: markInvoicePaidMock }));
+const { onDepositPaid, onDepositSessionExpired, notifyOps } = vi.hoisted(() => ({
+  onDepositPaid: vi.fn(),
+  onDepositSessionExpired: vi.fn(),
+  notifyOps: vi.fn(),
+}));
+vi.mock("@/lib/car-deposit-server", () => ({ onDepositPaid, onDepositSessionExpired }));
+vi.mock("@/lib/ops-notify", () => ({ notifyOps }));
 
 import { POST } from "./route";
 
@@ -214,5 +221,128 @@ describe("POST /api/car-rental/commission/webhook", () => {
     // `request_id` seul est ambigu entre stay_requests et car_requests : sans
     // scope, deux lignes de tables differentes se confondent au reconcile.
     expect(inserts[0]).toMatchObject({ scope: "car", request_id: 42 });
+  });
+});
+
+// ── Acompte (car_deposit) ───────────────────────────────────────────────────
+describe("POST /api/car-rental/commission/webhook : acompte", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  const DEPOSIT_META = { car_request_id: "25", payment_type: "car_deposit", brand: "crete.direct" };
+
+  function depositEvent(type: string, id = "evt_dep") {
+    return { id, type, data: { object: { id: "cs_d1", payment_intent: "pi_d1", metadata: DEPOSIT_META } } };
+  }
+
+  /** Registre seul : l'acompte ne touche car_requests que par car-deposit-server. */
+  function ledger(opts: { ledgerError?: { code?: string }; deleteError?: { message: string } } = {}) {
+    const deleted: Array<Array<[string, unknown]>> = [];
+    from.mockImplementation((table: string) => {
+      if (table !== "stripe_webhook_events") throw new Error(`table inattendue: ${table}`);
+      return {
+        insert: async () => ({ error: opts.ledgerError ?? null }),
+        delete: () => {
+          const filters: Array<[string, unknown]> = [];
+          deleted.push(filters);
+          const chain = {
+            eq: (col: string, val: unknown) => { filters.push([col, val]); return chain; },
+            then: (res: (x: unknown) => unknown) => Promise.resolve({ error: opts.deleteError ?? null }).then(res),
+          };
+          return chain;
+        },
+      };
+    });
+    return deleted;
+  }
+
+  it("completed : enregistre le paiement par onDepositPaid", async () => {
+    constructEvent.mockReturnValueOnce(depositEvent("checkout.session.completed"));
+    ledger();
+    onDepositPaid.mockResolvedValueOnce("recorded");
+    const res = await POST(req() as never);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ received: true, deposit: "recorded" });
+    expect(onDepositPaid).toHaveBeenCalledWith(25, "cs_d1", "pi_d1", expect.any(Number));
+    expect(markInvoicePaidMock).not.toHaveBeenCalled();
+  });
+
+  it("un événement en double est ignoré par le registre", async () => {
+    constructEvent.mockReturnValueOnce(depositEvent("checkout.session.completed"));
+    ledger({ ledgerError: { code: "23505" } });
+    const res = await POST(req() as never);
+    expect((await res.json()).duplicate).toBe(true);
+    expect(onDepositPaid).not.toHaveBeenCalled();
+  });
+
+  it("le traitement lève : ligne du registre supprimée, ops prévenu, 500 pour que Stripe rejoue", async () => {
+    constructEvent.mockReturnValueOnce(depositEvent("checkout.session.completed", "evt_boom"));
+    const deleted = ledger();
+    onDepositPaid.mockRejectedValueOnce(new Error("onDepositPaid(25) refuse par la base: timeout"));
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await POST(req() as never);
+
+    expect(res.status).toBe(500);
+    expect(deleted).toHaveLength(1);
+    expect(deleted[0]).toContainEqual(["stripe_event_id", "evt_boom"]);
+    expect(deleted[0]).toContainEqual(["scope", "car"]);
+    expect(notifyOps).toHaveBeenCalledTimes(1);
+    err.mockRestore();
+  });
+
+  it("suppression du registre refusée : toujours 500, et ops le sait", async () => {
+    constructEvent.mockReturnValueOnce(depositEvent("checkout.session.completed"));
+    ledger({ deleteError: { message: "permission denied" } });
+    onDepositPaid.mockRejectedValueOnce(new Error("boom"));
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await POST(req() as never);
+
+    expect(res.status).toBe(500);
+    expect(JSON.stringify(notifyOps.mock.calls)).toMatch(/registre/);
+    err.mockRestore();
+  });
+
+  it("session étrangère : 200, le remboursement est fait par onDepositPaid", async () => {
+    constructEvent.mockReturnValueOnce(depositEvent("checkout.session.completed"));
+    ledger();
+    onDepositPaid.mockResolvedValueOnce("session_mismatch");
+    const res = await POST(req() as never);
+    expect(res.status).toBe(200);
+    expect((await res.json()).deposit).toBe("session_mismatch");
+  });
+
+  it("expired : libère le verrou de la demande pour cette session", async () => {
+    constructEvent.mockReturnValueOnce(depositEvent("checkout.session.expired"));
+    ledger();
+    onDepositSessionExpired.mockResolvedValueOnce(true);
+    const res = await POST(req() as never);
+    expect(res.status).toBe(200);
+    expect(onDepositSessionExpired).toHaveBeenCalledWith(25, "cs_d1");
+    expect(onDepositPaid).not.toHaveBeenCalled();
+  });
+
+  it("un autre type d'événement d'acompte ne déclenche rien", async () => {
+    constructEvent.mockReturnValueOnce(depositEvent("payment_intent.succeeded"));
+    ledger();
+    const res = await POST(req() as never);
+    expect(res.status).toBe(200);
+    expect(onDepositPaid).not.toHaveBeenCalled();
+    expect(onDepositSessionExpired).not.toHaveBeenCalled();
+  });
+
+  it("paiement sans payment_intent : traité comme un échec (rejeu Stripe), jamais enregistré à moitié", async () => {
+    constructEvent.mockReturnValueOnce({
+      id: "evt_nopi",
+      type: "checkout.session.completed",
+      data: { object: { id: "cs_d1", payment_intent: null, metadata: DEPOSIT_META } },
+    });
+    const deleted = ledger();
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await POST(req() as never);
+    expect(res.status).toBe(500);
+    expect(onDepositPaid).not.toHaveBeenCalled();
+    expect(deleted).toHaveLength(1);
+    err.mockRestore();
   });
 });

@@ -13,7 +13,24 @@ vi.mock("./car-quote", async (orig: () => Promise<Record<string, unknown>>) => (
   siteBase: () => "https://crete.direct",
 }));
 
-import { startDeposit, depositRatesFor, onDepositSessionExpired } from "./car-deposit-server";
+const { refundsCreate, notifyOps, sendCarDepositMail, sendCreditNote } = vi.hoisted(() => ({
+  refundsCreate: vi.fn(),
+  notifyOps: vi.fn(),
+  sendCarDepositMail: vi.fn(),
+  sendCreditNote: vi.fn(),
+}));
+vi.mock("./stays/stripe-helpers", () => ({ stripeClient: () => ({ refunds: { create: refundsCreate } }) }));
+vi.mock("./ops-notify", () => ({ notifyOps, echeance: () => "13/07" }));
+vi.mock("./email", () => ({
+  sendCarDepositMail,
+  sendCreditNote,
+  formatPhoneWithCountryCode: (p: string | null) => p ?? "-",
+}));
+
+import {
+  startDeposit, depositRatesFor, onDepositSessionExpired,
+  onDepositPaid, confirmBooking, releaseBooking, refundConfirmed, bookingByConfirmToken,
+} from "./car-deposit-server";
 
 // Mardi 12/07/2027 à 09:00 heure d'Athènes : en pleine plage d'ouverture.
 const NOW = athensWallToUtcMs("2027-07-12", "09:00");
@@ -290,5 +307,574 @@ describe("onDepositSessionExpired", () => {
   it("lève quand la base refuse l'écriture", async () => {
     wiring({ writeError: { message: "permission denied" } });
     await expect(onDepositSessionExpired(25, "cs_old")).rejects.toThrow(/permission denied/);
+  });
+});
+
+// ── Après paiement : fausse base en mémoire ────────────────────────────────
+// Les transitions reposent sur des écritures conditionnelles : la fausse base
+// applique réellement les filtres, pour que « confirmer deux fois » ou
+// « confirmer après le remboursement » se jouent comme en production.
+
+type Row = Record<string, unknown>;
+type Filter = [string, string, unknown];
+interface Op {
+  table: string;
+  kind: "select" | "update" | "delete";
+  patch?: Row;
+  filters: Filter[];
+  columns?: string;
+  returning?: string;
+  head?: boolean;
+  single?: boolean;
+}
+
+function matches(r: Row, [kind, col, val]: Filter): boolean {
+  const v = r[col];
+  switch (kind) {
+    case "eq": return v === val;
+    case "neq": return v != null && v !== val;
+    case "is": return val === null ? v == null : v === val;
+    case "in": return (val as unknown[]).includes(v);
+    case "notnull": return v != null;
+    case "gte": return v != null && String(v) >= String(val);
+    default: throw new Error(`filtre non simulé: ${kind}`);
+  }
+}
+
+function fakeDb(seed: Record<string, Row[]>, opts: { fail?: (op: Op) => string | null } = {}) {
+  const tables: Record<string, Row[]> = JSON.parse(JSON.stringify(seed));
+  const ops: Op[] = [];
+  from.mockImplementation((table: string) => {
+    const op: Op = { table, kind: "select", filters: [] };
+    const run = () => {
+      ops.push(op);
+      const failure = opts.fail?.(op);
+      if (failure) return { data: null, error: { message: failure }, count: null };
+      const rows = (tables[table] ??= []);
+      const hit = rows.filter((r) => op.filters.every((f) => matches(r, f)));
+      if (op.kind === "update") {
+        for (const r of hit) Object.assign(r, op.patch);
+        return { data: op.returning !== undefined ? hit.map((r) => ({ ...r })) : null, error: null };
+      }
+      if (op.kind === "delete") {
+        tables[table] = rows.filter((r) => !hit.includes(r));
+        return { data: null, error: null };
+      }
+      if (op.head) return { data: null, error: null, count: hit.length };
+      if (op.single) return { data: hit[0] ? { ...hit[0] } : null, error: null };
+      return { data: hit.map((r) => ({ ...r })), error: null };
+    };
+    const chain = {
+      select(cols?: string, o?: { head?: boolean }) {
+        if (op.kind === "select") { op.columns = cols; op.head = o?.head; } else op.returning = cols ?? "*";
+        return chain;
+      },
+      update(patch: Row) { op.kind = "update"; op.patch = patch; return chain; },
+      delete() { op.kind = "delete"; return chain; },
+      eq(c: string, v: unknown) { op.filters.push(["eq", c, v]); return chain; },
+      neq(c: string, v: unknown) { op.filters.push(["neq", c, v]); return chain; },
+      is(c: string, v: unknown) { op.filters.push(["is", c, v]); return chain; },
+      in(c: string, v: unknown[]) { op.filters.push(["in", c, v]); return chain; },
+      not(c: string, operator: string, v: unknown) {
+        if (operator !== "is" || v !== null) throw new Error("not() non simulé");
+        op.filters.push(["notnull", c, null]);
+        return chain;
+      },
+      gte(c: string, v: unknown) { op.filters.push(["gte", c, v]); return chain; },
+      maybeSingle() { op.single = true; return Promise.resolve(run()); },
+      then(res: (x: unknown) => unknown, rej?: (e: unknown) => unknown) { return Promise.resolve(run()).then(res, rej); },
+    };
+    return chain;
+  });
+  const req = () => tables.car_requests[0];
+  const invite = (id: number) => tables.car_quote_invites.find((i) => i.id === id)!;
+  const updates = (table: string) => ops.filter((o) => o.table === table && o.kind === "update");
+  return { tables, ops, req, invite, updates };
+}
+
+// Paiement le lundi 12/07/2027 à 21:30 heure d'Athènes.
+const PAID_AT = athensWallToUtcMs("2027-07-12", "21:30");
+const DEADLINE_ISO = new Date(athensWallToUtcMs("2027-07-13", "11:30")).toISOString();
+const DAY = 86_400_000;
+
+const REQ: Row = {
+  id: 25,
+  locale: "fr",
+  status: "quoted",
+  accepted_at: null,
+  booking_status: "pending_payment",
+  booking_session_id: "cs_1",
+  booking_payment_intent_id: null,
+  booking_paid_at: null,
+  booking_token_hash: "bookhash",
+  deposit_option_id: 501,
+  deposit_eur: 41.2,
+  quoted_price: 412,
+  quoted_car_model: "Fiat Panda · Manual",
+  quoted_insurance_type: "cdw_excess",
+  quoted_excess_eur: 800,
+  quoted_zero_excess_upsell_eur_day: 9,
+  quoted_by_partner_id: 111,
+  partner_name: "Zorbas Rent a Car",
+  pickup_slug: "heraklion-airport",
+  car_type: "compact",
+  date_from: "2027-07-20",
+  time_from: "10:00",
+  date_to: "2027-07-27",
+  time_to: "10:00",
+  confirm_deadline_at: null,
+  partner_confirm_token: null,
+  partner_confirmed_at: null,
+  refund_reason: null,
+  refund_id: null,
+  refund_amount_eur: null,
+  cancelled_at: null,
+  client_token: "client-tok",
+  customer_name: "Marie Durand",
+  customer_email: "marie@example.fr",
+  customer_phone: "+33 6 12 34 56 78",
+};
+
+const AWAITING: Row = {
+  ...REQ,
+  status: "accepted",
+  accepted_at: new Date(PAID_AT).toISOString(),
+  booking_status: "awaiting_partner",
+  booking_payment_intent_id: "pi_1",
+  booking_paid_at: new Date(PAID_AT).toISOString(),
+  confirm_deadline_at: DEADLINE_ISO,
+  partner_confirm_token: "deadbeefhash",
+};
+
+const INVITES: Row[] = [
+  { id: 77, request_id: 25, partner_id: 111, status: "quoted", deposit_failure_reason: null, deposit_failed_at: null },
+  { id: 78, request_id: 25, partner_id: 112, status: "quoted", deposit_failure_reason: null, deposit_failed_at: null },
+  { id: 79, request_id: 25, partner_id: 113, status: "declined", deposit_failure_reason: null, deposit_failed_at: null },
+];
+const AWAITING_INVITES: Row[] = [
+  { ...INVITES[0], status: "chosen" },
+  { ...INVITES[1], status: "not_chosen" },
+  INVITES[2],
+];
+
+const PARTNERS: Row[] = [{
+  id: 111,
+  name: "Zorbas Rent a Car",
+  email: "info@zorbas.gr",
+  phone: "+30 2810 123456",
+  whatsapp: null,
+  address_line: "Airport road 1",
+  postal_code: "71601",
+  city: "Heraklion",
+  rates_status: "live",
+}];
+
+function seed(request: Row, extra: Partial<Record<string, Row[]>> = {}): Record<string, Row[]> {
+  return {
+    car_requests: [request],
+    car_quote_options: [{ id: 501, invite_id: 77, request_id: 25, partner_id: 111 }],
+    car_quote_invites: request.booking_status === "pending_payment" ? INVITES : AWAITING_INVITES,
+    car_partners: PARTNERS,
+    car_commission_invoices: [],
+    ...extra,
+  } as Record<string, Row[]>;
+}
+
+const mailsTo = (to: string) =>
+  sendCarDepositMail.mock.calls.filter(([dest]) => dest === to).map(([, m]) => m as { subject: string; html: string });
+
+const opsTitles = () => notifyOps.mock.calls.map(([n]) => (n as { title: string }).title);
+
+describe("après paiement", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    refundsCreate.mockReset();
+    refundsCreate.mockResolvedValue({ id: "re_1", amount: 4120 });
+    notifyOps.mockResolvedValue(true);
+    sendCarDepositMail.mockReset();
+    sendCarDepositMail.mockResolvedValue(true);
+    sendCreditNote.mockResolvedValue(true);
+  });
+
+  describe("onDepositPaid", () => {
+    it("écrit l'échéance attendue pour un paiement à 21:30 heure d'Athènes (11:30 le lendemain)", async () => {
+      const db = fakeDb(seed(REQ));
+      expect(await onDepositPaid(25, "cs_1", "pi_1", PAID_AT)).toBe("recorded");
+      expect(db.req()).toMatchObject({
+        booking_status: "awaiting_partner",
+        booking_payment_intent_id: "pi_1",
+        booking_paid_at: new Date(PAID_AT).toISOString(),
+        confirm_deadline_at: DEADLINE_ISO,
+        status: "accepted",
+        accepted_at: new Date(PAID_AT).toISOString(),
+        partner_confirm_token: "deadbeefhash",
+      });
+    });
+
+    it("prise de main conditionnelle : session ET état pending_payment", async () => {
+      const db = fakeDb(seed(REQ));
+      await onDepositPaid(25, "cs_1", "pi_1", PAID_AT);
+      const claim = db.updates("car_requests")[0];
+      expect(claim.filters).toContainEqual(["eq", "booking_session_id", "cs_1"]);
+      expect(claim.filters).toContainEqual(["eq", "booking_status", "pending_payment"]);
+      expect(claim.returning).toBeDefined();
+    });
+
+    it("le jeton loueur n'est stocké que haché, le clair ne part que dans le lien de l'e-mail", async () => {
+      const db = fakeDb(seed(REQ));
+      await onDepositPaid(25, "cs_1", "pi_1", PAID_AT);
+      expect(JSON.stringify(db.tables)).not.toContain("book-plain");
+      const [partnerMail] = mailsTo("info@zorbas.gr");
+      expect(partnerMail.html).toContain("https://crete.direct/en/car-confirm/book-plain");
+    });
+
+    it("l'invitation de l'option payée passe chosen, les autres devis not_chosen", async () => {
+      const db = fakeDb(seed(REQ));
+      await onDepositPaid(25, "cs_1", "pi_1", PAID_AT);
+      expect(db.invite(77).status).toBe("chosen");
+      expect(db.invite(78).status).toBe("not_chosen");
+      expect(db.invite(79).status).toBe("declined");
+    });
+
+    it("prévient le client, le loueur (sans coordonnées du client) et ops", async () => {
+      fakeDb(seed(REQ));
+      await onDepositPaid(25, "cs_1", "pi_1", PAID_AT);
+      const [client] = mailsTo("marie@example.fr");
+      expect(client.subject).toContain("en attente de confirmation");
+      expect(client.html).not.toContain("+30 2810 123456");
+      const [partner] = mailsTo("info@zorbas.gr");
+      for (const c of ["Marie Durand", "+33 6 12 34 56 78", "marie@example.fr"]) {
+        expect(partner.html).not.toContain(c);
+        expect(partner.subject).not.toContain(c);
+      }
+      expect(sendCarDepositMail).toHaveBeenCalledTimes(2);
+      expect(opsTitles()).toHaveLength(1);
+      expect(opsTitles()[0]).toMatch(/^Acompte voiture payé : Zorbas Rent a Car doit confirmer avant .*11:30/);
+    });
+
+    it("seconde livraison du même paiement : recorded, aucun second e-mail, aucun remboursement", async () => {
+      fakeDb(seed(REQ));
+      await onDepositPaid(25, "cs_1", "pi_1", PAID_AT);
+      expect(await onDepositPaid(25, "cs_1", "pi_1", PAID_AT + 60_000)).toBe("recorded");
+      expect(sendCarDepositMail).toHaveBeenCalledTimes(2);
+      expect(refundsCreate).not.toHaveBeenCalled();
+    });
+
+    it.each(["confirmed", "refunded", "cancelled_kept"])(
+      "paiement déjà enregistré puis passé %s : recorded sans rien réécrire",
+      async (status) => {
+        const db = fakeDb(seed({ ...AWAITING, booking_status: status }));
+        expect(await onDepositPaid(25, "cs_1", "pi_1", PAID_AT)).toBe("recorded");
+        expect(db.req().booking_status).toBe(status);
+        expect(sendCarDepositMail).not.toHaveBeenCalled();
+        expect(refundsCreate).not.toHaveBeenCalled();
+      },
+    );
+
+    it("session étrangère : rembourse ce paiement, n'écrit pas awaiting_partner, alerte ops", async () => {
+      const db = fakeDb(seed({ ...REQ, booking_session_id: "cs_other" }));
+      expect(await onDepositPaid(25, "cs_1", "pi_1", PAID_AT)).toBe("session_mismatch");
+      expect(refundsCreate).toHaveBeenCalledTimes(1);
+      expect(refundsCreate).toHaveBeenCalledWith(
+        { payment_intent: "pi_1" },
+        { idempotencyKey: "car-deposit-mismatch-pi_1" },
+      );
+      expect(db.req().booking_status).toBe("pending_payment");
+      expect(db.req().booking_payment_intent_id).toBeNull();
+      expect(db.invite(77).status).toBe("quoted");
+      expect(sendCarDepositMail).not.toHaveBeenCalled();
+      expect(opsTitles()[0]).toMatch(/session/i);
+    });
+
+    it("second paiement sur une demande déjà payée par une autre session : remboursé", async () => {
+      const db = fakeDb(seed({ ...AWAITING, booking_session_id: "cs_first" }));
+      expect(await onDepositPaid(25, "cs_second", "pi_2", PAID_AT)).toBe("session_mismatch");
+      expect(refundsCreate).toHaveBeenCalledWith(
+        { payment_intent: "pi_2" },
+        { idempotencyKey: "car-deposit-mismatch-pi_2" },
+      );
+      expect(db.req().booking_payment_intent_id).toBe("pi_1");
+    });
+
+    it("un e-mail refusé ne défait pas l'état et prévient ops", async () => {
+      const db = fakeDb(seed(REQ));
+      sendCarDepositMail.mockImplementation(async (to: string) => to !== "info@zorbas.gr");
+      expect(await onDepositPaid(25, "cs_1", "pi_1", PAID_AT)).toBe("recorded");
+      expect(db.req().booking_status).toBe("awaiting_partner");
+      const alert = notifyOps.mock.calls.map(([n]) => JSON.stringify(n)).join("\n");
+      expect(alert).toMatch(/loueur/);
+      // Le lien n'existe nulle part ailleurs : ops doit pouvoir le transmettre.
+      expect(alert).toContain("/en/car-confirm/book-plain");
+    });
+
+    it("lève quand la base refuse la prise de main (le webhook rendra 500)", async () => {
+      fakeDb(seed(REQ), { fail: (op) => (op.table === "car_requests" && op.kind === "update" ? "permission denied" : null) });
+      await expect(onDepositPaid(25, "cs_1", "pi_1", PAID_AT)).rejects.toThrow(/permission denied/);
+      expect(sendCarDepositMail).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("confirmBooking", () => {
+    it("awaiting_partner → confirmed, coordonnées échangées dans les deux sens", async () => {
+      const db = fakeDb(seed(AWAITING));
+      expect(await confirmBooking(25, "partner")).toBe("confirmed");
+      expect(db.req().booking_status).toBe("confirmed");
+      expect(db.req().partner_confirmed_at).toEqual(expect.any(String));
+      const [client] = mailsTo("marie@example.fr");
+      expect(client.html).toContain("+30 2810 123456");
+      expect(client.html).toContain("Airport road 1, 71601 Heraklion");
+      const [partner] = mailsTo("info@zorbas.gr");
+      expect(partner.html).toContain("Marie Durand");
+      expect(partner.html).toContain("+33 6 12 34 56 78");
+      expect(partner.html).toContain("marie@example.fr");
+    });
+
+    it("deux fois : already_confirmed au second appel, un seul envoi d'e-mails", async () => {
+      fakeDb(seed(AWAITING));
+      expect(await confirmBooking(25, "partner")).toBe("confirmed");
+      expect(await confirmBooking(25, "partner")).toBe("already_confirmed");
+      expect(sendCarDepositMail).toHaveBeenCalledTimes(2);
+    });
+
+    it("après releaseBooking : not_awaiting, aucune coordonnée envoyée", async () => {
+      const db = fakeDb(seed(AWAITING));
+      expect(await releaseBooking(25, "partner_timeout", PAID_AT + DAY)).toBe("refunded");
+      sendCarDepositMail.mockClear();
+      expect(await confirmBooking(25, "partner")).toBe("not_awaiting");
+      expect(db.req().booking_status).toBe("refunded");
+      expect(sendCarDepositMail).not.toHaveBeenCalled();
+    });
+
+    it("échéance dépassée mais demande encore awaiting_partner (cron pas encore passé) : acceptée", async () => {
+      const db = fakeDb(seed({ ...AWAITING, confirm_deadline_at: "2020-01-01T00:00:00.000Z" }));
+      expect(await confirmBooking(25, "partner")).toBe("confirmed");
+      expect(db.req().booking_status).toBe("confirmed");
+    });
+
+    it("prise de main conditionnelle sur awaiting_partner", async () => {
+      const db = fakeDb(seed(AWAITING));
+      await confirmBooking(25, "admin");
+      expect(db.updates("car_requests")[0].filters).toContainEqual(["eq", "booking_status", "awaiting_partner"]);
+    });
+
+    it("un e-mail refusé ne défait pas la confirmation et prévient ops", async () => {
+      const db = fakeDb(seed(AWAITING));
+      sendCarDepositMail.mockResolvedValue(false);
+      expect(await confirmBooking(25, "partner")).toBe("confirmed");
+      expect(db.req().booking_status).toBe("confirmed");
+      expect(JSON.stringify(notifyOps.mock.calls)).toMatch(/e-mail/i);
+    });
+  });
+
+  describe("releaseBooking", () => {
+    it("rembourse une fois, remet la demande en offres, l'invitation fautive passe declined", async () => {
+      const now = PAID_AT + DAY;
+      const db = fakeDb(seed(AWAITING));
+      expect(await releaseBooking(25, "partner_timeout", now)).toBe("refunded");
+      expect(refundsCreate).toHaveBeenCalledTimes(1);
+      expect(refundsCreate).toHaveBeenCalledWith(
+        { payment_intent: "pi_1" },
+        { idempotencyKey: "car-deposit-refund-25-pi_1" },
+      );
+      expect(db.req()).toMatchObject({
+        booking_status: "refunded",
+        refund_reason: "partner_timeout",
+        refund_id: "re_1",
+        refund_amount_eur: 41.2,
+        cancelled_at: new Date(now).toISOString(),
+        status: "quoted",
+        accepted_at: null,
+      });
+      expect(db.invite(77)).toMatchObject({
+        status: "declined",
+        deposit_failure_reason: "partner_timeout",
+        deposit_failed_at: new Date(now).toISOString(),
+      });
+      expect(db.invite(78).status).toBe("quoted");
+      expect(db.invite(79).status).toBe("declined");
+    });
+
+    it("garde le jeton de réservation : la vue « remboursé » reste lisible par le lien du client (R5)", async () => {
+      const db = fakeDb(seed(AWAITING));
+      await releaseBooking(25, "partner_declined", PAID_AT + DAY);
+      expect(db.req().booking_token_hash).toBe("bookhash");
+      for (const u of db.updates("car_requests")) expect(u.patch).not.toHaveProperty("booking_token_hash");
+    });
+
+    it("prend la main AVANT d'appeler Stripe : « Confirm » et le cron ne gagnent pas tous les deux", async () => {
+      const db = fakeDb(seed(AWAITING));
+      const seen: unknown[] = [];
+      refundsCreate.mockImplementation(async () => {
+        seen.push(db.req().booking_status);
+        return { id: "re_1", amount: 4120 };
+      });
+      await releaseBooking(25, "partner_timeout", PAID_AT + DAY);
+      expect(seen).toEqual(["refunded"]);
+      expect(db.updates("car_requests")[0].filters).toContainEqual(["eq", "booking_status", "awaiting_partner"]);
+    });
+
+    it("client_refunded part avec le motif et le lien des autres offres", async () => {
+      fakeDb(seed(AWAITING));
+      await releaseBooking(25, "partner_declined", PAID_AT + DAY);
+      const [client] = mailsTo("marie@example.fr");
+      expect(client.html).toContain("Le loueur n'a pas pu confirmer cette voiture.");
+      expect(client.html).toContain("https://crete.direct/fr/car-offer/client-tok");
+      expect(mailsTo("info@zorbas.gr")).toHaveLength(0);
+    });
+
+    it("Stripe refuse : retour à awaiting_partner, refund_failed, aucun e-mail, ops prévenu", async () => {
+      const db = fakeDb(seed(AWAITING));
+      refundsCreate.mockRejectedValue(new Error("api down"));
+      expect(await releaseBooking(25, "partner_timeout", PAID_AT + DAY)).toBe("refund_failed");
+      expect(db.req()).toMatchObject({ booking_status: "awaiting_partner", refund_reason: null, status: "accepted" });
+      expect(db.invite(77)).toMatchObject({ status: "chosen", deposit_failure_reason: null });
+      expect(sendCarDepositMail).not.toHaveBeenCalled();
+      expect(opsTitles().some((t) => /rembours/i.test(t))).toBe(true);
+    });
+
+    it("après une confirmation : not_releasable, aucun remboursement", async () => {
+      const db = fakeDb(seed(AWAITING));
+      await confirmBooking(25, "partner");
+      expect(await releaseBooking(25, "partner_timeout", PAID_AT + DAY)).toBe("not_releasable");
+      expect(refundsCreate).not.toHaveBeenCalled();
+      expect(db.req().booking_status).toBe("confirmed");
+    });
+
+    it("deux fois : un seul remboursement", async () => {
+      fakeDb(seed(AWAITING));
+      expect(await releaseBooking(25, "partner_declined", PAID_AT + DAY)).toBe("refunded");
+      expect(await releaseBooking(25, "partner_timeout", PAID_AT + DAY)).toBe("not_releasable");
+      expect(refundsCreate).toHaveBeenCalledTimes(1);
+    });
+
+    it.each(["ops", "client_cancelled"] as const)(
+      "motif %s : pas un manquement du loueur, son invitation repasse quoted sans trace d'échec",
+      async (reason) => {
+        const db = fakeDb(seed(AWAITING));
+        expect(await releaseBooking(25, reason, PAID_AT + DAY)).toBe("refunded");
+        expect(db.invite(77)).toMatchObject({ status: "quoted", deposit_failure_reason: null, deposit_failed_at: null });
+        expect(db.ops.some((o) => o.table === "car_quote_invites" && o.head)).toBe(false);
+        expect(db.tables.car_partners[0].rates_status).toBe("live");
+      },
+    );
+
+    const pastFailure = (id: number, daysAgo: number): Row => ({
+      id, request_id: 900 + id, partner_id: 111, status: "declined",
+      deposit_failure_reason: "partner_declined",
+      deposit_failed_at: new Date(PAID_AT + DAY - daysAgo * DAY).toISOString(),
+    });
+
+    it("au 3e manquement en 30 jours, la grille passe paused et ops est prévenu une fois", async () => {
+      const db = fakeDb(seed(AWAITING, {
+        car_quote_invites: [...AWAITING_INVITES, pastFailure(1, 3), pastFailure(2, 20)],
+      }));
+      await releaseBooking(25, "partner_timeout", PAID_AT + DAY);
+      expect(db.tables.car_partners[0].rates_status).toBe("paused");
+      expect(opsTitles().filter((t) => /suspendu/i.test(t))).toHaveLength(1);
+      const pause = db.updates("car_partners")[0];
+      expect(pause.filters).toContainEqual(["neq", "rates_status", "paused"]);
+    });
+
+    it("2 manquements seulement, ou un ancien hors fenêtre : pas de suspension", async () => {
+      const db = fakeDb(seed(AWAITING, {
+        car_quote_invites: [...AWAITING_INVITES, pastFailure(1, 3), pastFailure(2, 31)],
+      }));
+      await releaseBooking(25, "partner_declined", PAID_AT + DAY);
+      expect(db.tables.car_partners[0].rates_status).toBe("live");
+      expect(opsTitles().filter((t) => /suspendu/i.test(t))).toHaveLength(0);
+    });
+
+    it("grille déjà paused : aucune seconde alerte", async () => {
+      const db = fakeDb(seed(AWAITING, {
+        car_quote_invites: [...AWAITING_INVITES, pastFailure(1, 3), pastFailure(2, 20), pastFailure(3, 25)],
+        car_partners: [{ ...PARTNERS[0], rates_status: "paused" }],
+      }));
+      await releaseBooking(25, "partner_declined", PAID_AT + DAY);
+      expect(db.tables.car_partners[0].rates_status).toBe("paused");
+      expect(opsTitles().filter((t) => /suspendu/i.test(t))).toHaveLength(0);
+    });
+
+    it("lève quand la base refuse la prise de main, sans appeler Stripe", async () => {
+      fakeDb(seed(AWAITING), { fail: (op) => (op.table === "car_requests" && op.kind === "update" ? "timeout" : null) });
+      await expect(releaseBooking(25, "partner_timeout", PAID_AT + DAY)).rejects.toThrow(/timeout/);
+      expect(refundsCreate).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("refundConfirmed", () => {
+    const CONFIRMED: Row = { ...AWAITING, booking_status: "confirmed", partner_confirmed_at: "2027-07-13T06:00:00.000Z" };
+    const INVOICE: Row = {
+      id: 9, number: "NOVAI-2027-001", request_id: 25, partner_id: 111, base_amount_eur: 412, rate: 0.1,
+      amount_eur: 41.2, issued_at: "2027-07-20T05:00:00.000Z", sent_at: null, paid_at: "2027-07-20T05:00:00.000Z",
+      credited_at: null, credit_number: null, credit_reason: null,
+    };
+
+    it("loueur qui annule après confirmation : remboursé, manquement consigné, avoir émis", async () => {
+      const db = fakeDb(seed(CONFIRMED, { car_commission_invoices: [INVOICE] }));
+      expect(await refundConfirmed(25, "partner_cancelled")).toBe("refunded");
+      expect(refundsCreate).toHaveBeenCalledWith(
+        { payment_intent: "pi_1" },
+        { idempotencyKey: "car-deposit-refund-confirmed-25-pi_1" },
+      );
+      expect(db.req()).toMatchObject({
+        booking_status: "refunded", refund_reason: "partner_cancelled", refund_id: "re_1", refund_amount_eur: 41.2,
+      });
+      expect(db.invite(77)).toMatchObject({ status: "declined", deposit_failure_reason: "partner_cancelled" });
+      expect(db.tables.car_commission_invoices[0].credited_at).toEqual(expect.any(String));
+      expect(sendCreditNote).toHaveBeenCalledTimes(1);
+      expect(mailsTo("marie@example.fr")).toHaveLength(1);
+      // Tout s'est bien passé : ops est informé sans sonnerie, avoir nommé.
+      const notice = notifyOps.mock.calls.at(-1)![0] as { silent?: boolean; lines: string[] };
+      expect(notice.silent).toBe(true);
+      expect(notice.lines.join("\n")).toMatch(/avoir .* émis et envoyé/);
+    });
+
+    it("sans facture : aucun avoir", async () => {
+      fakeDb(seed(CONFIRMED));
+      expect(await refundConfirmed(25, "ops")).toBe("refunded");
+      expect(sendCreditNote).not.toHaveBeenCalled();
+    });
+
+    it("motif ops : l'invitation repasse quoted, pas de manquement", async () => {
+      const db = fakeDb(seed(CONFIRMED));
+      await refundConfirmed(25, "ops");
+      expect(db.invite(77)).toMatchObject({ status: "quoted", deposit_failure_reason: null });
+    });
+
+    it("pas encore confirmée : not_refundable, aucun remboursement", async () => {
+      fakeDb(seed(AWAITING));
+      expect(await refundConfirmed(25, "ops")).toBe("not_refundable");
+      expect(refundsCreate).not.toHaveBeenCalled();
+    });
+
+    it("Stripe refuse : retour à confirmed, refund_failed, aucun e-mail", async () => {
+      const db = fakeDb(seed(CONFIRMED, { car_commission_invoices: [INVOICE] }));
+      refundsCreate.mockRejectedValue(new Error("api down"));
+      expect(await refundConfirmed(25, "partner_cancelled")).toBe("refund_failed");
+      expect(db.req()).toMatchObject({ booking_status: "confirmed", refund_reason: null });
+      expect(db.tables.car_commission_invoices[0].credited_at).toBeNull();
+      expect(sendCarDepositMail).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("bookingByConfirmToken", () => {
+    it("cherche par le hash du jeton, sans lire aucune coordonnée du client", async () => {
+      const db = fakeDb(seed(AWAITING));
+      const b = await bookingByConfirmToken("conf-plain");
+      expect(b?.id).toBe(25);
+      const read = db.ops[0];
+      expect(read.filters).toEqual([["eq", "partner_confirm_token", "deadbeefhash"]]);
+      expect(read.columns).not.toMatch(/customer_/);
+    });
+
+    it("jeton inconnu : null", async () => {
+      fakeDb(seed({ ...AWAITING, partner_confirm_token: "other" }));
+      expect(await bookingByConfirmToken("conf-plain")).toBeNull();
+    });
+
+    it("lève quand la lecture est refusée", async () => {
+      fakeDb(seed(AWAITING), { fail: () => "timeout" });
+      await expect(bookingByConfirmToken("conf-plain")).rejects.toThrow(/timeout/);
+    });
   });
 });

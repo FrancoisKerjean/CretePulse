@@ -161,6 +161,25 @@ export function shouldSuspendPartner(failuresInWindow: number): boolean {
   return failuresInWindow >= SUSPEND_AFTER_FAILURES;
 }
 
+/** Ce que voit le loueur sur sa page de confirmation. */
+export type PartnerViewState = "awaiting" | "confirmed" | "declined" | "expired" | "cancelled" | "closed";
+
+/**
+ * État de la réservation vu du loueur, lu sur la demande : la page et la route
+ * de confirmation disent toujours l'état réel, jamais celui que le clic visait.
+ */
+export function partnerViewState(bookingStatus: string | null, refundReason: string | null): PartnerViewState {
+  if (bookingStatus === "awaiting_partner") return "awaiting";
+  if (bookingStatus === "confirmed") return "confirmed";
+  if (bookingStatus === "refunded") {
+    if (refundReason === "partner_declined") return "declined";
+    if (refundReason === "partner_timeout") return "expired";
+    return "cancelled";
+  }
+  if (bookingStatus === "cancelled_kept") return "cancelled";
+  return "closed";
+}
+
 export function buildDepositCheckoutParams(i: {
   requestId: number;
   customerEmail: string;

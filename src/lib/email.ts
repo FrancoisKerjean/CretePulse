@@ -881,7 +881,7 @@ const LOCALE_TO_COUNTRY_CODE: Record<string, string> = {
   lv: "371", et: "372",
 };
 
-function formatPhoneWithCountryCode(phone: string | null | undefined, locale: string): string {
+export function formatPhoneWithCountryCode(phone: string | null | undefined, locale: string): string {
   const raw = (phone ?? "").trim();
   if (!raw) return "-";
   const digits = raw.replace(/[^\d+]/g, "");
@@ -1943,6 +1943,29 @@ export async function sendInvoiceReminder(partnerEmail: string, m: InvoiceRemind
 }
 
 /** Reservation voiture payee en ligne : coordonnees echangees, jamais avant. */
+/**
+ * E-mails de l'acompte voiture (car-deposit-mail.ts rend sujet et corps). Même
+ * expéditeur que les autres e-mails voiture, réponse vers crete.direct, corps
+ * habillé aux couleurs du site. Best-effort : rend false sur un refus de Resend
+ * (lu dans `error`, le SDK ne lève pas) ou une exception, et l'appelant prévient
+ * ops ; un e-mail perdu ne défait jamais l'état de la réservation.
+ */
+export async function sendCarDepositMail(to: string, mail: { subject: string; html: string }): Promise<boolean> {
+  try {
+    const res = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      replyTo: "hello@crete.direct",
+      subject: mail.subject,
+      html: kalimeraShell(mail.html),
+    });
+    return reportSend(res, "acompte voiture");
+  } catch (e) {
+    console.error("[sendCarDepositMail] échec:", e);
+    return false;
+  }
+}
+
 export async function sendCarBookingPaidEmails(
   partnerEmail: string,
   info: BookingPaidInfo,

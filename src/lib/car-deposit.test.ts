@@ -7,6 +7,7 @@ import {
   confirmDeadlineMs,
   isBookableOnline,
   isDepositBookable,
+  partnerViewState,
   reminderDueMs,
   shouldSuspendPartner,
 } from "./car-deposit";
@@ -112,5 +113,20 @@ describe("car-deposit", () => {
     expect(isDepositBookable(evening, "2027-07-12", null)).toBe(false);
     expect(isDepositBookable(evening, "2027-07-12", "18:00")).toBe(true);
     expect(isDepositBookable(now, "", "18:00")).toBe(false);
+  });
+});
+
+describe("partnerViewState", () => {
+  it("dit au loueur l'état réel de la réservation", () => {
+    expect(partnerViewState("awaiting_partner", null)).toBe("awaiting");
+    expect(partnerViewState("confirmed", null)).toBe("confirmed");
+    expect(partnerViewState("refunded", "partner_declined")).toBe("declined");
+    expect(partnerViewState("refunded", "partner_timeout")).toBe("expired");
+    expect(partnerViewState("refunded", "client_cancelled")).toBe("cancelled");
+    expect(partnerViewState("refunded", "ops")).toBe("cancelled");
+    expect(partnerViewState("refunded", "partner_cancelled")).toBe("cancelled");
+    expect(partnerViewState("cancelled_kept", null)).toBe("cancelled");
+    expect(partnerViewState("pending_payment", null)).toBe("closed");
+    expect(partnerViewState(null, null)).toBe("closed");
   });
 });
