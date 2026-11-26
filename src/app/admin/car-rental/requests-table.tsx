@@ -15,7 +15,7 @@ import { carPickupLabel } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { canCancelRequest } from "@/lib/car-quotes";
 import { insuranceSummary, inclusionLabels } from "@/lib/car-inclusions";
-import { formatAthensDeadline } from "@/app/[locale]/car-booking/content";
+import { formatAthensDeadline } from "@/lib/car-format";
 import { DepositActions } from "./deposit-actions";
 import { invoiceAdminState, type AdminInvoiceRow } from "@/lib/car-invoice";
 import { commissionCatchUp, missingIdentityLabels, shouldOfferCommissionPaidToggle } from "@/lib/car-commission-catchup";

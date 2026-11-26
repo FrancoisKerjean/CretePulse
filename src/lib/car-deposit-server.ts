@@ -30,7 +30,8 @@ import { CAR_TYPES_DATA } from "./car-types-data";
 import { stripeClient } from "./stays/stripe-helpers";
 import { stripeLogFields } from "./stripe-errors";
 import { notifyOps } from "./ops-notify";
-import { pickCarBookingLocale, formatAthensDeadline } from "@/app/[locale]/car-booking/content";
+import { pickCarBookingLocale } from "@/app/[locale]/car-booking/content";
+import { formatAthensDeadline } from "./car-format";
 
 const GEARBOX_LABEL: Record<string, string> = { automatic: "Automatic", manual: "Manual" };
 

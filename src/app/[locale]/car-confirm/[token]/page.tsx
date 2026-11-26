@@ -6,7 +6,7 @@ import { partnerViewState } from "@/lib/car-deposit";
 import { carPickupLabel, carTypeLabelWithExamples } from "@/lib/car-lead";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
 import { insuranceSummary } from "@/lib/car-inclusions";
-import { formatEur, formatAthensDeadline } from "../../car-booking/content";
+import { formatEur, formatAthensDeadline } from "@/lib/car-format";
 import { ConfirmButtons, StateNotice, type StateTexts } from "./ConfirmButtons";
 
 // Lien privé du loueur : jamais mis en cache (aucune écriture ISR), jamais indexé.

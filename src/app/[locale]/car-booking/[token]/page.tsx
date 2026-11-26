@@ -8,9 +8,10 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { setRequestLocale } from "next-intl/server";
 import {
-  L, pickCarBookingLocale, fill, formatEur, formatAthensDeadline,
+  L, pickCarBookingLocale, fill,
   type CarBookingLocale, type CarBookingStrings,
 } from "../content";
+import { formatEur, formatAthensDeadline, formatWallDate } from "@/lib/car-format";
 import BookingPanel from "./BookingPanel";
 import CancelPanel from "./CancelPanel";
 import { DepositPaidBeacon } from "./DepositPaidBeacon";
@@ -25,7 +26,7 @@ export const metadata: Metadata = {
 };
 
 const COLS =
-  "status, booking_status, deposit_eur, quoted_price, quoted_car_model, quoted_insurance_type, quoted_excess_eur, quoted_zero_excess_upsell_eur_day, quoted_by_partner_id, partner_name, pickup_slug, date_from, date_to, time_from, confirm_deadline_at, refund_reason, client_token";
+  "status, booking_status, deposit_eur, quoted_price, quoted_car_model, quoted_insurance_type, quoted_excess_eur, quoted_zero_excess_upsell_eur_day, quoted_by_partner_id, partner_name, pickup_slug, date_from, date_to, time_from, time_to, confirm_deadline_at, refund_reason, client_token";
 
 interface BookingRow {
   status: string;
@@ -42,6 +43,7 @@ interface BookingRow {
   date_from: string;
   date_to: string;
   time_from: string | null;
+  time_to: string | null;
   confirm_deadline_at: string | null;
   refund_reason: string | null;
   client_token: string | null;
@@ -97,7 +99,8 @@ function Recap({ row, t, lang, paid }: { row: BookingRow; t: CarBookingStrings; 
         ) : null}
         {row.partner_name ? <p className="m-0 mt-1 text-[14px] text-text-muted">{row.partner_name}</p> : null}
         <p className="m-0 mt-1 text-[14px] text-text-muted">
-          {row.pickup_slug ? `${carPickupLabel(row.pickup_slug)} · ` : ""}{row.date_from} → {row.date_to}
+          {row.pickup_slug ? `${carPickupLabel(row.pickup_slug)} · ` : ""}
+          {formatWallDate(row.date_from, row.time_from, lang)} → {formatWallDate(row.date_to, row.time_to, lang)}
         </p>
       </div>
       <dl className="m-0 grid grid-cols-[1fr_auto] gap-x-4 gap-y-1.5 text-[15px]">

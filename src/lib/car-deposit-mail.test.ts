@@ -55,6 +55,21 @@ describe("depositMail", () => {
     expect(t).toContain("370,80 €");
   });
 
+  it("dates de prise et de retour lisibles dans la langue du client, plus d'ISO", () => {
+    expect(text("client_pending", "fr")).toContain("mardi 20 juillet 2027 à 10:00");
+    expect(text("client_pending", "de")).toContain("Dienstag, 20. Juli 2027 um 10:00");
+    expect(text("client_pending", "el")).toContain("Τρίτη 20 Ιουλίου 2027 στις 10:00");
+    expect(text("client_pending", "en")).toContain("Tuesday, July 27, 2027 at 10:00");
+    for (const loc of ["en", "fr", "de", "el"]) expect(text("client_pending", loc)).not.toContain("2027-07-20");
+  });
+
+  it("ligne d'assurance du client dans sa langue", () => {
+    const t = text("client_pending", "fr");
+    expect(t).toContain("Franchise : 800 €");
+    expect(t).toContain("+9 €/jour");
+    expect(t).not.toContain("/day");
+  });
+
   it("client_pending ne donne aucune coordonnée du loueur avant la confirmation", () => {
     const t = text("client_pending", "fr");
     for (const c of PARTNER_CONTACT) expect(t).not.toContain(c);
@@ -143,7 +158,10 @@ describe("depositMail", () => {
 
   it("partner_client_cancelled : le loueur apprend l'annulation, sans coordonnée du client", () => {
     const t = text("partner_client_cancelled", "fr");
-    expect(t).toContain("2027-07-20");
+    // Dates lisibles en anglais, sujet compris ; plus d'ISO.
+    expect(t).toContain("Tuesday, July 20, 2027 at 10:00");
+    expect(depositMail("partner_client_cancelled", DATA, "fr").subject).toContain("Tuesday, July 20, 2027 to Tuesday, July 27, 2027");
+    expect(t).not.toContain("2027-07-20");
     expect(t).toContain("Heraklion Airport");
     for (const c of CLIENT_CONTACT) expect(t).not.toContain(c);
   });
@@ -190,14 +208,16 @@ describe("depositMail", () => {
     expect(t).toContain("41.20");
     expect(t).toContain("412");
     expect(t).toContain("10%");
-    expect(t).toContain("2027-07-13");
+    expect(t).toContain("Tuesday, July 13, 2027");
+    expect(t).not.toContain("2027-07-13");
     expect(t).toContain("https://crete.direct/en/invoice/inv-tok");
     for (const c of CLIENT_CONTACT) expect(t).not.toContain(c);
   });
 
   it("partner_rates_expiring : date de fin et lien du portail", () => {
     const m = depositMail("partner_rates_expiring", DATA, "en");
-    expect(m.html).toContain("2027-09-30");
+    expect(m.html).toContain("Thursday, September 30, 2027");
+    expect(m.html).not.toContain("2027-09-30");
     expect(m.html).toContain("https://crete.direct/en/car-rates/portal-tok");
     for (const c of CLIENT_CONTACT) expect(m.html).not.toContain(c);
   });

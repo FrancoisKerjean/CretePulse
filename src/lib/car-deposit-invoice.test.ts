@@ -130,7 +130,7 @@ describe("runDepositInvoicePass", () => {
     expect(to).toBe("info@zorbas.gr");
     expect(mail.html).toContain("https://crete.direct/en/invoice/tok-1");
     expect(mail.html).toContain("F-2026-001");
-    expect(mail.html).toContain("2026-11-10");
+    expect(mail.html).toContain("Tuesday, November 10, 2026");
     expect(mail.html + mail.subject).not.toContain(EM_DASH);
     const claim = h.calls.find((c) => (c.payload as Row | undefined)?.sent_at != null)!;
     expect(claim.filters).toContainEqual(["eq", "id", 101]);
@@ -267,9 +267,9 @@ describe("runDepositInvoicePass", () => {
     expect(confirmed).not.toContain("starts today");
     expect(confirmed).toContain("collect the rest");
     expect(confirmed).toContain("Pick-up");
-    expect(confirmed).toContain("2026-11-26");
+    expect(confirmed).toContain("Thursday, November 26, 2026");
     expect(confirmed).toContain("Fiat Panda");
-    expect(confirmed).toContain("2026-11-11");
+    expect(confirmed).toContain("Wednesday, November 11, 2026");
     expect(confirmed).not.toContain(EM_DASH);
 
     h.sendCarDepositMail.mockClear();
@@ -325,7 +325,7 @@ describe("runRatesExpiryReminderPass", () => {
     const [to, mail] = h.sendCarDepositMail.mock.calls[0];
     expect(to).toBe("info@zorbas.gr");
     expect(mail.html).toContain("https://crete.direct/en/car-rates/portal-tok");
-    expect(mail.html).toContain("2026-12-26");
+    expect(mail.html).toContain("Saturday, December 26, 2026");
     const sel = h.calls.find((c) => c.table === "car_partners")!;
     expect(sel.filters).toContainEqual(["eq", "rates_status", "live"]);
     expect(sel.filters).toContainEqual(["is", "rates_expiry_reminded_at", null]);

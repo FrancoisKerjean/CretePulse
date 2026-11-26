@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { fill, formatEur, type CarBookingStrings } from "../content";
+import { fill, type CarBookingStrings } from "../content";
+import { formatEur } from "@/lib/car-format";
 
 /**
  * Qui annule : le jeton de réservation (page /car-booking) ou le jeton d'offres

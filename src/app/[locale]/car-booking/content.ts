@@ -91,30 +91,6 @@ export function fill(template: string, values: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (all, key: string) => values[key] ?? all);
 }
 
-/** Montant en euros dans la langue du client, centimes seulement s'il y en a. */
-export function formatEur(eur: number, locale: string): string {
-  const cents = Math.round(eur * 100) % 100 !== 0;
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: "EUR",
-    minimumFractionDigits: cents ? 2 : 0,
-    maximumFractionDigits: 2,
-  }).format(eur);
-}
-
-/** Échéance de confirmation, toujours écrite à l'heure d'Athènes (celle du loueur). */
-export function formatAthensDeadline(iso: string, locale: string): string {
-  return new Intl.DateTimeFormat(locale, {
-    timeZone: "Europe/Athens",
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-  }).format(new Date(iso));
-}
-
 export const L: Record<CarBookingLocale, CarBookingStrings> = {
   en: {
     h1: "Confirm and pay your car rental",

@@ -18,7 +18,8 @@ import type { QuoteOption } from "@/lib/car-quotes";
 import { depositEur, takesDeposits } from "@/lib/car-catalogue";
 import { clientCancelNowEur, isDepositBookable } from "@/lib/car-deposit";
 import { depositPartnersFor } from "@/lib/car-deposit-server";
-import { L, fill, formatEur, formatAthensDeadline, pickCarBookingLocale } from "../../car-booking/content";
+import { L, fill, pickCarBookingLocale } from "../../car-booking/content";
+import { formatEur, formatAthensDeadline, formatWallDate } from "@/lib/car-format";
 import CancelPanel from "../../car-booking/[token]/CancelPanel";
 
 const GEARBOX_LABEL: Record<string, string> = { automatic: "Automatic", manual: "Manual" };
@@ -237,7 +238,12 @@ function OfferCard({
       <div style={{ background: "#F6FBFC", border: "1px solid #DCE9EE", borderRadius: 14, padding: "14px 16px", marginBottom: 22, color: "#0B3954", fontSize: 14, lineHeight: 1.8 }}>
         <p style={{ margin: "0 0 6px", color: "#94A3B8", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em" }}>{c.request}</p>
         <div>{carPickupLabel(request.pickup_slug as string)}</div>
-        <div>{request.date_from as string} → {request.date_to as string}</div>
+        {/* Dates lisibles en mode acompte ; carte de mise en relation inchangée. */}
+        <div>
+          {deposit
+            ? `${formatWallDate(request.date_from as string, request.time_from as string | null, locale)} → ${formatWallDate(request.date_to as string, request.time_to as string | null, locale)}`
+            : `${request.date_from as string} → ${request.date_to as string}`}
+        </div>
         <div>{carTypeLabel}</div>
       </div>
 
@@ -378,7 +384,10 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
             <>
               <div style={{ background: "#F6FBFC", border: "1px solid #DCE9EE", borderRadius: 14, padding: "14px 16px", margin: "18px 0 14px", color: "#0B3954", fontSize: 14, lineHeight: 1.8 }}>
                 {partner ? <div><strong>{partner}</strong></div> : null}
-                <div>{carPickupLabel(request.pickup_slug as string)} · {request.date_from as string} → {request.date_to as string}</div>
+                <div>
+                  {carPickupLabel(request.pickup_slug as string)} · {formatWallDate(request.date_from as string, request.time_from as string | null, lang)}
+                  {" → "}{formatWallDate(request.date_to as string, request.time_to as string | null, lang)}
+                </div>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
                   <span>{t.depositPaidLabel}</span>
                   <strong>{formatEur(deposit, lang)}</strong>

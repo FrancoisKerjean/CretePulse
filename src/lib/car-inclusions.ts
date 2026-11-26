@@ -1,5 +1,7 @@
 // Inclusions optionnelles d'un devis loueur. Stockées en base comme clés
 // canoniques (jsonb array) ; libellés traduits à l'affichage.
+import { formatEur } from "./car-format";
+
 export const CAR_INCLUSION_KEYS = [
   "basic_insurance", "unlimited_km", "second_driver",
   "free_cancellation", "child_seat", "airport_pickup",
@@ -63,6 +65,7 @@ const INSURANCE_EXCESS_WORD: Record<string, string> = { en: "Excess", fr: "Franc
 const INSURANCE_ZERO_UPSELL_WORD: Record<string, string> = {
   en: "Zero-excess option", fr: "Option zéro franchise", de: "Option ohne Selbstbeteiligung", el: "Επιλογή μηδενικής απαλλαγής",
 };
+const INSURANCE_PER_DAY: Record<string, string> = { en: "/day", fr: "/jour", de: "/Tag", el: "/ημέρα" };
 
 export function insuranceLabel(type: string | null | undefined, locale: string): string {
   if (!isInsuranceType(type)) return "";
@@ -80,11 +83,14 @@ export function insuranceSummary(
   const lines: string[] = [];
   const label = insuranceLabel(type, locale);
   if (label) lines.push(label);
+  // Montants et unité dans la langue du client ; hors des quatre langues, tout en anglais.
+  const lang = locale in INSURANCE_PER_DAY ? locale : "en";
+  const colon = lang === "fr" ? " : " : ": ";
   if (type === "cdw_excess" && excessEur != null) {
-    lines.push(`${INSURANCE_EXCESS_WORD[locale] ?? INSURANCE_EXCESS_WORD.en}: €${excessEur}`);
+    lines.push(`${INSURANCE_EXCESS_WORD[lang]}${colon}${formatEur(Number(excessEur), lang)}`);
   }
   if (upsellPerDay != null && upsellPerDay > 0) {
-    lines.push(`${INSURANCE_ZERO_UPSELL_WORD[locale] ?? INSURANCE_ZERO_UPSELL_WORD.en}: +€${upsellPerDay}/day`);
+    lines.push(`${INSURANCE_ZERO_UPSELL_WORD[lang]}${colon}+${formatEur(Number(upsellPerDay), lang)}${INSURANCE_PER_DAY[lang]}`);
   }
   return lines;
 }

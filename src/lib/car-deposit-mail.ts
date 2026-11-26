@@ -13,9 +13,10 @@
 //
 // Textes relus par François avant tout envoi réel. Aucun tiret cadratin.
 import {
-  L, pickCarBookingLocale, fill, formatEur, formatAthensDeadline,
+  L, pickCarBookingLocale, fill,
   type CarBookingLocale, type CarBookingStrings,
 } from "@/app/[locale]/car-booking/content";
+import { formatEur, formatAthensDeadline, formatWallDate } from "./car-format";
 import { CAR_INSURANCE_HEADING, insuranceSummary } from "./car-inclusions";
 import type { RefundReason } from "./car-deposit";
 
@@ -89,20 +90,19 @@ const BOX = (heading: string, lines: string[]) =>
 const BUTTON = (href: string, label: string) =>
   `<p style="margin:0 0 18px;"><a href="${esc(href)}" style="display:inline-block; background:#008C9E; color:#ffffff; padding:13px 30px; border-radius:999px; text-decoration:none; font-weight:700; font-size:14px;">${esc(label)}</a></p>`;
 
-/** Heure murale « HH:MM » (Postgres rend parfois « HH:MM:SS »). */
-const hhmm = (t: string | null) => (t ? t.slice(0, 5) : "");
-const at = (date: string, time: string | null, word: string) => (time ? `${date} ${word} ${hhmm(time)}` : date);
+/** Date murale lisible (« mardi 20 juillet 2027 à 10:00 »), jamais l'ISO. */
+const at = (date: string, time: string | null, lang: string) => formatWallDate(date, time, lang);
 const rest = (d: DepositMailData) => Math.round((d.totalEur - d.depositEur) * 100) / 100;
 
 // ── Côté client (en, fr, de, el) ────────────────────────────────────────────
 
 const CLIENT: Record<CarBookingLocale, {
-  booking: string; pickup: string; dropoff: string; at: string; colon: string; amountRefunded: string; manage: string;
+  booking: string; pickup: string; dropoff: string; colon: string; amountRefunded: string; manage: string;
 }> = {
-  en: { booking: "Your booking", pickup: "Pick-up", dropoff: "Return", at: "at", colon: ": ", amountRefunded: "Amount refunded: {amount}", manage: "Manage my booking" },
-  fr: { booking: "Votre réservation", pickup: "Prise du véhicule", dropoff: "Retour", at: "à", colon: " : ", amountRefunded: "Montant remboursé : {amount}", manage: "Gérer ma réservation" },
-  de: { booking: "Ihre Buchung", pickup: "Abholung", dropoff: "Rückgabe", at: "um", colon: ": ", amountRefunded: "Erstatteter Betrag: {amount}", manage: "Buchung verwalten" },
-  el: { booking: "Η κράτησή σας", pickup: "Παραλαβή", dropoff: "Επιστροφή", at: "στις", colon: ": ", amountRefunded: "Ποσό επιστροφής: {amount}", manage: "Διαχείριση κράτησης" },
+  en: { booking: "Your booking", pickup: "Pick-up", dropoff: "Return", colon: ": ", amountRefunded: "Amount refunded: {amount}", manage: "Manage my booking" },
+  fr: { booking: "Votre réservation", pickup: "Prise du véhicule", dropoff: "Retour", colon: " : ", amountRefunded: "Montant remboursé : {amount}", manage: "Gérer ma réservation" },
+  de: { booking: "Ihre Buchung", pickup: "Abholung", dropoff: "Rückgabe", colon: ": ", amountRefunded: "Erstatteter Betrag: {amount}", manage: "Buchung verwalten" },
+  el: { booking: "Η κράτησή σας", pickup: "Παραλαβή", dropoff: "Επιστροφή", colon: ": ", amountRefunded: "Ποσό επιστροφής: {amount}", manage: "Διαχείριση κράτησης" },
 };
 
 const REASON: Record<RefundReason, keyof CarBookingStrings> = {
@@ -119,8 +119,8 @@ function clientBooking(d: DepositMailData, lang: CarBookingLocale, withAmounts: 
   const lines = [
     `<strong>${esc(d.carLabel)}</strong>`,
     esc(d.partnerName),
-    `${c.pickup}${c.colon}${esc(d.pickupLabel)}, ${esc(at(d.dateFrom, d.timeFrom, c.at))}`,
-    `${c.dropoff}${c.colon}${esc(at(d.dateTo, d.timeTo, c.at))}`,
+    `${c.pickup}${c.colon}${esc(d.pickupLabel)}, ${esc(at(d.dateFrom, d.timeFrom, lang))}`,
+    `${c.dropoff}${c.colon}${esc(at(d.dateTo, d.timeTo, lang))}`,
   ];
   if (withAmounts) {
     lines.push(
@@ -214,8 +214,8 @@ const SIGN = MUTED("Kami · crete.direct");
 
 function partnerBooking(d: DepositMailData, withMoney: boolean): string {
   const lines = [
-    `Pick-up: ${esc(d.pickupLabel)}, ${esc(at(d.dateFrom, d.timeFrom, "at"))}`,
-    `Return: ${esc(at(d.dateTo, d.timeTo, "at"))}`,
+    `Pick-up: ${esc(d.pickupLabel)}, ${esc(at(d.dateFrom, d.timeFrom, "en"))}`,
+    `Return: ${esc(at(d.dateTo, d.timeTo, "en"))}`,
     `Car: ${esc(d.carLabel)}`,
   ];
   const ins = d.insurance ? insuranceSummary(d.insurance.type, d.insurance.excessEur, d.insurance.upsellPerDay, "en") : [];
@@ -233,7 +233,7 @@ function partnerBooking(d: DepositMailData, withMoney: boolean): string {
 
 const deadlineEn = (d: DepositMailData) => (d.deadlineIso ? formatAthensDeadline(d.deadlineIso, "en") : "");
 /** Pour les sujets : texte brut, jamais échappé (un sujet n'est pas du HTML). */
-const when = (d: DepositMailData) => `${d.pickupLabel} ${d.dateFrom} to ${d.dateTo}`;
+const when = (d: DepositMailData) => `${d.pickupLabel} ${at(d.dateFrom, null, "en")} to ${at(d.dateTo, null, "en")}`;
 
 function partnerMail(kind: DepositMailKind, d: DepositMailData): DepositMail {
   const hi = P(`Hi ${esc(d.partnerName)},`);
@@ -305,7 +305,7 @@ function partnerMail(kind: DepositMailKind, d: DepositMailData): DepositMail {
             `Rental price quoted and accepted: ${formatEur(inv.baseEur, "en")}`,
             `Commission rate: ${esc(inv.ratePct)}%`,
             `Commission: <strong>${formatEur(inv.commissionEur, "en")}</strong>`,
-            `Settled by offset against the deposit collected on ${esc(inv.depositPaidOn)}`,
+            `Settled by offset against the deposit collected on ${esc(at(inv.depositPaidOn, null, "en"))}`,
           ]) +
           (kept
             ? ""
@@ -321,7 +321,7 @@ function partnerMail(kind: DepositMailKind, d: DepositMailData): DepositMail {
         subject: "Your price grid on crete.direct is about to expire",
         html:
           hi +
-          P(`Your price grid is valid until <strong>${esc(r.lastDay)}</strong>. After that date your offers are no longer shown to customers.`) +
+          P(`Your price grid is valid until <strong>${esc(at(r.lastDay, null, "en"))}</strong>. After that date your offers are no longer shown to customers.`) +
           P("To keep receiving bookings, please update your prices and dates.") +
           BUTTON(r.portalUrl, "Update my prices") +
           SIGN,
