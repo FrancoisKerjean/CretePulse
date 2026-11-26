@@ -4,26 +4,31 @@ import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { pickupLabel } from "@/lib/car-pickup-labels";
 import { CAR_TYPES_DATA } from "@/lib/car-types-data";
-import { AcceptButton, type AcceptRefusals } from "./AcceptButton";
+import type { AcceptRefusals } from "./AcceptButton";
+import { OfferRow, PickCard, type OfferItem } from "./OfferShowcase";
 import { isCallablePhone } from "@/lib/car-lead";
 import { DeclineButton } from "./DeclineButton";
 import { OfferBeacon } from "./OfferBeacon";
 import { offerViewProps } from "@/lib/car-offer-metrics";
-import { CAR_INSURANCE_HEADING, inclusionLabels, insuranceSummary } from "@/lib/car-inclusions";
+import { inclusionLabels, insuranceSummary } from "@/lib/car-inclusions";
 import { isOfferExpired } from "@/lib/car-offer-expiry";
 import { sharedOfferCopy } from "@/lib/car-offer-copy";
 import { requestByClientToken } from "@/lib/car-quotes-db";
 import { rentalDays } from "@/lib/car-pricing";
-import { curateOffers, quotedModelLabel } from "@/lib/car-quotes";
+import { curateOffers } from "@/lib/car-quotes";
 import type { QuoteOption } from "@/lib/car-quotes";
-import { depositEur, takesDeposits } from "@/lib/car-catalogue";
+import { depositEur, takesDeposits, type CarCategory } from "@/lib/car-catalogue";
 import { clientCancelNowEur, isDepositBookable, type RefundReason } from "@/lib/car-deposit";
 import { depositPartnersFor } from "@/lib/car-deposit-server";
 import { L, fill, pickCarBookingLocale, REFUND_REASON_KEY } from "../../car-booking/content";
 import { formatEur, formatAthensDeadline, formatWallDate } from "@/lib/car-format";
 import CancelPanel from "../../car-booking/[token]/CancelPanel";
-
-const GEARBOX_LABEL: Record<string, string> = { automatic: "Automatic", manual: "Manual" };
+import { supabaseAdmin } from "@/lib/supabase-admin";
+import { partnerRatings } from "@/lib/car-trust-server";
+import { formatRating } from "@/lib/car-trust";
+import { reviewsForPlace, type PlaceReviews } from "@/lib/google-reviews-server";
+import { offerCarPhoto } from "@/lib/car-fleet";
+import { OFFER_VIEW, daysLabel, gearboxLabel, offerLang, priceDelta, recommendOffer } from "@/lib/car-offer-view";
 
 // Libellé QUALIFIÉ de la boîte, pour les devis sans modèle de voiture. Affiché à
 // la place du modèle, « Manual » tout seul se lit comme un nom de voiture : c'est
@@ -33,12 +38,6 @@ const GEARBOX_ONLY: Record<string, Record<string, string>> = {
   fr: { automatic: "Boîte automatique", manual: "Boîte manuelle" },
   de: { automatic: "Automatikgetriebe", manual: "Schaltgetriebe" },
   el: { automatic: "Αυτόματο κιβώτιο", manual: "Χειροκίνητο κιβώτιο" },
-};
-const MORE_OFFERS: Record<string, string> = {
-  en: "See the {n} other offers",
-  fr: "Voir les {n} autres offres",
-  de: "Die {n} weiteren Angebote ansehen",
-  el: "Δείτε τις {n} άλλες προσφορές",
 };
 
 // Acompte (interrupteur CAR_CATALOGUE_ENABLED) : textes qui remplacent ceux de
@@ -139,16 +138,22 @@ type DepositView = {
   dc: DepositCopy;
 };
 
-const noticeBox = { margin: "0 0 20px", padding: "16px 18px", borderRadius: 14, background: "#ECFDF5", border: "1px solid #A7F3D0", color: "#065F46", fontSize: 15, lineHeight: 1.6 } as const;
-const refusalBox = { margin: 0, padding: "16px 18px", borderRadius: 12, background: "#FEF9EC", color: "#92400E", fontSize: 15, lineHeight: 1.6 } as const;
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
-const shell = { maxWidth: 520, margin: "0 auto", padding: "40px 20px", fontFamily: "'Baloo 2', system-ui, sans-serif" } as const;
-const card = { background: "#fff", border: "1px solid #DCE9EE", borderRadius: 20, padding: "26px 24px" } as const;
-
-const money = (p: number, c: string) => (c === "EUR" ? `€${p}` : `${p} ${c}`);
+function Shell({ children, wide = false }: { children: ReactNode; wide?: boolean }) {
+  return <main className={`mx-auto px-4 py-7 sm:px-6 ${wide ? "max-w-5xl" : "max-w-xl"}`}>{children}</main>;
+}
+function StateCard({ title, children }: { title: string; children?: ReactNode }) {
+  return (
+    <div className="card-base p-6">
+      <h1 className="m-0 mb-2 font-heading text-[22px] font-extrabold text-ink">{title}</h1>
+      {children}
+    </div>
+  );
+}
+const Lead = ({ children }: { children: ReactNode }) => <p className="m-0 text-[15.5px] leading-relaxed text-text-muted">{children}</p>;
 
 type Copy = {
   title: string; intro: string; request: string; accept: string; done: string;
@@ -176,131 +181,11 @@ const COPY: Record<string, Copy> = {
   },
 };
 
-function OfferCard({
-  offer, token, request, locale, c, rank, total, deposit, refusals,
-}: {
-  offer: QuoteOption;
-  token: string;
-  request: Record<string, unknown>;
-  locale: string;
-  c: Copy & ReturnType<typeof sharedOfferCopy>;
-  /** 1 = l'offre la moins chere. Dit si le client choisit ailleurs que le prix. */
-  rank: number;
-  total: number;
-  /** Présent seulement interrupteur allumé. */
-  deposit?: DepositView;
-  /**
-   * Textes des refus (409), pour TOUTES les cartes et interrupteur éteint
-   * compris : une offre sans acompte refusée pendant un paiement ouvert doit
-   * le dire, et non afficher « offre expirée ».
-   */
-  refusals?: AcceptRefusals;
-}) {
-  const expired = isOfferExpired(offer.created_at, request.date_from as string, Date.now());
-  const ct = CAR_TYPES_DATA.find((cc) => cc.id === (request.car_type as string));
-  const carTypeLabel = ct?.labels[locale] ?? ct?.labels.en ?? (request.car_type as string);
-  // Mode acompte : montants dans la langue du client (« 41,20 € »), comme l'acompte.
-  const fmt = (p: number) =>
-    deposit && (offer.currency ?? "EUR") === "EUR" ? formatEur(p, locale) : money(p, offer.currency ?? "EUR");
-  const priceStr = fmt(offer.price);
-  const incl = inclusionLabels(offer.inclusions ?? null, locale);
-  const insLines = insuranceSummary(offer.insurance_type, offer.excess_eur, offer.zero_excess_upsell_eur_day, locale);
-  const days = rentalDays(
-    request.date_from as string,
-    request.date_to as string,
-    request.time_from as string | null,
-    request.time_to as string | null,
-  );
-  const perDay = fmt(Math.round(offer.price / days));
-  const carLine = quotedModelLabel(offer.car_model, offer.gearbox ? GEARBOX_LABEL[offer.gearbox] : null);
-  // Pas de modèle mais une boîte : on la nomme pour ce qu'elle est plutôt que de
-  // la laisser occuper la ligne du modèle.
-  const gearboxOnly = !carLine && offer.gearbox
-    ? (GEARBOX_ONLY[locale] ?? GEARBOX_ONLY.en)[offer.gearbox] ?? null
-    : null;
-
-  return (
-    <div style={{ ...card, marginBottom: 20, opacity: expired || deposit?.declined ? 0.65 : 1 }}>
-      <p style={{ margin: "0 0 4px", color: "#008C9E", fontSize: 13, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase" }}>crete · direct</p>
-      <h2 style={{ margin: "0 0 6px", fontSize: 28, color: "#0B3954", fontWeight: 800 }}>{priceStr}</h2>
-      <p style={{ margin: "0 0 6px", color: "#5C7886", fontSize: 13 }}>{priceStr} {c.total} · ~{perDay} {c.perDay}</p>
-      {deposit?.amount != null ? (
-        <p style={{ margin: "0 0 6px", color: "#0B3954", fontSize: 14, fontWeight: 700 }}>
-          {fill(deposit.dc.dueLine, {
-            deposit: formatEur(deposit.amount, locale),
-            rest: formatEur(Math.round((offer.price - deposit.amount) * 100) / 100, locale),
-          })}
-        </p>
-      ) : null}
-      {offer.partner_name ? <p style={{ margin: "0 0 12px", color: "#0B3954", fontSize: 14 }}>{c.offerFrom} <strong>{offer.partner_name}</strong> · {c.localAgency}</p> : null}
-      {carLine ? <p style={{ margin: "0 0 12px", color: "#0B3954", fontSize: 15, fontWeight: 700 }}>{carLine}</p> : null}
-      {gearboxOnly ? <p style={{ margin: "0 0 12px", color: "#5C7886", fontSize: 14 }}>{gearboxOnly}</p> : null}
-      {/* Le mot du loueur. Sans lui, une offre plus chère parce qu'elle porte une
-          catégorie supérieure se lit simplement comme une offre plus chère. */}
-      {offer.note ? (
-        <p style={{ margin: "0 0 12px", padding: "10px 12px", background: "#FFF8E7", border: "1px solid #FFE2A8", borderRadius: 10, color: "#0B3954", fontSize: 14, lineHeight: 1.5 }}>
-          {offer.note}
-        </p>
-      ) : null}
-      <p style={{ margin: "0 0 20px", color: "#5C7886", fontSize: 14, lineHeight: 1.6 }}>{c.intro}</p>
-
-      <div style={{ background: "#F6FBFC", border: "1px solid #DCE9EE", borderRadius: 14, padding: "14px 16px", marginBottom: 22, color: "#0B3954", fontSize: 14, lineHeight: 1.8 }}>
-        <p style={{ margin: "0 0 6px", color: "#94A3B8", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em" }}>{c.request}</p>
-        <div>{pickupLabel(request.pickup_slug as string, locale)}</div>
-        {/* Dates lisibles en mode acompte ; carte de mise en relation inchangée. */}
-        <div>
-          {deposit
-            ? `${formatWallDate(request.date_from as string, request.time_from as string | null, locale)} → ${formatWallDate(request.date_to as string, request.time_to as string | null, locale)}`
-            : `${request.date_from as string} → ${request.date_to as string}`}
-        </div>
-        <div>{carTypeLabel}</div>
-      </div>
-
-      {incl.length ? (
-        <div style={{ marginBottom: 16, fontSize: 14, color: "#0B3954", lineHeight: 1.8 }}>
-          <p style={{ margin: "0 0 4px", color: "#94A3B8", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em" }}>{c.included}</p>
-          {incl.map((x) => <div key={x}>&#10003; {x}</div>)}
-        </div>
-      ) : null}
-
-      {insLines.length ? (
-        <div style={{ marginBottom: 16, fontSize: 14, color: "#0B3954", lineHeight: 1.8 }}>
-          <p style={{ margin: "0 0 4px", color: "#94A3B8", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em" }}>{CAR_INSURANCE_HEADING[locale] ?? CAR_INSURANCE_HEADING.en}</p>
-          {insLines.map((x) => <div key={x}>• {x}</div>)}
-        </div>
-      ) : null}
-
-      <div style={{ background: "#F6FBFC", border: "1px solid #DCE9EE", borderRadius: 14, padding: "12px 16px", marginBottom: 18 }}>
-        {c.reassure.map((r) => <p key={r} style={{ margin: "0 0 4px", color: "#0B3954", fontSize: 13 }}>• {r}</p>)}
-      </div>
-      {c.steps.length ? (
-        <ol style={{ margin: "0 0 18px", paddingLeft: 18, color: "#5C7886", fontSize: 13, lineHeight: 1.7 }}>
-          {c.steps.map((s) => <li key={s}>{s}</li>)}
-        </ol>
-      ) : null}
-
-      {expired ? (
-        <p style={refusalBox}>{c.expiredOffer}</p>
-      ) : deposit && (deposit.declined || !deposit.bookable || deposit.amount === null) ? (
-        // Pas de bouton quand on sait déjà que le paiement serait refusé.
-        <p style={refusalBox}>
-          {deposit.declined ? deposit.dc.declined : !deposit.bookable ? deposit.dc.refusals.tooClose : deposit.dc.refusals.belowMinimum}
-        </p>
-      ) : (
-        <AcceptButton token={token} optionId={offer.id}
-          label={deposit ? (deposit.amount != null ? fill(deposit.dc.book, { deposit: formatEur(deposit.amount, locale) }) : deposit.dc.bookPlain) : c.accept}
-          doneText={c.done} expiredText={c.expiredOffer}
-          needsPhone={!isCallablePhone(request.customer_phone as string | null)}
-          phoneLabel={c.phoneLabel} phoneHint={c.phoneHint} phoneError={c.phoneError}
-          rank={rank} offers={total} refusals={refusals} />
-      )}
-    </div>
-  );
-}
-
 export default async function CarOfferPage({ params }: { params: Promise<{ locale: string; token: string }> }) {
   const { locale, token } = await params;
   setRequestLocale(locale);
+  // Une seule horloge par rendu : toutes les règles de délai lisent le même instant.
+  const now = Date.now();
   // Interrupteur lu à chaque rendu (page force-dynamic).
   const depositOn = process.env.CAR_CATALOGUE_ENABLED === "on";
   const dc = DEPOSIT_COPY[locale] ?? DEPOSIT_COPY.en;
@@ -315,13 +200,10 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
   if (!found) notFound();
   const { request, options } = found;
   // Les offres sous le plancher (prix bidon d'un loueur sans voiture) ne sont jamais
-  // montrees ; les 3 moins cheres sont depliees, le reste replie. Voir curateOffers.
-  const curated = curateOffers(
-    options,
-    rentalDays(request.date_from as string, request.date_to as string, request.time_from as string | null, request.time_to as string | null),
-  );
+  // montrees (curateOffers). Les autres sont toutes listées, triées par prix.
+  const days = rentalDays(request.date_from as string, request.date_to as string, request.time_from as string | null, request.time_to as string | null);
+  const curated = curateOffers(options, days);
   const offers = [...curated.shown, ...curated.folded];
-  const more = (MORE_OFFERS[locale] ?? MORE_OFFERS.en).replace("{n}", String(curated.folded.length));
 
   // Acompte par offre (taux du loueur), réservabilité (même règle que le
   // paiement, durée de la session comprise) et offres déclinées par leur loueur.
@@ -331,7 +213,7 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
   let depositFor: (o: QuoteOption) => DepositView | undefined = () => undefined;
   if (depositOn && offers.length > 0 && request.status !== "accepted") {
     const partners = await depositPartnersFor(offers.map((o) => o.partner_id));
-    const bookable = isDepositBookable(Date.now(), request.date_from as string, request.time_from as string | null);
+    const bookable = isDepositBookable(now, request.date_from as string, request.time_from as string | null);
     const declinedInvites = new Set(found.quotes.filter((q) => q.status === "declined").map((q) => q.id));
     depositFor = (o) => {
       const p = partners.get(o.partner_id);
@@ -356,7 +238,7 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
         prices: offers.map((o) => o.price),
         dateFrom: request.date_from as string | null,
         locale,
-        now: Date.now(),
+        now: now,
       })}
     />
   );
@@ -381,35 +263,64 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
         : deadline
           ? fill(t.awaitingBody, { partner, deadline: formatAthensDeadline(deadline, lang) })
           : t.depositConfirmRule;
-    const refundNow = clientCancelNowEur(bs, deposit, request.date_from as string, request.time_from as string | null, Date.now());
+    const refundNow = clientCancelNowEur(bs, deposit, request.date_from as string, request.time_from as string | null, now);
+    // M11 : réservation confirmée = coordonnées du loueur, comme sur /car-booking
+    // (les e-mails du client ne portent que ce lien-ci).
+    let contact: { name: string; phone: string | null; whatsapp: string | null; email: string | null; address: string } | null = null;
+    if (bs === "confirmed" && request.quoted_by_partner_id != null) {
+      const { data: p } = await supabaseAdmin
+        .from("car_partners")
+        .select("name, phone, whatsapp, email, address_line, postal_code, city")
+        .eq("id", request.quoted_by_partner_id as number)
+        .maybeSingle();
+      if (p) {
+        contact = {
+          name: p.name as string,
+          phone: (p.phone as string | null) ?? null,
+          whatsapp: (p.whatsapp as string | null) ?? null,
+          email: (p.email as string | null) ?? null,
+          address: [p.address_line, [p.postal_code, p.city].filter(Boolean).join(" ")].filter(Boolean).join(", "),
+        };
+      }
+    }
     return (
-      <main style={shell}>
+      <Shell>
         {beacon("already_accepted")}
-        <div style={card}>
-          <p style={{ margin: "0 0 4px", color: "#008C9E", fontSize: 13, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase" }}>crete · direct</p>
-          <h1 style={{ margin: "0 0 8px", fontSize: 21, color: "#0B3954" }}>{title}</h1>
-          <p style={{ margin: 0, color: "#5C7886", fontSize: 15, lineHeight: 1.6 }}>{body}</p>
+        <StateCard title={title}>
+          <Lead>{body}</Lead>
           {bs === "cancelled_kept" ? null : (
             <>
-              <div style={{ background: "#F6FBFC", border: "1px solid #DCE9EE", borderRadius: 14, padding: "14px 16px", margin: "18px 0 14px", color: "#0B3954", fontSize: 14, lineHeight: 1.8 }}>
-                {partner ? <div><strong>{partner}</strong></div> : null}
-                <div>
+              <div className="mt-5 mb-3.5 flex flex-col gap-1 rounded-2xl border border-border bg-foam px-4 py-3.5 text-[14.5px] text-ink">
+                {partner ? <p className="m-0 font-heading font-bold">{partner}</p> : null}
+                <p className="m-0">
                   {pickupLabel(request.pickup_slug as string, lang)} · {formatWallDate(request.date_from as string, request.time_from as string | null, lang)}
                   {" → "}{formatWallDate(request.date_to as string, request.time_to as string | null, lang)}
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+                </p>
+                <p className="m-0 flex justify-between gap-3">
                   <span>{t.depositPaidLabel}</span>
-                  <strong>{formatEur(deposit, lang)}</strong>
-                </div>
+                  <strong className="font-heading">{formatEur(deposit, lang)}</strong>
+                </p>
               </div>
-              <p style={{ margin: 0, color: "#5C7886", fontSize: 13, lineHeight: 1.6 }}>{t.depositCancelRule}</p>
+              {contact ? (
+                <div className="mb-3.5 flex flex-col gap-1 rounded-2xl border border-border bg-white px-4 py-3.5 text-[15px] text-ink">
+                  <p className="m-0 mb-1 font-heading text-[12px] font-bold uppercase tracking-wide text-text-muted">{t.contactHeading}</p>
+                  <p className="m-0 font-heading font-bold">{contact.name}</p>
+                  {contact.phone ? <a className="text-lagoon-deep" href={`tel:${contact.phone}`}>{contact.phone}</a> : null}
+                  {contact.whatsapp && contact.whatsapp !== contact.phone ? <span>WhatsApp {contact.whatsapp}</span> : null}
+                  {contact.email ? <a className="text-lagoon-deep" href={`mailto:${contact.email}`}>{contact.email}</a> : null}
+                  {contact.address ? <span className="text-text-muted">{contact.address}</span> : null}
+                </div>
+              ) : null}
+              <p className="m-0 text-[13.5px] leading-relaxed text-text-muted">{t.depositCancelRule}</p>
             </>
           )}
-        </div>
+        </StateCard>
         {refundNow === null ? null : (
-          <CancelPanel auth={{ offerToken: token }} strings={t} locale={lang} refundEur={refundNow} />
+          <div className="mt-5">
+            <CancelPanel auth={{ offerToken: token }} strings={t} locale={lang} refundEur={refundNow} />
+          </div>
         )}
-      </main>
+      </Shell>
     );
   }
 
@@ -424,10 +335,10 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
     const reasonKey = REFUND_REASON_KEY[request.refund_reason as RefundReason];
     const deposit = Number(request.deposit_eur);
     refundNotice = (
-      <div role="status" style={noticeBox}>
-        <p style={{ margin: "0 0 4px", fontWeight: 700 }}>{t.refundedTitle}</p>
-        {reasonKey ? <p style={{ margin: "0 0 4px" }}>{t[reasonKey]}</p> : null}
-        <p style={{ margin: 0 }}>
+      <div role="status" className="mb-5 rounded-2xl border border-ok/40 bg-ok/10 px-4 py-3.5 text-[15px] leading-relaxed text-ink">
+        <p className="m-0 mb-1 font-bold">{t.refundedTitle}</p>
+        {reasonKey ? <p className="m-0 mb-1">{t[reasonKey]}</p> : null}
+        <p className="m-0">
           {Number.isFinite(deposit) && deposit > 0 ? fill(t.refundedAmountBody, { amount: formatEur(deposit, lang) }) : t.refundedBody}
         </p>
       </div>
@@ -439,66 +350,157 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
   // relation faite après un remboursement : l'ancien parcours efface
   // accept_token_hash, la page n'est alors plus joignable par ce jeton (404).
   if (request.status === "accepted" && refundNotice) {
-    return <main style={shell}>{beacon("already_accepted")}{refundNotice}</main>;
+    return <Shell>{beacon("already_accepted")}{refundNotice}</Shell>;
   }
   if (request.status === "accepted") {
+    // Une acceptation d'avant l'allumage garde son texte de mise en relation.
+    const deposited = depositOn && request.booking_status != null;
     return (
-      <main style={shell}>
+      <Shell>
         {beacon("already_accepted")}
-        <div style={card}>
-          <p style={{ margin: "0 0 4px", color: "#008C9E", fontSize: 13, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase" }}>crete · direct</p>
-          {/* Une acceptation d'avant l'allumage garde son texte de mise en relation. */}
-          <h1 style={{ margin: "0 0 6px", fontSize: 21, color: "#0B3954" }}>{depositOn && request.booking_status != null ? dc.alreadyTitle : c.alreadyTitle}</h1>
-          <p style={{ margin: 0, color: "#5C7886", fontSize: 15, lineHeight: 1.6 }}>{depositOn && request.booking_status != null ? dc.alreadyBody : c.alreadyBody}</p>
-        </div>
-      </main>
+        <StateCard title={deposited ? dc.alreadyTitle : c.alreadyTitle}>
+          <Lead>{deposited ? dc.alreadyBody : c.alreadyBody}</Lead>
+        </StateCard>
+      </Shell>
     );
   }
 
   // Etat : aucune offre disponible encore
   if (offers.length === 0) {
     return (
-      <main style={shell}>
+      <Shell>
         {beacon("none_yet")}
         {refundNotice}
-        <div style={card}>
-          <p style={{ margin: "0 0 4px", color: "#008C9E", fontSize: 13, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase" }}>crete · direct</p>
-          <h1 style={{ margin: "0 0 8px", fontSize: 20, color: "#0B3954" }}>{c.offersTitle}</h1>
-          <p style={{ margin: 0, color: "#5C7886", fontSize: 15, lineHeight: 1.6 }}>{c.noOffers}</p>
-        </div>
-      </main>
+        <StateCard title={c.offersTitle}><Lead>{c.noOffers}</Lead></StateCard>
+      </Shell>
     );
   }
 
-  // Etat : une ou plusieurs offres à comparer. Une carte sans acompte garde les
+  // Etat : une ou plusieurs offres à comparer. Une offre sans acompte garde les
   // textes de la mise en relation (« Accepter cette offre », « Accepté ! »).
   const copyFor = (o: QuoteOption) => (depositFor(o) ? c : baseCopy);
   // Interrupteur éteint aussi : un paiement ouvert avant l'extinction bloque la
   // mise en relation (409 inProgress), le client doit lire pourquoi.
   const refusals = dc.refusals;
+  const v = OFFER_VIEW[offerLang(locale)];
+  const category = request.car_type as CarCategory;
+
+  // Confiance : notes Google des loueurs (en base, relevé hebdomadaire) et avis
+  // lus en direct (cache 24 h, jamais stockés). Une panne vide le bloc, jamais la page.
+  const ratings = new Map((await partnerRatings([...new Set(offers.map((o) => o.partner_id))])).map((r) => [r.id, r]));
+  const ratingOf = (o: QuoteOption) => {
+    const r = ratings.get(o.partner_id);
+    const rating = r?.google_rating == null ? NaN : Number(r.google_rating);
+    const count = r?.google_rating_count == null ? 0 : Number(r.google_rating_count);
+    return Number.isFinite(rating) && count > 0 ? { rating, count } : null;
+  };
+  const reviewsBy = new Map<number, PlaceReviews>();
+  await Promise.all([...ratings.values()].map(async (r) => {
+    reviewsBy.set(r.id, await reviewsForPlace(r.google_place_id, locale));
+  }));
+
+  const pick = recommendOffer(offers, (o) => ratingOf(o)?.rating ?? null) ?? offers[0];
+  const others = offers.filter((o) => o.id !== pick.id);
+  const daysText = daysLabel(days, locale);
+  const needsPhone = !isCallablePhone(request.customer_phone as string | null);
+
+  const itemFor = (o: QuoteOption): OfferItem => {
+    const deposit = depositFor(o);
+    const cc = copyFor(o);
+    const expired = isOfferExpired(o.created_at, request.date_from as string, now);
+    const euro = (o.currency ?? "EUR") === "EUR";
+    const fmt = (n: number) => (euro ? formatEur(n, locale) : `${n} ${o.currency}`);
+    let blockedText: string | null = null;
+    if (expired) blockedText = cc.expiredOffer;
+    else if (deposit?.declined) blockedText = deposit.dc.declined;
+    else if (deposit && !deposit.bookable) blockedText = deposit.dc.refusals.tooClose;
+    else if (deposit && deposit.amount === null) blockedText = deposit.dc.refusals.belowMinimum;
+    const rv = reviewsBy.get(o.partner_id);
+    const photo = offerCarPhoto(o.partner_id, category, o.car_model);
+    const model = o.car_model?.trim() || null;
+    // Sans modèle ni photo, la boîte seule se lirait comme un nom de voiture : libellé qualifié.
+    const gearbox = model || photo
+      ? gearboxLabel(o.gearbox, locale)
+      : o.gearbox ? (GEARBOX_ONLY[locale] ?? GEARBOX_ONLY.en)[o.gearbox] ?? null : null;
+    return {
+      id: o.id, token, partner: o.partner_name, price: o.price, priceText: fmt(o.price),
+      splitText: deposit?.amount != null
+        ? fill(deposit.dc.dueLine, { deposit: formatEur(deposit.amount, locale), rest: formatEur(Math.round((o.price - deposit.amount) * 100) / 100, locale) })
+        : null,
+      rating: ratingOf(o),
+      reviews: rv?.reviews ?? [],
+      mapsUri: rv?.mapsUri ?? ratings.get(o.partner_id)?.google_maps_url ?? null,
+      photo, model, gearbox,
+      // M8 : sur une offre de grille, la « note » est la règle d'annulation du
+      // loueur ; avec l'acompte, seule celle de crete.direct s'applique.
+      note: deposit && o.source === "catalogue" ? null : o.note,
+      insurance: insuranceSummary(o.insurance_type, o.excess_eur, o.zero_excess_upsell_eur_day, locale),
+      inclusions: inclusionLabels(o.inclusions ?? null, locale),
+      blockedText,
+      buttonLabel: deposit
+        ? deposit.amount != null ? fill(deposit.dc.book, { deposit: formatEur(deposit.amount, locale) }) : deposit.dc.bookPlain
+        : cc.accept,
+      doneText: cc.done, expiredText: cc.expiredOffer,
+      needsPhone, phoneLabel: cc.phoneLabel, phoneHint: cc.phoneHint, phoneError: cc.phoneError,
+      errorText: v.tryAgain,
+      rank: offers.indexOf(o) + 1, total: offers.length, refusals,
+    };
+  };
+
+  const pickRating = ratingOf(pick);
+  const reason = offers.length === 1
+    ? v.onlyOffer
+    : pickRating
+      ? fill(v.reasonRated, { n: String(offers.length), rating: formatRating(pickRating.rating, locale) })
+      : fill(v.reasonPlain, { n: String(offers.length) });
+  const pickCopy = copyFor(pick);
+  const ct = CAR_TYPES_DATA.find((x) => x.id === category);
+
   return (
-    <main style={shell}>
+    <Shell wide>
       {beacon("offers")}
-      <p style={{ margin: "0 0 6px", color: "#008C9E", fontSize: 13, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", textAlign: "center" }}>crete · direct</p>
-      <h1 style={{ margin: "0 0 20px", fontSize: 22, color: "#0B3954", fontWeight: 800, textAlign: "center" }}>{c.offersTitle}</h1>
+      {/* M10 : un paiement ouvert se voit dès l'ouverture, pas après un clic. */}
+      {bs === "pending_payment" ? (
+        <p role="status" className="m-0 mb-4 rounded-2xl bg-warn/15 px-4 py-3 text-[15px] leading-relaxed text-ink">{v.pendingPayment}</p>
+      ) : null}
       {refundNotice}
-      {curated.shown.map((offer, i) => (
-        <OfferCard key={offer.id} offer={offer} token={token} request={request} locale={locale} c={copyFor(offer)}
-          rank={i + 1} total={offers.length} deposit={depositFor(offer)} refusals={refusals} />
-      ))}
-      {curated.folded.length > 0 && (
-        <details style={{ margin: "4px 0 16px" }}>
-          <summary style={{ cursor: "pointer", color: "#0B3954", fontSize: 15, fontWeight: 700, padding: "10px 0", listStyle: "none", textAlign: "center" }}>
-            {more}
-          </summary>
-          {curated.folded.map((offer, i) => (
-            <OfferCard key={offer.id} offer={offer} token={token} request={request} locale={locale} c={copyFor(offer)}
-              rank={curated.shown.length + i + 1} total={offers.length} deposit={depositFor(offer)} refusals={refusals} />
-          ))}
-        </details>
-      )}
-      <DeclineButton token={token} label={c.declineLink} doneText={c.declineDone} offers={offers.length}
-        inProgressText={dc.refusals.inProgress} />
-    </main>
+      <h1 className="m-0 mb-1 font-heading text-[24px] font-extrabold leading-tight text-ink md:text-[28px]">{c.offersTitle}</h1>
+      <p className="m-0 mb-5 flex flex-wrap gap-x-3 gap-y-1 text-[14px] text-text-muted">
+        <span className="font-bold text-ink">{pickupLabel(request.pickup_slug as string, locale)}</span>
+        <span>{formatWallDate(request.date_from as string, request.time_from as string | null, locale)} → {formatWallDate(request.date_to as string, request.time_to as string | null, locale)}</span>
+        <span>{daysText}</span>
+        {ct ? <span>{ct.labels[locale] ?? ct.labels.en}</span> : null}
+      </p>
+      <PickCard
+        item={itemFor(pick)} v={v} locale={locale}
+        eyebrow={offers.length > 1 ? fill(v.ourPick, { n: String(offers.length) }) : v.yourOffer}
+        reason={reason} daysText={daysText} guarantees={pickCopy.reassure ?? []}
+      />
+      {pickCopy.steps?.length ? (
+        <ol className="m-0 mt-4 list-decimal pl-5 text-[14px] leading-relaxed text-text-muted">
+          {pickCopy.steps.map((st) => <li key={st}>{st}</li>)}
+        </ol>
+      ) : null}
+      {others.length ? (
+        <section aria-labelledby="others-title" className="mt-9">
+          <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 id="others-title" className="m-0 font-heading text-[22px] font-extrabold text-ink">
+              {others.length === 1 ? v.otherOffer : fill(v.otherOffers, { n: String(others.length) })}
+            </h2>
+            <span className="text-[13.5px] text-text-muted">{fill(v.totalFor, { days: daysText })}</span>
+          </div>
+          <ul className="m-0 list-none divide-y divide-border overflow-hidden rounded-2xl border border-border bg-white p-0">
+            {others.map((o) => (
+              <OfferRow key={o.id} item={itemFor(o)} v={v} locale={locale} delta={priceDelta(o.price, pick.price)} />
+            ))}
+          </ul>
+        </section>
+      ) : null}
+      {offers.some((o) => depositFor(o)) ? <p className="m-0 mt-4 text-[13.5px] leading-relaxed text-text-muted">{v.everyOffer}</p> : null}
+      <div className="mt-6">
+        <DeclineButton token={token} label={c.declineLink} doneText={c.declineDone} offers={offers.length}
+          inProgressText={dc.refusals.inProgress} />
+      </div>
+    </Shell>
   );
 }

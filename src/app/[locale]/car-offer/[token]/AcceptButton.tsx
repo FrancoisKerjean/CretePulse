@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { isCallablePhone } from "@/lib/car-lead";
 
 // Bouton d'acceptation d'une offre par le client. Poste le jeton et l'ID de
@@ -30,7 +30,7 @@ const REFUSAL_EVENT: Record<Refusal, string> = {
 export function AcceptButton({
   token, optionId, label, doneText, expiredText,
   needsPhone = false, phoneLabel = "", phoneHint = "", phoneError = "",
-  rank = 0, offers = 0, refusals,
+  rank = 0, offers = 0, refusals, variant = "primary", errorText = "Something went wrong. Please try again.",
 }: {
   token: string; optionId: number; label: string; doneText: string; expiredText: string;
   needsPhone?: boolean; phoneLabel?: string; phoneHint?: string; phoneError?: string;
@@ -39,7 +39,14 @@ export function AcceptButton({
   /** Nombre total d'offres affichees, pour lire le rang relativement au choix offert. */
   offers?: number;
   refusals?: AcceptRefusals;
+  /** primary : grand bouton soleil (offre mise en avant) · compact : bouton de ligne. */
+  variant?: "primary" | "compact";
+  errorText?: string;
 }) {
+  const phoneId = useId();
+  // M9 : le champ téléphone n'apparaît qu'au clic « Réserver » sur CETTE offre,
+  // plus sous chaque carte à la fois.
+  const [askPhone, setAskPhone] = useState(false);
   const [state, setState] = useState<"idle" | "sending" | "done" | "expired" | "error" | "phone" | Refusal>("idle");
   const [phone, setPhone] = useState("");
 
@@ -47,6 +54,11 @@ export function AcceptButton({
     // Garde locale : même règle que le serveur (isCallablePhone), pour dire au
     // client ce qui manque au lieu de lui renvoyer un 422 muet.
     if (needsPhone && !isCallablePhone(phone)) {
+      if (!askPhone) {
+        setAskPhone(true);
+        track("phone_prompt");
+        return;
+      }
       setState("phone");
       // Le client a VOULU accepter et s'est heurte a une demande de telephone.
       // Sans cette ligne ce moment n'existe nulle part, alors que c'est une
@@ -54,7 +66,6 @@ export function AcceptButton({
       // Trouve en cliquant, pas en relisant : la 1re version sortait ici en
       // silence. `phone_prompt` (l'ecran s'ouvre) et `phone_required` (le
       // serveur refuse) restent distincts, ils n'appellent pas le meme remede.
-      track("phone_prompt");
       return;
     }
     setState("sending");
@@ -84,6 +95,7 @@ export function AcceptButton({
         setState("expired");
         track("expired");
       } else if (res.status === 422 && json.phoneRequired) {
+        setAskPhone(true);
         setState("phone");
         track("phone_required");
       } else {
@@ -130,36 +142,34 @@ export function AcceptButton({
     );
   }
 
+  const showPhone = needsPhone && (askPhone || state === "phone");
+  const buttonClass = variant === "compact"
+    ? "inline-flex items-center justify-center rounded-full border-2 border-sea bg-white px-5 py-2 text-[14px] font-heading font-bold text-sea hover:bg-sea hover:text-white transition-colors disabled:opacity-60"
+    : "w-full inline-flex items-center justify-center rounded-full bg-sun px-6 py-3.5 text-[16px] font-heading font-extrabold text-night shadow-[0_6px_18px_rgba(255,200,61,0.35)] hover:brightness-105 transition disabled:opacity-60";
   return (
-    <div>
-      {needsPhone && (
-        <div style={{ marginBottom: 14 }}>
-          <label htmlFor="offer-phone" style={{ display: "block", marginBottom: 6, color: "#0B3954", fontSize: 14, fontWeight: 700 }}>
+    <div className={variant === "compact" ? "flex flex-col items-end gap-2" : undefined}>
+      {showPhone && (
+        <div className={variant === "compact" ? "w-full min-w-[220px] text-left" : "mb-3.5"}>
+          <label htmlFor={phoneId} className="block mb-1.5 text-[14px] font-bold text-current">
             {phoneLabel}
           </label>
           <input
-            id="offer-phone" type="tel" autoComplete="tel" inputMode="tel" required
+            id={phoneId} type="tel" autoComplete="tel" inputMode="tel" required autoFocus
             value={phone} onChange={(e) => { setPhone(e.target.value); if (state === "phone") setState("idle"); }}
-            aria-describedby="offer-phone-hint" aria-invalid={state === "phone"}
-            style={{
-              width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 16,
-              border: `1px solid ${state === "phone" ? "#B91C1C" : "#DCE9EE"}`, color: "#0B3954", background: "#fff",
-            }}
+            aria-describedby={`${phoneId}-hint`} aria-invalid={state === "phone"}
+            className={`w-full rounded-xl border bg-white px-3.5 py-3 text-[16px] text-ink ${state === "phone" ? "border-alert" : "border-border"}`}
           />
-          <p id="offer-phone-hint" style={{ margin: "6px 0 0", color: "#5C7886", fontSize: 13, lineHeight: 1.5 }}>{phoneHint}</p>
+          <p id={`${phoneId}-hint`} className="mt-1.5 text-[13px] leading-normal opacity-80">{phoneHint}</p>
         </div>
       )}
-      <button
-        onClick={accept} disabled={state === "sending"}
-        style={{ width: "100%", padding: "14px 20px", borderRadius: 999, border: "none", background: "#008C9E", color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer", opacity: state === "sending" ? 0.6 : 1 }}
-      >
+      <button onClick={accept} disabled={state === "sending"} className={buttonClass}>
         {state === "sending" ? "…" : label}
       </button>
       {state === "phone" && (
-        <p style={{ margin: "10px 0 0", color: "#B91C1C", fontSize: 13 }}>{phoneError}</p>
+        <p role="alert" className="mt-2.5 text-[13px] text-alert bg-white/90 rounded-lg px-2 py-1">{phoneError}</p>
       )}
       {state === "error" && (
-        <p style={{ margin: "10px 0 0", color: "#B91C1C", fontSize: 13 }}>Something went wrong. Please try again.</p>
+        <p role="alert" className="mt-2.5 text-[13px] text-alert bg-white/90 rounded-lg px-2 py-1">{errorText}</p>
       )}
     </div>
   );

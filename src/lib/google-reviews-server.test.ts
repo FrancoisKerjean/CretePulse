@@ -1,4 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+const { cacheCalls } = vi.hoisted(() => ({ cacheCalls: [] as unknown[][] }));
+// Le cache de Next n'existe pas hors de Next : on enregistre sa configuration
+// et on appelle la fonction directement.
+vi.mock("next/cache", () => ({
+  unstable_cache: (fn: (...a: unknown[]) => unknown, keys: unknown, opts: unknown) => {
+    cacheCalls.push([keys, opts]);
+    return fn;
+  },
+}));
+
 import { reviewsForPlace, REVIEW_MAX_AGE_DAYS } from "./google-reviews-server";
 
 const NOW = new Date("2026-11-27T12:00:00Z");
@@ -35,14 +45,15 @@ describe("reviewsForPlace", () => {
     delete process.env.GOOGLE_PLACES_API_KEY;
   });
 
-  it("appelle Places API New avec la langue, les en-têtes et un cache de 24 h", async () => {
+  it("appelle Places API New avec la langue et les en-têtes, derrière un cache de données de 24 h", async () => {
     const fn = mockFetch(200, { googleMapsUri: "https://maps.example/p1", reviews: [] });
     await reviewsForPlace("ChIJ_abc", "fr");
     expect(fn).toHaveBeenCalledTimes(1);
-    const [url, init] = fn.mock.calls[0] as unknown as [string, RequestInit & { next?: { revalidate?: number } }];
+    const [url, init] = fn.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe("https://places.googleapis.com/v1/places/ChIJ_abc?languageCode=fr");
     expect(init.headers).toEqual({ "X-Goog-Api-Key": "test-key", "X-Goog-FieldMask": "reviews,googleMapsUri" });
-    expect(init.next?.revalidate).toBe(86_400);
+    // force-dynamic coupe le cache de fetch : le cache vit dans unstable_cache.
+    expect(cacheCalls).toContainEqual([["google-reviews-v1"], { revalidate: 86_400 }]);
   });
 
   it("rend les avis dans la langue demandée, avec auteur, lien, photo, note et dates", async () => {
