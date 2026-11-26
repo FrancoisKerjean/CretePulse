@@ -1,9 +1,11 @@
 // Accès base du catalogue de prix loueur (car_partners + car_partner_rates).
 // ⛔ PostgREST ne lève jamais : toute écriture lit `error` et passe par assertWritten.
+import { createHmac } from "crypto";
 import { supabaseAdmin } from "./supabase-admin";
 import { assertWritten } from "./car-invoice-server";
 import { PARTNER_IDENTITY_COLS, type PartnerLegalRow } from "./car-invoice";
-import { newToken } from "./car-quote";
+import { hashToken } from "./car-quote";
+import { secretOk } from "./car-admin-auth";
 import { todayAthens } from "./car-partner-identity";
 import type { CatalogueConditions, PartnerWithTerms, RateRow } from "./car-catalogue";
 
@@ -23,32 +25,45 @@ export interface PortalPartner extends PartnerLegalRow {
 const PORTAL_COLS =
   `id, name, ${PARTNER_IDENTITY_COLS}, terms_version, terms_accepted_at, rates_status, rates_paused_until, rates_published_at, catalogue_conditions`;
 
+/** Loueur désigné par le lien de son portail. La base compare des hashes : le clair n'y est jamais. */
 export async function partnerByPortalToken(token: string): Promise<PortalPartner | null> {
   if (!token || token.length > 100) return null;
   const { data, error } = await supabaseAdmin
-    .from("car_partners").select(PORTAL_COLS).eq("portal_token", token).maybeSingle();
+    .from("car_partners").select(PORTAL_COLS).eq("portal_token", hashToken(token)).maybeSingle();
   if (error) throw new Error(`partnerByPortalToken refusé par la base: ${error.message}`);
   return (data as unknown as PortalPartner | null) ?? null;
 }
 
-/** Jeton du portail du loueur, créé à la première demande. */
+/**
+ * Jeton du portail, DÉRIVÉ de l'id du loueur par HMAC du secret d'admin, même
+ * schéma que le lien « Confirm » : ops peut reconstruire le lien à tout moment
+ * sans que le clair soit stocké. Bumper le label v1 révoque tous les liens.
+ */
+function portalToken(partnerId: number): string {
+  const secret = process.env.CAR_ADMIN_SECRET;
+  if (!secretOk(secret)) throw new Error("CAR_ADMIN_SECRET absent ou trop court : lien du portail impossible");
+  return createHmac("sha256", secret).update(`car-portal-v1:${partnerId}`).digest("base64url");
+}
+
+/**
+ * Jeton du portail du loueur. `portal_token` ne garde que son hash (spec
+ * section 6) : écrit quand il manque, ou réécrit quand il ne correspond plus
+ * (secret changé, ancien jeton en clair), pour que le lien rendu ouvre toujours
+ * le portail. Deux appels concurrents écrivent la même valeur.
+ */
 export async function ensurePortalToken(partnerId: number): Promise<string> {
+  const token = portalToken(partnerId);
+  const hash = hashToken(token);
   const { data, error } = await supabaseAdmin
     .from("car_partners").select("portal_token").eq("id", partnerId).maybeSingle();
   if (error) throw new Error(`ensurePortalToken(${partnerId}) lecture refusée: ${error.message}`);
   if (!data) throw new Error(`ensurePortalToken(${partnerId}): loueur introuvable`);
-  if (data.portal_token) return data.portal_token as string;
+  if (data.portal_token === hash) return token;
 
-  const token = newToken();
-  // `.is(null)` : si deux appels se croisent, un seul écrit, l'autre relit le gagnant.
-  const { data: written, error: wErr } = await supabaseAdmin
-    .from("car_partners").update({ portal_token: token }).eq("id", partnerId).is("portal_token", null).select("portal_token");
+  const { error: wErr } = await supabaseAdmin
+    .from("car_partners").update({ portal_token: hash }).eq("id", partnerId).select("id");
   assertWritten("ensurePortalToken", partnerId, wErr);
-  if (written && written.length > 0) return token;
-  const { data: again } = await supabaseAdmin
-    .from("car_partners").select("portal_token").eq("id", partnerId).maybeSingle();
-  if (!again?.portal_token) throw new Error(`ensurePortalToken(${partnerId}): jeton non écrit`);
-  return again.portal_token as string;
+  return token;
 }
 
 const RATE_COLS = "category, period_from, period_to, min_days, eur_per_day, source";
