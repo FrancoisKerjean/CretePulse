@@ -412,3 +412,32 @@ describe("page facture · identite client perdue", () => {
     },
   );
 });
+
+describe("page facture · réglée par compensation", () => {
+  beforeEach(() => {
+    vi.resetModules();
+    delete process.env.NOVAI_IBAN;
+    delete process.env.NOVAI_BIC;
+  });
+
+  it("affiche la compensation avec la date de l'acompte, sans bouton ni virement", async () => {
+    wiring(
+      { ...INVOICE, settlement: "deposit_compensation", paid_at: "2026-08-10T05:00:02.000Z" },
+      { ...REQUEST, booking_paid_at: "2026-07-28T20:15:00.000Z" },
+    );
+    const html = await render();
+    expect(html).toContain("Paid by offset against the deposit collected on");
+    expect(html).toContain("2026-07-28");
+    expect(html).not.toContain("by card");
+    expect(html).not.toContain("<form");
+    expect(html).not.toContain("Bank transfer");
+    expect(html).not.toContain("payment due on receipt");
+  });
+
+  it("une facture réglée autrement garde son affichage", async () => {
+    wiring({ ...INVOICE, paid_at: "2026-08-11T09:00:00.000Z" });
+    const html = await render();
+    expect(html).toContain("Paid on 2026-08-11");
+    expect(html).not.toContain("by offset");
+  });
+});

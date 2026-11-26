@@ -115,7 +115,7 @@ export default async function InvoicePage({
 
   const { data: req } = await supabaseAdmin
     .from("car_requests")
-    .select("date_from, date_to, pickup_slug, outcome")
+    .select("date_from, date_to, pickup_slug, outcome, booking_paid_at")
     .eq("id", invoice.request_id)
     .maybeSingle();
 
@@ -132,6 +132,9 @@ export default async function InvoicePage({
       : req?.outcome === "lost"
         ? "lost"
         : "due";
+  // Réglée par compensation avec l'acompte déjà encaissé en ligne : aucun paiement
+  // à demander, la date est celle du paiement de l'acompte par le client.
+  const offset = invoice.settlement === "deposit_compensation";
   const bank = bankDetails();
   const ratePct = ratePercentLabel(Number(invoice.rate));
   // Le nom commercial n a d interet que s il differe de la raison sociale : le
@@ -150,7 +153,8 @@ export default async function InvoicePage({
         <p className="text-xs font-bold uppercase tracking-widest text-lagoon-deep">Invoice</p>
         <h1 className="font-heading text-2xl font-extrabold">{invoice.number}</h1>
         <p className="text-sm text-text-muted">
-          Issued {day(invoice.issued_at)} · payment due on receipt
+          Issued {day(invoice.issued_at)}
+          {offset ? "" : " · payment due on receipt"}
         </p>
       </header>
 
@@ -241,7 +245,14 @@ export default async function InvoicePage({
           </button>
         </form>
       )}
-      {state === "paid" && (
+      {state === "paid" && offset && (
+        <p className="mb-6 rounded-xl bg-ok/10 px-5 py-3 font-bold text-ok">
+          Paid by offset against the deposit collected on{" "}
+          {day((req?.booking_paid_at as string | null | undefined) ?? (invoice.paid_at as string))}. Nothing left
+          to do.
+        </p>
+      )}
+      {state === "paid" && !offset && (
         <p className="mb-6 rounded-xl bg-ok/10 px-5 py-3 font-bold text-ok">
           Paid on {day(invoice.paid_at as string)}. Nothing left to do.
         </p>

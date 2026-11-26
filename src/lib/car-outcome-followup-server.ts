@@ -143,6 +143,9 @@ export async function runOutcomeFollowupPass(now: Date): Promise<OutcomeFollowup
   const { data: unknown, error: errA } = await supabase.from("car_requests").select(COLS)
     .eq("status", "accepted")
     .is("outcome", null)
+    // Une réservation avec acompte (booking_status non nul) a sa propre facture
+    // au J1 : elle n'entre jamais dans la relance d'issue.
+    .is("booking_status", null)
     .is("booking_paid_at", null)
     .not("quoted_by_partner_id", "is", null)
     .lt("date_to", today);
@@ -150,6 +153,7 @@ export async function runOutcomeFollowupPass(now: Date): Promise<OutcomeFollowup
   const { data: presumed, error: errB } = await supabase.from("car_requests").select(COLS)
     .eq("outcome", "rented")
     .eq("outcome_source", "auto")
+    .is("booking_status", null)
     .lt("date_to", today);
   // PostgREST ne lève pas : une lecture refusée (colonnes absentes tant que la
   // migration n'est pas appliquée, droits) rend `data` null, et la passe

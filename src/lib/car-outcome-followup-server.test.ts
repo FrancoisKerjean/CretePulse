@@ -90,6 +90,12 @@ describe("runOutcomeFollowupPass · sélection", () => {
     expect(b.filters).toEqual(expect.arrayContaining(["eq:outcome:rented", "eq:outcome_source:auto", `lt:date_to:${TODAY}`]));
   });
 
+  it("exclut les réservations avec acompte (booking_status non nul) des deux populations", async () => {
+    const w = wiring();
+    await runOutcomeFollowupPass(NOW);
+    for (const q of w.queries) expect(q.filters).toContain("is:booking_status:null");
+  });
+
   it("écarte en code une annulée ou une payée en ligne remontée par la requête", async () => {
     const w = wiring({ unknown: [{ ...UNKNOWN, status: "cancelled" }], presumed: [{ ...PRESUMED, booking_paid_at: "2026-09-01T00:00:00.000Z" }] });
     const res = await runOutcomeFollowupPass(NOW);

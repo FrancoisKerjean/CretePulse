@@ -18,10 +18,11 @@ export interface InvoiceRow {
   credited_at: string | null;
   credit_number: string | null;
   credit_reason: string | null;
+  settlement?: string | null;
 }
 
 const COLS =
-  "id, number, request_id, partner_id, base_amount_eur, rate, amount_eur, issued_at, sent_at, paid_at, credited_at, credit_number, credit_reason";
+  "id, number, request_id, partner_id, base_amount_eur, rate, amount_eur, issued_at, sent_at, paid_at, credited_at, credit_number, credit_reason, settlement";
 
 export async function invoiceForRequest(requestId: number): Promise<InvoiceRow | null> {
   const { data } = await supabaseAdmin

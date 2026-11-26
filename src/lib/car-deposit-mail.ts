@@ -28,6 +28,8 @@ export const DEPOSIT_MAIL_KINDS = [
   "client_refunded",
   "partner_client_cancelled",
   "client_cancelled",
+  "partner_invoice",
+  "partner_rates_expiring",
 ] as const;
 export type DepositMailKind = (typeof DEPOSIT_MAIL_KINDS)[number];
 
@@ -60,6 +62,10 @@ export interface DepositMailData {
   insurance?: { type: string | null; excessEur: number | null; upsellPerDay: number | null };
   /** Lu par client_confirmed seulement. */
   partnerContact?: { name: string; phone: string | null; whatsapp: string | null; email: string | null; address: string | null };
+  /** Lu par partner_invoice seulement : montants lus de la facture, jamais recalculés. */
+  invoice?: { number: string; url: string; baseEur: number; ratePct: string; commissionEur: number; depositPaidOn: string };
+  /** Lu par partner_rates_expiring seulement. */
+  ratesExpiry?: { lastDay: string; portalUrl: string };
   /** Lu par partner_confirmed seulement. */
   customer?: { name: string; phone: string | null; email: string };
 }
@@ -280,6 +286,39 @@ function partnerMail(kind: DepositMailKind, d: DepositMailData): DepositMail {
           partnerBooking(d, false) +
           SIGN,
       };
+    case "partner_invoice": {
+      const inv = d.invoice;
+      if (!inv) throw new Error("depositMail: partner_invoice sans facture");
+      return {
+        subject: `Commission invoice ${inv.number} · already settled · ${when(d)}`,
+        html:
+          hi +
+          P("The rental below starts today. Here is the commission invoice for it. <strong>It is already settled: there is nothing to pay.</strong>") +
+          BOX("Invoice", [
+            `Invoice: <strong>${esc(inv.number)}</strong>`,
+            `Rental price quoted and accepted: ${formatEur(inv.baseEur, "en")}`,
+            `Commission rate: ${esc(inv.ratePct)}%`,
+            `Commission: <strong>${formatEur(inv.commissionEur, "en")}</strong>`,
+            `Settled by offset against the deposit collected on ${esc(inv.depositPaidOn)}`,
+          ]) +
+          MUTED("The customer paid this deposit online, and crete.direct keeps it as its commission. You collect the rest at the counter.") +
+          BUTTON(inv.url, "View the invoice") +
+          SIGN,
+      };
+    }
+    case "partner_rates_expiring": {
+      const r = d.ratesExpiry;
+      if (!r) throw new Error("depositMail: partner_rates_expiring sans échéance");
+      return {
+        subject: "Your price grid on crete.direct is about to expire",
+        html:
+          hi +
+          P(`Your price grid is valid until <strong>${esc(r.lastDay)}</strong>. After that date your offers are no longer shown to customers.`) +
+          P("To keep receiving bookings, please update your prices and dates.") +
+          BUTTON(r.portalUrl, "Update my prices") +
+          SIGN,
+      };
+    }
     default:
       throw new Error(`depositMail: ${kind} n'est pas un e-mail loueur`);
   }

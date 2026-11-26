@@ -32,6 +32,8 @@ const DATA: DepositMailData = {
     email: "info@zorbas.gr",
     address: "Airport road 1, 71601 Heraklion",
   },
+  invoice: { number: "F-2027-0007", url: "https://crete.direct/en/invoice/inv-tok", baseEur: 412, ratePct: "10", commissionEur: 41.2, depositPaidOn: "2027-07-13" },
+  ratesExpiry: { lastDay: "2027-09-30", portalUrl: "https://crete.direct/en/car-rates/portal-tok" },
   customer: { name: "Marie Durand", phone: "+33 6 12 34 56 78", email: "marie@example.fr" },
 };
 
@@ -177,5 +179,26 @@ describe("depositMail", () => {
         expect(t.toLowerCase(), `${kind}/${locale}`).not.toContain("kairos");
       }
     }
+  });
+
+  it("partner_invoice : montants de la facture, déjà réglée, lien, aucune demande de paiement ni contact client", () => {
+    const m = depositMail("partner_invoice", DATA, "en");
+    const t = flat(m.subject + " " + m.html);
+    expect(t).toContain("F-2027-0007");
+    expect(t).toContain("already settled");
+    expect(t).toContain("nothing to pay");
+    expect(t).toContain("41.20");
+    expect(t).toContain("412");
+    expect(t).toContain("10%");
+    expect(t).toContain("2027-07-13");
+    expect(t).toContain("https://crete.direct/en/invoice/inv-tok");
+    for (const c of CLIENT_CONTACT) expect(t).not.toContain(c);
+  });
+
+  it("partner_rates_expiring : date de fin et lien du portail", () => {
+    const m = depositMail("partner_rates_expiring", DATA, "en");
+    expect(m.html).toContain("2027-09-30");
+    expect(m.html).toContain("https://crete.direct/en/car-rates/portal-tok");
+    for (const c of CLIENT_CONTACT) expect(m.html).not.toContain(c);
   });
 });
