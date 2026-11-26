@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   athensWallToUtcMs,
+  DEPOSIT_CHECKOUT_LIFETIME_S,
   buildDepositCheckoutParams,
   clientCancelRefundEur,
   confirmDeadlineMs,
@@ -54,8 +55,20 @@ describe("car-deposit", () => {
     expect(isBookableOnline(now, at("2027-07-11", "13:30"))).toBe(true);
     expect(isBookableOnline(now, at("2027-07-11", "13:29"))).toBe(false);
   });
-  it("reminder is the midpoint", () => {
-    expect(reminderDueMs(1000, 3000)).toBe(2000);
+  it("keeps milliseconds across closing time", () => {
+    const paid = at("2027-07-10", "21:59") + 59_500;
+    expect(confirmDeadlineMs(paid)).toBe(at("2027-07-11", "11:59") + 59_500);
+  });
+  it("reminder is at half the open delay", () => {
+    const p1 = at("2027-07-10", "10:00");
+    expect(reminderDueMs(p1, confirmDeadlineMs(p1))).toBe(at("2027-07-10", "12:00"));
+    const p2 = at("2027-07-10", "21:30");
+    expect(reminderDueMs(p2, confirmDeadlineMs(p2))).toBe(at("2027-07-11", "09:30"));
+  });
+  it("reminder is capped at the deadline", () => {
+    const p = at("2027-07-10", "10:00");
+    const early = at("2027-07-10", "11:00");
+    expect(reminderDueMs(p, early)).toBe(early);
   });
   it("client cancellation: unconfirmed is always refunded, confirmed follows 48 h", () => {
     expect(clientCancelRefundEur("awaiting_partner", 41.2, 3)).toBe(41.2);
@@ -75,7 +88,8 @@ describe("car-deposit", () => {
     expect(p.metadata).toMatchObject({ payment_type: "car_deposit", brand: "crete.direct", car_request_id: "25" });
     expect(p.payment_intent_data?.metadata).toEqual(p.metadata);
     expect(p.payment_intent_data?.statement_descriptor_suffix).toBe("CRETE DIRECT");
-    expect(p.expires_at).toBe(Math.floor(INPUT.nowMs / 1000) + 1800);
+    expect(DEPOSIT_CHECKOUT_LIFETIME_S).toBe(1860);
+    expect(p.expires_at).toBe(Math.floor(INPUT.nowMs / 1000) + 1860);
     expect(p.customer_email).toBe("client@example.com");
     expect(p.success_url).toMatch(/\/fr\/car-booking\/tok123\?paid=1$/);
     expect(p.cancel_url).toMatch(/\/fr\/car-booking\/tok123$/);

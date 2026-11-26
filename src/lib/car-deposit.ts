@@ -23,10 +23,12 @@ export const CLOSE_HOUR = 22;
 export const PICKUP_MARGIN_MS = 2 * 3600_000;
 export const SUSPEND_AFTER_FAILURES = 3;
 export const SUSPEND_WINDOW_DAYS = 30;
+/** 31 min et non 30 : 30 min est la borne basse de Stripe, la latence d'appel la ferait refuser. */
+export const DEPOSIT_CHECKOUT_LIFETIME_S = 1860;
 
 const TZ = "Europe/Athens";
 
-// Un seul formateur par processus : en construire un coute cher.
+// Un seul formateur par processus : en construire un coûte cher.
 const wallFmt = new Intl.DateTimeFormat("en-GB", {
   timeZone: TZ,
   hourCycle: "h23",
@@ -59,7 +61,7 @@ function athensWall(ms: number): Wall {
   return { y: p.year, mo: p.month, d: p.day, h: p.hour, mi: p.minute, s: p.second };
 }
 
-/** Decalage d'Athenes en ms a cet instant (+2 h hiver, +3 h ete). */
+/** Décalage d'Athènes en ms à cet instant (+2 h hiver, +3 h été). */
 function athensOffsetMs(ms: number): number {
   const name = offsetFmt.formatToParts(ms).find((x) => x.type === "timeZoneName")?.value ?? "GMT";
   const m = /GMT([+-])(\d{1,2})(?::(\d{2}))?/.exec(name);
@@ -68,7 +70,7 @@ function athensOffsetMs(ms: number): number {
   return sign * (Number(m[2]) * 60 + Number(m[3] ?? 0)) * 60_000;
 }
 
-/** "YYYY-MM-DD" + "HH:mm" heure murale d'Athenes -> instant UTC en ms. */
+/** "YYYY-MM-DD" + "HH:mm" heure murale d'Athènes -> instant UTC en ms. */
 export function athensWallToUtcMs(date: string, time: string): number {
   const [y, mo, d] = date.split("-").map(Number);
   const [h, mi] = time.split(":").map(Number);
@@ -86,20 +88,21 @@ const isoDate = (y: number, mo: number, d: number) => {
 };
 
 /**
- * paidAtMs + 240 minutes comptees uniquement entre 08:00 et 22:00 (Athenes).
- * Les heures de fermeture sont sautees d'un bloc jusqu'a 08:00 pile.
+ * fromMs + `minutes` minutes comptées uniquement entre 08:00 et 22:00 (Athènes).
+ * Les heures de fermeture sont sautées d'un bloc jusqu'à 08:00 pile.
  */
-export function confirmDeadlineMs(paidAtMs: number): number {
-  let t = paidAtMs;
-  let remaining = CONFIRM_OPEN_MINUTES * 60_000;
+function addOpenMinutes(fromMs: number, minutes: number): number {
+  let t = fromMs;
+  let remaining = minutes * 60_000;
   for (let guard = 0; guard < 20 && remaining > 0; guard++) {
     const w = athensWall(t);
+    const day = isoDate(w.y, w.mo, w.d);
     if (w.h < OPEN_HOUR) {
-      t = athensWallToUtcMs(isoDate(w.y, w.mo, w.d), `${pad(OPEN_HOUR)}:00`);
+      t = athensWallToUtcMs(day, `${pad(OPEN_HOUR)}:00`);
     } else if (w.h >= CLOSE_HOUR) {
       t = athensWallToUtcMs(isoDate(w.y, w.mo, w.d + 1), `${pad(OPEN_HOUR)}:00`);
     } else {
-      const untilClose = ((CLOSE_HOUR - w.h) * 3600 - w.mi * 60 - w.s) * 1000;
+      const untilClose = athensWallToUtcMs(day, `${pad(CLOSE_HOUR)}:00`) - t;
       const step = Math.min(remaining, untilClose);
       t += step;
       remaining -= step;
@@ -108,12 +111,21 @@ export function confirmDeadlineMs(paidAtMs: number): number {
   return t;
 }
 
+/** Échéance de confirmation du loueur : 240 minutes ouvertes après le paiement. */
+export function confirmDeadlineMs(paidAtMs: number): number {
+  return addOpenMinutes(paidAtMs, CONFIRM_OPEN_MINUTES);
+}
+
 export function isBookableOnline(nowMs: number, pickupMs: number): boolean {
   return confirmDeadlineMs(nowMs) <= pickupMs - PICKUP_MARGIN_MS;
 }
 
+/**
+ * Rappel au loueur à mi-délai en temps ouvert (pas en temps mural : un milieu
+ * mural tomberait la nuit pour tout paiement entre 18:00 et 08:00).
+ */
 export function reminderDueMs(paidAtMs: number, deadlineMs: number): number {
-  return Math.round((paidAtMs + deadlineMs) / 2);
+  return Math.min(addOpenMinutes(paidAtMs, CONFIRM_OPEN_MINUTES / 2), deadlineMs);
 }
 
 export function clientCancelRefundEur(
@@ -172,7 +184,7 @@ export function buildDepositCheckoutParams(i: {
     },
     customer_email: i.customerEmail,
     metadata,
-    expires_at: Math.floor(i.nowMs / 1000) + 1800,
+    expires_at: Math.floor(i.nowMs / 1000) + DEPOSIT_CHECKOUT_LIFETIME_S,
     success_url: `${base}/${i.locale}/car-booking/${i.bookingToken}?paid=1`,
     cancel_url: `${base}/${i.locale}/car-booking/${i.bookingToken}`,
   };
