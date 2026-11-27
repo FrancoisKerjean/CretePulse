@@ -84,6 +84,22 @@ export type CarBookingStrings = {
   otherOffers: string;
   keptTitle: string;
   keptBody: string;
+  /** Pages de suivi façon « lagon et chèvre » (nuit du 27/11/2026). */
+  kickerPaid: string;
+  kickerConfirmed: string;
+  awaitingHero: string;
+  awaitingLead: string;
+  deadlineKicker: string;
+  deadlineBody: string;
+  contactTitle: string;
+  contactLocked: string;
+  pickupRow: string;
+  returnRow: string;
+  paidShort: string;
+  counterShort: string;
+  totalDays: string;
+  orSimilar: string;
+  freeCancelTitle: string;
 };
 
 /** Phrase qui dit au client pourquoi son acompte lui est rendu (pages et e-mails). */
@@ -162,6 +178,21 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
     reasonPartnerCancelled: "The rental agency cancelled this booking.",
     reasonOps: "Our team cancelled this booking.",
     otherOffers: "See your other offers",
+    kickerPaid: "Deposit received · {deposit}",
+    kickerConfirmed: "Booking confirmed",
+    awaitingHero: "Over to {partner} to confirm",
+    awaitingLead: "We email you as soon as they answer. Without a timely confirmation, you are refunded.",
+    deadlineKicker: "Answer at the latest",
+    deadlineBody: "If {partner} does not confirm by then, your {deposit} is refunded in full and you can book another of your offers.",
+    contactTitle: "Contact details",
+    contactLocked: "{partner}'s details appear here once confirmed. The agency receives yours at the same time.",
+    pickupRow: "Pick-up",
+    returnRow: "Return",
+    paidShort: "Paid",
+    counterShort: "At the counter",
+    totalDays: "Total, {days}",
+    orSimilar: "or similar",
+    freeCancelTitle: "Free cancellation",
     keptTitle: "Booking cancelled",
     keptBody:
       "This booking was cancelled less than 48 hours before pick-up: the deposit is kept, as stated in the cancellation terms.",
@@ -227,6 +258,21 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
     reasonPartnerCancelled: "Le loueur a annulé cette réservation.",
     reasonOps: "Notre équipe a annulé cette réservation.",
     otherOffers: "Voir vos autres offres",
+    kickerPaid: "Acompte reçu · {deposit}",
+    kickerConfirmed: "Réservation confirmée",
+    awaitingHero: "Au tour de {partner} de confirmer",
+    awaitingLead: "Nous vous écrivons dès sa réponse. Sans confirmation à temps, vous êtes remboursé.",
+    deadlineKicker: "Réponse au plus tard",
+    deadlineBody: "Si {partner} ne confirme pas d'ici là, vos {deposit} vous sont remboursés intégralement et vous pouvez réserver une autre de vos offres.",
+    contactTitle: "Coordonnées",
+    contactLocked: "Celles de {partner} s'affichent ici à la confirmation. Le loueur reçoit les vôtres au même moment.",
+    pickupRow: "Prise",
+    returnRow: "Restitution",
+    paidShort: "Payé",
+    counterShort: "Au comptoir",
+    totalDays: "Total, {days}",
+    orSimilar: "ou similaire",
+    freeCancelTitle: "Annulation gratuite",
     keptTitle: "Réservation annulée",
     keptBody:
       "Cette réservation a été annulée moins de 48 heures avant la prise du véhicule : l'acompte est conservé, comme prévu par les conditions d'annulation.",
@@ -292,6 +338,21 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
     reasonPartnerCancelled: "Der Vermieter hat diese Buchung storniert.",
     reasonOps: "Unser Team hat diese Buchung storniert.",
     otherOffers: "Ihre anderen Angebote ansehen",
+    kickerPaid: "Anzahlung erhalten · {deposit}",
+    kickerConfirmed: "Buchung bestätigt",
+    awaitingHero: "Jetzt bestätigt {partner}",
+    awaitingLead: "Wir schreiben Ihnen, sobald die Antwort da ist. Ohne rechtzeitige Bestätigung wird erstattet.",
+    deadlineKicker: "Antwort spätestens",
+    deadlineBody: "Bestätigt {partner} bis dahin nicht, erhalten Sie Ihre {deposit} vollständig zurück und können ein anderes Ihrer Angebote buchen.",
+    contactTitle: "Kontaktdaten",
+    contactLocked: "Die Daten von {partner} erscheinen hier nach der Bestätigung. Die Vermietung erhält Ihre zur gleichen Zeit.",
+    pickupRow: "Abholung",
+    returnRow: "Rückgabe",
+    paidShort: "Bezahlt",
+    counterShort: "Am Schalter",
+    totalDays: "Gesamt, {days}",
+    orSimilar: "oder ähnlich",
+    freeCancelTitle: "Kostenlose Stornierung",
     keptTitle: "Buchung storniert",
     keptBody:
       "Diese Buchung wurde weniger als 48 Stunden vor Abholung storniert: Die Anzahlung wird gemäß den Stornobedingungen einbehalten.",
@@ -357,6 +418,21 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
     reasonPartnerCancelled: "Το γραφείο ακύρωσε αυτήν την κράτηση.",
     reasonOps: "Η ομάδα μας ακύρωσε αυτήν την κράτηση.",
     otherOffers: "Δείτε τις άλλες προσφορές σας",
+    kickerPaid: "Η προκαταβολή ελήφθη · {deposit}",
+    kickerConfirmed: "Η κράτηση επιβεβαιώθηκε",
+    awaitingHero: "Σειρά του {partner} να επιβεβαιώσει",
+    awaitingLead: "Σας γράφουμε μόλις απαντήσει. Χωρίς έγκαιρη επιβεβαίωση, σας επιστρέφονται τα χρήματα.",
+    deadlineKicker: "Απάντηση το αργότερο",
+    deadlineBody: "Αν το {partner} δεν επιβεβαιώσει μέχρι τότε, τα {deposit} σας επιστρέφονται ολόκληρα και μπορείτε να κλείσετε άλλη από τις προσφορές σας.",
+    contactTitle: "Στοιχεία επικοινωνίας",
+    contactLocked: "Τα στοιχεία του {partner} εμφανίζονται εδώ με την επιβεβαίωση. Το γραφείο λαμβάνει τα δικά σας την ίδια στιγμή.",
+    pickupRow: "Παραλαβή",
+    returnRow: "Επιστροφή",
+    paidShort: "Πληρώθηκε",
+    counterShort: "Στο γκισέ",
+    totalDays: "Σύνολο, {days}",
+    orSimilar: "ή παρόμοιο",
+    freeCancelTitle: "Δωρεάν ακύρωση",
     keptTitle: "Η κράτηση ακυρώθηκε",
     keptBody:
       "Η κράτηση ακυρώθηκε λιγότερο από 48 ώρες πριν την παραλαβή: η προκαταβολή παρακρατείται, όπως προβλέπουν οι όροι ακύρωσης.",

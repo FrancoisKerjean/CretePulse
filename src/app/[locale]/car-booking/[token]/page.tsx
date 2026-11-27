@@ -20,13 +20,20 @@ import { hashToken } from "@/lib/car-quote";
 import { pickupLabel } from "@/lib/car-pickup-labels";
 import { clientCancelNowEur, isDepositBookable, type RefundReason } from "@/lib/car-deposit";
 import { CAR_INSURANCE_HEADING, insuranceSummary } from "@/lib/car-inclusions";
+import { rentalDays } from "@/lib/car-pricing";
+import { offerCarPhoto } from "@/lib/car-fleet";
+import { partnerRatings } from "@/lib/car-trust-server";
+import { daysLabel, localizeQuotedModel } from "@/lib/car-offer-view";
+import { CarPhoto, RatingLine } from "@/components/car-rental/trust";
+import GoatStanding from "@/components/campagne/GoatStanding";
+import type { CarCategory } from "@/lib/car-catalogue";
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
 const COLS =
-  "status, booking_status, deposit_eur, quoted_price, quoted_car_model, quoted_insurance_type, quoted_excess_eur, quoted_zero_excess_upsell_eur_day, quoted_by_partner_id, partner_name, pickup_slug, date_from, date_to, time_from, time_to, confirm_deadline_at, refund_reason, client_token";
+  "status, booking_status, deposit_eur, quoted_price, quoted_car_model, quoted_insurance_type, quoted_excess_eur, quoted_zero_excess_upsell_eur_day, quoted_by_partner_id, partner_name, car_type, pickup_slug, date_from, date_to, time_from, time_to, confirm_deadline_at, refund_reason, client_token";
 
 interface BookingRow {
   status: string;
@@ -39,6 +46,7 @@ interface BookingRow {
   quoted_zero_excess_upsell_eur_day: number | null;
   quoted_by_partner_id: number | null;
   partner_name: string | null;
+  car_type: string | null;
   pickup_slug: string | null;
   date_from: string;
   date_to: string;
@@ -49,19 +57,36 @@ interface BookingRow {
   client_token: string | null;
 }
 
-function Shell({ children }: { children: ReactNode }) {
+/**
+ * Mise en page « lagon et chèvre » (maquette B) : bandeau lagon avec titre et
+ * chèvre, vague, puis la carte de la réservation et la colonne des règles.
+ */
+function Shell({ children, hero, wide = false }: { children?: ReactNode; hero?: ReactNode; wide?: boolean }) {
   return (
-    <main className="min-h-screen bg-surface">
-      <div className="mx-auto max-w-xl px-4 pt-10 pb-16">{children}</div>
+    <main className="min-h-screen bg-foam">
+      {hero ? (
+        <div className="relative overflow-hidden bg-gradient-to-br from-lagoon to-sea text-white">
+          <div className={`relative mx-auto flex items-end justify-between gap-6 px-4 pt-10 pb-20 ${wide ? "max-w-5xl" : "max-w-xl"}`}>
+            <div className="min-w-0">{hero}</div>
+            <GoatStanding className="hidden h-36 w-auto shrink-0 sm:block" />
+          </div>
+          <svg viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true" className="absolute bottom-0 left-0 h-10 w-full text-foam">
+            <path d="M0 34 C240 4 480 4 720 26 C960 48 1200 50 1440 18 V60 H0Z" fill="currentColor" />
+          </svg>
+        </div>
+      ) : null}
+      <div className={`relative mx-auto px-4 pb-16 ${hero ? "-mt-10" : "pt-10"} ${wide ? "max-w-5xl" : "max-w-xl"}`}>{children}</div>
     </main>
   );
 }
 
-function Title({ children }: { children: ReactNode }) {
+function Hero({ kicker, title, lead }: { kicker?: string; title: string; lead?: ReactNode }) {
   return (
-    <h1 className="font-heading font-extrabold text-3xl md:text-[38px] leading-[1.1] tracking-tight text-text mb-3">
-      {children}
-    </h1>
+    <>
+      {kicker ? <p className="m-0 mb-2 font-heading text-[12.5px] font-bold uppercase tracking-[.12em] text-white/85">{kicker}</p> : null}
+      <h1 className="m-0 font-heading text-3xl font-extrabold leading-[1.1] tracking-tight md:text-[40px]">{title}</h1>
+      {lead ? <p className="m-0 mt-3 max-w-xl text-[16px] leading-relaxed text-white/90">{lead}</p> : null}
+    </>
   );
 }
 
@@ -77,43 +102,84 @@ function Rules({ lines }: { lines: string[] }) {
   );
 }
 
-/** Récapitulatif chiffré : total, acompte, reste au comptoir, couverture. */
-function Recap({ row, t, lang, paid }: { row: BookingRow; t: CarBookingStrings; lang: CarBookingLocale; paid: boolean }) {
+function SideBox({ title, dark = false, children }: { title?: ReactNode; dark?: boolean; children: ReactNode }) {
+  return (
+    <section className={`rounded-[22px] p-5 ${dark ? "bg-night text-white" : "border border-border bg-white text-ink shadow-soft"}`}>
+      {title ? <h2 className={`m-0 mb-2 font-heading text-[17px] font-bold ${dark ? "text-white" : "text-ink"}`}>{title}</h2> : null}
+      {children}
+    </section>
+  );
+}
+
+interface CardExtras { rating: { rating: number; count: number } | null }
+
+/** Carte de la réservation : vraie voiture du loueur, note, trajet, argent. */
+function BookingCard({ row, t, lang, paid, extras }: { row: BookingRow; t: CarBookingStrings; lang: CarBookingLocale; paid: boolean; extras: CardExtras }) {
   const total = Number(row.quoted_price);
   const deposit = Number(row.deposit_eur);
   const rest = Math.round((total - deposit) * 100) / 100;
   const ins = insuranceSummary(row.quoted_insurance_type, row.quoted_excess_eur, row.quoted_zero_excess_upsell_eur_day, lang);
+  const model = localizeQuotedModel(row.quoted_car_model, lang);
+  const photo = row.quoted_by_partner_id != null && row.car_type
+    ? offerCarPhoto(row.quoted_by_partner_id, row.car_type as CarCategory, row.quoted_car_model)
+    : null;
+  const days = rentalDays(row.date_from, row.date_to, row.time_from, row.time_to);
   return (
-    <div className="card-base p-6 flex flex-col gap-4 mb-6">
-      <div>
-        {row.quoted_car_model ? (
-          <p className="m-0 text-[16px] font-heading font-bold text-text">{row.quoted_car_model}</p>
-        ) : null}
-        {row.partner_name ? <p className="m-0 mt-1 text-[14px] text-text-muted">{row.partner_name}</p> : null}
-        <p className="m-0 mt-1 text-[14px] text-text-muted">
-          {row.pickup_slug ? `${pickupLabel(row.pickup_slug, lang)} · ` : ""}
-          {formatWallDate(row.date_from, row.time_from, lang)} → {formatWallDate(row.date_to, row.time_to, lang)}
-        </p>
-      </div>
-      <dl className="m-0 grid grid-cols-[1fr_auto] gap-x-4 gap-y-1.5 text-[15px]">
-        <dt className="text-text-muted">{t.totalLabel}</dt>
-        <dd className="m-0 text-right font-heading font-bold text-text">{formatEur(total, lang)}</dd>
-        <dt className="text-text-muted">{paid ? t.depositPaidLabel : t.depositLabel}</dt>
-        <dd className="m-0 text-right font-heading font-bold text-text">{formatEur(deposit, lang)}</dd>
-        <dt className="text-text-muted">{t.restLabel}</dt>
-        <dd className="m-0 text-right font-heading font-bold text-text">{formatEur(rest, lang)}</dd>
-      </dl>
-      {ins.length ? (
-        <div className="text-[14px] text-text leading-relaxed">
-          <p className="m-0 mb-1 text-[12px] font-heading font-bold uppercase tracking-wide text-text-muted">
-            {CAR_INSURANCE_HEADING[lang] ?? CAR_INSURANCE_HEADING.en}
-          </p>
-          {ins.map((x) => <div key={x}>{x}</div>)}
+    <section className="overflow-hidden rounded-[26px] border border-border bg-white shadow-soft">
+      {photo ? (
+        <div className="flex aspect-[16/9] items-center justify-center bg-white px-6 pt-6">
+          <CarPhoto src640={photo.src640} src1280={photo.src1280} alt={[photo.model, row.partner_name].filter(Boolean).join(", ")} eager className="h-full w-full" sizes="(min-width: 768px) 560px, 100vw" />
         </div>
       ) : null}
-    </div>
+      <div className="flex flex-col gap-4 p-6">
+        <div>
+          {model ? (
+            <p className="m-0 font-heading text-[22px] font-extrabold leading-tight text-ink">
+              {model} <span className="font-sans text-[15px] font-medium text-text-muted">{t.orSimilar}</span>
+            </p>
+          ) : null}
+          <p className="m-0 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[14.5px] text-ink">
+            {row.partner_name ? <span>{row.partner_name}</span> : null}
+            {extras.rating ? <RatingLine rating={extras.rating.rating} count={extras.rating.count} locale={lang} countLabel={GOOGLE_COUNT[lang]} /> : null}
+          </p>
+        </div>
+        <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 text-[15px]">
+          <dt className="text-text-muted">{t.pickupRow}</dt>
+          <dd className="m-0 text-right text-ink">
+            {row.pickup_slug ? <span className="block">{pickupLabel(row.pickup_slug, lang)}</span> : null}
+            {formatWallDate(row.date_from, row.time_from, lang)}
+          </dd>
+          <dt className="text-text-muted">{t.returnRow}</dt>
+          <dd className="m-0 text-right text-ink">{formatWallDate(row.date_to, row.time_to, lang)}</dd>
+          {ins.length ? (
+            <>
+              <dt className="text-text-muted">{CAR_INSURANCE_HEADING[lang] ?? CAR_INSURANCE_HEADING.en}</dt>
+              <dd className="m-0 text-right text-ink">{ins.join(" · ")}</dd>
+            </>
+          ) : null}
+        </dl>
+        <div className="grid grid-cols-3 gap-2.5">
+          <div className={`rounded-2xl px-3.5 py-3 ${paid ? "bg-ok/10" : "bg-sun/20"}`}>
+            <p className="m-0 text-[13px] text-text-muted">{paid ? t.paidShort : t.depositLabel}</p>
+            <p className="m-0 font-heading text-[20px] font-extrabold text-ink">{formatEur(deposit, lang)}</p>
+          </div>
+          <div className="rounded-2xl bg-sun/15 px-3.5 py-3">
+            <p className="m-0 text-[13px] text-text-muted">{t.counterShort}</p>
+            <p className="m-0 font-heading text-[20px] font-extrabold text-ink">{formatEur(rest, lang)}</p>
+          </div>
+          <div className="rounded-2xl bg-foam px-3.5 py-3">
+            <p className="m-0 text-[13px] text-text-muted">{fill(t.totalDays, { days: daysLabel(days, lang) })}</p>
+            <p className="m-0 font-heading text-[20px] font-extrabold text-ink">{formatEur(total, lang)}</p>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
+
+const GOOGLE_COUNT: Record<CarBookingLocale, string> = {
+  en: "{n} Google reviews", fr: "{n} avis Google", de: "{n} Google-Bewertungen", el: "{n} κριτικές Google",
+};
 
 export default async function CarBookingPage(
   { params, searchParams }: {
@@ -139,7 +205,7 @@ export default async function CarBookingPage(
   const beacon = paid === "1" ? <DepositPaidBeacon token={token} /> : null;
 
   if (!row) {
-    return <Shell>{beacon}<Lead>{t.linkInvalid}</Lead></Shell>;
+    return <Shell>{beacon}<SideBox><Lead>{t.linkInvalid}</Lead></SideBox></Shell>;
   }
 
   const status = row.booking_status;
@@ -151,18 +217,27 @@ export default async function CarBookingPage(
   const cancelPanel = refundNow === null
     ? null
     : <CancelPanel auth={{ token }} strings={t} locale={lang} refundEur={refundNow} />;
+  const [rated] = row.quoted_by_partner_id != null ? await partnerRatings([row.quoted_by_partner_id]) : [];
+  const ratingValue = rated?.google_rating == null ? NaN : Number(rated.google_rating);
+  const ratingCount = rated?.google_rating_count == null ? 0 : Number(rated.google_rating_count);
+  const extras: CardExtras = { rating: Number.isFinite(ratingValue) && ratingCount > 0 ? { rating: ratingValue, count: ratingCount } : null };
+  const depositText = formatEur(Number(row.deposit_eur), lang);
+  const cancelBox = (
+    <SideBox title={t.freeCancelTitle}>
+      <p className="m-0 text-[14px] leading-relaxed text-text-muted">{t.depositCancelRule}</p>
+      {cancelPanel}
+    </SideBox>
+  );
 
   if (status === "pending_payment") {
     return (
-      <Shell>
+      <Shell hero={<Hero title={t.pendingTitle} lead={t.pendingBody} />}>
         {beacon}
-        <Title>{t.pendingTitle}</Title>
-        <Lead>{t.pendingBody}</Lead>
         {/* Au retour de Stripe, le webhook est en route : rien à reprendre. */}
         {paid === "1" ? null : (
-          <div className="mt-6">
+          <SideBox>
             <BookingPanel token={token} locale={locale} strings={t} label={t.continuePayment} />
-          </div>
+          </SideBox>
         )}
       </Shell>
     );
@@ -170,24 +245,37 @@ export default async function CarBookingPage(
 
   if (status === "awaiting_partner") {
     return (
-      <Shell>
+      <Shell
+        wide
+        hero={
+          <Hero
+            kicker={fill(t.kickerPaid, { deposit: depositText })}
+            title={partnerName ? fill(t.awaitingHero, { partner: partnerName }) : t.awaitingTitle}
+            lead={row.confirm_deadline_at ? t.awaitingLead : t.depositConfirmRule}
+          />
+        }
+      >
         {beacon}
-        <header className="mb-7">
-          <Title>{t.awaitingTitle}</Title>
-          {row.confirm_deadline_at ? (
-            <Lead>
-              {fill(t.awaitingBody, {
-                partner: partnerName,
-                deadline: formatAthensDeadline(row.confirm_deadline_at, lang),
-              })}
-            </Lead>
-          ) : (
-            <Lead>{t.depositConfirmRule}</Lead>
-          )}
-        </header>
-        <Recap row={row} t={t} lang={lang} paid />
-        <Rules lines={[t.depositCancelRule]} />
-        {cancelPanel}
+        <div className="grid items-start gap-5 md:grid-cols-[1.2fr_1fr]">
+          <BookingCard row={row} t={t} lang={lang} paid extras={extras} />
+          <div className="flex flex-col gap-4">
+            {row.confirm_deadline_at ? (
+              <SideBox dark>
+                <p className="m-0 mb-1 font-heading text-[12px] font-bold uppercase tracking-[.12em] text-lagoon">{t.deadlineKicker}</p>
+                <p className="m-0 font-heading text-[24px] font-extrabold leading-tight text-white">
+                  {formatAthensDeadline(row.confirm_deadline_at, lang)}
+                </p>
+                <p className="m-0 mt-2 text-[14px] leading-relaxed text-white/85">
+                  {fill(t.deadlineBody, { partner: partnerName, deposit: depositText })}
+                </p>
+              </SideBox>
+            ) : null}
+            <SideBox title={t.contactTitle}>
+              <p className="m-0 text-[14px] leading-relaxed text-text-muted">{fill(t.contactLocked, { partner: partnerName })}</p>
+            </SideBox>
+            {cancelBox}
+          </div>
+        </div>
       </Shell>
     );
   }
@@ -204,29 +292,30 @@ export default async function CarBookingPage(
       .filter(Boolean)
       .join(", ");
     return (
-      <Shell>
+      <Shell
+        wide
+        hero={<Hero kicker={t.kickerConfirmed} title={t.confirmedTitle} lead={fill(t.confirmedBody, { partner: partner?.name ?? partnerName })} />}
+      >
         {beacon}
-        <header className="mb-7">
-          <Title>{t.confirmedTitle}</Title>
-          <Lead>{fill(t.confirmedBody, { partner: partner?.name ?? partnerName })}</Lead>
-        </header>
-        <Recap row={row} t={t} lang={lang} paid />
-        {partner ? (
-          <div className="card-base p-6 mb-6 flex flex-col gap-1 text-[15px] text-text">
-            <p className="m-0 mb-1 text-[12px] font-heading font-bold uppercase tracking-wide text-text-muted">
-              {t.contactHeading}
-            </p>
-            <p className="m-0 font-heading font-bold">{partner.name}</p>
-            {partner.phone ? <a className="text-lagoon-deep" href={`tel:${partner.phone}`}>{partner.phone}</a> : null}
-            {partner.whatsapp && partner.whatsapp !== partner.phone ? (
-              <span>WhatsApp {partner.whatsapp}</span>
+        <div className="grid items-start gap-5 md:grid-cols-[1.2fr_1fr]">
+          <BookingCard row={row} t={t} lang={lang} paid extras={extras} />
+          <div className="flex flex-col gap-4">
+            {partner ? (
+              <SideBox title={t.contactHeading}>
+                <div className="flex flex-col gap-1 text-[15px] text-ink">
+                  <p className="m-0 font-heading font-bold">{partner.name}</p>
+                  {partner.phone ? <a className="text-lagoon-deep" href={`tel:${partner.phone}`}>{partner.phone}</a> : null}
+                  {partner.whatsapp && partner.whatsapp !== partner.phone ? (
+                    <span>WhatsApp {partner.whatsapp}</span>
+                  ) : null}
+                  {partner.email ? <a className="text-lagoon-deep" href={`mailto:${partner.email}`}>{partner.email}</a> : null}
+                  {address ? <span className="text-text-muted">{address}</span> : null}
+                </div>
+              </SideBox>
             ) : null}
-            {partner.email ? <a className="text-lagoon-deep" href={`mailto:${partner.email}`}>{partner.email}</a> : null}
-            {address ? <span className="text-text-muted">{address}</span> : null}
+            {cancelBox}
           </div>
-        ) : null}
-        <Rules lines={[t.depositCancelRule]} />
-        {cancelPanel}
+        </div>
       </Shell>
     );
   }
@@ -234,57 +323,58 @@ export default async function CarBookingPage(
   if (status === "refunded") {
     const reasonKey = REFUND_REASON_KEY[row.refund_reason as RefundReason];
     return (
-      <Shell>
+      <Shell hero={<Hero title={t.refundedTitle} lead={reasonKey ? t[reasonKey] : undefined} />}>
         {beacon}
-        <Title>{t.refundedTitle}</Title>
-        {reasonKey ? <p className="text-[15.5px] text-text leading-relaxed m-0 mb-2">{t[reasonKey]}</p> : null}
-        <Lead>{t.refundedBody}</Lead>
-        {row.client_token ? (
-          <a
-            href={`/${locale}/car-offer/${row.client_token}`}
-            className="mt-6 inline-flex items-center justify-center bg-sun text-text rounded-full px-6 py-3 text-[15px] font-heading font-bold hover:brightness-105 transition-all"
-          >
-            {t.otherOffers}
-          </a>
-        ) : null}
+        <SideBox>
+          <Lead>{t.refundedBody}</Lead>
+          {row.client_token ? (
+            <a
+              href={`/${locale}/car-offer/${row.client_token}`}
+              className="mt-5 inline-flex items-center justify-center bg-sun text-text rounded-full px-6 py-3 text-[15px] font-heading font-bold hover:brightness-105 transition-all"
+            >
+              {t.otherOffers}
+            </a>
+          ) : null}
+        </SideBox>
       </Shell>
     );
   }
 
   if (status === "cancelled_kept") {
     return (
-      <Shell>
+      <Shell hero={<Hero title={t.keptTitle} />}>
         {beacon}
-        <Title>{t.keptTitle}</Title>
-        <Lead>{t.keptBody}</Lead>
+        <SideBox><Lead>{t.keptBody}</Lead></SideBox>
       </Shell>
     );
   }
 
   // booking_status vide : récapitulatif et paiement, si la demande s'y prête.
   if (status !== null || row.deposit_eur == null || row.status !== "quoted") {
-    return <Shell>{beacon}<Lead>{status !== null ? t.errorUnavailable : t.notReady}</Lead></Shell>;
+    return <Shell>{beacon}<SideBox><Lead>{status !== null ? t.errorUnavailable : t.notReady}</Lead></SideBox></Shell>;
   }
   const bookable = isDepositBookable(Date.now(), row.date_from, row.time_from);
   return (
-    <Shell>
+    <Shell wide hero={<Hero title={t.depositTitle} lead={t.depositIntro} />}>
       {beacon}
-      <header className="mb-7">
-        <Title>{t.depositTitle}</Title>
-        <Lead>{t.depositIntro}</Lead>
-      </header>
-      <Recap row={row} t={t} lang={lang} paid={false} />
-      <Rules lines={[t.depositConfirmRule, t.depositCancelRule]} />
-      {bookable ? (
-        <BookingPanel
-          token={token}
-          locale={locale}
-          strings={t}
-          label={fill(t.depositPay, { deposit: formatEur(Number(row.deposit_eur), lang) })}
-        />
-      ) : (
-        <p role="status" className="m-0 text-[15px] font-heading font-bold text-terracotta">{t.tooClose}</p>
-      )}
+      <div className="grid items-start gap-5 md:grid-cols-[1.2fr_1fr]">
+        <BookingCard row={row} t={t} lang={lang} paid={false} extras={extras} />
+        <div className="flex flex-col gap-4">
+          <SideBox>
+            <Rules lines={[t.depositConfirmRule, t.depositCancelRule]} />
+            {bookable ? (
+              <BookingPanel
+                token={token}
+                locale={locale}
+                strings={t}
+                label={fill(t.depositPay, { deposit: depositText })}
+              />
+            ) : (
+              <p role="status" className="m-0 text-[15px] font-heading font-bold text-terracotta">{t.tooClose}</p>
+            )}
+          </SideBox>
+        </div>
+      </div>
     </Shell>
   );
 }
