@@ -5,6 +5,7 @@ import { validateActivityLead } from "@/lib/activity-lead";
 import { newToken, hashToken, siteBase } from "@/lib/car-quote";
 import { partnersForCategoryCity } from "@/lib/activity-partners-db";
 import { categoryLabel, cityLabel } from "@/lib/activity-taxonomy";
+import { notifyOps, echeance } from "@/lib/ops-notify";
 import type { ActivityLead } from "@/lib/email";
 
 // Anti-abus : plafonds de demandes par IP. Un fan-out = N emails à de vrais
@@ -116,9 +117,22 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // Aucun prestataire joint : ⛔ aucune coordonnée de prestataire vers le navigateur (ni numéro,
+  // ni WhatsApp, ni nom), le voyageur ne doit pas pouvoir contourner crete.direct. La demande
+  // reste en base (email_failed), ops reprend la main, le client reçoit « demande reçue ».
   if (sentNames.length === 0) {
     await supabase.from("activity_requests").update({ status: "email_failed" }).eq("id", requestId);
-    const fb = partners[0];
+    void notifyOps({
+      title: "Demande activité SANS prestataire joignable",
+      lines: [
+        `${lead.categoryLabel} · ${lead.cityLabel} · ${lead.date}`,
+        `${row.customer_name || "client"} · ${row.customer_email}`,
+        `${partners.length} prestataire(s) dans la zone, aucun email parti`,
+      ],
+      action: "contacter un prestataire à la main, le voyageur attend un retour",
+      due: echeance(0),
+      url: `${siteBase()}/admin/activities`,
+    });
     try {
       await sendActivityCustomerRequestReceived({
         email: row.customer_email, locale: row.locale,
@@ -127,7 +141,7 @@ export async function POST(request: NextRequest) {
         noProvider: true,
       });
     } catch (e) { console.error("[activities/submit] ack email (no provider) failed:", e); }
-    return NextResponse.json({ ok: false, fallbackWhatsapp: fb.whatsapp ?? fb.phone });
+    return NextResponse.json({ ok: false, noPartner: true });
   }
 
   await sendActivityLeadKamiSummary(lead, sentNames);

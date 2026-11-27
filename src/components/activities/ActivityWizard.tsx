@@ -18,6 +18,7 @@ import {
   cityLabel,
 } from "@/lib/activity-taxonomy";
 import type { ActivityCategorySlug, ActivityCitySlug, ActivityTimeslot, GuideLanguage } from "@/lib/activity-taxonomy";
+import { activitySubmitView } from "@/lib/activity-lead";
 import { CiMark, CiCompass, CiFood, CiHike, CiFerry } from "@/components/icons";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -299,10 +300,11 @@ export function ActivityWizard({
         }),
       });
       const json = await res.json().catch(() => null);
-      if (res.status === 400 && json?.error) {
+      const outcome = activitySubmitView(res.status, json);
+      if (outcome === "noProvider") {
         // noProvider : le serveur a déjà envoyé l'ack
         setView("noProvider");
-      } else if (res.ok && json?.ok === true) {
+      } else if (outcome === "sent") {
         window.plausible?.("Activity Lead", {
           props: { category, city, locale },
         });

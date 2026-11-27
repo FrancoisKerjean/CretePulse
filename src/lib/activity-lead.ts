@@ -74,3 +74,13 @@ export function validateActivityLead(
   };
   return { kind: "ok", row };
 }
+
+/** Écran du wizard après l'envoi. `noPartner` = aucun prestataire joint : le client a déjà
+ *  reçu l'e-mail « demande reçue », on lui montre le même message, jamais une erreur. */
+export function activitySubmitView(status: number, json: unknown): "sent" | "noProvider" | "error" {
+  const j = (json ?? {}) as { ok?: unknown; noPartner?: unknown; error?: unknown };
+  if (status === 400 && j.error) return "noProvider";
+  if (status === 200 && j.ok === true) return "sent";
+  if (status === 200 && j.ok === false && j.noPartner === true) return "noProvider";
+  return "error";
+}
