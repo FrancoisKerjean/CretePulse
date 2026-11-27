@@ -31,22 +31,22 @@ type Params = { locale: string; location: string };
 // remplace « pas une réservation » et « aucun prépaiement », qui deviendraient faux.
 const UI_DEPOSIT: Record<CarLocLocale, { wizardLead: string; process: [string, string, string]; trust: [string, string, string] }> = {
   en: {
-    wizardLead: "Choose this pick-up point. Local agencies reply with their prices.",
+    wizardLead: "Enter your dates: local agencies send their prices, bookable with a deposit.",
     process: ["Enter your dates and the car you need.", "Local agencies send their prices, the lowest first.", "Book with a deposit online, pay the rest at pick-up."],
     trust: ["A deposit paid online books the car, the rest is paid at the counter.", "Confirmed by the agency within 4 hours, otherwise refunded.", "Free cancellation up to 48 hours before pick-up."],
   },
   fr: {
-    wizardLead: "Choisissez ce point de prise en charge. Les agences locales répondent avec leur prix.",
+    wizardLead: "Indiquez vos dates : les agences locales envoient leurs prix, réservables avec un acompte.",
     process: ["Indiquez vos dates et le véhicule recherché.", "Les agences locales envoient leur prix, le plus bas en premier.", "Réservez avec un acompte en ligne, réglez le reste à la prise du véhicule."],
     trust: ["Un acompte payé en ligne réserve la voiture, le reste se règle au comptoir.", "Confirmée par l'agence sous 4 h, sinon remboursée.", "Annulation gratuite jusqu'à 48 h avant la prise."],
   },
   de: {
-    wizardLead: "Wählen Sie diesen Abholpunkt. Lokale Vermieter antworten mit ihren Preisen.",
+    wizardLead: "Geben Sie Ihre Reisedaten an: lokale Vermieter senden ihre Preise, buchbar mit Anzahlung.",
     process: ["Geben Sie Reisedaten und gewünschten Wagen an.", "Lokale Vermieter senden ihre Preise, der günstigste zuerst.", "Buchen Sie mit einer Online-Anzahlung, den Rest zahlen Sie bei der Abholung."],
     trust: ["Eine online gezahlte Anzahlung sichert das Auto, der Rest wird am Schalter bezahlt.", "Bestätigung durch den Vermieter innerhalb von 4 Stunden, sonst Erstattung.", "Kostenlose Stornierung bis 48 Stunden vor Abholung."],
   },
   el: {
-    wizardLead: "Επιλέξτε αυτό το σημείο παραλαβής. Τα τοπικά γραφεία απαντούν με τις τιμές τους.",
+    wizardLead: "Δηλώστε τις ημερομηνίες σας: τα τοπικά γραφεία στέλνουν τις τιμές τους, με κράτηση μέσω προκαταβολής.",
     process: ["Δηλώστε ημερομηνίες και το αυτοκίνητο που θέλετε.", "Τα τοπικά γραφεία στέλνουν τις τιμές τους, πρώτα η χαμηλότερη.", "Κάντε κράτηση με προκαταβολή online και πληρώστε το υπόλοιπο κατά την παραλαβή."],
     trust: ["Μια προκαταβολή online κλείνει το αυτοκίνητο, το υπόλοιπο πληρώνεται στο γκισέ.", "Επιβεβαίωση από το γραφείο εντός 4 ωρών, αλλιώς επιστροφή χρημάτων.", "Δωρεάν ακύρωση έως 48 ώρες πριν την παραλαβή."],
   },

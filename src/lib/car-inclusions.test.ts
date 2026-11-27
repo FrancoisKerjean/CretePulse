@@ -12,8 +12,8 @@ describe("insuranceSummary", () => {
 
   it("français : montant dans la langue, unité « /jour », deux-points français", () => {
     const [, excess, upsell] = insuranceSummary("cdw_excess", 800, 8.5, "fr");
-    expect(excess).toMatch(/^Franchise : 800\s€$/);
-    expect(upsell).toMatch(/^Option zéro franchise : \+8,50\s€\/jour$/);
+    expect(excess).toMatch(/^Franchise\u00a0: 800\s€$/);
+    expect(upsell).toMatch(/^Option zéro franchise\u00a0: \+8,50\s€\/jour$/);
   });
 
   it("allemand et grec : unité par jour traduite, plus de « /day » ni de « € » devant", () => {

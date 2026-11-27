@@ -83,6 +83,7 @@ export interface OfferViewCopy {
   pendingPayment: string;
   tryAgain: string;
   photoAlt: string;       // {model} {partner}
+  photoOther: string;     // {model} : photo d'un autre modèle de la même flotte
   dayOne: string;
   dayMany: string;
 }
@@ -110,6 +111,7 @@ export const OFFER_VIEW: Record<OfferLang, OfferViewCopy> = {
     pendingPayment: "A payment is already open for this request. If you left the payment page, it closes within 30 minutes and you can choose again.",
     tryAgain: "Something went wrong. Please try again.",
     photoAlt: "{model}, {partner}",
+    photoOther: "Photo: {model}, from this agency's fleet",
     dayOne: "1 day",
     dayMany: "{n} days",
   },
@@ -135,6 +137,7 @@ export const OFFER_VIEW: Record<OfferLang, OfferViewCopy> = {
     pendingPayment: "Un paiement est déjà ouvert pour cette demande. Si vous avez quitté la page de paiement, elle se ferme d'ici 30 minutes et vous pourrez choisir à nouveau.",
     tryAgain: "Un problème est survenu. Réessayez.",
     photoAlt: "{model}, {partner}",
+    photoOther: "Photo\u00a0: {model}, de la flotte de cette agence",
     dayOne: "1 jour",
     dayMany: "{n} jours",
   },
@@ -160,6 +163,7 @@ export const OFFER_VIEW: Record<OfferLang, OfferViewCopy> = {
     pendingPayment: "Für diese Anfrage ist bereits eine Zahlung offen. Wenn Sie die Zahlungsseite verlassen haben, schließt sie sich innerhalb von 30 Minuten und Sie können neu wählen.",
     tryAgain: "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
     photoAlt: "{model}, {partner}",
+    photoOther: "Foto: {model}, aus der Flotte dieser Agentur",
     dayOne: "1 Tag",
     dayMany: "{n} Tage",
   },
@@ -185,6 +189,7 @@ export const OFFER_VIEW: Record<OfferLang, OfferViewCopy> = {
     pendingPayment: "Υπάρχει ήδη ανοιχτή πληρωμή για αυτό το αίτημα. Αν φύγατε από τη σελίδα πληρωμής, κλείνει μέσα σε 30 λεπτά και μπορείτε να επιλέξετε ξανά.",
     tryAgain: "Κάτι πήγε στραβά. Δοκιμάστε ξανά.",
     photoAlt: "{model}, {partner}",
+    photoOther: "Φωτογραφία: {model}, από τον στόλο αυτού του γραφείου",
     dayOne: "1 ημέρα",
     dayMany: "{n} ημέρες",
   },

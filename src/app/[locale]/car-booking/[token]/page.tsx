@@ -23,7 +23,7 @@ import { CAR_INSURANCE_HEADING, insuranceSummary } from "@/lib/car-inclusions";
 import { rentalDays } from "@/lib/car-pricing";
 import { offerCarPhoto } from "@/lib/car-fleet";
 import { partnerRatings } from "@/lib/car-trust-server";
-import { daysLabel, localizeQuotedModel } from "@/lib/car-offer-view";
+import { OFFER_VIEW, daysLabel, localizeQuotedModel } from "@/lib/car-offer-view";
 import { CarPhoto, RatingLine } from "@/components/car-rental/trust";
 import GoatStanding from "@/components/campagne/GoatStanding";
 import type { CarCategory } from "@/lib/car-catalogue";
@@ -119,7 +119,8 @@ function BookingCard({ row, t, lang, paid, extras }: { row: BookingRow; t: CarBo
   const deposit = Number(row.deposit_eur);
   const rest = Math.round((total - deposit) * 100) / 100;
   const ins = insuranceSummary(row.quoted_insurance_type, row.quoted_excess_eur, row.quoted_zero_excess_upsell_eur_day, lang);
-  const model = localizeQuotedModel(row.quoted_car_model, lang);
+  // Le modèle saisi porte la boîte (« VW Polo · Automatique ») : « ou similaire » suit le modèle, pas la boîte.
+  const [model, ...modelRest] = (localizeQuotedModel(row.quoted_car_model, lang) ?? "").split(" · ").filter(Boolean);
   const photo = row.quoted_by_partner_id != null && row.car_type
     ? offerCarPhoto(row.quoted_by_partner_id, row.car_type as CarCategory, row.quoted_car_model)
     : null;
@@ -131,11 +132,14 @@ function BookingCard({ row, t, lang, paid, extras }: { row: BookingRow; t: CarBo
           <CarPhoto src640={photo.src640} src1280={photo.src1280} alt={[photo.model, row.partner_name].filter(Boolean).join(", ")} eager className="h-full w-full" sizes="(min-width: 768px) 560px, 100vw" />
         </div>
       ) : null}
+      {photo && !photo.exact && model ? (
+        <p className="m-0 px-6 pt-2 text-[12.5px] text-text-muted">{OFFER_VIEW[lang].photoOther.replace("{model}", photo.model)}</p>
+      ) : null}
       <div className="flex flex-col gap-4 p-6">
         <div>
           {model ? (
             <p className="m-0 font-heading text-[22px] font-extrabold leading-tight text-ink">
-              {model} <span className="font-sans text-[15px] font-medium text-text-muted">{t.orSimilar}</span>
+              {model} <span className="font-sans text-[15px] font-medium text-text-muted">{t.orSimilar}{modelRest.length ? ` · ${modelRest.join(" · ")}` : ""}</span>
             </p>
           ) : null}
           <p className="m-0 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[14.5px] text-ink">
@@ -154,22 +158,22 @@ function BookingCard({ row, t, lang, paid, extras }: { row: BookingRow; t: CarBo
           {ins.length ? (
             <>
               <dt className="text-text-muted">{CAR_INSURANCE_HEADING[lang] ?? CAR_INSURANCE_HEADING.en}</dt>
-              <dd className="m-0 text-right text-ink">{ins.join(" · ")}</dd>
+              <dd className="m-0 text-right text-ink">{ins.map((l) => <span key={l} className="block">{l}</span>)}</dd>
             </>
           ) : null}
         </dl>
-        <div className="grid grid-cols-3 gap-2.5">
-          <div className={`rounded-2xl px-3.5 py-3 ${paid ? "bg-ok/10" : "bg-sun/20"}`}>
-            <p className="m-0 text-[13px] text-text-muted">{paid ? t.paidShort : t.depositLabel}</p>
-            <p className="m-0 font-heading text-[20px] font-extrabold text-ink">{formatEur(deposit, lang)}</p>
+        <div className="grid grid-cols-3 gap-2 md:gap-2.5">
+          <div className={`rounded-2xl flex flex-col justify-between gap-1 px-2.5 py-2.5 md:px-3.5 md:py-3 ${paid ? "bg-ok/10" : "bg-sun/20"}`}>
+            <p className="m-0 text-[12px] leading-tight text-text-muted md:text-[13px]">{paid ? t.paidShort : t.depositLabel}</p>
+            <p className="m-0 whitespace-nowrap font-heading text-[17px] font-extrabold text-ink md:text-[20px]">{formatEur(deposit, lang)}</p>
           </div>
-          <div className="rounded-2xl bg-sun/15 px-3.5 py-3">
-            <p className="m-0 text-[13px] text-text-muted">{t.counterShort}</p>
-            <p className="m-0 font-heading text-[20px] font-extrabold text-ink">{formatEur(rest, lang)}</p>
+          <div className="rounded-2xl bg-sun/15 flex flex-col justify-between gap-1 px-2.5 py-2.5 md:px-3.5 md:py-3">
+            <p className="m-0 text-[12px] leading-tight text-text-muted md:text-[13px]">{t.counterShort}</p>
+            <p className="m-0 whitespace-nowrap font-heading text-[17px] font-extrabold text-ink md:text-[20px]">{formatEur(rest, lang)}</p>
           </div>
-          <div className="rounded-2xl bg-foam px-3.5 py-3">
-            <p className="m-0 text-[13px] text-text-muted">{fill(t.totalDays, { days: daysLabel(days, lang) })}</p>
-            <p className="m-0 font-heading text-[20px] font-extrabold text-ink">{formatEur(total, lang)}</p>
+          <div className="rounded-2xl bg-foam flex flex-col justify-between gap-1 px-2.5 py-2.5 md:px-3.5 md:py-3">
+            <p className="m-0 text-[12px] leading-tight text-text-muted md:text-[13px]">{fill(t.totalDays, { days: daysLabel(days, lang) })}</p>
+            <p className="m-0 whitespace-nowrap font-heading text-[17px] font-extrabold text-ink md:text-[20px]">{formatEur(total, lang)}</p>
           </div>
         </div>
       </div>

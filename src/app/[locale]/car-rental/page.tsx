@@ -200,7 +200,7 @@ export default async function CarRentalPage(
                       {location.hub[carLocationLocale]}
                     </span>
                     <span className="mt-1 block text-[12px] font-semibold uppercase tracking-[0.08em] text-text-muted">
-                      {location.kind === "airport" ? locationCopy.airport : locationCopy.port}
+                      {locationCopy[location.kind]}
                       {location.code ? ` · ${location.code}` : ""}
                     </span>
                   </span>

@@ -17,3 +17,6 @@ data/activity-catalog-prospects.local.json
 __pycache__/
 /fraport_*.pdf
 /hcaa_kinisi_*.xlsx
+
+# Avis Google relevés pour le banc de maquettes : conditions Google, jamais stockés ni commités.
+docs/mockups/car-catalogue-front/avis/

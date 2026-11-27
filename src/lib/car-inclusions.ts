@@ -85,7 +85,7 @@ export function insuranceSummary(
   if (label) lines.push(label);
   // Montants et unité dans la langue du client ; hors des quatre langues, tout en anglais.
   const lang = locale in INSURANCE_PER_DAY ? locale : "en";
-  const colon = lang === "fr" ? " : " : ": ";
+  const colon = lang === "fr" ? "\u00a0: " : ": ";
   if (type === "cdw_excess" && excessEur != null) {
     lines.push(`${INSURANCE_EXCESS_WORD[lang]}${colon}${formatEur(Number(excessEur), lang)}`);
   }

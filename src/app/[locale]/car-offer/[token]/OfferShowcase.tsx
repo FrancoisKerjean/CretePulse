@@ -85,13 +85,27 @@ export function PickCard({
   item: OfferItem; v: OfferViewCopy; locale: string; eyebrow: string; reason: string; daysText: string; guarantees: string[];
 }) {
   const alt = fill(v.photoAlt, { model: item.photo?.model ?? item.model ?? "", partner: item.partner });
+  // Le modèle proposé n'est pas dans la flotte en ligne : la photo est une autre voiture de l'agence, on le dit.
+  const otherPhoto = Boolean(item.photo && !item.photo.exact && item.model);
+  const hasList = guarantees.length > 0 || item.insurance.length > 0 || item.inclusions.length > 0;
+  const list = (
+    <ul className="m-0 flex list-none flex-col gap-1.5 p-0 text-[14px] text-white/85">
+      {guarantees.map((g) => <li key={g} className="flex items-start gap-2"><CheckIcon className="mt-0.5 text-lagoon" />{g}</li>)}
+      {item.insurance.map((g) => <li key={g} className="flex items-start gap-2"><CheckIcon className="mt-0.5 text-lagoon" />{g}</li>)}
+      {item.inclusions.length ? <li className="flex items-start gap-2"><CheckIcon className="mt-0.5 text-lagoon" />{item.inclusions.join(" · ")}</li> : null}
+    </ul>
+  );
   return (
     <section aria-labelledby="pick-title" className="mt-2">
       <p className="m-0 mb-2 font-heading text-[12px] font-bold uppercase tracking-[.12em] text-lagoon-deep">{eyebrow}</p>
       <div className="overflow-hidden rounded-[28px] bg-night text-white shadow-[0_18px_40px_rgba(7,55,74,0.22)]">
         <div className="grid gap-5 p-4 md:grid-cols-[1.05fr_1fr] md:gap-7 md:p-6">
-          <div className="flex aspect-[3/2] items-center justify-center overflow-hidden rounded-2xl bg-white">
-            <CarPhoto src640={item.photo?.src640} src1280={item.photo?.src1280} alt={alt} eager className="h-full w-full" />
+          <div className="flex flex-col gap-3">
+            <div className="flex aspect-[3/2] items-center justify-center overflow-hidden rounded-2xl bg-white">
+              <CarPhoto src640={item.photo?.src640} src1280={item.photo?.src1280} alt={alt} eager className="h-full w-full" />
+            </div>
+            {otherPhoto ? <p className="m-0 text-[12.5px] text-white/60">{fill(v.photoOther, { model: item.photo!.model })}</p> : null}
+            {hasList ? <div className="hidden md:mt-2 md:block">{list}</div> : null}
           </div>
           <div className="flex flex-col gap-3">
             <h2 id="pick-title" className="m-0 font-heading text-[26px] font-extrabold leading-tight md:text-[30px]">{item.partner}</h2>
@@ -109,13 +123,7 @@ export function PickCard({
               {item.splitText ? <p className="m-0 mt-1.5 text-[14px] font-bold text-white/90">{item.splitText}</p> : null}
             </div>
             <Accept item={item} variant="primary" />
-            {guarantees.length || item.insurance.length || item.inclusions.length ? (
-              <ul className="m-0 flex list-none flex-col gap-1.5 p-0 text-[14px] text-white/85">
-                {guarantees.map((g) => <li key={g} className="flex items-start gap-2"><CheckIcon className="mt-0.5 text-lagoon" />{g}</li>)}
-                {item.insurance.map((g) => <li key={g} className="flex items-start gap-2"><CheckIcon className="mt-0.5 text-lagoon" />{g}</li>)}
-                {item.inclusions.length ? <li className="flex items-start gap-2"><CheckIcon className="mt-0.5 text-lagoon" />{item.inclusions.join(" · ")}</li> : null}
-              </ul>
-            ) : null}
+            {hasList ? <div className="md:hidden">{list}</div> : null}
           </div>
         </div>
         {item.reviews.length ? (

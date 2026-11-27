@@ -686,13 +686,13 @@ export function CarRentalWizard({
     <div className="mt-5 rounded-2xl bg-surface px-4 py-3.5 text-left">
       <p className="m-0 font-heading font-bold text-[15px] text-text">{pickupLabel(pickup)}</p>
       <p className="m-0 mt-1 text-sm text-text-muted font-data">
-        {dateFrom}{timeFrom ? ` ${timeFrom}` : ""} → {dateTo}{timeTo ? ` ${timeTo}` : ""}
+        {formatShortDate(dateFrom, locale)}{timeFrom ? ` ${timeFrom}` : ""} → {formatShortDate(dateTo, locale)}{timeTo ? ` ${timeTo}` : ""}
       </p>
       {carTypeDef && (
         <p className="m-0 mt-1 text-sm text-text-muted">
           {carTypeDef.labels[locale] ?? carTypeDef.labels.en}
           {" · "}
-          <span className="font-data">{pax} pax</span>
+          {t.paxLabel} : {pax}
         </p>
       )}
     </div>
