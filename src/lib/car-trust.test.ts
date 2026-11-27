@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { aggregateRating, ratingAriaLabel, formatRating, trustBarCopy, partnerRevealed } from "./car-trust";
+import { aggregateRating, ratingAriaLabel, formatRating, trustBarCopy, partnerRevealed, validRating } from "./car-trust";
 
 describe("aggregateRating", () => {
   it("moyenne pondérée par le nombre d'avis, arrondie au dixième", () => {
@@ -97,5 +97,16 @@ describe("partnerRevealed : le loueur n'est nommé qu'après l'acompte ou l'acce
   });
   it("un statut inconnu n'ouvre rien", () => {
     expect(partnerRevealed({ bookingStatus: "whatever", requestStatus: "quoted" })).toBe(false);
+  });
+});
+
+describe("validRating", () => {
+  it("note valide seulement avec un nombre d'avis > 0 ; chaînes numériques acceptées", () => {
+    expect(validRating({ google_rating: 4.8, google_rating_count: 367 })).toEqual({ rating: 4.8, count: 367 });
+    expect(validRating({ google_rating: "4.6", google_rating_count: "12" })).toEqual({ rating: 4.6, count: 12 });
+    expect(validRating({ google_rating: 4.8, google_rating_count: 0 })).toBeNull();
+    expect(validRating({ google_rating: null, google_rating_count: 10 })).toBeNull();
+    expect(validRating({ google_rating: "abc", google_rating_count: 10 })).toBeNull();
+    expect(validRating(undefined)).toBeNull();
   });
 });

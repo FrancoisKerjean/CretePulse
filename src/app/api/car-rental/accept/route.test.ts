@@ -247,10 +247,30 @@ describe("POST /api/car-rental/accept", () => {
         ]) {
           expect(accept?.patch).toHaveProperty(col, null);
         }
-        // Le lien d'offres meurt avec la mise en relation (jeton effacé) : la
-        // page d'offres ne peut plus afficher cette demande, bandeau compris.
-        expect(accept?.patch.accept_token_hash).toBeNull();
+        // Le lien d'offres reste valable : la page rend la révélation du loueur.
+        expect(accept?.patch).not.toHaveProperty("accept_token_hash");
         expect(sendConnectionEmails).toHaveBeenCalledOnce();
+      });
+
+      it("la mise en relation garde le lien d'offres valable (jeton non effacé) : la page affiche la révélation", async () => {
+        const updates = wiring({ phone: "+33 6 12 34 56 78" });
+        await POST(req({ token: "tok", option_id: 501 }) as never);
+        const accept = updates.find((u) => u.table === "car_requests" && u.patch.status === "accepted");
+        expect(accept).toBeDefined();
+        expect(accept?.patch).not.toHaveProperty("accept_token_hash");
+      });
+
+      it("deuxième acceptation sur le même lien : already, rien d'écrit, aucun e-mail", async () => {
+        const updates = wiring({ phone: "+33 6 12 34 56 78" });
+        requestByClientToken.mockResolvedValue({
+          request: { ...REQUEST, status: "accepted", customer_phone: "+33 6 12 34 56 78" },
+          quotes: [], options: [OPTION],
+        });
+        const res = await POST(req({ token: "tok", option_id: 501 }) as never);
+        expect(res.status).toBe(200);
+        expect(await res.json()).toEqual({ ok: true, already: true });
+        expect(updates).toHaveLength(0);
+        expect(sendConnectionEmails).not.toHaveBeenCalled();
       });
 
       it("après un remboursement puis une mise en relation : relance d'issue et commission à nouveau dues", async () => {

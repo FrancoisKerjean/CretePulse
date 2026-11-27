@@ -150,7 +150,7 @@ export function PickCard({
               {item.splitText ? <p className="m-0 mt-1.5 text-[14px] font-bold text-white/90">{item.splitText}</p> : null}
             </div>
             <Accept item={item} variant="primary" />
-            <p className="m-0 text-[13px] leading-snug text-white/70">{revealLine}</p>
+            {item.blockedText ? null : <p className="m-0 text-[13px] leading-snug text-white/70">{revealLine}</p>}
             {hasList ? <div className="md:hidden">{list}</div> : null}
           </div>
         </div>

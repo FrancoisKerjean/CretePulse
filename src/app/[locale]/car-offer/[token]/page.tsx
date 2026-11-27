@@ -25,7 +25,7 @@ import { formatEur, formatAthensDeadline, formatWallDate } from "@/lib/car-forma
 import CancelPanel from "../../car-booking/[token]/CancelPanel";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { partnerRatings } from "@/lib/car-trust-server";
-import { CANCEL_LINE, CONFIRM_LINE, formatRating, partnerRevealed } from "@/lib/car-trust";
+import { CANCEL_LINE, CONFIRM_LINE, formatRating, validRating } from "@/lib/car-trust";
 import { PartnerReveal } from "@/components/car-rental/PartnerReveal";
 import { offerCarPhoto } from "@/lib/car-fleet";
 import { OFFER_VIEW, daysLabel, gearboxLabel, offerLang, priceDelta, recommendOffer } from "@/lib/car-offer-view";
@@ -315,8 +315,8 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
             </>
           )}
         </StateCard>
-        {/* Acompte payé : le loueur se révèle (nom ci-dessus, note complète et avis ici). */}
-        {bs !== "cancelled_kept" && partnerRevealed({ bookingStatus: bs, requestStatus: request.status as string }) ? (
+        {/* Acompte payé : le loueur se révèle (nom ci-dessus, note complète et avis ici). Rien en cancelled_kept : le panneau ne nomme pas le loueur. */}
+        {bs !== "cancelled_kept" ? (
           <PartnerReveal partnerId={(request.quoted_by_partner_id as number | null) ?? null} locale={lang} stacked className="mt-5" />
         ) : null}
         {refundNow === null ? null : (
@@ -350,9 +350,8 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
   }
 
   // Etat : déjà accepté. Remboursement en cours : seul le bandeau, la
-  // réservation n'existe plus. accepted + refunded n'est JAMAIS une mise en
-  // relation faite après un remboursement : l'ancien parcours efface
-  // accept_token_hash, la page n'est alors plus joignable par ce jeton (404).
+  // réservation n'existe plus. Une mise en relation faite après un remboursement
+  // remet booking_status à null (PREVIOUS_BOOKING_RESET) : elle ne passe pas ici.
   if (request.status === "accepted" && refundNotice) {
     return <Shell>{beacon("already_accepted")}{refundNotice}</Shell>;
   }
@@ -365,13 +364,12 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
         <StateCard title={deposited ? dc.alreadyTitle : c.alreadyTitle}>
           <Lead>{deposited ? dc.alreadyBody : c.alreadyBody}</Lead>
         </StateCard>
-        {/* Offre acceptée : le loueur se révèle, nom, note complète et avis. */}
-        {partnerRevealed({ bookingStatus: bs, requestStatus: request.status as string }) ? (
-          <PartnerReveal
-            partnerId={(request.quoted_by_partner_id as number | null) ?? null} locale={locale}
-            name={(request.partner_name as string | null) || null} stacked className="mt-5"
-          />
-        ) : null}
+        {/* Offre acceptée (mise en relation, lien gardé valable par la route d'acceptation) :
+            ici le loueur est toujours révélé (partnerRevealed : accepted sans pending_payment). */}
+        <PartnerReveal
+          partnerId={(request.quoted_by_partner_id as number | null) ?? null} locale={locale}
+          name={(request.partner_name as string | null) || null} stacked className="mt-5"
+        />
       </Shell>
     );
   }
@@ -402,12 +400,7 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
   // appelé. Il se révèle après l'acompte ou l'acceptation (PartnerReveal, plus haut).
   // Même une demande remboursée, rouverte à d'autres offres : ces agences-là n'ont rien reçu.
   const ratings = new Map((await partnerRatings([...new Set(offers.map((o) => o.partner_id))])).map((r) => [r.id, r]));
-  const ratingOf = (o: QuoteOption): number | null => {
-    const r = ratings.get(o.partner_id);
-    const rating = r?.google_rating == null ? NaN : Number(r.google_rating);
-    const count = r?.google_rating_count == null ? 0 : Number(r.google_rating_count);
-    return Number.isFinite(rating) && count > 0 ? rating : null;
-  };
+  const ratingOf = (o: QuoteOption): number | null => validRating(ratings.get(o.partner_id))?.rating ?? null;
 
   // Ce qui empêche de réserver une offre (expirée, refusée par le loueur, trop proche, acompte trop bas).
   const blockedFor = (o: QuoteOption): string | null => {

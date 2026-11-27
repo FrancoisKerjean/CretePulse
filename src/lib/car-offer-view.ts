@@ -68,7 +68,6 @@ export interface OfferViewCopy {
   reasonPlain: string;    // {n}
   onlyOffer: string;
   onlyBookable: string;
-  agencyTerms: string;    // {partner} : titre de ce que le loueur inclut (assurance, kilométrage)   // les autres offres sont expirées ou refusées
   otherOffers: string;    // {n}
   otherOffer: string;
   totalFor: string;       // {days}
@@ -81,11 +80,9 @@ export interface OfferViewCopy {
   googleReview: string;
   disclaimer: string;
   readLess: string;
-  readReviews: string;
   everyOffer: string;
   pendingPayment: string;
   tryAgain: string;
-  photoAlt: string;       // {model} {partner}
   agencyHidden: string;   // libellé à la place du nom du loueur, avant l'acompte
   agencyTermsHidden: string; // agencyTerms sans {partner}
   revealLine: string;     // sous le bouton, offre avec acompte
@@ -103,7 +100,6 @@ export const OFFER_VIEW: Record<OfferLang, OfferViewCopy> = {
     reasonPlain: "The lowest price of the {n} offers.",
     onlyOffer: "The only offer for your dates so far.",
     onlyBookable: "The only offer you can still book.",
-    agencyTerms: "Offered by {partner}",
     otherOffers: "The {n} other offers",
     otherOffer: "The other offer",
     totalFor: "Total price for {days}",
@@ -116,11 +112,9 @@ export const OFFER_VIEW: Record<OfferLang, OfferViewCopy> = {
     googleReview: "Google review",
     disclaimer: "Reviews published on Google, not verified by crete.direct, in Google's order; reviews older than 2 years are not shown.",
     readLess: "Show less",
-    readReviews: "Read reviews",
     everyOffer: "On every offer: part paid online today, the rest at the counter.",
     pendingPayment: "A payment is already open for this request. If you left the payment page, it closes within 30 minutes and you can choose again.",
     tryAgain: "Something went wrong. Please try again.",
-    photoAlt: "{model}, {partner}",
     agencyHidden: "Verified local agency",
     agencyTermsHidden: "Agency terms",
     revealLine: "The agency's name and Google reviews appear as soon as your deposit is paid.",
@@ -136,7 +130,6 @@ export const OFFER_VIEW: Record<OfferLang, OfferViewCopy> = {
     reasonPlain: "Le prix le plus bas des {n} offres.",
     onlyOffer: "La seule offre reçue pour vos dates à ce jour.",
     onlyBookable: "La seule offre encore réservable.",
-    agencyTerms: "Proposé par {partner}",
     otherOffers: "Les {n} autres offres",
     otherOffer: "L'autre offre",
     totalFor: "Prix total pour {days}",
@@ -149,11 +142,9 @@ export const OFFER_VIEW: Record<OfferLang, OfferViewCopy> = {
     googleReview: "Avis Google",
     disclaimer: "Avis publiés sur Google, non vérifiés par crete.direct, dans l'ordre de Google ; les avis de plus de 2 ans ne sont pas affichés.",
     readLess: "Réduire",
-    readReviews: "Lire les avis",
     everyOffer: "Sur chaque offre : une part payée en ligne aujourd'hui, le reste au comptoir.",
     pendingPayment: "Un paiement est déjà ouvert pour cette demande. Si vous avez quitté la page de paiement, elle se ferme d'ici 30 minutes et vous pourrez choisir à nouveau.",
     tryAgain: "Un problème est survenu. Réessayez.",
-    photoAlt: "{model}, {partner}",
     agencyHidden: "Agence locale vérifiée",
     agencyTermsHidden: "Conditions de l'agence",
     revealLine: "Le nom de l'agence et ses avis Google s'affichent dès l'acompte payé.",
@@ -169,7 +160,6 @@ export const OFFER_VIEW: Record<OfferLang, OfferViewCopy> = {
     reasonPlain: "Der niedrigste Preis der {n} Angebote.",
     onlyOffer: "Bisher das einzige Angebot für Ihre Daten.",
     onlyBookable: "Das einzige Angebot, das noch buchbar ist.",
-    agencyTerms: "Angeboten von {partner}",
     otherOffers: "Die {n} weiteren Angebote",
     otherOffer: "Das andere Angebot",
     totalFor: "Gesamtpreis für {days}",
@@ -182,11 +172,9 @@ export const OFFER_VIEW: Record<OfferLang, OfferViewCopy> = {
     googleReview: "Google-Bewertung",
     disclaimer: "Auf Google veröffentlichte Bewertungen, nicht von crete.direct geprüft, in der Reihenfolge von Google; Bewertungen, die älter als 2 Jahre sind, werden nicht angezeigt.",
     readLess: "Weniger anzeigen",
-    readReviews: "Bewertungen lesen",
     everyOffer: "Bei jedem Angebot: ein Teil heute online, der Rest am Schalter.",
     pendingPayment: "Für diese Anfrage ist bereits eine Zahlung offen. Wenn Sie die Zahlungsseite verlassen haben, schließt sie sich innerhalb von 30 Minuten und Sie können neu wählen.",
     tryAgain: "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
-    photoAlt: "{model}, {partner}",
     agencyHidden: "Geprüfte lokale Agentur",
     agencyTermsHidden: "Bedingungen der Agentur",
     revealLine: "Name und Google-Bewertungen der Agentur sehen Sie, sobald die Anzahlung bezahlt ist.",
@@ -202,7 +190,6 @@ export const OFFER_VIEW: Record<OfferLang, OfferViewCopy> = {
     reasonPlain: "Η χαμηλότερη τιμή από τις {n} προσφορές.",
     onlyOffer: "Η μόνη προσφορά για τις ημερομηνίες σας μέχρι στιγμής.",
     onlyBookable: "Η μόνη προσφορά που μπορείτε ακόμη να κλείσετε.",
-    agencyTerms: "Προσφέρεται από {partner}",
     otherOffers: "Οι άλλες {n} προσφορές",
     otherOffer: "Η άλλη προσφορά",
     totalFor: "Συνολική τιμή για {days}",
@@ -215,11 +202,9 @@ export const OFFER_VIEW: Record<OfferLang, OfferViewCopy> = {
     googleReview: "Κριτική Google",
     disclaimer: "Κριτικές δημοσιευμένες στο Google, μη επαληθευμένες από το crete.direct, με τη σειρά του Google· οι κριτικές παλαιότερες των 2 ετών δεν εμφανίζονται.",
     readLess: "Λιγότερα",
-    readReviews: "Διαβάστε τις κριτικές",
     everyOffer: "Σε κάθε προσφορά: ένα μέρος online σήμερα, το υπόλοιπο στο γκισέ.",
     pendingPayment: "Υπάρχει ήδη ανοιχτή πληρωμή για αυτό το αίτημα. Αν φύγατε από τη σελίδα πληρωμής, κλείνει μέσα σε 30 λεπτά και μπορείτε να επιλέξετε ξανά.",
     tryAgain: "Κάτι πήγε στραβά. Δοκιμάστε ξανά.",
-    photoAlt: "{model}, {partner}",
     agencyHidden: "Επαληθευμένο τοπικό γραφείο",
     agencyTermsHidden: "Όροι του γραφείου",
     revealLine: "Το όνομα του γραφείου και οι κριτικές Google εμφανίζονται μόλις πληρωθεί η προκαταβολή.",
@@ -242,5 +227,5 @@ export function daysLabel(n: number, locale: string): string {
 export function photoAltFor(locale: string, model: string, partner: string, revealed: boolean): string {
   const v = OFFER_VIEW[offerLang(locale)];
   if (!revealed) return model || v.agencyHidden;
-  return v.photoAlt.replace("{model}", model).replace("{partner}", partner);
+  return [model, partner].filter(Boolean).join(", ") || v.agencyHidden;
 }

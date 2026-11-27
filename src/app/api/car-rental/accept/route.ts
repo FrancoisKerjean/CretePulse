@@ -119,7 +119,9 @@ export async function POST(request: NextRequest) {
   // commission du loueur n'est jamais facturée.
   const update = supabase.from("car_requests").update({
     ...(previous === "refunded" ? { ...PREVIOUS_BOOKING_RESET, booking_status: null } : {}),
-    status: "accepted", accepted_at: new Date().toISOString(), accept_token_hash: null,
+    // accept_token_hash est GARDÉ : le lien d'offres reste valable pour afficher la révélation
+    // du loueur (nom, note, avis). Rejouer le lien rend `already` (status accepted) sans rien écrire.
+    status: "accepted", accepted_at: new Date().toISOString(),
     closure_reason: null, customer_phone: phoneResolu.phone,
     quoted_price: chosen.price, quoted_currency: chosen.currency ?? "EUR",
     quoted_car_model: carModelSnapshot, quoted_inclusions: chosen.inclusions ?? [],

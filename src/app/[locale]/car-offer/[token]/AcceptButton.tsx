@@ -102,6 +102,8 @@ export function AcceptButton({
         const ok = res.ok && json.ok;
         setState(ok ? "done" : "error");
         track(ok ? "ok" : "error");
+        // Offre acceptée : la page se recharge et rend la révélation du loueur (nom, note, avis).
+        if (ok) window.location.reload();
       }
     } catch {
       setState("error");

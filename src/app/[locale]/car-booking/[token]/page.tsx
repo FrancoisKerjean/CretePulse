@@ -24,7 +24,7 @@ import { rentalDays } from "@/lib/car-pricing";
 import { offerCarPhoto } from "@/lib/car-fleet";
 import { partnerRatings } from "@/lib/car-trust-server";
 import { OFFER_VIEW, daysLabel, localizeQuotedModel, photoAltFor } from "@/lib/car-offer-view";
-import { partnerRevealed } from "@/lib/car-trust";
+import { partnerRevealed, validRating } from "@/lib/car-trust";
 import { CarPhoto, RatingLine } from "@/components/car-rental/trust";
 import { PartnerReveal } from "@/components/car-rental/PartnerReveal";
 import GoatStanding from "@/components/campagne/GoatStanding";
@@ -225,9 +225,7 @@ export default async function CarBookingPage(
     ? null
     : <CancelPanel auth={{ token }} strings={t} locale={lang} refundEur={refundNow} />;
   const [rated] = row.quoted_by_partner_id != null ? await partnerRatings([row.quoted_by_partner_id]) : [];
-  const ratingValue = rated?.google_rating == null ? NaN : Number(rated.google_rating);
-  const ratingCount = rated?.google_rating_count == null ? 0 : Number(rated.google_rating_count);
-  const extras: CardExtras = { rating: Number.isFinite(ratingValue) && ratingCount > 0 ? { rating: ratingValue, count: ratingCount } : null };
+  const extras: CardExtras = { rating: validRating(rated) };
   const depositText = formatEur(Number(row.deposit_eur), lang);
   // « Annulation gratuite » seulement tant qu'annuler rend tout l'acompte (I4 : à moins de 48 h, plus de titre trompeur).
   const freeNow = refundNow !== null && refundNow >= Number(row.deposit_eur);
@@ -285,7 +283,7 @@ export default async function CarBookingPage(
             {cancelBox}
           </div>
         </div>
-        <PartnerReveal partnerId={row.quoted_by_partner_id} locale={lang} withRating={false} className="mt-6" />
+        <PartnerReveal partnerId={row.quoted_by_partner_id} locale={lang} withRating={false} rated={rated} className="mt-6" />
       </Shell>
     );
   }
@@ -326,7 +324,7 @@ export default async function CarBookingPage(
             {cancelBox}
           </div>
         </div>
-        <PartnerReveal partnerId={row.quoted_by_partner_id} locale={lang} withRating={false} className="mt-6" />
+        <PartnerReveal partnerId={row.quoted_by_partner_id} locale={lang} withRating={false} rated={rated} className="mt-6" />
       </Shell>
     );
   }

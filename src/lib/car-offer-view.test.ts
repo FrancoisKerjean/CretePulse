@@ -120,4 +120,19 @@ describe("photoAltFor", () => {
   it("après révélation : modèle et loueur", () => {
     expect(photoAltFor("fr", "Fiat Panda", "Zorbas", true)).toBe("Fiat Panda, Zorbas");
   });
+  it("après révélation : jamais de virgule orpheline", () => {
+    expect(photoAltFor("fr", "Fiat Panda", "", true)).toBe("Fiat Panda");
+    expect(photoAltFor("fr", "", "Zorbas", true)).toBe("Zorbas");
+    expect(photoAltFor("fr", "", "", true)).toBe("Agence locale vérifiée");
+  });
+});
+
+describe("textes qui nommaient le loueur avant l'acompte", () => {
+  it("agencyTerms, photoAlt et readReviews n'existent plus", () => {
+    for (const l of ["en", "fr", "de", "el"] as const) {
+      expect(OFFER_VIEW[l]).not.toHaveProperty("agencyTerms");
+      expect(OFFER_VIEW[l]).not.toHaveProperty("photoAlt");
+      expect(OFFER_VIEW[l]).not.toHaveProperty("readReviews");
+    }
+  });
 });

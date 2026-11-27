@@ -54,6 +54,14 @@ export function partnerRevealed(s: { bookingStatus?: string | null; requestStatu
   return s.requestStatus === "accepted";
 }
 
+/** Note valide d'un loueur (nombre d'avis > 0), sinon null : source unique des pages. */
+export function validRating(p: RatedPartner | null | undefined): { rating: number; count: number } | null {
+  if (!p) return null;
+  const rating = num(p.google_rating);
+  const count = num(p.google_rating_count);
+  return rating !== null && count !== null && count > 0 ? { rating, count } : null;
+}
+
 type Locale = "en" | "fr" | "de" | "el";
 
 /** « 4,9 » (fr, de, el) ou « 4.9 » (en), toujours une décimale. */
