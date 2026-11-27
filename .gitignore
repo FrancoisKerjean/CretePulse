@@ -20,3 +20,5 @@ __pycache__/
 
 # Avis Google relevés pour le banc de maquettes : conditions Google, jamais stockés ni commités.
 docs/mockups/car-catalogue-front/avis/
+# Planche, captures et rapport du front vendeur : montrent des avis Google (texte non stockable, conditions Google).
+docs/mockups/car-front-vendeur/
