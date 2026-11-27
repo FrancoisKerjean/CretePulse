@@ -1,7 +1,7 @@
 // Briques de confiance de la location de voiture : photo de la vraie voiture du
 // loueur, étoiles Google lisibles par un lecteur d'écran, bloc d'avis Google
 // avec attribution. Composants serveur, sans état.
-import { ratingAriaLabel, formatRating, trustBarCopy, type AggregateRating } from "@/lib/car-trust";
+import { ratingAriaLabel, formatRating, trustBarCopy } from "@/lib/car-trust";
 import { reviewExcerpt } from "@/lib/car-offer-view";
 import type { GoogleReview } from "@/lib/google-reviews-server";
 
@@ -185,19 +185,20 @@ export function CheckIcon({ className = "" }: { className?: string }) {
 }
 
 /**
- * Bandeau sous le titre des pages de location : la note de nos loueurs, puis,
- * acompte allumé seulement, les deux garanties qu'il apporte. Rien d'autre :
- * interrupteur éteint, aucune promesse liée à l'acompte.
+ * Bandeau sous le titre des pages de location : le nombre de nos agences actives, puis,
+ * acompte allumé seulement, les deux garanties qu'il apporte. ⛔ Pas de note Google
+ * moyenne (politique Places : contenu dérivé interdit). Interrupteur éteint, aucune
+ * promesse liée à l'acompte.
  */
-export function TrustBar({ agg, locale, depositOn, className = "" }: { agg: AggregateRating | null; locale: string; depositOn: boolean; className?: string }) {
-  const c = trustBarCopy(agg, locale);
-  if (!agg && !depositOn) return null;
+export function TrustBar({ agencyCount, locale, depositOn, className = "" }: { agencyCount: number; locale: string; depositOn: boolean; className?: string }) {
+  const c = trustBarCopy(agencyCount, locale);
+  if (!c.agencies && !depositOn) return null;
   return (
     <ul className={`m-0 flex list-none flex-wrap items-center gap-x-6 gap-y-2 p-0 text-[14px] text-text-muted ${className}`}>
-      {agg && c.rating ? (
+      {c.agencies ? (
         <li className="flex items-center gap-2">
-          <Stars rating={agg.rating} locale={locale} className="text-[14px]" decorative />
-          <span>{c.rating}</span>
+          <CheckIcon className="text-lagoon-deep" />
+          <span>{c.agencies}</span>
         </li>
       ) : null}
       {depositOn ? (

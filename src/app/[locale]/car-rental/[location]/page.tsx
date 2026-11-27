@@ -8,7 +8,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { CarRentalWizard } from "@/components/car-rental/CarRentalWizard";
 import { servedZoneIds } from "@/lib/car-partners-db";
 import { TrustBar } from "@/components/car-rental/trust";
-import { CONFIRM_LINE, aggregateRating } from "@/lib/car-trust";
+import { CONFIRM_LINE } from "@/lib/car-trust";
 import { partnerRatings } from "@/lib/car-trust-server";
 import { showcasesByZone } from "@/lib/car-fleet";
 import { CAR_CATEGORIES } from "@/lib/car-catalogue";
@@ -191,9 +191,8 @@ export default async function CarLocationPage(
 
   const dbZones = await servedZoneIds();
   const servedZones = dbZones.length ? dbZones : STATIC_SERVED;
-  // Confiance : note de nos loueurs actifs et leurs vraies voitures, zone par zone.
+  // Confiance : nos loueurs actifs (leur nombre, jamais une note moyenne) et leurs vraies voitures, zone par zone.
   const activePartners = await partnerRatings();
-  const trust = aggregateRating(activePartners);
   const showcases = showcasesByZone(activePartners, servedZones, CAR_CATEGORIES);
 
   const schema = {
@@ -260,7 +259,7 @@ export default async function CarLocationPage(
             {t.h1}
           </h1>
           <p className="m-0 text-[15.5px] leading-relaxed text-text-muted">{t.intro}</p>
-          <TrustBar agg={trust} locale={locale} depositOn={depositOn} className="mt-4" />
+          <TrustBar agencyCount={activePartners.length} locale={locale} depositOn={depositOn} className="mt-4" />
         </header>
 
         <p className="mb-3 text-[15px] font-semibold text-text">{ui.wizardLead}</p>

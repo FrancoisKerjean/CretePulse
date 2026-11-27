@@ -15,7 +15,6 @@ import { META, L } from "./content";
 import { JsonLd } from "@/components/JsonLd";
 import { servedZoneIds } from "@/lib/car-partners-db";
 import { TrustBar } from "@/components/car-rental/trust";
-import { aggregateRating } from "@/lib/car-trust";
 import { partnerRatings } from "@/lib/car-trust-server";
 import { showcasesByZone } from "@/lib/car-fleet";
 import { CAR_CATEGORIES } from "@/lib/car-catalogue";
@@ -145,9 +144,8 @@ export default async function CarRentalPage(
 
   const dbZones = await servedZoneIds();
   const servedZones = dbZones.length ? dbZones : STATIC_SERVED;
-  // Confiance : note de nos loueurs actifs et leurs vraies voitures, zone par zone.
+  // Confiance : nos loueurs actifs (leur nombre, jamais une note moyenne) et leurs vraies voitures, zone par zone.
   const activePartners = await partnerRatings();
-  const trust = aggregateRating(activePartners);
   const showcases = showcasesByZone(activePartners, servedZones, CAR_CATEGORIES);
 
   const schema = carRentalPageSchema({
@@ -171,7 +169,7 @@ export default async function CarRentalPage(
           <p className="text-[15.5px] text-text-muted leading-relaxed m-0">
             {intro}
           </p>
-          <TrustBar agg={trust} locale={locale} depositOn={depositOn} className="mt-4" />
+          <TrustBar agencyCount={activePartners.length} locale={locale} depositOn={depositOn} className="mt-4" />
         </header>
 
         {/* Île client : useSearchParams() exige un boundary Suspense (Next 16) */}

@@ -1,18 +1,9 @@
-// Confiance : note Google moyenne des loueurs (relevée chaque semaine par le
-// cron google-ratings dans car_partners.google_rating*). Pur, zéro I/O.
+// Confiance : notes Google par loueur (relevées chaque semaine par le cron
+// google-ratings dans car_partners.google_rating*), jamais agrégées. Pur, zéro I/O.
 
 export interface RatedPartner {
   google_rating: number | string | null;
   google_rating_count: number | string | null;
-}
-
-export interface AggregateRating {
-  /** Moyenne pondérée par le nombre d'avis, arrondie au dixième. */
-  rating: number;
-  /** Total des avis Google des loueurs notés. */
-  count: number;
-  /** Nombre de loueurs entrés dans la moyenne. */
-  partners: number;
 }
 
 const num = (v: number | string | null): number | null => {
@@ -20,23 +11,6 @@ const num = (v: number | string | null): number | null => {
   const n = typeof v === "number" ? v : Number(v);
   return Number.isFinite(n) ? n : null;
 };
-
-/** Note moyenne de nos loueurs. null si aucun n'est noté : jamais de chiffre inventé. */
-export function aggregateRating(partners: RatedPartner[]): AggregateRating | null {
-  let weighted = 0;
-  let count = 0;
-  let rated = 0;
-  for (const p of partners) {
-    const r = num(p.google_rating);
-    const c = num(p.google_rating_count);
-    if (r === null || c === null || c <= 0) continue;
-    weighted += r * c;
-    count += c;
-    rated++;
-  }
-  if (count === 0) return null;
-  return { rating: Math.round((weighted / count) * 10) / 10, count, partners: rated };
-}
 
 // Décision du 27/11/2026 : le client ne connaît le loueur qu'après avoir payé
 // l'acompte, ou accepté l'offre quand l'acompte est éteint (mise en relation).
@@ -101,20 +75,22 @@ export const CANCEL_LINE: Record<string, string> = {
   el: "Δωρεάν ακύρωση έως 48 ώρες πριν την παραλαβή",
 };
 
-const TRUST_BAR: Record<string, { rating: string }> = {
-  en: { rating: "{rating}/5 from {count} Google reviews of our rental partners" },
-  fr: { rating: "{rating}/5 sur {count} avis Google de nos loueurs" },
-  de: { rating: "{rating}/5 aus {count} Google-Bewertungen unserer Vermieter" },
-  el: { rating: "{rating}/5 από {count} κριτικές Google των συνεργατών μας" },
+const AGENCIES: Record<string, string> = {
+  en: "{n} verified local agencies",
+  fr: "{n} agences locales vérifiées",
+  de: "{n} geprüfte lokale Agenturen",
+  el: "{n} επαληθευμένα τοπικά γραφεία",
 };
 
-/** Bandeau de confiance de la location : note de nos loueurs (null sans note), puis les deux garanties de l'acompte. */
-export function trustBarCopy(agg: AggregateRating | null, locale: string): { rating: string | null; confirm: string; cancel: string } {
-  const c = TRUST_BAR[locale] ?? TRUST_BAR.en;
-  const nf = locale === "en" ? "en-GB" : locale;
+/**
+ * Bandeau de confiance de la location : le nombre de nos agences actives (donnée à nous),
+ * puis les deux garanties de l'acompte. ⛔ Aucune note Google agrégée : la politique des
+ * Places API interdit le contenu dérivé (moyenne). La note n'existe que par agence, sur les offres.
+ */
+export function trustBarCopy(agencyCount: number, locale: string): { agencies: string | null; confirm: string; cancel: string } {
   return {
     confirm: CONFIRM_LINE[locale] ?? CONFIRM_LINE.en,
     cancel: CANCEL_LINE[locale] ?? CANCEL_LINE.en,
-    rating: agg ? c.rating.replace("{rating}", formatRating(agg.rating, locale)).replace("{count}", agg.count.toLocaleString(nf)) : null,
+    agencies: agencyCount >= 2 ? (AGENCIES[locale] ?? AGENCIES.en).replace("{n}", String(agencyCount)) : null,
   };
 }
