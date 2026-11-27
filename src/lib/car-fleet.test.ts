@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { fleetModelsFor, categoryShowcase, offerCarPhoto } from "./car-fleet";
+import { fleetModelsFor, categoryShowcase, offerCarPhoto, showcasesByZone } from "./car-fleet";
 import type { CarFleet, FleetModel } from "./car-fleet-build";
 
 const m = (model: string, over: Partial<FleetModel> = {}): FleetModel => ({
@@ -132,3 +132,31 @@ describe("flotte réelle (src/data/car-fleet.json)", () => {
     }
   });
 });
+
+describe("showcasesByZone", () => {
+  const fleet: CarFleet = {
+    "1": { name: "Ouest", models: [m("Fiat Panda", { ...ph("panda"), confirmed: true })] },
+    "2": { name: "Centre", models: [m("Kia Picanto", { ...ph("picanto"), confirmed: true }), m("VW Polo", { body: "compact", ...ph("polo") })] },
+  };
+  const partners = [
+    { id: 1, zone_ids: ["chania-west"] },
+    { id: 2, zone_ids: ["heraklion-center", "rethymno"] },
+    { id: 3, zone_ids: null },
+  ];
+
+  it("une vitrine par zone servie, avec les seuls loueurs de la zone", () => {
+    const out = showcasesByZone(partners, ["chania-west", "heraklion-center", "lasithi-east"], ["city", "compact"], fleet);
+    expect(out["chania-west"].city?.photo?.model).toBe("Fiat Panda");
+    expect(out["chania-west"].compact).toBeUndefined();
+    expect(out["heraklion-center"].city?.photo?.model).toBe("Kia Picanto");
+    expect(out["heraklion-center"].compact?.models).toEqual(["VW Polo"]);
+    // Zone sans loueur : aucune vitrine (le front retombe sur « all »).
+    expect(out["lasithi-east"]).toBeUndefined();
+  });
+
+  it("« all » réunit tous les loueurs actifs, pour l'étape où le lieu n'est pas encore choisi", () => {
+    const out = showcasesByZone(partners, [], ["city"], fleet);
+    expect(out.all.city?.models.sort()).toEqual(["Fiat Panda", "Kia Picanto"]);
+  });
+});
+

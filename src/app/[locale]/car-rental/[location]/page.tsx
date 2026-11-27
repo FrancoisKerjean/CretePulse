@@ -7,6 +7,11 @@ import { buildAlternates } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { CarRentalWizard } from "@/components/car-rental/CarRentalWizard";
 import { servedZoneIds } from "@/lib/car-partners-db";
+import { TrustBar } from "@/components/car-rental/trust";
+import { aggregateRating } from "@/lib/car-trust";
+import { partnerRatings } from "@/lib/car-trust-server";
+import { showcasesByZone } from "@/lib/car-fleet";
+import { CAR_CATEGORIES } from "@/lib/car-catalogue";
 import {
   CAR_LOCATIONS,
   CAR_LOC_LOCALES,
@@ -21,6 +26,31 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://crete.direct";
 const STATIC_SERVED = ["chania-west", "rethymno", "heraklion-center"];
 
 type Params = { locale: string; location: string };
+
+// Acompte allumé (CAR_CATALOGUE_ENABLED) : la vérité du parcours avec acompte
+// remplace « pas une réservation » et « aucun prépaiement », qui deviendraient faux.
+const UI_DEPOSIT: Record<CarLocLocale, { wizardLead: string; process: [string, string, string]; trust: [string, string, string] }> = {
+  en: {
+    wizardLead: "Choose this pick-up point. Local agencies reply with their prices.",
+    process: ["Enter your dates and the car you need.", "Local agencies send their prices, the lowest first.", "Book with a deposit online, pay the rest at pick-up."],
+    trust: ["A deposit paid online books the car, the rest is paid at the counter.", "Confirmed by the agency within 4 hours, otherwise refunded.", "Free cancellation up to 48 hours before pick-up."],
+  },
+  fr: {
+    wizardLead: "Choisissez ce point de prise en charge. Les agences locales répondent avec leur prix.",
+    process: ["Indiquez vos dates et le véhicule recherché.", "Les agences locales envoient leur prix, le plus bas en premier.", "Réservez avec un acompte en ligne, réglez le reste à la prise du véhicule."],
+    trust: ["Un acompte payé en ligne réserve la voiture, le reste se règle au comptoir.", "Confirmée par l'agence sous 4 h, sinon remboursée.", "Annulation gratuite jusqu'à 48 h avant la prise."],
+  },
+  de: {
+    wizardLead: "Wählen Sie diesen Abholpunkt. Lokale Vermieter antworten mit ihren Preisen.",
+    process: ["Geben Sie Reisedaten und gewünschten Wagen an.", "Lokale Vermieter senden ihre Preise, der günstigste zuerst.", "Buchen Sie mit einer Online-Anzahlung, den Rest zahlen Sie bei der Abholung."],
+    trust: ["Eine online gezahlte Anzahlung sichert das Auto, der Rest wird am Schalter bezahlt.", "Bestätigung durch den Vermieter innerhalb von 4 Stunden, sonst Erstattung.", "Kostenlose Stornierung bis 48 Stunden vor Abholung."],
+  },
+  el: {
+    wizardLead: "Επιλέξτε αυτό το σημείο παραλαβής. Τα τοπικά γραφεία απαντούν με τις τιμές τους.",
+    process: ["Δηλώστε ημερομηνίες και το αυτοκίνητο που θέλετε.", "Τα τοπικά γραφεία στέλνουν τις τιμές τους, πρώτα η χαμηλότερη.", "Κάντε κράτηση με προκαταβολή online και πληρώστε το υπόλοιπο κατά την παραλαβή."],
+    trust: ["Μια προκαταβολή online κλείνει το αυτοκίνητο, το υπόλοιπο πληρώνεται στο γκισέ.", "Επιβεβαίωση από το γραφείο εντός 4 ωρών, αλλιώς επιστροφή χρημάτων.", "Δωρεάν ακύρωση έως 48 ώρες πριν την παραλαβή."],
+  },
+};
 
 const UI: Record<CarLocLocale, {
   home: string;
@@ -154,11 +184,17 @@ export default async function CarLocationPage(
   const copyLocale = pickLocale(locale);
   const t = loc.content[copyLocale];
   const m = loc.meta[copyLocale];
-  const ui = UI[copyLocale];
+  // Interrupteur lu au rendu serveur ; un changement de variable passe par un redéploiement.
+  const depositOn = process.env.CAR_CATALOGUE_ENABLED === "on";
+  const ui = depositOn ? { ...UI[copyLocale], ...UI_DEPOSIT[copyLocale] } : UI[copyLocale];
   const pageUrl = `${BASE_URL}/${locale}/car-rental/${location}`;
 
   const dbZones = await servedZoneIds();
   const servedZones = dbZones.length ? dbZones : STATIC_SERVED;
+  // Confiance : note de nos loueurs actifs et leurs vraies voitures, zone par zone.
+  const activePartners = await partnerRatings();
+  const trust = aggregateRating(activePartners);
+  const showcases = showcasesByZone(activePartners, servedZones, CAR_CATEGORIES);
 
   const schema = {
     "@context": "https://schema.org",
@@ -224,9 +260,24 @@ export default async function CarLocationPage(
             {t.h1}
           </h1>
           <p className="m-0 text-[15.5px] leading-relaxed text-text-muted">{t.intro}</p>
+          <TrustBar agg={trust} locale={locale} depositOn={depositOn} className="mt-4" />
         </header>
 
-        <section aria-labelledby="quote-process-title" className="mb-7 rounded-3xl bg-white p-5 shadow-soft">
+        <p className="mb-3 text-[15px] font-semibold text-text">{ui.wizardLead}</p>
+        <Suspense fallback={null}>
+          {/* initialSource : une visite organique de la landing est attribuée à la
+              landing elle-même ; un clic CTA interne arrive avec ?source= qui prime. */}
+          <CarRentalWizard
+            locale={locale}
+            servedZones={servedZones}
+            initialPickup={loc.pickup}
+            initialSource={`landing-${loc.slug}`}
+            depositOn={depositOn}
+            showcases={showcases}
+          />
+        </Suspense>
+
+        <section aria-labelledby="quote-process-title" className="mt-10 rounded-3xl bg-white p-5 shadow-soft">
           <h2 id="quote-process-title" className="m-0 font-heading text-xl font-extrabold text-text">
             {ui.processTitle}
           </h2>
@@ -244,19 +295,6 @@ export default async function CarLocationPage(
             {ui.trust.map((item) => <li key={item}>{item}</li>)}
           </ul>
         </section>
-
-        <p className="mb-3 text-[15px] font-semibold text-text">{ui.wizardLead}</p>
-        <Suspense fallback={null}>
-          {/* initialSource : une visite organique de la landing est attribuée à la
-              landing elle-même ; un clic CTA interne arrive avec ?source= qui prime. */}
-          <CarRentalWizard
-            locale={locale}
-            servedZones={servedZones}
-            initialPickup={loc.pickup}
-            initialSource={`landing-${loc.slug}`}
-            depositOn={process.env.CAR_CATALOGUE_ENABLED === "on"}
-          />
-        </Suspense>
 
         <section className="mt-12">
           <h2 className="mb-5 font-heading text-[26px] font-extrabold text-text">{t.deliveryTitle}</h2>

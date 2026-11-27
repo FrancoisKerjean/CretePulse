@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { aggregateRating, ratingAriaLabel, formatRating } from "./car-trust";
+import { aggregateRating, ratingAriaLabel, formatRating, trustBarCopy } from "./car-trust";
 
 describe("aggregateRating", () => {
   it("moyenne pondérée par le nombre d'avis, arrondie au dixième", () => {
@@ -54,5 +54,22 @@ describe("formatRating / ratingAriaLabel", () => {
     expect(ratingAriaLabel(4.6, "en")).toBe("Rated 4.6 out of 5");
     expect(ratingAriaLabel(4.6, "de")).toBe("Bewertung 4,6 von 5");
     expect(ratingAriaLabel(4.6, "el")).toBe("Βαθμολογία 4,6 στα 5");
+  });
+});
+
+describe("trustBarCopy", () => {
+  it("la note et le nombre d'avis dans la langue, jamais de chiffre en dur", () => {
+    const agg = { rating: 4.9, count: 5598, partners: 6 };
+    expect(trustBarCopy(agg, "fr").rating).toBe("4,9/5 sur 5 598 avis Google de nos loueurs");
+    expect(trustBarCopy(agg, "en").rating).toBe("4.9/5 from 5,598 Google reviews of our rental partners");
+  });
+  it("les deux garanties de l'acompte, dans les 4 langues, sans tiret cadratin", () => {
+    for (const l of ["en", "fr", "de", "el"]) {
+      const c = trustBarCopy({ rating: 4.8, count: 10, partners: 1 }, l);
+      expect(c.confirm.length).toBeGreaterThan(10);
+      expect(c.cancel.length).toBeGreaterThan(10);
+      expect(JSON.stringify(c)).not.toContain(String.fromCharCode(0x2014));
+    }
+    expect(trustBarCopy({ rating: 4.8, count: 10, partners: 1 }, "fr").confirm).toBe("Confirmée sous 4 h, sinon remboursée");
   });
 });

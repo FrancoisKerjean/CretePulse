@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatEur, formatAthensDeadline, formatWallDate, mailCaps } from "./car-format";
+import { formatEur, formatAthensDeadline, formatWallDate, formatShortDate, mailCaps } from "./car-format";
 
 const LOCALES = ["en", "fr", "de", "el"];
 
@@ -64,5 +64,13 @@ describe("mailCaps", () => {
   it("français et allemand : accents et lettres gardés", () => {
     expect(mailCaps("Votre réservation")).toBe("VOTRE RÉSERVATION");
     expect(mailCaps("Ihre Buchung")).toBe("IHRE BUCHUNG");
+  });
+});
+
+describe("formatShortDate", () => {
+  it("date courte du résumé de voyage, jour de la semaine compris, sans dérive de fuseau", () => {
+    expect(formatShortDate("2027-07-12", "fr")).toBe("lun. 12 juil.");
+    expect(formatShortDate("2027-07-12", "en")).toBe("Mon 12 Jul");
+    expect(formatShortDate("pas une date", "fr")).toBe("pas une date");
   });
 });

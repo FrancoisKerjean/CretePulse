@@ -8,9 +8,11 @@ export interface PartnerRating extends RatedPartner {
   name: string;
   google_place_id: string | null;
   google_maps_url: string | null;
+  /** Zones servies : la page de location en tire ses vitrines par zone. */
+  zone_ids: string[] | null;
 }
 
-const COLS = "id, name, google_rating, google_rating_count, google_place_id, google_maps_url";
+const COLS = "id, name, google_rating, google_rating_count, google_place_id, google_maps_url, zone_ids";
 
 /**
  * Notes des loueurs : ceux qui sont nommés, sinon tous les loueurs actifs.

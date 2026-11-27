@@ -1,7 +1,7 @@
 // Briques de confiance de la location de voiture : photo de la vraie voiture du
 // loueur, étoiles Google lisibles par un lecteur d'écran, bloc d'avis Google
 // avec attribution. Composants serveur, sans état.
-import { ratingAriaLabel, formatRating } from "@/lib/car-trust";
+import { ratingAriaLabel, formatRating, trustBarCopy, type AggregateRating } from "@/lib/car-trust";
 import { reviewExcerpt } from "@/lib/car-offer-view";
 import type { GoogleReview } from "@/lib/google-reviews-server";
 
@@ -154,5 +154,37 @@ export function CheckIcon({ className = "" }: { className?: string }) {
     <svg viewBox="0 0 20 20" aria-hidden="true" className={`h-4 w-4 shrink-0 ${className}`}>
       <path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
+  );
+}
+
+/**
+ * Bandeau sous le titre des pages de location : la note de nos loueurs, puis,
+ * acompte allumé seulement, les deux garanties qu'il apporte. Rien d'autre :
+ * interrupteur éteint, aucune promesse liée à l'acompte.
+ */
+export function TrustBar({ agg, locale, depositOn, className = "" }: { agg: AggregateRating | null; locale: string; depositOn: boolean; className?: string }) {
+  const c = trustBarCopy(agg, locale);
+  if (!agg && !depositOn) return null;
+  return (
+    <ul className={`m-0 flex list-none flex-wrap items-center gap-x-6 gap-y-2 p-0 text-[14px] text-text-muted ${className}`}>
+      {agg && c.rating ? (
+        <li className="flex items-center gap-2">
+          <Stars rating={agg.rating} locale={locale} className="text-[14px]" />
+          <span>{c.rating}</span>
+        </li>
+      ) : null}
+      {depositOn ? (
+        <>
+          <li className="flex items-center gap-2">
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 shrink-0 text-lagoon-deep" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
+            {c.confirm}
+          </li>
+          <li className="flex items-center gap-2">
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 shrink-0 text-lagoon-deep" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
+            {c.cancel}
+          </li>
+        </>
+      ) : null}
+    </ul>
   );
 }

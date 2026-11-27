@@ -10,14 +10,16 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { CAR_ZONES, allPickups, zoneForPickup } from "@/lib/car-partners";
 import { CAR_TYPES } from "@/lib/car-types";
+import { featuredCategory } from "@/lib/car-types-data";
+import type { ZoneShowcases } from "@/lib/car-fleet";
 import { SHORT_STAY_MIN_DAYS, rentalDays } from "@/lib/car-pricing";
-import { CAR_CHILD_SEAT_KEYS, CAR_CHILD_SEAT_LABELS } from "@/lib/car-child-seats";
+import { CAR_CHILD_SEAT_KEYS, CAR_CHILD_SEAT_LABELS, type CarChildSeatKey } from "@/lib/car-child-seats";
 import { SLUG_COORDS } from "@/lib/taxi-fare";
 import { nearestBy } from "@/lib/geo";
 import { useGeoPosition } from "@/components/geo/useGeoPosition";
 import { CiCompass, CiMark, CiPlane } from "@/components/icons";
 import { CarPriceEstimate } from "@/components/car-rental/CarPriceEstimate";
-import { formatEur } from "@/lib/car-format";
+import { formatEur, formatShortDate } from "@/lib/car-format";
 import { pickupLabel as pickupLabelFor } from "@/lib/car-pickup-labels";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -102,6 +104,20 @@ type Strings = {
   rcvTitle: string;
   rcvBody: string;
   fromPrice: string; // {price} : montant déjà formaté dans la langue (formatEur)
+  cheapestBadge: string;
+  orSimilar: string;
+  seats: string; // {pax}
+  fromWord: string;
+  perDay: string;
+  totalForStay: string; // {total} {days}
+  onQuote: string;
+  otherCategories: string;
+  selected: string;
+  photosPartners: string;
+  prefsAnyRest: string;
+  refine: string;
+  modify: string;
+  daysWord: string; // {n}
 };
 
 const T: Record<string, Strings> = {
@@ -138,14 +154,14 @@ const T: Record<string, Strings> = {
     emailLabel: "Email",
     phoneLabel: "Phone / WhatsApp (optional)",
     noteLabel: "Anything else? (optional)",
-    rgpd: "Your details are sent to the local partner agency so they can reply with a quote. Nothing else.",
+    rgpd: "Your details are used to send you the offers, then to arrange the rental with the agency you choose. Nothing else.",
     back: "Back",
     next: "Continue",
     submit: "Send request",
     sending: "Sending…",
     sentTitle: "Request sent",
-    sentBody: "Request sent. Local rental agencies are preparing their price · you'll get the best offer by email shortly. No prepayment.",
-    sentBodyDeposit: "Request sent. Local rental agencies are preparing their price. You'll get the best offer by email shortly. Some offers can be booked online: a deposit paid online books the car, and you pay the rest at pick-up.",
+    sentBody: "Local rental agencies are preparing their price · you'll get the best offer by email shortly. No prepayment.",
+    sentBodyDeposit: "Local rental agencies are preparing their price. You'll get the best offer by email shortly. Some offers can be booked online: a deposit paid online books the car, and you pay the rest at pick-up.",
     fallbackTitle: "The email didn't go through",
     fallbackBody: "Our email to the agency failed. Reach them directly on WhatsApp · your request is ready to send.",
     whatsappCta: "Open WhatsApp",
@@ -158,6 +174,20 @@ const T: Record<string, Strings> = {
     rcvTitle: "Request received",
     rcvBody: "We received your request, but no partner agency is available for these criteria right now. We'll get back to you.",
     fromPrice: "from {price}/day",
+    cheapestBadge: "The lowest price for your dates",
+    orSimilar: "or similar",
+    seats: "{pax} seats",
+    fromWord: "from",
+    perDay: "/day",
+    totalForStay: "that is {total} for your {days} days, at the cheapest agency",
+    onQuote: "On request",
+    otherCategories: "Or another category",
+    selected: "Selected",
+    photosPartners: "Photos: our rental partners",
+    prefsAnyRest: "gearbox, insurance, payment, child seats: no preference",
+    refine: "Refine",
+    modify: "Change",
+    daysWord: "{n} days",
   },
   fr: {
     title1: "Où récupérez-vous la voiture ?",
@@ -192,14 +222,14 @@ const T: Record<string, Strings> = {
     emailLabel: "Email",
     phoneLabel: "Téléphone / WhatsApp (facultatif)",
     noteLabel: "Une précision ? (facultatif)",
-    rgpd: "Vos coordonnées sont transmises à l'agence partenaire locale pour qu'elle vous réponde avec un devis. Rien d'autre.",
+    rgpd: "Vos coordonnées servent à vous envoyer les offres, puis à organiser la location avec l'agence que vous choisissez. Rien d'autre.",
     back: "Retour",
     next: "Continuer",
     submit: "Envoyer la demande",
     sending: "Envoi…",
     sentTitle: "Demande envoyée",
-    sentBody: "Demande envoyée. Les agences locales préparent leur prix : vous recevrez la meilleure offre par email très vite. Aucun prépaiement.",
-    sentBodyDeposit: "Demande envoyée. Les agences locales préparent leur prix : vous recevrez la meilleure offre par email très vite. Certaines offres se réservent en ligne : un acompte payé en ligne réserve la voiture, et vous réglez le reste à la prise du véhicule.",
+    sentBody: "Les agences locales préparent leur prix : vous recevrez la meilleure offre par email très vite. Aucun prépaiement.",
+    sentBodyDeposit: "Les agences locales préparent leur prix : vous recevrez la meilleure offre par email très vite. Certaines offres se réservent en ligne : un acompte payé en ligne réserve la voiture, et vous réglez le reste à la prise du véhicule.",
     fallbackTitle: "L'email n'est pas parti",
     fallbackBody: "Notre email vers l'agence a échoué. Contactez-la directement sur WhatsApp : votre demande est prête à envoyer.",
     whatsappCta: "Ouvrir WhatsApp",
@@ -212,6 +242,20 @@ const T: Record<string, Strings> = {
     rcvTitle: "Demande reçue",
     rcvBody: "Nous avons bien reçu votre demande, mais aucune agence partenaire n'est disponible pour ces critères pour le moment. Nous revenons vers vous.",
     fromPrice: "à partir de {price}/jour",
+    cheapestBadge: "Le prix le plus bas pour vos dates",
+    orSimilar: "ou similaire",
+    seats: "{pax} places",
+    fromWord: "dès",
+    perDay: "/jour",
+    totalForStay: "soit {total} pour vos {days} jours, chez le loueur le moins cher",
+    onQuote: "Sur devis",
+    otherCategories: "Ou une autre catégorie",
+    selected: "Sélectionnée",
+    photosPartners: "Photos : nos loueurs partenaires",
+    prefsAnyRest: "boîte, assurance, paiement, sièges enfants : peu importe",
+    refine: "Préciser",
+    modify: "Modifier",
+    daysWord: "{n} jours",
   },
   de: {
     title1: "Wo holen Sie das Auto ab?",
@@ -246,14 +290,14 @@ const T: Record<string, Strings> = {
     emailLabel: "E-Mail",
     phoneLabel: "Telefon / WhatsApp (optional)",
     noteLabel: "Noch etwas? (optional)",
-    rgpd: "Ihre Daten werden an die lokale Partneragentur übermittelt, damit sie Ihnen ein Angebot senden kann. Sonst nichts.",
+    rgpd: "Ihre Daten dienen dazu, Ihnen die Angebote zu senden und danach die Miete mit der von Ihnen gewählten Vermietung zu organisieren. Sonst nichts.",
     back: "Zurück",
     next: "Weiter",
     submit: "Anfrage senden",
     sending: "Wird gesendet…",
     sentTitle: "Anfrage gesendet",
-    sentBody: "Anfrage gesendet. Lokale Autovermietungen bereiten ihren Preis vor · Sie erhalten das beste Angebot in Kürze per E-Mail. Keine Vorauszahlung.",
-    sentBodyDeposit: "Anfrage gesendet. Lokale Autovermietungen bereiten ihren Preis vor. Sie erhalten das beste Angebot in Kürze per E-Mail. Manche Angebote sind online buchbar: Eine online gezahlte Anzahlung sichert das Auto, den Rest zahlen Sie bei der Abholung.",
+    sentBody: "Lokale Autovermietungen bereiten ihren Preis vor · Sie erhalten das beste Angebot in Kürze per E-Mail. Keine Vorauszahlung.",
+    sentBodyDeposit: "Lokale Autovermietungen bereiten ihren Preis vor. Sie erhalten das beste Angebot in Kürze per E-Mail. Manche Angebote sind online buchbar: Eine online gezahlte Anzahlung sichert das Auto, den Rest zahlen Sie bei der Abholung.",
     fallbackTitle: "E-Mail nicht zugestellt",
     fallbackBody: "Unsere E-Mail an die Agentur ist fehlgeschlagen. Kontaktieren Sie sie direkt per WhatsApp · Ihre Anfrage ist vorbereitet.",
     whatsappCta: "WhatsApp öffnen",
@@ -266,6 +310,20 @@ const T: Record<string, Strings> = {
     rcvTitle: "Anfrage erhalten",
     rcvBody: "Wir haben Ihre Anfrage erhalten, aber momentan ist keine Partneragentur für diese Kriterien verfügbar. Wir melden uns bei Ihnen.",
     fromPrice: "ab {price}/Tag",
+    cheapestBadge: "Der günstigste Preis für Ihre Daten",
+    orSimilar: "oder ähnlich",
+    seats: "{pax} Sitze",
+    fromWord: "ab",
+    perDay: "/Tag",
+    totalForStay: "also {total} für Ihre {days} Tage, beim günstigsten Vermieter",
+    onQuote: "Auf Anfrage",
+    otherCategories: "Oder eine andere Kategorie",
+    selected: "Ausgewählt",
+    photosPartners: "Fotos: unsere Partnervermieter",
+    prefsAnyRest: "Getriebe, Versicherung, Zahlung, Kindersitze: egal",
+    refine: "Anpassen",
+    modify: "Ändern",
+    daysWord: "{n} Tage",
   },
   el: {
     title1: "Πού θα παραλάβετε το αυτοκίνητο;",
@@ -300,14 +358,14 @@ const T: Record<string, Strings> = {
     emailLabel: "Email",
     phoneLabel: "Τηλέφωνο / WhatsApp (προαιρετικό)",
     noteLabel: "Κάτι άλλο; (προαιρετικό)",
-    rgpd: "Τα στοιχεία σας αποστέλλονται στο τοπικό συνεργαζόμενο γραφείο ώστε να σας απαντήσει με προσφορά. Τίποτα άλλο.",
+    rgpd: "Τα στοιχεία σας χρησιμοποιούνται για να σας στείλουμε τις προσφορές και μετά για να οργανωθεί η ενοικίαση με το γραφείο που θα επιλέξετε. Τίποτα άλλο.",
     back: "Πίσω",
     next: "Συνέχεια",
     submit: "Αποστολή αιτήματος",
     sending: "Αποστολή…",
     sentTitle: "Το αίτημα στάλθηκε",
-    sentBody: "Το αίτημα στάλθηκε. Τα τοπικά γραφεία ετοιμάζουν την τιμή τους · θα λάβετε σύντομα την καλύτερη προσφορά με email. Καμία προπληρωμή.",
-    sentBodyDeposit: "Το αίτημα στάλθηκε. Τα τοπικά γραφεία ετοιμάζουν την τιμή τους. Θα λάβετε σύντομα την καλύτερη προσφορά με email. Ορισμένες προσφορές κρατούνται online: μια προκαταβολή που πληρώνετε online κλείνει το αυτοκίνητο και το υπόλοιπο το πληρώνετε κατά την παραλαβή.",
+    sentBody: "Τα τοπικά γραφεία ετοιμάζουν την τιμή τους · θα λάβετε σύντομα την καλύτερη προσφορά με email. Καμία προπληρωμή.",
+    sentBodyDeposit: "Τα τοπικά γραφεία ετοιμάζουν την τιμή τους. Θα λάβετε σύντομα την καλύτερη προσφορά με email. Ορισμένες προσφορές κρατούνται online: μια προκαταβολή που πληρώνετε online κλείνει το αυτοκίνητο και το υπόλοιπο το πληρώνετε κατά την παραλαβή.",
     fallbackTitle: "Το email δεν στάλθηκε",
     fallbackBody: "Το email προς το γραφείο απέτυχε. Επικοινωνήστε απευθείας μέσω WhatsApp · το αίτημά σας είναι έτοιμο για αποστολή.",
     whatsappCta: "Άνοιγμα WhatsApp",
@@ -320,6 +378,20 @@ const T: Record<string, Strings> = {
     rcvTitle: "Το αίτημα ελήφθη",
     rcvBody: "Λάβαμε το αίτημά σας, αλλά αυτή τη στιγμή δεν υπάρχει διαθέσιμη συνεργαζόμενη εταιρεία για αυτά τα κριτήρια. Θα επικοινωνήσουμε μαζί σας.",
     fromPrice: "από {price}/ημέρα",
+    cheapestBadge: "Η χαμηλότερη τιμή για τις ημερομηνίες σας",
+    orSimilar: "ή παρόμοιο",
+    seats: "{pax} θέσεις",
+    fromWord: "από",
+    perDay: "/ημέρα",
+    totalForStay: "δηλαδή {total} για τις {days} ημέρες σας, στο φθηνότερο γραφείο",
+    onQuote: "Κατόπιν προσφοράς",
+    otherCategories: "Ή άλλη κατηγορία",
+    selected: "Επιλέχθηκε",
+    photosPartners: "Φωτογραφίες: οι συνεργάτες μας",
+    prefsAnyRest: "κιβώτιο, ασφάλεια, πληρωμή, παιδικά καθίσματα: αδιάφορο",
+    refine: "Προσαρμογή",
+    modify: "Αλλαγή",
+    daysWord: "{n} ημέρες",
   },
 };
 
@@ -343,10 +415,16 @@ type CarRentalWizardProps = {
    * « aucun prépaiement ».
    */
   depositOn?: boolean;
+  /**
+   * Vraies voitures des loueurs par zone (« all » = tous les loueurs actifs),
+   * calculées par la page serveur : le JSON de flotte ne part pas au client.
+   * Absent : photos Wikimedia d'illustration.
+   */
+  showcases?: ZoneShowcases;
 };
 
 export function CarRentalWizard({
-  locale, servedZones, initialPickup: initialPickupProp, initialSource, depositOn = false,
+  locale, servedZones, initialPickup: initialPickupProp, initialSource, depositOn = false, showcases,
 }: CarRentalWizardProps) {
   const t = T[locale] || T.en;
   const pickupLabel = (slug: string) => pickupLabelFor(slug, locale);
@@ -486,6 +564,29 @@ export function CarRentalWizard({
   // Un prix réel connu remplace l'estimation de marché, à toutes les étapes.
   const showEstimate = !!carType && realPrices[carType] == null;
   const carTypeDef = CAR_TYPES.find((c) => c.id === carType) ?? null;
+
+  // Étape 3 : catégorie la moins chère mise en avant (seulement avec de vrais
+  // prix de grille), vraies voitures des loueurs de la zone, sinon photo d'illustration.
+  const fmtLocale = T[locale] ? locale : "en";
+  const hasPrices = Object.keys(realPrices).length > 0;
+  const featured = featuredCategory(realPrices, CAR_TYPES.map((c) => c.id));
+  const stayDays = rentalDays(dateFrom, dateTo, timeFrom, timeTo);
+  const zoneShowcase = (pickup && showcases?.[zoneForPickup(pickup)?.id ?? ""]) || showcases?.all;
+  const carVisual = (id: string) => {
+    const c = CAR_TYPES.find((x) => x.id === id)!;
+    const sc = zoneShowcase?.[id as keyof NonNullable<typeof zoneShowcase>];
+    const models = sc?.models.length ? sc.models : c.examples;
+    return sc?.photo
+      ? { src640: sc.photo.src640, src1280: sc.photo.src1280 !== sc.photo.src640 ? sc.photo.src1280 : null, alt: sc.photo.model, models, partner: true }
+      : { src640: c.photo, src1280: null, alt: "", models, partner: false };
+  };
+  const anyWikimedia = CAR_TYPES.some((c) => !carVisual(c.id).partner);
+  const prefsSummary = [
+    gearbox === "automatic" ? t.gbAuto : gearbox === "manual" ? t.gbManual : null,
+    insurance === "full" ? t.insFull : insurance === "basic" ? t.insBasic : null,
+    payment === "cash" ? t.payCash : payment === "card" ? t.payCard : null,
+    ...childSeats.map((k) => (CAR_CHILD_SEAT_LABELS[locale] ?? CAR_CHILD_SEAT_LABELS.en)[k as CarChildSeatKey]),
+  ].filter(Boolean).join(" · ");
 
   // Pickup servi le plus proche du pickup non servi choisi (suggestion honnête).
   const suggestion = useMemo(() => {
@@ -833,7 +934,7 @@ export function CarRentalWizard({
               </div>
             </fieldset>
           </div>
-          {!timesValid && (
+          {timeFilled && !timesValid && (
             <p className="mt-4 text-sm font-semibold text-terracotta">{t.invalidTimeRange}</p>
           )}
           {/* Blocage, pas un avertissement : sous ce seuil aucune demande n'a
@@ -850,45 +951,111 @@ export function CarRentalWizard({
       {/* Étape 3 : quoi ? */}
       {step === 3 && (
         <div data-testid="car-step-3">
+          {pickup && datesValid ? (
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-[14px] text-text-muted">
+              <span>
+                <span className="font-bold text-text">{pickupLabel(pickup)}</span>
+                {" · "}{formatShortDate(dateFrom, locale)} → {formatShortDate(dateTo, locale)}
+                {" · "}{t.daysWord.replace("{n}", String(stayDays))}
+              </span>
+              <button type="button" onClick={() => setStep(2)} className="font-heading font-bold text-sea hover:underline">{t.modify}</button>
+            </div>
+          ) : null}
           <h2 className="font-heading font-extrabold text-xl text-text mb-5">{t.title3}</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-            {CAR_TYPES.map((c) => (
+          {featured ? (() => {
+            const c = CAR_TYPES.find((x) => x.id === featured)!;
+            const v = carVisual(c.id);
+            const on = carType === c.id;
+            return (
               <button
-                key={c.id}
                 type="button"
                 data-testid={`car-type-${c.id}`}
+                aria-pressed={on}
                 onClick={() => setCarType(c.id)}
-                className={`flex flex-col items-stretch gap-1 overflow-hidden rounded-2xl border-[1.5px] bg-white p-2.5 transition-colors ${
-                  carType === c.id ? "border-sea bg-sea-faint" : "border-border hover:border-sea/50"
-                }`}
+                className={`grid w-full items-center gap-4 overflow-hidden rounded-[22px] border-2 bg-white p-4 text-left transition-colors md:grid-cols-[1.15fr_1fr] md:gap-8 md:p-6 ${on ? "border-sea shadow-[0_0_0_4px_rgba(0,140,158,0.12)]" : "border-border hover:border-sea/50"}`}
               >
-                <img
-                  src={c.photo}
-                  alt=""
-                  loading="lazy"
-                  className="h-20 w-full rounded-xl bg-sea-faint object-cover"
-                />
-                <span className="mt-1 text-center font-heading font-bold text-[14px] leading-tight text-text">
-                  {c.labels[locale] ?? c.labels.en}
+                <span className="flex aspect-[3/2] items-center justify-center overflow-hidden rounded-2xl bg-white">
+                  <img src={v.src640} srcSet={v.src1280 ? `${v.src640} 640w, ${v.src1280} 1280w` : undefined} sizes="(min-width: 768px) 420px, 90vw"
+                    alt={v.alt} loading="lazy" decoding="async" className={`h-full w-full ${v.partner ? "object-contain" : "object-cover"}`} />
                 </span>
-                {c.examples.length > 0 && (
-                  <span className="text-center text-[10px] leading-tight text-text-muted">
-                    {c.examples.join(" · ")}
+                <span className="flex flex-col items-start gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-sun/25 px-3 py-1 text-[12.5px] font-bold text-ink">
+                    <svg viewBox="0 0 20 20" aria-hidden="true" className="h-3.5 w-3.5"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    {t.cheapestBadge}
                   </span>
-                )}
-                <span className="text-center font-data text-xs text-text-muted">{c.pax} pax</span>
-                {realPrices[c.id] != null && (
-                  <span data-testid={`car-from-${c.id}`} className="text-center font-data text-xs font-bold text-sea">
-                    {t.fromPrice.replace("{price}", formatEur(realPrices[c.id], T[locale] ? locale : "en"))}
+                  <span className="font-heading text-[28px] font-extrabold leading-tight text-text">{c.labels[locale] ?? c.labels.en}</span>
+                  <span className="text-[14.5px] text-text-muted">{v.models.join(" · ")} {t.orSimilar} · {t.seats.replace("{pax}", c.pax)}</span>
+                  <span className="mt-1 font-heading text-text">
+                    <span className="text-[15px] font-bold">{t.fromWord} </span>
+                    <span data-testid={`car-from-${c.id}`} className="text-[34px] font-extrabold leading-none">{formatEur(realPrices[c.id], fmtLocale)}</span>
+                    <span className="text-[15px] text-text-muted"> {t.perDay}</span>
                   </span>
-                )}
+                  <span className="text-[14px] text-text-muted">
+                    {t.totalForStay.replace("{total}", formatEur(Math.round(realPrices[c.id] * stayDays * 100) / 100, fmtLocale)).replace("{days}", String(stayDays))}
+                  </span>
+                  <span className={`mt-2 inline-flex items-center gap-2 font-heading text-[15px] font-bold ${on ? "text-sea" : "text-text-muted"}`}>
+                    <span aria-hidden="true" className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${on ? "border-sea bg-sea text-white" : "border-border bg-white"}`}>
+                      {on ? <svg viewBox="0 0 20 20" className="h-3.5 w-3.5"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg> : null}
+                    </span>
+                    {on ? t.selected : null}
+                  </span>
+                </span>
               </button>
-            ))}
+            );
+          })() : null}
+          {featured ? <p className="mt-5 mb-2.5 font-heading text-[15px] font-bold text-text-muted">{t.otherCategories}</p> : null}
+          <div className={`grid grid-cols-2 gap-2.5 ${featured ? "md:grid-cols-4" : "sm:grid-cols-3"}`}>
+            {CAR_TYPES.filter((c) => c.id !== featured).map((c) => {
+              const v = carVisual(c.id);
+              const on = carType === c.id;
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  data-testid={`car-type-${c.id}`}
+                  aria-pressed={on}
+                  onClick={() => setCarType(c.id)}
+                  className={`flex flex-col items-stretch gap-1 overflow-hidden rounded-2xl border-[1.5px] bg-white p-2.5 text-left transition-colors ${
+                    on ? "border-sea bg-sea-faint" : "border-border hover:border-sea/50"
+                  }`}
+                >
+                  <img
+                    src={v.src640}
+                    alt={v.alt}
+                    loading="lazy"
+                    decoding="async"
+                    className={`h-24 w-full rounded-xl bg-white ${v.partner ? "object-contain" : "object-cover"}`}
+                  />
+                  <span className="mt-1 font-heading font-bold text-[15px] leading-tight text-text">
+                    {c.labels[locale] ?? c.labels.en}
+                  </span>
+                  {realPrices[c.id] != null ? (
+                    <span data-testid={`car-from-${c.id}`} className="font-heading text-[13.5px] font-bold text-text">
+                      {t.fromWord} {formatEur(realPrices[c.id], fmtLocale)}<span className="font-normal text-text-muted">{t.perDay}</span>
+                    </span>
+                  ) : hasPrices ? (
+                    <span className="font-heading text-[13.5px] font-bold text-text-muted">{t.onQuote}</span>
+                  ) : (
+                    <span className="text-[12px] leading-tight text-text-muted">{v.models.join(" · ")} · {t.seats.replace("{pax}", c.pax)}</span>
+                  )}
+                </button>
+              );
+            })}
           </div>
-          <p className="mt-2 text-center text-[10px] leading-tight text-text-muted/70">
-            Photos : Wikimedia Commons · CC BY-SA 4.0
+          <p className="mt-2 text-right text-[11px] leading-tight text-text-muted">
+            {t.photosPartners}{anyWikimedia ? " · Wikimedia Commons, CC BY-SA 4.0" : ""}
           </p>
-          <div className="mt-6 flex items-center justify-between gap-4 rounded-2xl bg-surface px-4 py-3.5">
+          <details className="group mt-5 rounded-2xl bg-surface">
+            <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3.5 text-[14.5px] text-text-muted [&::-webkit-details-marker]:hidden">
+              <span className="min-w-0 flex-1">
+                <b className="text-text">{t.paxLabel} : {pax}</b> · {prefsSummary || t.prefsAnyRest}
+              </span>
+              <span className="shrink-0 font-heading font-bold text-sea">
+                {t.refine} <span aria-hidden="true" className="inline-block transition-transform group-open:rotate-180">⌄</span>
+              </span>
+            </summary>
+            <div className="px-4 pb-4">
+          <div className="flex items-center justify-between gap-4 rounded-2xl bg-white px-4 py-3.5">
             <span className="font-heading font-bold text-[15px] text-text">{t.paxLabel}</span>
             <div className="flex items-center gap-3.5">
               <button
@@ -964,6 +1131,8 @@ export function CarRentalWizard({
               </div>
             </div>
           </div>
+            </div>
+          </details>
           {showEstimate && carType && (
             <CarPriceEstimate
               carType={carType}

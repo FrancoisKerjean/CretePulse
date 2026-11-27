@@ -75,6 +75,16 @@ assert(
   landingPage.includes("No online prepayment through Crete Direct."),
   "Missing transparent payment reassurance",
 );
+// Acompte allumé : « aucun prépaiement » deviendrait faux. La landing doit porter
+// la version acompte et la choisir par l'interrupteur, pas la coder en dur.
+assert(
+  landingPage.includes("A deposit paid online books the car, the rest is paid at the counter."),
+  "Missing deposit-mode payment reassurance",
+);
+assert(
+  /CAR_CATALOGUE_ENABLED === "on"[\s\S]*UI_DEPOSIT\[copyLocale\]/.test(landingPage),
+  "Deposit-mode copy must be chosen by the CAR_CATALOGUE_ENABLED switch",
+);
 
 console.log(
   `car-demand checks: ${prioritySlugs.length} priority landings, metadata, visible process and funnel events OK`,

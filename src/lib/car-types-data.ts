@@ -27,3 +27,18 @@ export const CAR_TYPES_DATA: CarTypeData[] = [
   { id: "suv",       pax: "5",   labels: { en: "SUV", fr: "SUV", de: "SUV", el: "SUV" },
     examples: ["Citroën C3 Aircross"], photo: "/images/cars/suv.jpg" },
 ];
+
+/**
+ * Catégorie mise en avant à l'étape « Quelle voiture ? » : la moins chère par
+ * jour d'après les grilles des loueurs ; à égalité, l'ordre du catalogue. null
+ * sans aucun prix (interrupteur éteint) : rien n'est mis en avant à tort.
+ */
+export function featuredCategory(pricesPerDay: Record<string, number>, order: readonly string[]): string | null {
+  let best: string | null = null;
+  for (const id of order) {
+    const v = pricesPerDay[id];
+    if (typeof v !== "number" || !Number.isFinite(v)) continue;
+    if (best === null || v < pricesPerDay[best]) best = id;
+  }
+  return best;
+}

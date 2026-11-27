@@ -73,6 +73,36 @@ export function categoryShowcase(category: CarCategory, partnerIds: number[], fl
   };
 }
 
+export type ZoneShowcases = Record<string, Partial<Record<CarCategory, CategoryShowcase>>>;
+
+/**
+ * Vitrines de l'étape « Quelle voiture ? », calculées côté serveur (le JSON de
+ * flotte ne part jamais dans le bundle client) : une entrée par zone servie,
+ * avec ses seuls loueurs, plus « all » pour tous les loueurs actifs. Une
+ * catégorie sans aucun modèle chez ces loueurs est absente.
+ */
+export function showcasesByZone(
+  partners: Array<{ id: number; zone_ids: string[] | null }>,
+  zoneIds: string[],
+  categories: readonly CarCategory[],
+  fleet: CarFleet = FLEET,
+): ZoneShowcases {
+  const build = (ids: number[]) => {
+    const out: Partial<Record<CarCategory, CategoryShowcase>> = {};
+    for (const c of categories) {
+      const sc = categoryShowcase(c, ids, fleet);
+      if (sc.models.length > 0 || sc.photo) out[c] = sc;
+    }
+    return out;
+  };
+  const result: ZoneShowcases = { all: build(partners.map((p) => p.id)) };
+  for (const z of zoneIds) {
+    const ids = partners.filter((p) => p.zone_ids?.includes(z)).map((p) => p.id);
+    if (ids.length > 0) result[z] = build(ids);
+  }
+  return result;
+}
+
 // « VW Polo or similar », « I10, Panda », « VW Polo auto · Automatic » : on retire
 // la mention « ou similaire » (4 langues), puis on coupe sur les séparateurs.
 const SIMILAR = /\b(?:or|ou|oder|o)\s+(?:similar|similaire|ahnlich|equivalent)\b|η παρομοιο|\bsimilar\b/g;

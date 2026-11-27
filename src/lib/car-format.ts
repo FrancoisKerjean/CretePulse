@@ -57,3 +57,13 @@ export function formatWallDate(date: string, time: string | null | undefined, lo
   }).format(ms);
   return time ? `${day} ${AT_WORD[locale] ?? AT_WORD.en} ${time.slice(0, 5)}` : day;
 }
+
+/** « lun. 12 juil. » : date courte du résumé de voyage (date murale, sans fuseau). */
+export function formatShortDate(date: string, locale: string): string {
+  const [y, m, d] = date.split("-").map(Number);
+  const ms = Date.UTC(y, m - 1, d);
+  if (!Number.isFinite(ms)) return date;
+  return new Intl.DateTimeFormat(locale === "en" ? "en-GB" : locale, {
+    weekday: "short", day: "numeric", month: "short", timeZone: "UTC",
+  }).format(ms).replace(",", "");
+}
