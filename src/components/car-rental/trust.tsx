@@ -63,17 +63,32 @@ export function Stars({ rating, locale, className = "", decorative = false }: { 
   );
 }
 
-/** « ★★★★★ 4,9 · 367 avis Google » */
+/**
+ * « ★★★★★ 4,9 · 367 avis Google ». `hideCount` : avant révélation du loueur, le
+ * nombre d'avis (qui permettrait de retrouver la fiche) est remplacé par l'attribution
+ * « Google Maps » (règles Google Places : non traduit, insécable, Roboto 400,
+ * #5E5E5E sur clair ou #FFFFFF sur sombre, 12 à 16 px, dans le conteneur de la note).
+ */
 export function RatingLine({
-  rating, count, locale, countLabel, tone = "light", className = "",
+  rating, count, locale, countLabel, tone = "light", className = "", hideCount = false,
 }: {
-  rating: number; count: number; locale: string; countLabel: string; tone?: "light" | "dark"; className?: string;
+  rating: number; count: number; locale: string; countLabel: string; tone?: "light" | "dark"; className?: string; hideCount?: boolean;
 }) {
   return (
     <span className={`inline-flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[14px] ${className}`}>
       <Stars rating={rating} locale={locale} className="text-[15px]" decorative />
       <strong className={`font-heading ${tone === "dark" ? "text-white" : "text-ink"}`}>{formatRating(rating, locale)}</strong>
-      <span className={tone === "dark" ? "text-white/70" : "text-text-muted"}>{countLabel.replace("{n}", count.toLocaleString(locale === "en" ? "en-GB" : locale))}</span>
+      {hideCount ? (
+        <span
+          translate="no"
+          className="whitespace-nowrap"
+          style={{ fontFamily: "Roboto, sans-serif", fontWeight: 400, letterSpacing: "normal", fontSize: "13px", color: tone === "dark" ? "#FFFFFF" : "#5E5E5E" }}
+        >
+          Google Maps
+        </span>
+      ) : (
+        <span className={tone === "dark" ? "text-white/70" : "text-text-muted"}>{countLabel.replace("{n}", count.toLocaleString(locale === "en" ? "en-GB" : locale))}</span>
+      )}
     </span>
   );
 }
@@ -128,11 +143,13 @@ export function ReviewCard({
 
 /** Avis Google d'un loueur : 3 au plus, lien vers la fiche, mention légale. Rien sans avis. */
 export function GoogleReviewsBlock({
-  reviews, mapsUri, locale, title, allReviews, readMore, readLess, googleReview, disclaimer, tone = "light", max = 3,
+  reviews, mapsUri, locale, title, allReviews, readMore, readLess, googleReview, disclaimer, tone = "light", max = 3, stacked = false,
 }: {
   reviews: GoogleReview[]; mapsUri: string | null; locale: string;
   title?: string; allReviews: string; readMore: string; readLess: string; googleReview: string; disclaimer: string;
   tone?: "light" | "dark"; max?: number;
+  /** Une colonne : conteneur étroit (page d'état de 36 rem), où trois cartes côte à côte s'écrasent. */
+  stacked?: boolean;
 }) {
   if (reviews.length === 0) return null;
   const dark = tone === "dark";
@@ -148,7 +165,7 @@ export function GoogleReviewsBlock({
           ) : null}
         </div>
       ) : null}
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className={`grid gap-3 ${stacked ? "" : "md:grid-cols-3"}`}>
         {reviews.slice(0, max).map((r) => (
           <ReviewCard key={`${r.author}-${r.publishTime}`} review={r} locale={locale} readMore={readMore} readLess={readLess} googleReview={googleReview} tone={tone} />
         ))}

@@ -38,6 +38,22 @@ export function aggregateRating(partners: RatedPartner[]): AggregateRating | nul
   return { rating: Math.round((weighted / count) * 10) / 10, count, partners: rated };
 }
 
+// Décision du 27/11/2026 : le client ne connaît le loueur qu'après avoir payé
+// l'acompte, ou accepté l'offre quand l'acompte est éteint (mise en relation).
+const PAID_BOOKING = new Set(["awaiting_partner", "confirmed", "cancelled_kept", "refunded"]);
+
+/**
+ * Le nom du loueur peut-il s'afficher au client ? Pur, source unique des deux pages.
+ * `refunded` suppose un acompte encaissé : il n'est posé que depuis awaiting_partner
+ * ou confirmed (claimRefund, car-deposit-server.ts), donc le client a déjà vu ce loueur.
+ * `pending_payment` (session Stripe ouverte, rien d'encaissé) ne révèle rien.
+ */
+export function partnerRevealed(s: { bookingStatus?: string | null; requestStatus?: string | null }): boolean {
+  const b = s.bookingStatus ?? null;
+  if (b !== null) return PAID_BOOKING.has(b);
+  return s.requestStatus === "accepted";
+}
+
 type Locale = "en" | "fr" | "de" | "el";
 
 /** « 4,9 » (fr, de, el) ou « 4.9 » (en), toujours une décimale. */

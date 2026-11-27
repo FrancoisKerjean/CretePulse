@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  daysLabel, gearboxLabel, localizeQuotedModel, OFFER_VIEW, priceDelta, recommendOffer, reviewExcerpt,
+  daysLabel, gearboxLabel, localizeQuotedModel, OFFER_VIEW, photoAltFor, priceDelta, recommendOffer, reviewExcerpt,
 } from "./car-offer-view";
 
 describe("recommendOffer", () => {
@@ -80,5 +80,44 @@ describe("textes de la page d'offres", () => {
     expect(daysLabel(1, "fr")).toBe("1 jour");
     expect(daysLabel(7, "fr")).toBe("7 jours");
     expect(daysLabel(7, "el")).toBe("7 ημέρες");
+  });
+});
+
+describe("loueur masqué avant l'acompte : textes des 4 langues", () => {
+  const keys = ["agencyHidden", "agencyTermsHidden", "revealLine", "revealLineNoDeposit"] as const;
+  it("chaque langue porte les textes, sans tiret cadratin ni marque interne", () => {
+    for (const l of ["en", "fr", "de", "el"] as const) {
+      for (const k of keys) {
+        const t = OFFER_VIEW[l][k];
+        expect(t, `${l}.${k}`).toBeTruthy();
+        expect(t).not.toContain(String.fromCharCode(8212));
+        expect(t).not.toMatch(/kairos/i);
+      }
+      // Les textes affichés avant paiement ne portent aucune variable de nom.
+      expect(OFFER_VIEW[l].agencyTermsHidden).not.toContain("{partner}");
+      expect(OFFER_VIEW[l].agencyHidden).not.toContain("{partner}");
+    }
+  });
+  it("valeurs validées par François", () => {
+    expect(OFFER_VIEW.fr.agencyHidden).toBe("Agence locale vérifiée");
+    expect(OFFER_VIEW.en.agencyHidden).toBe("Verified local agency");
+    expect(OFFER_VIEW.de.agencyHidden).toBe("Geprüfte lokale Agentur");
+    expect(OFFER_VIEW.el.agencyHidden).toBe("Επαληθευμένο τοπικό γραφείο");
+    expect(OFFER_VIEW.fr.agencyTermsHidden).toBe("Conditions de l'agence");
+    expect(OFFER_VIEW.fr.revealLine).toBe("Le nom de l'agence et ses avis Google s'affichent dès l'acompte payé.");
+    expect(OFFER_VIEW.fr.revealLineNoDeposit).toBe("Le nom de l'agence et ses avis Google s'affichent dès que vous acceptez l'offre.");
+    expect(OFFER_VIEW.en.revealLineNoDeposit).toBe("The agency's name and Google reviews appear as soon as you accept the offer.");
+    expect(OFFER_VIEW.de.revealLine).toBe("Name und Google-Bewertungen der Agentur sehen Sie, sobald die Anzahlung bezahlt ist.");
+    expect(OFFER_VIEW.el.revealLineNoDeposit).toBe("Το όνομα του γραφείου και οι κριτικές Google εμφανίζονται μόλις αποδεχτείτε την προσφορά.");
+  });
+});
+
+describe("photoAltFor", () => {
+  it("avant révélation : le modèle seul, jamais le loueur", () => {
+    expect(photoAltFor("fr", "Fiat Panda", "Zorbas", false)).toBe("Fiat Panda");
+    expect(photoAltFor("fr", "", "Zorbas", false)).toBe("Agence locale vérifiée");
+  });
+  it("après révélation : modèle et loueur", () => {
+    expect(photoAltFor("fr", "Fiat Panda", "Zorbas", true)).toBe("Fiat Panda, Zorbas");
   });
 });

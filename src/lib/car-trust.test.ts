@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { aggregateRating, ratingAriaLabel, formatRating, trustBarCopy } from "./car-trust";
+import { aggregateRating, ratingAriaLabel, formatRating, trustBarCopy, partnerRevealed } from "./car-trust";
 
 describe("aggregateRating", () => {
   it("moyenne pondérée par le nombre d'avis, arrondie au dixième", () => {
@@ -75,5 +75,27 @@ describe("trustBarCopy", () => {
     expect(fr.confirm).toBe("Confirmée sous 4 h d'ouverture (8 h à 22 h, heure grecque), sinon remboursée");
     expect(fr.cancel).toBe("Annulation gratuite jusqu'à 48 h avant la prise du véhicule");
     for (const l of ["en", "de", "el"]) expect(trustBarCopy(null, l).confirm).toMatch(/22/);
+  });
+});
+
+describe("partnerRevealed : le loueur n'est nommé qu'après l'acompte ou l'acceptation", () => {
+  it("révélé dès qu'un acompte a été payé, y compris remboursé ou gardé", () => {
+    for (const bookingStatus of ["awaiting_partner", "confirmed", "cancelled_kept", "refunded"]) {
+      expect(partnerRevealed({ bookingStatus, requestStatus: "quoted" })).toBe(true);
+    }
+  });
+  it("jamais révélé sans statut, avec une session Stripe ouverte, ou sur des offres en cours", () => {
+    expect(partnerRevealed({ bookingStatus: null, requestStatus: "quoted" })).toBe(false);
+    expect(partnerRevealed({ bookingStatus: undefined, requestStatus: "new" })).toBe(false);
+    expect(partnerRevealed({ bookingStatus: "pending_payment", requestStatus: "quoted" })).toBe(false);
+    expect(partnerRevealed({ bookingStatus: "pending_payment", requestStatus: "accepted" })).toBe(false);
+    expect(partnerRevealed({})).toBe(false);
+  });
+  it("mise en relation : révélé quand l'offre est acceptée sans acompte", () => {
+    expect(partnerRevealed({ bookingStatus: null, requestStatus: "accepted" })).toBe(true);
+    expect(partnerRevealed({ requestStatus: "accepted" })).toBe(true);
+  });
+  it("un statut inconnu n'ouvre rien", () => {
+    expect(partnerRevealed({ bookingStatus: "whatever", requestStatus: "quoted" })).toBe(false);
   });
 });

@@ -223,19 +223,22 @@ export function partnerViewState(bookingStatus: string | null, refundReason: str
   return "closed";
 }
 
-/** Nom du produit sur la page Stripe, dans la langue du client (anglais hors des quatre). */
-const DEPOSIT_PRODUCT: Record<string, (car: string, partner: string, from: string, to: string) => string> = {
-  en: (car, partner, from, to) => `Deposit: ${car} with ${partner}, ${from} to ${to}`,
-  fr: (car, partner, from, to) => `Acompte : ${car} chez ${partner}, du ${from} au ${to}`,
-  de: (car, partner, from, to) => `Anzahlung: ${car} bei ${partner}, ${from} bis ${to}`,
-  el: (car, partner, from, to) => `Προκαταβολή: ${car} από ${partner}, ${from} έως ${to}`,
+/**
+ * Nom du produit sur la page Stripe, dans la langue du client (anglais hors des quatre).
+ * ⛔ Sans le nom du loueur : la page de paiement précède la révélation de l'agence
+ * (décision du 27/11/2026, voir partnerRevealed dans car-trust.ts).
+ */
+const DEPOSIT_PRODUCT: Record<string, (car: string, from: string, to: string) => string> = {
+  en: (car, from, to) => `Deposit: ${car}, ${from} to ${to}`,
+  fr: (car, from, to) => `Acompte : ${car}, du ${from} au ${to}`,
+  de: (car, from, to) => `Anzahlung: ${car}, ${from} bis ${to}`,
+  el: (car, from, to) => `Προκαταβολή: ${car}, ${from} έως ${to}`,
 };
 
 export function buildDepositCheckoutParams(i: {
   requestId: number;
   customerEmail: string;
   depositEur: number;
-  partnerName: string;
   carLabel: string;
   dateFrom: string;
   dateTo: string;
@@ -263,7 +266,6 @@ export function buildDepositCheckoutParams(i: {
           product_data: {
             name: DEPOSIT_PRODUCT[lang](
               i.carLabel,
-              i.partnerName,
               formatWallDate(i.dateFrom, null, lang),
               formatWallDate(i.dateTo, null, lang),
             ),

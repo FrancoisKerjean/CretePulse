@@ -45,7 +45,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const { data: row, error: readError } = await supabaseAdmin
     .from("car_requests")
     .select(
-      "id, status, booking_status, booking_session_id, deposit_eur, partner_name, quoted_car_model, customer_email, date_from, date_to, time_from",
+      "id, status, booking_status, booking_session_id, deposit_eur, quoted_car_model, customer_email, date_from, date_to, time_from",
     )
     .eq("booking_token_hash", tokenHash)
     .maybeSingle();
@@ -148,7 +148,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         requestId: row.id,
         customerEmail: row.customer_email,
         depositEur: deposit,
-        partnerName: row.partner_name ?? "",
         carLabel: row.quoted_car_model ?? "Car rental",
         dateFrom: row.date_from,
         dateTo: row.date_to,

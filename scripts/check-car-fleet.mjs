@@ -37,4 +37,13 @@ for (const p of Object.values(fleet)) {
 }
 ok(`chaque photo citée existe dans public/${missing.length ? ` (manquantes : ${missing.slice(0, 5).join(", ")})` : ""}`, missing.length === 0);
 
+// Le chemin d'une photo est lisible dans le HTML avant l'acompte : jamais le nom du loueur (27/11/2026).
+const badPaths = [];
+for (const ph of read("data/car-fleet/manifest.json")) {
+  for (const src of [ph.src640, ph.src1280]) {
+    if (src && !src.startsWith(`/images/fleet/p${ph.partnerId}/`)) badPaths.push(src);
+  }
+}
+ok(`photos rangées dans public/images/fleet/p<partnerId>/, sans nom de loueur${badPaths.length ? ` (${badPaths.slice(0, 3).join(", ")})` : ""}`, badPaths.length === 0);
+
 process.exit(fail ? 1 : 0);

@@ -25,8 +25,8 @@ import { formatEur, formatAthensDeadline, formatWallDate } from "@/lib/car-forma
 import CancelPanel from "../../car-booking/[token]/CancelPanel";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { partnerRatings } from "@/lib/car-trust-server";
-import { CANCEL_LINE, CONFIRM_LINE, formatRating } from "@/lib/car-trust";
-import { reviewsForPlace, type PlaceReviews } from "@/lib/google-reviews-server";
+import { CANCEL_LINE, CONFIRM_LINE, formatRating, partnerRevealed } from "@/lib/car-trust";
+import { PartnerReveal } from "@/components/car-rental/PartnerReveal";
 import { offerCarPhoto } from "@/lib/car-fleet";
 import { OFFER_VIEW, daysLabel, gearboxLabel, offerLang, priceDelta, recommendOffer } from "@/lib/car-offer-view";
 
@@ -315,6 +315,10 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
             </>
           )}
         </StateCard>
+        {/* Acompte payé : le loueur se révèle (nom ci-dessus, note complète et avis ici). */}
+        {bs !== "cancelled_kept" && partnerRevealed({ bookingStatus: bs, requestStatus: request.status as string }) ? (
+          <PartnerReveal partnerId={(request.quoted_by_partner_id as number | null) ?? null} locale={lang} stacked className="mt-5" />
+        ) : null}
         {refundNow === null ? null : (
           <div className="mt-5">
             <CancelPanel auth={{ offerToken: token }} strings={t} locale={lang} refundEur={refundNow} />
@@ -361,6 +365,13 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
         <StateCard title={deposited ? dc.alreadyTitle : c.alreadyTitle}>
           <Lead>{deposited ? dc.alreadyBody : c.alreadyBody}</Lead>
         </StateCard>
+        {/* Offre acceptée : le loueur se révèle, nom, note complète et avis. */}
+        {partnerRevealed({ bookingStatus: bs, requestStatus: request.status as string }) ? (
+          <PartnerReveal
+            partnerId={(request.quoted_by_partner_id as number | null) ?? null} locale={locale}
+            name={(request.partner_name as string | null) || null} stacked className="mt-5"
+          />
+        ) : null}
       </Shell>
     );
   }
@@ -385,19 +396,18 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
   const v = OFFER_VIEW[offerLang(locale)];
   const category = request.car_type as CarCategory;
 
-  // Confiance : notes Google des loueurs (en base, relevé hebdomadaire) et avis
-  // lus en direct (cache 24 h, jamais stockés). Une panne vide le bloc, jamais la page.
+  // Confiance : note Google des loueurs (en base, relevé hebdomadaire), chiffre seul.
+  // ⛔ Ici le loueur n'est pas encore connu du client (décision du 27/11/2026) : ni nom,
+  // ni nombre d'avis, ni avis, ni lien Maps, ni place_id ; reviewsForPlace n'est donc pas
+  // appelé. Il se révèle après l'acompte ou l'acceptation (PartnerReveal, plus haut).
+  // Même une demande remboursée, rouverte à d'autres offres : ces agences-là n'ont rien reçu.
   const ratings = new Map((await partnerRatings([...new Set(offers.map((o) => o.partner_id))])).map((r) => [r.id, r]));
-  const ratingOf = (o: QuoteOption) => {
+  const ratingOf = (o: QuoteOption): number | null => {
     const r = ratings.get(o.partner_id);
     const rating = r?.google_rating == null ? NaN : Number(r.google_rating);
     const count = r?.google_rating_count == null ? 0 : Number(r.google_rating_count);
-    return Number.isFinite(rating) && count > 0 ? { rating, count } : null;
+    return Number.isFinite(rating) && count > 0 ? rating : null;
   };
-  const reviewsBy = new Map<number, PlaceReviews>();
-  await Promise.all([...ratings.values()].map(async (r) => {
-    reviewsBy.set(r.id, await reviewsForPlace(r.google_place_id, locale));
-  }));
 
   // Ce qui empêche de réserver une offre (expirée, refusée par le loueur, trop proche, acompte trop bas).
   const blockedFor = (o: QuoteOption): string | null => {
@@ -411,7 +421,7 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
   // « Notre choix » ne recommande qu'une offre réservable ; si aucune ne l'est, la moins chère reste en tête.
   const bookableOffers = offers.filter((o) => blockedFor(o) === null);
   const pool = bookableOffers.length ? bookableOffers : offers;
-  const pick = recommendOffer(pool, (o) => ratingOf(o)?.rating ?? null) ?? offers[0];
+  const pick = recommendOffer(pool, ratingOf) ?? offers[0];
   const others = offers.filter((o) => o.id !== pick.id);
   const daysText = daysLabel(days, locale);
   const needsPhone = !isCallablePhone(request.customer_phone as string | null);
@@ -422,7 +432,6 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
     const euro = (o.currency ?? "EUR") === "EUR";
     const fmt = (n: number) => (euro ? formatEur(n, locale) : `${n} ${o.currency}`);
     const blockedText = blockedFor(o);
-    const rv = reviewsBy.get(o.partner_id);
     const photo = offerCarPhoto(o.partner_id, category, o.car_model);
     const model = o.car_model?.trim() || null;
     // Sans modèle, la boîte seule se lirait comme un nom de voiture : libellé qualifié.
@@ -430,13 +439,11 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
       ? gearboxLabel(o.gearbox, locale)
       : o.gearbox ? (GEARBOX_ONLY[locale] ?? GEARBOX_ONLY.en)[o.gearbox] ?? null : null;
     return {
-      id: o.id, token, partner: o.partner_name, price: o.price, priceText: fmt(o.price),
+      id: o.id, token, price: o.price, priceText: fmt(o.price),
       splitText: deposit?.amount != null
         ? fill(deposit.dc.dueLine, { deposit: formatEur(deposit.amount, locale), rest: formatEur(Math.round((o.price - deposit.amount) * 100) / 100, locale) })
         : null,
       rating: ratingOf(o),
-      reviews: rv?.reviews ?? [],
-      mapsUri: rv?.mapsUri ?? ratings.get(o.partner_id)?.google_maps_url ?? null,
       photo, model, gearbox,
       // M8 : sur une offre de grille, la « note » est la règle d'annulation du
       // loueur ; avec l'acompte, seule celle de crete.direct s'applique.
@@ -461,7 +468,7 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
     : pool.length === 1
       ? v.onlyBookable
       : pickRating
-        ? fill(v.reasonRated, { n: String(pool.length), rating: formatRating(pickRating.rating, locale) })
+        ? fill(v.reasonRated, { n: String(pool.length), rating: formatRating(pickRating, locale) })
         : fill(v.reasonPlain, { n: String(pool.length) });
   const pickCopy = copyFor(pick);
   const ct = CAR_TYPES_DATA.find((x) => x.id === category);
@@ -485,6 +492,7 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
         item={itemFor(pick)} v={v} locale={locale}
         eyebrow={offers.length > 1 ? fill(v.ourPick, { n: String(offers.length) }) : v.yourOffer}
         reason={reason} daysText={daysText} guarantees={pickCopy.reassure ?? []}
+        revealLine={depositFor(pick) ? v.revealLine : v.revealLineNoDeposit}
       />
       {pickCopy.steps?.length ? (
         <ol className="m-0 mt-4 list-decimal pl-5 text-[14px] leading-relaxed text-text-muted">

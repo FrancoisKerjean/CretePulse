@@ -189,13 +189,14 @@ Généré le 26/11/2026. Source : `docs/mockups/car-catalogue-front/flottes/flot
 
 Score = largeur source, netteté (variance du laplacien), fond propre et présence d'une version 1280.
 
-- **city** : Fiat 500 (Autochoice Rent a Car), 1880 px, fond uni, `/images/fleet/autochoice/fiat-500-1280.webp`
-- **compact** : Opel Corsa (Autochoice Rent a Car), 1880 px, fond uni, `/images/fleet/autochoice/opel-corsa-1280.webp`
-- **other** : Dacia Jogger (Autochoice Rent a Car), 1880 px, fond uni, `/images/fleet/autochoice/dacia-jogger-1280.webp`
-- **sedan** : BMW 116 (Luxtrans Crete (Cretecar)), 600 px, fond uni, `/images/fleet/luxtrans-crete/bmw-116-640.webp`
-- **suv** : BMW X1 (Autochoice Rent a Car), 1880 px, fond uni, `/images/fleet/autochoice/bmw-x1-1280.webp`
+- **city** : Fiat 500 (Autochoice Rent a Car), 1880 px, fond uni, `/images/fleet/p134/fiat-500-1280.webp`
+- **compact** : Opel Corsa (Autochoice Rent a Car), 1880 px, fond uni, `/images/fleet/p134/opel-corsa-1280.webp`
+- **other** : Dacia Jogger (Autochoice Rent a Car), 1880 px, fond uni, `/images/fleet/p134/dacia-jogger-1280.webp`
+- **sedan** : BMW 116 (Luxtrans Crete (Cretecar)), 600 px, fond uni, `/images/fleet/p16/bmw-116-640.webp`
+- **suv** : BMW X1 (Autochoice Rent a Car), 1880 px, fond uni, `/images/fleet/p134/bmw-x1-1280.webp`
 
 ## Notes
 
 - Greenways : le site utilise des images de classe partagées par plusieurs modèles. Chacune n'est gardée que pour le modèle réellement visible dessus ; les autres modèles de la classe sont rejetés.
 - Poids total de `public/images/fleet` : **3.61 Mo** (3789699 octets).
+- ⛔ **Règle des dossiers (27/11/2026)** : `public/images/fleet/p<partnerId>/`, jamais le nom du loueur, car le chemin est lisible dans le HTML des pages publiques et des offres avant l'acompte. `npm run check:car-fleet` la fait respecter.

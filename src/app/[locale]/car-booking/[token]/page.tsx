@@ -23,8 +23,10 @@ import { CAR_INSURANCE_HEADING, insuranceSummary } from "@/lib/car-inclusions";
 import { rentalDays } from "@/lib/car-pricing";
 import { offerCarPhoto } from "@/lib/car-fleet";
 import { partnerRatings } from "@/lib/car-trust-server";
-import { OFFER_VIEW, daysLabel, localizeQuotedModel } from "@/lib/car-offer-view";
+import { OFFER_VIEW, daysLabel, localizeQuotedModel, photoAltFor } from "@/lib/car-offer-view";
+import { partnerRevealed } from "@/lib/car-trust";
 import { CarPhoto, RatingLine } from "@/components/car-rental/trust";
+import { PartnerReveal } from "@/components/car-rental/PartnerReveal";
 import GoatStanding from "@/components/campagne/GoatStanding";
 import type { CarCategory } from "@/lib/car-catalogue";
 
@@ -113,8 +115,12 @@ function SideBox({ title, dark = false, children }: { title?: ReactNode; dark?: 
 
 interface CardExtras { rating: { rating: number; count: number } | null }
 
-/** Carte de la réservation : vraie voiture du loueur, note, trajet, argent. */
-function BookingCard({ row, t, lang, paid, extras }: { row: BookingRow; t: CarBookingStrings; lang: CarBookingLocale; paid: boolean; extras: CardExtras }) {
+/**
+ * Carte de la réservation : vraie voiture du loueur, note, trajet, argent.
+ * ⛔ Avant l'acompte (`revealed` faux) le loueur n'est pas identifiable : libellé neutre,
+ * note sans nombre d'avis (attribution « Google Maps »), alt de la photo sans son nom.
+ */
+function BookingCard({ row, t, lang, paid, extras, revealed }: { row: BookingRow; t: CarBookingStrings; lang: CarBookingLocale; paid: boolean; extras: CardExtras; revealed: boolean }) {
   const total = Number(row.quoted_price);
   const deposit = Number(row.deposit_eur);
   const rest = Math.round((total - deposit) * 100) / 100;
@@ -129,7 +135,7 @@ function BookingCard({ row, t, lang, paid, extras }: { row: BookingRow; t: CarBo
     <section className="overflow-hidden rounded-[26px] border border-border bg-white shadow-soft">
       {photo ? (
         <div className="flex aspect-[16/9] items-center justify-center bg-white px-6 pt-6">
-          <CarPhoto src640={photo.src640} src1280={photo.src1280} alt={[photo.model, row.partner_name].filter(Boolean).join(", ")} eager className="h-full w-full" sizes="(min-width: 768px) 560px, 100vw" />
+          <CarPhoto src640={photo.src640} src1280={photo.src1280} alt={photoAltFor(lang, photo.model ?? "", row.partner_name ?? "", revealed)} eager className="h-full w-full" sizes="(min-width: 768px) 560px, 100vw" />
         </div>
       ) : null}
       {photo && !photo.exact ? (
@@ -143,8 +149,8 @@ function BookingCard({ row, t, lang, paid, extras }: { row: BookingRow; t: CarBo
             </p>
           ) : null}
           <p className="m-0 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[14.5px] text-ink">
-            {row.partner_name ? <span>{row.partner_name}</span> : null}
-            {extras.rating ? <RatingLine rating={extras.rating.rating} count={extras.rating.count} locale={lang} countLabel={OFFER_VIEW[lang].googleReviews} /> : null}
+            {revealed ? (row.partner_name ? <span>{row.partner_name}</span> : null) : <span>{OFFER_VIEW[lang].agencyHidden}</span>}
+            {extras.rating ? <RatingLine rating={extras.rating.rating} count={extras.rating.count} locale={lang} countLabel={OFFER_VIEW[lang].googleReviews} hideCount={!revealed} /> : null}
           </p>
         </div>
         <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 text-[15px]">
@@ -209,6 +215,7 @@ export default async function CarBookingPage(
   }
 
   const status = row.booking_status;
+  const revealed = partnerRevealed({ bookingStatus: status, requestStatus: row.status });
   const partnerName = row.partner_name ?? "";
 
   // Ce que rendrait une annulation maintenant ; null quand elle n'est plus
@@ -259,7 +266,7 @@ export default async function CarBookingPage(
       >
         {beacon}
         <div className="grid items-start gap-5 md:grid-cols-[1.2fr_1fr]">
-          <BookingCard row={row} t={t} lang={lang} paid extras={extras} />
+          <BookingCard row={row} t={t} lang={lang} paid extras={extras} revealed={revealed} />
           <div className="flex flex-col gap-4">
             {row.confirm_deadline_at ? (
               <SideBox dark>
@@ -278,6 +285,7 @@ export default async function CarBookingPage(
             {cancelBox}
           </div>
         </div>
+        <PartnerReveal partnerId={row.quoted_by_partner_id} locale={lang} withRating={false} className="mt-6" />
       </Shell>
     );
   }
@@ -300,7 +308,7 @@ export default async function CarBookingPage(
       >
         {beacon}
         <div className="grid items-start gap-5 md:grid-cols-[1.2fr_1fr]">
-          <BookingCard row={row} t={t} lang={lang} paid extras={extras} />
+          <BookingCard row={row} t={t} lang={lang} paid extras={extras} revealed={revealed} />
           <div className="flex flex-col gap-4">
             {partner ? (
               <SideBox title={t.contactHeading}>
@@ -318,6 +326,7 @@ export default async function CarBookingPage(
             {cancelBox}
           </div>
         </div>
+        <PartnerReveal partnerId={row.quoted_by_partner_id} locale={lang} withRating={false} className="mt-6" />
       </Shell>
     );
   }
@@ -360,7 +369,7 @@ export default async function CarBookingPage(
     <Shell wide hero={<Hero title={t.depositTitle} lead={t.depositIntro} />}>
       {beacon}
       <div className="grid items-start gap-5 md:grid-cols-[1.2fr_1fr]">
-        <BookingCard row={row} t={t} lang={lang} paid={false} extras={extras} />
+        <BookingCard row={row} t={t} lang={lang} paid={false} extras={extras} revealed={revealed} />
         <div className="flex flex-col gap-4">
           <SideBox>
             <Rules lines={[t.depositConfirmRule, t.depositCancelRule]} />
