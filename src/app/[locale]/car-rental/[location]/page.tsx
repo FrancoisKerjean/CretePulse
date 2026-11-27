@@ -8,7 +8,8 @@ import { JsonLd } from "@/components/JsonLd";
 import { CarRentalWizard } from "@/components/car-rental/CarRentalWizard";
 import { servedZoneIds } from "@/lib/car-partners-db";
 import { TrustBar } from "@/components/car-rental/trust";
-import { CONFIRM_LINE } from "@/lib/car-trust";
+import { CONFIRM_LINE, agenciesServing } from "@/lib/car-trust";
+import { zoneForPickup } from "@/lib/car-partners";
 import { partnerRatings } from "@/lib/car-trust-server";
 import { showcasesByZone } from "@/lib/car-fleet";
 import { CAR_CATEGORIES } from "@/lib/car-catalogue";
@@ -259,7 +260,7 @@ export default async function CarLocationPage(
             {t.h1}
           </h1>
           <p className="m-0 text-[15.5px] leading-relaxed text-text-muted">{t.intro}</p>
-          <TrustBar agencyCount={activePartners.length} locale={locale} depositOn={depositOn} className="mt-4" />
+          <TrustBar agencyCount={agenciesServing(activePartners, zoneForPickup(loc.pickup)?.id ?? null)} locale={locale} depositOn={depositOn} className="mt-4" />
         </header>
 
         <p className="mb-3 text-[15px] font-semibold text-text">{ui.wizardLead}</p>

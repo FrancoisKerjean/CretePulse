@@ -381,7 +381,7 @@ const T: Record<string, Strings> = {
 };
 
 // noPartner : zone non couverte, AVANT tout envoi (aucune demande partie).
-// received : demande enregistrée, aucun loueur joignable (interrupteur allumé).
+// received : demande enregistrée, aucun loueur joignable (interrupteur allumé ou non).
 type View = "steps" | "noPartner" | "sent" | "received";
 
 const INPUT_CLS =

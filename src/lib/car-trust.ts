@@ -28,6 +28,16 @@ export function partnerRevealed(s: { bookingStatus?: string | null; requestStatu
   return s.requestStatus === "accepted";
 }
 
+/**
+ * Nombre d'agences (déjà filtrées sur `active`) qui servent la page : dans la zone donnée,
+ * ou, sans zone (page centrale), au moins une zone. Une zone inconnue (`null`) compte 0 :
+ * jamais le total de l'île au-dessus d'un assistant qui peut répondre « pas de partenaire ».
+ */
+export function agenciesServing(partners: Array<{ zone_ids: string[] | null }>, zoneId?: string | null): number {
+  if (zoneId === null) return 0;
+  return partners.filter((p) => (zoneId === undefined ? (p.zone_ids?.length ?? 0) > 0 : p.zone_ids?.includes(zoneId) === true)).length;
+}
+
 /** Note valide d'un loueur (nombre d'avis > 0), sinon null : source unique des pages. */
 export function validRating(p: RatedPartner | null | undefined): { rating: number; count: number } | null {
   if (!p) return null;

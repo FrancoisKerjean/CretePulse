@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ratingAriaLabel, formatRating, trustBarCopy, partnerRevealed, validRating } from "./car-trust";
+import { ratingAriaLabel, formatRating, trustBarCopy, partnerRevealed, validRating, agenciesServing } from "./car-trust";
 
 describe("formatRating / ratingAriaLabel", () => {
   it("virgule décimale en fr/de/el, point en en", () => {
@@ -15,6 +15,27 @@ describe("formatRating / ratingAriaLabel", () => {
     expect(ratingAriaLabel(4.6, "en")).toBe("Rated 4.6 out of 5");
     expect(ratingAriaLabel(4.6, "de")).toBe("Bewertung 4,6 von 5");
     expect(ratingAriaLabel(4.6, "el")).toBe("Βαθμολογία 4,6 στα 5");
+  });
+});
+
+describe("agenciesServing : le bandeau ne compte que les agences qui servent la page", () => {
+  const P = [
+    { zone_ids: ["heraklion-center", "chania-west"] },
+    { zone_ids: ["chania-west"] },
+    { zone_ids: [] as string[] },
+    { zone_ids: null },
+  ];
+  it("page de zone : seules les agences dont zone_ids contient la zone", () => {
+    expect(agenciesServing(P, "chania-west")).toBe(2);
+    expect(agenciesServing(P, "heraklion-center")).toBe(1);
+    expect(agenciesServing(P, "rethymno")).toBe(0);
+  });
+  it("zone inconnue de la page : 0 (jamais le total de l'île)", () => {
+    expect(agenciesServing(P, null)).toBe(0);
+    expect(agenciesServing([], "chania-west")).toBe(0);
+  });
+  it("page centrale (sans zone) : les agences qui servent au moins une zone, sans zone = pas comptée", () => {
+    expect(agenciesServing(P)).toBe(2);
   });
 });
 

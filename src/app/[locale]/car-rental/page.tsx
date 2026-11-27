@@ -14,6 +14,7 @@ import { CarRentalWizard } from "@/components/car-rental/CarRentalWizard";
 import { META, L } from "./content";
 import { JsonLd } from "@/components/JsonLd";
 import { servedZoneIds } from "@/lib/car-partners-db";
+import { agenciesServing } from "@/lib/car-trust";
 import { TrustBar } from "@/components/car-rental/trust";
 import { partnerRatings } from "@/lib/car-trust-server";
 import { showcasesByZone } from "@/lib/car-fleet";
@@ -169,7 +170,7 @@ export default async function CarRentalPage(
           <p className="text-[15.5px] text-text-muted leading-relaxed m-0">
             {intro}
           </p>
-          <TrustBar agencyCount={activePartners.length} locale={locale} depositOn={depositOn} className="mt-4" />
+          <TrustBar agencyCount={agenciesServing(activePartners)} locale={locale} depositOn={depositOn} className="mt-4" />
         </header>
 
         {/* Île client : useSearchParams() exige un boundary Suspense (Next 16) */}
