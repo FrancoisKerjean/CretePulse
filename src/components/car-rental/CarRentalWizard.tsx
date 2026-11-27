@@ -91,9 +91,6 @@ type Strings = {
   sentBody: string; // {partner}
   /** Interrupteur allumé : même écran, sans promettre « aucun prépaiement ». */
   sentBodyDeposit: string;
-  fallbackTitle: string;
-  fallbackBody: string;
-  whatsappCta: string;
   error: string;
   npTitle: string;
   shortStay: string; // {days}
@@ -162,9 +159,6 @@ const T: Record<string, Strings> = {
     sentTitle: "Request sent",
     sentBody: "Local rental agencies are preparing their price · you'll get the best offer by email shortly. No prepayment.",
     sentBodyDeposit: "Local rental agencies are preparing their price. You'll get the best offer by email shortly. Some offers can be booked online: a deposit paid online books the car, and you pay the rest at pick-up.",
-    fallbackTitle: "The email didn't go through",
-    fallbackBody: "Our email to the agency failed. Reach them directly on WhatsApp · your request is ready to send.",
-    whatsappCta: "Open WhatsApp",
     error: "Something went wrong. Please try again in a moment.",
     shortStay: "Minimum rental: {days} days. Below that, local agencies do not follow up. Adjust your dates to continue.",
     npTitle: "No partner in this area yet",
@@ -230,9 +224,6 @@ const T: Record<string, Strings> = {
     sentTitle: "Demande envoyée",
     sentBody: "Les agences locales préparent leur prix : vous recevrez la meilleure offre par email très vite. Aucun prépaiement.",
     sentBodyDeposit: "Les agences locales préparent leur prix : vous recevrez la meilleure offre par email très vite. Certaines offres se réservent en ligne : un acompte payé en ligne réserve la voiture, et vous réglez le reste à la prise du véhicule.",
-    fallbackTitle: "L'email n'est pas parti",
-    fallbackBody: "Notre email vers l'agence a échoué. Contactez-la directement sur WhatsApp : votre demande est prête à envoyer.",
-    whatsappCta: "Ouvrir WhatsApp",
     error: "Une erreur est survenue. Réessayez dans un instant.",
     shortStay: "Durée minimale de location : {days} jours. En dessous, les agences d'ici ne donnent pas suite. Ajustez vos dates pour continuer.",
     npTitle: "Pas encore de partenaire dans cette zone",
@@ -298,9 +289,6 @@ const T: Record<string, Strings> = {
     sentTitle: "Anfrage gesendet",
     sentBody: "Lokale Autovermietungen bereiten ihren Preis vor · Sie erhalten das beste Angebot in Kürze per E-Mail. Keine Vorauszahlung.",
     sentBodyDeposit: "Lokale Autovermietungen bereiten ihren Preis vor. Sie erhalten das beste Angebot in Kürze per E-Mail. Manche Angebote sind online buchbar: Eine online gezahlte Anzahlung sichert das Auto, den Rest zahlen Sie bei der Abholung.",
-    fallbackTitle: "E-Mail nicht zugestellt",
-    fallbackBody: "Unsere E-Mail an die Agentur ist fehlgeschlagen. Kontaktieren Sie sie direkt per WhatsApp · Ihre Anfrage ist vorbereitet.",
-    whatsappCta: "WhatsApp öffnen",
     error: "Etwas ist schiefgelaufen. Bitte versuchen Sie es gleich noch einmal.",
     shortStay: "Mindestmietdauer: {days} Tage. Darunter melden sich die örtlichen Agenturen nicht zurück. Bitte passen Sie Ihre Daten an.",
     npTitle: "Noch kein Partner in dieser Gegend",
@@ -366,9 +354,6 @@ const T: Record<string, Strings> = {
     sentTitle: "Το αίτημα στάλθηκε",
     sentBody: "Τα τοπικά γραφεία ετοιμάζουν την τιμή τους · θα λάβετε σύντομα την καλύτερη προσφορά με email. Καμία προπληρωμή.",
     sentBodyDeposit: "Τα τοπικά γραφεία ετοιμάζουν την τιμή τους. Θα λάβετε σύντομα την καλύτερη προσφορά με email. Ορισμένες προσφορές κρατούνται online: μια προκαταβολή που πληρώνετε online κλείνει το αυτοκίνητο και το υπόλοιπο το πληρώνετε κατά την παραλαβή.",
-    fallbackTitle: "Το email δεν στάλθηκε",
-    fallbackBody: "Το email προς το γραφείο απέτυχε. Επικοινωνήστε απευθείας μέσω WhatsApp · το αίτημά σας είναι έτοιμο για αποστολή.",
-    whatsappCta: "Άνοιγμα WhatsApp",
     error: "Κάτι πήγε στραβά. Δοκιμάστε ξανά σε λίγο.",
     shortStay: "Ελάχιστη διάρκεια ενοικίασης: {days} ημέρες. Κάτω από αυτό, τα τοπικά γραφεία δεν ανταποκρίνονται. Προσαρμόστε τις ημερομηνίες σας.",
     npTitle: "Δεν υπάρχει ακόμη συνεργάτης σε αυτήν την περιοχή",
@@ -397,7 +382,7 @@ const T: Record<string, Strings> = {
 
 // noPartner : zone non couverte, AVANT tout envoi (aucune demande partie).
 // received : demande enregistrée, aucun loueur joignable (interrupteur allumé).
-type View = "steps" | "noPartner" | "sent" | "fallback" | "received";
+type View = "steps" | "noPartner" | "sent" | "received";
 
 const INPUT_CLS =
   "w-full rounded-xl border-[1.5px] border-border bg-white px-3.5 py-2.5 text-[15px] text-text focus:outline-none focus:border-sea transition-colors";
@@ -459,7 +444,6 @@ export function CarRentalWizard({
   const [website, setWebsite] = useState(""); // honeypot
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(false);
-  const [fallbackWhatsapp, setFallbackWhatsapp] = useState<string | null>(null);
   const [nearRequested, setNearRequested] = useState(false);
   const [realPrices, setRealPrices] = useState<Record<string, number>>({});
   // Total réel le plus bas par catégorie (somme jour par jour + livraison), jamais prix/jour x jours.
@@ -659,14 +643,8 @@ export function CarRentalWizard({
           return;
         }
         setView("sent");
-      } else if (res.ok && json?.ok === false && json.fallbackWhatsapp) {
-        window.plausible?.("Car Wizard Submit", {
-          props: { status: "fallback", source, pickup, locale },
-        });
-        setFallbackWhatsapp(String(json.fallbackWhatsapp));
-        setView("fallback");
       } else if (res.ok && json?.ok === false && json.noPartner) {
-        // Acompte allumé : aucun loueur joignable, et jamais de numéro de loueur
+        // Aucun loueur joignable (acompte allumé ou non) : jamais de numéro de loueur
         // avant réservation. La demande est enregistrée et ops prévenu : l'écran
         // dit la même chose que l'e-mail noAgency, jamais « aucune demande envoyée ».
         window.plausible?.("Car Wizard Submit", {
@@ -726,30 +704,6 @@ export function CarRentalWizard({
         <CiMark className="w-12 h-12 text-lagoon-deep mx-auto" />
         <h2 className="mt-4 font-heading font-extrabold text-2xl text-text">{t.rcvTitle}</h2>
         <p className="mt-2 text-[15px] text-text-muted max-w-xl mx-auto">{t.rcvBody}</p>
-        <div className="max-w-sm mx-auto">{recap}</div>
-      </div>
-    );
-  }
-
-  if (view === "fallback") {
-    const waNumber = (fallbackWhatsapp ?? "").replace(/[^\d]/g, "");
-    const waText = encodeURIComponent(
-      `Hi! Car rental request via crete.direct · ${pickup ? pickupLabel(pickup) : ""}, ` +
-      `${dateFrom}${timeFrom ? ` ${timeFrom}` : ""} to ${dateTo}${timeTo ? ` ${timeTo}` : ""}, ` +
-      `${carTypeDef ? carTypeDef.labels.en : ""}, ${pax} pax. ${name.trim()}`,
-    );
-    return (
-      <div ref={rootRef} data-testid="car-wizard-fallback" className="card-base p-7 sm:p-10 text-center scroll-mt-24">
-        <h2 className="font-heading font-extrabold text-2xl text-text">{t.fallbackTitle}</h2>
-        <p className="mt-2 text-[15px] text-text-muted max-w-xl mx-auto">{t.fallbackBody}</p>
-        <a
-          href={`https://wa.me/${waNumber}?text=${waText}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-5 inline-flex items-center gap-2 bg-sun text-text rounded-full px-6 py-3 text-[15px] font-heading font-bold no-underline hover:brightness-105 transition-all"
-        >
-          {t.whatsappCta}
-        </a>
         <div className="max-w-sm mx-auto">{recap}</div>
       </div>
     );

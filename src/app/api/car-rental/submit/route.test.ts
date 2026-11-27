@@ -194,18 +194,23 @@ describe("POST /api/car-rental/submit : aucun numéro de loueur avant réservati
     expect(json).toEqual({ ok: false, noPartner: true });
   });
 
-  it("éteint, aucun e-mail parti : fallbackWhatsapp inchangé", async () => {
+  it("éteint, aucun e-mail parti : jamais de numéro ni de nom de loueur, demande gardée et ops prévenu", async () => {
     m.partnersForZoneWithTerms.mockResolvedValue([PARTNER({ whatsapp: WA })]);
     m.sendAgencyQuoteRequest.mockRejectedValue(new Error("resend down"));
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     const json = await call();
     spy.mockRestore();
-    expect(json).toEqual({ ok: false, fallbackWhatsapp: WA });
+    expect(json).toEqual({ ok: false, noPartner: true });
+    const out = JSON.stringify(json);
+    for (const leak of ["699", "Lux Trans", "fallbackWhatsapp", "l@example.com"]) expect(out).not.toContain(leak);
+    expect(m.notifyOps.mock.calls.some((c) => c[0].title === "Demande voiture SANS loueur joignable")).toBe(true);
   });
 
-  it("éteint, durée trop courte : fallbackWhatsapp inchangé", async () => {
+  it("éteint, durée trop courte : jamais de numéro ni de nom de loueur, ops prévenu", async () => {
     m.partnersForZoneWithTerms.mockResolvedValue([PARTNER({ whatsapp: WA, min_days: 10 })]);
     const json = await call();
-    expect(json).toEqual({ ok: false, fallbackWhatsapp: WA });
+    expect(json).toEqual({ ok: false, noPartner: true });
+    expect(JSON.stringify(json)).not.toMatch(/699|Lux Trans|fallbackWhatsapp/);
+    expect(m.notifyOps.mock.calls.some((c) => c[0].title === "Demande voiture trop courte pour la zone")).toBe(true);
   });
 });

@@ -59,7 +59,7 @@ for (const event of [
 ]) {
   assert(wizard.includes(`"${event}"`), `Missing funnel event: ${event}`);
 }
-for (const status of ["attempt", "success", "fallback", "network_error"]) {
+for (const status of ["attempt", "success", "no_partner", "network_error"]) {
   assert(wizard.includes(`status: "${status}"`), `Missing submit status: ${status}`);
 }
 

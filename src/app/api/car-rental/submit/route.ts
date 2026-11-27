@@ -112,15 +112,12 @@ export async function POST(request: NextRequest) {
   // Interrupteur lu ici (pas au chargement du module) : offres instantanées
   // depuis les grilles publiées. Éteint, tout le fan-out reste un appel de devis.
   const catalogueOn = process.env.CAR_CATALOGUE_ENABLED === "on";
-  // Repli quand aucun loueur n'est joint. Allumé, ⛔ aucun numéro de loueur :
-  // les coordonnées ne s'échangent qu'à la confirmation d'un acompte, et ce
-  // loueur n'a peut-être pas accepté les conditions 2027. Le voyageur voit
-  // « pas encore de partenaire » ; éteint, le WhatsApp du premier loueur, comme avant.
-  const fallback = () => {
-    if (catalogueOn) return NextResponse.json({ ok: false, noPartner: true });
-    const fb = partners[0];
-    return NextResponse.json({ ok: false, fallbackWhatsapp: fb.whatsapp ?? fb.phone });
-  };
+  // Repli quand aucun loueur n'est joint : ⛔ aucune coordonnée de loueur vers le navigateur
+  // (ni numéro, ni WhatsApp, ni nom), interrupteur allumé ou éteint : le voyageur ne doit
+  // pas pouvoir contourner crete.direct. La demande est déjà écrite (below_min_days ou
+  // email_failed) et ops est prévenu (notifyOps) avant ce retour ; le client reçoit l'e-mail
+  // « demande reçue » et voit l'écran « demande reçue, nous revenons vers vous ».
+  const fallback = () => NextResponse.json({ ok: false, noPartner: true });
 
   if (eligibles.length === 0) {
     // Mesure du 12/08/2026 : la demande 53 (Rethymno, 1 jour) est partie à 8
