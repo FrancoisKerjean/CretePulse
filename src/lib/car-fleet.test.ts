@@ -97,6 +97,10 @@ describe("offerCarPhoto", () => {
     expect(offerCarPhoto(1, "automatic", "Volkswagen Polo auto · Automatic", FLEET)?.model).toBe("VW Polo");
     expect(offerCarPhoto(1, "compact", "Citroen C3 ou similaire", FLEET)?.model).toBe("Citroën C3");
   });
+  it("un modèle plus précis que la flotte (« Panda Cross ») : photo du modèle proche, NON exacte", () => {
+    expect(offerCarPhoto(2, "city", "Fiat Panda Cross", FLEET)).toMatchObject({ model: "Fiat Panda", exact: false });
+    expect(offerCarPhoto(1, "automatic", "VW Polo auto 2024", FLEET)).toMatchObject({ model: "VW Polo", exact: true });
+  });
   it("le nom le plus long l'emporte (C3 Aircross, pas C3)", () => {
     expect(offerCarPhoto(1, "suv", "Citroën C3 Aircross", FLEET)?.model).toBe("Citroën C3 Aircross");
   });

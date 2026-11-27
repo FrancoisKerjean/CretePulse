@@ -36,6 +36,9 @@
   --color-ink: #0B3954;
   --color-warn: #FFC83D;
   --color-alert: #E5484D;
+  /* Texte d'alerte et écart de prix en petit corps sur blanc : contraste AA (6,6:1 et 5,3:1). */
+  --color-alert-deep: #B42318;
+  --color-terracotta-deep: #B64A2E;
   /* DA Kalimera : Geist = corps de texte (var next/font) ; Baloo 2 = titres + UI forte +
      donnees (font-data) ; Comfortaa = fallback grec/cyrillique (Baloo 2 = latin/latin-ext). */
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;

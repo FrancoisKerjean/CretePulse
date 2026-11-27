@@ -33,22 +33,22 @@ const PAGE_COPY: Record<string, { intro: string; introDeposit: string; prepayDep
   en: {
     intro: "Compare prices from local rental agencies for your dates: they reply by email, you choose, and you pay the agency at pick-up.",
     introDeposit: "Compare prices from local rental agencies for your dates, book with a deposit online and pay the rest at pick-up.",
-    prepayDeposit: "For offers you can book online, only part of it: a deposit paid online books the car and you pay the rest to the agency at pick-up. If the agency does not confirm within 4 hours, the deposit is refunded. Other offers are confirmed directly with the agency, with no online payment.",
+    prepayDeposit: "For offers you can book online, only part of it: a deposit paid online books the car and you pay the rest to the agency at pick-up. If the agency does not confirm within 4 opening hours (8:00 to 22:00, Greek time), the deposit is refunded. Other offers are confirmed directly with the agency, with no online payment.",
   },
   fr: {
     intro: "Comparez les prix des agences de location locales pour vos dates : elles vous répondent par e-mail, vous choisissez, et vous payez l'agence à la prise du véhicule.",
     introDeposit: "Comparez les prix des agences de location locales pour vos dates, réservez avec un acompte en ligne et réglez le reste à la prise du véhicule.",
-    prepayDeposit: "Pour les offres réservables en ligne, une partie seulement : un acompte payé en ligne réserve la voiture, et vous réglez le reste à l'agence à la prise du véhicule. Si l'agence ne confirme pas sous 4 h, l'acompte vous est remboursé. Les autres offres se confirment directement avec l'agence, sans paiement en ligne.",
+    prepayDeposit: "Pour les offres réservables en ligne, une partie seulement : un acompte payé en ligne réserve la voiture, et vous réglez le reste à l'agence à la prise du véhicule. Si l'agence ne confirme pas sous 4 h d'ouverture (8 h à 22 h, heure grecque), l'acompte vous est remboursé. Les autres offres se confirment directement avec l'agence, sans paiement en ligne.",
   },
   de: {
     intro: "Vergleichen Sie die Preise lokaler Autovermietungen für Ihre Daten: Sie antworten per E-Mail, Sie wählen und zahlen bei der Abholung.",
     introDeposit: "Vergleichen Sie die Preise lokaler Autovermietungen für Ihre Daten, buchen Sie mit einer Online-Anzahlung und zahlen Sie den Rest bei der Abholung.",
-    prepayDeposit: "Bei online buchbaren Angeboten nur einen Teil: Eine online gezahlte Anzahlung sichert das Auto, den Rest zahlen Sie bei der Abholung an die Vermietung. Bestätigt die Vermietung nicht innerhalb von 4 Stunden, wird die Anzahlung erstattet. Andere Angebote bestätigen Sie direkt mit der Vermietung, ohne Online-Zahlung.",
+    prepayDeposit: "Bei online buchbaren Angeboten nur einen Teil: Eine online gezahlte Anzahlung sichert das Auto, den Rest zahlen Sie bei der Abholung an die Vermietung. Bestätigt die Vermietung nicht innerhalb von 4 Öffnungsstunden (8 bis 22 Uhr, griechische Zeit), wird die Anzahlung erstattet. Andere Angebote bestätigen Sie direkt mit der Vermietung, ohne Online-Zahlung.",
   },
   el: {
     intro: "Συγκρίνετε τις τιμές τοπικών γραφείων ενοικίασης για τις ημερομηνίες σας: σας απαντούν με email, εσείς επιλέγετε και πληρώνετε το γραφείο κατά την παραλαβή.",
     introDeposit: "Συγκρίνετε τις τιμές τοπικών γραφείων ενοικίασης για τις ημερομηνίες σας, κάντε κράτηση με προκαταβολή online και πληρώστε το υπόλοιπο κατά την παραλαβή.",
-    prepayDeposit: "Για τις προσφορές που κρατούνται online, μόνο ένα μέρος: μια προκαταβολή online κλείνει το αυτοκίνητο και το υπόλοιπο το πληρώνετε στο γραφείο κατά την παραλαβή. Αν το γραφείο δεν επιβεβαιώσει εντός 4 ωρών, η προκαταβολή επιστρέφεται. Οι άλλες προσφορές επιβεβαιώνονται απευθείας με το γραφείο, χωρίς πληρωμή online.",
+    prepayDeposit: "Για τις προσφορές που κρατούνται online, μόνο ένα μέρος: μια προκαταβολή online κλείνει το αυτοκίνητο και το υπόλοιπο το πληρώνετε στο γραφείο κατά την παραλαβή. Αν το γραφείο δεν επιβεβαιώσει εντός 4 ωρών λειτουργίας (8:00 έως 22:00, ώρα Ελλάδας), η προκαταβολή επιστρέφεται. Οι άλλες προσφορές επιβεβαιώνονται απευθείας με το γραφείο, χωρίς πληρωμή online.",
   },
 };
 

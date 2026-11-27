@@ -68,7 +68,7 @@ function Shell({ children, hero, wide = false }: { children?: ReactNode; hero?: 
         <div className="relative overflow-hidden bg-gradient-to-br from-lagoon to-sea text-white">
           <div className={`relative mx-auto flex items-end justify-between gap-6 px-4 pt-10 pb-20 ${wide ? "max-w-5xl" : "max-w-xl"}`}>
             <div className="min-w-0">{hero}</div>
-            <GoatStanding className="hidden h-36 w-auto shrink-0 sm:block" />
+            <div aria-hidden="true" className="hidden shrink-0 sm:block"><GoatStanding className="h-36 w-auto" /></div>
           </div>
           <svg viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true" className="absolute bottom-0 left-0 h-10 w-full text-foam">
             <path d="M0 34 C240 4 480 4 720 26 C960 48 1200 50 1440 18 V60 H0Z" fill="currentColor" />
@@ -132,7 +132,7 @@ function BookingCard({ row, t, lang, paid, extras }: { row: BookingRow; t: CarBo
           <CarPhoto src640={photo.src640} src1280={photo.src1280} alt={[photo.model, row.partner_name].filter(Boolean).join(", ")} eager className="h-full w-full" sizes="(min-width: 768px) 560px, 100vw" />
         </div>
       ) : null}
-      {photo && !photo.exact && model ? (
+      {photo && !photo.exact ? (
         <p className="m-0 px-6 pt-2 text-[12.5px] text-text-muted">{OFFER_VIEW[lang].photoOther.replace("{model}", photo.model)}</p>
       ) : null}
       <div className="flex flex-col gap-4 p-6">
@@ -144,7 +144,7 @@ function BookingCard({ row, t, lang, paid, extras }: { row: BookingRow; t: CarBo
           ) : null}
           <p className="m-0 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[14.5px] text-ink">
             {row.partner_name ? <span>{row.partner_name}</span> : null}
-            {extras.rating ? <RatingLine rating={extras.rating.rating} count={extras.rating.count} locale={lang} countLabel={GOOGLE_COUNT[lang]} /> : null}
+            {extras.rating ? <RatingLine rating={extras.rating.rating} count={extras.rating.count} locale={lang} countLabel={OFFER_VIEW[lang].googleReviews} /> : null}
           </p>
         </div>
         <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 text-[15px]">
@@ -180,10 +180,6 @@ function BookingCard({ row, t, lang, paid, extras }: { row: BookingRow; t: CarBo
     </section>
   );
 }
-
-const GOOGLE_COUNT: Record<CarBookingLocale, string> = {
-  en: "{n} Google reviews", fr: "{n} avis Google", de: "{n} Google-Bewertungen", el: "{n} κριτικές Google",
-};
 
 export default async function CarBookingPage(
   { params, searchParams }: {
@@ -226,8 +222,10 @@ export default async function CarBookingPage(
   const ratingCount = rated?.google_rating_count == null ? 0 : Number(rated.google_rating_count);
   const extras: CardExtras = { rating: Number.isFinite(ratingValue) && ratingCount > 0 ? { rating: ratingValue, count: ratingCount } : null };
   const depositText = formatEur(Number(row.deposit_eur), lang);
+  // « Annulation gratuite » seulement tant qu'annuler rend tout l'acompte (I4 : à moins de 48 h, plus de titre trompeur).
+  const freeNow = refundNow !== null && refundNow >= Number(row.deposit_eur);
   const cancelBox = (
-    <SideBox title={t.freeCancelTitle}>
+    <SideBox title={freeNow ? t.freeCancelTitle : undefined}>
       <p className="m-0 text-[14px] leading-relaxed text-text-muted">{t.depositCancelRule}</p>
       {cancelPanel}
     </SideBox>

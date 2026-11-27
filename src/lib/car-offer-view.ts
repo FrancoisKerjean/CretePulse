@@ -67,6 +67,8 @@ export interface OfferViewCopy {
   reasonRated: string;    // {n} {rating}
   reasonPlain: string;    // {n}
   onlyOffer: string;
+  onlyBookable: string;
+  agencyTerms: string;    // {partner} : titre de ce que le loueur inclut (assurance, kilométrage)   // les autres offres sont expirées ou refusées
   otherOffers: string;    // {n}
   otherOffer: string;
   totalFor: string;       // {days}
@@ -78,6 +80,7 @@ export interface OfferViewCopy {
   allReviews: string;
   googleReview: string;
   disclaimer: string;
+  readLess: string;
   readReviews: string;
   everyOffer: string;
   pendingPayment: string;
@@ -95,6 +98,8 @@ export const OFFER_VIEW: Record<OfferLang, OfferViewCopy> = {
     reasonRated: "The lowest price of the {n} offers, from an agency rated {rating} out of 5 on Google.",
     reasonPlain: "The lowest price of the {n} offers.",
     onlyOffer: "The only offer for your dates so far.",
+    onlyBookable: "The only offer you can still book.",
+    agencyTerms: "Offered by {partner}",
     otherOffers: "The {n} other offers",
     otherOffer: "The other offer",
     totalFor: "Total price for {days}",
@@ -105,9 +110,10 @@ export const OFFER_VIEW: Record<OfferLang, OfferViewCopy> = {
     readMore: "Read more",
     allReviews: "All reviews on Google",
     googleReview: "Google review",
-    disclaimer: "Reviews published on Google, not verified by crete.direct.",
+    disclaimer: "Reviews published on Google, not verified by crete.direct, in Google's order; reviews older than 2 years are not shown.",
+    readLess: "Show less",
     readReviews: "Read reviews",
-    everyOffer: "On every offer: part paid online today, the rest at the counter. Confirmed within 4 hours, otherwise refunded.",
+    everyOffer: "On every offer: part paid online today, the rest at the counter.",
     pendingPayment: "A payment is already open for this request. If you left the payment page, it closes within 30 minutes and you can choose again.",
     tryAgain: "Something went wrong. Please try again.",
     photoAlt: "{model}, {partner}",
@@ -121,6 +127,8 @@ export const OFFER_VIEW: Record<OfferLang, OfferViewCopy> = {
     reasonRated: "Le prix le plus bas des {n} offres, chez une agence notée {rating} sur 5 sur Google.",
     reasonPlain: "Le prix le plus bas des {n} offres.",
     onlyOffer: "La seule offre reçue pour vos dates à ce jour.",
+    onlyBookable: "La seule offre encore réservable.",
+    agencyTerms: "Proposé par {partner}",
     otherOffers: "Les {n} autres offres",
     otherOffer: "L'autre offre",
     totalFor: "Prix total pour {days}",
@@ -131,9 +139,10 @@ export const OFFER_VIEW: Record<OfferLang, OfferViewCopy> = {
     readMore: "Lire la suite",
     allReviews: "Tous les avis sur Google",
     googleReview: "Avis Google",
-    disclaimer: "Avis publiés sur Google, non vérifiés par crete.direct.",
+    disclaimer: "Avis publiés sur Google, non vérifiés par crete.direct, dans l'ordre de Google ; les avis de plus de 2 ans ne sont pas affichés.",
+    readLess: "Réduire",
     readReviews: "Lire les avis",
-    everyOffer: "Sur chaque offre : une part payée en ligne aujourd'hui, le reste au comptoir. Confirmée sous 4 h, sinon remboursée.",
+    everyOffer: "Sur chaque offre : une part payée en ligne aujourd'hui, le reste au comptoir.",
     pendingPayment: "Un paiement est déjà ouvert pour cette demande. Si vous avez quitté la page de paiement, elle se ferme d'ici 30 minutes et vous pourrez choisir à nouveau.",
     tryAgain: "Un problème est survenu. Réessayez.",
     photoAlt: "{model}, {partner}",
@@ -147,6 +156,8 @@ export const OFFER_VIEW: Record<OfferLang, OfferViewCopy> = {
     reasonRated: "Der niedrigste Preis der {n} Angebote, von einer Vermietung mit {rating} von 5 auf Google.",
     reasonPlain: "Der niedrigste Preis der {n} Angebote.",
     onlyOffer: "Bisher das einzige Angebot für Ihre Daten.",
+    onlyBookable: "Das einzige Angebot, das noch buchbar ist.",
+    agencyTerms: "Angeboten von {partner}",
     otherOffers: "Die {n} weiteren Angebote",
     otherOffer: "Das andere Angebot",
     totalFor: "Gesamtpreis für {days}",
@@ -157,9 +168,10 @@ export const OFFER_VIEW: Record<OfferLang, OfferViewCopy> = {
     readMore: "Weiterlesen",
     allReviews: "Alle Bewertungen auf Google",
     googleReview: "Google-Bewertung",
-    disclaimer: "Auf Google veröffentlichte Bewertungen, nicht von crete.direct geprüft.",
+    disclaimer: "Auf Google veröffentlichte Bewertungen, nicht von crete.direct geprüft, in der Reihenfolge von Google; Bewertungen, die älter als 2 Jahre sind, werden nicht angezeigt.",
+    readLess: "Weniger anzeigen",
     readReviews: "Bewertungen lesen",
-    everyOffer: "Bei jedem Angebot: ein Teil heute online, der Rest am Schalter. Bestätigung innerhalb von 4 Stunden, sonst Erstattung.",
+    everyOffer: "Bei jedem Angebot: ein Teil heute online, der Rest am Schalter.",
     pendingPayment: "Für diese Anfrage ist bereits eine Zahlung offen. Wenn Sie die Zahlungsseite verlassen haben, schließt sie sich innerhalb von 30 Minuten und Sie können neu wählen.",
     tryAgain: "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
     photoAlt: "{model}, {partner}",
@@ -173,6 +185,8 @@ export const OFFER_VIEW: Record<OfferLang, OfferViewCopy> = {
     reasonRated: "Η χαμηλότερη τιμή από τις {n} προσφορές, από γραφείο με βαθμολογία {rating} στα 5 στο Google.",
     reasonPlain: "Η χαμηλότερη τιμή από τις {n} προσφορές.",
     onlyOffer: "Η μόνη προσφορά για τις ημερομηνίες σας μέχρι στιγμής.",
+    onlyBookable: "Η μόνη προσφορά που μπορείτε ακόμη να κλείσετε.",
+    agencyTerms: "Προσφέρεται από {partner}",
     otherOffers: "Οι άλλες {n} προσφορές",
     otherOffer: "Η άλλη προσφορά",
     totalFor: "Συνολική τιμή για {days}",
@@ -183,9 +197,10 @@ export const OFFER_VIEW: Record<OfferLang, OfferViewCopy> = {
     readMore: "Περισσότερα",
     allReviews: "Όλες οι κριτικές στο Google",
     googleReview: "Κριτική Google",
-    disclaimer: "Κριτικές δημοσιευμένες στο Google, μη επαληθευμένες από το crete.direct.",
+    disclaimer: "Κριτικές δημοσιευμένες στο Google, μη επαληθευμένες από το crete.direct, με τη σειρά του Google· οι κριτικές παλαιότερες των 2 ετών δεν εμφανίζονται.",
+    readLess: "Λιγότερα",
     readReviews: "Διαβάστε τις κριτικές",
-    everyOffer: "Σε κάθε προσφορά: ένα μέρος online σήμερα, το υπόλοιπο στο γκισέ. Επιβεβαίωση εντός 4 ωρών, αλλιώς επιστροφή χρημάτων.",
+    everyOffer: "Σε κάθε προσφορά: ένα μέρος online σήμερα, το υπόλοιπο στο γκισέ.",
     pendingPayment: "Υπάρχει ήδη ανοιχτή πληρωμή για αυτό το αίτημα. Αν φύγατε από τη σελίδα πληρωμής, κλείνει μέσα σε 30 λεπτά και μπορείτε να επιλέξετε ξανά.",
     tryAgain: "Κάτι πήγε στραβά. Δοκιμάστε ξανά.",
     photoAlt: "{model}, {partner}",

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import {
   CAR_CATEGORIES,
   MAX_CATALOGUE_DAYS,
+  catalogueQuote,
   fromPricePerDay,
   isCatalogueEligible,
   isoToUtc,
@@ -15,7 +16,12 @@ const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
 const CACHE = { "Cache-Control": "private, max-age=300" };
 const bad = (error: string) => NextResponse.json({ error }, { status: 400 });
 
-/** Prix « à partir de » par catégorie : le plus bas des loueurs réservables pour ce retrait et ces dates. */
+/**
+ * Par catégorie, pour ce retrait et ces dates, parmi les loueurs réservables :
+ * - `prices` : le prix par jour le plus bas (« dès X €/jour ») ;
+ * - `totals` : le total le plus bas, calculé comme l'offre qui sera envoyée
+ *   (somme jour par jour + livraison au point de prise, `catalogueQuote`).
+ */
 export async function GET(request: Request) {
   const q = new URL(request.url).searchParams;
   const pickup = q.get("pickup") ?? "";
@@ -34,7 +40,7 @@ export async function GET(request: Request) {
   if ((to - from) / 86_400_000 > MAX_CATALOGUE_DAYS) return bad(`Rental too long (${MAX_CATALOGUE_DAYS} days maximum).`);
   if ((timeFrom && !TIME.test(timeFrom)) || (timeTo && !TIME.test(timeTo))) return bad("Invalid time (HH:MM expected).");
 
-  if (process.env.CAR_CATALOGUE_ENABLED !== "on") return NextResponse.json({ prices: {} }, { headers: CACHE });
+  if (process.env.CAR_CATALOGUE_ENABLED !== "on") return NextResponse.json({ prices: {}, totals: {} }, { headers: CACHE });
 
   const days = rentalDays(dateFrom, dateTo, timeFrom, timeTo);
   const partners = (await partnersForZoneWithTerms(zone.id)).filter(
@@ -43,13 +49,16 @@ export async function GET(request: Request) {
   const catalogues = await liveCataloguesForPartners(partners.map((p) => p.id));
 
   const prices: Partial<Record<CarCategory, number>> = {};
+  const totals: Partial<Record<CarCategory, number>> = {};
   for (const p of partners) {
     const cat = catalogues.get(p.id);
     if (!cat) continue;
     for (const c of CAR_CATEGORIES) {
       const v = fromPricePerDay(cat.rates, { dateFrom, dateTo, timeFrom, timeTo }, c);
       if (v != null && (prices[c] == null || v < prices[c]!)) prices[c] = v;
+      const q = catalogueQuote(cat.rates, cat.conditions, { category: c, pickupSlug: pickup, dateFrom, dateTo, timeFrom, timeTo });
+      if (q && (totals[c] == null || q.total < totals[c]!)) totals[c] = q.total;
     }
   }
-  return NextResponse.json({ prices }, { headers: CACHE });
+  return NextResponse.json({ prices, totals }, { headers: CACHE });
 }

@@ -1,5 +1,5 @@
 // Projection de la flotte réelle des loueurs (relevé `data/car-fleet/flottes.json`
-// + photos `public/images/fleet/manifest.json`) vers `src/data/car-fleet.json`.
+// + photos `data/car-fleet/manifest.json`) vers `src/data/car-fleet.json`.
 // Pur, zéro I/O : importé par scripts/gen-car-fleet.mjs, scripts/check-car-fleet.mjs
 // (node type-stripping, d'où les imports sans alias) et par car-fleet.ts.
 

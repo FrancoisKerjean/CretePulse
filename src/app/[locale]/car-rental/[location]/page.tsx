@@ -8,7 +8,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { CarRentalWizard } from "@/components/car-rental/CarRentalWizard";
 import { servedZoneIds } from "@/lib/car-partners-db";
 import { TrustBar } from "@/components/car-rental/trust";
-import { aggregateRating } from "@/lib/car-trust";
+import { CONFIRM_LINE, aggregateRating } from "@/lib/car-trust";
 import { partnerRatings } from "@/lib/car-trust-server";
 import { showcasesByZone } from "@/lib/car-fleet";
 import { CAR_CATEGORIES } from "@/lib/car-catalogue";
@@ -33,22 +33,22 @@ const UI_DEPOSIT: Record<CarLocLocale, { wizardLead: string; process: [string, s
   en: {
     wizardLead: "Enter your dates: local agencies send their prices, bookable with a deposit.",
     process: ["Enter your dates and the car you need.", "Local agencies send their prices, the lowest first.", "Book with a deposit online, pay the rest at pick-up."],
-    trust: ["A deposit paid online books the car, the rest is paid at the counter.", "Confirmed by the agency within 4 hours, otherwise refunded.", "Free cancellation up to 48 hours before pick-up."],
+    trust: ["A deposit paid online books the car, the rest is paid at the counter.", `${CONFIRM_LINE.en}.`, "Free cancellation up to 48 hours before pick-up."],
   },
   fr: {
     wizardLead: "Indiquez vos dates : les agences locales envoient leurs prix, réservables avec un acompte.",
     process: ["Indiquez vos dates et le véhicule recherché.", "Les agences locales envoient leur prix, le plus bas en premier.", "Réservez avec un acompte en ligne, réglez le reste à la prise du véhicule."],
-    trust: ["Un acompte payé en ligne réserve la voiture, le reste se règle au comptoir.", "Confirmée par l'agence sous 4 h, sinon remboursée.", "Annulation gratuite jusqu'à 48 h avant la prise."],
+    trust: ["Un acompte payé en ligne réserve la voiture, le reste se règle au comptoir.", `${CONFIRM_LINE.fr}.`, "Annulation gratuite jusqu'à 48 h avant la prise."],
   },
   de: {
     wizardLead: "Geben Sie Ihre Reisedaten an: lokale Vermieter senden ihre Preise, buchbar mit Anzahlung.",
     process: ["Geben Sie Reisedaten und gewünschten Wagen an.", "Lokale Vermieter senden ihre Preise, der günstigste zuerst.", "Buchen Sie mit einer Online-Anzahlung, den Rest zahlen Sie bei der Abholung."],
-    trust: ["Eine online gezahlte Anzahlung sichert das Auto, der Rest wird am Schalter bezahlt.", "Bestätigung durch den Vermieter innerhalb von 4 Stunden, sonst Erstattung.", "Kostenlose Stornierung bis 48 Stunden vor Abholung."],
+    trust: ["Eine online gezahlte Anzahlung sichert das Auto, der Rest wird am Schalter bezahlt.", `${CONFIRM_LINE.de}.`, "Kostenlose Stornierung bis 48 Stunden vor Abholung."],
   },
   el: {
     wizardLead: "Δηλώστε τις ημερομηνίες σας: τα τοπικά γραφεία στέλνουν τις τιμές τους, με κράτηση μέσω προκαταβολής.",
     process: ["Δηλώστε ημερομηνίες και το αυτοκίνητο που θέλετε.", "Τα τοπικά γραφεία στέλνουν τις τιμές τους, πρώτα η χαμηλότερη.", "Κάντε κράτηση με προκαταβολή online και πληρώστε το υπόλοιπο κατά την παραλαβή."],
-    trust: ["Μια προκαταβολή online κλείνει το αυτοκίνητο, το υπόλοιπο πληρώνεται στο γκισέ.", "Επιβεβαίωση από το γραφείο εντός 4 ωρών, αλλιώς επιστροφή χρημάτων.", "Δωρεάν ακύρωση έως 48 ώρες πριν την παραλαβή."],
+    trust: ["Μια προκαταβολή online κλείνει το αυτοκίνητο, το υπόλοιπο πληρώνεται στο γκισέ.", `${CONFIRM_LINE.el}.`, "Δωρεάν ακύρωση έως 48 ώρες πριν την παραλαβή."],
   },
 };
 

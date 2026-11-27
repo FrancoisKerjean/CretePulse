@@ -22,6 +22,8 @@ export interface GoogleReview {
   author: string;
   authorUri: string | null;
   authorPhoto: string | null;
+  /** Lien vers l'avis lui-même sur Google Maps (exigé par Google à côté de chaque avis). */
+  reviewUri: string | null;
   rating: number;
   text: string;
   /** Formulé par Google dans la langue demandée (« il y a 3 semaines »). */
@@ -41,6 +43,7 @@ interface ApiReview {
   relativePublishTimeDescription?: string;
   publishTime?: string;
   authorAttribution?: { displayName?: string; uri?: string; photoUri?: string } | null;
+  googleMapsUri?: string;
 }
 
 const EMPTY: PlaceReviews = { mapsUri: null, reviews: [] };
@@ -58,6 +61,7 @@ function toReview(r: ApiReview, minTime: number): GoogleReview | null {
     author,
     authorUri: r.authorAttribution?.uri ?? null,
     authorPhoto: r.authorAttribution?.photoUri ?? null,
+    reviewUri: r.googleMapsUri ?? null,
     rating: r.rating,
     text,
     relativeTime: r.relativePublishTimeDescription ?? null,
@@ -72,7 +76,7 @@ async function fetchPlaceReviews(placeId: string, lang: string): Promise<RawPlac
   const key = process.env.GOOGLE_PLACES_API_KEY as string;
   const res = await fetch(
     `https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}?languageCode=${lang}`,
-    { headers: { "X-Goog-Api-Key": key, "X-Goog-FieldMask": "reviews,googleMapsUri" }, cache: "no-store" },
+    { headers: { "X-Goog-Api-Key": key, "X-Goog-FieldMask": "reviews,googleMapsUri" }, cache: "no-store", signal: AbortSignal.timeout(2500) },
   );
   if (!res.ok) throw new Error(`places_reviews_${res.status}`);
   const json = (await res.json()) as { googleMapsUri?: string; reviews?: ApiReview[] };

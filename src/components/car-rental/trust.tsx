@@ -18,7 +18,7 @@ export function CarPhoto({
   if (!src640) {
     // Loueur sans photo : silhouette neutre plutôt qu'une voiture qui n'est pas la sienne.
     return (
-      <svg viewBox="0 0 120 60" role="img" aria-label={alt} className={`text-sea/40 ${className}`}>
+      <svg viewBox="0 0 120 60" aria-hidden="true" className={`text-sea/40 ${className}`}>
         <path d="M14 40h92M22 40l8-14c2-4 5-6 10-6h36c5 0 8 2 11 6l9 14M30 40v6m60-6v6" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
         <circle cx="34" cy="44" r="6" fill="none" stroke="currentColor" strokeWidth="3" />
         <circle cx="86" cy="44" r="6" fill="none" stroke="currentColor" strokeWidth="3" />
@@ -52,10 +52,11 @@ const starRow = (opacity: number) => (
 );
 
 /** 5 étoiles remplies au prorata de la note (sans id SVG, donc répétables sur une page). */
-export function Stars({ rating, locale, className = "" }: { rating: number; locale: string; className?: string }) {
+/** `decorative` : le chiffre est écrit à côté, les étoiles ne sont pas relues par le lecteur d'écran. */
+export function Stars({ rating, locale, className = "", decorative = false }: { rating: number; locale: string; className?: string; decorative?: boolean }) {
   const pct = Math.max(0, Math.min(100, (rating / 5) * 100));
   return (
-    <span role="img" aria-label={ratingAriaLabel(rating, locale)} className={`relative inline-flex text-sun ${className}`}>
+    <span {...(decorative ? { "aria-hidden": true } : { role: "img", "aria-label": ratingAriaLabel(rating, locale) })} className={`relative inline-flex text-sun ${className}`}>
       {starRow(0.25)}
       <span className="absolute inset-y-0 left-0 overflow-hidden" style={{ width: `${pct}%` }}>{starRow(1)}</span>
     </span>
@@ -70,7 +71,7 @@ export function RatingLine({
 }) {
   return (
     <span className={`inline-flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[14px] ${className}`}>
-      <Stars rating={rating} locale={locale} className="text-[15px]" />
+      <Stars rating={rating} locale={locale} className="text-[15px]" decorative />
       <strong className={`font-heading ${tone === "dark" ? "text-white" : "text-ink"}`}>{formatRating(rating, locale)}</strong>
       <span className={tone === "dark" ? "text-white/70" : "text-text-muted"}>{countLabel.replace("{n}", count.toLocaleString(locale === "en" ? "en-GB" : locale))}</span>
     </span>
@@ -78,20 +79,27 @@ export function RatingLine({
 }
 
 export function ReviewCard({
-  review, locale, readMore, googleReview, tone = "light",
+  review, locale, readMore, readLess, googleReview, tone = "light",
 }: {
-  review: GoogleReview; locale: string; readMore: string; googleReview: string; tone?: "light" | "dark";
+  review: GoogleReview; locale: string; readMore: string; readLess: string; googleReview: string; tone?: "light" | "dark";
 }) {
   const { short, truncated } = reviewExcerpt(review.text);
   const dark = tone === "dark";
   return (
     <article className={`flex flex-col gap-2 rounded-2xl p-4 ${dark ? "border border-white/10 bg-white/[.06]" : "border border-border bg-white"}`}>
       <header className="flex items-center gap-3">
-        <span aria-hidden="true" className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-heading font-bold ${dark ? "bg-white text-night" : "bg-sea-faint text-sea"}`}>
-          {review.author.charAt(0).toUpperCase()}
-        </span>
+        {review.authorPhoto ? (
+          // eslint-disable-next-line @next/next/no-img-element -- avatar servi par Google, affiché tel quel (règles d'attribution)
+          <img src={review.authorPhoto} alt="" width={36} height={36} loading="lazy" referrerPolicy="no-referrer" className="h-9 w-9 shrink-0 rounded-full object-cover" />
+        ) : (
+          <span aria-hidden="true" className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-heading font-bold ${dark ? "bg-white text-night" : "bg-sea-faint text-sea"}`}>
+            {review.author.charAt(0).toUpperCase()}
+          </span>
+        )}
         <div className="min-w-0">
-          <p className={`m-0 truncate font-heading text-[15px] font-bold ${dark ? "text-white" : "text-ink"}`}>{review.author}</p>
+          <p className={`m-0 truncate font-heading text-[15px] font-bold ${dark ? "text-white" : "text-ink"}`}>
+            {review.authorUri ? <a href={review.authorUri} target="_blank" rel="noopener noreferrer nofollow" className="hover:underline">{review.author}</a> : review.author}
+          </p>
           <p className={`m-0 flex items-center gap-2 text-[12.5px] ${dark ? "text-white/65" : "text-text-muted"}`}>
             <Stars rating={review.rating} locale={locale} className="text-[13px]" />
             {review.relativeTime}
@@ -102,6 +110,7 @@ export function ReviewCard({
         <details className={`group text-[14px] leading-relaxed ${dark ? "text-white/90" : "text-ink"}`}>
           <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
             <span className="group-open:hidden">{short} <span className={`font-bold ${dark ? "text-lagoon" : "text-lagoon-deep"}`}>{readMore}</span></span>
+            <span className={`hidden font-bold group-open:inline ${dark ? "text-lagoon" : "text-lagoon-deep"}`}>{readLess}</span>
           </summary>
           <p className="m-0">{review.text}</p>
         </details>
@@ -109,8 +118,8 @@ export function ReviewCard({
         <p className={`m-0 text-[14px] leading-relaxed ${dark ? "text-white/90" : "text-ink"}`}>{short}</p>
       )}
       <p className={`m-0 mt-auto text-[12px] ${dark ? "text-white/55" : "text-text-muted"}`}>
-        {review.authorUri ? (
-          <a href={review.authorUri} target="_blank" rel="noopener noreferrer nofollow" className="underline-offset-2 hover:underline">{googleReview}</a>
+        {review.reviewUri ? (
+          <a href={review.reviewUri} target="_blank" rel="noopener noreferrer nofollow" className="underline-offset-2 hover:underline">{googleReview}</a>
         ) : googleReview}
       </p>
     </article>
@@ -119,10 +128,10 @@ export function ReviewCard({
 
 /** Avis Google d'un loueur : 3 au plus, lien vers la fiche, mention légale. Rien sans avis. */
 export function GoogleReviewsBlock({
-  reviews, mapsUri, locale, title, allReviews, readMore, googleReview, disclaimer, tone = "light", max = 3,
+  reviews, mapsUri, locale, title, allReviews, readMore, readLess, googleReview, disclaimer, tone = "light", max = 3,
 }: {
   reviews: GoogleReview[]; mapsUri: string | null; locale: string;
-  title?: string; allReviews: string; readMore: string; googleReview: string; disclaimer: string;
+  title?: string; allReviews: string; readMore: string; readLess: string; googleReview: string; disclaimer: string;
   tone?: "light" | "dark"; max?: number;
 }) {
   if (reviews.length === 0) return null;
@@ -141,10 +150,11 @@ export function GoogleReviewsBlock({
       ) : null}
       <div className="grid gap-3 md:grid-cols-3">
         {reviews.slice(0, max).map((r) => (
-          <ReviewCard key={`${r.author}-${r.publishTime}`} review={r} locale={locale} readMore={readMore} googleReview={googleReview} tone={tone} />
+          <ReviewCard key={`${r.author}-${r.publishTime}`} review={r} locale={locale} readMore={readMore} readLess={readLess} googleReview={googleReview} tone={tone} />
         ))}
       </div>
-      <p className={`m-0 text-[12.5px] ${dark ? "text-white/60" : "text-text-muted"}`}>{disclaimer}</p>
+      {/* Attribution exigée par Google : « Google Maps » non traduit, et comment les avis sont triés et filtrés. */}
+      <p className={`m-0 text-[12.5px] ${dark ? "text-white/60" : "text-text-muted"}`}><span translate="no" className="font-bold">Google Maps</span> · {disclaimer}</p>
     </section>
   );
 }
@@ -169,7 +179,7 @@ export function TrustBar({ agg, locale, depositOn, className = "" }: { agg: Aggr
     <ul className={`m-0 flex list-none flex-wrap items-center gap-x-6 gap-y-2 p-0 text-[14px] text-text-muted ${className}`}>
       {agg && c.rating ? (
         <li className="flex items-center gap-2">
-          <Stars rating={agg.rating} locale={locale} className="text-[14px]" />
+          <Stars rating={agg.rating} locale={locale} className="text-[14px]" decorative />
           <span>{c.rating}</span>
         </li>
       ) : null}

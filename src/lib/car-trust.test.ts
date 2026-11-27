@@ -70,6 +70,10 @@ describe("trustBarCopy", () => {
       expect(c.cancel.length).toBeGreaterThan(10);
       expect(JSON.stringify(c)).not.toContain(String.fromCharCode(0x2014));
     }
-    expect(trustBarCopy({ rating: 4.8, count: 10, partners: 1 }, "fr").confirm).toBe("Confirmée sous 4 h, sinon remboursée");
+    // La règle réelle est 4 h OUVERTES (8 h-22 h, car-deposit.ts) : « sous 4 h » tout court serait faux le soir.
+    const fr = trustBarCopy({ rating: 4.8, count: 10, partners: 1 }, "fr");
+    expect(fr.confirm).toBe("Confirmée sous 4 h d'ouverture (8 h à 22 h, heure grecque), sinon remboursée");
+    expect(fr.cancel).toBe("Annulation gratuite jusqu'à 48 h avant la prise du véhicule");
+    for (const l of ["en", "de", "el"]) expect(trustBarCopy(null, l).confirm).toMatch(/22/);
   });
 });

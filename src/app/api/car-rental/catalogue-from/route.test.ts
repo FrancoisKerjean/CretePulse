@@ -34,7 +34,7 @@ describe("GET catalogue-from", () => {
     vi.stubEnv("CAR_CATALOGUE_ENABLED", "off");
     const res = await call(QS);
     expect(res.headers.get("Cache-Control")).toBe("private, max-age=300");
-    expect(await res.json()).toEqual({ prices: {} });
+    expect(await res.json()).toEqual({ prices: {}, totals: {} });
     expect(db.partnersForZoneWithTerms).not.toHaveBeenCalled();
     expect(db.liveCataloguesForPartners).not.toHaveBeenCalled();
   });
@@ -52,6 +52,25 @@ describe("GET catalogue-from", () => {
     ]);
     db.liveCataloguesForPartners.mockResolvedValue(new Map([[1, grid(50)], [2, grid(10)], [3, grid(11)], [4, grid(12)]]));
     expect((await (await call(QS)).json()).prices).toEqual({ compact: 50 });
+  });
+
+  it("totals: the offer's real total, delivery to the pickup point included, lowest across partners", async () => {
+    // 35 €/j en juin, 50 €/j en juillet, 20 € de livraison : 3 x 35 + 4 x 50 + 20 = 325 (et non 7 x 35).
+    const seasonal = {
+      rates: [
+        { category: "compact", period_from: "2027-06-01", period_to: "2027-06-30", min_days: 1, eur_per_day: 35 },
+        { category: "compact", period_from: "2027-07-01", period_to: "2027-07-31", min_days: 1, eur_per_day: 50 },
+      ],
+      conditions: { delivery_fees: { "heraklion-airport": 20 } },
+    };
+    const flat = { ...grid(46), conditions: null };
+    flat.rates = [{ ...flat.rates[0], period_to: "2027-07-31" }];
+    db.liveCataloguesForPartners.mockResolvedValue(new Map([[1, seasonal], [2, flat]]));
+    const body = await (await call("pickup=heraklion-airport&dateFrom=2027-06-28&dateTo=2027-07-05&timeFrom=10:00&timeTo=10:00")).json();
+    expect(body.prices).toEqual({ compact: 35 });
+    expect(body.totals).toEqual({ compact: 322 });
+    db.liveCataloguesForPartners.mockResolvedValue(new Map([[1, seasonal]]));
+    expect((await (await call("pickup=heraklion-airport&dateFrom=2027-06-28&dateTo=2027-07-05&timeFrom=10:00&timeTo=10:00")).json()).totals).toEqual({ compact: 325 });
   });
 
   it("a partner without live catalogue is skipped", async () => {

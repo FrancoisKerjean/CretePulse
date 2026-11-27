@@ -47,7 +47,8 @@ const fill = (s: string, vars: Record<string, string | number>) =>
   s.replace(/\{(\w+)\}/g, (_, k) => (k in vars ? String(vars[k]) : `{${k}}`));
 
 function ModelLine({ item, v, dark }: { item: OfferItem; v: OfferViewCopy; dark: boolean }) {
-  const shown = item.model ?? item.photo?.model ?? null;
+  // Seul le modèle écrit par le loueur est nommé (la page de réservation fait de même).
+  const shown = item.model ?? null;
   if (!shown && !item.gearbox) return null;
   return (
     <p className={`m-0 text-[15px] leading-snug ${dark ? "text-white/85" : "text-text-muted"}`}>
@@ -62,6 +63,17 @@ function ModelLine({ item, v, dark }: { item: OfferItem; v: OfferViewCopy; dark:
 function Cover({ item }: { item: OfferItem }) {
   if (!item.insurance.length) return null;
   return <p className="m-0 mt-0.5 text-[13px] leading-snug text-text-muted">{item.insurance.join(" · ")}</p>;
+}
+
+/** Inclusions et note du loueur : ce qui explique un prix plus haut, visible avant de payer l'acompte. */
+function RowExtras({ item }: { item: OfferItem }) {
+  if (!item.inclusions.length && !item.note) return null;
+  return (
+    <>
+      {item.inclusions.length ? <p className="m-0 mt-0.5 text-[13px] leading-snug text-text-muted">{item.inclusions.join(" · ")}</p> : null}
+      {item.note ? <p className="m-0 mt-1 line-clamp-2 text-[13px] italic leading-snug text-text-muted">« {item.note} »</p> : null}
+    </>
+  );
 }
 
 function Blocked({ text }: { text: string }) {
@@ -85,15 +97,28 @@ export function PickCard({
   item: OfferItem; v: OfferViewCopy; locale: string; eyebrow: string; reason: string; daysText: string; guarantees: string[];
 }) {
   const alt = fill(v.photoAlt, { model: item.photo?.model ?? item.model ?? "", partner: item.partner });
-  // Le modèle proposé n'est pas dans la flotte en ligne : la photo est une autre voiture de l'agence, on le dit.
-  const otherPhoto = Boolean(item.photo && !item.photo.exact && item.model);
-  const hasList = guarantees.length > 0 || item.insurance.length > 0 || item.inclusions.length > 0;
+  // Photo qui n'est pas le modèle proposé (absent de la flotte en ligne, ou aucun modèle précisé) : on le dit.
+  const otherPhoto = Boolean(item.photo && !item.photo.exact);
+  const terms = [...item.insurance, ...(item.inclusions.length ? [item.inclusions.join(" · ")] : [])];
+  const hasList = guarantees.length > 0 || terms.length > 0;
+  // Coches = engagements de crete.direct (confirmation, annulation). Ce que le loueur inclut
+  // (assurance, kilométrage) est à part, à son nom, sans coche : crete.direct ne présente pas d'assurance.
   const list = (
-    <ul className="m-0 flex list-none flex-col gap-1.5 p-0 text-[14px] text-white/85">
-      {guarantees.map((g) => <li key={g} className="flex items-start gap-2"><CheckIcon className="mt-0.5 text-lagoon" />{g}</li>)}
-      {item.insurance.map((g) => <li key={g} className="flex items-start gap-2"><CheckIcon className="mt-0.5 text-lagoon" />{g}</li>)}
-      {item.inclusions.length ? <li className="flex items-start gap-2"><CheckIcon className="mt-0.5 text-lagoon" />{item.inclusions.join(" · ")}</li> : null}
-    </ul>
+    <div className="flex flex-col gap-3">
+      {guarantees.length ? (
+        <ul className="m-0 flex list-none flex-col gap-1.5 p-0 text-[14px] text-white/85">
+          {guarantees.map((g) => <li key={g} className="flex items-start gap-2"><CheckIcon className="mt-0.5 text-lagoon" />{g}</li>)}
+        </ul>
+      ) : null}
+      {terms.length ? (
+        <div className="rounded-xl bg-white/[.06] px-3.5 py-2.5">
+          <p className="m-0 mb-1 text-[12.5px] font-bold text-white/70">{fill(v.agencyTerms, { partner: item.partner })}</p>
+          <ul className="m-0 list-disc pl-4 text-[13.5px] leading-relaxed text-white/80 marker:text-white/40">
+            {terms.map((g) => <li key={g}>{g}</li>)}
+          </ul>
+        </div>
+      ) : null}
+    </div>
   );
   return (
     <section aria-labelledby="pick-title" className="mt-2">
@@ -130,7 +155,7 @@ export function PickCard({
           <div className="border-t border-white/10 bg-white/[.03] p-4 md:p-6">
             <GoogleReviewsBlock
               reviews={item.reviews} mapsUri={item.mapsUri} locale={locale} tone="dark"
-              title={v.reviewsTitle} allReviews={v.allReviews} readMore={v.readMore} googleReview={v.googleReview} disclaimer={v.disclaimer}
+              title={v.reviewsTitle} allReviews={v.allReviews} readMore={v.readMore} readLess={v.readLess} googleReview={v.googleReview} disclaimer={v.disclaimer}
             />
           </div>
         ) : null}
@@ -150,13 +175,13 @@ export function OfferRow({ item, v, locale, delta }: { item: OfferItem; v: Offer
         <div className="min-w-0">
           <p className="m-0 font-heading text-[16px] font-bold text-ink">{item.partner}</p>
           {item.rating ? <RatingLine rating={item.rating.rating} count={item.rating.count} locale={locale} countLabel={v.googleReviews} className="text-[13px]" /> : null}
-          <div className="md:hidden"><ModelLine item={item} v={v} dark={false} /><Cover item={item} /></div>
+          <div className="md:hidden"><ModelLine item={item} v={v} dark={false} /><Cover item={item} /><RowExtras item={item} /></div>
         </div>
-        <div className="hidden md:block"><ModelLine item={item} v={v} dark={false} /><Cover item={item} /></div>
+        <div className="hidden md:block"><ModelLine item={item} v={v} dark={false} /><Cover item={item} /><RowExtras item={item} /></div>
         <div className="col-span-2 flex items-center justify-between gap-3 md:col-span-1 md:justify-end">
           <div className="text-left md:text-right">
             <p className="m-0 font-heading text-[19px] font-extrabold text-ink">{item.priceText}</p>
-            {delta > 0 ? <p className="m-0 text-[13px] font-bold text-terracotta">+{formatEur(delta, locale)}</p> : null}
+            {delta > 0 ? <p className="m-0 text-[13px] font-bold text-terracotta-deep">+{formatEur(delta, locale)}</p> : null}
           </div>
           <Accept item={item} variant="compact" />
         </div>
@@ -169,7 +194,7 @@ export function OfferRow({ item, v, locale, delta }: { item: OfferItem; v: Offer
           <div className="mt-3">
             <GoogleReviewsBlock
               reviews={item.reviews} mapsUri={item.mapsUri} locale={locale}
-              allReviews={v.allReviews} readMore={v.readMore} googleReview={v.googleReview} disclaimer={v.disclaimer}
+              allReviews={v.allReviews} readMore={v.readMore} readLess={v.readLess} googleReview={v.googleReview} disclaimer={v.disclaimer}
             />
           </div>
         </details>

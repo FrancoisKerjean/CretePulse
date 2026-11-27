@@ -340,7 +340,7 @@ export const L: Record<CarBookingLocale, CarBookingStrings> = {
     otherOffers: "Ihre anderen Angebote ansehen",
     kickerPaid: "Anzahlung erhalten · {deposit}",
     kickerConfirmed: "Buchung bestätigt",
-    awaitingHero: "Jetzt bestätigt {partner}",
+    awaitingHero: "Wartet auf Bestätigung durch {partner}",
     awaitingLead: "Wir schreiben Ihnen, sobald die Antwort da ist. Ohne rechtzeitige Bestätigung wird erstattet.",
     deadlineKicker: "Antwort spätestens",
     deadlineBody: "Bestätigt {partner} bis dahin nicht, erhalten Sie Ihre {deposit} vollständig zurück und können ein anderes Ihrer Angebote buchen.",

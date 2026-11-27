@@ -14,7 +14,7 @@ export interface CategoryShowcase { models: string[]; photo: ShowcasePhoto | nul
 export interface FleetPhoto { model: string; src640: string; src1280: string; exact: boolean }
 
 // La version 1280 n'existe que pour les sources d'au moins 1 100 px
-// (public/images/fleet/fleet-photos-report.md) : la 640 suffit, la 1280 retombe sur elle.
+// (data/car-fleet/fleet-photos-report.md) : la 640 suffit, la 1280 retombe sur elle.
 const hasPhoto = (m: FleetModel) => !!m.photo640;
 const large = (m: FleetModel) => m.photo1280 ?? m.photo640!;
 
@@ -116,6 +116,23 @@ function fragments(text: string): string[][] {
 const containsRun = (hay: string[], needle: string[]) =>
   needle.length > 0 && hay.some((_, i) => needle.every((t, j) => hay[i + j] === t));
 
+// Mots qui suivent un modèle sans en changer : boîte, motorisation (« VW Polo auto », « Yaris Hybrid »).
+const NOISE = new Set(["auto", "automatic", "automatique", "automatik", "manual", "manuel", "manuelle", "hybrid", "hybride", "diesel", "petrol", "essence", "benzin", "new"]);
+
+/**
+ * Le modèle trouvé couvre-t-il tout le fragment, à un mot de boîte ou une année près ?
+ * « Citroën C3 Aircross » contre une flotte qui n'a que la C3 : non, la photo n'est pas exacte.
+ */
+function coversFragment(fragment: string[], model: string): boolean {
+  const tokens = modelKey(model).split(" ");
+  for (const run of [tokens, tokens.slice(1)]) {
+    if (run.length === 0) continue;
+    const i = fragment.findIndex((_, k) => run.every((t, j) => fragment[k + j] === t));
+    if (i >= 0) return fragment.slice(i + run.length).every((t) => NOISE.has(t) || /^\d{4}$/.test(t));
+  }
+  return false;
+}
+
 /** Nombre de mots du modèle retrouvés dans le fragment (nom complet, ou sans la marque), 0 sinon. */
 function matchScore(fragment: string[], model: string): number {
   const tokens = modelKey(model).split(" ");
@@ -144,7 +161,7 @@ export function offerCarPhoto(
       const s = matchScore(frag, m.model);
       if (s > bestScore) { best = m; bestScore = s; }
     }
-    if (best) return { model: best.model, src640: best.photo640!, src1280: large(best), exact: true };
+    if (best) return { model: best.model, src640: best.photo640!, src1280: large(best), exact: coversFragment(frag, best.model) };
   }
   const p = categoryShowcase(category, [partnerId], fleet).photo;
   return p ? { model: p.model, src640: p.src640, src1280: p.src1280, exact: false } : null;

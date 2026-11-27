@@ -59,11 +59,29 @@ export function ratingAriaLabel(rating: number, locale: string): string {
   return ARIA[l](formatRating(rating, l));
 }
 
-const TRUST_BAR: Record<string, { rating: string; confirm: string; cancel: string }> = {
-  en: { rating: "{rating}/5 from {count} Google reviews of our rental partners", confirm: "Confirmed within 4 hours, otherwise refunded", cancel: "Free cancellation up to 48 hours before pick-up" },
-  fr: { rating: "{rating}/5 sur {count} avis Google de nos loueurs", confirm: "Confirmée sous 4 h, sinon remboursée", cancel: "Annulation gratuite jusqu'à 48 h avant" },
-  de: { rating: "{rating}/5 aus {count} Google-Bewertungen unserer Vermieter", confirm: "Bestätigung innerhalb von 4 Stunden, sonst Erstattung", cancel: "Kostenlose Stornierung bis 48 Stunden vor Abholung" },
-  el: { rating: "{rating}/5 από {count} κριτικές Google των συνεργατών μας", confirm: "Επιβεβαίωση εντός 4 ωρών, αλλιώς επιστροφή χρημάτων", cancel: "Δωρεάν ακύρωση έως 48 ώρες πριν την παραλαβή" },
+/**
+ * Les deux garanties de l'acompte, source unique (bandeau, page d'offres, pages lieu).
+ * Règle réelle : 240 minutes OUVERTES, de 8 h à 22 h heure d'Athènes (CONFIRM_OPEN_MINUTES,
+ * car-deposit.ts) : « sous 4 h » tout court serait faux pour un paiement à 21:30.
+ */
+export const CONFIRM_LINE: Record<string, string> = {
+  en: "Confirmed within 4 opening hours (8:00 to 22:00, Greek time), otherwise refunded",
+  fr: "Confirmée sous 4 h d'ouverture (8 h à 22 h, heure grecque), sinon remboursée",
+  de: "Bestätigung innerhalb von 4 Öffnungsstunden (8 bis 22 Uhr, griechische Zeit), sonst Erstattung",
+  el: "Επιβεβαίωση εντός 4 ωρών λειτουργίας (8:00 έως 22:00, ώρα Ελλάδας), αλλιώς επιστροφή χρημάτων",
+};
+export const CANCEL_LINE: Record<string, string> = {
+  en: "Free cancellation up to 48 hours before pick-up",
+  fr: "Annulation gratuite jusqu'à 48 h avant la prise du véhicule",
+  de: "Kostenlose Stornierung bis 48 Stunden vor Abholung",
+  el: "Δωρεάν ακύρωση έως 48 ώρες πριν την παραλαβή",
+};
+
+const TRUST_BAR: Record<string, { rating: string }> = {
+  en: { rating: "{rating}/5 from {count} Google reviews of our rental partners" },
+  fr: { rating: "{rating}/5 sur {count} avis Google de nos loueurs" },
+  de: { rating: "{rating}/5 aus {count} Google-Bewertungen unserer Vermieter" },
+  el: { rating: "{rating}/5 από {count} κριτικές Google των συνεργατών μας" },
 };
 
 /** Bandeau de confiance de la location : note de nos loueurs (null sans note), puis les deux garanties de l'acompte. */
@@ -71,7 +89,8 @@ export function trustBarCopy(agg: AggregateRating | null, locale: string): { rat
   const c = TRUST_BAR[locale] ?? TRUST_BAR.en;
   const nf = locale === "en" ? "en-GB" : locale;
   return {
-    ...c,
+    confirm: CONFIRM_LINE[locale] ?? CONFIRM_LINE.en,
+    cancel: CANCEL_LINE[locale] ?? CANCEL_LINE.en,
     rating: agg ? c.rating.replace("{rating}", formatRating(agg.rating, locale)).replace("{count}", agg.count.toLocaleString(nf)) : null,
   };
 }

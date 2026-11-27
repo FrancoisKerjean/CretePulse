@@ -166,10 +166,10 @@ export function AcceptButton({
         {state === "sending" ? "…" : label}
       </button>
       {state === "phone" && (
-        <p role="alert" className="mt-2.5 text-[13px] text-alert bg-white/90 rounded-lg px-2 py-1">{phoneError}</p>
+        <p role="alert" className="mt-2.5 text-[13px] text-alert-deep bg-white/90 rounded-lg px-2 py-1">{phoneError}</p>
       )}
       {state === "error" && (
-        <p role="alert" className="mt-2.5 text-[13px] text-alert bg-white/90 rounded-lg px-2 py-1">{errorText}</p>
+        <p role="alert" className="mt-2.5 text-[13px] text-alert-deep bg-white/90 rounded-lg px-2 py-1">{errorText}</p>
       )}
     </div>
   );

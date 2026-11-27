@@ -25,7 +25,7 @@ import { formatEur, formatAthensDeadline, formatWallDate } from "@/lib/car-forma
 import CancelPanel from "../../car-booking/[token]/CancelPanel";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { partnerRatings } from "@/lib/car-trust-server";
-import { formatRating } from "@/lib/car-trust";
+import { CANCEL_LINE, CONFIRM_LINE, formatRating } from "@/lib/car-trust";
 import { reviewsForPlace, type PlaceReviews } from "@/lib/google-reviews-server";
 import { offerCarPhoto } from "@/lib/car-fleet";
 import { OFFER_VIEW, daysLabel, gearboxLabel, offerLang, priceDelta, recommendOffer } from "@/lib/car-offer-view";
@@ -55,8 +55,8 @@ const DEPOSIT_COPY: Record<string, DepositCopy> = {
     intro: "Choose your offer and pay a deposit online. You pay the rest to the agency at pick-up.",
     phoneHint: "The agency receives your number only once it confirms your booking.",
     dueLine: "{deposit} today · {rest} at the counter",
-    confirmLine: "Confirmed within 4 hours, otherwise refunded",
-    cancelLine: "Free cancellation up to 48 hours before pick-up",
+    confirmLine: CONFIRM_LINE.en,
+    cancelLine: CANCEL_LINE.en,
     book: "Book with {deposit}",
     bookPlain: "Book this offer",
     declined: "No longer available from this agency.",
@@ -74,8 +74,8 @@ const DEPOSIT_COPY: Record<string, DepositCopy> = {
     intro: "Choisissez votre offre et payez un acompte en ligne. Vous réglez le reste à l'agence à la prise du véhicule.",
     phoneHint: "L'agence reçoit votre numéro seulement quand elle confirme votre réservation.",
     dueLine: "{deposit} aujourd'hui · {rest} au comptoir",
-    confirmLine: "Confirmée sous 4 h, sinon remboursée",
-    cancelLine: "Annulation gratuite jusqu'à 48 h avant la prise du véhicule",
+    confirmLine: CONFIRM_LINE.fr,
+    cancelLine: CANCEL_LINE.fr,
     book: "Réserver avec {deposit}",
     bookPlain: "Réserver cette offre",
     declined: "Plus disponible chez cette agence.",
@@ -93,8 +93,8 @@ const DEPOSIT_COPY: Record<string, DepositCopy> = {
     intro: "Wählen Sie Ihr Angebot und zahlen Sie online eine Anzahlung. Den Rest zahlen Sie bei der Abholung an die Vermietung.",
     phoneHint: "Die Vermietung erhält Ihre Nummer erst, wenn sie Ihre Buchung bestätigt.",
     dueLine: "{deposit} heute · {rest} am Schalter",
-    confirmLine: "Bestätigung innerhalb von 4 Stunden, sonst Erstattung",
-    cancelLine: "Kostenlose Stornierung bis 48 Stunden vor Abholung",
+    confirmLine: CONFIRM_LINE.de,
+    cancelLine: CANCEL_LINE.de,
     book: "Mit {deposit} buchen",
     bookPlain: "Dieses Angebot buchen",
     declined: "Bei dieser Vermietung nicht mehr verfügbar.",
@@ -112,8 +112,8 @@ const DEPOSIT_COPY: Record<string, DepositCopy> = {
     intro: "Επιλέξτε την προσφορά σας και πληρώστε online μια προκαταβολή. Το υπόλοιπο το πληρώνετε στο γραφείο κατά την παραλαβή.",
     phoneHint: "Το γραφείο λαμβάνει τον αριθμό σας μόνο όταν επιβεβαιώσει την κράτησή σας.",
     dueLine: "{deposit} σήμερα · {rest} στο γκισέ",
-    confirmLine: "Επιβεβαίωση εντός 4 ωρών, αλλιώς επιστροφή χρημάτων",
-    cancelLine: "Δωρεάν ακύρωση έως 48 ώρες πριν την παραλαβή",
+    confirmLine: CONFIRM_LINE.el,
+    cancelLine: CANCEL_LINE.el,
     book: "Κράτηση με {deposit}",
     bookPlain: "Κράτηση αυτής της προσφοράς",
     declined: "Δεν είναι πλέον διαθέσιμο από αυτό το γραφείο.",
@@ -399,7 +399,19 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
     reviewsBy.set(r.id, await reviewsForPlace(r.google_place_id, locale));
   }));
 
-  const pick = recommendOffer(offers, (o) => ratingOf(o)?.rating ?? null) ?? offers[0];
+  // Ce qui empêche de réserver une offre (expirée, refusée par le loueur, trop proche, acompte trop bas).
+  const blockedFor = (o: QuoteOption): string | null => {
+    const deposit = depositFor(o);
+    if (isOfferExpired(o.created_at, request.date_from as string, now)) return copyFor(o).expiredOffer;
+    if (deposit?.declined) return deposit.dc.declined;
+    if (deposit && !deposit.bookable) return deposit.dc.refusals.tooClose;
+    if (deposit && deposit.amount === null) return deposit.dc.refusals.belowMinimum;
+    return null;
+  };
+  // « Notre choix » ne recommande qu'une offre réservable ; si aucune ne l'est, la moins chère reste en tête.
+  const bookableOffers = offers.filter((o) => blockedFor(o) === null);
+  const pool = bookableOffers.length ? bookableOffers : offers;
+  const pick = recommendOffer(pool, (o) => ratingOf(o)?.rating ?? null) ?? offers[0];
   const others = offers.filter((o) => o.id !== pick.id);
   const daysText = daysLabel(days, locale);
   const needsPhone = !isCallablePhone(request.customer_phone as string | null);
@@ -407,19 +419,14 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
   const itemFor = (o: QuoteOption): OfferItem => {
     const deposit = depositFor(o);
     const cc = copyFor(o);
-    const expired = isOfferExpired(o.created_at, request.date_from as string, now);
     const euro = (o.currency ?? "EUR") === "EUR";
     const fmt = (n: number) => (euro ? formatEur(n, locale) : `${n} ${o.currency}`);
-    let blockedText: string | null = null;
-    if (expired) blockedText = cc.expiredOffer;
-    else if (deposit?.declined) blockedText = deposit.dc.declined;
-    else if (deposit && !deposit.bookable) blockedText = deposit.dc.refusals.tooClose;
-    else if (deposit && deposit.amount === null) blockedText = deposit.dc.refusals.belowMinimum;
+    const blockedText = blockedFor(o);
     const rv = reviewsBy.get(o.partner_id);
     const photo = offerCarPhoto(o.partner_id, category, o.car_model);
     const model = o.car_model?.trim() || null;
-    // Sans modèle ni photo, la boîte seule se lirait comme un nom de voiture : libellé qualifié.
-    const gearbox = model || photo
+    // Sans modèle, la boîte seule se lirait comme un nom de voiture : libellé qualifié.
+    const gearbox = model
       ? gearboxLabel(o.gearbox, locale)
       : o.gearbox ? (GEARBOX_ONLY[locale] ?? GEARBOX_ONLY.en)[o.gearbox] ?? null : null;
     return {
@@ -448,11 +455,14 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
   };
 
   const pickRating = ratingOf(pick);
+  // La raison compare l'offre aux offres encore réservables, jamais à une offre morte.
   const reason = offers.length === 1
     ? v.onlyOffer
-    : pickRating
-      ? fill(v.reasonRated, { n: String(offers.length), rating: formatRating(pickRating.rating, locale) })
-      : fill(v.reasonPlain, { n: String(offers.length) });
+    : pool.length === 1
+      ? v.onlyBookable
+      : pickRating
+        ? fill(v.reasonRated, { n: String(pool.length), rating: formatRating(pickRating.rating, locale) })
+        : fill(v.reasonPlain, { n: String(pool.length) });
   const pickCopy = copyFor(pick);
   const ct = CAR_TYPES_DATA.find((x) => x.id === category);
 
@@ -496,7 +506,7 @@ export default async function CarOfferPage({ params }: { params: Promise<{ local
           </ul>
         </section>
       ) : null}
-      {offers.some((o) => depositFor(o)) ? <p className="m-0 mt-4 text-[13.5px] leading-relaxed text-text-muted">{v.everyOffer}</p> : null}
+      {offers.every((o) => depositFor(o)) ? <p className="m-0 mt-4 text-[13.5px] leading-relaxed text-text-muted">{v.everyOffer} {CONFIRM_LINE[locale] ?? CONFIRM_LINE.en}.</p> : null}
       <div className="mt-6">
         <DeclineButton token={token} label={c.declineLink} doneText={c.declineDone} offers={offers.length}
           inProgressText={dc.refusals.inProgress} />

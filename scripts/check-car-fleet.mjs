@@ -12,7 +12,7 @@ const read = (p) => JSON.parse(readFileSync(new URL(`../${p}`, import.meta.url),
 const flottes = read("data/car-fleet/flottes.json");
 let projected = null;
 try {
-  projected = JSON.stringify(buildCarFleet(flottes, read("public/images/fleet/manifest.json")), null, 2) + "\n";
+  projected = JSON.stringify(buildCarFleet(flottes, read("data/car-fleet/manifest.json")), null, 2) + "\n";
 } catch (e) {
   ok(`sources lisibles (${e.message})`, false);
 }

@@ -109,7 +109,7 @@ type Strings = {
   seats: string; // {pax}
   fromWord: string;
   perDay: string;
-  totalForStay: string; // {total} {days}
+  totalForStay: string; // {total} {days} : le total réel le plus bas, livraison comprise
   onQuote: string;
   otherCategories: string;
   selected: string;
@@ -154,7 +154,7 @@ const T: Record<string, Strings> = {
     emailLabel: "Email",
     phoneLabel: "Phone / WhatsApp (optional)",
     noteLabel: "Anything else? (optional)",
-    rgpd: "Your details are used to send you the offers, then to arrange the rental with the agency you choose. Nothing else.",
+    rgpd: "Your details are used only for this request: the local agencies concerned receive them to reply to you and arrange the rental. Nothing else.",
     back: "Back",
     next: "Continue",
     submit: "Send request",
@@ -179,7 +179,7 @@ const T: Record<string, Strings> = {
     seats: "{pax} seats",
     fromWord: "from",
     perDay: "/day",
-    totalForStay: "that is {total} for your {days} days, at the cheapest agency",
+    totalForStay: "from {total} for your {days} days, delivery included",
     onQuote: "On request",
     otherCategories: "Or another category",
     selected: "Selected",
@@ -222,7 +222,7 @@ const T: Record<string, Strings> = {
     emailLabel: "Email",
     phoneLabel: "Téléphone / WhatsApp (facultatif)",
     noteLabel: "Une précision ? (facultatif)",
-    rgpd: "Vos coordonnées servent à vous envoyer les offres, puis à organiser la location avec l'agence que vous choisissez. Rien d'autre.",
+    rgpd: "Vos coordonnées servent uniquement à cette demande : les agences locales concernées les reçoivent pour vous répondre et organiser la location. Rien d'autre.",
     back: "Retour",
     next: "Continuer",
     submit: "Envoyer la demande",
@@ -247,7 +247,7 @@ const T: Record<string, Strings> = {
     seats: "{pax} places",
     fromWord: "dès",
     perDay: "/jour",
-    totalForStay: "soit {total} pour vos {days} jours, chez le loueur le moins cher",
+    totalForStay: "à partir de {total} pour vos {days} jours, livraison comprise",
     onQuote: "Sur devis",
     otherCategories: "Ou une autre catégorie",
     selected: "Sélectionnée",
@@ -290,7 +290,7 @@ const T: Record<string, Strings> = {
     emailLabel: "E-Mail",
     phoneLabel: "Telefon / WhatsApp (optional)",
     noteLabel: "Noch etwas? (optional)",
-    rgpd: "Ihre Daten dienen dazu, Ihnen die Angebote zu senden und danach die Miete mit der von Ihnen gewählten Vermietung zu organisieren. Sonst nichts.",
+    rgpd: "Ihre Daten dienen nur dieser Anfrage: Die betroffenen lokalen Vermieter erhalten sie, um Ihnen zu antworten und die Miete zu organisieren. Sonst nichts.",
     back: "Zurück",
     next: "Weiter",
     submit: "Anfrage senden",
@@ -315,7 +315,7 @@ const T: Record<string, Strings> = {
     seats: "{pax} Sitze",
     fromWord: "ab",
     perDay: "/Tag",
-    totalForStay: "also {total} für Ihre {days} Tage, beim günstigsten Vermieter",
+    totalForStay: "ab {total} für Ihre {days} Tage, Zustellung inklusive",
     onQuote: "Auf Anfrage",
     otherCategories: "Oder eine andere Kategorie",
     selected: "Ausgewählt",
@@ -358,7 +358,7 @@ const T: Record<string, Strings> = {
     emailLabel: "Email",
     phoneLabel: "Τηλέφωνο / WhatsApp (προαιρετικό)",
     noteLabel: "Κάτι άλλο; (προαιρετικό)",
-    rgpd: "Τα στοιχεία σας χρησιμοποιούνται για να σας στείλουμε τις προσφορές και μετά για να οργανωθεί η ενοικίαση με το γραφείο που θα επιλέξετε. Τίποτα άλλο.",
+    rgpd: "Τα στοιχεία σας χρησιμοποιούνται μόνο για αυτό το αίτημα: τα σχετικά τοπικά γραφεία τα λαμβάνουν για να σας απαντήσουν και να οργανώσουν την ενοικίαση. Τίποτα άλλο.",
     back: "Πίσω",
     next: "Συνέχεια",
     submit: "Αποστολή αιτήματος",
@@ -383,7 +383,7 @@ const T: Record<string, Strings> = {
     seats: "{pax} θέσεις",
     fromWord: "από",
     perDay: "/ημέρα",
-    totalForStay: "δηλαδή {total} για τις {days} ημέρες σας, στο φθηνότερο γραφείο",
+    totalForStay: "από {total} για τις {days} ημέρες σας, με την παράδοση",
     onQuote: "Κατόπιν προσφοράς",
     otherCategories: "Ή άλλη κατηγορία",
     selected: "Επιλέχθηκε",
@@ -462,6 +462,8 @@ export function CarRentalWizard({
   const [fallbackWhatsapp, setFallbackWhatsapp] = useState<string | null>(null);
   const [nearRequested, setNearRequested] = useState(false);
   const [realPrices, setRealPrices] = useState<Record<string, number>>({});
+  // Total réel le plus bas par catégorie (somme jour par jour + livraison), jamais prix/jour x jours.
+  const [realTotals, setRealTotals] = useState<Record<string, number>>({});
   const pricesKeyRef = useRef("");
   const funnelStartedRef = useRef(false);
   const viewTrackedRef = useRef(false);
@@ -553,10 +555,13 @@ export function CarRentalWizard({
     if (pricesKeyRef.current === key) return;
     pricesKeyRef.current = key;
     setRealPrices({});
+    setRealTotals({});
     fetch(`/api/car-rental/catalogue-from?${key}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
-        if (pricesKeyRef.current === key && d?.prices && typeof d.prices === "object") setRealPrices(d.prices);
+        if (pricesKeyRef.current !== key) return;
+        if (d?.prices && typeof d.prices === "object") setRealPrices(d.prices);
+        if (d?.totals && typeof d.totals === "object") setRealTotals(d.totals);
       })
       .catch(() => {});
   }, [step, pickup, dateFrom, dateTo, timeFrom, timeTo]);
@@ -569,7 +574,8 @@ export function CarRentalWizard({
   // prix de grille), vraies voitures des loueurs de la zone, sinon photo d'illustration.
   const fmtLocale = T[locale] ? locale : "en";
   const hasPrices = Object.keys(realPrices).length > 0;
-  const featured = featuredCategory(realPrices, CAR_TYPES.map((c) => c.id));
+  // Mise en avant : le total le plus bas pour ces dates (ce que le client paiera), pas le prix par jour.
+  const featured = featuredCategory(realTotals, CAR_TYPES.map((c) => c.id));
   const stayDays = rentalDays(dateFrom, dateTo, timeFrom, timeTo);
   const zoneShowcase = (pickup && showcases?.[zoneForPickup(pickup)?.id ?? ""]) || showcases?.all;
   const carVisual = (id: string) => {
@@ -581,6 +587,7 @@ export function CarRentalWizard({
       : { src640: c.photo, src1280: null, alt: "", models, partner: false };
   };
   const anyWikimedia = CAR_TYPES.some((c) => !carVisual(c.id).partner);
+  const anyPartnerPhoto = CAR_TYPES.some((c) => carVisual(c.id).partner);
   const prefsSummary = [
     gearbox === "automatic" ? t.gbAuto : gearbox === "manual" ? t.gbManual : null,
     insurance === "full" ? t.insFull : insurance === "basic" ? t.insBasic : null,
@@ -692,7 +699,7 @@ export function CarRentalWizard({
         <p className="m-0 mt-1 text-sm text-text-muted">
           {carTypeDef.labels[locale] ?? carTypeDef.labels.en}
           {" · "}
-          {t.paxLabel} : {pax}
+          {t.paxLabel}{locale === "fr" ? " : " : ": "}{pax}
         </p>
       )}
     </div>
@@ -990,9 +997,11 @@ export function CarRentalWizard({
                     <span data-testid={`car-from-${c.id}`} className="text-[34px] font-extrabold leading-none">{formatEur(realPrices[c.id], fmtLocale)}</span>
                     <span className="text-[15px] text-text-muted"> {t.perDay}</span>
                   </span>
-                  <span className="text-[14px] text-text-muted">
-                    {t.totalForStay.replace("{total}", formatEur(Math.round(realPrices[c.id] * stayDays * 100) / 100, fmtLocale)).replace("{days}", String(stayDays))}
-                  </span>
+                  {realTotals[c.id] != null ? (
+                    <span className="text-[14px] text-text-muted">
+                      {t.totalForStay.replace("{total}", formatEur(realTotals[c.id], fmtLocale)).replace("{days}", String(stayDays))}
+                    </span>
+                  ) : null}
                   <span className={`mt-2 inline-flex items-center gap-2 font-heading text-[15px] font-bold ${on ? "text-sea" : "text-text-muted"}`}>
                     <span aria-hidden="true" className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${on ? "border-sea bg-sea text-white" : "border-border bg-white"}`}>
                       {on ? <svg viewBox="0 0 20 20" className="h-3.5 w-3.5"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg> : null}
@@ -1043,12 +1052,12 @@ export function CarRentalWizard({
             })}
           </div>
           <p className="mt-2 text-right text-[11px] leading-tight text-text-muted">
-            {t.photosPartners}{anyWikimedia ? " · Wikimedia Commons, CC BY-SA 4.0" : ""}
+            {[anyPartnerPhoto ? t.photosPartners : null, anyWikimedia ? "Wikimedia Commons, CC BY-SA 4.0" : null].filter(Boolean).join(" · ")}
           </p>
           <details className="group mt-5 rounded-2xl bg-surface">
             <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3.5 text-[14.5px] text-text-muted [&::-webkit-details-marker]:hidden">
               <span className="min-w-0 flex-1">
-                <b className="text-text">{t.paxLabel} : {pax}</b> · {prefsSummary || t.prefsAnyRest}
+                <b className="text-text">{t.paxLabel}{locale === "fr" ? " : " : ": "}{pax}</b> · {prefsSummary || t.prefsAnyRest}
               </span>
               <span className="shrink-0 font-heading font-bold text-sea">
                 {t.refine} <span aria-hidden="true" className="inline-block transition-transform group-open:rotate-180">⌄</span>

@@ -22,6 +22,7 @@ const review = (author: string, rating: number, publishTime: string, text = `Tex
   text: { text, languageCode: "fr" },
   originalText: { text: `Original ${author}`, languageCode: "en" },
   authorAttribution: { displayName: author, uri: `https://maps.example/${author}`, photoUri: `https://photo.example/${author}` },
+  googleMapsUri: `https://maps.example/review/${author}`,
   publishTime,
 });
 
@@ -64,6 +65,7 @@ describe("reviewsForPlace", () => {
       author: "Alpha",
       authorUri: "https://maps.example/Alpha",
       authorPhoto: "https://photo.example/Alpha",
+      reviewUri: "https://maps.example/review/Alpha",
       rating: 5,
       text: "Texte de Alpha",
       relativeTime: "il y a 3 semaines",
